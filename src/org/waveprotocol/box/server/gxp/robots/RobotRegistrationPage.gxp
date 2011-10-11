@@ -1,0 +1,36 @@
+<!--
+  GXP template for the Robot registration page.
+  Generate with "ant gen_gxp".
+  Author: ljvderijk@google.com (Lennard de Rijk)
+-->
+
+<gxp:template
+    name='org.waveprotocol.box.server.gxp.robots.RobotRegistrationPage'
+    xmlns='http://www.w3.org/1999/xhtml'
+    xmlns:gxp='http://google.com/2001/gxp'>
+
+  <gxp:param name='domain' type='String' />
+  <gxp:param name='message' type='String' />
+
+  <html>
+    <head>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+      <title>Robot Registration</title>
+      <link rel="shortcut icon" href="/static/favicon.ico" />
+    </head>
+
+    <body>
+
+      <gxp:if cond='!message.isEmpty()'>
+        <b><gxp:eval expr='message'/></b>
+      </gxp:if>
+
+      <form method="post" action="">
+        Robot Username: <input name="username" type="text"/>@<gxp:eval expr='domain'/><br/>
+        Robot URL: <input name="location" type="text"/><br/>
+        <input type="submit"/>
+      </form>
+
+    </body>
+  </html>
+</gxp:template>

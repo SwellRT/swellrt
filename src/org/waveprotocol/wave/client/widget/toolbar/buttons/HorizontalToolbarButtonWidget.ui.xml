@@ -1,0 +1,20 @@
+<!--
+  Template for HorizontalToolbarButtonWidget.
+  Author: kalman@google.com (Benjamin Kalman)
+-->
+<ui:UiBinder
+    xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+    xmlns:wp='urn:import:org.waveprotocol.wave.client.widget.common'
+>
+  <ui:with field='res' type='org.waveprotocol.wave.client.widget.toolbar.buttons.HorizontalToolbarButtonWidget.Resources' />
+  <wp:ImplPanel ui:field='self' styleName='{res.css.self} {res.css.enabled}'>
+    <!-- All fields hidden by default and if/shown when set. -->
+    <div ui:field='visualElement' class='{res.css.visualElement} {res.css.hidden}' />
+    <span ui:field='textElement' class='{res.css.textElement} {res.css.hidden}' />
+    <div ui:field='dropdownArrow' class='{res.css.dropdownArrow} {res.css.hidden}' />
+    <div ui:field='divider' class='{res.css.divider} {res.css.hidden}' />
+    <div ui:field='overlay' class='{res.css.overlay}' />
+  </wp:ImplPanel>
+
+</ui:UiBinder>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.model.Model"/>
+  <inherits name="org.waveprotocol.wave.model.account.Account"/>
+  <inherits name="org.waveprotocol.wave.model.conversation.Conversation"/>
+  <inherits name="org.waveprotocol.wave.model.util.Util"/>
+   
+  <source path=""/>
+   
+  <source path="converter"/>
+   
+  <source path="converter/v21"/>
+   
+  <source path="converter/v22"/>
+    
+</module>

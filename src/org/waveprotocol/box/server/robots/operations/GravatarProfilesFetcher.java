@@ -1,0 +1,64 @@
+/**
+ * Copyright 2011 Google Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ */
+
+package org.waveprotocol.box.server.robots.operations;
+
+import com.google.wave.api.ParticipantProfile;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.waveprotocol.box.server.robots.operations.FetchProfilesService.ProfilesFetcher;
+
+/**
+ * A {@link ProfilesFetcher} implementation that assigns a Gravatar identicon
+ * image URL for the user avatar. Users can change the avatar image by going to
+ * gravatar.com and adding their wave address to the main profile. It is
+ * impossible to create a main profile with wave address since gravatar requires
+ * email address verification.
+ * 
+ * @author yurize@apache.org (Yuri Zelikov)
+ */
+public class GravatarProfilesFetcher implements ProfilesFetcher {
+
+  private static final String GRAVATAR_URL = "http://www.gravatar.com/avatar/";
+
+  public static GravatarProfilesFetcher create() {
+    return new GravatarProfilesFetcher();
+  }
+
+  private GravatarProfilesFetcher() {
+
+  }
+
+  /**
+   * Returns the Gravatar identicon URL for the given email address.
+   */
+  public String getImageUrl(String email) {
+    // Hexadecimal MD5 hash of the requested user's lowercased email address
+    // with all whitespace trimmed.
+    String emailHash = DigestUtils.md5Hex(email.toLowerCase().trim());
+    return GRAVATAR_URL + emailHash + ".jpg?s=100&d=identicon";
+  }
+
+  @Override
+  public ParticipantProfile fetchProfile(String email) {
+    ParticipantProfile pTemp = null;
+    pTemp = ProfilesFetcher.SIMPLE_PROFILES_FETCHER.fetchProfile(email);
+    ParticipantProfile profile =
+        new ParticipantProfile(email, pTemp.getName(), getImageUrl(email), pTemp.getProfileUrl());
+    return profile;
+  }
+}

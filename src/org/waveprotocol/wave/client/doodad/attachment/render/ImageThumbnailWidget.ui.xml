@@ -1,0 +1,72 @@
+<ui:UiBinder
+    xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+    xmlns:pw='urn:import:org.waveprotocol.wave.client.widget.progress'
+    >
+
+  <ui:with field='res' type='org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWidget.Resources'/>
+  <!--
+    ______________________________________________
+   |      |                               |       |
+   | 6x90 |             *x6               | 15x90 |
+   |      |_______________________________|       |
+   |      |                               |       |
+   |      |                               |       |
+   |______|                               |_______|
+   |      |                               |       |
+   |      |                               |       |
+   | 6x*  |                               | 15x*  |
+   |      |                               |       |
+   |______|_______________________________|_______|
+   |      |                               |       |
+   | 6x4  |             *x4               | 15x4  |
+   |______|_______________________________|_______|
+
+   -->
+  <!-- Firefox requires an extra container div to establish a positioning context. -->
+  <!-- The unselectable="on" is required scatter through out the dom liberally.  This is to prevent
+       the resizable box to appear in IE. -->
+
+  <gwt:HTMLPanel>
+    <gwt:SimplePanel ui:field='menuButtonContainer' styleName='buttonContainer'></gwt:SimplePanel>
+
+    <gwt:HTMLPanel ui:field='chromeContainer' styleName='chromeContainer'>
+      <!-- Framing divs -->
+      <div class='itnw' unselectable="on"></div>
+      <div class='itnc' unselectable="on"></div>
+      <div class='itne' unselectable="on"></div>
+      <div class='itcw' unselectable="on"></div>
+
+      <!-- innards appear here -->
+
+      <div class='itce' unselectable="on"></div>
+      <div class='itsw' unselectable="on"></div>
+      <div class='itsc' unselectable="on"></div>
+      <div class='itse' unselectable="on"></div>
+    </gwt:HTMLPanel>
+
+    <table class='ittt' cellSpacing="0" cellPadding="0" unselectable="on">
+      <tr unselectable="on">
+        <!-- visibility override the bframe td rule which is over zealous  -->
+        <td class='itco' style="visibility: visible" unselectable="on">
+          <div class='itci' unselectable="on">
+            <!-- visibility override the bframe td rule which is over zealous  -->
+            <gwt:Image ui:field='image' styleName='itimg'></gwt:Image>
+            <gwt:Label ui:field='spin' styleName='itcc'></gwt:Label>
+            <gwt:Label ui:field='errorLabel' styleName='iterr'></gwt:Label>
+            <pw:ProgressWidget ui:field="progressWidget" styleName='{res.css.progress}' />
+          </div>
+        </td>
+      </tr>
+      <tr unselectable="on">
+        <!-- visibility override the bframe td rule which is over zealous  -->
+        <td style="visibility: visible" unselectable="on">
+          <gwt:SimplePanel ui:field='captionPanel'>
+               <!-- caption goes here -->
+          </gwt:SimplePanel>
+        </td>
+      </tr>
+    </table>
+
+  </gwt:HTMLPanel>
+</ui:UiBinder>

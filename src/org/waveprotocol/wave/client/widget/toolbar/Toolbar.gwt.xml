@@ -1,0 +1,4 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="com.google.common.base.Base" /><inherits name="org.waveprotocol.wave.client.common.webdriver.Webdriver" /><inherits name="org.waveprotocol.wave.client.widget.common.Common" /><inherits name="org.waveprotocol.wave.client.widget.overflowpanel.OverflowPanel" /><inherits name="org.waveprotocol.wave.client.widget.popup.Popup" /> <source path=""/>
+ <source path="buttons"/>
+
+</module>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<reference anchor="OT">
+  <front>
+    <title>Google Wave Operation Transform</title>
+    <author initials="D." surname="Wang" fullname="David Wang">
+      <organization/>
+      <address>
+        <email/>
+      </address>
+    </author>
+    <author initials="A." surname="Mah" fullname="Alex Mah">
+      <organization/>
+      <address>
+        <email/>
+      </address>
+    </author>
+    <date day="24" month="July" year="2009"/>
+  </front>
+  <seriesInfo name="Google Wave Whitepapers" value="OT"/>
+  <format type="HTML" target="http://www.waveprotocol.org/whitepapers/operational-transform"/>
+</reference>

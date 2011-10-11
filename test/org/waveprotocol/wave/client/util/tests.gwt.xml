@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.client.util.ClientFlags"/>
+  <entry-point class="org.waveprotocol.wave.client.util.ClientFlags"/>
+   
+  <source path=""/>
+    
+</module>

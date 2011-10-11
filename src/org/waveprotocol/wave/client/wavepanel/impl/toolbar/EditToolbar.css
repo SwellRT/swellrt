@@ -1,0 +1,93 @@
+/**
+ * Icons for the edit toolbar, see EditToolbarResources.java.
+ *
+ * author: patcoleman@google.com (Pat Coleman)
+ */
+
+@sprite .bold {
+  gwt-image: 'bold';
+}
+
+@sprite .italic {
+  gwt-image: 'italic';
+}
+
+@sprite .underline {
+  gwt-image: 'underline';
+}
+
+@sprite .strikethrough {
+  gwt-image: 'strikethrough';
+}
+
+@sprite .superscript {
+  gwt-image: 'superscript';
+}
+
+@sprite .subscript {
+  gwt-image: 'subscript';
+}
+
+@sprite .fontSize {
+  gwt-image: 'fontSize';
+}
+
+@sprite .fontFamily {
+  gwt-image: 'fontFamily';
+}
+
+@sprite .heading {
+  gwt-image: 'heading';
+}
+
+@sprite .indent {
+  gwt-image: 'indent';
+}
+
+@sprite .outdent {
+  gwt-image: 'outdent';
+}
+
+@sprite .unorderedlist {
+  gwt-image: 'unorderedlist';
+}
+
+@sprite .orderedlist {
+  gwt-image: 'orderedlist';
+}
+
+@sprite .alignDrop {
+  gwt-image: 'alignDrop';
+}
+
+@sprite .alignLeft {
+  gwt-image: 'alignLeft';
+}
+
+@sprite .alignCentre {
+  gwt-image: 'alignCentre';
+}
+
+@sprite .alignRight {
+  gwt-image: 'alignRight';
+}
+
+@sprite .alignJustify {
+  gwt-image: 'alignJustify';
+}
+
+@sprite .clearFormatting {
+  gwt-image: 'clearFormatting';
+}
+
+@sprite .insertLink {
+  gwt-image: 'insertLink';
+}
+
+@sprite .removeLink {
+  gwt-image: 'removeLink';
+}
+
+@sprite .insertGadget {
+  gwt-image: 'insertGadget';
+}

@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.5: http://docutils.sourceforge.net/" />
+<title>Access Control in Google Wave</title>
+<meta name="authors" content="Jon Tirsen" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5196 2007-06-03 20:25:28Z wiemann $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left {
+  clear: left }
+
+img.align-right {
+  clear: right }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="access-control-in-google-wave">
+<h1 class="title">Access Control in Google Wave</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Authors:</th>
+<td>Jon Tirsen</td></tr>
+<tr><th class="docinfo-name">Version:</th>
+<td>1.0 - May 2009</td></tr>
+</tbody>
+</table>
+<p>Google Wave's primary means of access control is the list of addresses that
+participate on a wavelet and what access accounts has to these addresses. This
+white paper outlines how the wave platform stores, exchanges and enforces
+access control.</p>
+<p>This whitepaper is part of a series. All of the whitepapers
+can be found on <a class="reference external" href="http://www.waveprotocol.org/whitepapers">Google Wave Federation Protocol site</a>.</p>
+<div class="section" id="executive-summary">
+<h1>Executive summary</h1>
+<p>Wave access control is defined as:</p>
+<ul class="simple">
+<li>which individual or robot has access to a specific account,</li>
+<li>what access an account has to an address,</li>
+<li>and finally what access an address has to a wavelet (see <a class="reference external" href="http://www.waveprotocol.org/whitepapers/internal-client-server-protocol">Google Wave Data
+Model and Client-Server Protocol</a> for more information on the wavelets).</li>
+</ul>
+<p>Access from individuals to accounts and accounts to addresses is defined and
+enforced inside each wave provider and not specified in the standard.  Address
+access is modeled as a graph where each edge in the graph grants access from
+one address to another address. These edges are stored in waves and are
+authorized by the wave provider that controls the domain of the addresses. The
+access edges can be exchanged between wave providers through the normal wave
+federation protocols.</p>
+<p>Typically an account has access to a canonical address which is the entry point
+for an account into this graph, although this is wave provider specific.
+Operations are authorized at the source of each wave provider. If authorization
+spans multiple wave providers the operation needs to be sent and verified along
+the path of each of the involved wave providers.  Different levels of access to
+a wavelet is still to be defined.</p>
+<div class="section" id="accounts-and-addresses">
+<h2>Accounts and addresses</h2>
+<dl class="docutils">
+<dt>Account</dt>
+<dd>An account belongs to an end user or a robot. Exactly how accounts work is
+wave provider specific. For example, Google uses Google Accounts to store and
+authenticate accounts, so a Google Wave account is shared with other Google
+properties.</dd>
+<dt>Address</dt>
+<dd>Most of the system does not deal directly with accounts but rather with
+addresses. An address is a string formatted as an email address (RFC 2822).
+Addresses, rather than accounts, participate in wavelets.</dd>
+<dt>Canonical address</dt>
+<dd>Each account has a canonical address which is the address the user acts as
+normally. Most per-user metadata is stored with the canonical address as a
+key. The canonical address cannot generally be changed, but an account can
+participate on a single wavelet as multiple addresses.</dd>
+</dl>
+</div>
+<div class="section" id="authentication">
+<h2>Authentication</h2>
+<p>Each wave provider chooses how they authenticate their users. In Google Wave we
+use a simple username and password scheme for individuals. Robots are contacted
+by the Google Wave provider through a well-defined URL and are therefore
+authenticated that way.</p>
+</div>
+<div class="section" id="address-access-as-a-graph">
+<h2>Address access as a graph</h2>
+<p>Address access can be seen as a directed graph of address to address edges
+where each edge is restricted by access settings.</p>
+<img alt="img/address-address.png" src="img/address-address.png" />
+<p>The entry point into the graph for a user or a robot is their canonical address.</p>
+<img alt="img/account-canonical.png" src="img/account-canonical.png" />
+<p>There are multiple types of access which indicate what address A can do as address B.</p>
+<ul class="simple">
+<li>Indexed to (INDEX) - wavelets addressed to address B will be written into the
+index of the account associated with address A (transitively).</li>
+<li>Add (ADD) - address A can add address B to wavelets.</li>
+<li>Add myself as (ADD_ME) - address A can add address A to wavelets as address B.</li>
+<li>Read (READ) - address A can read wavelets addressed to address B.</li>
+<li>Write (WRITE) - address A can do anything as address B. This could also be
+called &quot;act as&quot;.</li>
+<li>Grant (GRANT) - address A can grant additional access
+edges to address B.</li>
+</ul>
+</div>
+<div class="section" id="storing-and-exchanging-access-edges">
+<h2>Storing and exchanging access edges</h2>
+<dl class="docutils">
+<dt>Wave representation of an access edge</dt>
+<dd>Access edges are stored in data documents in wavelets as follows:</dd>
+</dl>
+<pre class="literal-block">
+&lt;grant from=&quot;a&#64;example.com&quot; to=&quot;b&#64;example.com&quot; until=&quot;2009-06-14T13:31Z&quot;&gt;
+  &lt;access&gt;INDEX&lt;/access&gt;
+  &lt;access&gt;READ&lt;/access&gt;
+&lt;/grant&gt;
+</pre>
+<dl class="docutils">
+<dt>Authorized access edge</dt>
+<dd>An authorized access edge is an access edge stored in a wave that can be
+attributed to an author that has a Grant access edge to the to address she is
+granting additional access too. This attribution should be enforced and
+verified by the wave provider. For example, the Google wave provider uses a
+namespace for all access edges. The namespace policer for that namespace will
+not allow edits that are not authorized.</dd>
+<dt>Access wave</dt>
+<dd>Each account has an access wave identified by its canonical address. This
+contains the entire access sub-graph that is reachable from the canonical
+address. The wave provider of the account maintains this access wave by
+copying all the relevant and authorized access edges it encounters while
+indexing its own and its federated wave providers' waves. This means that
+access edges can be stored and distributed anywhere in the system as long as
+they are authorized as above. The storage and distribution mechanism of
+Google Wave itself is used to store and distribute this information.</dd>
+<dt>Time to live</dt>
+<dd>When a wave provider issues an access edge to federated servers they are
+issued with a limited time period. They have to be refreshed within that time
+period or they are no longer valid. The time period should be chosen to
+minimize chattiness of the protocol and still allow for timely revocation.
+This is typically used for READ authorization when opening of a wavelet is
+not validated at the owning wave provider.</dd>
+</dl>
+</div>
+<div class="section" id="authorizing-an-operation">
+<h2>Authorizing an operation</h2>
+<p>An operation always contains the path of authorization from the canonical
+address to the address the account wants to perform an operation as excluding
+any initial WRITE edges.  Using the information available in the access wave
+the client builds the path and inserts it into the operation that it sends to
+its wave provider. After it has optimistically applied the operation to the
+wave in the client it sends it to its wave provider who then signs and forwards
+the operation to the next wave provider in the path. Every wave provider on the
+path will validate and sign the operation before it is finally forwarded and
+applied at the wave provider that owns the wavelet. This final wave provider is
+responsible for verifying all the signatures.</p>
+<p>If an authorization fails, the client has typically already optimistically
+applied the operation to the wave so will either need to reverse those
+operations or indicate an error to the user. In a well-behaved system this
+should only occur if an access edge has been removed or changed and this change
+has yet to be forwarded to the clients wave provider. In this case the access
+wave would access edges that are no longer valid.</p>
+</div>
+</div>
+<div class="section" id="groups">
+<h1>Groups</h1>
+<p>Groups are implemented on top of this generic access framework. Each group has
+an address and members. Group membership is expressed as the following edge for
+each member of the group:</p>
+<img alt="img/member-group.png" src="img/member-group.png" />
+<p>As you can see an important detail of groups in wave is that being a member of
+a group does not allow you to directly write into a wave which that group is
+addressed to. Instead it lets you add yourself as a direct participant to that
+wave.</p>
+<p>A group can be a member of another group which looks like this:</p>
+<img alt="img/member-group-group.png" src="img/member-group-group.png" />
+<p>This means that wavelets addressed to both Group 1 and Group 2 will be written
+into the member's index and the member can read and &quot;write&quot; (add self as a
+participant) to all these wavelets.</p>
+<p>Read-only groups mean that the &quot;add myself&quot; access is lacking:</p>
+<img alt="img/member-read-group.png" src="img/member-read-group.png" />
+<p>An address can be a read-write member of a nested group even though it's a
+read-only member of an outer group:</p>
+<img alt="img/member-group-read-group.png" src="img/member-group-read-group.png" />
+<p>This means the member can become a participant of wavelets addressed to Group 1
+but not to wavelets addressed to Group 2.</p>
+<div class="section" id="delegation">
+<h2>Delegation</h2>
+<p>Delegation allows an account to perform operations with another address as the
+author. Google Wave currently uses this for two cases:</p>
+<ul class="simple">
+<li>An account that is a write-member of a group can perform an AddParticipant
+operation to add an address belonging to that account to a wavelet.</li>
+<li>Google Wave's spelling (&quot;Spelly&quot;), linking (&quot;Linky&quot;), and other infrastructure
+services act on behalf of any address in a wavelet with those services
+enabled.</li>
+</ul>
+<p>This last case is represented as the following edge:</p>
+<img alt="img/spelly.png" src="img/spelly.png" />
+<p>This provides Google Wave infrastructure services full access to act as a user,
+while being authenticated as a service account.</p>
+</div>
+<div class="section" id="per-wavelet-access-control">
+<h2>Per-wavelet access control</h2>
+<p>Google Wave will eventually support some level of access control on a wavelets
+but requirements and implementation plans have yet to be determined. For
+example:</p>
+<ul class="simple">
+<li>A &quot;commenter&quot; role whereby a user can only create new blips and edit their own blips.</li>
+<li>A &quot;confidential&quot; mode (on the whole wavelet) or role (on a participant) where
+participants can't add new participants.</li>
+</ul>
+</div>
+</div>
+</div>
+</body>
+</html>

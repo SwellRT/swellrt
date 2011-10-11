@@ -1,0 +1,4 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="com.google.common.base.Base" /><inherits name="org.waveprotocol.wave.model.Model" /> <source path=""/>
+ <source path="impl"/>
+
+</module>

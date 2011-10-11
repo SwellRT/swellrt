@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- A schema featuring various regular expressions for attribute values -->
+<schema>
+  <definition name="test">
+    <element name="element1">
+      <attribute name="attribute1" values="hello|world" required="false"/>
+      <attribute name="attribute2" values="ab(cd|ef)gh" required="false"/>
+      <attribute name="attribute3" values="ab(c*|.d)ef" required="false"/>
+    </element>
+  </definition>
+  <root name="test"/>
+</schema>

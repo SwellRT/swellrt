@@ -1,0 +1,3 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="org.waveprotocol.wave.common.bootstrap.FlagConstants" /> <source path=""/>
+
+</module>

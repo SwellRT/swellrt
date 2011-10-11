@@ -1,0 +1,13 @@
+URL: http://bouncycastle.org/java.html
+Version: 1.45
+License: MIT X11 derivative
+
+License File: LICENSE.html
+
+Description:
+
+Bouncy Castle Lightweight Crypto APIs for Java.
+
+Local Modifications:
+
+None

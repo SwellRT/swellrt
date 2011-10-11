@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with an attribute clash through a reference -->
+<schema>
+  <definition name="test">
+    <attribute name="attribute1" values="value1" required="false"/>
+    <reference name="definition1"/>
+  </definition>
+  <definition name="definition1">
+    <attribute name="attribute1" values="value1" required="false"/>
+  </definition>
+  <root name="test"/>
+</schema>

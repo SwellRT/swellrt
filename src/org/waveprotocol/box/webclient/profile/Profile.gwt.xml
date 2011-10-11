@@ -1,0 +1,6 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <inherits name="com.google.common.base.Base" />
+  <inherits name="org.waveprotocol.wave.client.account.Account" />
+  <source path=""/>
+</module>

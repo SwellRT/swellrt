@@ -1,0 +1,42 @@
+<!--
+  GXP template for the OAuth authorization page.
+  Generate "ant gen_gxp".
+  Author: ljvderijk@google.com (Lennard de Rijk)
+-->
+
+<gxp:template
+  name='org.waveprotocol.box.server.gxp.OAuthAuthorizeTokenPage'
+  xmlns='http://www.w3.org/1999/xhtml' xmlns:gxp='http://google.com/2001/gxp'>
+
+  <gxp:param name='numberOfMinutes' type='int' />
+  <gxp:param name='xsrfToken' type='String' />
+
+  <html>
+
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>Authorization Required</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" />
+  </head>
+
+  <body>
+  A program would like to access your waves and perform operations on your
+  behalf. If you authorize the program it will have access to your data for
+  <gxp:eval expr='numberOfMinutes' />
+  minutes.
+
+  <form method="post" action=""><input type="hidden" name="token">
+  <gxp:attr name='value'>
+    <gxp:eval expr='xsrfToken' />
+  </gxp:attr></input>
+  <table>
+    <tr>
+      <input type="submit" value="Agree" name="agree" />
+      <input type="submit" value="Cancel" name="cancel" />
+    </tr>
+  </table>
+
+  </form>
+  </body>
+  </html>
+</gxp:template>

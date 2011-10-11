@@ -1,0 +1,27 @@
+/*
+ * CSS for DesktopTitleBar.
+ * Author: macpherson@google.com (Luke Macpherson)
+ */
+ 
+.titleBar {
+  position: static;
+  font: 12px;
+  color: white;
+  padding: 1px 5px 3px 7px;
+  background: #5690d2;
+}
+
+.buttons div {
+  float: left;
+  margin: 3px 5px 0 0;
+}
+
+.buttons {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+}
+
+.title {
+  color: white;
+}

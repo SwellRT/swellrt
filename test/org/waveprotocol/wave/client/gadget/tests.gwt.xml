@@ -1,0 +1,8 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <inherits name="org.waveprotocol.wave.client.gadget.Gadget" />
+
+  <source path=""/>
+  <source path="renderer"/>
+
+</module>

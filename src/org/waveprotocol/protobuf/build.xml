@@ -1,0 +1,11 @@
+<!--
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="extensions">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="extensions"/>
+  <patternset id="srcs">
+    <include name="org/waveprotocol/protobuf/*"/>
+  </patternset>
+</project>

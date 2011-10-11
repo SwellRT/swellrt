@@ -1,0 +1,31 @@
+<ui:UiBinder
+  xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+  xmlns:ui='urn:ui:com.google.gwt.uibinder'
+>
+  <ui:with
+    field='res'
+    type='org.waveprotocol.wave.client.widget.button.text.TextButton.Resources'
+  />
+  <gwt:HTMLPanel>
+    <table
+      cellpadding="0"
+      cellspacing="0"
+      class='{res.css.full}'
+      ui:field='full'
+    >
+      <tbody>
+        <tr>
+          <td>
+            <div class='{res.css.left}'/>
+          </td>
+          <td class='{res.css.middletd}'>
+            <div class='{res.css.middle}' ui:field='middle'/>
+          </td>
+          <td>
+            <div class='{res.css.right}'/>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </gwt:HTMLPanel>
+</ui:UiBinder>

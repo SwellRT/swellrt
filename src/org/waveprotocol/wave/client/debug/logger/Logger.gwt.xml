@@ -1,0 +1,62 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="org.waveprotocol.wave.client.common.util.Util" /><inherits name="org.waveprotocol.wave.common.logging.Logging" /> <source path=""/>
+
+<!--
+  There are three levels of logging: none, error, and debug, in that order.
+
+  There are two levels of error handling and defensive validation: noop and debug,
+  in that order.
+
+  Both are controlled through the "loglevel" property, as follows:
+
+    loglevel      Logging       Errors & Validation
+    ===============================================
+    none          none          noop
+    error         error         debug
+    debug         debug         debug
+-->
+
+<define-property name="loglevel" values="error,debug,none"/>
+<property-provider name="loglevel">
+  <![CDATA[
+    var logLevel = __gwt_getMetaProperty("loglevel");
+
+    if (logLevel == null) {
+      var args = location.search;
+      var startLogLevel = args.indexOf("ll");
+      if (startLogLevel >= 0) {
+        var value = args.substring(startLogLevel);
+        var begin = value.indexOf("=") + 1;
+        var end = value.indexOf("&");
+        if (end == -1) {
+          end = value.length;
+        }
+        logLevel = value.substring(begin, end);
+      }
+    }
+
+    if (logLevel == null) {
+      logLevel = "none";
+    }
+
+    return logLevel.toLowerCase();
+  ]]>
+</property-provider>
+
+<!--  Allow #ifdef-style guards:  -->
+<!--  e.g. "if (LogLevel.showDebug()) { ... debug code ... }" -->
+
+<replace-with class="org.waveprotocol.wave.client.debug.logger.LogLevel.NoneImpl">
+  <when-type-is class="org.waveprotocol.wave.client.debug.logger.LogLevel" />
+  <when-property-is name="loglevel" value="none" />
+</replace-with>
+
+<replace-with class="org.waveprotocol.wave.client.debug.logger.LogLevel.ErrorImpl">
+  <when-type-is class="org.waveprotocol.wave.client.debug.logger.LogLevel" />
+  <when-property-is name="loglevel" value="error" />
+</replace-with>
+
+<replace-with class="org.waveprotocol.wave.client.debug.logger.LogLevel.DebugImpl">
+  <when-type-is class="org.waveprotocol.wave.client.debug.logger.LogLevel" />
+  <when-property-is name="loglevel" value="debug" />
+</replace-with>
+</module>

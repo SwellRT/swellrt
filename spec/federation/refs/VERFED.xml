@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<reference anchor="VERFED">
+  <front>
+    <title>General Verifiable Federation</title>
+    <author initials="L." surname="Kissner" fullname="Lea Kissner">
+      <organization/>
+      <address>
+        <email>lkissner@google.com</email>
+      </address>
+    </author>
+    <author initials="B." surname="Laurie" fullname="Ben Laurie">
+      <organization/>
+      <address>
+        <email>benl@google.com</email>
+      </address>
+    </author>
+    <date day="24" month="July" year="2009"/>
+  </front>
+  <seriesInfo name="Google Wave Whitepapers" value="VERFED"/>
+  <format type="HTML" target="http://sites.google.com/a/waveprotocol.org/wave-protocol/whitepapers/wave-protocol-verification"/>
+</reference>

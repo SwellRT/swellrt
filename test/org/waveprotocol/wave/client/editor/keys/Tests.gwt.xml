@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.client.editor.Editor"/>
+  <inherits name="org.waveprotocol.wave.client.editor.testing.Testing"/>
+  <inherits name="org.waveprotocol.wave.client.scheduler.testing.Testing"/>
+  <inherits name="org.waveprotocol.wave.client.editor.restrict_permutations"/>
+  <inherits name="org.waveprotocol.wave.model.Model"/>
+  <inherits name="org.waveprotocol.wave.client.widget.popup.simple.Simple"/>
+   
+  <source path=""/>
+    
+</module>

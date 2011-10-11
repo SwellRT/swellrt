@@ -1,0 +1,103 @@
+# Core Configuration for the Wave in a Box server
+# 
+# Run "ant -f server-config.xml" to generate the server.config file automatically.
+# To override default values pass them to the ant script. For example
+# to override wave_server_domain run: ant -f server-config.xml -Dwave_server_domain=example.com
+
+
+# Domain name of the wave server 
+# Default value: local.net
+wave_server_domain = @WAVE_SERVER_DOMAIN@
+
+# A comma separated list of address on which to listen for connections.
+# Each address is a comma separated host:port pair.
+# Default value: localhost:9898
+http_frontend_public_address = @HTTP_FRONTEND_PUBLIC_ADDRESS@
+
+# Default value: values passed to http_frontend_public_address.
+http_frontend_addresses = @HTTP_FRONTEND_ADDRESSES@
+
+# A comma separated list of webApp source directories
+# Default value: ./war
+resource_bases = @RESOURCE_BASES@
+
+### Server-specific variables
+###
+
+# Settings for the different persistence stores. Currently supported: memory, file, mongodb
+# Default value: memory
+signer_info_store_type = @SIGNER_INFO_STORE_TYPE@
+
+# The location where signer info certificate data is stored on disk. This should be changed.
+# Note: This is only used when using the file signer info store. It is ignored
+# for other data store types.
+# Default value: _certificates
+signer_info_store_directory = @SIGNER_INFO_STORE_DIRECTORY@
+
+# Currently supported attachment types: mongodb, disk
+# Default value: disk
+attachment_store_type = @ATTACHMENT_STORE_TYPE@
+
+# The location where attachments are stored on disk. This should be changed.
+# Note: This is only used when using the disk attachment store. It is ignored
+# for other data store types.
+attachment_store_directory = @ATTACHMENT_STORE_DIRECTORY@
+
+# Currently supported account store types: fake, memory, file, mongodb
+# Default value: memory
+account_store_type = @ACCOUNT_STORE_TYPE@
+
+# The location where accounts are stored on disk. This should be changed.
+# Note: This is only used when using the file account store. It is ignored
+# for other data store types.
+# Default value: _accounts
+account_store_directory = @ACCOUNT_STORE_DIRECTORY@
+
+# Currently supported delta store types: memory, file
+# Note: file system support is experimental. Your server may crash. And the file format is
+# not stable and shouldn't be relied upon for long-term storage yet; upcoming changes will
+# require you to blow away your data.
+# Default value: memory
+delta_store_type = @DELTA_STORE_TYPE@
+
+# The location where deltas are stored on disk. This should be changed.
+# Note: This is only used when using the file delta store. It is ignored
+# for other data store types.
+# Default value: _deltas
+delta_store_directory = @DELTA_STORE_DIRECTORY@
+
+# The location where user sessions are persisted on disk. This allow to restore user sessions
+# between restarts.
+# Default value: _sessions
+sessions_store_directory = @SESSIONS_STORE_DIRECTORY@
+
+# Set false to use raw WebSockets instead of Socket.IO (still a bit experimental) in the webclient
+# Default value: true
+use_socketio = @USE_SOCKETIO@
+
+# Note: the default value for admin is an invalid user id that cannot be registered.
+# To become an admin: Register a user and set its address as the value below.
+# Admin has a privilege to change passwords of other users using an agent robot.
+# Default value: @${wave_server_domain}
+admin_user = @ADMIN_USER@
+
+# The wave id of the welcome template wave. (Without domain, for example: w+Fxjs_-ZPmmA).
+# If filled in then a copy of this wave (actually only the root blip) will be 
+# automatically added to the inbox of every new user.
+# Default value: "" (empty)
+welcome_wave_id = @WELCOME_WAVE_ID@
+
+# To enable federation, edit the server.federation.config file and include it here.
+# Or run ant -f server-config.xml server-federation-config
+# If not using the server-config.xml ant script - it is possible just to comment the line.
+include = server.federation.config
+
+# These two parameters MUST appear in this file AFTER the above include of the
+# federation config file. This is necesary so that the federation config file
+# can override these two values.
+
+# Set true to disable the verification of signed deltas
+waveserver_disable_verification = true
+
+# Set true to disable the verification of signers (certificates)
+waveserver_disable_signer_verification = true

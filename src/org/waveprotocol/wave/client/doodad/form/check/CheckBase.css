@@ -1,0 +1,10 @@
+/*
+ * StyleInjector CSS file for client.editor.content.check
+ *
+ * Author: lars@google.com (Lars Rasmussen)
+ */
+
+.check, .radio {
+  padding:4px;
+  cursor: pointer;
+}

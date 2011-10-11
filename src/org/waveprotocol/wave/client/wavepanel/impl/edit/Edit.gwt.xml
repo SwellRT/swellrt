@@ -1,0 +1,12 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <inherits name="com.google.common.base.Base" />
+  <inherits name="org.waveprotocol.wave.client.editor.Editor" />
+  <inherits name="org.waveprotocol.wave.client.scheduler.Scheduler" />
+  <inherits name="org.waveprotocol.wave.client.wave.Wave" />
+  <inherits name="org.waveprotocol.wave.client.wavepanel.impl.Base" />
+  <inherits name="org.waveprotocol.wave.client.wavepanel.impl.focus.Focus" />
+  <inherits name="org.waveprotocol.wave.client.wavepanel.view.View" />
+  
+  <source path=""/>
+</module>

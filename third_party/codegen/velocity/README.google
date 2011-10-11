@@ -1,0 +1,12 @@
+URL: http://velocity.apache.org/
+Version: 1.6.3
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+Velocity template engine.
+
+Local Modifications:
+No modifications.
+

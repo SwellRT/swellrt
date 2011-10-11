@@ -1,0 +1,13 @@
+URL: http://www.igniterealtime.org/projects/whack/index.jsp
+License: Apache ASL 2.0
+Version: 1.0.0
+License File: COPYING
+
+Description:
+A library for XMPP components.
+
+Local Modifications:
+whack.jar contains source patched with patches/whack_1.0.0_gnu_idn.patch to use 
+GNU libidn instead of older jivesoftware stringprep code.
+
+

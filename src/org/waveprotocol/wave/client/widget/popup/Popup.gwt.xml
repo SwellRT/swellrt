@@ -1,0 +1,39 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <inherits name="com.google.gwt.user.UserAgent"/>
+  <inherits name="org.waveprotocol.wave.client.autohide.Autohide" />
+  <inherits name="org.waveprotocol.wave.client.common.util.Util" />
+  <inherits name="org.waveprotocol.wave.client.common.webdriver.Webdriver" />
+  <inherits name="org.waveprotocol.wave.client.scheduler.Scheduler" />
+  <inherits name="org.waveprotocol.wave.model.util.Util" />
+  <source path=""/>
+  <source path="desktopchrome"/>
+
+  <!-- PopupFactory instantiates PopupProvider - default to DesktopPopupProvider... -->
+  <replace-with class="org.waveprotocol.wave.client.widget.popup.DesktopPopupProvider">
+    <when-type-is class="org.waveprotocol.wave.client.widget.popup.PopupProvider"/>
+  </replace-with>
+
+  <!-- ... unless it's a mobile device - then use MobilePopupProvider -->
+  <replace-with class="org.waveprotocol.wave.client.widget.popup.MobilePopupProvider">
+    <when-type-is class="org.waveprotocol.wave.client.widget.popup.PopupProvider"/>
+    <any>
+      <when-property-is name="mobile.user.agent" value="iphone"/>
+      <when-property-is name="mobile.user.agent" value="android"/>
+    </any>
+  </replace-with>
+
+  <!-- Default to DesktopPopupChromeProvider... -->
+  <replace-with class="org.waveprotocol.wave.client.widget.popup.desktopchrome.DesktopPopupChromeProvider">
+    <when-type-is class="org.waveprotocol.wave.client.widget.popup.PopupChromeProvider"/>
+  </replace-with>
+
+  <!-- ... unless it's a small-screen client - then use MobilePopupChromeProvider -->
+  <replace-with class="org.waveprotocol.wave.client.widget.popup.MobilePopupChromeProvider">
+    <when-type-is class="org.waveprotocol.wave.client.widget.popup.PopupChromeProvider"/>
+    <any>
+      <when-property-is name="mobile.user.agent" value="iphone"/>
+      <when-property-is name="mobile.user.agent" value="android"/>
+    </any>
+  </replace-with>
+</module>

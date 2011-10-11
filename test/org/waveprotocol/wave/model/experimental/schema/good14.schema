@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- A schema featuring recursive references -->
+<schema>
+  <definition name="def1">
+    <attribute name="attribute1" values="value1" required="false"/>
+    <element name="element1">
+      <reference name="def2"/>
+    </element>
+  </definition>
+  <definition name="def2">
+    <attribute name="attribute2" values="value2" required="false"/>
+    <element name="element2">
+      <reference name="def3"/>
+    </element>
+  </definition>
+  <definition name="def3">
+    <attribute name="attribute3" values="value3" required="false"/>
+    <element name="element3">
+      <reference name="def1"/>
+    </element>
+  </definition>
+  <root name="def1"/>
+</schema>

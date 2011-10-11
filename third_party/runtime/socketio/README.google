@@ -1,0 +1,11 @@
+URL: http://code.google.com/p/socketio-java/downloads
+Version: 2011-01-14
+License: MIT
+
+License File: COPYING
+
+Description:
+This library contains a WebSocket like socket implementation that operates over multiple transports.
+
+Local Modifications:
+No modifications.

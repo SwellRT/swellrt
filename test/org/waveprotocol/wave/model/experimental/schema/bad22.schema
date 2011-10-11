@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- An invalid schema containing an invalid element type -->
+<schema>
+  <SomeInvalidElement/>
+  <definition name="test">
+  </definition>
+  <root name="test"/>
+</schema>

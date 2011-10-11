@@ -1,0 +1,14 @@
+/*
+ * Default doodad CSS
+ *
+ * Author: danilatos@google.com (Daniel Danilatos)
+ */
+
+.unknown {
+  display: inline-block;
+  border: 1px solid gray;
+  background: silver;
+  font-weight: bold;
+  padding-left: 1em;
+  padding-right: 1em;
+}

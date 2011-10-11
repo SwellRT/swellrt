@@ -1,0 +1,23 @@
+/**
+ * CSS for the progress widget.
+ *
+ * Author: reuben@google.com (Reuben Kan)
+ */
+ 
+ @url grooveImageUrl grooveImage;
+.groove {
+  position: absolute;
+  right: 0px;
+  height: 5px;
+  bottom: 0px;
+  background: grooveImageUrl repeat-x;
+}
+
+@url barImageUrl barImage;
+.bar {
+  position: absolute;
+  left: 0px;
+  height: 5px;
+  bottom: 0px;
+  background: barImageUrl repeat-x;
+}

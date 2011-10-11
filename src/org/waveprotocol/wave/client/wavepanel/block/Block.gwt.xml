@@ -1,0 +1,6 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="org.waveprotocol.wave.client.common.util.Util" /><inherits name="org.waveprotocol.wave.client.paging.Paging" /><inherits name="org.waveprotocol.wave.client.render.Render" /><inherits name="org.waveprotocol.wave.client.wavepanel.view.View" /><inherits name="org.waveprotocol.wave.model.conversation.Conversation" /> <source path=""/>
+ <source path="js"/>
+ <source path="pojo"/>
+ <source path="xml"/>
+
+</module>

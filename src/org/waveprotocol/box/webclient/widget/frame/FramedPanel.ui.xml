@@ -1,0 +1,22 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:g="urn:import:com.google.gwt.user.client.ui" 
+  xmlns:w='urn:import:org.waveprotocol.wave.client.widget.common'>
+  <ui:with field="css" type="org.waveprotocol.box.webclient.widget.frame.FramedPanel.Css"/>
+  <w:ImplPanel>
+    <div class='{css.frame}'>
+      <div class='{css.north}'/>
+      <div class='{css.northEast}'/>
+      <div class='{css.north}' ui:field='title'/>
+      <div class='{css.east}'/>
+      <div class='{css.southEast}'/>
+      <div class='{css.south}'/>
+      <div class='{css.southWest}'/>
+      <div class='{css.west}'/>
+      <div class='{css.northWest}'/>
+      <div class='{css.contentContainer}' ui:field='contentContainer'>
+        <!-- Content widget goes here -->
+      </div>
+    </div>
+  </w:ImplPanel>
+</ui:UiBinder>

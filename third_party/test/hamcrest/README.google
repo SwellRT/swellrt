@@ -1,0 +1,11 @@
+URL: http://code.google.com/p/hamcrest/
+Version: 1.2
+License: BSD
+
+License File: LICENSE.txt
+
+Description:
+Hamcrest is a library of matchers for building test expressions
+
+Local Modifications:
+No modifications.

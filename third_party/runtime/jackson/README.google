@@ -1,0 +1,12 @@
+URL: http://jackson.codehaus.org/
+Version: 1.5.2
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+A library for encoding and decoding JSON in Java.
+
+Local Modifications:
+None.
+

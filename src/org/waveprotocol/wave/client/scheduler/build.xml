@@ -1,0 +1,11 @@
+<!-- 
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="client-scheduler">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="client-scheduler"/>
+  <patternset id="srcs">
+    <include name="org/waveprotocol/wave/client/scheduler/**"/>
+  </patternset>
+</project>

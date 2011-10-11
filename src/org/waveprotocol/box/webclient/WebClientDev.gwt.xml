@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='webclient'>
+  <inherits name='org.waveprotocol.box.webclient.WebClient'/>
+
+  <set-property name="compiler.emulatedStack" value="true"/>
+  <set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true" />
+  <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
+
+  <set-property name="user.agent" value="safari" />
+  <set-property name="mobile.user.agent" value="not_mobile" />
+  <set-property name="loglevel" value="debug" /> 
+</module>

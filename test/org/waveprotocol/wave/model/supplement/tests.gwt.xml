@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.model.Model"/>
+  <inherits name="org.waveprotocol.wave.model.account.Account"/>
+  <inherits name="org.waveprotocol.wave.model.conversation.Conversation"/>
+  <inherits name="org.waveprotocol.wave.model.conversation.Testing"/>
+  <inherits name="org.waveprotocol.wave.model.supplement.Supplement"/>
+  <inherits name="org.waveprotocol.wave.model.schema.account.Account"/>
+  <inherits name="org.waveprotocol.wave.model.schema.conversation.Conversation"/>
+  <inherits name="org.waveprotocol.wave.model.schema.supplement.Supplement"/>
+  <inherits name="org.waveprotocol.wave.model.testing.Testing"/>
+   
+  <source path=""/>
+    
+</module>

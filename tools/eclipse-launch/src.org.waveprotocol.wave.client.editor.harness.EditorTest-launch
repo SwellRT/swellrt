@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="com.google.gdt.eclipse.suite.webapp">
+<stringAttribute key="bad_container_name" value="/WPL-wpl1/tool"/>
+<stringAttribute key="com.google.gdt.eclipse.suiteMainTypeProcessor.PREVIOUSLY_SET_MAIN_TYPE_NAME" value="com.google.gwt.dev.GWTShell"/>
+<stringAttribute key="com.google.gwt.eclipse.core.URL" value="http://localhost:8888/org.waveprotocol.wave.client.editor.harness.EditorTest/EditorTest.html?gwt.codesvr=127.0.0.1:9997"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/WPL-wpl1"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="4"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="com.google.gwt.eclipse.core.moduleClasspathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.google.gwt.dev.GWTShell"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-logLevel INFO -port 8888 http://localhost:8888/org.waveprotocol.wave.client.editor.harness.EditorTest/EditorTest.html?gwt.codesvr=127.0.0.1:9997"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="WPL-wpl1"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx512m"/>
+</launchConfiguration>

@@ -1,0 +1,35 @@
+/*
+ * CSS for DesktopUniversalPopup.
+ * Author: macpherson@google.com (Luke Macpherson)
+ */
+.popup {
+  position: absolute;
+  z-index: 1000; /* Make popup appear on top of other panels */
+  background-color: white;
+}
+
+@eval fadeInTime INSTANCE.FADE_IN_MS;
+.fadeIn {
+  \-webkit-transition: opacity fadeInTime ease-in;
+  \-moz-transition: opacity fadeInTime ease-in;
+  transition: opacity fadeInTime ease-in;
+}
+
+@eval fadeOutTime INSTANCE.FADE_OUT_MS;
+.fadeOut {
+  \-webkit-transition: opacity fadeOutTime ease-out;
+  \-moz-transition: opacity fadeOutTime ease-out;
+  transition: opacity fadeOutTime ease-out;
+}
+
+.mask {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: -12px;
+  background-color: black;
+  opacity: 0.6;
+  filter: "alpha(opacity=40%)";
+  z-index: 3;
+}

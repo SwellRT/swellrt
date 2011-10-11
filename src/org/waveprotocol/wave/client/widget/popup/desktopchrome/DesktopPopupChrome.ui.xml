@@ -1,0 +1,18 @@
+<ui:UiBinder
+  xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:gwt="urn:import:com.google.gwt.user.client.ui"
+>
+  <ui:with field="res" type="org.waveprotocol.wave.client.widget.popup.desktopchrome.DesktopPopupChrome.Resources" />
+  
+  <gwt:HTMLPanel ui:field='frame'>
+    <div class='{res.css.north}'/>
+    <div class='{res.css.northEast}'/>
+    <div class='{res.css.eastNorthEast}'/>
+    <div class='{res.css.east}'/>
+    <div class='{res.css.southEast}'/>
+    <div class='{res.css.south}'/>
+    <div class='{res.css.southWest}'/>
+    <div class='{res.css.west}'/>
+    <div class='{res.css.northWest}'/>
+  </gwt:HTMLPanel>
+</ui:UiBinder>

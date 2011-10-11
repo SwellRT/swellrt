@@ -1,0 +1,26 @@
+<module>
+
+<source path=""/>
+
+<inherits name="com.google.gwt.user.User" />
+<inherits name="org.waveprotocol.wave.client.editor.Editor" />
+<inherits name="org.waveprotocol.wave.client.editor.testtools.TestTools_Gwt" />
+
+<!-- TODO(danilatos) Move this into EditorTest.gwt.xml -->
+<inherits name="org.waveprotocol.wave.client.doodad.Doodad" />
+
+<!-- uncomment these when appropriate for faster compilation -->
+<!-- <set-property name="user.agent" value="ie6"/> -->
+<!-- <set-property name="user.agent" value="safari"/> -->
+<!-- <set-property name="user.agent" value="gecko1_8"/> -->
+
+<stylesheet src='EditorTest.css'/>
+
+<set-property name="loglevel" value="debug"/>
+
+<!-- Uncomment the following to improve debug-ability of CSS: -->
+<!-- <set-property name="ResourceBundle.enableInlining" value="false"/> -->
+<!-- <set-configuration-property name="CssResource.style" value="pretty"/> -->
+
+
+</module>

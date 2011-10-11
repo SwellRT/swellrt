@@ -1,0 +1,11 @@
+URL: http://code.google.com/p/google-guice/
+Version: 3.0
+License: Apache 2.0
+
+License File: LICENSE
+
+Description:
+Guice, and its components that allow dependency injection in a java-y way.
+
+Local Modifications:
+No modifications.

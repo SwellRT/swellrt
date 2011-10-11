@@ -1,0 +1,21 @@
+<!--
+  Template for VerticalToolbarButtonWidget.
+  Author: kalman@google.com (Benjamin Kalman)
+-->
+<ui:UiBinder
+    xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+    xmlns:wp='urn:import:org.waveprotocol.wave.client.widget.common'
+>
+  <ui:with field='res' type='org.waveprotocol.wave.client.widget.toolbar.buttons.VerticalToolbarButtonWidget.Resources' />
+  <gwt:HTMLPanel ui:field='self' styleName='{res.css.self} {res.css.enabled}'>
+    <!-- Divider vertically above the button, hidden by default. -->
+    <div ui:field='divider' class='{res.css.divider} {res.css.hidden}' />
+    <!-- Other fields are inline. -->
+    <wp:ImplPanel ui:field='content' styleName='{res.css.content}'>
+      <div ui:field='visualElement' class='{res.css.visualElement}' />
+      <span ui:field='textElement' class='{res.css.textElement}' />
+      <div ui:field='dropdownArrow' class='{res.css.dropdownArrow} {res.css.hidden}' />
+    </wp:ImplPanel>
+  </gwt:HTMLPanel>
+</ui:UiBinder>

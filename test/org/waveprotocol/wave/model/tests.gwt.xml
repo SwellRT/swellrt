@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.model.testing.Testing"/>
+  <inherits name="third_party.java_src.gwt.crore.Crore"/>
+   
+  <source path=""/>
+   
+  <source path="adt"/>
+   
+  <source path="adt/docbased"/>
+   
+  <source path="document"/>
+   
+  <source path="document/bootstrap"/>
+   
+  <source path="document/indexed"/>
+   
+  <source path="document/operation"/>
+   
+  <source path="document/operation/algorithm"/>
+   
+  <source path="document/operation/impl"/>
+   
+  <source path="document/operation/util"/>
+   
+  <source path="document/parser"/>
+   
+  <source path="document/util"/>
+   
+  <source path="id"/>
+   
+  <source path="operation"/>
+   
+  <source path="operation/core"/>
+   
+  <source path="operation/testing"/>
+   
+  <source path="operation/wave"/>
+   
+  <source path="testing"/>
+   
+  <source path="version"/>
+   
+  <source path="wave"/>
+   
+  <source path="wave/data/impl"/>
+   
+  <source path="wave/opbased"/>
+   
+  <source path="wave/undo"/>
+   
+  <source path="waveref"/>
+    
+</module>

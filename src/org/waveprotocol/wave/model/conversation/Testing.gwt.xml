@@ -1,0 +1,3 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="org.waveprotocol.wave.model.conversation.Conversation" /><inherits name="org.waveprotocol.wave.model.schema.conversation.Conversation" /><inherits name="org.waveprotocol.wave.model.testing.Testing" /> <source path="testing"/>
+
+</module>

@@ -1,0 +1,92 @@
+/*
+ * CSS for DesktopPopupChrome.
+ * Author: macpherson@google.com (Luke Macpherson)
+ *
+ * Unfortunately it is necessary to have a lot of hand tuned constants in this file,
+ * Both because of the image contents, and because GWT does not provide a way to evaluate
+ * expressions from CSS.
+ */
+
+@def northOffset -3px;
+@def westOffset -1px;
+@def southOffset -11px;
+@def eastOffset -9px;
+
+@sprite .north {
+  gwt-image: 'chromeNorth';
+  position: absolute;
+  top: northOffset;
+  right: 2px;
+  left: 2px;
+}
+
+@sprite .titled .north {
+  gwt-image: 'chromeNorthTitled';
+}
+
+@sprite .northEast {
+  gwt-image: 'chromeNorthEast';
+  position: absolute;
+  right: eastOffset;
+  top: northOffset;
+}
+
+@sprite .titled .northEast {
+  gwt-image: 'chromeNorthEastTitled';
+}
+
+@sprite .eastNorthEast {
+  gwt-image: 'chromeEastNorthEast';
+  position: absolute;
+  top: 0px;
+  right: eastOffset;
+}
+
+@sprite .east {
+  gwt-image: 'chromeEast';
+  position: absolute;
+  top: 9px;
+  right: eastOffset;
+  bottom: 0;
+}
+
+@sprite .southEast {
+  gwt-image: 'chromeSouthEast';
+  position: absolute;
+  right: eastOffset;
+  bottom: southOffset;
+}
+
+@sprite .south {
+  gwt-image: 'chromeSouth';
+  position: absolute;
+  right: 2px;
+  bottom: southOffset;
+  left: 10px;
+}
+
+@sprite .southWest {
+  gwt-image: 'chromeSouthWest';
+  position: absolute;
+  bottom: southOffset;
+  left: westOffset;
+}
+
+@sprite .west {
+  gwt-image: 'chromeWest';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: westOffset;
+}
+
+@sprite .northWest {
+  gwt-image: 'chromeNorthWest';
+  position: absolute;
+  top: northOffset;
+  left: westOffset;
+}
+
+@sprite .titled .northWest {
+  gwt-image: 'chromeNorthWestTitled';
+}

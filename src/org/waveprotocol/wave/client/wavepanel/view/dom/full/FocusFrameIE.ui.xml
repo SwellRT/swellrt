@@ -1,0 +1,21 @@
+<!--
+  Template for BlipFocusFrame.
+  Author: hearnden@google.com (David Hearnden)
+-->
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+    >
+  <ui:with field='res' type='org.waveprotocol.wave.client.wavepanel.view.dom.full.FocusFrame.IeBinder.Resources'/>
+  <div>
+    <div class='{res.css.display}'>
+      <div class='{res.css.northWest}'></div>
+      <div class='{res.css.north}'></div>
+      <div class='{res.css.northEast}'></div>
+      <div class='{res.css.west}'></div>
+      <div class='{res.css.east}'></div>
+      <div class='{res.css.southWest}'></div>
+      <div class='{res.css.south}'></div>
+      <div class='{res.css.southEast}'></div>
+    </div>
+  </div>
+</ui:UiBinder>

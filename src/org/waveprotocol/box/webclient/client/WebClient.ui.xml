@@ -1,0 +1,81 @@
+<ui:UiBinder
+    xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:g='urn:import:com.google.gwt.user.client.ui'
+    xmlns:d='urn:import:org.waveprotocol.box.webclient.client'
+    xmlns:s='urn:import:org.waveprotocol.box.webclient.search'
+    xmlns:f='urn:import:org.waveprotocol.box.webclient.widget.frame'
+    xmlns:w='urn:import:org.waveprotocol.wave.client.widget.common'>
+  <ui:style type="org.waveprotocol.box.webclient.client.WebClient.Style">
+    @def rootBackground #f0f0ff;
+    @def gap 10px;
+    .root {
+      background: rootBackground;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .root2 {
+      position: absolute;
+    }
+
+    .splitPanel {
+    }
+
+    @external gwt-SplitLayoutPanel-HDragger;
+    @external gwt-SplitLayoutPanel-VDragger;
+    .splitPanel .gwt-SplitLayoutPanel-HDragger,.splitPanel .gwt-SplitLayoutPanel-VDragger {
+      background-color: rootBackground;
+    }
+
+    .searchPanel {
+      /*
+       * GWT's drag panel separators are already huge, so no margin needed on
+       * sides that have drag panels.
+       */
+      margin: gap 0 0 gap;
+    }
+
+    .debugPanel {
+      background: white;
+      border: thin solid silver;
+      border-radius: 5px;
+      margin: 0 gap gap gap;
+    }
+
+    .wavePanel {
+      /*
+       * GWT's drag panel separators are already huge, so no margin needed on
+       * sides that have drag panels.
+       */
+      margin: gap 0 0 0;
+    }
+
+    .waveHolder {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  </ui:style>
+  <g:DockLayoutPanel unit="PX" styleName="{style.root}">
+    <g:center>
+      <g:SplitLayoutPanel ui:field="splitPanel" stylePrimaryName="{style.splitPanel}">
+        <g:south size="200">
+          <d:DebugMessagePanel ui:field="logPanel" addStyleNames="{style.debugPanel}" />
+        </g:south>
+        <g:west size="400">
+          <s:SearchPanelWidget ui:field="searchPanel" addStyleNames="{style.searchPanel}"/>
+        </g:west>
+        <g:center>
+          <f:FramedPanel ui:field="waveFrame" addStyleNames="{style.wavePanel}">
+            <w:ImplPanel ui:field="waveHolder" addStyleNames="{style.waveHolder}"/>
+          </f:FramedPanel>
+        </g:center>
+      </g:SplitLayoutPanel>
+    </g:center>
+  </g:DockLayoutPanel>
+</ui:UiBinder>

@@ -1,0 +1,11 @@
+URL: http://commons.apache.org/codec/
+Version: 1.4
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+General Coding/Decoding algorithms
+
+Local Modifications:
+No modifications.

@@ -1,0 +1,6 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="org.waveprotocol.wave.client.debug.logger.testing.restrict_permutations" />
+<!-- Restricts permutations to reduce code compiled for GWT tests. -->
+
+<set-property name="locale" value="default" />
+<set-property name="loglevel" value="error" />
+</module>

@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<reference anchor='RFC5234'>
+
+<front>
+<title>Augmented BNF for Syntax Specifications: ABNF</title>
+<author initials='D.' surname='Crocker' fullname='D. Crocker'>
+<organization /></author>
+<author initials='P.' surname='Overell' fullname='P. Overell'>
+<organization /></author>
+<date year='2008' month='January' />
+<abstract>
+<t>Internet technical specifications often need to define a formal syntax.  Over the years, a modified version of Backus-Naur Form (BNF), called Augmented BNF (ABNF), has been popular among many Internet specifications.  The current specification documents ABNF.  It balances compactness and simplicity with reasonable representational power.  The differences between standard BNF and ABNF involve naming rules, repetition, alternatives, order-independence, and value ranges.  This specification also supplies additional rule definitions and encoding for a core lexical analyzer of the type common to several Internet specifications. [STANDARDS TRACK]</t></abstract></front>
+
+<seriesInfo name='STD' value='68' />
+<seriesInfo name='RFC' value='5234' />
+<format type='TXT' octets='26359' target='http://www.rfc-editor.org/rfc/rfc5234.txt' />
+</reference>

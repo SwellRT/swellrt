@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- A schema featuring references involving required attributes -->
+<schema>
+  <definition name="test">
+    <attribute name="attribute1" values="value1" required="true"/>
+    <attribute name="attribute2" values="value2" required="false"/>
+    <reference name="definition1"/>
+  </definition>
+  <definition name="definition1">
+    <attribute name="attribute3" values="value3" required="true"/>
+    <attribute name="attribute4" values="value4" required="false"/>
+  </definition>
+  <root name="test"/>
+</schema>

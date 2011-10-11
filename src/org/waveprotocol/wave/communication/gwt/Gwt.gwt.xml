@@ -1,0 +1,4 @@
+<module>
+  <inherits name="org.waveprotocol.wave.communication.json.Json" />
+  <source path=""/>
+</module>

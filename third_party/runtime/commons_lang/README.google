@@ -1,0 +1,11 @@
+URL: http://commons.apache.org/lang/
+Version: 2.5
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+Helper utilities for the java.lang API
+
+Local Modifications:
+No modifications.

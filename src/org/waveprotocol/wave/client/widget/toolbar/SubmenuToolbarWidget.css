@@ -1,0 +1,9 @@
+/**
+ * CSS stylesheet for SubmenuToolbarWidget.
+ *
+ * Author: kalman@google.com (Benjamin Kalman).
+ */
+
+.toolbar {
+  background-color: white;
+}

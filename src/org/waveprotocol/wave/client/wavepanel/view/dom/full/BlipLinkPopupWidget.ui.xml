@@ -1,0 +1,19 @@
+<ui:UiBinder 
+    xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:g='urn:import:com.google.gwt.user.client.ui'
+    xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common">
+  <ui:with 
+      field='style'
+      type='org.waveprotocol.wave.client.wavepanel.view.dom.full.BlipLinkPopupWidget.Style' />
+  <g:HTMLPanel styleName="{style.self}">
+    <div class="{style.title}">Link to this blip</div>
+    <div class="{style.explanation}">Use this Wave ID to link
+      to this blip from other blips</div>
+    <g:TextBox ui:field="linkInfoBox" styleName="{style.link}"
+      readOnly="true"></g:TextBox>
+    <div class="{style.explanation}">Use this reference to link
+      to this blip from the web</div>
+    <g:TextBox ui:field="waverefLink" styleName="{style.link}"
+      readOnly="true"></g:TextBox>
+  </g:HTMLPanel>
+</ui:UiBinder>

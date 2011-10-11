@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<reference anchor='RFC3987'>
+
+<front>
+<title>Internationalized Resource Identifiers (IRIs)</title>
+<author initials='M.' surname='Duerst' fullname='M. Duerst'>
+<organization /></author>
+<author initials='M.' surname='Suignard' fullname='M. Suignard'>
+<organization /></author>
+<date year='2005' month='January' />
+<abstract>
+<t>This document defines a new protocol element, the Internationalized Resource Identifier (IRI), as a complement of the Uniform Resource Identifier (URI). An IRI is a sequence of characters from the Universal Character Set (Unicode/ISO 10646). A mapping from IRIs to URIs is defined, which means that IRIs can be used instead of URIs, where appropriate, to identify resources.&lt;/t>&lt;t> The approach of defining a new protocol element was chosen instead of extending or changing the definition of URIs. This was done in order to allow a clear distinction and to avoid incompatibilities with existing software. Guidelines are provided for the use and deployment of IRIs in various protocols, formats, and software components that currently deal with URIs.</t></abstract></front>
+
+<seriesInfo name='RFC' value='3987' />
+<format type='TXT' octets='111190' target='ftp://ftp.rfc-editor.org/in-notes/rfc3987.txt' />
+</reference>

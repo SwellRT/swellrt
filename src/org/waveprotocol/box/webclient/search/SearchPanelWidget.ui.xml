@@ -1,0 +1,23 @@
+<!--
+  Template for SearchPanelWidget.
+  Author: hearnden@google.com (David Hearnden)
+-->
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:s="urn:import:org.waveprotocol.box.webclient.search"
+    xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common"
+    xmlns:f="urn:import:org.waveprotocol.box.webclient.widget.frame"
+    xmlns:t="urn:import:org.waveprotocol.wave.client.widget.toolbar">
+  <ui:with field="css" type="org.waveprotocol.box.webclient.search.SearchPanelWidget.Css"/>
+  <f:FramedPanel>
+    <w:ImplPanel ui:field='self' styleName='{css.self}'>
+      <s:SearchWidget ui:field='search' addStyleNames='{css.search}'/>
+      <t:ToplevelToolbarWidget ui:field='toolbar' addStyleNames='{css.toolbar}'/>
+      <div ui:field='list' class='{css.list}'>
+        <div ui:field='showMore' class='{css.showMore}' style='visibility:hidden'>
+          Show more results
+        </div>
+      </div>
+    </w:ImplPanel>
+  </f:FramedPanel>
+</ui:UiBinder>

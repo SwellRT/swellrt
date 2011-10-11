@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.4.1: http://docutils.sourceforge.net/" />
+<title>Google Wave Client-Server Protocol Whitepaper</title>
+<meta name="authors" content="Joe Gregorio" />
+<style type="text/css">
+
+/*
+:Author: David Goodger
+:Contact: goodger@users.sourceforge.net
+:Date: $Date: 2005-12-18 01:56:14 +0100 (Sun, 18 Dec 2005) $
+:Revision: $Revision: 4224 $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin-left: 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left {
+  clear: left }
+
+img.align-right {
+  clear: right }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em ;
+  background-color: #eeeeee }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+tt.docutils {
+  background-color: #eeeeee }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="google-wave-client-server-protocol-whitepaper">
+<h1 class="title">Google Wave Client-Server Protocol Whitepaper</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Authors:</th>
+<td>Joe Gregorio</td></tr>
+<tr><th class="docinfo-name">Version:</th>
+<td>2.0 - May 2010</td></tr>
+</tbody>
+</table>
+<!-- Use headers in this order #=~-_ -->
+<p>This whitepaper is part of a series. All of the whitepapers
+can be found on <a class="reference" href="http://www.waveprotocol.org/whitepapers">Google Wave Federation Protocol site</a>.</p>
+<div class="section">
+<h1><a id="editorial-notes" name="editorial-notes">Editorial Notes</a></h1>
+<p>To provide feedback on this draft join the wave-protocol
+mailing list at
+<a class="reference" href="http://groups.google.com/group/wave-protocol">http://groups.google.com/group/wave-protocol</a></p>
+<p>This current draft only covers a small subset of the functionality
+that is required to build a full client. Future drafts
+will expand to cover more functionality.</p>
+</div>
+<div class="section">
+<h1><a id="introduction" name="introduction">Introduction</a></h1>
+<p>This document describes the protocol by which a
+wave client communicates with a wave server in order to
+create, read, and modify waves. The protocol is defined in
+terms of JSON messages exchanged over WebSockets.</p>
+</div>
+<div class="section">
+<h1><a id="background" name="background">Background</a></h1>
+<p>There is already a protocol being defined to handle the federation
+of Waves, however it was designed as a server-to-server protocol and
+is not well suited for clients.
+What is needed is a lighter weight protocol that only captures
+the needs of a client-server communication channel. The WebSockets protocol
+was chosen because it provides the two-way communication
+channel needed to efficiently handle wave messages, while being light weight
+and targeted to browsers, which are considered a primary platform
+for client developers.</p>
+</div>
+<div class="section">
+<h1><a id="scope" name="scope">Scope</a></h1>
+<p>This specification only covers the rudiments of the communication between
+a client and a server. There are many things that are not covered by
+this specification at this time, such as authentication, authorization,
+how a client determines which server to talk to, or which port to use.
+This protocol is a very simple client/server protocol implementation,
+and does not reflect the Google Wave web client protocol
+used in production today.</p>
+</div>
+<div class="section">
+<h1><a id="data-model" name="data-model">Data Model</a></h1>
+<p>It is important to understand the <a class="reference" href="http://www.waveprotocol.org/draft-protocol-specs/draft-protocol-spec">Wave Federation Protocol</a>
+and <a class="reference" href="http://www.waveprotocol.org/draft-protocol-specs/wave-conversation-model">Conversation Model</a> as a prerequisite to this specification.</p>
+<div class="section">
+<h2><a id="terminology" name="terminology">Terminology</a></h2>
+<p>The following terminology is used by this specification:</p>
+<ul class="simple">
+<li>wave - a collection of wavelets</li>
+<li>wavelet - a collection of named documents and participants, and the domain of operational transformation</li>
+<li>document - a structured wave document</li>
+<li>wave message - a single message sent either from the client to the server or from the server to the client.</li>
+</ul>
+<p>Wave messages do not include the WebSocket opening handshake messages.</p>
+</div>
+</div>
+<div class="section">
+<h1><a id="operation" name="operation">Operation</a></h1>
+<p>This section assumes an elementary understanding of the theory of <a class="reference" href="http://www.waveprotocol.org/whitepapers/operational-transform">Operational
+Transforms</a>.</p>
+<div class="section">
+<h2><a id="protocol-version" name="protocol-version">Protocol Version</a></h2>
+<p>In the current implementation the version of the protocol is carried in each
+message and if the server does not understand the version sent it closes
+the connection. Future revisions may have the client and server negotiate
+for an agreed upon protocol version.</p>
+<p>The version of the protocol used is 1.</p>
+</div>
+<div class="section">
+<h2><a id="transport" name="transport">Transport</a></h2>
+<p>The protocol begins when a Wave client connects with a Wave server.
+The connection is handled by the WebSockets protocol. After the connection
+is initiated Wave messages are sent between the client and
+server encapsulated in WebSocket frames. Each message occupies
+a single frame.</p>
+</div>
+<div class="section">
+<h2><a id="transport-error-conditions" name="transport-error-conditions">Transport Error Conditions</a></h2>
+<div class="section">
+<h3><a id="websocket-errors" name="websocket-errors">WebSocket Errors</a></h3>
+<p>TBD</p>
+</div>
+<div class="section">
+<h3><a id="timeouts" name="timeouts">Timeouts</a></h3>
+<p>TBD</p>
+</div>
+<div class="section">
+<h3><a id="error-recovery" name="error-recovery">Error recovery</a></h3>
+<p>TDB</p>
+</div>
+</div>
+<div class="section">
+<h2><a id="message-flow" name="message-flow">Message Flow</a></h2>
+<p>There are two kinds of Wave requests, ProtocolOpenRequest
+and ProtocolSubmitRequest. Communication begins when
+a client sends a ProtocolOpenRequest to the server with the
+id of a Wave it wishes to monitor and/or mutate. After opening
+a wave the client may send ProtocolSubmitRequests
+to the server to manipulate the wave. The server will
+send ProtocolWaveletUpdates to the client as the server
+representation of the wave changes.</p>
+<p>Any error messages related to the opening of a wave
+are sent back from the server in a ProtocolWaveletUpdate.</p>
+<p>A client may send more than one ProtocolOpenRequest, one for
+each wave that the client is interested in.</p>
+<p>The client MUST send a ProtocolOpenRequest for each
+wave that the client is interested in. A client MUST NOT
+send mutations for a wave id that it has not issued a
+ProtocolOpenRequest for. The client must
+wait for the server to acknowledge the ProtocolOpenRequest
+before sending ProtocolSubmitRequests for the given
+wave as it needs to include the document hash with
+each ProtocolSubmitRequest.</p>
+<div class="section">
+<h3><a id="protocolopenrequest" name="protocolopenrequest">ProtocolOpenRequest</a></h3>
+<p>The ProtocolOpenRequest contains a wave id and
+a wavelet_id_prefix. Those two determine the set of
+wavelets that the client will be notified of changes
+to.</p>
+<p>The wavelet_id_prefix may be shortened to match
+a larger subset of wavelets, with the empty string
+matching all wavelets in the given wave.</p>
+<p>The client can indicate if it supports snapshots when
+it sends a ProtocolOpenRequest.</p>
+<p>It also contains the protocol version number, which is
+defined as 1, per the previous section on Protocol Version.</p>
+</div>
+<div class="section">
+<h3><a id="protocolwaveletupdate" name="protocolwaveletupdate">ProtocolWaveletUpdate</a></h3>
+<p>In response to a ProtocolOpenRequest the server may
+send any number of ProtocolWaveletUpdate messages.
+The ProtocolWaveletUpdate may contain a snapshot of
+the current wave state or it will contain one or more
+ProtocolWaveletDelta messages that represent deltas
+to be applied to wavelets that the client is monitoring.
+The inclusion of the snapshot is determined by the
+server, it will only be sent on the first ProtocolWaveletUpdate,
+and will only be sent if the client has indicated in its
+ProtocolOpenRequest that it supports receiving snapshots.</p>
+<p>ProtocolWaveletUpdate messages will only be sent for
+wavelets that the client is an explicit participant in.</p>
+</div>
+<div class="section">
+<h3><a id="protocolsubmitrequest" name="protocolsubmitrequest">ProtocolSubmitRequest</a></h3>
+<p>This message contains a ProtocolWaveletDelta which the
+client requests the server to apply to a wave. Only one
+submit per wavelet may be outstanding at any one time.</p>
+<p>The client specifies which version to apply the delta at,
+and the client is expected to transform deltas pending
+for submission against deltas received in
+ProtocolWaveletUpdates from the server.</p>
+<p>ProtocolWaveletDelta's are applied atomically and either
+fully succeed, or the whole delta will fail.</p>
+</div>
+<div class="section">
+<h3><a id="protocolsubmitresponse" name="protocolsubmitresponse">ProtocolSubmitResponse</a></h3>
+<p>The ProtocolSubmitResponse acknowledges the ProtocolSubmitRequest
+and if the delta was successfully applied it also supplies the
+ProtocolHashedVersion of the wavelet after the delta, which
+the client will need to successfully submit future deltas
+to the wavelet.</p>
+</div>
+<div class="section">
+<h3><a id="closing-a-wave" name="closing-a-wave">Closing a wave</a></h3>
+<p>TBD</p>
+</div>
+</div>
+</div>
+<div class="section">
+<h1><a id="specific-flows" name="specific-flows">Specific Flows</a></h1>
+<div class="section">
+<h2><a id="search" name="search">Search</a></h2>
+<p>TBD</p>
+</div>
+<div class="section">
+<h2><a id="creating-a-new-wave" name="creating-a-new-wave">Creating a new wave</a></h2>
+<p>Creating a new wave is different from other flows
+since neither the client nor the server have the wave
+id. The client must generate a unique id for the wave
+and send a ProtocolOpenRequest for that wave id.</p>
+<div class="section">
+<h3><a id="entropy-and-wave-id-length" name="entropy-and-wave-id-length">Entropy and Wave ID Length</a></h3>
+<p>TBD</p>
+</div>
+</div>
+</div>
+<div class="section">
+<h1><a id="serializing-protocol-buffers-as-json" name="serializing-protocol-buffers-as-json">Serializing Protocol Buffers as JSON</a></h1>
+<p>There is no standard serialization of Protocol Buffers
+into JSON. This section will define the serialization
+that is used to construct Wave Messages from the protocol
+buffers included in this specification.</p>
+<p>Protocol buffer messages may be nested, so this serialization
+algorithm must be applied recursively.</p>
+<p>The root level message is emitted as a JSON object. Each
+member of the message will be emitted as a key-value pair
+in the JSON object. Each member's key name in
+the JSON serialization is set to normalize(key), where
+normalize is a function that takes in the protocol
+buffer member key name and returns a JSON utf-8 string.</p>
+<div class="section">
+<h2><a id="normalize" name="normalize">normalize()</a></h2>
+<p>TBD</p>
+</div>
+<div class="section">
+<h2><a id="member-value-serialization" name="member-value-serialization">Member value serialization</a></h2>
+<p>The serialization of a value for the key is dependent
+on the type and modifiers of that member. If the member
+is flagged as 'repeated' then the serialized
+value will be a JSON array. The array will be filled
+with the serialized values of the repeated members.</p>
+</div>
+<div class="section">
+<h2><a id="modifiers" name="modifiers">Modifiers</a></h2>
+<p>The following modifiers can be applied to message
+values and they alter how the values are serialized.</p>
+<div class="section">
+<h3><a id="repeated" name="repeated">repeated</a></h3>
+<p>For each repeated member value, serialize it as
+JSON according to the following rules and add the serialization
+to the JSON array.</p>
+</div>
+<div class="section">
+<h3><a id="required" name="required">required</a></h3>
+<p>Required parameters are always serialized into JSON.</p>
+</div>
+<div class="section">
+<h3><a id="optional" name="optional">optional</a></h3>
+<p>Optional parameters are only serialized if they appear in the
+protocol buffer.</p>
+</div>
+</div>
+<div class="section">
+<h2><a id="string" name="string">string</a></h2>
+<p>A string member of a protocol buffer message is serialized
+as a JSON string.</p>
+</div>
+<div class="section">
+<h2><a id="int" name="int">int</a></h2>
+<p>An int32 or int64 member of a protocol buffer message
+is serialized as a JSON number.</p>
+</div>
+<div class="section">
+<h2><a id="bool" name="bool">bool</a></h2>
+<p>A bool value is serialized as a JSON number with a value of
+1 for true and 0 for false.</p>
+</div>
+<div class="section">
+<h2><a id="enum" name="enum">enum</a></h2>
+<p>An enum value is serialized as a JSON string for the enumeration's value.</p>
+</div>
+<div class="section">
+<h2><a id="bytes" name="bytes">bytes</a></h2>
+<p>A bytes value is hex encoded and serialized as a JSON string.</p>
+</div>
+<div class="section">
+<h2><a id="message" name="message">message</a></h2>
+<p>A protocol buffer message is serialized by recursively applying
+the rules in this section.</p>
+</div>
+</div>
+<div class="section">
+<h1><a id="security" name="security">Security</a></h1>
+<div class="section">
+<h2><a id="securing-the-channel" name="securing-the-channel">Securing the channel</a></h2>
+<p>TBD</p>
+</div>
+<div class="section">
+<h2><a id="authenticating-the-client" name="authenticating-the-client">Authenticating the client</a></h2>
+<p>TBD</p>
+</div>
+<div class="section">
+<h2><a id="authorization" name="authorization">Authorization</a></h2>
+<p>Authorization is covered in the <a class="reference" href="http://www.waveprotocol.org/whitepapers/access-control">Access Control Whitepaper</a>.</p>
+</div>
+</div>
+<div class="section">
+<h1><a id="client-server-protocol-buffers" name="client-server-protocol-buffers">Client-Server Protocol Buffers</a></h1>
+<p>While the client server protocol is implemented as JSON over WebSockets,
+each Wave message is a JSON serialization of a protocol buffer. The
+protocol buffer definitions are defined as:</p>
+<blockquote>
+TBD</blockquote>
+</div>
+<div class="section">
+<h1><a id="example-client-server-flow" name="example-client-server-flow">Example Client-Server Flow</a></h1>
+<blockquote>
+TBD</blockquote>
+</div>
+<div class="section">
+<h1><a id="appendix-a-open-source-implementation-notes" name="appendix-a-open-source-implementation-notes">Appendix A - Open Source Implementation Notes</a></h1>
+<p>The current open source implementation of the
+client-server protocol begins with the client
+opening the wave &quot;indexwave!indexwave&quot;. That
+is currently an implementation detail and is not
+documented.</p>
+</div>
+</div>
+</body>
+</html>

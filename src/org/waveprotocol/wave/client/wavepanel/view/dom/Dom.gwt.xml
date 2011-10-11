@@ -1,0 +1,4 @@
+<module><inherits name="com.google.gwt.user.User" /><inherits name="com.google.common.base.Base" /><inherits name="org.waveprotocol.wave.client.common.safehtml.SafeHtml" /><inherits name="org.waveprotocol.wave.client.editor.Editor" /><inherits name="org.waveprotocol.wave.client.doodad.Doodad" /><inherits name="org.waveprotocol.wave.client.uibuilder.UiBuilder" /><inherits name="org.waveprotocol.wave.client.wavepanel.view.View" /><inherits name="org.waveprotocol.wave.client.wavepanel.view.impl.Impl" /><inherits name="org.waveprotocol.wave.model.conversation.Conversation" /><inherits name="org.waveprotocol.wave.model.util.Util" /> <source path=""/>
+ <source path="full"/>
+
+</module>

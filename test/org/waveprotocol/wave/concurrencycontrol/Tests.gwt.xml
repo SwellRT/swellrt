@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.common.logging.Print"/>
+  <inherits name="org.waveprotocol.wave.concurrencycontrol.server.Server"/>
+  <inherits name="org.waveprotocol.wave.concurrencycontrol.Testing"/>
+  <inherits name="org.waveprotocol.wave.concurrencycontrol.Wave"/>
+  <inherits name="org.waveprotocol.wave.model.Model"/>
+  <inherits name="org.waveprotocol.wave.model.testing.Testing"/>
+  <inherits name="third_party.java_src.gwt.crore.Crore"/>
+   
+  <source path=""/>
+   
+  <source path="channel"/>
+   
+  <source path="client"/>
+   
+  <source path="common"/>
+   
+  <source path="wave"/>
+    
+</module>

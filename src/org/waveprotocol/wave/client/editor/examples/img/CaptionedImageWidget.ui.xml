@@ -1,0 +1,56 @@
+<!-- 
+Bare bones captioned image template. Doesn't look as pretty
+as the full-blown ImageThumbnailWidget.
+
+Author: danilatos@google.com
+-->
+<ui:UiBinder
+    xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+    >
+
+  <ui:style>
+    .top {
+      margin-left: 2px;
+      margin-right: 1px;
+      border-left: 1px solid #ccf;
+      border-top: 1px solid #ccf;
+      border-right: 2px solid #88a;
+      border-bottom: 2px solid #88a;
+      background: #eee; 
+      padding: 4px;
+      
+      /* NOTE(danilatos): More rules are needed to get this to work in IE. See ImageThumbnail */
+      display: inline-block;
+      position: relative;
+    }
+    
+    /*
+     * For some reason, the programmatic fixing of whitespace doesn't work for
+     * FF, need to figure out why...
+     */
+    @if user.agent gecko1_8 {
+      .top {
+        white-space: normal;
+      }
+    }
+    
+    /* Apply the style to immediate children, i.e. the caption, not to the container itself.
+     * This way we don't get ugly artifacts when there is no caption. */
+    .container > * {
+      margin-top: 4px;
+      border: 1px solid #aac;
+      border-left: 2px solid #88a;
+      border-top: 2px solid #88a;
+      text-align: center;
+      background: white;
+    }
+  </ui:style>
+  
+  <gwt:HTMLPanel styleName='{style.top}'>
+      <gwt:Image ui:field='image'/>
+      
+      <!-- Child nodes (i.e. the caption) will go inside this container -->
+      <div ui:field='container' class='{style.container}'></div>
+  </gwt:HTMLPanel>
+</ui:UiBinder>

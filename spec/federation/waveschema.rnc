@@ -1,0 +1,222 @@
+namespace default = ""
+namespace pubsub = "http://jabber.org/protocol/pubsub"
+namespace disco = "http://jabber.org/protocol/disco#info"
+namespace rec   = "urn:xmpp:receipts"  # NAMESPACE_XMPP_RECEIPTS
+namespace discoitems = "http://jabber.org/protocol/disco#items"  # NAMESPACE_DISCO_ITEMS
+namespace pubsubevt = "http://jabber.org/protocol/pubsub#event" # NAMESPACE_PUBSUB_EVENT
+namespace wavesrv = "http://waveprotocol.org/protocol/0.2/waveserver" # NAMESPACE_WAVE_SERVER
+namespace rcpt = "urn:xmpp:receipts"
+
+
+## Our possible iq children
+start = update
+      | submitrequest | submitresponse
+      | history-request | history-response
+      | signer-get-request | signer-get-response
+      | signer-post-request | signer-post-response
+
+## Envelope to push wavelet operations. Used in iq set stanza.
+update =
+  element message {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element rcpt:request { empty },
+    element pubsubevt:event {
+      element pubsubevt:items {
+        element pubsubevt:item {
+          element wavesrv:wavelet-update {
+            attribute wavelet-name { xsd:string },
+            element wavesrv:applied-delta { text }*,
+            commit-notice?
+          } *
+        }
+      }
+    }
+  }
+
+
+## Request for historical wavelet operations. Used in iq get stanza.
+history-request =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        attribute node { text }, # set to "wavelet"
+        element wavesrv:delta-history {
+          attribute wavelet-name { xsd:string },
+          attribute start-version { xsd:integer },
+          attribute start-version-hash { xsd:string },
+          attribute end-version { xsd:integer },
+          attribute end-version-hash { xsd:string },
+          attribute response-length-limit { xsd:integer }?
+        } *
+      }
+    }
+  }
+
+## Response to history-request. Used in iq result stanza.
+history-response =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        element pubsub:item {
+          element wavesrv:applied-delta {
+            text
+          }
+          | element wavesrv:history-truncated {
+            attribute version { xsd:integer }
+          }
+          | commit-notice
+        } *
+      }
+    }
+  }
+
+## Request to submit operations to a wavelet. Used in iq set stanza.
+submitrequest =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        attribute node { xsd:string },
+        element pubsub:item {
+          element wavesrv:submit-request {
+            element wavesrv:delta {
+              attribute wavelet-name { xsd:string },
+              text
+            }
+          }
+        }
+      }
+    }
+  }
+
+## Response to submit-request. Used in iq result stanza.
+submitresponse =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        element pubsub:item {
+          element wavesrv:submit-response {
+            attribute application-timestamp { xsd:integer },
+            attribute operations-applied { xsd:integer },
+            attribute error-message { xsd:string }?,
+            hashed-version
+          }
+        }
+      }
+    }
+  }
+
+
+## Signer get request
+signer-get-request =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        attribute node { xsd:string }, # need to be hardcoded value "signer"
+        element wavesrv:signer-request {
+          attribute signer-id {xsd:string },
+          attribute wavelet-name { xsd:string },
+          version-hash-attributes
+        }
+      }
+    }
+  }
+
+## Signer get response
+signer-get-response =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        element wavesrv:signature {
+          attribute domain { text },
+          attribute algorithm { text },
+          element wavesrv:certificate { text } +
+        }
+      }
+    }
+  }
+
+
+
+## Signer post request
+signer-post-request =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        attribute node { xsd:string }, # need to be hardcoded value "signer"
+        element pubsub:item {
+          element wavesrv:signature {
+            attribute domain { text },
+            attribute algorithm { text },
+            element wavesrv:certificate { text } +
+          }
+        }
+      }
+    }
+  }
+
+## Signer post response
+signer-post-response =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        element pubsub:item {
+          attribute node { xsd:string }, # need to be hardcoded value "signer"
+          element wavesrv:signature-response { empty }
+        }
+      }
+    }
+  }
+
+
+## A wavelet version and the wavelet's history hash at that version.
+version-hash-attributes =
+  attribute version { xsd:integer } & attribute history-hash { xsd:string }
+
+## Notification of the fact that the host provider has persisted a
+## wavelet up to the specified version.
+commit-notice =
+  element wavesrv:commit-notice {
+    attribute version { xsd:integer }
+  }
+
+## Describes a wavelet version and the wavelet's history hash at that version.
+hashed-version =
+  element wavesrv:hashed-version {
+    version-hash-attributes
+  }
+

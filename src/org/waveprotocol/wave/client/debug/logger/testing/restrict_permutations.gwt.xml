@@ -1,0 +1,5 @@
+<module><inherits name="com.google.gwt.user.User" />
+<!-- Restricts permutations to reduce code compiled for GWT tests. -->
+
+<set-property name="loglevel" value="error" />
+</module>

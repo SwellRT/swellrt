@@ -1,0 +1,11 @@
+<!-- 
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="diff">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="diff"/>
+  <patternset id="srcs">
+    <include name="org/waveprotocol/wave/diff/**"/>
+  </patternset>
+</project>

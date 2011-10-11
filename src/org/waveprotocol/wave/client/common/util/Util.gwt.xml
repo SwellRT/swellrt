@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.client.common.util.useragents"/>
+  <inherits name="com.google.common.base.Base"/>
+  <inherits name="org.waveprotocol.wave.model.Model"/>
+   
+  <source path=""/>
+    
+  <!-- Allow for conditional compilation per user.agent with a single "if": -->
+   
+  <replace-with class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties.FirefoxImpl">
+    <when-type-is class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties"/>
+     
+    <when-property-is name="user.agent" value="gecko1_8"/>
+  </replace-with>
+   
+  <replace-with class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties.IEImpl">
+    <when-type-is class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties"/>
+     
+    <any>
+      <when-property-is name="user.agent" value="ie6"/>
+      <when-property-is name="user.agent" value="ie8"/>
+    </any>
+  </replace-with>
+   
+  <!-- Following rules are order dependent: android and iphone have to come after "simple" safari -->
+  <replace-with class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties.SafariImpl">
+    <when-type-is class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties"/>
+     
+    <when-property-is name="user.agent" value="safari"/>
+  </replace-with>
+   
+  <replace-with class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties.AndroidImpl">
+    <when-type-is class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties"/>
+     
+    <when-property-is name="mobile.user.agent" value="android"/>
+  </replace-with>
+   
+  <replace-with class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties.IPhoneImpl">
+    <when-type-is class="org.waveprotocol.wave.client.common.util.UserAgentStaticProperties"/>
+     
+    <when-property-is name="mobile.user.agent" value="iphone"/>
+  </replace-with>
+   
+</module>

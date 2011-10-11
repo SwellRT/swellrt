@@ -1,0 +1,11 @@
+URL: http://www.gnu.org/software/libidn/
+VERSION: 1.15
+License: LGPL
+License File: LICENSE
+
+Description:
+Encodes and decodes internationalized domain names.
+
+Local Modifications:
+None.
+

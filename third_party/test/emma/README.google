@@ -1,0 +1,11 @@
+URL: http://emma.sourceforge.net
+Version: 2.0.5312
+License: Common Public License
+
+License File: COPYING
+
+Description:
+Emma implements code coverage for Java.
+
+Local Modifications:
+No modifications.

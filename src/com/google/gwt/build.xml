@@ -1,0 +1,11 @@
+<!-- 
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="gwt-util">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="gwt-util"/>
+  <patternset id="srcs">
+    <include name="com/google/gwt/**"/>
+  </patternset>
+</project>

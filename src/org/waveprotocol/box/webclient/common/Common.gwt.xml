@@ -1,0 +1,11 @@
+<module>
+    <inherits name="com.google.gwt.user.User"/>
+    <inherits name='org.waveprotocol.box.common.comms.WaveClientRpc'/>
+    <inherits name="org.waveprotocol.wave.concurrencycontrol.Client"/>
+    <inherits name="org.waveprotocol.wave.concurrencycontrol.Common"/>
+    <inherits name="org.waveprotocol.wave.concurrencycontrol.Wave"/>
+    <inherits name="org.waveprotocol.wave.federation.Federation"/>
+    <inherits name="org.waveprotocol.wave.model.Model"/>
+    <source path="">
+    </source>
+</module>

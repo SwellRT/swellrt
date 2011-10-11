@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with a reference to an undefined definition -->
+<schema>
+  <definition name="test">
+    <reference name="definition1"/>
+  </definition>
+  <root name="test"/>
+</schema>

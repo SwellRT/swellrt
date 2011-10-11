@@ -1,0 +1,22 @@
+/*
+ * CSS for things in the extractor package
+ *
+ * @author danilatos
+ */
+
+.repaired {
+  border: 1px solid red;
+  background-color: #ffc0c0;
+}
+
+.dead {
+  border: 2px solid red;
+  background-color: #ffc0c0;
+  color: #c00;
+  text-decoration: line-through;
+}
+
+.problem {
+  background-color: #ccc;
+  text-decoration: line-through;
+}

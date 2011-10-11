@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- A schema featuring attributes -->
+<schema>
+  <definition name="test">
+    <element name="element1">
+      <attribute name="attribute1" values="value1" required="false"/>
+    </element>
+    <element name="element2">
+      <attribute name="attribute2" values="ab*c" required="false"/>
+    </element>
+    <element name="element3">
+      <attribute name="attribute3" values="value3" required="true"/>
+      <attribute name="attribute4" values="value4" required="false"/>
+      <attribute name="attribute5" values="value5" required="false"/>
+    </element>
+    <element name="element4">
+      <attribute name="attribute6" values="a.*b" required="true"/>
+    </element>
+  </definition>
+  <root name="test"/>
+</schema>

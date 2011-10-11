@@ -1,0 +1,5 @@
+<module>
+    <inherits name="com.google.common.collect.Collect"/>
+    <inherits name="org.waveprotocol.wave.model.Model"/>
+    <source path="" />
+</module>

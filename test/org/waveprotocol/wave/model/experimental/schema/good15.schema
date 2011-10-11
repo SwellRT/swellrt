@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!-- A schema featuring the interleaving of prologues and prologues in referenced patterns -->
+<schema>
+  <definition name="test">
+    <prologue>
+      <element name="element1">
+        <element name="element7"/>
+      </element>
+      <element name="element2">
+        <element name="element8"/>
+      </element>
+    </prologue>
+    <reference name="definition1"/>
+    <prologue>
+      <element name="element3">
+        <element name="element9"/>
+      </element>
+    </prologue>
+    <prologue>
+      <element name="element4">
+        <element name="element10"/>
+      </element>
+    </prologue>
+    <reference name="definition1"/>
+  </definition>
+  <definition name="definition1">
+    <prologue>
+      <element name="element5">
+        <element name="element11"/>
+      </element>
+      <element name="element6">
+        <element name="element12"/>
+      </element>
+    </prologue>
+  </definition>
+  <root name="test"/>
+</schema>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!-- A schema featuring references structured with double indirection -->
+<schema>
+  <definition name="test">
+    <reference name="definition1"/>
+    <attribute name="attribute1" values="value1" required="false"/>
+    <element name="element1">
+      <element name="element4"/>
+    </element>
+  </definition>
+  <definition name="definition1">
+    <attribute name="attribute2" values="value2" required="false"/>
+    <element name="element2">
+      <element name="element5"/>
+    </element>
+    <reference name="definition2"/>
+  </definition>
+  <definition name="definition2">
+    <element name="element3">
+      <element name="element6"/>
+    </element>
+    <attribute name="attribute3" values="value3" required="false"/>
+  </definition>
+  <root name="test"/>
+</schema>

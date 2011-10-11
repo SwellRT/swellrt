@@ -1,0 +1,15 @@
+<module>
+  <!--
+    This entire GWT module exists for just one proto, the hashed version, which
+    is used by other protos in the web client.  The hashed version proto
+    probably belongs in the core model, rather than here in federation.
+    Most of the code in this package is not GWT compatible, so a stricter
+    inclusion rule is used: a whitelist of safe files, rather than a blacklist
+    of known offenders.
+  -->
+  <!-- DTO deps below. -->
+  <inherits name="org.waveprotocol.wave.communication.Communication"/>
+  <source path=""
+          includes="Protocol* impl/* jso/*"
+          excludes="ProtocolHashedVersionFactory.java"/>
+</module>

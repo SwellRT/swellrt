@@ -1,0 +1,11 @@
+URL: http://code.google.com/p/guava-libraries/
+Version: r09
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+This library contains several of Google's core Java libraries that we use in our many Java-based projects.
+
+Local Modifications:
+No modifications.

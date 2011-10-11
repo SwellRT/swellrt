@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with an infinite recursion -->
+<schema>
+  <definition name="test">
+    <reference name="test"/>
+  </definition>
+  <root name="test"/>
+</schema>

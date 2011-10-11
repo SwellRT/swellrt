@@ -1,0 +1,33 @@
+/*
+ * CSS styling for user selections - gives the appearance of a rounded box by
+ *   manually playing with 1px borders.
+ * author: danilatos@google.com (Daniel Danilatos)
+*/
+
+.compositionState {
+  /* Later, use single GWT opacity rule, when available */
+  opacity: 0.4;
+  filter: "alpha(opacity = 40)";
+
+  /*
+   * Underline, so it looks like text during composition :)
+   * Color intentionally unspecified, that's done programmatically .
+   */
+  border-bottom: 2px solid;
+}
+
+.outer {
+  color: white;
+  position: relative;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+.inner {
+  border: 1px solid;
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: 1px;
+  right: 1px;
+}

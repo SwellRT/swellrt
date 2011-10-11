@@ -1,0 +1,12 @@
+URL: http://code.google.com/apis/protocolbuffers/
+Version: 2.3.0
+License: New BSD
+
+License File: LICENSE
+
+Description:
+Protocol Buffers are a way to specify serialization of data, and an efficient 
+implementation of that serialization.
+
+Local Modifications:
+No modifications.

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.client.scheduler.Scheduler"/>
+  <inherits name="org.waveprotocol.wave.client.scheduler.testing.Testing"/>
+   
+  <source path=""/>
+   
+  <source path="knobs"/>
+   
+  <source path="testing"/>
+    
+</module>

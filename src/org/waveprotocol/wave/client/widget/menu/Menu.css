@@ -1,0 +1,40 @@
+/*
+ * Popup menu CSS
+ * Author: macpherson@google.com (Luke Macpherson)
+ */
+
+.item {
+  margin: 0px 1px;
+  padding: 3px 7px 3px 12px;
+  color: #003ea8;
+  cursor: pointer;
+  cursor: hand;
+  background-color: white;
+}
+
+.item:hover {
+  background-color: #4086ff;
+  color: white;
+}
+
+.item.disabled {
+  cursor: default;
+  opacity: 0.35; /* matches TextButton.css disabled. */
+}
+
+.item.disabled:hover {
+  color: #003ea8;
+  background-color: white;
+}
+
+/** the | between links **/
+.verticalSeparator {
+  display: inline;
+}
+
+.divider {
+  margin: 3px 1px;
+  border-bottom: 1px solid #e3e8f2;
+  cursor: auto;
+  background-color: white;
+}

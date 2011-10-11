@@ -1,0 +1,21 @@
+/*
+ * CSS Stylesheet for the focus frame.
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+/*
+ * Balloons out to the positioned ancestor of whereever it is inserted.
+ */
+.focus {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  border: 3px solid rgb(114, 135, 27);
+  border-radius: 5px;
+  \-moz-border-radius: 5px;
+  \-webkit-border-radius: 5px;
+}

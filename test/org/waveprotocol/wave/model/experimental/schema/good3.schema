@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- A schema featuring character data -->
+<schema>
+  <definition name="test">
+    <element name="element1">
+      <text characters="abcd" type="blacklist"/>
+    </element>
+    <element name="element2">
+      <text characters="abcd" type="whitelist"/>
+    </element>
+  </definition>
+  <root name="test"/>
+</schema>

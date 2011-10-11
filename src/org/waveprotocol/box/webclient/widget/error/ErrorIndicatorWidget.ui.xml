@@ -1,0 +1,61 @@
+<!--
+  Template for ErrorIndicator.
+-->
+<ui:UiBinder
+    xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:gwt="urn:import:com.google.gwt.user.client.ui"
+>
+  <ui:style type='org.waveprotocol.box.webclient.widget.error.ErrorIndicatorWidget.Style'>
+
+  .alert {
+    background-color: red;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    /* This padding is just aesthetic, to give some space for the rounded corners to show. */
+    padding: 2px 6px;
+  }
+  
+  .detail {
+    background-color: #eeeeee;
+    width: 50px;
+    height: 0;  /* Starts off collapsed */
+    overflow-y: auto;
+  
+    transition: height 300ms ease-in-out;
+    -moz-transition: height 300ms ease-in-out;
+    -webkit-transition: height 300ms ease-in-out;
+  
+    font-size: small;
+    line-height: 1;
+  }
+
+  .expanded {
+    width: 800px;
+    height: 500px;
+    padding: 5px;
+    border: 1px solid black;
+  }
+
+  .stack {
+    white-space: pre;
+  }
+
+  </ui:style>
+  <gwt:HTMLPanel>
+    <span class="{style.alert}">
+      <em>"Everything's shiny, Cap'n. Not to fret!"</em>
+      An error has occurred, please
+      <a href="#" onclick="window.location.replace(window.location.href.replace(/#.*/, ''));">
+      refresh</a>.
+      <gwt:Anchor href="javascript:;" ui:field="showDetail" visible="false">
+        Show error detail
+      </gwt:Anchor>
+      </span>
+    <div ui:field="detail" class="{style.detail}">
+      <h3>Stack trace:</h3>
+      <span ui:field="stack" class="{style.stack}"></span>
+      <span ui:field="bug"></span>
+    </div>
+  </gwt:HTMLPanel>
+</ui:UiBinder>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.wave.client.wavepanel.block.Block"/>
+  <inherits name="org.waveprotocol.wave.model.conversation.Testing"/>
+   
+  <source path=""/>
+   
+  <source path="xml"/>
+    
+</module>

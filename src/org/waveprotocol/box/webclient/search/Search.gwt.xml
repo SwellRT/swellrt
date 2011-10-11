@@ -1,0 +1,6 @@
+<module>
+  <inherits name="com.google.gwt.user.User"/>
+  <inherits name="org.waveprotocol.box.webclient.widget.frame.Frame"/>
+  <inherits name="org.waveprotocol.wave.client.widget.toolbar.Toolbar"/>
+  <source path=""/>
+</module>

@@ -1,0 +1,26 @@
+/*
+ * CSS stylesheet for link info popups.
+ */
+.self {
+  margin: 0px 2px 0px 2px; 
+  line-height: 1.5;
+  overflow: hidden; /* Expand to include floated content. */
+}
+
+.title {
+  font-size: 15px;
+  whitespace: nowrap;
+  color: #5a99df;
+}
+
+.explanation {
+  font-size: 10px;
+  color: gray;
+}
+
+.link {
+  font-size: 14px;
+  color: black;
+  overflow: hidden;
+  width: 32em;
+}

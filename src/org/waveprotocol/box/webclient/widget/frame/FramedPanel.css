@@ -1,0 +1,90 @@
+/*
+ * CSS for FramedPanel.
+ */
+ 
+@noflip {
+  @sprite .north {
+    gwt-image: 'chromeNorth';
+    position: absolute;
+    top: 0;
+    right: value('chromeNorthEast.getWidth', 'px');
+    left: value('chromeNorthWest.getWidth', 'px');
+    /*
+     * Title-bar styles.
+     */
+    height: value('chromeNorth.getHeight', 'px');
+    line-height: value('chromeNorth.getHeight', 'px');
+    color: white;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+  @sprite .northEast {
+    gwt-image: 'chromeNorthEast';
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  @sprite .east {
+    gwt-image: 'chromeEast';
+    position: absolute;
+    top: value('chromeNorthEast.getHeight', 'px');
+    right: 0;
+    bottom: value('chromeSouthEast.getHeight', 'px');
+  }
+
+  @sprite .southEast {
+    gwt-image: 'chromeSouthEast';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+
+  @sprite .south {
+    gwt-image: 'chromeSouth';
+    position: absolute;
+    right: value('chromeSouthEast.getWidth', 'px');
+    bottom: 0;
+    left: value('chromeSouthWest.getWidth', 'px');
+  }
+
+  @sprite .southWest {
+    gwt-image: 'chromeSouthWest';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+
+  @sprite .west {
+    gwt-image: 'chromeWest';
+    position: absolute;
+    top: value('chromeNorthWest.getHeight', 'px');
+    bottom: value('chromeSouthWest.getHeight', 'px');
+    left: 0;
+  }
+
+  @sprite .northWest {
+    gwt-image: 'chromeNorthWest';
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+.frame {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.contentContainer {
+  position: absolute;
+  right: value('chromeEast.getWidth', 'px');
+  bottom: value('chromeSouth.getHeight', 'px');
+  left: value('chromeWest.getWidth', 'px');
+  top: value('chromeNorth.getHeight', 'px');
+  background-color: white;
+}

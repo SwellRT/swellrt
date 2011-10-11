@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with a missing name attribute for a definition element -->
+<schema>
+  <definition name="test">
+  </definition>
+  <definition>
+  </definition>
+  <root name="test"/>
+</schema>

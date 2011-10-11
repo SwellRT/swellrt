@@ -1,0 +1,19 @@
+/*
+ * CSS for Loading indicator.
+ */
+
+.loading {
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  left: 0;
+  right: 0;
+  color: #666;
+}
+
+@noflip {
+  @sprite .loadingImage {
+    gwt-image: 'loading';
+    margin: auto;  /* Horizontally centered. */
+  }
+}

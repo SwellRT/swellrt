@@ -1,0 +1,16 @@
+<!--
+  Template for ToplevelToolbarWidget.
+  Author: kalman@google.com (Benjamin Kalman)
+-->
+<ui:UiBinder
+    xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+>
+  <ui:with field='res' type='org.waveprotocol.wave.client.widget.toolbar.ToplevelToolbarWidget.Resources' />
+  <gwt:FlowPanel>
+    <!-- SimplePanel for the overflow button. -->
+    <gwt:SimplePanel ui:field='overflowButton' styleName='{res.css.overflowButton}' />
+    <!-- FlowPanel for added items. -->
+    <gwt:FlowPanel ui:field='self' styleName='{res.css.toolbar}' />
+  </gwt:FlowPanel>
+</ui:UiBinder>

@@ -1,0 +1,12 @@
+URL: http://code.google.com/p/protobuf-java-format/
+Version: 1.1
+License: BSD
+
+License File: COPYING
+
+Description:
+Conversion from ProtoBuf message objects into JSON and vice versa.
+
+Local Modifications:
+No modifications.
+

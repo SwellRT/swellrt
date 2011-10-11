@@ -1,0 +1,12 @@
+/*
+ * @author danilatos
+ */
+
+.insert {
+  background-color: #ffff00;
+}
+
+.delete {
+  background-color: #ffd0d0;
+  text-decoration: line-through;
+}

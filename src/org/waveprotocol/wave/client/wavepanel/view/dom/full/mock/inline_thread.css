@@ -1,0 +1,107 @@
+/*
+ * CSS Stylesheet for threads.
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+.anchor {
+  display: inline;
+}
+
+.thread {
+  display: inline;
+}
+
+.arrow {
+  display: inline-block;  /* Inline, but with background. */
+  height: 7px;
+  width: 7px;
+}
+
+.arrow.read.expanded {
+  background-image: url('arrow_read_expanded.png');
+}
+
+.arrow.unread.expanded {
+  background-image: url('arrow_unread_expanded.png');
+}
+
+.arrow.read.collapsed {
+  background-image: url('arrow_read_collapsed.png');
+}
+
+.arrow.unread.collapsed {
+  background-image: url('arrow_unread_collapsed.png');
+}
+
+.toggle {
+  cursor: pointer;
+  margin: 0 0.3em;
+  white-space: nowrap;    /* Keeps bubble and arrow together. */
+  font-size: 0.8em;
+  vertical-align: 0.1em;  /* Keep center alignment with shrinking font. */
+}
+
+.count {
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  padding: 0 0.5em;
+  margin: 0 0.3em;
+  font-weight: bold;
+}
+
+.count.unread {
+  color: white;
+  background-image: -moz-linear-gradient(0% 100% 90deg, rgb(93,140,9), rgb(149,184,0));
+  background-image: -webkit-gradient(linear, 0% 100%, 0% 0%, from(rgb(93,140,9)), to(rgb(149,184,0)));
+  border: 1px solid rgb(93,140,9);
+}
+
+.count.read {
+  color: gray;
+  background-image: -moz-linear-gradient(0% 100% 90deg, rgb(220,220,220), white);
+  background-image: -webkit-gradient(linear, 0% 100%, 0% 0%, from(rgb(220,220,220)), to(white));
+  border: 1px solid rgb(154,154,154);
+}
+
+.chrome {
+  margin: 1em 0.5em;
+  box-shadow: 0px 0px 4px #808080;
+  -moz-box-shadow: 0px 0px 4px #808080;
+  -webkit-box-shadow: 0px 0px 4px #808080;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+}
+
+.chrome.collapsed {
+  display: none;
+}
+
+.count.expanded {
+  position: relative;
+}
+
+.dropContainer.collapsed {
+  display: none;
+}
+
+.dropContainer.expanded {
+  position: absolute;
+  text-align: center;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  line-height: 0;  /* Height comes only from image. */
+}
+
+.drop {
+  background-color: white;
+  background-image: url("callout.png");
+  display: inline-block;
+  height: 12px;
+  width: 18px;
+  vertical-align: bottom;
+  margin-bottom: -16px; /* Magic height. */
+}

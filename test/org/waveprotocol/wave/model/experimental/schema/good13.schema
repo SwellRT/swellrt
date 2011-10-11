@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- A schema featuring a recursive reference -->
+<schema>
+  <definition name="test">
+    <attribute name="attribute1" values="value1" required="false"/>
+    <element name="element1">
+      <reference name="test"/>
+    </element>
+  </definition>
+  <root name="test"/>
+</schema>

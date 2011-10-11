@@ -1,0 +1,12 @@
+URL: http://jmock.org/
+Version: 2.5.1
+License: BSD
+
+License File: jmock-license.txt
+
+Description:
+JMock is a library that supports test-driven development of Java code with 
+mock objects.
+
+Local Modifications:
+No modifications.

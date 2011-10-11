@@ -1,0 +1,1353 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head><title>Google Wave Conversation Model</title>
+<meta http-equiv="Expires" content="Fri, 18 Jun 2010 14:13:02 +0000">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="Google Wave Conversation Model">
+<meta name="generator" content="xml2rfc v1.33 (http://xml.resource.org/)">
+<style type='text/css'><!--
+        body {
+                font-family: verdana, charcoal, helvetica, arial, sans-serif;
+                font-size: small; color: #000; background-color: #FFF;
+                margin: 2em;
+        }
+        h1, h2, h3, h4, h5, h6 {
+                font-family: helvetica, monaco, "MS Sans Serif", arial, sans-serif;
+                font-weight: bold; font-style: normal;
+        }
+        h1 { color: #900; background-color: transparent; text-align: right; }
+        h3 { color: #333; background-color: transparent; }
+
+        td.RFCbug {
+                font-size: x-small; text-decoration: none;
+                width: 30px; height: 30px; padding-top: 2px;
+                text-align: justify; vertical-align: middle;
+                background-color: #000;
+        }
+        td.RFCbug span.RFC {
+                font-family: monaco, charcoal, geneva, "MS Sans Serif", helvetica, verdana, sans-serif;
+                font-weight: bold; color: #666;
+        }
+        td.RFCbug span.hotText {
+                font-family: charcoal, monaco, geneva, "MS Sans Serif", helvetica, verdana, sans-serif;
+                font-weight: normal; text-align: center; color: #FFF;
+        }
+
+        table.TOCbug { width: 30px; height: 15px; }
+        td.TOCbug {
+                text-align: center; width: 30px; height: 15px;
+                color: #FFF; background-color: #900;
+        }
+        td.TOCbug a {
+                font-family: monaco, charcoal, geneva, "MS Sans Serif", helvetica, sans-serif;
+                font-weight: bold; font-size: x-small; text-decoration: none;
+                color: #FFF; background-color: transparent;
+        }
+
+        td.header {
+                font-family: arial, helvetica, sans-serif; font-size: x-small;
+                vertical-align: top; width: 33%;
+                color: #FFF; background-color: #666;
+        }
+        td.author { font-weight: bold; font-size: x-small; margin-left: 4em; }
+        td.author-text { font-size: x-small; }
+
+        /* info code from SantaKlauss at http://www.madaboutstyle.com/tooltip2.html */
+        a.info {
+                /* This is the key. */
+                position: relative;
+                z-index: 24;
+                text-decoration: none;
+        }
+        a.info:hover {
+                z-index: 25;
+                color: #FFF; background-color: #900;
+        }
+        a.info span { display: none; }
+        a.info:hover span.info {
+                /* The span will display just on :hover state. */
+                display: block;
+                position: absolute;
+                font-size: smaller;
+                top: 2em; left: -5em; width: 15em;
+                padding: 2px; border: 1px solid #333;
+                color: #900; background-color: #EEE;
+                text-align: left;
+        }
+
+        a { font-weight: bold; }
+        a:link    { color: #900; background-color: transparent; }
+        a:visited { color: #633; background-color: transparent; }
+        a:active  { color: #633; background-color: transparent; }
+
+        p { margin-left: 2em; margin-right: 2em; }
+        p.copyright { font-size: x-small; }
+        p.toc { font-size: small; font-weight: bold; margin-left: 3em; }
+        table.toc { margin: 0 0 0 3em; padding: 0; border: 0; vertical-align: text-top; }
+        td.toc { font-size: small; font-weight: bold; vertical-align: text-top; }
+
+        ol.text { margin-left: 2em; margin-right: 2em; }
+        ul.text { margin-left: 2em; margin-right: 2em; }
+        li      { margin-left: 3em; }
+
+        /* RFC-2629 <spanx>s and <artwork>s. */
+        em     { font-style: italic; }
+        strong { font-weight: bold; }
+        dfn    { font-weight: bold; font-style: normal; }
+        cite   { font-weight: normal; font-style: normal; }
+        tt     { color: #036; }
+        tt, pre, pre dfn, pre em, pre cite, pre span {
+                font-family: "Courier New", Courier, monospace; font-size: small;
+        }
+        pre {
+                text-align: left; padding: 4px;
+                color: #000; background-color: #CCC;
+        }
+        pre dfn  { color: #900; }
+        pre em   { color: #66F; background-color: #FFC; font-weight: normal; }
+        pre .key { color: #33C; font-weight: bold; }
+        pre .id  { color: #900; }
+        pre .str { color: #000; background-color: #CFF; }
+        pre .val { color: #066; }
+        pre .rep { color: #909; }
+        pre .oth { color: #000; background-color: #FCF; }
+        pre .err { background-color: #FCC; }
+
+        /* RFC-2629 <texttable>s. */
+        table.all, table.full, table.headers, table.none {
+                font-size: small; text-align: center; border-width: 2px;
+                vertical-align: top; border-collapse: collapse;
+        }
+        table.all, table.full { border-style: solid; border-color: black; }
+        table.headers, table.none { border-style: none; }
+        th {
+                font-weight: bold; border-color: black;
+                border-width: 2px 2px 3px 2px;
+        }
+        table.all th, table.full th { border-style: solid; }
+        table.headers th { border-style: none none solid none; }
+        table.none th { border-style: none; }
+        table.all td {
+                border-style: solid; border-color: #333;
+                border-width: 1px 2px;
+        }
+        table.full td, table.headers td, table.none td { border-style: none; }
+
+        hr { height: 1px; }
+        hr.insert {
+                width: 80%; border-style: none; border-width: 0;
+                color: #CCC; background-color: #CCC;
+        }
+--></style>
+</head>
+<body>
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<table summary="layout" width="66%" border="0" cellpadding="0" cellspacing="0"><tr><td><table summary="layout" width="100%" border="0" cellpadding="2" cellspacing="1">
+<tr><td class="header"> </td><td class="header">J. Gregorio</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">A. North</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">Google, Inc</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">Oct 2009</td></tr>
+</table></td></tr></table>
+<h1><br />Google Wave Conversation Model</h1>
+
+<h3>Abstract</h3>
+
+<p>
+Google Wave is a communication and collaboration platform based on hosted
+conversations, called waves. A wave comprises a set of concurrently editable
+structured documents and supports real-time sharing between multiple
+participants. This document is one in a larger set of specifications for Google
+Wave. This specification describes Google Wave conversation manifest document
+schema and blip document schema, which together define the Google Wave
+conversation model. This application model is layered upon the documents,
+operations and operational transformation defined in the Wave Federation
+Protocol; see http://www.waveprotocol.org/draft-protocol-specs.
+</p><a name="toc"></a><br /><hr />
+<h3>Table of Contents</h3>
+<p class="toc">
+<a href="#anchor1">1.</a>&nbsp;
+Introduction<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor2">1.1.</a>&nbsp;
+Document Status<br />
+<a href="#anchor3">2.</a>&nbsp;
+Applicability<br />
+<a href="#anchor4">3.</a>&nbsp;
+Terminology<br />
+<a href="#anchor5">4.</a>&nbsp;
+Editorial Notes<br />
+<a href="#anchor6">5.</a>&nbsp;
+Roadmap<br />
+<a href="#anchor7">6.</a>&nbsp;
+Relationship between specifications<br />
+<a href="#anchor8">7.</a>&nbsp;
+Terminology<br />
+<a href="#anchor9">8.</a>&nbsp;
+Model<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor10">8.1.</a>&nbsp;
+Document namespace and validation<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor11">8.2.</a>&nbsp;
+Documents<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor12">8.3.</a>&nbsp;
+Conversation Manifest Document<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor13">8.3.1.</a>&nbsp;
+Elements<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor18">8.3.2.</a>&nbsp;
+Private Replies<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor19">8.3.3.</a>&nbsp;
+Examples<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor20">8.4.</a>&nbsp;
+Blip Document<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor21">8.4.1.</a>&nbsp;
+Schema Design<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor22">8.4.2.</a>&nbsp;
+Elements<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor28">8.4.3.</a>&nbsp;
+Annotations<br />
+<a href="#anchor32">9.</a>&nbsp;
+Example Conversations<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor33">9.1.</a>&nbsp;
+Simple Replies<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor34">9.1.1.</a>&nbsp;
+In-line Replies<br />
+<a href="#anchor36">10.</a>&nbsp;
+Display<br />
+<a href="#anchor37">11.</a>&nbsp;
+Mechanisms<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor38">11.1.</a>&nbsp;
+Creating a new blip<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor39">11.2.</a>&nbsp;
+Creating a reply thread<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor40">11.3.</a>&nbsp;
+Deleting a blip<br />
+<a href="#anchor41">12.</a>&nbsp;
+References<br />
+<a href="#rfc.references1">13.</a>&nbsp;
+References<br />
+<a href="#rfc.authors">&#167;</a>&nbsp;
+Authors' Addresses<br />
+</p>
+<br clear="all" />
+
+<a name="anchor1"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1"></a><h3>1.&nbsp;
+Introduction</h3>
+
+<p>
+A wave can be used to represent a conversation. This specification describes
+the Google Wave conversation model, which implements the conversation structure
+within structured documents in a wave.
+</p>
+<a name="anchor2"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.1"></a><h3>1.1.&nbsp;
+Document Status</h3>
+
+<p>
+This document represents work in progress.  It omits details that we
+are unable to capture at this point and we expect parts of the
+protocol to change.  Please also note that while we revise the
+protocol and white papers, some transient inconsistencies will occur.
+</p>
+<p>
+This document is one in a larger set of specifications for Google
+Wave; see <a href='http://www.waveprotocol.org/draft-protocol-specs'>http://www.waveprotocol.org/draft-protocol-specs</a>.
+</p>
+<a name="anchor3"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2"></a><h3>2.&nbsp;
+Applicability</h3>
+
+<p>
+The wave documents described in this specification may, in whole or in part, be
+interchanged between servers via the Google Wave Federation Protocol. The
+structure within a wave document is reminiscent of XML. A document contains an
+XML-like tree structure of elements, with attributes, and text. In addition, a
+document includes stand-off key/value annotations over arbitrary ranges.
+Documents are subject to constraints expressed in schemas similar to XML
+schemas.
+</p>
+<p>
+The use of XML in this specification in no way forces the server implementation
+to be XML-based. That is, XML is used as a convenient model and implementations
+are free to implement that model in the manner that is most convenient and
+performant.
+</p>
+<a name="anchor4"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3"></a><h3>3.&nbsp;
+Terminology</h3>
+
+<p>
+The capitalized key words &quot;MUST&quot;, &quot;MUST NOT&quot;,
+&quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;,
+&quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and
+&quot;OPTIONAL&quot; in this document are to be
+interpreted as described in <a class='info' href='#RFC2119'>[RFC2119]<span> (</span><span class='info'>Bradner, S., &ldquo;Key words for use in RFCs to Indicate Requirement Levels,&rdquo; March&nbsp;1997.</span><span>)</span></a>
+.
+</p>
+<a name="anchor5"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4"></a><h3>4.&nbsp;
+Editorial Notes</h3>
+
+<p>
+To provide feedback on this draft join the wave-protocol
+mailing list at
+<a href='http://groups.google.com/group/wave-protocol'>http://groups.google.com/group/wave-protocol</a>
+</p>
+<a name="anchor6"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.5"></a><h3>5.&nbsp;
+Roadmap</h3>
+
+<p>
+Wave is being actively developed and some features of the
+conversation model have not been documented, or may change in
+the short term. Currently undocumented are annotations, RTL
+text, images, and form elements.
+</p>
+<p>
+Here is a short roadmap of upcoming changes:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+A mechanism for signalling blip submission
+</li>
+<li>
+A mechanism for signalling relevance of changes
+</li>
+<li>
+Modification timestamps
+</li>
+<li>
+Cursors and selections
+</li>
+<li>
+Attachments
+</li>
+<li>
+Rich text
+</li>
+</ul><p>
+
+</p>
+<a name="anchor7"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.6"></a><h3>6.&nbsp;
+Relationship between specifications</h3>
+
+<p>
+The Federation Protocol specifies the form and function of
+operations that mutate wave documents. While this specification
+deals only with conversation manifest documents and blip
+documents, a wavelet may contain documents of other types.
+Wavelets have metadata that is not stored in document form,
+including the wave id, wavelet id, and list of named
+participants for the wavelet. See the Federation Protocol for
+more details on wavelets and participants.
+</p>
+<a name="anchor8"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.7"></a><h3>7.&nbsp;
+Terminology</h3>
+
+<p>
+The following terminology is used by this specification:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+wave - a collection of wavelets
+</li>
+<li>
+wavelet - a collection of named documents and participants, and the domain of operational transformation
+</li>
+<li>
+conversation - an interpretation of a wavelet as a structured collection of messages
+</li>
+<li>
+document - a structured wave document
+</li>
+<li>
+blip - a document containing a conversational message
+</li>
+<li>
+thread - a sequence of blips, each a &quot;continuation&quot; to that before it
+</li>
+<li>
+conversation manifest - a document that defines the structure of a conversation
+</li>
+<li>
+reply - a thread that represents a reply to conversation material appearing above it
+</li>
+<li>
+inline reply - a reply anchored to a particular point in the replied-to blip
+</li>
+<li>
+private reply - a conversation wavelet with a restricted set of participants
+</li>
+</ul><p>
+
+</p>
+<a name="anchor9"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8"></a><h3>8.&nbsp;
+Model</h3>
+
+<p>
+A conversation wave is a forest of conversations. Each
+conversation has a set of participants collaborating on a
+structured collection of blips. The structure of the
+conversation is maintained in the conversation manifest
+document, while the content of the conversational messages is
+stored in blip documents. Clients participate in the
+conversation by sending operations which mutate the
+conversation manifest and blips.
+</p>
+<p>
+The following assumptions about the wave model and operational
+transforms should be kept in mind when reading this
+specification.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+A wavelet may contain many documents which may or may
+not be part of the conversation. This specification
+addresses only the two document types needed for the
+conversation model: blip documents and conversation
+manifest documents.
+</li>
+<li>
+Documents not referenced by the conversation manifest
+are data documents and are not part of the conversation
+content.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor10"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.1"></a><h3>8.1.&nbsp;
+Document namespace and validation</h3>
+
+<p>
+Every document in a wavelet has an identifier unique within the wavelet. Ids of
+documents are structured as a sequence of '+'-separated tokens. The first token
+of the id is conventionally the document namespace. That wavelet and document
+namespace determine the type of document (its schema). Different types of
+documents may have different validity constraints. Operations which violate the
+schema for a document must be rejected by the server.
+</p>
+<p>
+The namespaces for the documents described in this specification are:
+</p>
+<p>
+</p>
+<blockquote class="text"><dl>
+<dt>b</dt>
+<dd>
+Blip document
+</dd>
+<dt>conversation</dt>
+<dd>
+Conversation Manifest document
+</dd>
+</dl></blockquote><p>
+
+</p>
+<p>
+An example blip document id:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+b+a8w3SD_k</pre></div>
+<a name="anchor11"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.2"></a><h3>8.2.&nbsp;
+Documents</h3>
+
+<p>
+This section describes the two document types that make up the conversation
+model.As a general principle of data modeling in waves, metadata is embedded in
+documents where it can be manipulated by operations. The conversation metadata
+includes the message structure and contributors. Below are examples of a blip
+document and a conversation manifest document.
+</p>
+<p>
+Blip document example:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="dadams@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;There is a theory which states that if
+    &lt;line&gt;&lt;/line&gt;ever anybody discovers exactly what the
+    &lt;line&gt;&lt;/line&gt;Universe is for and why it
+    &lt;line&gt;&lt;/line&gt;is here, it will instantly disappear and
+    &lt;line&gt;&lt;/line&gt;be replaced by something even more bizarre
+    &lt;line&gt;&lt;/line&gt;and inexplicable. There is another theory
+    &lt;line&gt;&lt;/line&gt;which states that this has already happened.
+&lt;/body&gt;</pre></div>
+<p>
+Conversation manifest document example:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation sort="m"&gt;
+    &lt;blip id="b+a"&gt; &lt;!-- first message --&gt;
+        &lt;thread id="3Fsd"&gt;
+            &lt;blip id="b+aaa"&gt;&lt;/blip&gt; &lt;!-- indented reply to "b+a" --&gt;
+            &lt;blip id="b+aab"&gt;&lt;/blip&gt; &lt;!-- continuation to "b+aaa" --&gt;
+        &lt;/thread&gt;
+        &lt;thread id="jjKs"&gt;
+            &lt;blip id="b+aba"&gt;&lt;/blip&gt; &lt;!-- another reply to "b+a" --&gt;
+        &lt;/thread&gt;
+    &lt;/blip&gt;
+    &lt;blip id="b+b"&gt; &lt;!-- continuation after "b+a" --&gt;
+        &lt;peer id="chess+4342"&gt;&lt;/peer&gt; &lt;!-- consistency peer id --&gt;
+        &lt;thread inline="true" id="J362"&gt;
+            &lt;blip id="b+baa"&gt;&lt;/blip&gt; &lt;!-- inline reply to "b+b" --&gt;
+            &lt;blip id="b+bab"&gt;&lt;/blip&gt; &lt;!-- continuation to "b+aaa" --&gt;
+        &lt;/thread&gt;
+        &lt;thread inline="true" ... &gt; &lt;!-- another inline reply group,
+            possibly at the same location --&gt;
+            ...
+        &lt;/thread&gt;
+        &lt;thread id="9dKx"&gt; &lt;!-- non-inline reply to "b+b" --&gt;
+            ...
+        &lt;/thread&gt;
+    &lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<a name="anchor12"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3"></a><h3>8.3.&nbsp;
+Conversation Manifest Document</h3>
+
+<p>
+A conversation manifest document has the distinguished document
+id 'conversation', and is the only document in the
+'conversation' namespace. There is one conversation manifest
+document per conversation.
+</p>
+<p>
+The conversation manifest defines the logical structure of the
+conversation by describing the relationships between the blips.
+See the Display section for how the logical structure of
+conversations is reflected in the user-interface of a wave
+client.
+</p>
+<p>
+Blip elements are wrapped in a grouping element 'thread',
+except for top-level blips which belong to an implicit root
+thread. A blip may have multiple child 'thread' elements
+representing replies. Each 'thread' element has an id, unique
+within the conversation. Thread ids have no semantic meaning.
+</p>
+<p>
+Here is a very simple conversation manifest that references only a single blip.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation&gt;
+    &lt;blip id="b+a"&gt; &lt;!-- first and only message --&gt;
+    &lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<p>
+Here is a more complex conversation manifest that references multiple blips.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation&gt;
+    &lt;blip id="b+a"&gt; &lt;!-- first message --&gt;
+        &lt;thread id="x123"&gt;
+            &lt;blip id="b+aaa"&gt;&lt;/blip&gt; &lt;!-- indented reply to "b+a" --&gt;
+        &lt;/thread&gt;
+        &lt;thread inline="true" id="x983"&gt;
+            &lt;blip id="b+aba"&gt;&lt;/blip&gt; &lt;!-- another reply to "b+a" --&gt;
+            &lt;blip id="b+abb"&gt;&lt;/blip&gt; &lt;!-- another reply to "b+a" --&gt;
+        &lt;/thread&gt;
+    &lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<a name="anchor13"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.1"></a><h3>8.3.1.&nbsp;
+Elements</h3>
+
+<p>
+These are the allowed elements in a conversation manifest.
+</p>
+<a name="anchor14"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.1.1"></a><h3>8.3.1.1.&nbsp;
+conversation</h3>
+
+<p>
+The top-level element in a conversation manifest document.
+It may have anchor attributes (&quot;anchorWavelet&quot;,
+&quot;anchorManifestOffset&quot;, &quot;anchorVersion&quot;, &quot;anchorBlip&quot;,
+&quot;anchorOffset&quot;), which determine where this conversation is
+displayed. See the section below on private replies.
+It also has a &quot;sort&quot; attribute. The value of the sort attribute is used to
+determine the order of peer conversation elements by sorting on sort values
+lexicographically.  A conversation element has zero or more 'blip' elements as
+children.
+</p>
+<p>
+</p>
+<blockquote class="text"><dl>
+<dt>anchorWavelet</dt>
+<dd>
+The id of the wavelet that this conversation is a reply to.
+</dd>
+<dt>anchorManifestOffset</dt>
+<dd>
+An integer offset into the document sequence for the parent's conversation manifest.
+</dd>
+<dt>anchorVersion</dt>
+<dd>
+The version of the parent wavelet when the private reply was created.
+</dd>
+<dt>anchorBlip</dt>
+<dd>
+The id of the blip document in the parent wavelet that anchors the reply.
+</dd>
+<dt>anchorOffset</dt>
+<dd>
+An integer offset into the replied-to blip document that anchors the private reply.
+</dd>
+</dl></blockquote><p>
+
+</p>
+<a name="anchor15"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.1.2"></a><h3>8.3.1.2.&nbsp;
+blip</h3>
+
+<p>
+Represents a message. Every blip element has an 'id'
+attribute that references a blip document in the
+conversation. It may also have a 'deleted' attribute whose
+boolean value determines if that blip has been logically
+deleted. See the section below on deleting blips.
+A blip may have zero or more 'thread' and 'peer' elements
+as children.
+</p>
+<a name="anchor16"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.1.3"></a><h3>8.3.1.3.&nbsp;
+thread</h3>
+
+<p>
+Represents a sequence of messages. All sibling blips in a thread element are
+considered a reply to the parent blip element.  A thread element has an
+&quot;id&quot; and optional boolean &quot;inline&quot; attribute. The &quot;inline&quot; attribute determines
+whether the thread is anchored inline in the parent blip. The default value
+for &quot;inline&quot; if false, that is, the inline attribute not being present is
+the same thing as inline=false. A thread may have zero or more 'blip' elements as children.
+</p>
+<a name="anchor17"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.1.4"></a><h3>8.3.1.4.&nbsp;
+peer</h3>
+
+<p>
+A peer element has an &quot;id&quot; attribute. The &quot;id&quot; attribute value is the id of a
+data document. The identified data document is not a blip or conversation
+manifest document.
+</p>
+<a name="anchor18"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.2"></a><h3>8.3.2.&nbsp;
+Private Replies</h3>
+
+<p>
+Private replies are represented as distinct wavelets with their
+own conversation manifest containing a reference to the parent
+conversation wavelet. Sub-conversations reference the parent
+conversation's manifest document with a (wavelet-id, blip-id,
+location, version) tuple referred to as an anchor. This tuple
+refers to a parent blip by naming the replied-to wavelet and
+blip. The location and version attributes refer
+to the corresponding blip element in the replied-to
+conversation's manifest document at some previous version. This
+ensures the information is still present if the parent blip is
+deleted.
+</p>
+<p>
+An inline private reply also references an anchor point in the
+replied-to blip at a selected version. A forthcoming mechanism
+will allow clients to request a server to transform a location
+to the current version for rendering.
+</p>
+<p>
+This representation prevents leakage of the existence of the
+private reply to participants who cannot access it. Note that
+this structure still leaks the existence of the parent
+conversation to the private reply.
+</p>
+<p>
+The anchoring tuple is represented as a set of optional attributes on the
+conversation tag of the conversation manifest document.
+</p>
+<a name="anchor19"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.3.3"></a><h3>8.3.3.&nbsp;
+Examples</h3>
+
+<p>
+A root wavelet has no anchoring information.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation&gt;&lt;/conversation&gt;</pre></div>
+<p>
+A non-inline private reply wavelet, referencing a blip in the
+conversation manifest document. The sort attribute determines
+sibling wavelet sort order by lexicographic value order.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation
+   sort="p"
+   anchorWavelet="conv+root"
+   anchorBlip="b+123"
+   anchorManifestOffset="45"
+   anchorVersion="7436" &gt;
+&lt;/conversation&gt;</pre></div>
+<p>
+An inline private reply, also has an anchor offset
+referring to the replied-to blip.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation
+   sort="p"
+   anchorWavelet="conv+root"
+   anchorBlip="b+123"
+   anchorManifestOffset="45"
+   anchorVersion="7436"
+   anchorOffset="784"&gt;
+&lt;/conversation&gt;</pre></div>
+<a name="anchor20"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4"></a><h3>8.4.&nbsp;
+Blip Document</h3>
+
+<p>
+A blip document is distinguished by having a document id
+that begins with the namespace 'b'.
+</p>
+<p>
+A simple blip document.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="me@gwave.com"&gt;&lt;/contributor&gt;
+&lt;contributor name="you@gwave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;The quick brown fox...
+&lt;/body&gt;</pre></div>
+<p>
+A more complex blip document.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="me@gwave.com"&gt;&lt;/contributor&gt;
+&lt;contributor name="you@gwave.com"&gt;&lt;/contributor&gt;
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;The quick brown fox
+    &lt;line&gt;&lt;/line&gt;Jumped over
+    &lt;line&gt;&lt;/line&gt;the lazy dog.
+    &lt;image attachment="a+sadkfd"&gt;
+        &lt;caption&gt;A lazy dog.&lt;/caption&gt;
+    &lt;/image&gt;
+&lt;/body&gt;</pre></div>
+<a name="anchor21"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.1"></a><h3>8.4.1.&nbsp;
+Schema Design</h3>
+
+<p>
+The documents representing messages (blips) conform to a very simple schema.
+</p>
+<p>
+The blip document schema expresses a structured representation of the message
+with little presentation logic, and is mostly not web-specific. For example,
+most rich-text styling is represented in annotations. This representation
+behaves in a much more natural way when two clients concurrently edit
+overlapping regions of text. The document representation may not correspond to
+the most natural semantic interpretation, but is designed to behave most
+naturally under operational transformation.
+</p>
+<a name="anchor22"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.2"></a><h3>8.4.2.&nbsp;
+Elements</h3>
+
+<p>
+The allowed elements of a blip are:
+</p>
+<a name="anchor23"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.2.1"></a><h3>8.4.2.1.&nbsp;
+contributor</h3>
+
+<p>
+Each contributor element has a single
+required attribute 'name' with the id of a participant who
+has contributed to the blip content. If there are duplicates
+(which may occur with concurrent editing) then the first is
+the canonical contributor and the others should be ignored or
+removed. Individual contributors are responsible for adding themselves
+to this list. This allows for &quot;trivial&quot; contributors such as
+annotators to voluntarily omit themselves. Absolute
+contributor information may be recovered from the operation
+history if required.
+</p>
+<a name="anchor24"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.2.2"></a><h3>8.4.2.2.&nbsp;
+body</h3>
+
+<p>
+The displayed content of the blip. The body element may
+contain text and 'line' elements. The first child of the body
+element must be a line element. If a document contains two
+body elements then the first is the canonical body and others
+should be ignored or removed.
+</p>
+<a name="anchor25"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.2.3"></a><h3>8.4.2.3.&nbsp;
+line</h3>
+
+<p>
+The displayed textual content of a blip
+is broken up into lines. Each line is preceded with a &quot;line&quot;
+element. The line element must be an empty element, that is,
+having no other items between the begin element and the end
+element. The line element may have the following attributes:
+</p>
+<p>
+</p>
+<blockquote class="text"><dl>
+<dt>t</dt>
+<dd>
+The type of the line. Allowed values
+are 'h1', 'h2', 'h3', 'h4', 'h5', and 'li', where h[1-5] is a
+heading and 'li' an item in a list.
+</dd>
+<dt>i</dt>
+<dd>
+The indentation level (0,1,2,...). This attribute is only
+meaningful when applied to lines of type t=&quot;li&quot;.
+</dd>
+<dt>a</dt>
+<dd>
+The alignment of the text in the line. (a, m, r, j)
+a = align left = centered = alighted right = justified
+</dd>
+<dt>d</dt>
+<dd>
+The display direction of the line
+l = left to right, r = right to left
+</dd>
+</dl></blockquote><p>
+
+</p>
+<a name="anchor26"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.2.4"></a><h3>8.4.2.4.&nbsp;
+image</h3>
+
+<p>
+The image element represents an attached image embedded in
+the blip. The image element has an 'attachment' attribute
+that is the id of that attachment's data document.
+Attachments and attachment documents are described in the
+Google Wave Attachments whitepaper.
+</p>
+<a name="anchor27"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.2.5"></a><h3>8.4.2.5.&nbsp;
+reply</h3>
+
+<p>
+The reply element denotes the location of an inline reply
+thread. It has an attribute 'id' that contains the id of the
+thread whose location it marks. Thus an inline reply's inline
+location is marked with a reply element.
+</p>
+<a name="anchor28"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.3"></a><h3>8.4.3.&nbsp;
+Annotations</h3>
+
+<p>
+The following are the allowed annotations allowed in blip
+documents.
+</p>
+<a name="anchor29"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.3.1"></a><h3>8.4.3.1.&nbsp;
+Style</h3>
+
+<p>
+Style annotations control the display of the content in the
+blip. All style annotations have keys that begin with
+&quot;style/&quot;. The allowed values for the style annotations are
+the same as those of the CSS properties of the same name.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+style/backgroundColor
+</li>
+<li>
+style/color
+</li>
+<li>
+style/fontFamily
+</li>
+<li>
+style/fontSize
+</li>
+<li>
+style/fontStyle
+</li>
+<li>
+style/fontWeight
+</li>
+<li>
+style/textDecoration
+</li>
+<li>
+style/verticalAlign
+</li>
+</ul><p>
+
+</p>
+<a name="anchor30"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.3.2"></a><h3>8.4.3.2.&nbsp;
+User</h3>
+
+<p>
+The following annotations refer to a user id
+and a session id. Each client gets its session
+id from the server. Session ids, their
+assignment, and how they are transmitted to a
+client are out of scope for this document. It
+should be noted that to avoid name clashes when
+federating waves the session id should include
+the domain of the server generating them.
+Style annotations control the display of the
+content in the blip.
+</p>
+<p>
+User annotations contain information that is
+specific to each user session. All user
+annotation keys begin with 'user/'.
+</p>
+<p>
+</p>
+<blockquote class="text"><dl>
+<dt>user/d/&lt;session id></dt>
+<dd>
+This annotation covers the entire
+document. The value of the
+annotation is a comma separated
+list of (userid, timestamp [,ime
+composition state]) The timestamp
+is the last time the cursor was
+updated. The timestamp may be used
+by clients to stop dislpaying the
+users carat after a period of
+inactivity.
+</dd>
+<dt>user/r/&lt;session id></dt>
+<dd>
+This annotation represents the
+users selection. That is, the range
+of text with this annotation is
+text that the user has selected. If
+the user does not have any text
+selected then this annotation is
+not present. Note that the
+currently implementation only
+supports a single selection region
+per user. The value of this
+annotation is the user id.
+</dd>
+<dt>user/e/&lt;session id></dt>
+<dd>
+This annotation represents the
+user's selection focus (the &quot;blinky
+bit&quot;). The first point in the range
+of the annotation is the cursor
+location for the users session.
+That is, the cursor is placed
+before the first item in the
+annotation range. This annotation
+always extends from the cursor
+position to the end of the
+document. If this annotation is
+missing then the cursor is placed
+after the last item in the
+document. The value of this
+annotation is the user id.
+</dd>
+</dl></blockquote><p>
+
+</p>
+<a name="anchor31"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8.4.3.3"></a><h3>8.4.3.3.&nbsp;
+Links</h3>
+
+<p>
+Link annotations define links to
+other resources. All link annotations have keys that begin
+with &quot;link/&quot;.
+</p>
+<p>
+</p>
+<blockquote class="text"><dl>
+<dt>link/manual</dt>
+<dd>
+A manually created link. A URI or IRI? is the only valid
+value for this annotation.
+</dd>
+<dt>link/auto</dt>
+<dd>
+A link created automatically by some linkifying process. Such annotations have a
+lower precedence than manual links. A URI is the only valid
+value for this annotation.
+</dd>
+<dt>link/wave</dt>
+<dd>
+A link to another wave. Wave ids are the only valid values
+for this annotation.
+</dd>
+</dl></blockquote><p>
+
+</p>
+<a name="anchor32"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.9"></a><h3>9.&nbsp;
+Example Conversations</h3>
+
+<a name="anchor33"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.9.1"></a><h3>9.1.&nbsp;
+Simple Replies</h3>
+
+<p>
+This is an example conversation showing how a conversation is
+represented by this model. This conversation consists of two
+blips and a conversation manifest document in one wavelet.
+</p>
+<p>
+The conversation manifest has an id of &quot;conversation&quot; and is:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation&gt;
+    &lt;blip id="b+a"&gt;
+        &lt;thread id="r1"&gt;
+            &lt;blip id="b+b"&gt;&lt;/blip&gt;
+            &lt;blip id="b+c"&gt;&lt;/blip&gt;
+        &lt;/thread&gt;
+    &lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<p>
+There is a blip with an id of &quot;b+a&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;There is a theory which states
+    &lt;line&gt;&lt;/line&gt;that if ever anybody
+    &lt;line&gt;&lt;/line&gt;discovers exactly what the
+    &lt;line&gt;&lt;/line&gt;Universe is for and why it
+    &lt;line&gt;&lt;/line&gt;is here, it will instantly
+    &lt;line&gt;&lt;/line&gt;disappear and be replaced by
+    &lt;line&gt;&lt;/line&gt;something even more bizarre
+    &lt;line&gt;&lt;/line&gt;and inexplicable. There is another
+    &lt;line&gt;&lt;/line&gt;theory which states that this
+    &lt;line&gt;&lt;/line&gt;has already happened.
+&lt;/body&gt;</pre></div>
+<p>
+A reply blip with an id of &quot;b+b&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="barney@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;Isn't that a quote from Douglas Adams?
+&lt;/body&gt;</pre></div>
+<p>
+And a reply blip with an id of &quot;b+c&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;Yes it is.
+&lt;/body&gt;</pre></div>
+<a name="anchor34"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.9.1.1"></a><h3>9.1.1.&nbsp;
+In-line Replies</h3>
+
+<p>
+The above shows the conversation with non-inline replies.
+Here is the same conversation, but the replies are in-line.
+This conversation will display differently from the above
+conversation.
+</p>
+<p>
+The conversation manifest has an id of &quot;conversation&quot; and is:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation&gt;
+    &lt;blip id="b+a"&gt;
+        &lt;thread inline="true" id="r1"&gt;
+            &lt;blip id="b+b"&gt;&lt;/blip&gt;
+            &lt;blip id="b+c"&gt;&lt;/blip&gt;
+        &lt;/thread&gt;
+    &lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<p>
+There is a blip with an id of &quot;b+a&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;There is a theory which states
+    &lt;line&gt;&lt;/line&gt;that if ever&lt;reply id='aF8j_s'&gt;&lt;/reply&gt; anybody
+    &lt;line&gt;&lt;/line&gt;discovers exactly what the
+    &lt;line&gt;&lt;/line&gt;Universe is for and why it
+    &lt;line&gt;&lt;/line&gt;is here, it will instantly
+    &lt;line&gt;&lt;/line&gt;disappear and be replaced by
+    &lt;line&gt;&lt;/line&gt;something even more bizarre
+    &lt;line&gt;&lt;/line&gt;and inexplicable. There is another
+    &lt;line&gt;&lt;/line&gt;theory which states that this
+    &lt;line&gt;&lt;/line&gt;has already happened.
+&lt;/body&gt;</pre></div>
+<p>
+Note the addition of the reply element which
+anchors the in-line reply.
+</p>
+<p>
+A reply blip with an id of &quot;b+b&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="barney@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;Isn't that a quote from Douglas Adams?
+&lt;/body&gt;</pre></div>
+<p>
+And a reply blip with an id of &quot;b+c&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;Yes it is.
+&lt;/body&gt;</pre></div>
+<a name="anchor35"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.9.1.1.1"></a><h3>9.1.1.1.&nbsp;
+Private In-line Replies</h3>
+
+<p>
+The above shows the conversation with inline replies. Here is the same
+conversation, but the replies are private in-line. This conversation will
+display differently from the above two conversations.
+</p>
+<p>
+The conversation manifest has an id of &quot;conversation&quot; and
+is an contained in the wavelet with an id of 'wave+a'.
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation&gt;
+    &lt;blip id="b+a"&gt;&lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<p>
+There is a blip with an id of &quot;b+a&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;There is a theory which states
+    &lt;line&gt;&lt;/line&gt;that if ever anybody
+    &lt;line&gt;&lt;/line&gt;discovers exactly what the
+    &lt;line&gt;&lt;/line&gt;Universe is for and why it
+    &lt;line&gt;&lt;/line&gt;is here, it will instantly
+    &lt;line&gt;&lt;/line&gt;disappear and be replaced by
+    &lt;line&gt;&lt;/line&gt;something even more bizarre
+    &lt;line&gt;&lt;/line&gt;and inexplicable. There is another
+    &lt;line&gt;&lt;/line&gt;theory which states that this
+    &lt;line&gt;&lt;/line&gt;has already happened.
+&lt;/body&gt;</pre></div>
+<p>
+The replies are contained in another wavelet with an id of 'wave+b'.
+</p>
+<p>
+Being a wavelet it has its own conversation manifest:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;conversation
+    sort="r"
+    anchorWavelet="wave+a"
+    anchorBlip="b+a"
+    anchorManifestOffset="1"
+    anchorVersion="12"
+    anchorOffset="10"&gt;
+   &lt;blip id="b+b"&gt;&lt;/blip&gt;
+   &lt;blip id="b+c"&gt;&lt;/blip&gt;
+&lt;/conversation&gt;</pre></div>
+<p>
+The reply blips are in the 'wave+b' wavelet. There is the reply blip with an id of &quot;b+b&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="barney@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;Isn't that a quote from Douglas Adams?
+&lt;/body&gt;</pre></div>
+<p>
+And a reply blip with an id of &quot;b+c&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;contributor name="fred@acmewave.com"&gt;&lt;/contributor&gt;
+&lt;body&gt;
+    &lt;line&gt;&lt;/line&gt;Yes it is.
+&lt;/body&gt;</pre></div>
+<a name="anchor36"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.10"></a><h3>10.&nbsp;
+Display</h3>
+
+<p>
+The structure and relationships between wavelets, conversation manifests
+and blips defines a logical structure for conversations. What follows is a
+description of how the content and structure defined is presented in a
+user-interface, fully realizing that implementing wave on different clients
+will impose different constraints. The below isn't meant to constrain client
+implementations, but to give guidance on providing a consistent user
+experience.
+</p>
+<p>
+A conversation should be displayed as a single unit and
+may reference more than one wavelet. A wavelet is
+considered to be in a conversation view if it has a wavelet
+id in the &quot;conv&quot; namespace and the user has permission to
+access the wavelet. Wavelets other than the root in a
+conversation view should reference another via an
+anchorWavelet attribute.
+</p>
+<p>
+Blips are displayed in the order that they
+appear in the conversation manifest, going from top to bottom. Blip documents
+in a wavelet that are not referenced in the conversation manifest should not be
+displayed. Threads are indented from the content of their parent blip unless
+they have a property value of inline=true. The location of private replies is
+determined by the &quot;anchorWavelet&quot;, &quot;anchorManifestOffset&quot;, &quot;anchorVersion&quot;,
+&quot;anchorBlip&quot;, and &quot;anchorOffset&quot; properties of the conversation element. Note
+that the anchor position is given for version at which the private reply was
+created, and is recorded in the &quot;anchorVersion&quot; attribute. The proper display
+location for the private reply will depend upon keeping track of how that
+historical position moves as documents are mutated.
+</p>
+<p>
+The location of
+non-private inline replies is denoted with a reply element in the thread and
+should be displayed indented at that location.
+</p>
+<p>
+The display of private
+inline replies should include an indication that it is private, such as
+displaying the participants for that wavelet, along with the content of the
+sub-conversation.
+</p>
+<a name="anchor37"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.11"></a><h3>11.&nbsp;
+Mechanisms</h3>
+
+<p>
+This section describes some mechanisms for changing the conversation
+structure. Additional mechanisms remain to be defined. In addition, the
+interactions of concurrent modifications have yet to be detailed.
+</p>
+<a name="anchor38"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.11.1"></a><h3>11.1.&nbsp;
+Creating a new blip</h3>
+
+<p>
+To add a new blip to a thread an operation is sent to
+insert a blip element (with a unique id) to the thread in the conversation
+manifest. The added blip document may or may not be empty
+</p>
+<a name="anchor39"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.11.2"></a><h3>11.2.&nbsp;
+Creating a reply thread</h3>
+
+<p>
+To add a new thread an operation is sent to insert a thread
+element (with a unique id) to the replied-to blip element in the conversation
+manifest. If the thread is an inline reply an anchor element must first be
+inserted in the replied to blip.
+</p>
+<a name="anchor40"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.11.3"></a><h3>11.3.&nbsp;
+Deleting a blip</h3>
+
+<p>
+Deleting a blip involves deleting the blip, any inline replies to the blip, and
+(optionally) any non-inline replies to the blip. This mechanism deletes only
+inline replies.
+</p>
+<p>
+A blip is deleted by sending mutations that:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+Delete all subordinate inline threads by:
+- Deleting all blips in the thread
+- Removing the thread element from the conversation manifest
+</li>
+<li>
+Transform the blip's document to an empty document
+</li>
+<li>
+Set the &quot;deleted&quot; attribute value to 'true' on the blip's conversation
+manifest element if the blip has non-inline replies, else deletes the element
+entirely.
+</li>
+</ul><p>
+
+</p>
+<p>
+After a blip is deleted, non-inline replies to that blip are still nested
+within their parent in the conversation manifest. They may be rendered as
+children of a deleted blip. Future restructure operations may allow the
+children to be re-parented. If a deleted blip has no remaining replies then the
+blip entry should be deleted from the conversation manifest document. If the
+deleted blip was the last in a thread then the thread entry should be removed
+from the manifest document.
+</p>
+<p>
+Edits that occur concurrently with a blip
+deletion are nullified in transform. Concurrently created replies to a deleted
+blip are deleted if the blip has no replies, but survive if the blip element
+remains (with &quot;deleted&quot; set to &quot;true&quot;).
+</p>
+<a name="anchor41"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.12"></a><h3>12.&nbsp;
+References</h3>
+
+<a name="rfc.references1"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>13.&nbsp;References</h3>
+<table width="99%" border="0">
+<tr><td class="author-text" valign="top"><a name="RFC2119">[RFC2119]</a></td>
+<td class="author-text"><a href="mailto:sob@harvard.edu">Bradner, S.</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>,&rdquo; BCP&nbsp;14, RFC&nbsp;2119, March&nbsp;1997 (<a href="ftp://ftp.isi.edu/in-notes/rfc2119.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc2119.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc2119.xml">XML</a>).</td></tr>
+</table>
+
+<a name="rfc.authors"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>Authors' Addresses</h3>
+<table width="99%" border="0" cellpadding="0" cellspacing="0">
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Joe Gregorio</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:jcgregorio@google.com">jcgregorio@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Alex North</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:anorth@google.com">anorth@google.com</a></td></tr>
+</table>
+</body></html>

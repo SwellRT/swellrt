@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with a duplicate element -->
+<schema>
+  <definition name="test">
+    <element name="element1"/>
+    <element name="element1"/>
+  </definition>
+  <root name="test"/>
+</schema>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+  <inherits name="com.google.common.base.Base"/>
+  <inherits name='com.google.gwt.user.User'/>
+  <inherits name="com.google.gwt.event.EventBase"/>
+
+  <inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
+
+  <inherits name='com.glines.socketio.client.Client'/>
+  <inherits name='com.google.gwt.json.JSON'/>
+  <inherits name='com.google.gwt.websockets.WebSockets'/>
+
+  <inherits name='org.waveprotocol.wave.client.Client'/>
+  <inherits name='org.waveprotocol.wave.client.editor.Editor'/>
+  <inherits name='org.waveprotocol.wave.client.gadget.Gadget'/>
+  <inherits name='org.waveprotocol.wave.client.util.ClientFlags'/>
+  <inherits name='org.waveprotocol.wave.model.Model'/>
+  <inherits name="org.waveprotocol.wave.model.account.Account"/>
+  <inherits name='org.waveprotocol.wave.model.conversation.Conversation'/>
+
+  <inherits name="org.waveprotocol.box.common.Common"/>
+  <inherits name='org.waveprotocol.box.common.comms.WaveClientRpc'/>
+  <inherits name='org.waveprotocol.box.search.Search'/>
+  <inherits name='org.waveprotocol.box.profile.Profile'/>
+  <inherits name='org.waveprotocol.box.webclient.common.communication.Communication'/>
+  <!-- TODO(hearnden): delete webclient.common.  It's not common to anything. -->
+  <inherits name='org.waveprotocol.box.webclient.common.Common'/>
+  <inherits name='org.waveprotocol.box.webclient.search.Search'/>
+  <inherits name='org.waveprotocol.box.webclient.profile.Profile'/>
+  <inherits name='org.waveprotocol.box.webclient.widget.error.Error'/>
+  <inherits name='org.waveprotocol.box.webclient.widget.frame.Frame'/>
+  <inherits name='org.waveprotocol.box.webclient.widget.loading.Loading'/>
+
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/>
+
+  <set-configuration-property name="CssResource.obfuscationPrefix" value="SWC" />
+
+</module>

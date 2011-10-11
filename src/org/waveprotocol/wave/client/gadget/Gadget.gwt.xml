@@ -1,0 +1,16 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <inherits name="com.google.gwt.json.JSON" />
+  <inherits name="org.waveprotocol.wave.client.account.Account" />
+  <inherits name="org.waveprotocol.wave.client.debug.logger.Logger" />
+  <inherits name="org.waveprotocol.wave.client.editor.Editor" />
+  <inherits name="org.waveprotocol.wave.client.scheduler.Scheduler" />
+  <inherits name="org.waveprotocol.wave.client.widget.generic.Generic" />
+  <inherits name="org.waveprotocol.wave.client.widget.menu.Menu" />
+  <inherits name="org.waveprotocol.wave.model.Model" />
+  <inherits name="org.waveprotocol.wave.model.gadget.Gadget" />
+  <inherits name="org.waveprotocol.wave.model.schema.supplement.Supplement" />
+  <source path="" />
+  <source path="renderer" />
+
+</module>

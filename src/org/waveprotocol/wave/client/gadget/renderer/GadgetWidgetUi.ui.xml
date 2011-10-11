@@ -1,0 +1,49 @@
+<!--
+  UI binder for Gadget Container.
+  Author: vadimg@google.com (Vadim Gerasimov)
+-->
+<ui:UiBinder
+  xmlns:ui='urn:ui:com.google.gwt.uibinder'
+  xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+  xmlns:wb='urn:import:org.waveprotocol.wave.client.widget.common'
+>
+  <ui:with
+    field='res'
+    type='org.waveprotocol.wave.client.gadget.renderer.GadgetWidgetUi.Resources'
+  />
+  <wb:ClickableDivPanel
+    ui:field='enclosingBox'
+    addStyleNames='{res.css.panel}'
+  >
+    <!-- Gadget title label. -->
+    <gwt:Label ui:field='titleLabel' addStyleNames='{res.css.title}'/>
+    <wb:ClickableDivPanel
+      ui:field='gadgetFrame'
+      addStyleNames='{res.css.gadgetFrame}'
+    >
+      <!-- Main gadget iframe. -->
+      <wb:ClickableDivPanel
+        ui:field='iframeDiv'
+        addStyleNames='{res.css.iframeDiv}'
+      />
+      <!-- Mouse-over overlay menu. -->
+      <wb:ClickableDivPanel
+        ui:field='metaButtons'
+        addStyleNames='{res.css.metaButtons}'
+      >
+        <wb:ClickableDivPanel
+          ui:field='metaLeft'
+          addStyleNames='{res.css.metaLeft}'
+        />
+        <wb:ClickableDivPanel
+          ui:field='metaButtonsPanel'
+          addStyleNames='{res.css.metaButtonsPanel}'
+        />
+        <wb:ClickableDivPanel
+          ui:field='metaRight'
+          addStyleNames='{res.css.metaRight}'
+        />
+      </wb:ClickableDivPanel>
+    </wb:ClickableDivPanel>
+  </wb:ClickableDivPanel>
+</ui:UiBinder>

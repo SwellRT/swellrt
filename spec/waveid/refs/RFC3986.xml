@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<reference anchor='RFC3986'>
+
+<front>
+<title abbrev='URI Generic Syntax'>Uniform Resource Identifier (URI): Generic Syntax</title>
+<author initials='T.' surname='Berners-Lee' fullname='Tim Berners-Lee'>
+<organization abbrev='W3C/MIT'>World Wide Web Consortium</organization>
+<address>
+<postal>
+<street>Massachusetts Institute of Technology</street>
+<street>77 Massachusetts Avenue</street>
+<city>Cambridge</city>
+<region>MA</region>
+<code>02139</code>
+<country>USA</country></postal>
+<phone>+1-617-253-5702</phone>
+<facsimile>+1-617-258-5999</facsimile>
+<email>timbl@w3.org</email>
+<uri>http://www.w3.org/People/Berners-Lee/</uri></address></author>
+<author initials='R.' surname='Fielding' fullname='Roy T. Fielding'>
+<organization abbrev='Day Software'>Day Software</organization>
+<address>
+<postal>
+<street>5251 California Ave., Suite 110</street>
+<city>Irvine</city>
+<region>CA</region>
+<code>92617</code>
+<country>USA</country></postal>
+<phone>+1-949-679-2960</phone>
+<facsimile>+1-949-679-2972</facsimile>
+<email>fielding@gbiv.com</email>
+<uri>http://roy.gbiv.com/</uri></address></author>
+<author initials='L.' surname='Masinter' fullname='Larry Masinter'>
+<organization abbrev='Adobe Systems'>Adobe Systems Incorporated</organization>
+<address>
+<postal>
+<street>345 Park Ave</street>
+<city>San Jose</city>
+<region>CA</region>
+<code>95110</code>
+<country>USA</country></postal>
+<phone>+1-408-536-3024</phone>
+<email>LMM@acm.org</email>
+<uri>http://larry.masinter.net/</uri></address></author>
+<date year='2005' month='January' />
+<area>Applications</area>
+<keyword>uniform resource identifier</keyword>
+<keyword>URI</keyword>
+<keyword>URL</keyword>
+<keyword>URN</keyword>
+<keyword>WWW</keyword>
+<keyword>resource</keyword>
+<abstract>
+<t>
+A Uniform Resource Identifier (URI) is a compact sequence of characters
+that identifies an abstract or physical resource.  This specification
+defines the generic URI syntax and a process for resolving URI references
+that might be in relative form, along with guidelines and security
+considerations for the use of URIs on the Internet.
+The URI syntax defines a grammar that is a superset of all valid URIs,
+allowing an implementation to parse the common components of a URI
+reference without knowing the scheme-specific requirements of every
+possible identifier.  This specification does not define a generative
+grammar for URIs; that task is performed by the individual
+specifications of each URI scheme.
+</t></abstract></front>
+
+<seriesInfo name='STD' value='66' />
+<seriesInfo name='RFC' value='3986' />
+<format type='TXT' octets='141811' target='http://www.rfc-editor.org/rfc/rfc3986.txt' />
+<format type='HTML' octets='213584' target='http://xml.resource.org/public/rfc/html/rfc3986.html' />
+<format type='XML' octets='163534' target='http://xml.resource.org/public/rfc/xml/rfc3986.xml' />
+</reference>

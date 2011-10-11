@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- A schema featuring top-level character data -->
+<schema>
+  <definition name="test">
+    <text characters="abcd" type="whitelist"/>
+  </definition>
+  <root name="test"/>
+</schema>

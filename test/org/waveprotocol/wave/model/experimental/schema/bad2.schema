@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with an undefined root -->
+<schema>
+  <definition name="test"/>
+  <root name="undefined"/>
+</schema>

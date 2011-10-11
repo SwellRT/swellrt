@@ -1,0 +1,434 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head><title>Google Wave Identifiers</title>
+<meta http-equiv="Expires" content="Fri, 18 Jun 2010 14:13:12 +0000">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="Google Wave Identifiers">
+<meta name="generator" content="xml2rfc v1.33 (http://xml.resource.org/)">
+<style type='text/css'><!--
+        body {
+                font-family: verdana, charcoal, helvetica, arial, sans-serif;
+                font-size: small; color: #000; background-color: #FFF;
+                margin: 2em;
+        }
+        h1, h2, h3, h4, h5, h6 {
+                font-family: helvetica, monaco, "MS Sans Serif", arial, sans-serif;
+                font-weight: bold; font-style: normal;
+        }
+        h1 { color: #900; background-color: transparent; text-align: right; }
+        h3 { color: #333; background-color: transparent; }
+
+        td.RFCbug {
+                font-size: x-small; text-decoration: none;
+                width: 30px; height: 30px; padding-top: 2px;
+                text-align: justify; vertical-align: middle;
+                background-color: #000;
+        }
+        td.RFCbug span.RFC {
+                font-family: monaco, charcoal, geneva, "MS Sans Serif", helvetica, verdana, sans-serif;
+                font-weight: bold; color: #666;
+        }
+        td.RFCbug span.hotText {
+                font-family: charcoal, monaco, geneva, "MS Sans Serif", helvetica, verdana, sans-serif;
+                font-weight: normal; text-align: center; color: #FFF;
+        }
+
+        table.TOCbug { width: 30px; height: 15px; }
+        td.TOCbug {
+                text-align: center; width: 30px; height: 15px;
+                color: #FFF; background-color: #900;
+        }
+        td.TOCbug a {
+                font-family: monaco, charcoal, geneva, "MS Sans Serif", helvetica, sans-serif;
+                font-weight: bold; font-size: x-small; text-decoration: none;
+                color: #FFF; background-color: transparent;
+        }
+
+        td.header {
+                font-family: arial, helvetica, sans-serif; font-size: x-small;
+                vertical-align: top; width: 33%;
+                color: #FFF; background-color: #666;
+        }
+        td.author { font-weight: bold; font-size: x-small; margin-left: 4em; }
+        td.author-text { font-size: x-small; }
+
+        /* info code from SantaKlauss at http://www.madaboutstyle.com/tooltip2.html */
+        a.info {
+                /* This is the key. */
+                position: relative;
+                z-index: 24;
+                text-decoration: none;
+        }
+        a.info:hover {
+                z-index: 25;
+                color: #FFF; background-color: #900;
+        }
+        a.info span { display: none; }
+        a.info:hover span.info {
+                /* The span will display just on :hover state. */
+                display: block;
+                position: absolute;
+                font-size: smaller;
+                top: 2em; left: -5em; width: 15em;
+                padding: 2px; border: 1px solid #333;
+                color: #900; background-color: #EEE;
+                text-align: left;
+        }
+
+        a { font-weight: bold; }
+        a:link    { color: #900; background-color: transparent; }
+        a:visited { color: #633; background-color: transparent; }
+        a:active  { color: #633; background-color: transparent; }
+
+        p { margin-left: 2em; margin-right: 2em; }
+        p.copyright { font-size: x-small; }
+        p.toc { font-size: small; font-weight: bold; margin-left: 3em; }
+        table.toc { margin: 0 0 0 3em; padding: 0; border: 0; vertical-align: text-top; }
+        td.toc { font-size: small; font-weight: bold; vertical-align: text-top; }
+
+        ol.text { margin-left: 2em; margin-right: 2em; }
+        ul.text { margin-left: 2em; margin-right: 2em; }
+        li      { margin-left: 3em; }
+
+        /* RFC-2629 <spanx>s and <artwork>s. */
+        em     { font-style: italic; }
+        strong { font-weight: bold; }
+        dfn    { font-weight: bold; font-style: normal; }
+        cite   { font-weight: normal; font-style: normal; }
+        tt     { color: #036; }
+        tt, pre, pre dfn, pre em, pre cite, pre span {
+                font-family: "Courier New", Courier, monospace; font-size: small;
+        }
+        pre {
+                text-align: left; padding: 4px;
+                color: #000; background-color: #CCC;
+        }
+        pre dfn  { color: #900; }
+        pre em   { color: #66F; background-color: #FFC; font-weight: normal; }
+        pre .key { color: #33C; font-weight: bold; }
+        pre .id  { color: #900; }
+        pre .str { color: #000; background-color: #CFF; }
+        pre .val { color: #066; }
+        pre .rep { color: #909; }
+        pre .oth { color: #000; background-color: #FCF; }
+        pre .err { background-color: #FCC; }
+
+        /* RFC-2629 <texttable>s. */
+        table.all, table.full, table.headers, table.none {
+                font-size: small; text-align: center; border-width: 2px;
+                vertical-align: top; border-collapse: collapse;
+        }
+        table.all, table.full { border-style: solid; border-color: black; }
+        table.headers, table.none { border-style: none; }
+        th {
+                font-weight: bold; border-color: black;
+                border-width: 2px 2px 3px 2px;
+        }
+        table.all th, table.full th { border-style: solid; }
+        table.headers th { border-style: none none solid none; }
+        table.none th { border-style: none; }
+        table.all td {
+                border-style: solid; border-color: #333;
+                border-width: 1px 2px;
+        }
+        table.full td, table.headers td, table.none td { border-style: none; }
+
+        hr { height: 1px; }
+        hr.insert {
+                width: 80%; border-style: none; border-width: 0;
+                color: #CCC; background-color: #CCC;
+        }
+--></style>
+</head>
+<body>
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<table summary="layout" width="66%" border="0" cellpadding="0" cellspacing="0"><tr><td><table summary="layout" width="100%" border="0" cellpadding="2" cellspacing="1">
+<tr><td class="header"> </td><td class="header">J. Gregorio</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">S. Lassen</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">A. North</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">Google, Inc</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">Mar 2010</td></tr>
+</table></td></tr></table>
+<h1><br />Google Wave Identifiers</h1>
+
+<h3>Abstract</h3>
+
+<p>
+Google Wave is a communication and collaboration platform based on hosted
+conversations, called waves. A wave comprises a set of concurrently editable
+structured documents and supports real-time sharing between multiple
+participants. This document is one in a larger set of specifications for Google
+Wave. This specification describes Google Wave identifiers, which are used
+to identify waves, wavelets, and documents.
+</p><a name="toc"></a><br /><hr />
+<h3>Table of Contents</h3>
+<p class="toc">
+<a href="#anchor1">1.</a>&nbsp;
+Introduction<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor2">1.1.</a>&nbsp;
+Document Status<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor3">1.2.</a>&nbsp;
+Terminology<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor4">1.3.</a>&nbsp;
+Editorial Notes<br />
+<a href="#anchor5">2.</a>&nbsp;
+Overview<br />
+<a href="#anchor6">3.</a>&nbsp;
+Identifier Syntax<br />
+<a href="#anchor7">4.</a>&nbsp;
+Identifier Constraints<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor8">4.1.</a>&nbsp;
+Local Identifier<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor9">4.2.</a>&nbsp;
+Wave Identifier<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor10">4.3.</a>&nbsp;
+Wavelet Identifier<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor11">4.4.</a>&nbsp;
+Wavelet Name<br />
+<a href="#anchor12">5.</a>&nbsp;
+References<br />
+<a href="#rfc.references1">6.</a>&nbsp;
+References<br />
+<a href="#rfc.authors">&#167;</a>&nbsp;
+Authors' Addresses<br />
+</p>
+<br clear="all" />
+
+<a name="anchor1"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1"></a><h3>1.&nbsp;
+Introduction</h3>
+
+<a name="anchor2"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.1"></a><h3>1.1.&nbsp;
+Document Status</h3>
+
+<p>
+This document represents work in progress.  It omits details that we
+are unable to capture at this point and we expect parts of the
+protocol to change.  Please also note that while we revise the
+protocol and white papers, some transient inconsistencies will occur.
+</p>
+<p>
+This document is one in a larger set of specifications for Google
+Wave; see <a href='http://www.waveprotocol.org/draft-protocol-specs'>http://www.waveprotocol.org/draft-protocol-specs</a>.
+</p>
+<a name="anchor3"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.2"></a><h3>1.2.&nbsp;
+Terminology</h3>
+
+<p>
+The capitalized key words &quot;MUST&quot;, &quot;MUST NOT&quot;,
+&quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;,
+&quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and
+&quot;OPTIONAL&quot; in this document are to be
+interpreted as described in <a class='info' href='#RFC2119'>[RFC2119]<span> (</span><span class='info'>Bradner, S., &ldquo;Key words for use in RFCs to Indicate Requirement Levels,&rdquo; March&nbsp;1997.</span><span>)</span></a>
+.
+</p>
+<p>
+This specification uses the Augmented Backus-Naur Form (ABNF)
+notation of <a class='info' href='#RFC5234'>[RFC5234]<span> (</span><span class='info'>Crocker, D. and P. Overell, &ldquo;Augmented BNF for Syntax Specifications: ABNF,&rdquo; January&nbsp;2008.</span><span>)</span></a>
+. The following ABNF rules are imported from
+the normative references <a class='info' href='#RFC5234'>[RFC5234]<span> (</span><span class='info'>Crocker, D. and P. Overell, &ldquo;Augmented BNF for Syntax Specifications: ABNF,&rdquo; January&nbsp;2008.</span><span>)</span></a>
+, <a class='info' href='#RFC3986'>[RFC3986]<span> (</span><span class='info'>Berners-Lee, T., Fielding, R., and L. Masinter, &ldquo;Uniform Resource Identifier (URI): Generic Syntax,&rdquo; January&nbsp;2005.</span><span>)</span></a>
+, and <a class='info' href='#RFC3987'>[RFC3987]<span> (</span><span class='info'>Duerst, M. and M. Suignard, &ldquo;Internationalized Resource Identifiers (IRIs),&rdquo; January&nbsp;2005.</span><span>)</span></a>
+.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+pct-encoded    =  "%" HEXDIG HEXDIG
+unreserved     =  ALPHA / DIGIT / "-" / "." / "_" / "~"
+reserved       =  gen-delims / sub-delims
+gen-delims     =  ":" / "/" / "?" / "#" / "[" / "]" / "@"
+sub-delims     =  "!" / "$" / "&amp;" / "'" / "(" / ")"
+               /  "*" / "+" / "," / ";" / "="
+
+iunreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
+ucschar        =  %xA0-D7FF / %xF900-FDCF / %xFDF0-FFEF
+               /  %x10000-1FFFD / %x20000-2FFFD / %x30000-3FFFD
+               /  %x40000-4FFFD / %x50000-5FFFD / %x60000-6FFFD
+               /  %x70000-7FFFD / %x80000-8FFFD / %x90000-9FFFD
+               /  %xA0000-AFFFD / %xB0000-BFFFD / %xC0000-CFFFD
+               /  %xD0000-DFFFD / %xE1000-EFFFD
+ireg-name      = *( iunreserved / pct-encoded / sub-delims )</pre></div>
+<a name="anchor4"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.3"></a><h3>1.3.&nbsp;
+Editorial Notes</h3>
+
+<p>
+To provide feedback on this draft join the wave-protocol
+mailing list at
+<a href='http://groups.google.com/group/wave-protocol'>http://groups.google.com/group/wave-protocol</a>
+</p>
+<a name="anchor5"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2"></a><h3>2.&nbsp;
+Overview</h3>
+
+<p>
+A wave identifier provides a simple and extensible means for identifying parts
+of a wave. This goal of this specification and syntax for wave identifiers is
+to construct identifiers that may be used as parts of a URI or as a URL query
+parameter without excessive escaping so that a URI path form is the canonical
+serialisation. In addition, the syntax is designed to accomodate
+internationalized identifiers.
+</p>
+<p>
+In a wave implementation a wave identifier appears on the wire in the
+federation and client/server protocols, and in  addition may be serialized to
+disk. Wave identifiers may be included in the path or query of an HTTP URI, and
+should be structured to meet the conflicting goals of uniqueness and clarity
+when serialized into such URIs.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+http://example.com/waveref/&lt;waveid&gt;
+
+http://example.com/waveref?id=&lt;waveid&gt;
+
+http://example.com/waveref#&lt;waveid&gt;</pre></div>
+<p>
+Note that this draft specification has references to particular documents,
+offsets, and versions in mind, but does not specify them explicitly at this
+time.
+</p>
+<p>
+This specification restricts the allowed character set in a wave id to aid
+construction of clean and readable URI-references.
+</p>
+<a name="anchor6"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3"></a><h3>3.&nbsp;
+Identifier Syntax</h3>
+
+<p>
+A wave identifier is a domain name and a local identifier joined by '/'.
+</p>
+<p>
+The domain name is a unicode string, and may contain international alphanumeric
+characters, as described by the IDNA standard <a class='info' href='#RFC3490'>[RFC3490]<span> (</span><span class='info'>Faltstrom, P., Hoffman, P., and A. Costello, &ldquo;Internationalizing Domain Names in Applications (IDNA),&rdquo; March&nbsp;2003.</span><span>)</span></a>
+. Future version of this
+specification will detail serialization, which depends on context.
+</p>
+<p>
+The local identifier is a non-empty unicode string drawn from the character set:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+lchar       = iunreserved / "+" / "*" / "@"
+localid     = 1*lchar
+waveid      = ireg-name "/" localid</pre></div>
+<p>
+A wavelet identifier is a domain name and a local identifier joined by '/'.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+waveletid = ireg-name "/" localid</pre></div>
+<p>
+A wavelet name is an identifier for a wavelet that includes the wave
+identifier and the wavelet identifier. It is constructed by concatenating the
+two identifiers with a &quot;/&quot;:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+wavename    = waveid "/" waveletid</pre></div>
+<a name="anchor7"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4"></a><h3>4.&nbsp;
+Identifier Constraints</h3>
+
+<p>
+The constructed wave and wavelet identifiers have differing uniqueness
+constraints which are described below.
+</p>
+<a name="anchor8"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4.1"></a><h3>4.1.&nbsp;
+Local Identifier</h3>
+
+<p>
+Local identifiers may be structured by an application, but that structure is
+not specified here.
+</p>
+<a name="anchor9"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4.2"></a><h3>4.2.&nbsp;
+Wave Identifier</h3>
+
+<p>
+For wave identifiers that identify waves, the domain and localid of a wave
+identifier together as a pair MUST be globally unique.
+</p>
+<p>
+Example:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+example.com/w+2cDs_sd</pre></div>
+<a name="anchor10"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4.3"></a><h3>4.3.&nbsp;
+Wavelet Identifier</h3>
+
+<p>
+For identifiers the identify wavelets, the domain and localid of a wavelet
+identifier together MUST be unique within a wave.
+</p>
+<p>
+Examples:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+tūdaliņ.lv/user+töm@tūdaliņ.lv
+
+example.com/prof+hügo@example.com
+
+tūdaliņ.lv/robot+tweety.appspot.com</pre></div>
+<a name="anchor11"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4.4"></a><h3>4.4.&nbsp;
+Wavelet Name</h3>
+
+<p>
+Wavelet names are constructed from wave identifiers and wavelet identifiers
+that meet their individual constraints, and are thus by construction globally unique.
+</p>
+<p>
+Example:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+example.com/w+2cDs_sd/tūdaliņ.lv/user+töm@tūdaliņ.lv</pre></div>
+<a name="anchor12"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.5"></a><h3>5.&nbsp;
+References</h3>
+
+<a name="rfc.references1"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>6.&nbsp;References</h3>
+<table width="99%" border="0">
+<tr><td class="author-text" valign="top"><a name="RFC2119">[RFC2119]</a></td>
+<td class="author-text"><a href="mailto:sob@harvard.edu">Bradner, S.</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>,&rdquo; BCP&nbsp;14, RFC&nbsp;2119, March&nbsp;1997 (<a href="ftp://ftp.isi.edu/in-notes/rfc2119.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc2119.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc2119.xml">XML</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC3490">[RFC3490]</a></td>
+<td class="author-text">Faltstrom, P., Hoffman, P., and A. Costello, &ldquo;<a href="http://tools.ietf.org/html/rfc3490">Internationalizing Domain Names in Applications (IDNA)</a>,&rdquo; RFC&nbsp;3490, March&nbsp;2003 (<a href="http://www.rfc-editor.org/rfc/rfc3490.txt">TXT</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC3986">[RFC3986]</a></td>
+<td class="author-text"><a href="mailto:timbl@w3.org">Berners-Lee, T.</a>, <a href="mailto:fielding@gbiv.com">Fielding, R.</a>, and <a href="mailto:LMM@acm.org">L. Masinter</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc3986">Uniform Resource Identifier (URI): Generic Syntax</a>,&rdquo; STD&nbsp;66, RFC&nbsp;3986, January&nbsp;2005 (<a href="http://www.rfc-editor.org/rfc/rfc3986.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc3986.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc3986.xml">XML</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC3987">[RFC3987]</a></td>
+<td class="author-text">Duerst, M. and M. Suignard, &ldquo;<a href="http://tools.ietf.org/html/rfc3987">Internationalized Resource Identifiers (IRIs)</a>,&rdquo; RFC&nbsp;3987, January&nbsp;2005 (<a href="ftp://ftp.rfc-editor.org/in-notes/rfc3987.txt">TXT</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC5234">[RFC5234]</a></td>
+<td class="author-text">Crocker, D. and P. Overell, &ldquo;<a href="http://tools.ietf.org/html/rfc5234">Augmented BNF for Syntax Specifications: ABNF</a>,&rdquo; STD&nbsp;68, RFC&nbsp;5234, January&nbsp;2008 (<a href="http://www.rfc-editor.org/rfc/rfc5234.txt">TXT</a>).</td></tr>
+</table>
+
+<a name="rfc.authors"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>Authors' Addresses</h3>
+<table width="99%" border="0" cellpadding="0" cellspacing="0">
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Joe Gregorio</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:jcgregorio@google.com">jcgregorio@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Soren Lassen</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:soren@google.com">soren@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Alex North</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:anorth@google.com">anorth@google.com</a></td></tr>
+</table>
+</body></html>

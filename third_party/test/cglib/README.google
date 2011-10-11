@@ -1,0 +1,11 @@
+URL: http://cglib.sf.net/
+Version: 2.2
+License: Apache ASL2
+
+License File: COPYING
+
+Description:
+Code Generation library to extend Java classes.
+
+Local Modifications:
+No modifications.

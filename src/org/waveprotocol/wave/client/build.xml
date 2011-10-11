@@ -1,0 +1,13 @@
+<!-- 
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="client">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="client"/>
+  <patternset id="srcs">
+    <include name="org/waveprotocol/wave/client/**"/>
+    <exclude name="org/waveprotocol/wave/client/common/**"/>
+    <exclude name="org/waveprotocol/wave/client/scheduler/**"/>
+  </patternset>
+</project>

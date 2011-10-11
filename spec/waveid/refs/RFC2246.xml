@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<reference anchor='RFC2246'>
+
+<front>
+<title>The TLS Protocol Version 1.0</title>
+<author initials='T.' surname='Dierks' fullname='Tim Dierks'>
+<organization>Certicom</organization>
+<address>
+<email>tdierks@certicom.com</email></address></author>
+<author initials='C.' surname='Allen' fullname='Christopher Allen'>
+<organization>Certicom</organization>
+<address>
+<email>callen@certicom.com</email></address></author>
+<date year='1999' month='January' />
+<abstract>
+<t>This document specifies Version 1.0 of the Transport Layer Security (TLS) protocol. The TLS protocol provides communications privacy over the Internet. The protocol allows client/server applications to communicate in a way that is designed to prevent eavesdropping, tampering, or message forgery.</t></abstract></front>
+
+<seriesInfo name='RFC' value='2246' />
+<format type='TXT' octets='170401' target='ftp://ftp.isi.edu/in-notes/rfc2246.txt' />
+</reference>

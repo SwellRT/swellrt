@@ -1,0 +1,11 @@
+URL: http://code.google.com/p/jsr-305/
+Version: v0r47
+License: BSD
+License File: COPYING
+
+Description:
+Reference implementations, test cases, and other documents under source code control
+for Java Specification Request 305: Annotations for Software Defect Detection
+
+Local Modifications:
+No modifications.

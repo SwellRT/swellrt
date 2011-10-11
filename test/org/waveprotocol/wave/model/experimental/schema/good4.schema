@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- A schema featuring a top-level prologue -->
+<schema>
+  <definition name="test">
+    <prologue>
+      <element name="element1">
+        <element name="element4"/>
+      </element>
+      <element name="element2"/>
+      <element name="element3">
+        <prologue>
+          <element name="element7"/>
+          <element name="element8"/>
+        </prologue>
+        <element name="element5"/>
+        <element name="element6"/>
+      </element>
+    </prologue>
+  </definition>
+  <root name="test"/>
+</schema>

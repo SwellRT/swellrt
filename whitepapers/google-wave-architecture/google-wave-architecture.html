@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.5: http://docutils.sourceforge.net/" />
+<title>Google Wave Federation Architecture</title>
+<meta name="authors" content="Soren Lassen  Sam Thorogood" />
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 5196 2007-06-03 20:25:28Z wiemann $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left {
+  clear: left }
+
+img.align-right {
+  clear: right }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="google-wave-federation-architecture">
+<h1 class="title">Google Wave Federation Architecture</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Authors:</th>
+<td>Soren Lassen
+<br />Sam Thorogood</td></tr>
+<tr><th class="docinfo-name">Version:</th>
+<td>1.0 - May 2009</td></tr>
+</tbody>
+</table>
+<p>This whitepaper is part of a series. All of the whitepapers
+can be found on <a class="reference external" href="http://www.waveprotocol.org/whitepapers">Google Wave Federation Protocol site</a>.</p>
+<p>Google Wave is a new communication and collaboration platform based on hosted
+documents (called waves) supporting concurrent modifications and low-latency
+updates. This platform enables people to communicate and work together in new,
+convenient and effective ways. We will offer these benefits to users of
+<a class="reference external" href="http://wave.google.com">http://wave.google.com</a> and we also want to share them with everyone else by making
+waves an open platform that everybody can share. We welcome others to run wave
+servers and become wave providers, for themselves or as services for their
+users, and to &quot;federate&quot; waves, that is, to share waves with each other and
+with <a class="reference external" href="http://wave.google.com">http://wave.google.com</a>. In this way users from different wave providers can
+communicate and collaborate using shared waves. We are introducing the Google
+Wave Federation Protocol for federating waves between wave providers on the
+Internet.</p>
+<p>This document gives an overview of how various elements of Google Wave
+technology -- data model, operational transformation, and client-server
+protocol -- are used together to run a wave service, and how wave service
+providers communicate using the Google Wave Federation Protocol with its
+cryptographic measures to prevent spoofing.  All these elements are described
+in more depth in accompanying documents on this site and the reader is
+encouraged to consult them for more details.  The focus of this document is
+federation, which involves the server-server wave federation protocol, and does
+not cover the client-server protocol between the clients and the wave server of
+a wave provider.  Nonetheless, this document is far from an exhaustive account
+of wave federation. In particular, <a class="reference external" href="http://www.waveprotocol.org/whitepapers/google-wave-attachments">attachments</a>, groups, contacts, and presence
+are important elements of wave federation that are not covered herein.</p>
+<div class="section" id="wave-providers">
+<h1>Wave Providers</h1>
+<p>The wave federation protocol enables everyone to become a wave provider and
+share waves with others. For instance, an organization can operate as a wave
+provider for its members, an individual can run a wave server as a wave
+provider for a single user or family members, and an Internet service provider
+can run a wave service as another Internet service for its users as a
+supplement to email, IM, ftp, etc. In this model, wave.google.com is one of
+many wave providers.</p>
+<p>A wave provider is identified by its Internet domain name(s).</p>
+<p>Wave users have wave addresses which consist of a user name and a wave provider
+domain in the same form as an email address, namely &lt;username&gt;&#64;&lt;domain&gt;. Wave
+addresses can also refer to groups, robots, gateways, and other services. A
+group address refers to a collection of wave addresses, much like an email
+mailing list. A robot is an automated participant on a wave (see the <a class="reference external" href="http://code.google.com/apis/wave/extensions/robots/index.html">Robots
+API</a>). Examples are translation robots and chess game robots. A gateway
+translates between waves and other communication and sharing protocols such as
+email and IM.  In the remainder we ignore addresses that are services,
+including robots and gateways; they are treated largely the same as users with
+respect to federation.</p>
+<p>Wave users access all waves through their wave provider. If a wave has
+participants from different wave providers, their wave providers all maintain a
+copy of the wave and serve it to their users on the wave. The wave providers
+share updates to the wave with each other using the wave federation protocol
+which we describe below.  For any given wave user, it is the responsibility of
+the wave provider for the user's domain to authenticate the user (using cookies
+and passwords, etc) and perform local access control.</p>
+</div>
+<div class="section" id="waves-wavelets-and-identifiers">
+<h1>Waves, Wavelets, and Identifiers</h1>
+<p>A wave consists of a set of wavelets. When a user has access to a wavelet, that
+user is called a participant of that wavelet. Each wavelet has a list of
+participants, and a set of documents that make up its contents. Different
+wavelets of a wave can have different lists of participants. Copies of a
+wavelet are shared across all of the wave providers that have at least one
+participant in that wavelet. Amongst these wave providers, there is a
+designated wave provider that has the definitive copy of that wavelet.  We say
+that this particular provider is hosting that wavelet.</p>
+<p>When a user opens a wave, a view of the wave is retrieved, namely the set of
+wavelets in the wave that the user is a participant of (directly, or indirectly
+via group membership). In general, different users have different wave views
+for a given wave. For example, per-user data for a user in a wave, such as the
+user's read/unread state for the wave, is stored in a user-data wavelet in the
+wave with the user as the only participant. The user-data wavelet only appears
+in this user's wave view. Another example is a private reply within a wave,
+which is represented as a wavelet with a restricted participant list. The
+private reply wavelet is only in the wave views of the restricted list of
+users.</p>
+<p>A wave is identified by a globally unique wave id, which is a pair of a domain
+name and an id string. The domain names the wave provider where the wave
+originated.</p>
+<p>A wavelet has a wavelet id which is unique within its wave. Like a wave id, a
+wavelet id is a pair of a domain name and an id string. The domain name in the
+wavelet id plays a special role: It names the wave provider that hosts the
+wavelet. A wavelet is hosted by the wave provider of the participant who
+creates the wavelet. The wave provider who hosts a wavelet is responsible both
+for operational transformation and application of wavelet operations to the
+wavelet and for sharing the updates with the wave providers of all the wavelet
+participants, as described in the Wave Servers section below. The updates are
+wavelet operations and concurrent updates are resolved using operational
+transformation.</p>
+<p>Wavelets in the same wave can be hosted by different wave providers. For
+example, a user-data wavelet is always hosted by the user's wave provider,
+regardless of where the rest of the wave is hosted. Indeed, user-data is not
+federated, i.e., not shared with other wave providers. Another example is a
+private reply wavelet. A particularly simple instance of this is when all the
+participants of the private reply are from the same wave provider. Then this
+wave provider will not share the private reply wavelet with other wave
+providers, regardless of where the other wavelets in the wave are hosted.</p>
+</div>
+<div class="section" id="wave-service-architecture">
+<h1>Wave Service Architecture</h1>
+<p>A wave provider operates a wave service on one or more networked servers. The
+central pieces of the wave service is the wave store, which stores wavelet
+operations, and the wave server, which resolves wavelet operations by
+operational transformation and writes and reads wavelet operations to and from
+the wave store. Typically, the wave service serves waves to users of the wave
+provider which connect to the wave service frontend (see the <a class="reference external" href="http://www.waveprotocol.org/draft-protocol-specs/draft-protocol-spec">Google Wave Data
+Model and Client-Server Protocol</a>), and we shall assume this in the following
+description of the wave service architecture. More importantly, for the purpose
+of federation, the wave service shares waves with participants from other
+providers by communicating with these wave provider's servers. The wave service
+uses two components for this, a federation gateway and a federation proxy. They
+are described in the next section.</p>
+<p>A wave provider's wave server serves wave views to local participants, i.e.,
+participants from its domain. As described earlier, copies of a wavelet are
+distributed to all wave providers that have participants in that wavelet.
+Copies of a wavelet at a particular provider can either be local or remote. We
+use the term &quot;local wavelet&quot; and &quot;remote wavelet&quot; to refer to these two types
+of wavelet copies (in both cases, we are referring to the wavelet copy, and not
+the wavelet). A wave view can contain both types of wavelet copies
+simultaneously.</p>
+<p>At a particular wave provider, local wavelets are those created at that
+provider, namely by users who belong to the wavelet provider.  The wave server
+is responsible for processing the wavelet operations submitted to the wavelet
+by local participants and by remote participants from other wave providers. The
+wave server performs concurrency control by ordering the submitted wavelet
+operations relative to each other using operational transformation. It also
+validates the operations before applying them to a local wavelet.</p>
+<p>Remote wavelets are hosted by other wave providers. The wave server maintains
+cached copies locally and updates them with wavelet operations that it gets
+from the hosting wave providers. When a local participant submits a wavelet
+operation to a remote wavelet, the wave server forwards the operation to the
+wave server of the hosting provider.  When the transformed and applied
+operation is echoed back, it is applied to the cached copy. Read access to
+local participants is done from the cached copy without a round trip to the
+hosting wave provider.</p>
+<p>Local and remote wavelets are all stored in the wave server's persistent wave
+store.</p>
+<p>We say that a wave provider is &quot;upstream&quot; relative to its local wavelets and
+that it is &quot;downstream&quot; relative to its remote wavelets.</p>
+</div>
+<div class="section" id="federation-gateway-and-federation-proxy">
+<h1>Federation Gateway and Federation Proxy</h1>
+<p>The wave service uses a federation gateway and a federation proxy component to
+communicate with other wave providers.</p>
+<p>The federation gateway communicates local wavelet operations, i.e., operations
+on local wavelets:
+* It pushes new wavelet operations that are applied to a local wavelet to the wave providers of any remote participants.
+* It satisfies requests for old wavelet operations.
+* It processes wavelet operations submission requests.</p>
+<p>The federation proxy communicates remote wavelet operations and is the
+component of a wave provider that communicates with the federation gateway of
+remote providers:
+* It receives new wavelet operations pushed to it from the wave providers that host the remote wavelets.
+* It requests old wavelet operations from the hosting wave providers.
+* It submits wavelet operations to the hosting wave providers.</p>
+<p>An upstream wave provider's federation gateway connects to a downstream wave
+provider's federation proxy to push wavelet operations that are hosted by the
+upstream wave provider.</p>
+<p>The federation protocol has the following mechanisms to make operation delivery
+from gateway to proxy reliable. The federation gateway maintains (in persistent
+storage) a queue of outgoing operations for each remote domain. Operations are
+queued until their receipt is acknowledged by the receiving federation proxy.
+The federation gateway will continually attempt to establish a connection and
+reconnect after any connection failures (retrying with exponential backoff).
+When a connection is established, the federation gateway will send queued
+operations in order. The receiving federation proxy sends acknowledgements back
+to the sending federation gateway on a back channel and whenever an
+acknowledgement is received, the sender dequeues the acknowledged operations.</p>
+<img alt="img/gateway-and-proxy.png" src="img/gateway-and-proxy.png" />
+<p>Example</p>
+<img alt="img/acmewave-federati.png" src="img/acmewave-federati.png" />
+<p>Consider the case of a wavelet W with wavelet id (acmewave.com, conv+090528),
+where acmewave.com is a domain and &quot;conv+090528&quot; is an id string (whose
+structure does not concern us here). The wavelet id dictates that W is hosted
+by the Acmewave wave provider. Suppose W has a participant <a class="reference external" href="mailto:feddy&#64;federati.com">feddy&#64;federati.com</a>
+from another domain federati.com.</p>
+<p>All wavelet operations for W, submitted by local and remote participants alike,
+are transformed, applied to W, stored in the local wave store by the Acmewave
+wave provider, and then the applied operations are passed to the federation
+gateway which pushes them to federati.com. The Acmewave gateway does so by
+establishing a connection to the Federati federation proxy and sending the
+operations across the connection.</p>
+<p>Sometimes the receiver needs to request past operations from the sender. The
+typical case is when it receives an operation for a wavelet where the receiver
+does not already posses all preceding operations for the wavelet. (This
+condition is easily verified because applied operations carry consecutive
+version numbers.) In this case the receiving federation proxy will connect to
+the domain that hosts the wavelet and request the past operations that it is
+missing. (One way that a wave server can develop such a gap in the operation
+history for a remove wavelet is when no participant from its domain
+participates in the wavelet, at time t1, and then later, at time t2, a
+participant from its domain is added to the wavelet. The host federation
+gateway responds by sending the new AddParticipant operation forwarding all
+ensuing new operations to the federation proxy, but the latter must itself turn
+around and request the prior operations.)</p>
+<p>In the same way a user can submit operations to a remote wavelet, namely by
+letting the federation proxy connect to the remote federation proxy and submit
+the operation to its wave server.</p>
+<p>Suppose there is another wavelet hosted by Federati, i.e., the wavelet id
+domain is federati.com, and this wavelet has a participant which is a user at
+acmewave.com.  Then the Federati gateway and Acmewave gateway will also
+communicate with each other.</p>
+</div>
+<div class="section" id="protocol">
+<h1>Protocol</h1>
+<p>The network protocol between federation gateways and proxies is called the
+Google Wave Federation Protocol. It is an open extension to the XMPP Internet
+Messaging protocol. Some of key useful features of XMPP that the wave
+federation protocol uses are the discovery of IP addresses and ports, using SRV
+records, and TLS authentication and encryption of connections. See &quot;Google Wave
+Federation Protocol&quot;.</p>
+<p>The XMPP transport encrypts operations at a transport level, so it only
+provides cryptographic security between servers that connect directly to each
+other. An additional layer of cryptography provides end-to-end authentication
+between wave providers using cryptographic signatures and certificates,
+allowing all wavelet providers to verify the properties of the operation.
+Specifically, a downstream wave provider can verify that the wave provider is
+not spoofing wavelet operations, namely, it cannot falsely claim (1) that a
+wavelet operation originated from a user on another wave provider or (2) that
+it was originated in a different context.  This addresses the situation where
+two users from different, trustworthy wave providers, say love.com and
+peace.com, are participants of the a wavelet that is hosted on a malicious wave
+provider evil.com.  The protocol requires love.com to sign its user's
+operations with love.com's certificate and peace.com to sign its user's
+operations with peace.com's certificate.  These signatures travel with the
+operations and evil.com must host the signatures together with the operations.
+Furthermore, love.com and peace.com will verify the signatures of all the
+operations that evil.com forwards.  This makes it impossible for evil.com to
+alter or spoof the content of the messages from the user of love.com which is
+shared with peace.com, and vice versa.  All the signing and verification is
+done by the wave providers, not the client software of the end users.</p>
+<img alt="img/love.png" src="img/love.png" />
+<p>The protocol specification requires that wave providers connecting using the
+federation protocol must authenticate using cryptographically secure TLS
+mechanisms.  Moreover, it is recommended that they use TLS to encrypt the
+traffic between them. The client-server and federation protocols do not provide
+end-to-end authentication or encryption between end users.  A wave provider
+should authenticate its end users and encryption of user connections is also
+recommended. In combination, secure connections between wave services and
+secure connections between users and their wave services offer a reasonable
+level of end-to-end security.</p>
+</div>
+<div class="section" id="references">
+<h1>References</h1>
+<p>Jochen Bekmann, Michael Lancaster, Soren Lassen, David Wang: <a class="reference external" href="http://www.waveprotocol.org/draft-protocol-specs/draft-protocol-spec">Google Wave Data Model and Client-Server Protocol</a></p>
+<p>David Wang, Alex Mah: <a class="reference external" href="http://www.waveprotocol.org/whitepapers/operational-transform">Google Wave Operational Transformation</a></p>
+<p>Daniel Berlin: <a class="reference external" href="http://www.waveprotocol.org/draft-protocol-specs/draft-protocol-spec">Google Wave Federation Protocol</a></p>
+<p>Lea Kissner and Ben Laurie: <a class="reference external" href="http://www.waveprotocol.org/whitepapers/wave-protocol-verification">General Verifiable Federation</a></p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<!-- 
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="concurrencycontrol">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="concurrencycontrol"/>
+  <patternset id="srcs">
+    <include name="org/waveprotocol/wave/concurrencycontrol/**"/>
+  </patternset>
+</project>

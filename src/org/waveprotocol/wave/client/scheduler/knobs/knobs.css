@@ -1,0 +1,66 @@
+/*
+ * CSS Stylesheet for Scheduler Knobs.
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+.knob {
+  margin: 0.5em;
+  width: 12em;
+  float: left;
+  text-align: center;
+  position: relative;
+}
+
+.knobLabel {
+  padding: 0.2em;
+  display: inline;
+  cursor: pointer;
+}
+
+/**
+ * details box is positioned within knob container, and on top of everything
+ */
+.knobDetails {
+  position:absolute;
+  z-index: 1000;
+  top: 2em;
+  border: 1px solid black;
+  background: yellow;
+  text-align: left;
+}
+
+.knobDetails * {
+  padding: 2px;
+}
+
+.currentTitle, .oldTitle {
+  font-weight: bold;
+  background: black;
+}
+
+.currentTitle {
+  color: #00e800;
+}
+
+.oldTitle {
+  color: red;
+}
+
+/* A bright green. */
+.enabled {
+  background-color: rgb(100,240,50);
+}
+
+/* Disabled is red. */
+.disabled {
+  background-color: red;
+}
+
+.knobPanel, .knobContainer, .knobContainer>button {
+  float: left;
+}
+
+.knobContainer>button {
+  margin: 0.5em;
+}

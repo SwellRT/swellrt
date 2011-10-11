@@ -1,0 +1,14 @@
+URL: http://db.apache.org/jdo/
+Download URL: http://db.apache.org/jdo/releases/release-2.0.cgi
+Version: 2.2
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+Java Data Objects (JDO) is a standard way to access persistent data in
+databases, using plain old Java objects (POJO) to represent persistent data.
+
+Local Modifications:
+None.
+

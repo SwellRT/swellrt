@@ -1,0 +1,38 @@
+<!--
+  GXP template after registration of a robot to show the user the token and token secret to use.
+  Generate with "ant gen_gxp".
+  Author: ljvderijk@google.com (Lennard de Rijk)
+-->
+
+<gxp:template
+  name='org.waveprotocol.box.server.gxp.robots.RobotRegistrationSuccessPage'
+  xmlns='http://www.w3.org/1999/xhtml' xmlns:gxp='http://google.com/2001/gxp'>
+
+  <gxp:param name='token' type='String' />
+  <gxp:param name='tokenSecret' type='String' />
+
+  <html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>Robot Successfully Registered</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" />
+  </head>
+
+  <body>
+  Your Robot has been successfully registered. Please take note of the consumer
+  token and token secret to use for the Active API.
+
+  <table>
+    <tr>
+      <td><b>Consumer Token</b></td>
+      <td><gxp:eval expr='token' /></td>
+    </tr>
+    <tr>
+      <td><b>Consumer Token Secret</b></td>
+      <td><gxp:eval expr='tokenSecret' /></td>
+    </tr>
+  </table>
+
+  </body>
+  </html>
+</gxp:template>

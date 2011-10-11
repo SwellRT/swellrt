@@ -1,0 +1,7 @@
+<module>
+  <inherits name="org.waveprotocol.wave.communication.gwt.Gwt" />
+  <inherits name="org.waveprotocol.wave.communication.json.Json" />
+  
+  <!--  Only include source in this package, not sub-packages. -->
+  <source path="" includes="*.*"/>
+</module>

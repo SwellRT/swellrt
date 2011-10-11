@@ -1,0 +1,4 @@
+# Copy this file to build-proto.properties and set the parameter below
+
+# Path to the unpacked and compiled protoc distribution
+protoc_dist=set_this_to_your_local_protoc_distribution

@@ -1,0 +1,55 @@
+Build:
+
+This code requires Java 6.  If you are on MacOS 10.5 (Leopard) or earlier,
+you'll need to install it from
+http://www.apple.com/support/downloads/javaformacosx105update1.html - 
+MacOS 10.5 ships with Java 5 by default.
+
+Wave in a Box uses Ant to build. To run the tests, run:
+
+<code>
+  ant test
+</code>
+
+To build the server, run just 
+<code>
+  ant
+</code>
+
+It will be left in dist/waveinabox-X.Y.jar.
+
+If you want to use the web client, you will also need to run:
+<code>
+  ant compile_gwt
+</code>
+
+The server can be started by running
+./run-server.sh
+The simple web client will be accessable at
+http://localhost:9898/
+
+To configure the server, copy run-config.sh.example to run-config.sh and edit
+it.
+
+Wave Protocol communicates using Protocol Buffers 
+<http://code.google.com/p/protobuf/>
+Because of the difficulty of distributing binaries, we do not include the 
+protocol compiler in this distribution. Therefore, to rebuild updated 
+protocol buffer files, you will need to install the binary protoc 
+in your environment by fetching the protobuf code from the website 
+above.
+
+Additionally, you will have to update the build-proto.properties file to
+point to the unpacked source distribution of the protocol buffers release.
+
+Then, after updating a proto file, run
+
+<code>
+  ant -f build-proto.xml compile compile_json
+</code>
+
+Note: this generates files into proto_src. If files here exist without 
+write permission, you will get permission denied errors from this step.
+
+Note also that you don't need protoc unless you want to change the proto
+files.

@@ -1,0 +1,14 @@
+/*
+ * CSS styles for the HTML template doodad.
+ * author: jasvir@google.com (Jasvir Nagra)
+ */
+
+.outerHull {
+  display: inline;
+}
+
+.innerHull, .outerHull > * {
+  position: relative;
+  overflow: auto;
+  clip: 0 0 0 0
+}

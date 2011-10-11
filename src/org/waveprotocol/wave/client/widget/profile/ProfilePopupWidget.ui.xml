@@ -1,0 +1,31 @@
+<ui:UiBinder
+    xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common" >
+  <ui:with 
+      field='style'
+      type='org.waveprotocol.wave.client.widget.profile.ProfilePopupWidget.Style'/>
+  <w:ImplPanel ui:field="self" styleName="{style.self}">
+    <!-- All widget-children of this panel must be buttons in the control section.
+         Otherwise, ProfilePopupWidget.reset() needs to be re-implemented. --> 
+    <div class="{style.state}">
+      <img ui:field="avatar" class="{style.avatar}" src="static/images/unknown.jpg"></img>
+      <div class="{style.details}">
+        <div ui:field="name" class="{style.name}"></div>
+        <table class="{style.extra}" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="{style.label}">Address:</td>
+            <td ui:field="address"></td>
+          </tr>
+          <!-- Add more rows here once profiles get more state -->
+        </table>
+      </div>
+    </div>
+    <div class="{style.separator}"></div>
+    <div ui:field="controls" class="{style.controls}">
+      <!-- Dynamically added buttons go in here, like:
+      <g:Button styleName="button">New Wave</g:Button>
+      <g:Button styleName="button">Remove</g:Button>
+      -->
+    </div>
+  </w:ImplPanel>
+</ui:UiBinder>

@@ -1,0 +1,35 @@
+/*
+ * CSS for conversations.
+ *
+ * Author: reuben@google.com (Reuben Kan)
+ */
+
+@eval threadTop org.waveprotocol.wave.client.wavepanel.view.dom.full.TopConversationViewBuilder.CssConstants.THREAD_TOP_CSS;
+
+.fixedSelf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
+}
+
+.fixedThread {
+  /*
+   * Allow scrolling.  Also, keep the scrollbar there permanently, so that content does not get
+   * horizontally resized by the addition and removal of a scrollbar.
+   */
+  overflow-y: scroll;
+  position: absolute;
+  top: threadTop;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Layout under siblings (participant panel etc). */
+  z-index: -1;
+}
+
+@sprite .toolbar {
+  gwt-image: 'emptyToolbar';
+}

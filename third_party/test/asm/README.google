@@ -1,0 +1,11 @@
+URL: http://forge.ow2.org/projects/asm/
+Version: 3.2
+License: BSD
+
+License File: LICENSE
+
+Description:
+A small and fast Java bytecode manipulation framework.
+
+Local Modifications:
+No modifications.

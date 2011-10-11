@@ -1,0 +1,38 @@
+<module><inherits name="com.google.gwt.user.User" />
+<!-- This file is embedded into a gwt_module.
+     To use it, add a "deps" on
+     //third_party/java_src/wave/java/org/waveprotocol/wave/client/common/util:useragents
+
+     Note that we don't like opera, ie6 and ff2, but we don't restrict the user
+     agent here, this will have to be done in the actually application. Compilation
+     will likely fail altogether if one fail to do that (or setup a specific code path
+     for those unsupported UAs that does not use our code) because of missing deferred
+     binding rules.
+
+     Notes about GWT's user.agent values:
+      - ie6 is "ie6 or ie7" (or any upper IE version when running in compat' mode)
+      - gecko1_8 is "gecko 1.8+", which includes all firefox versions starting with 1.5
+      - safari is any webkit-based browser (including chrome and android)
+  -->
+
+<!-- Copied from
+     http://code.google.com/p/google-web-toolkit/wiki/ConditionalProperties
+  -->
+<define-property name="mobile.user.agent" values="android, iphone, not_mobile" />
+<property-provider name="mobile.user.agent"><![CDATA[
+  {
+    var ua = window.navigator.userAgent.toLowerCase();
+    if (ua.indexOf('android') != -1) { return 'android'; }
+    if (ua.indexOf('iphone') != -1 || ua.indexOf('ipod') != -1) { return 'iphone'; }
+    return 'not_mobile';
+  }
+]]></property-provider>
+
+<!-- Constrain the value for non-webkit browsers -->
+<set-property name="mobile.user.agent" value="not_mobile" >
+  <none> <!-- Actually means NOR, in this case "not safari" -->
+    <when-property-is name="user.agent" value="safari" />
+  </none>
+</set-property>
+
+</module>

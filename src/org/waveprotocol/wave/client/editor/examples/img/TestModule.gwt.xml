@@ -1,0 +1,5 @@
+<module>
+<source path=""/>
+<entry-point class="org.waveprotocol.wave.client.editor.examples.img.TestModule" />
+<inherits name="org.waveprotocol.wave.client.editor.harness.EditorHarness" />
+</module>

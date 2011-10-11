@@ -1,0 +1,7 @@
+<module>
+
+<entry-point class="org.waveprotocol.wave.client.editor.harness.EditorTestHarness" />
+
+<inherits name="org.waveprotocol.wave.client.editor.harness.EditorHarness" />
+
+</module>

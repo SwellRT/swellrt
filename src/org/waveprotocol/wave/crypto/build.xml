@@ -1,0 +1,11 @@
+<!-- 
+Copyright (C) 2010 Google Inc.
+See COPYING for license.
+-->
+<project name="crypto">
+  <import file="${build.common.path}"/>
+  <property name="libname" value="crypto"/>
+  <patternset id="srcs">
+    <include name="org/waveprotocol/wave/crypto/**"/>
+  </patternset>
+</project>

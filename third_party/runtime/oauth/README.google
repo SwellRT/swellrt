@@ -1,0 +1,20 @@
+URL: http://code.google.com/p/oauth/source/browse/?r=1123#svn/code/java
+License: Apache License 2.0
+License File: LICENSE
+
+Description:
+Java implementation of OAuth, an open protocol to allow API authentication in
+a simple and standard method from desktop and web applications.
+
+Local Modifications:
+Building procedure:
+svn checkout http://oauth.googlecode.com/svn/code/ oauth-lib/
+cd oauth-lib
+mvn build
+copy java/core/target/commons/target/oauth-20090825.jar oauth-common.jar
+copy java/core/target/commons/target/oauth-20090825-sources.jar oauth-common-src.jar
+copy java/core/target/consumer/target/oauth-20090825.jar oauth-consumer.jar
+copy java/core/target/consumer/target/oauth-20090825-sources.jar oauth-consumer-src.jar
+copy java/core/target/provider/target/oauth-20090825.jar oauth-provider.jar
+copy java/core/target/provider/target/oauth-20090825-sources.jar oauth-provider-src.jar
+

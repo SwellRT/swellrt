@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<reference anchor='RFC3920'>
+
+<front>
+<title abbrev='XMPP Core'>Extensible Messaging and Presence Protocol (XMPP): Core</title>
+<author initials='P.' surname='Saint-Andre' fullname='Peter Saint-Andre' role='editor'>
+<organization>Jabber Software Foundation</organization>
+<address>
+<email>stpeter@jabber.org</email></address></author>
+<date year='2004' month='October' />
+<area>Applications</area>
+<workgroup>XMPP Working Group</workgroup>
+<keyword>RFC</keyword>
+<keyword>Request for Comments</keyword>
+<keyword>I-D</keyword>
+<keyword>Internet-Draft</keyword>
+<keyword>XMPP</keyword>
+<keyword>Extensible Messaging and Presence Protocol</keyword>
+<keyword>Jabber</keyword>
+<keyword>IM</keyword>
+<keyword>Instant Messaging</keyword>
+<keyword>Presence</keyword>
+<keyword>XML</keyword>
+<keyword>Extensible Markup Language</keyword>
+<abstract>
+<t>This memo defines the core features of the Extensible Messaging and Presence Protocol (XMPP), a protocol for streaming Extensible Markup Language (XML) elements in order to exchange structured information in close to real time between any two network endpoints.  While XMPP provides a generalized, extensible framework for exchanging XML data, it is used mainly for the purpose of building instant messaging and presence applications that meet the requirements of RFC 2779.</t></abstract></front>
+
+<seriesInfo name='RFC' value='3920' />
+<format type='TXT' octets='194313' target='ftp://ftp.isi.edu/in-notes/rfc3920.txt' />
+<format type='HTML' octets='237435' target='http://xml.resource.org/public/rfc/html/rfc3920.html' />
+<format type='XML' octets='234474' target='http://xml.resource.org/public/rfc/xml/rfc3920.xml' />
+</reference>

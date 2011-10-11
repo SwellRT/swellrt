@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- A schema featuring top-level attributes -->
+<schema>
+  <definition name="test">
+    <attribute name="attribute1" values="value1" required="false"/>
+    <attribute name="attribute2" values="ab*c" required="false"/>
+    <attribute name="attribute3" values="a.*b" required="false"/>
+  </definition>
+  <root name="test"/>
+</schema>

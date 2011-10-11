@@ -1,0 +1,7 @@
+<module>
+  <inherits name="org.waveprotocol.wave.client.wavepanel.impl.focus.Focus" />
+  <inherits name="org.waveprotocol.wave.client.wavepanel.impl.edit.Edit" />
+  <inherits name="org.waveprotocol.wave.client.wavepanel.view.View" />
+  <inherits name="org.waveprotocol.wave.model.supplement.Supplement" /> 
+  <source path=""/>
+</module>

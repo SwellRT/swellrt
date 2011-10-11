@@ -1,0 +1,10 @@
+URL: http://www.extreme.indiana.edu/dist/java-repository/xpp3/distributions/xpp3-1.1.4c_all.zip
+Version: 1.1.4c
+License: Indiana University Extreme! Lab Software License
+License File: xpp3.LICENSE
+
+Description:
+xpp3 is an XML parsing library. It is fast, small, and easy to use.
+
+Local Modifications:
+No modifications.

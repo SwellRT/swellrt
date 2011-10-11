@@ -1,0 +1,12 @@
+/*
+ * StyleInjector CSS file for editor.content.input
+ *
+ * Author: lars@google.com (Lars Rasmussen)
+ */
+
+.input, .textarea {
+  display:block;
+  border:1px solid silver;
+  padding:4px;
+  margin:4px 0;
+}

@@ -1,0 +1,24 @@
+<!--
+  Template for DigestDomImpl
+  Author: hearnden@google.com (David Hearnden)
+-->
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder">
+  <ui:with field="css" type="org.waveprotocol.box.webclient.search.DigestDomImpl.Css"/>
+  <div class='{css.digest}'>
+    <div class='{css.inner}'>
+      <div ui:field='avatars' class='{css.avatars}'>
+      <!--  In here go elements like:
+        <img class='{css.avatar}' src='unknown.jpg' alt=''>
+      -->
+      </div>
+      <div class='{css.info}'>
+        <div ui:field='time'/>
+        <div ui:field='msgs'/>
+      </div>
+      <span ui:field='title'/>
+      &mdash;
+      <span ui:field='snippet'/>
+    </div>
+  </div>
+</ui:UiBinder>

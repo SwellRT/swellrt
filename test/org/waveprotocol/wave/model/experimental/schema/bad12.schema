@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- An invalid schema with a bad regular expression beginning with ')' -->
+<schema>
+  <definition name="test">
+    <element name="element1">
+      <attribute name="attribute1" values=")abcd" required="false"/>
+    </element>
+  </definition>
+  <root name="test"/>
+</schema>

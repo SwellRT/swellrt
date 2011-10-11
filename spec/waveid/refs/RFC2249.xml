@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<reference anchor='RFC2249'>
+
+<front>
+<title>Mail Monitoring MIB</title>
+<author initials='N.' surname='Freed' fullname='Ned Freed'>
+<organization>Innosoft International, Inc.</organization>
+<address>
+<postal>
+<street>1050 Lakes Drive</street>
+<street>West Covina</street>
+<street>CA 91790</street>
+<country>USA</country></postal>
+<phone>+1 626 919 3600</phone>
+<facsimile>+1 626 919 3614</facsimile>
+<email>ned.freed@innosoft.com</email></address></author>
+<author initials='S.' surname='Kille' fullname='Steve Kille, MADMAN WG Chair'>
+<organization>ISODE Consortium</organization>
+<address>
+<postal>
+<street>The Dome</street>
+<street>The Square</street>
+<street>Richmond TW9 1DT</street>
+<country>UK</country></postal>
+<phone>+44 181 332 9091</phone>
+<email>S.Kille@isode.com</email></address></author>
+<date year='1998' month='January' />
+<area>Management</area>
+<area>Applications</area>
+<keyword>Management Information Base</keyword>
+<keyword>mail</keyword>
+<keyword>monitor</keyword></front>
+
+<seriesInfo name='RFC' value='2249' />
+<format type='TXT' octets='52334' target='ftp://ftp.isi.edu/in-notes/rfc2249.txt' />
+<format type='HTML' octets='64882' target='http://xml.resource.org/public/rfc/html/rfc2249.html' />
+<format type='XML' octets='51602' target='http://xml.resource.org/public/rfc/xml/rfc2249.xml' />
+</reference>

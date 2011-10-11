@@ -1,0 +1,11 @@
+URL: http://ant.apache.org/
+Version: 1.7.0
+License: Apache 2
+
+License File: COPYING
+
+Description:
+ant-junit.jar is a jar bundled with ant that allows junit tests to be run as a task.
+
+Local Modifications:
+No modifications.

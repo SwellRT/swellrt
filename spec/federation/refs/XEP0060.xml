@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<reference anchor="XEP0060">
+  <front>
+    <title>Publish-Subscribe</title>
+    <author initials="P." surname="Millard" fullname="Peter Millard">
+      <organization/>
+      <address>
+        <email/>
+      </address>
+    </author>
+    <author initials="P." surname="Saint-Andre" fullname="Peter Saint-Andre">
+      <organization/>
+      <address>
+        <email>stpeter@jabber.org</email>
+      </address>
+    </author>
+    <author initials="R." surname="Meijer" fullname="Ralph Meijer">
+      <organization/>
+      <address>
+        <email>ralphm@ik.nu</email>
+      </address>
+    </author>
+    <date day="01" month="October" year="in progress, 2009"/>
+  </front>
+  <seriesInfo name="XSF XEP" value="0060"/>
+  <format type="HTML" target="http://xmpp.org/extensions/xep-0060.html"/>
+</reference>

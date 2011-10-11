@@ -1,0 +1,7 @@
+<module>
+  <inherits name="com.google.gwt.user.User" />
+  <inherits name="org.waveprotocol.wave.concurrencycontrol.Channel" />
+  <inherits name="org.waveprotocol.wave.common.logging.Logging" />
+  <inherits name="org.waveprotocol.wave.model.Model" />
+  <source path="wave"/>
+</module>

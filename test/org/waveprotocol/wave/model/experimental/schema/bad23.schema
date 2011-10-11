@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- An invalid schema containing an unknown attribute -->
+<schema>
+  <definition name="test" someAttribute="someValue">
+  </definition>
+  <root name="test"/>
+</schema>

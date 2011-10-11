@@ -1,0 +1,2098 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en"><head><title>Google Wave Federation Protocol Over XMPP</title>
+<meta http-equiv="Expires" content="Fri, 18 Jun 2010 14:13:08 +0000">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="Google Wave Federation Protocol Over XMPP">
+<meta name="generator" content="xml2rfc v1.33 (http://xml.resource.org/)">
+<style type='text/css'><!--
+        body {
+                font-family: verdana, charcoal, helvetica, arial, sans-serif;
+                font-size: small; color: #000; background-color: #FFF;
+                margin: 2em;
+        }
+        h1, h2, h3, h4, h5, h6 {
+                font-family: helvetica, monaco, "MS Sans Serif", arial, sans-serif;
+                font-weight: bold; font-style: normal;
+        }
+        h1 { color: #900; background-color: transparent; text-align: right; }
+        h3 { color: #333; background-color: transparent; }
+
+        td.RFCbug {
+                font-size: x-small; text-decoration: none;
+                width: 30px; height: 30px; padding-top: 2px;
+                text-align: justify; vertical-align: middle;
+                background-color: #000;
+        }
+        td.RFCbug span.RFC {
+                font-family: monaco, charcoal, geneva, "MS Sans Serif", helvetica, verdana, sans-serif;
+                font-weight: bold; color: #666;
+        }
+        td.RFCbug span.hotText {
+                font-family: charcoal, monaco, geneva, "MS Sans Serif", helvetica, verdana, sans-serif;
+                font-weight: normal; text-align: center; color: #FFF;
+        }
+
+        table.TOCbug { width: 30px; height: 15px; }
+        td.TOCbug {
+                text-align: center; width: 30px; height: 15px;
+                color: #FFF; background-color: #900;
+        }
+        td.TOCbug a {
+                font-family: monaco, charcoal, geneva, "MS Sans Serif", helvetica, sans-serif;
+                font-weight: bold; font-size: x-small; text-decoration: none;
+                color: #FFF; background-color: transparent;
+        }
+
+        td.header {
+                font-family: arial, helvetica, sans-serif; font-size: x-small;
+                vertical-align: top; width: 33%;
+                color: #FFF; background-color: #666;
+        }
+        td.author { font-weight: bold; font-size: x-small; margin-left: 4em; }
+        td.author-text { font-size: x-small; }
+
+        /* info code from SantaKlauss at http://www.madaboutstyle.com/tooltip2.html */
+        a.info {
+                /* This is the key. */
+                position: relative;
+                z-index: 24;
+                text-decoration: none;
+        }
+        a.info:hover {
+                z-index: 25;
+                color: #FFF; background-color: #900;
+        }
+        a.info span { display: none; }
+        a.info:hover span.info {
+                /* The span will display just on :hover state. */
+                display: block;
+                position: absolute;
+                font-size: smaller;
+                top: 2em; left: -5em; width: 15em;
+                padding: 2px; border: 1px solid #333;
+                color: #900; background-color: #EEE;
+                text-align: left;
+        }
+
+        a { font-weight: bold; }
+        a:link    { color: #900; background-color: transparent; }
+        a:visited { color: #633; background-color: transparent; }
+        a:active  { color: #633; background-color: transparent; }
+
+        p { margin-left: 2em; margin-right: 2em; }
+        p.copyright { font-size: x-small; }
+        p.toc { font-size: small; font-weight: bold; margin-left: 3em; }
+        table.toc { margin: 0 0 0 3em; padding: 0; border: 0; vertical-align: text-top; }
+        td.toc { font-size: small; font-weight: bold; vertical-align: text-top; }
+
+        ol.text { margin-left: 2em; margin-right: 2em; }
+        ul.text { margin-left: 2em; margin-right: 2em; }
+        li      { margin-left: 3em; }
+
+        /* RFC-2629 <spanx>s and <artwork>s. */
+        em     { font-style: italic; }
+        strong { font-weight: bold; }
+        dfn    { font-weight: bold; font-style: normal; }
+        cite   { font-weight: normal; font-style: normal; }
+        tt     { color: #036; }
+        tt, pre, pre dfn, pre em, pre cite, pre span {
+                font-family: "Courier New", Courier, monospace; font-size: small;
+        }
+        pre {
+                text-align: left; padding: 4px;
+                color: #000; background-color: #CCC;
+        }
+        pre dfn  { color: #900; }
+        pre em   { color: #66F; background-color: #FFC; font-weight: normal; }
+        pre .key { color: #33C; font-weight: bold; }
+        pre .id  { color: #900; }
+        pre .str { color: #000; background-color: #CFF; }
+        pre .val { color: #066; }
+        pre .rep { color: #909; }
+        pre .oth { color: #000; background-color: #FCF; }
+        pre .err { background-color: #FCC; }
+
+        /* RFC-2629 <texttable>s. */
+        table.all, table.full, table.headers, table.none {
+                font-size: small; text-align: center; border-width: 2px;
+                vertical-align: top; border-collapse: collapse;
+        }
+        table.all, table.full { border-style: solid; border-color: black; }
+        table.headers, table.none { border-style: none; }
+        th {
+                font-weight: bold; border-color: black;
+                border-width: 2px 2px 3px 2px;
+        }
+        table.all th, table.full th { border-style: solid; }
+        table.headers th { border-style: none none solid none; }
+        table.none th { border-style: none; }
+        table.all td {
+                border-style: solid; border-color: #333;
+                border-width: 1px 2px;
+        }
+        table.full td, table.headers td, table.none td { border-style: none; }
+
+        hr { height: 1px; }
+        hr.insert {
+                width: 80%; border-style: none; border-width: 0;
+                color: #CCC; background-color: #CCC;
+        }
+--></style>
+</head>
+<body>
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<table summary="layout" width="66%" border="0" cellpadding="0" cellspacing="0"><tr><td><table summary="layout" width="100%" border="0" cellpadding="2" cellspacing="1">
+<tr><td class="header"> </td><td class="header">A. Baxter</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">J. Bekmann</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">D. Berlin</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">J. Gregorio</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">S. Lassen</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">S. Thorogood</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">Google, Inc</td></tr>
+<tr><td class="header">&nbsp;</td><td class="header">July 2009</td></tr>
+</table></td></tr></table>
+<h1><br />Google Wave Federation Protocol Over XMPP</h1>
+
+<h3>Abstract</h3>
+
+<p>
+Google Wave is a communication and collaboration platform based on hosted
+conversations, called waves. A wave comprises a set of concurrently editable
+structured documents and supports real-time sharing between multiple
+participants. This specification describes the Google Wave Federation
+Protocol Over XMPP, an open extension to the XMPP core <a class='info' href='#RFC3920'>[RFC3920]<span> (</span><span class='info'>Saint-Andre, P., Ed., &ldquo;Extensible Messaging and Presence Protocol (XMPP): Core,&rdquo; October&nbsp;2004.</span><span>)</span></a>
+ protocol
+allowing near real-time communication of wave updates between two wave servers.
+</p><a name="toc"></a><br /><hr />
+<h3>Table of Contents</h3>
+<p class="toc">
+<a href="#anchor1">1.</a>&nbsp;
+Introduction<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor2">1.1.</a>&nbsp;
+Document Status<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor3">1.2.</a>&nbsp;
+Overview<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor4">1.3.</a>&nbsp;
+Terminology<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor5">1.4.</a>&nbsp;
+Editorial Notes<br />
+<a href="#anchor6">2.</a>&nbsp;
+Architectural Overview<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor7">2.1.</a>&nbsp;
+Relationship between specifications<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor8">2.2.</a>&nbsp;
+Wave Providers<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor9">2.3.</a>&nbsp;
+Wavelets<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor10">2.4.</a>&nbsp;
+Documents<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor11">2.5.</a>&nbsp;
+Operations<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor12">2.6.</a>&nbsp;
+Wave Service Architecture<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor13">2.6.1.</a>&nbsp;
+Federation Host and Federation Remote<br />
+<a href="#anchor14">3.</a>&nbsp;
+Protocol Specification<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor15">3.1.</a>&nbsp;
+Connection Initiation and Lifetime<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor16">3.2.</a>&nbsp;
+Cryptographic Certificates and Signatures<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor17">3.3.</a>&nbsp;
+Stanzas<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor18">3.3.1.</a>&nbsp;
+Commonly used attributes<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor20">3.3.2.</a>&nbsp;
+Commonly used elements<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor25">3.3.3.</a>&nbsp;
+Update Stanzas<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor28">3.3.4.</a>&nbsp;
+Service Stanzas<br />
+<a href="#anchor35">4.</a>&nbsp;
+Wavelet Update<br />
+<a href="#anchor36">5.</a>&nbsp;
+Get Signer<br />
+<a href="#anchor37">6.</a>&nbsp;
+Post Signer<br />
+<a href="#anchor38">7.</a>&nbsp;
+Documents<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor39">7.1.</a>&nbsp;
+Document operations<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#anchor40">7.2.</a>&nbsp;
+Document operation components<br />
+<a href="#anchor41">8.</a>&nbsp;
+Copyright and Patent<br />
+<a href="#rfc.references1">9.</a>&nbsp;
+References<br />
+<a href="#anchor43">Appendix&nbsp;A.</a>&nbsp;
+Protocol Schema<br />
+<a href="#anchor44">Appendix&nbsp;B.</a>&nbsp;
+Protocol Buffers<br />
+<a href="#rfc.authors">&#167;</a>&nbsp;
+Authors' Addresses<br />
+</p>
+<br clear="all" />
+
+<a name="anchor1"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1"></a><h3>1.&nbsp;
+Introduction</h3>
+
+<a name="anchor2"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.1"></a><h3>1.1.&nbsp;
+Document Status</h3>
+
+<p>
+This document represents work in progress.  It omits details that we
+are unable to capture at this point and we expect parts of the
+protocol to change.  Please also note that while we revise the
+protocol and white papers, some transient inconsistencies will occur.
+</p>
+<p>
+This document is one in a larger set of specifications for Google
+Wave; see <a href='http://www.waveprotocol.org/draft-protocol-specs'>http://www.waveprotocol.org/draft-protocol-specs</a>.
+</p>
+<a name="anchor3"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.2"></a><h3>1.2.&nbsp;
+Overview</h3>
+
+<p>
+The Google Wave Federation Protocol Over XMPP is an open extension to
+the XMPP core <a class='info' href='#RFC3920'>[RFC3920]<span> (</span><span class='info'>Saint-Andre, P., Ed., &ldquo;Extensible Messaging and Presence Protocol (XMPP): Core,&rdquo; October&nbsp;2004.</span><span>)</span></a>
+ protocol allowing near real-time
+communication of wave updates between two wave servers.
+</p>
+<a name="anchor4"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.3"></a><h3>1.3.&nbsp;
+Terminology</h3>
+
+<p>
+The capitalized key words &quot;MUST&quot;, &quot;MUST NOT&quot;,
+&quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;,
+&quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and
+&quot;OPTIONAL&quot; in this document are to be
+interpreted as described in <a class='info' href='#RFC2119'>[RFC2119]<span> (</span><span class='info'>Bradner, S., &ldquo;Key words for use in RFCs to Indicate Requirement Levels,&rdquo; March&nbsp;1997.</span><span>)</span></a>
+.
+</p>
+<a name="anchor5"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.1.4"></a><h3>1.4.&nbsp;
+Editorial Notes</h3>
+
+<p>
+To provide feedback on this draft join the wave-protocol
+mailing list at
+<a href='http://groups.google.com/group/wave-protocol'>http://groups.google.com/group/wave-protocol</a>
+</p>
+<a name="anchor6"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2"></a><h3>2.&nbsp;
+Architectural Overview</h3>
+
+<p>
+Google Wave is a communication and collaboration platform based on
+hosted conversations, called waves.  A wave consists of XML documents
+and supports concurrent modifications and low-latency updates between
+participants on the wave.
+</p>
+<a name="anchor7"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.1"></a><h3>2.1.&nbsp;
+Relationship between specifications</h3>
+
+<p>
+The Federation Protocol specifies the form and function of operations that
+mutate wave documents. See the Google Wave Conversation Model specification of
+conversation manifest documents and blip documents.
+</p>
+<a name="anchor8"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.2"></a><h3>2.2.&nbsp;
+Wave Providers</h3>
+
+<p>
+The wave federation protocol enables everyone to become a wave
+provider and share waves with others.  For instance, an organization
+can operate as a wave provider for its members, an individual can run
+a wave server as a wave provider for a single user or family members,
+and an Internet service provider can run a wave service as another
+Internet service for its users as a supplement to email, IM, ftp,
+etc.
+</p>
+<p>
+A wave provider is identified by its Internet domain name(s).
+</p>
+<p>
+Wave users have wave addresses which consist of a user name and a
+wave provider domain in the same form as an email address, namely
+&lt;username&gt;@&lt;domain&gt;.  Wave addresses can also refer to groups,
+robots, gateways, and other services.  A group address refers to a
+collection of wave addresses, much like an email mailing list.  A
+robot can be a translation robot or a chess game robot.  A gateway
+translates between waves and other communication and sharing
+protocols such as email and IM.  In the remainder we ignore
+addressees that are services, including robots and gateways - they
+are treated largely the same as users with respect to federation.
+</p>
+<p>
+Wave users access all waves through their wave provider.  If a wave
+has participants from different wave providers, their wave providers
+all maintain a copy of the wave and serve it to their users on the
+wave.  The wave providers share updates to the wave with each other
+using the wave federation protocol which we describe below.  For any
+given wave user, it is the responsibility of the wave provider for
+the user's domain to authenticate the user (using cookies and
+passwords, etc) and perform local access control.
+</p>
+<a name="anchor9"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.3"></a><h3>2.3.&nbsp;
+Wavelets</h3>
+
+<p>
+A wave consists of a set of wavelets.  When a user has access to a
+wavelet, that user is called a participant of that wavelet.  Each
+wavelet has a list of participants, and a set of documents that make
+up its contents.  Different wavelets of a wave can have different
+lists of participants.  Copies of a wavelet are shared across all of
+the wave providers that have at least one participant in that
+wavelet.  Amongst these wave providers, there is a designated wave
+provider that has the definitive copy of that wavelet.  We say that
+this particular provider is hosting that wavelet.
+</p>
+<p>
+When a user opens a wave, a view of the wave is retrieved, namely the
+set of wavelets in the wave that the user is a participant of
+(directly, or indirectly via group membership).  In general,
+different users have different wave views for a given wave.  For
+example, per-user data for a user in a wave, such as the user's read/
+unread state for the wave, is stored in a user-data wavelet in the
+wave with the user as the only participant.  The user-data wavelet
+only appears in this user's wave view.  Another example is a private
+reply within a wave, which is represented as a wavelet with a
+restricted participant list.  The private reply wavelet is only in
+the wave views of the restricted list of users.
+</p>
+<p>
+A wave is identified by a globally unique wave id, which is a pair of
+a domain name and an id string.  The domain names the wave provider
+where the wave originated.
+</p>
+<p>
+A wavelet has a wavelet id which is unique within its wave.  Like a
+wave id, a wavelet id is a pair of a domain name and an id string.
+The domain name in the wavelet id plays a special role: It names the
+wave provider that hosts the wavelet.  A wavelet is hosted by the
+wave provider of the participant who creates the wavelet.  The wave
+provider who hosts a wavelet is responsible both for operational
+transformation and application of wavelet operations to the wavelet
+and for sharing the applied operations with the wave providers of all
+the wavelet participants
+</p>
+<p>
+Wavelets in the same wave can be hosted by different wave providers.
+For example, a user-data wavelet is always hosted by the user's wave
+provider, regardless of where the rest of the wave is hosted.
+Indeed, user-data is not federated, i.e., not shared with other wave
+providers.  Another example is a private reply wavelet.  A
+particularly simple instance of this is when all the participants of
+the private reply are from the same wave provider.  Then this wave
+provider will not share the private reply wavelet with other wave
+providers, regardless of where the other wavelets in the wave are
+hosted.
+</p>
+<a name="anchor10"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.4"></a><h3>2.4.&nbsp;
+Documents</h3>
+
+<p>
+Each wavelet is a container for any number of documents.  Each
+document has an id that is unique within its containing wavelet.  It
+is composed of an XML document and a set of annotations.  Annotations
+are key-value pairs that span arbitrary ranges of the XML document
+and are independent of the XML document structure.  They are used to
+represent text formatting, spelling suggestions and hyper-links.
+</p>
+<p>
+Some documents represent rich-text messages in the wavelet.  These
+are known as &quot;blips&quot;.  The blips in a wave form a threaded
+conversation.  Others represent data, for example tags, and are not
+displayed to the user as part of the threaded conversation structure
+in the wave.  For detailed information on the structure of documents,
+please refer to the Google Wave Operational Transformation <a class='info' href='#OT'>[OT]<span> (</span><span class='info'>Wang, D. and A. Mah, &ldquo;Google Wave Operation Transform,&rdquo; July&nbsp;2009.</span><span>)</span></a>
+ white
+paper.
+</p>
+<a name="anchor11"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.5"></a><h3>2.5.&nbsp;
+Operations</h3>
+
+<p>
+Operations are mutations on wavelets.  The state of a wavelet is
+entirely defined by a sequence of operations on that wavelet.
+</p>
+<p>
+Clients and servers exchange operations in order to communicate
+modifications to a wavelet.  Operations propagate through the system
+to all clients and servers interested in that wavelet.  They each
+apply the operation to their own copy of the wavelet.  The use of
+operational transformation (OT) guarantees all copies of the
+wavelet will eventually converge to the same state.  In order for the
+guarantees made by OT to hold, all communication participants must
+use the same operational transformation and composition algorithms
+(i.e. all OT implementations must be functionally equivalent).
+</p>
+<a name="anchor12"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.6"></a><h3>2.6.&nbsp;
+Wave Service Architecture</h3>
+
+<p>
+A wave provider operates a wave service on one or more networked
+servers.  The central pieces of the wave service is the wave store,
+which stores wavelet operations, and the wave server, which resolves
+wavelet operations by operational transformation and writes and reads
+wavelet operations to and from the wave store.  Typically, the wave
+service serves waves to users of the wave provider which connect to
+the wave service frontend (see Google Wave Data Model and Client-
+Server Protocol), and we shall assume this in the following
+description of the wave service architecture.  More importantly, for
+the purpose of federation, the wave service shares waves with
+participants from other providers by communicating with these wave
+provider's servers.
+</p>
+<p>
+For a given wave provider, its wave server serves wave views to local
+participants, i.e., participants from its domain.  This wave server
+stores the state of all wavelets that it knows about.  Some are
+hosted by the wave server itself.  These are &quot;local wavelets&quot;
+relative to this wave server.  Others are copies of wavelets hosted
+by other wave providers.  These are &quot;remote&quot;.  A wave view can
+contain both types of wavelet simultaneously.
+</p>
+<p>
+At a particular wave provider, local wavelets are those created at
+that provider, namely by users who belong to the wavelet provider.
+The wave server is responsible for processing the wavelet operations
+submitted to the wavelet by local participants and by remote
+participants from other wave providers.  The wave server performs
+concurrency control by ordering the submitted wavelet operations
+relative to each other using operational transformation.  It also
+validates the operations before applying them to a local wavelet.
+</p>
+<p>
+Remote wavelets are hosted by other wave providers.  The wave server
+maintains cached copies locally and updates them with wavelet
+operations that it gets from the hosting wave providers.  When a
+local participant submits a wavelet operation to a remote wavelet,
+the wave server forwards the operation to the wave server of the
+hosting provider.  When the transformed and applied operation is
+echoed back, it is applied to the cached copy.  Read access to local
+participants is done from the cached copy without a round trip to the
+hosting wave provider.
+</p>
+<p>
+Local and remote wavelets are all stored in the wave server's
+persistent wave store.
+</p>
+<p>
+We say that a wave provider is &quot;upstream&quot; relative to its local
+wavelets and that it is &quot;downstream&quot; relative to its remote wavelets.
+</p>
+<a name="anchor13"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.2.6.1"></a><h3>2.6.1.&nbsp;
+Federation Host and Federation Remote</h3>
+
+<p>
+The wave service uses two components for peering with other wave
+providers, a &quot;federation host&quot; and a &quot;federation remote&quot;.  (In an
+earlier revision of this draft specification these components were
+called &quot;federation gateway&quot; and &quot;federation proxy&quot;, respectively).
+</p>
+<p>
+The federation host communicates local wavelet operations, i.e.,
+operations on local wavelets:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+wavelet to the wave providers of any remote participants.
+</li>
+<li>
+It satisfies requests for old wavelet operations.
+</li>
+<li>
+It processes wavelet operations submission requests.
+</li>
+</ul><p>
+
+</p>
+<p>
+The federation remote communicates remote wavelet operations and is
+the component of a wave provider that communicates with the
+federation host of upstream wave providers:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+It receives new wavelet operations pushed to it from the wave
+providers that host the wavelets.
+</li>
+<li>
+It requests old wavelet operations from the hosting wave
+providers.
+</li>
+<li>
+It submits wavelet operations to the hosting wave providers.
+</li>
+</ul><p>
+
+</p>
+<p>
+An upstream wave provider's federation host connects to a downstream
+wave provider's federation remote to push wavelet operations that are
+hosted by the upstream wave provider.
+</p>
+<p>
+The federation protocol has the following mechanisms to make
+operation delivery from host to remote reliable.  The federation host
+maintains (in persistent storage) a queue of outgoing operations for
+each remote domain.  Operations are queued until their receipt is
+acknowledged by the receiving federation remote.  The federation host
+will continually attempt to establish a connection and reconnect
+after any connection failures (retrying with an exponential backoff).
+When a connection is established, the federation host will send
+queued operations.  The receiving federation remote sends
+acknowledgements back to the sending federation host and whenever an
+acknowledgement is received, the sender dequeues the acknowledged
+operations.
+</p>
+<a name="anchor14"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3"></a><h3>3.&nbsp;
+Protocol Specification</h3>
+
+<a name="anchor15"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.1"></a><h3>3.1.&nbsp;
+Connection Initiation and Lifetime</h3>
+
+<p>
+As an XMPP extension, this protocol expects a bidirectional stream to
+be established according to the XMPP core specification.
+</p>
+<p>
+The connection MUST be secured using the TLS feature of XMPP.  It is
+RECOMMENDED that communication is encrypted (namely by using a non-
+identity TLS cipher).
+</p>
+<p>
+All communication except wavelet updates are sent via PubSub
+<a class='info' href='#XEP0060'>[XEP0060]<span> (</span><span class='info'>Millard, P., Saint-Andre, P., and R. Meijer, &ldquo;Publish-Subscribe,&rdquo; October&nbsp;in progress, 2009.</span><span>)</span></a>
+ events.  Wavelet updates are sent using Message stanzas.
+</p>
+<a name="anchor16"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.2"></a><h3>3.2.&nbsp;
+Cryptographic Certificates and Signatures</h3>
+
+<p>
+In the section below there are references to cryptographic signatures
+and certificates used to generate them.
+</p>
+<p>
+The paper by Kissner and Laurie, General Verifiable Federation <a class='info' href='#VERFED'>[VERFED]<span> (</span><span class='info'>Kissner, L. and B. Laurie, &ldquo;General Verifiable Federation,&rdquo; July&nbsp;2009.</span><span>)</span></a>
+
+gives a detailed explanation of how we expect to make all changes to
+wavelets attributable to their originating servers and render the
+federation protocol immune to a number of attacks.  The techniques
+described in the paper have not yet been fully implemented or
+incorporated into this protocol specification, however certificates
+are exchanged using the get signer and post signer XMPP messages.
+</p>
+<a name="anchor17"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3"></a><h3>3.3.&nbsp;
+Stanzas</h3>
+
+<p>
+The federation protocol involves two parties: a wave federation host
+and wave federation remote as described above.  The
+top level stanzas are divided into two types: those that are part of
+the &quot;update stanzas&quot;, and those part of the &quot;service stanzas&quot;.  The
+update stanzas are initiated by a federation host to
+a federation remote and carry &lt;update/&gt;s from the
+host to the remote.  The service stanzas are
+initiated by the federation remote to the federation host and carry
+&lt;submit-request/&gt;s and &lt;submit-response/&gt;s, &lt;history-request/&gt;s and
+&lt;history-response/&gt;s, &lt;signer-get-request/&gt;s and
+&lt;signer-get-response/&gt;s, &lt;signer-post-request/&gt;s and &lt;signer-post-
+response/&gt;s.
+</p>
+<a name="anchor18"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.1"></a><h3>3.3.1.&nbsp;
+Commonly used attributes</h3>
+
+<p>
+These stanzas commonly contain the following attributes:
+</p>
+<a name="anchor19"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.1.1"></a><h3>3.3.1.1.&nbsp;
+wavelet-name</h3>
+
+<p>
+The 'wavelet-name' attribute is an encoded form of the following
+components:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+A &quot;wave id&quot; specifies the domain of the wave provider that
+originally started the wave, plus an identifier unique within that
+domain. The identifier starts with &quot;w+&quot; by convention.
+</li>
+<li>
+A &quot;wavelet id&quot; specifies the domain of the wave provider that
+hosts the wavelet, plus a unique identifier which is unique within
+all wavelets with that domain. The identifier starts with &quot;conv+&quot;
+by convention. The first wavelet added to a wave has the identifier
+&quot;conv+root&quot; by convention.
+</li>
+</ul><p>
+
+</p>
+<p>
+These components are encoded into a single string in the format of a
+an absolute URI.  The wavelet id domain is used as the host part
+(since this is where the wavelet is hosted).  The wave id is used as
+the first path element, which contains the wave id domain if it does
+not match the wavelet id domain, in this case it is prepended to a
+unique identifier with a '$' delimiter.  The unique identifier in the
+wavelet id is the final path element.  URI generic delimiter
+characters (:/?#[]@) appearing in the id parts must be percent-
+escaped.
+</p>
+<p>
+For example, a 'wavelet-name' might be &quot;wave://initech-corp.com/
+acmewave.com$w+4Kl2/conv+3sG7&quot;, where the wavelet id has domain
+&quot;initech-corp.com&quot; and unique identifier &quot;conv+3sG7&quot;, and the wave id
+has domain &quot;acmewave.com&quot; and unique identifier &quot;w+4Kl2&quot;.
+</p>
+<p>
+If the wavelet was hosted at &quot;initech-corp.com&quot; and the wave had also
+been started on that domain, the 'wavelet-name' would be &quot;wave://initech-
+corp.com/w+4Kl2/conv+3sG7&quot;.
+</p>
+<a name="anchor20"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.2"></a><h3>3.3.2.&nbsp;
+Commonly used elements</h3>
+
+<a name="anchor21"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.2.1"></a><h3>3.3.2.1.&nbsp;
+hashed-version</h3>
+
+<p>
+A &lt;hashed-version/&gt; element contains the version and history hash
+pair of a wavelet.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+'version' -- REQUIRED attribute which contains the version of the
+wavelet. The value of this attribute is a 64-bit integer to base 10.
+</li>
+<li>
+'history-hash' -- REQUIRED attribute which is the value of the
+rolling history hash at the given version. The history-hash attribute is
+a base64 encoding of the rolling hash.
+</li>
+</ul><p>
+
+</p>
+<p>
+The rolling hash is computed as follows:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+The initial hash value H(0) is the wavelet-name.
+</li>
+<li>
+The hash value H(n) is computed as SHA256( H(n-1) + delta )[0..20].
+</li>
+</ul><p>
+
+</p>
+<p>
+The '+' operator means that the hash and the delta are concatenated.
+The delta is a protocol buffer encoding of the message type
+protocol::ProtocolAppliedWaveletDelta.
+</p>
+<a name="anchor22"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.2.2"></a><h3>3.3.2.2.&nbsp;
+commit-notice</h3>
+
+<p>
+The &lt;commit-notice/&gt; element is a variant of the &lt;hashed-version/&gt;
+element.  It is used to indicate that the wave server has committed
+deltas up to this point.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+'version' -- REQUIRED attribute which contains the version of
+the wavelet. The value of this attribute is a 64-bit integer
+to base 10.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor23"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.2.3"></a><h3>3.3.2.3.&nbsp;
+delta</h3>
+
+<p>
+The &lt;delta/&gt; element contains a sequence of one or more operations
+grouped for communication to and between wave servers:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+'wavelet-name' -- REQUIRED wavelet-name (Section 3.3.1.1).
+</li>
+<li>
+&lt;operation/&gt; -- The operation is carried as the text of the
+&lt;delta&gt; element as a Base64 encoded protocol buffer of the
+message type protocol::ProtocolSignedDelta.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor24"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.2.4"></a><h3>3.3.2.4.&nbsp;
+applied-delta</h3>
+
+<p>
+The &lt;applied-delta/&gt; element contains a delta which has been
+successfully applied to a wavelet by a wave server, along with
+supplementary information about the result of the application.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+&lt;operation/&gt; -- The operation is carried as the text of the
+&lt;applied-delta&gt; element as a Base64 encoded protocol buffer
+of the message type protocol::ProtocolAppliedWaveletDelta.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor25"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.3"></a><h3>3.3.3.&nbsp;
+Update Stanzas</h3>
+
+<p>
+The wavelet-update operation is sent as a Message stanza.
+</p>
+<a name="anchor26"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.3.1"></a><h3>3.3.3.1.&nbsp;
+wavelet-update</h3>
+
+<p>
+The &lt;wavelet-update/&gt; element is used within a Message stanza.  It is
+used to push new wavelet operations applied to a local wavelet to the
+wave providers of any remote participants.
+</p>
+<p>
+When the requester is resending updates after reconnecting a XMPP
+stream, the &lt;wavelet-update/&gt; MAY omit the &lt;applied-delta/&gt; elements
+but MUST resend the &lt;commit-notice/&gt; elements.  In this case the
+&lt;commit-notice/&gt; informs the receiver of the existence of updates,
+and it is up to the receiver to request these using a &lt;history-
+request/&gt; on a service stream.
+</p>
+<a name="anchor27"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.3.2"></a><h3>3.3.3.2.&nbsp;
+Successful update and response example</h3>
+
+<p>
+An example of otherwave.com's federation host pushing data to a
+federation remote:
+</p>
+<p>
+Step 1: otherwave.com's federation host sends an update to the
+federation remote:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;message type="normal"
+  from="wave.initech-corp.com"
+  id="1-1" to="wave.acmewave.com"&gt;
+  &lt;request xmlns="urn:xmpp:receipts"/&gt;
+  &lt;event xmlns="http://jabber.org/protocol/pubsub#event"&gt;
+    &lt;items&gt;
+      &lt;item&gt;
+        &lt;wavelet-update
+          xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+          wavelet-name="wave://acmewave.com/initech-corp.com$w+a/conv+b"&gt;
+          &lt;applied-delta&gt;&lt;![CDATA[CiI...MwE] ]&gt;&lt;/applied-delta&gt;
+        &lt;/wavelet-update&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/event&gt;
+&lt;/message&gt;</pre></div>
+<p>
+Step 2: The federation remote acknowledges the update, indicating
+success.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;message id="1-1"
+  from="wave.acmewave.com"
+  to="wave.initech-corp.com"&gt;
+  &lt;received
+    xmlns="urn:xmpp:receipts"/&gt;
+&lt;/message&gt;</pre></div>
+<a name="anchor28"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4"></a><h3>3.3.4.&nbsp;
+Service Stanzas</h3>
+
+<p>
+The service stanzas are for the submission of operations and wavelet
+history retrieval.
+</p>
+<a name="anchor29"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4.1"></a><h3>3.3.4.1.&nbsp;
+History Request</h3>
+
+<p>
+The &lt;delta-history/&gt; element is used within a PubSub <a class='info' href='#XEP0060'>[XEP0060]<span> (</span><span class='info'>Millard, P., Saint-Andre, P., and R. Meijer, &ldquo;Publish-Subscribe,&rdquo; October&nbsp;in progress, 2009.</span><span>)</span></a>
+ event.
+It is sent by a federation remote to request wavelet operations from
+the hosting wave providers.  The response by the host provider's
+federation host will contain the operations for the requested version
+range.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+'wavelet-name' -- REQUIRED attribute.
+</li>
+<li>
+'start-version' -- REQUIRED attribute with version number
+(inclusive) from which to retrieve the wavelet's history.  (Note
+that the start version MUST fall on a delta boundary).
+</li>
+<li>
+'start-version-hash' -- REQUIRED attribute with the hash for the
+associated start version.
+</li>
+<li>
+'end-version' -- REQUIRED attribute with ending version number
+(exclusive) up to which to retrieve the wavelet's history.  (Note
+that the end version MUST fall on a delta boundary).
+</li>
+<li>
+'end-version-hash' -- REQUIRED attribute with the hash for the
+associated end version.
+</li>
+<li>
+'response-length-limit' -- OPTIONAL attribute containing advice
+from the requester about the preferred response limit, measured as
+the aggregate number of characters in the XML serialization of the
+applied deltas in the response.  The responder is advised but not
+required to respect the limit.  Moreover, the responder may
+operate with a lower limit of its own and send back a smaller
+message than requested.  When the responder exercises either its
+own or the requester's limit, it will return only a prefix of the
+requested wavelet deltas.  Unless the version range is empty, the
+responder will always return a minimum of one wavelet delta (the
+first) even if its length exceeds the responders or requester's
+limits.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor30"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4.2"></a><h3>3.3.4.2.&nbsp;
+History Response</h3>
+
+<p>
+The response to a History Request contains:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+&lt;history-truncated&gt; -- OPTIONAL attribute indicating that the
+returned deltas were truncated at the given version number
+(exclusive).  Truncation will occur if the &lt;delta-history/&gt;
+(Section 3.3.4.1) specified a 'response-length-limit' attribute or
+the responder imposed its own limit.
+</li>
+<li>
+&lt;applied-delta/&gt; -- the update contains ZERO OR MORE &lt;applied-
+delta/&gt; elements, starting from the requested version up to the
+requested end version (exclusive), or until the latest version if
+the request did not contain the end version, or up to the version
+indicated in 'version-truncated-at'.
+</li>
+<li>
+&lt;commit-notice/&gt; -- OPTIONAL element indicating that some range of
+the returned deltas has not been committed to persistent storage
+by the hosting wave server.  The &lt;commit-notice/&gt; indicates up to
+which version the server has committed.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor31"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4.3"></a><h3>3.3.4.3.&nbsp;
+Successful history request / history response example</h3>
+
+<p>
+Step 1: A federation remote makes a history-request (Section 3.3.4.1)
+to the acmewave.com federation host:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="get" id="1-1" from="wave.initech-corp.com" to="wave.acmewave.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;items node="wavelet"&gt;
+      &lt;delta-history
+        xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+        start-version="12"
+        start-version-hash="..."
+        end-version="2345"
+        end-version-hash="..."
+        response-length-limit="300000"
+        wavelet-name="wave://acmewave.com/initech-corp.com$w+a/conv+b"/&gt;
+    &lt;/items&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<p>
+Step 2: acmewave.com's federation host returns the requested history.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="result" id="1-1" from="wave.acmewave.com" to="wave.initech-corp.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;items&gt;
+      &lt;item&gt;
+        &lt;applied-delta
+          xmlns="http://waveprotocol.org/protocol/0.2/waveserver"&gt;
+            &lt;![CDATA[CiI...MwE] ]&gt;
+        &lt;/applied-delta&gt;
+      &lt;/item&gt;
+      &lt;item&gt;
+        &lt;commit-notice
+          xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+          version="2344"/&gt;
+      &lt;/item&gt;
+      &lt;item&gt;
+        &lt;history-truncated
+          xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+          version="2300"/&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<a name="anchor32"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4.4"></a><h3>3.3.4.4.&nbsp;
+Submit Request</h3>
+
+<p>
+The &lt;submit-request/&gt; element is used within a PubSub <a class='info' href='#XEP0060'>[XEP0060]<span> (</span><span class='info'>Millard, P., Saint-Andre, P., and R. Meijer, &ldquo;Publish-Subscribe,&rdquo; October&nbsp;in progress, 2009.</span><span>)</span></a>
+
+event.  The federation remote submits wavelet operations to the
+hosting wave provider.  A &lt;submit-response/&gt; will be returned.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+&lt;delta/&gt; -- REQUIRED delta element to be submitted.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor33"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4.5"></a><h3>3.3.4.5.&nbsp;
+submit-response</h3>
+
+<p>
+A &lt;submit-response/&gt; element is used within a PubSub <a class='info' href='#XEP0060'>[XEP0060]<span> (</span><span class='info'>Millard, P., Saint-Andre, P., and R. Meijer, &ldquo;Publish-Subscribe,&rdquo; October&nbsp;in progress, 2009.</span><span>)</span></a>
+
+response.  It is returned by a federation host after the hosting wave
+server has processed the submitted delta.
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+'operations-applied' -- REQUIRED attribute with the number of
+operations applied by the wave server after transforming the
+submitted delta. The value of this attribute is a 32-bit integer
+to base 10.
+</li>
+<li>
+'application-timestamp' -- REQUIRED timestamp (milliseconds since
+1.1.1979) attribute recording the time of delta application.
+The value of this attribute is a 64-bit integer to base 10.
+</li>
+<li>
+'error-message' -- OPTIONAL string attribute containing an error
+message if the an error occurred while applying the delta.  Note
+it's possible to partially apply a delta, in which case the error
+message will be present.
+</li>
+<li>
+&lt;hashed-version/&gt; -- REQUIRED element with the version and history
+hash of the wavelet after the submitted delta was applied.
+</li>
+</ul><p>
+
+</p>
+<a name="anchor34"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.3.3.4.6"></a><h3>3.3.4.6.&nbsp;
+Successful submit request / submit response example</h3>
+
+<p>
+Step 1: The federation remote makes a submit request to the initech-
+corp.com federation host:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="set" id="1-1" from="wave.initech-corp.com" to="wave.acmewave.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;publish node="wavelet"&gt;
+      &lt;item&gt;
+        &lt;submit-request
+          xmlns="http://waveprotocol.org/protocol/0.2/waveserver"&gt;
+          &lt;delta wavelet-name="wave://acmewave.com/initech-corp.com$w+a/conv+b"&gt;
+            &lt;![CDATA[CiA...NvbQ==] ]&gt;
+          &lt;/delta&gt;
+        &lt;/submit-request&gt;
+      &lt;/item&gt;
+    &lt;/publish&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<p>
+Step 2: The initech-corp.com federation host returns a response to
+the submit request.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="result" id="1-1" from="wave.acmewave.com" to="wave.initech-corp.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;publish&gt;
+      &lt;item&gt;
+        &lt;submit-response
+          xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+          application-timestamp="1234567890"
+          operations-applied="2"&gt;
+          &lt;hashed-version
+            history-hash="..."
+            version="1234"/&gt;
+        &lt;/submit-response&gt;
+      &lt;/item&gt;
+    &lt;/publish&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<a name="anchor35"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.4"></a><h3>4.&nbsp;
+Wavelet Update</h3>
+
+<p>
+Wavelet update operations mutate wavelets.  The actual operation is a
+signed protocol buffer that is included in the applied-delta element
+Base64 encoded text.  The wavelet update MAY contain zero or more applied-
+delta's and an optional commit-notice.  The wavelet update response
+is an XMPP receipt of the form specified in XEP-0184.
+</p>
+<p>
+Here is an example exchange:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;message type="normal" from="wave.initech-corp.com" id="1-1" to="wave.acmewave.com"&gt;
+  &lt;request xmlns="urn:xmpp:receipts"/&gt;
+  &lt;event xmlns="http://jabber.org/protocol/pubsub#event"&gt;
+    &lt;items&gt;
+      &lt;item&gt;
+        &lt;wavelet-update xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+          wavelet-name="wave://acmewave.com/initech-corp.com$w+a/conv+b"&gt;
+          &lt;applied-delta&gt;&lt;![CDATA[CiIKIAoFCNIJEgASF2ZvenppZUBpbml0ZWNoLWNvcnAuY29tEgUI0gkSABgCINKF2MwE] ]&gt;&lt;/applied-delta&gt;
+        &lt;/wavelet-update&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/event&gt;
+&lt;/message&gt;
+
+
+&lt;message id="1-1" from="wave.acmewave.com" to="wave.initech-corp.com"&gt;
+  &lt;received xmlns="urn:xmpp:receipts"/&gt;
+&lt;/message&gt;</pre></div>
+<a name="anchor36"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.5"></a><h3>5.&nbsp;
+Get Signer</h3>
+
+<p>
+A remote wave server issues a signer-request to request certificates
+for wavelets where the signer of the wavelet is currently unknown.
+i.e. the request is being sent in response to a received wavelet update.
+A signer is identified by a sequence of bytes as used in
+protocol::ProtocolSignature.signer_id. The request is sent to the wave
+server that hosts the wavelet. The request MUST NOT be sent to a remote
+wave server. The provided history-hash identifies the delta for which
+the certificate is being requested.
+</p>
+<p>
+Here is an example exchange:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="get" id="1-1" from="wave.initech-corp.com" to="wave.acmewave.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;items node="signer"&gt;
+      &lt;signer-request xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+        history-hash="somehash" version="1234"
+        wavelet-name="wave://acmewave.com/initech-corp.com$w+a/conv+b"/&gt;
+    &lt;/items&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<p>
+The hosting wave server replies with a chain of certificates sent
+Base64 encoded in the certificate elements.  Each certificate element
+represents a single certificate.  The order of the certificate
+elements goes from the first which is the closest certificate, to the
+last certificate which is the root for the certificate chain.  More
+details on signing are still to be added to this document.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="result" id="1-1" from="wave.acmewave.com" to="wave.initech-corp.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;items&gt;
+      &lt;signature xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+        domain="initech-corp.com" algorithm="SHA256"&gt;
+        &lt;certificate&gt;&lt;![CDATA[Q0VS...VElPTg==] ]&gt;&lt;/certificate&gt;
+        &lt;certificate&gt;&lt;![CDATA[QkV...LRQ==] ]&gt;&lt;/certificate&gt;
+      &lt;/signature&gt;
+    &lt;/items&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<p>
+The certificates are base64 encoded (almost as in PEM).
+A (shortened) PEM certificate as follows:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+-----BEGIN CERTIFICATE-----
+MIIDmTCCAwKgAwIBAgIJAJbxsoszxI+5MA0GCSqGSIb3DQEBBQUAMIGQMQswCQYD
+qBgkuse74JojLyzxHg==
+-----END CERTIFICATE-----</pre></div>
+<p>
+is compressed by omitting the first and last line and by removing
+the line break, resulting in:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+MIIDmTCCAwKgAwIBAgIJAJbxsoszxI+5MA0GCSqGSIb3DQEBBQUAMIGQMQswCQYDqBgkuse74JojLyzxHg==</pre></div>
+<p>
+This value is base64 encoded and sent as text or CDATA inside the
+certificate element. Upon receiving the response, the remote wave
+server must compute the signer ID from the list of certificates
+to check that the received certificates match the requested signer.
+Therefore, the remote wave server decodes the certificates, encodes
+them using DER (ASN.1 Distinguished Encoding Rules), reversers their
+order, i.e. the root certificate of the chain is first and the
+closest certificate is the last. These DER encoded certificates are
+treated as an ASN.1 SEQUENCE OF data type and are concatenated
+accordingly resulting in a byte sequence. Finally, a SHA256 hash
+of the resulting byte sequence is computed. The hash must match the
+signer ID used in the signed delta.
+</p>
+<p>
+A ASN.1 SEQUENCE OF is enocded as follows:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+Byte 1: 0b110000 (this indicates the data type, i.e. SEQUENCE OF)
+Byte 2: 0b10000000 OR (the number of bytes required to express the length of the data as a binary number)
+Bytes 3 .. n: The data length encoded as a big endian number
+Bytes n+1 ff.: The data</pre></div>
+<p>
+For example, a data of length 0x293 is encoded as:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+Byte 1: 0b110000
+Byte 2: 0b10000010
+Byte 3: 0x02
+Byte 4: 0x93
+Bytes 5 ff.: The data</pre></div>
+<a name="anchor37"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.6"></a><h3>6.&nbsp;
+Post Signer</h3>
+
+<p>
+Before its first submit request to a hosting wave server, a remote wave
+server MUST supply the certificate chain that will allow the hosting
+wave server to authenticate the signed wave delta.
+If the signature is not sent in advance, the hosting wave server will
+reject the submit request and the remote wave server must send the signature
+before it resends the submit request. More details on signing are still
+to be added to this document.
+</p>
+<p>
+Here is an example exchange:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="set" id="1-1" from="wave.initech-corp.com" to="wave.acmewave.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;publish node="signer"&gt;
+      &lt;item&gt;
+        &lt;signature xmlns="http://waveprotocol.org/protocol/0.2/waveserver"
+          domain="initech-corp.com" algorithm="SHA256"&gt;
+          &lt;certificate&gt;&lt;![CDATA[Q0V...Tg==] ]&gt;&lt;/certificate&gt;
+          &lt;certificate&gt;&lt;![CDATA[QkV...RQ==] ]&gt;&lt;/certificate&gt;
+        &lt;/signature&gt;
+      &lt;/item&gt;
+    &lt;/publish&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<p>
+The hosting wave server acks the message.:
+</p><div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+&lt;iq type="set" id="1-1" from="wave.initech-corp.com" to="wave.acmewave.com"&gt;
+  &lt;pubsub xmlns="http://jabber.org/protocol/pubsub"&gt;
+    &lt;publish&gt;
+      &lt;item node="signer"&gt;
+        &lt;signature-response xmlns="http://waveprotocol.org/protocol/0.2/waveserver" /&gt;
+      &lt;/item&gt;
+    &lt;/publish&gt;
+  &lt;/pubsub&gt;
+&lt;/iq&gt;</pre></div>
+<p>
+The encoding of the certificates are the same as in the signer request.
+</p>
+<a name="anchor38"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.7"></a><h3>7.&nbsp;
+Documents</h3>
+
+<p>
+A document is a sequence of items, where each item is a character, a
+start tag, or an end tag.  Each item has a key-value map of
+annotations.
+</p>
+<p>
+Characters are Unicode code points.  Certain control characters,
+special characters and noncharacters are not permitted.
+</p>
+<p>
+Start tags consist of a type and attributes.  The type is an XML
+name.  The attributes form a key-value map, where keys and values are
+strings.  Certain Unicode control characters, special characters and
+noncharacters are permitted neither in the type nor in attribute
+names or values.
+</p>
+<p>
+Each end tag terminates the rightmost unterminated start tag; the tag
+name is implicit.  The number of start tags in the document equals
+the number of end tags, and for every prefix of the document, the
+number of start tags equals or exceeds the number of end tags.  Thus,
+start and end tags nest properly, and there are no self-closing tags.
+</p>
+<p>
+Annotation keys and values are strings.  Certain Unicode control
+characters, special characters and noncharacters are not permitted.
+If the map has no entry for a given key, we sometimes say that the
+value for that key is null.  While each item conceptually has its own
+annotation map, implementations may find it more efficient to have
+just one annotation map for each consecutive run of items with the
+same annotations.
+</p>
+<p>
+Note that a naive serialization of the document without annotations
+into a string is not formally an XML document because it can have
+multiple elements and characters at the top level, while XML requires
+a single root element.  How to interpret the document as XML is up to
+the application; options include making sure at the application level
+that the entire document contents are inside a single element even if
+the protocol does not enforce this; ignoring all content other than
+the first element; or wrapping the entire document in an implicit
+root element whose type and attributes are not represented inside the
+document.
+</p>
+<a name="anchor39"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.7.1"></a><h3>7.1.&nbsp;
+Document operations</h3>
+
+<p>
+A document operation is a set of instructions that specify how to
+process an input document, reading its sequence of items from left to
+right, to generate an output document.  For the purpose of this
+specification, the operation does not modify the input document,
+although implementations that perform destructive updates are
+possible.
+</p>
+<p>
+Document operations are invertible; for any document operation op
+that turns an input document A into an output document B, an inverse
+operation that turns B into A can always be derived from op without
+knowledge of A or B.
+</p>
+<p>
+A document operation consists of a sequence of document operation
+components that are executed in order.  During this process, two
+pieces of state need to be maintained in addition to the document
+being processed:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+the current location ('cursor') in the input document, either to
+the left of the first item, between two items, or to the right of
+the last item of the input document, and
+</li>
+<li>
+the current annotations update, which is a map of annotation keys
+to pairs (old-value, new-value), where old-value and new-value are
+either null or an annotation value.
+</li>
+</ul><p>
+
+</p>
+<p>
+Initially, the cursor is to the left of the first item, and the
+annotations update is empty.
+</p>
+<p>
+After the final component, the annotations update must be empty, and
+the cursor must be to the right of the last item in the input
+document.
+</p>
+<a name="anchor40"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.7.2"></a><h3>7.2.&nbsp;
+Document operation components</h3>
+
+<p>
+Document operation components can be divided into four classes:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+update components (retain, replaceAttributes, updateAttributes)
+move the cursor over a consecutive range of input items and
+generate corresponding but potentially modified items in the
+output document;
+</li>
+<li>
+insertion components (characters, elementStart, elementEnd)
+generate items in the output document without moving the cursor;
+</li>
+<li>
+deletion components (deleteCharacters, deleteElementStart,
+deleteElementEnd) move the cursor over a consecutive range of
+input items without generating any output;
+</li>
+<li>
+annotation boundaries (annotationBoundary) change the current
+annotations update but do not directly affect the document or the
+cursor.
+</li>
+</ul><p>
+
+</p>
+<p>
+The different component classes have the following interaction with
+annotations:
+</p>
+<p>
+</p>
+<ul class="text">
+<li>
+For update components, the old values in the annotations update
+match the annotation values of each item in the input document
+that the component processes.  The generated items in the output
+document will have the same annotations as the corresponding input
+items, except for the annotation keys in the annotations update;
+for those keys, the generated items will have the new values.
+</li>
+<li>
+For insertion components, the old values in the annotations update
+match the annotations of the item to the left of the cursor.  The
+inserted items are annotated with the new values from the
+annotations update in addition to any annotations on the item to
+the left of the cursor with keys that are not part of the
+annotations update.
+If the cursor is at the beginning of the document, the old values
+in the annotations update are null, and the inserted items are
+annotated with the new values from the annotations update.
+</li>
+<li>
+For deletion components, the old values in the annotations update
+match the annotations of each item in the input document processed
+by the component, and the new values match the annotations of the
+rightmost item generated so far.  All annotation keys that have
+different values in the processed item and the rightmost item
+generated so far are present in the annotations update.
+If no items have been generated so far, the new values are null,
+and all annotation keys of the deleted items must be present in
+the annotations update.
+</li>
+</ul><p>
+
+</p>
+<p>
+</p>
+<blockquote class="text"><dl>
+<dt>retain(itemCount)</dt>
+<dd>
+The cursor moves over the next itemCount items,
+and they are copied to the output document, with annotations as
+described above.  The argument itemCount is a positive integer.
+</dd>
+<dt>replaceAttributes(oldAttributes, newAttributes)</dt>
+<dd>
+The cursor moves over the next item, which must be a start tag with the
+attributes oldAttributes.  A start tag with the same type but the attributes
+newAttributes is generated in the output.  Its annotations are as described
+above.  The arguments oldAttributes and newAttributes are key-value maps.
+</dd>
+<dt>updateAttributes(attributesUpdate)</dt>
+<dd>
+The cursor moves over the next item, which must be a start tag.  A start tag
+with the same type is generated in the output, with annotations as described
+above.  The argument attributesUpdate is a map of attribute names to pairs
+(oldValue, newValue), where oldValue and newValue are either null or an
+attribute value.  The oldValues match the attributes of the start tag in the
+input document; an oldValue of null means no such attribute is present.  The
+generated start tag has the new values for the attributes in
+attributesUpdate.  Attributes in the input whose names are not listed are
+transferred to the output unchanged.
+</dd>
+<dt>characters(characters)</dt>
+<dd>
+The specified characters are inserted into the output document, with
+annotations as described above.
+</dd>
+<dt>elementStart(type, attributes)</dt>
+<dd>
+An element start with type type and attributes attributes is inserted into
+the output document, with annotations as described above.  This component
+must be terminated with an elementEnd.  Between an elementStart and its
+corresponding elementEnd, only insertion components are permitted.
+</dd>
+<dt>elementEnd</dt>
+<dd>
+An element end is inserted into the output document, with annotations as
+described above.  This component terminates the most recent unterminated
+elementStart.  It must not occur without a corresponding elementStart.
+</dd>
+<dt>deleteCharacters(characters)</dt>
+<dd>
+This component moves the cursor over the specified characters in the input
+document without generating any output.  The characters must match the
+actual characters in the input document, and the current annotations update
+must match as described above.
+</dd>
+<dt>deleteElementStart(type, attributes)</dt>
+<dd>
+This component moves the cursor over the specified element start in the
+input document without generating any output.  There must be an element
+start to the right of the cursor, and its type and attributes must match the
+arguments.  The current annotations update must match as described above.
+This component must be terminated with a deleteElementEnd.  Between a
+deleteElementStart and its corresponding deleteElementEnd, only deletion
+components are permitted.
+</dd>
+<dt>deleteElementEnd</dt>
+<dd>
+This component moves the cursor over an element end in the input document
+without generating any output.  There must be an element end to the right of
+the cursor.  The current annotations update must match as described above.
+This component terminates the most recent unterminated deleteElementStart.
+It must not occur without a corresponding deleteElementStart.
+</dd>
+<dt>annotation-boundary(ends, changes)</dt>
+<dd>
+This component modifies the current annotations update.  Ends is a set of
+annotation keys; these keys are removed from the annotations update.
+Changes is a map of annotation keys to pairs (oldValue, newValue), where
+oldValue and newValue are either null or an annotation value; these entries
+are added to the annotations update, or replace entries in the annotations
+update that have the same key.  The keys in ends and changes must be
+disjoint.  An operation must not contain two consecutive annotationBoundary
+components.  Ends must only contain keys that are part of the current
+annotations update.
+</dd>
+</dl></blockquote><p>
+
+</p>
+<a name="anchor41"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.8"></a><h3>8.&nbsp;
+Copyright and Patent</h3>
+
+<p>
+This specification is made available under the terms of the <a href='http://creativecommons.org/licenses/by/3.0'>Creative Commons
+Attribution 3.0 License</a> and the
+<a href='http://www.waveprotocol.org/patent-license'>Patent License</a>.
+</p>
+<a name="rfc.references1"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>9.&nbsp;References</h3>
+<table width="99%" border="0">
+<tr><td class="author-text" valign="top"><a name="OT">[OT]</a></td>
+<td class="author-text"><a href="mailto:">Wang, D.</a> and <a href="mailto:">A. Mah</a>, &ldquo;<a href="http://www.waveprotocol.org/whitepapers/operational-transform">Google Wave Operation Transform</a>,&rdquo; Google Wave Whitepapers&nbsp;OT, July&nbsp;2009.</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC2119">[RFC2119]</a></td>
+<td class="author-text"><a href="mailto:sob@harvard.edu">Bradner, S.</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc2119">Key words for use in RFCs to Indicate Requirement Levels</a>,&rdquo; BCP&nbsp;14, RFC&nbsp;2119, March&nbsp;1997 (<a href="ftp://ftp.isi.edu/in-notes/rfc2119.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc2119.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc2119.xml">XML</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="RFC3920">[RFC3920]</a></td>
+<td class="author-text"><a href="mailto:stpeter@jabber.org">Saint-Andre, P., Ed.</a>, &ldquo;<a href="http://tools.ietf.org/html/rfc3920">Extensible Messaging and Presence Protocol (XMPP): Core</a>,&rdquo; RFC&nbsp;3920, October&nbsp;2004 (<a href="ftp://ftp.isi.edu/in-notes/rfc3920.txt">TXT</a>, <a href="http://xml.resource.org/public/rfc/html/rfc3920.html">HTML</a>, <a href="http://xml.resource.org/public/rfc/xml/rfc3920.xml">XML</a>).</td></tr>
+<tr><td class="author-text" valign="top"><a name="VERFED">[VERFED]</a></td>
+<td class="author-text"><a href="mailto:lkissner@google.com">Kissner, L.</a> and <a href="mailto:benl@google.com">B. Laurie</a>, &ldquo;<a href="http://sites.google.com/a/waveprotocol.org/wave-protocol/whitepapers/wave-protocol-verification">General Verifiable Federation</a>,&rdquo; Google Wave Whitepapers&nbsp;VERFED, July&nbsp;2009.</td></tr>
+<tr><td class="author-text" valign="top"><a name="XEP0060">[XEP0060]</a></td>
+<td class="author-text"><a href="mailto:">Millard, P.</a>, <a href="mailto:stpeter@jabber.org">Saint-Andre, P.</a>, and <a href="mailto:ralphm@ik.nu">R. Meijer</a>, &ldquo;<a href="http://xmpp.org/extensions/xep-0060.html">Publish-Subscribe</a>,&rdquo; XSF XEP&nbsp;0060, October&nbsp;in progress, 2009.</td></tr>
+</table>
+
+<a name="anchor43"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.A"></a><h3>Appendix A.&nbsp;
+Protocol Schema</h3>
+<div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+namespace default = ""
+namespace pubsub = "http://jabber.org/protocol/pubsub"
+namespace disco = "http://jabber.org/protocol/disco#info"
+namespace rec   = "urn:xmpp:receipts"  # NAMESPACE_XMPP_RECEIPTS
+namespace discoitems = "http://jabber.org/protocol/disco#items"  # NAMESPACE_DISCO_ITEMS
+namespace pubsubevt = "http://jabber.org/protocol/pubsub#event" # NAMESPACE_PUBSUB_EVENT
+namespace wavesrv = "http://waveprotocol.org/protocol/0.2/waveserver" # NAMESPACE_WAVE_SERVER
+namespace rcpt = "urn:xmpp:receipts"
+
+
+## Our possible iq children
+start = update
+      | submitrequest | submitresponse
+      | history-request | history-response
+      | signer-get-request | signer-get-response
+      | signer-post-request | signer-post-response
+
+## Envelope to push wavelet operations. Used in iq set stanza.
+update =
+  element message {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element rcpt:request { empty },
+    element pubsubevt:event {
+      element pubsubevt:items {
+        element pubsubevt:item {
+          element wavesrv:wavelet-update {
+            attribute wavelet-name { xsd:string },
+            element wavesrv:applied-delta { text }*,
+            commit-notice?
+          } *
+        }
+      }
+    }
+  }
+
+
+## Request for historical wavelet operations. Used in iq get stanza.
+history-request =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        attribute node { text }, # set to "wavelet"
+        element wavesrv:delta-history {
+          attribute wavelet-name { xsd:string },
+          attribute start-version { xsd:integer },
+          attribute start-version-hash { xsd:string },
+          attribute end-version { xsd:integer },
+          attribute end-version-hash { xsd:string },
+          attribute response-length-limit { xsd:integer }?
+        } *
+      }
+    }
+  }
+
+## Response to history-request. Used in iq result stanza.
+history-response =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        element pubsub:item {
+          element wavesrv:applied-delta {
+            text
+          }
+          | element wavesrv:history-truncated {
+            attribute version { xsd:integer }
+          }
+          | commit-notice
+        } *
+      }
+    }
+  }
+
+## Request to submit operations to a wavelet. Used in iq set stanza.
+submitrequest =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        attribute node { xsd:string },
+        element pubsub:item {
+          element wavesrv:submit-request {
+            element wavesrv:delta {
+              attribute wavelet-name { xsd:string },
+              text
+            }
+          }
+        }
+      }
+    }
+  }
+
+## Response to submit-request. Used in iq result stanza.
+submitresponse =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        element pubsub:item {
+          element wavesrv:submit-response {
+            attribute application-timestamp { xsd:integer },
+            attribute operations-applied { xsd:integer },
+            attribute error-message { xsd:string }?,
+            hashed-version
+          }
+        }
+      }
+    }
+  }
+
+
+## Signer get request
+signer-get-request =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        attribute node { xsd:string }, # need to be hardcoded value "signer"
+        element wavesrv:signer-request {
+          attribute signer-id {xsd:string },
+          attribute wavelet-name { xsd:string },
+          version-hash-attributes
+        }
+      }
+    }
+  }
+
+## Signer get response
+signer-get-response =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:items {
+        element wavesrv:signature {
+          attribute domain { text },
+          attribute algorithm { text },
+          element wavesrv:certificate { text } +
+        }
+      }
+    }
+  }
+
+
+
+## Signer post request
+signer-post-request =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        attribute node { xsd:string }, # need to be hardcoded value "signer"
+        element pubsub:item {
+          element wavesrv:signature {
+            attribute domain { text },
+            attribute algorithm { text },
+            element wavesrv:certificate { text } +
+          }
+        }
+      }
+    }
+  }
+
+## Signer post response
+signer-post-response =
+  element iq {
+    attribute id   { text },
+    attribute from { text },
+    attribute to   { text },
+    attribute type { text },
+    element pubsub:pubsub {
+      element pubsub:publish {
+        element pubsub:item {
+          attribute node { xsd:string }, # need to be hardcoded value "signer"
+          element wavesrv:signature-response { empty }
+        }
+      }
+    }
+  }
+
+
+## A wavelet version and the wavelet's history hash at that version.
+version-hash-attributes =
+  attribute version { xsd:integer } &amp; attribute history-hash { xsd:string }
+
+## Notification of the fact that the host provider has persisted a
+## wavelet up to the specified version.
+commit-notice =
+  element wavesrv:commit-notice {
+    attribute version { xsd:integer }
+  }
+
+## Describes a wavelet version and the wavelet's history hash at that version.
+hashed-version =
+  element wavesrv:hashed-version {
+    version-hash-attributes
+  }
+
+</pre></div>
+<a name="anchor44"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<a name="rfc.section.B"></a><h3>Appendix B.&nbsp;
+Protocol Buffers</h3>
+<div style='display: table; width: 0; margin-left: 3em; margin-right: auto'><pre>
+/**
+ * Copyright 2009 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+//
+// Google Wave Federation Protocol data structures.
+//
+// They are intended to be equivalent to the data structures in the
+// draft "Google Wave Federation Protocol Over XMPP" at
+// http://code.google.com/p/wave-protocol/source
+//
+// Author: thorogood@google.com (Sam Thorogood), soren@google.com (Soren Lassen)
+
+syntax = "proto2";
+
+package federation;
+
+option java_package = "org.waveprotocol.wave.federation";
+option java_outer_classname = "Proto";
+
+/**
+ * An immutable list of operations for contribution to a wavelet.
+ * Specifies the contributor and the wavelet version that the
+ * operations are intended to be applied to.  The host wave server
+ * may apply the operations to the wavelet at the specified wavelet version
+ * or it may accept them at a later version after operational transformation
+ * against the operations at the intermediate wavelet versions.
+ */
+message ProtocolWaveletDelta {
+  // Wavelet version that the delta is intended to be applied to.
+  required ProtocolHashedVersion hashed_version = 1;
+
+  // Wave address of the contributor. Must be an explicit wavelet participant,
+  // and may be different from the originator of this delta.
+  required string author = 2;
+
+  // Operations included in this delta.
+  repeated ProtocolWaveletOperation operation = 3;
+
+  /*
+   * The nodes on the "overt" path from the originator through the address
+   * access graph leading up to (but excluding) the author. The path excludes
+   * any initial segments of the complete path which come before a WRITE edge
+   * in the graph. This field is empty if the author is either the originator's
+   * entry point into the address graph or is accessed by a WRITE edge.
+   *
+   * For example, "wave-discuss@acmewave.com" may be the explicit participant of
+   * a wavelet, and is set as the author of a delta. However, this group is
+   * being asked to act on behalf of "peter@initech-corp.com", who is a member
+   * of "wave-authors", which is in turn a member of "wave-discuss". In this
+   * example, the delta would be configured as such:
+   *  delta.author = "wave-discuss@acmewave.com"
+   *  delta.addressPath = ["peter@initech-corp.com", "wave-authors@acmewave.com"]
+   */
+  repeated string address_path = 4;
+}
+
+/**
+ * Describes a wavelet version and the wavelet's history hash at that version.
+ */
+message ProtocolHashedVersion {
+  required int64 version = 1;
+  required bytes history_hash = 2;
+}
+
+/**
+ * An operation within a delta. Exactly one of the following seven fields must be set
+ * for this operation to be valid.
+ */
+message ProtocolWaveletOperation {
+
+  // A document operation. Mutates the contents of the specified document.
+  message MutateDocument {
+    required string document_id = 1;
+    required ProtocolDocumentOperation document_operation = 2;
+  }
+
+  // Adds a new participant (canonicalized wave address) to the wavelet.
+  optional string add_participant = 1;
+
+  // Removes an existing participant (canonicalized wave address) from the wavelet.
+  optional string remove_participant = 2;
+
+  // Mutates a document.
+  optional MutateDocument mutate_document = 3;
+
+  // Does nothing. True if set.
+  optional bool no_op = 4;
+}
+
+/**
+ * A list of mutation components.
+ */
+message ProtocolDocumentOperation {
+
+  /**
+   * A component of a document operation.  One (and only one) of the component
+   * types must be set.
+   */
+  message Component {
+
+    message KeyValuePair {
+      required string key = 1;
+      required string value = 2;
+    }
+
+    message KeyValueUpdate {
+      required string key = 1;
+      // Absent field means that the attribute was absent/the annotation
+      // was null.
+      optional string old_value = 2;
+      // Absent field means that the attribute should be removed/the annotation
+      // should be set to null.
+      optional string new_value = 3;
+    }
+
+    message ElementStart {
+      required string type = 1;
+      // MUST NOT have two pairs with the same key.
+      repeated KeyValuePair attribute = 2;
+    }
+
+    message ReplaceAttributes {
+      // This field is set to true if and only if both oldAttributes and
+      // newAttributes are empty.  It is needed to ensure that the optional
+      // replaceAttributes component field is not dropped during serialization.
+      optional bool empty = 1;
+      // MUST NOT have two pairs with the same key.
+      repeated KeyValuePair old_attribute = 2;
+      // MUST NOT have two pairs with the same key.
+      repeated KeyValuePair new_attribute = 3;
+    }
+
+    message UpdateAttributes {
+      // This field is set to true if and only if attributeUpdates are empty.
+      // It is needed to ensure that the optional updateAttributes
+      // component field is not dropped during serialization.
+      optional bool empty = 1;
+      // MUST NOT have two updates with the same key.
+      repeated KeyValueUpdate attribute_update = 2;
+    }
+
+    message AnnotationBoundary {
+      // This field is set to true if and only if both ends and changes are
+      // empty.  It is needed to ensure that the optional annotationBoundary
+      // component field is not dropped during serialization.
+      optional bool empty = 1;
+      // MUST NOT have the same string twice.
+      repeated string end = 2;
+      // MUST NOT have two updates with the same key.  MUST NOT
+      // contain any of the strings listed in the 'end' field.
+      repeated KeyValueUpdate change = 3;
+    }
+
+    optional AnnotationBoundary annotation_boundary = 1;
+    optional string characters = 2;
+    optional ElementStart element_start = 3;
+    optional bool element_end = 4;
+    optional int32 retain_item_count = 5;
+    optional string delete_characters = 6;
+    optional ElementStart delete_element_start = 7;
+    optional bool delete_element_end = 8;
+    optional ReplaceAttributes replace_attributes = 9;
+    optional UpdateAttributes update_attributes = 10;
+  }
+
+  repeated Component component = 1;
+}
+
+/**
+ * Information generated about this delta post-applicaton. Used in
+ * ProtocolUpdate and ProtocolHistoryResponse.
+ */
+message ProtocolAppliedWaveletDelta {
+  required ProtocolSignedDelta signed_original_delta = 1;
+  optional ProtocolHashedVersion hashed_version_applied_at = 2;
+  required int32 operations_applied = 3;
+  required int64 application_timestamp = 4;
+}
+
+/**
+ * A canonicalised delta signed with a number of domain signatures.
+ */
+message ProtocolSignedDelta {
+  required bytes delta = 1;
+  repeated ProtocolSignature signature = 2;
+}
+
+/**
+ * A signature for a delta. It contains the actual bytes of the signature,
+ * an identifier of the signer (usually the hash of a certificate chain),
+ * and an enum identifying the signature algorithm used.
+ */
+message ProtocolSignature {
+
+  enum SignatureAlgorithm {
+    SHA1_RSA = 1;
+  }
+
+  required bytes signature_bytes = 1;
+  required bytes signer_id = 2;
+  required SignatureAlgorithm signature_algorithm = 3;
+}
+
+/**
+ * A certificate chain that a sender will refer to in subsequent signatures.
+ *
+ * The signer_id field in a ProtocolSignature refers to a ProtocolSignerInfo
+ * as follows: The certificates present in a ProtocolSignerInfo are encoded
+ * in PkiPath format, and then hashed using the hash algorithm indicated in the
+ * ProtocolSignerInfo.
+ */
+message ProtocolSignerInfo {
+
+  enum HashAlgorithm {
+    SHA256 = 1;
+    SHA512 = 2;
+  }
+
+  // The hash algorithm senders will use to generate an id that will refer to
+  // this certificate chain in the future
+  required HashAlgorithm hash_algorithm = 1;
+
+  // The domain that this certificate chain was issued to. Receivers of this
+  // ProtocolSignerInfo SHOULD reject the ProtocolSignerInfo if the target
+  // certificate (the first one in the list) is not issued to this domain.
+  required string domain = 2;
+
+  // The certificate chain. The target certificate (i.e., the certificate issued
+  // to the signer) is first, and the CA certificate (or one issued directly
+  // by the CA) is last.
+  repeated bytes certificate = 3;
+}
+</pre></div>
+<a name="rfc.authors"></a><br /><hr />
+<table summary="layout" cellpadding="0" cellspacing="2" class="TOCbug" align="right"><tr><td class="TOCbug"><a href="#toc">&nbsp;TOC&nbsp;</a></td></tr></table>
+<h3>Authors' Addresses</h3>
+<table width="99%" border="0" cellpadding="0" cellspacing="0">
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Anthony Baxter</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:arb@google.com">arb@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Jochen Bekmann</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:jochen@google.com">jochen@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Daniel Berlin</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:dannyb@google.com">dannyb@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Joe Gregorio</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:jcgregorio@google.com">jcgregorio@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Soren Lassen</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:soren@google.com">soren@google.com</a></td></tr>
+<tr cellpadding="3"><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Sam Thorogood</td></tr>
+<tr><td class="author-text">&nbsp;</td>
+<td class="author-text">Google, Inc</td></tr>
+<tr><td class="author" align="right">Email:&nbsp;</td>
+<td class="author-text"><a href="mailto:thorogood@google.com">thorogood@google.com</a></td></tr>
+</table>
+</body></html>
