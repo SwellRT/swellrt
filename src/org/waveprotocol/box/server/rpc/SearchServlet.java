@@ -216,7 +216,7 @@ public final class SearchServlet extends HttpServlet {
       resp.sendError(HttpServletResponse.SC_FORBIDDEN);
     } else {
       resp.setStatus(HttpServletResponse.SC_OK);
-      resp.setContentType("application/json");
+      resp.setContentType("application/json; charset=utf8");
       // This is to make sure the fetched data is fresh - since the w3c spec
       // is rarely respected.
       resp.setHeader("Cache-Control", "no-store");
