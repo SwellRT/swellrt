@@ -20,8 +20,6 @@ package org.waveprotocol.box.server.rpc;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import com.sun.istack.internal.Nullable;
-
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -100,7 +98,6 @@ public class AttachmentServlet extends HttpServlet {
     return fileName != null ? fileName : "";
   }
 
-  @Nullable
   private static WaveletName waveRef2WaveletName(String waveRefStr) {
     WaveRef waveRef = null;
     try {
