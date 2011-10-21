@@ -1,0 +1,11 @@
+URL: http://commons.apache.org/fileupload/download_fileupload.cgi
+Version: 1.2.2
+License: Apache 2.0
+
+License File: LICENSE
+
+Description:
+The Commons FileUpload package makes it easy to add robust, high-performance, file upload capability to your servlets and web applications.
+
+Local Modifications:
+No modifications.
