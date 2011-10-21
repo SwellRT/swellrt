@@ -91,3 +91,8 @@
 @sprite .insertGadget {
   gwt-image: 'insertGadget';
 }
+
+@sprite .insertAttachment {
+  gwt-image: 'insertAttachment';
+  margin-top: 3px;
+}

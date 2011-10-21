@@ -1,0 +1,40 @@
+/*
+ * CSS Stylesheet for the attachment popup.
+ *
+ * author: yurize@apache.org (Yuri Zelikov)
+ */
+ 
+.self {
+	margin: 0px 2px 0px 2px;
+	line-height: 1.5;
+	overflow: hidden; /* Expand to include floated content. */
+}
+
+.title {
+	font-size: 15px;
+	whitespace: nowrap;
+	color: #5a99df;
+	margin-left: 5px;
+}
+
+.spinnerPanel {
+	margin-left: 15px;
+}
+
+.spinner {
+	margin: 3px 5px 0 0;
+}
+
+.status {
+	font-size: 15px;
+	whitespace: nowrap;
+	margin-top: 0;
+}
+
+.error {
+	color: red;
+}
+
+.done {
+	color: green;
+}

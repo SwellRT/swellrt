@@ -160,6 +160,9 @@ public interface StageTwo {
   /** @return the profile manager. */
   ProfileManager getProfileManager();
 
+  /** @return the id generator. */
+  IdGenerator getIdGenerator();
+
   /** @return the communication channel connector. */
   MuxConnector getConnector();
 
@@ -318,7 +321,8 @@ public interface StageTwo {
       return signedInuser == null ? signedInuser = createSignedInUser() : signedInuser;
     }
 
-    protected final IdGenerator getIdGenerator() {
+    @Override
+    public final IdGenerator getIdGenerator() {
       return idGenerator == null ? idGenerator = createIdGenerator() : idGenerator;
     }
 
@@ -605,15 +609,15 @@ public interface StageTwo {
         @Override
         public UiBuilder render(
             ConversationBlip blip, IdentityMap<ConversationThread, UiBuilder> replies) {
-          // Documents are rendered blank, and filled in later when 
+          // Documents are rendered blank, and filled in later when
           // they get paged in.
           pager.add(blip);
           return DocRefRenderer.EMPTY.render(blip, replies);
         }
       };
-      
+
       RenderingRules<UiBuilder> rules = new FullDomRenderer(
-          getBlipDetailer(), docRenderer, getProfileManager(), 
+          getBlipDetailer(), docRenderer, getProfileManager(),
           getViewIdMapper(), createViewFactories(), getThreadReadStateMonitor());
       return new HtmlDomRenderer(ReductionBasedRenderer.of(rules, getConversations()));
     }

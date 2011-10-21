@@ -43,10 +43,12 @@ import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.SignerInfoStore;
+import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.robots.RobotCapabilities;
 import org.waveprotocol.wave.crypto.SignatureException;
 import org.waveprotocol.wave.crypto.SignerInfo;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
+import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -79,17 +81,17 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private static final String ACCOUNT_COLLECTION = "account";
   private static final String ACCOUNT_HUMAN_DATA_FIELD = "human";
   private static final String ACCOUNT_ROBOT_DATA_FIELD = "robot";
-  
+
   private static final String HUMAN_PASSWORD_FIELD = "passwordDigest";
-  
+
   private static final String PASSWORD_DIGEST_FIELD = "digest";
   private static final String PASSWORD_SALT_FIELD = "salt";
-  
+
   private static final String ROBOT_URL_FIELD = "url";
   private static final String ROBOT_SECRET_FIELD = "secret";
   private static final String ROBOT_CAPABILITIES_FIELD = "capabilities";
   private static final String ROBOT_VERIFIED_FIELD = "verified";
-  
+
   private static final String CAPABILITIES_VERSION_FIELD = "version";
   private static final String CAPABILITIES_HASH_FIELD = "capabilitiesHash";
   private static final String CAPABILITIES_CAPABILITIES_FIELD = "capabilities";
@@ -97,6 +99,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private static final String CAPABILITY_FILTER_FIELD = "filter";
 
   private static final Logger LOG = Logger.getLogger(MongoDbStore.class.getName());
+  private final static String SEPARATOR_CHAR = "#";
 
   private final DB database;
 
@@ -177,8 +180,10 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   }
 
   @Override
-  public AttachmentData getAttachment(String id) {
-    final GridFSDBFile attachment = getAttachmentGrid().findOne(id);
+  public AttachmentData getAttachment(WaveletName waveletName, String id) {
+
+    String completeAttachmentId = computeCompleteAttachmentId(waveletName, id);
+    final GridFSDBFile attachment = getAttachmentGrid().findOne(completeAttachmentId);
 
     if (attachment == null) {
       return null;
@@ -208,14 +213,16 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   }
 
   @Override
-  public boolean storeAttachment(String id, InputStream data) throws IOException {
+  public boolean storeAttachment(WaveletName waveletName, String id, InputStream data)
+      throws IOException {
     // This method returns false if the attachment is already in the database.
     // Unfortunately, as far as I can tell the only way to do this is to perform
     // a second database query.
-    if (getAttachment(id) != null) {
+    if (getAttachment(waveletName, id) != null) {
       return false;
     } else {
-      GridFSInputFile file = getAttachmentGrid().createFile(data, id);
+      String completeAttachmentId = computeCompleteAttachmentId(waveletName, id);
+      GridFSInputFile file = getAttachmentGrid().createFile(data, completeAttachmentId);
 
       try {
         file.save();
@@ -235,8 +242,9 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   }
 
   @Override
-  public void deleteAttachment(String id) {
-    getAttachmentGrid().remove(id);
+  public void deleteAttachment(WaveletName waveletName, String id) {
+    String completeAttachmentId = computeCompleteAttachmentId(waveletName, id);
+    getAttachmentGrid().remove(completeAttachmentId);
   }
 
 
@@ -356,7 +364,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
               .append(CAPABILITY_CONTEXTS_FIELD, contexts)
               .append(CAPABILITY_FILTER_FIELD, capability.getFilter()));
     }
-    
+
     BasicDBObject object =
         new BasicDBObject()
             .append(CAPABILITIES_CAPABILITIES_FIELD, capabilitiesObj)
@@ -369,7 +377,8 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private AccountData objectToRobot(ParticipantId id, DBObject robot) {
     String url = (String) robot.get(ROBOT_URL_FIELD);
     String secret = (String) robot.get(ROBOT_SECRET_FIELD);
-    RobotCapabilities capabilities = objectToCapabilities((DBObject) robot.get(ROBOT_CAPABILITIES_FIELD));
+    RobotCapabilities capabilities =
+        objectToCapabilities((DBObject) robot.get(ROBOT_CAPABILITIES_FIELD));
     boolean verified = (Boolean) robot.get(ROBOT_VERIFIED_FIELD);
     return new RobotAccountDataImpl(id, url, secret, capabilities, verified);
   }
@@ -379,11 +388,11 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     if (object == null) {
       return null;
     }
-    
+
     Map<String, Object> capabilitiesObj =
 	(Map<String, Object>) object.get(CAPABILITIES_CAPABILITIES_FIELD);
     Map<EventType, Capability> capabilities = CollectionUtils.newHashMap();
-    
+
     for (Entry<String, Object> capability : capabilitiesObj.entrySet()) {
       EventType eventType = EventType.valueOf(capability.getKey());
       List<Context> contexts = CollectionUtils.newArrayList();
@@ -393,13 +402,20 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
         contexts.add(Context.valueOf((String) contextsObj.get(contextId)));
       }
       String filter = (String) capabilityObj.get(CAPABILITY_FILTER_FIELD);
-      
+
       capabilities.put(eventType, new Capability(eventType, contexts, filter));
     }
-    
+
     String capabilitiesHash = (String) object.get(CAPABILITIES_HASH_FIELD);
-    ProtocolVersion version = ProtocolVersion.valueOf((String) object.get(CAPABILITIES_VERSION_FIELD));
+    ProtocolVersion version =
+        ProtocolVersion.valueOf((String) object.get(CAPABILITIES_VERSION_FIELD));
 
     return new RobotCapabilities(capabilities, capabilitiesHash, version);
+  }
+
+  private String computeCompleteAttachmentId(WaveletName waveletName, String id) {
+    String waveletNamePrefix = FileUtils.waveletNameToPathSegment(waveletName);
+    String completeAttachmentId = waveletNamePrefix + SEPARATOR_CHAR + id;
+    return completeAttachmentId;
   }
 }

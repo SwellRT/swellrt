@@ -158,7 +158,7 @@ public interface StageThree {
     }
 
     protected EditToolbar createEditToolbar() {
-      return EditToolbar.create(getStageTwo().getSignedInUser());
+      return EditToolbar.create(getStageTwo().getSignedInUser(), stageTwo.getIdGenerator());
     }
 
     protected ViewToolbar createViewToolbar() {

@@ -52,6 +52,7 @@ public interface EditorToolbarResources extends ClientBundle {
     String insertLink();
     String removeLink();
     String insertGadget();
+    String insertAttachment();
   }
 
   @Source("images/edit/bold.png") ImageResource bold();
@@ -76,6 +77,7 @@ public interface EditorToolbarResources extends ClientBundle {
   @Source("images/edit/createLink.png") ImageResource insertLink();
   @Source("images/edit/removeLink.png") ImageResource removeLink();
   @Source("images/edit/gadget.png") ImageResource insertGadget();
+  @Source("images/edit/attachment.png") ImageResource insertAttachment();
 
   @Source("EditToolbar.css")
   Css css();

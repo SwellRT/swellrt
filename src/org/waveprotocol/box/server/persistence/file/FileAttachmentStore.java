@@ -23,6 +23,7 @@ import com.google.inject.name.Named;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
 import org.waveprotocol.box.server.persistence.AttachmentUtil;
+import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.util.CharBase64;
 
 import java.io.File;
@@ -44,7 +45,7 @@ public class FileAttachmentStore implements AttachmentStore {
    * The directory in which the attachments are stored. This directory is created lazily
    * when the first attachment is stored.
    */
-  private String basePath;
+  private final String basePath;
 
   @Inject
   public FileAttachmentStore(@Named(CoreSettings.ATTACHMENT_STORE_DIRECTORY) String basePath) {
@@ -59,13 +60,15 @@ public class FileAttachmentStore implements AttachmentStore {
     }
   }
 
-  private String getAttachmentPath(String id) {
-    return basePath + File.separatorChar + encodeId(id);
+  public String getAttachmentPath(WaveletName waveletName, String attachmentId) {
+    String waveletNamePrefix = FileUtils.waveletNameToPathSegment(waveletName);
+    return basePath + File.separatorChar + waveletNamePrefix + File.separatorChar
+        + encodeId(attachmentId);
   }
 
   /** Gets the file which stores an attachment with the specified ID. */
-  private File getAttachmentFile(String id, boolean createDir) {
-    File file = new File(getAttachmentPath(id));
+  private File getAttachmentFile(WaveletName waveletName, String attachmentId, boolean createDir) {
+    File file = new File(getAttachmentPath(waveletName, attachmentId));
     if (!file.exists() && createDir) {
       file.getParentFile().mkdirs();
     }
@@ -74,8 +77,8 @@ public class FileAttachmentStore implements AttachmentStore {
   }
 
   @Override
-  public AttachmentData getAttachment(String id) {
-    final File file = getAttachmentFile(id, false);
+  public AttachmentData getAttachment(WaveletName waveletName, String attachmentId) {
+    final File file = getAttachmentFile(waveletName, attachmentId, false);
 
     if (!file.exists() || !file.canRead()) {
       return null;
@@ -107,8 +110,8 @@ public class FileAttachmentStore implements AttachmentStore {
   }
 
   @Override
-  public boolean storeAttachment(String id, InputStream data) throws IOException {
-    File file = getAttachmentFile(id, true);
+  public boolean storeAttachment(WaveletName waveletName, String id, InputStream data) throws IOException {
+    File file = getAttachmentFile(waveletName, id, true);
 
     if (file.exists()) {
       return false;
@@ -121,8 +124,8 @@ public class FileAttachmentStore implements AttachmentStore {
   }
 
   @Override
-  public void deleteAttachment(String id) {
-    File file = new File(getAttachmentPath(id));
+  public void deleteAttachment(WaveletName waveletName, String id) {
+    File file = new File(getAttachmentPath(waveletName, id));
     if (file.exists()) {
       file.delete();
     }

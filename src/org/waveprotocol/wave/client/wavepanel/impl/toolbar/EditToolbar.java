@@ -18,11 +18,15 @@
 package org.waveprotocol.wave.client.wavepanel.impl.toolbar;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 
+import org.waveprotocol.box.webclient.client.HistorySupport;
 import org.waveprotocol.wave.client.common.util.WaveRefConstants;
 import org.waveprotocol.wave.client.doodad.link.Link;
 import org.waveprotocol.wave.client.doodad.link.Link.InvalidLinkException;
@@ -41,7 +45,10 @@ import org.waveprotocol.wave.client.editor.toolbar.ParagraphTraversalController;
 import org.waveprotocol.wave.client.editor.toolbar.TextSelectionController;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.gadget.GadgetXmlUtil;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GadgetSelectorWidget;
+import org.waveprotocol.wave.client.wavepanel.view.AttachmentPopupView;
+import org.waveprotocol.wave.client.wavepanel.view.AttachmentPopupView.Listener;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
 import org.waveprotocol.wave.client.widget.toolbar.SubmenuToolbarView;
 import org.waveprotocol.wave.client.widget.toolbar.ToolbarButtonViewBuilder;
@@ -49,11 +56,16 @@ import org.waveprotocol.wave.client.widget.toolbar.ToolbarView;
 import org.waveprotocol.wave.client.widget.toolbar.ToplevelToolbarWidget;
 import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarClickButton;
 import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarToggleButton;
+import org.waveprotocol.wave.media.model.AttachmentIdGenerator;
+import org.waveprotocol.wave.media.model.AttachmentIdGeneratorImpl;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
+import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.waveref.WaveRef;
+import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 
 /**
  * Attaches actions that can be performed in a Wave's "edit mode" to a toolbar.
@@ -100,24 +112,26 @@ public class EditToolbar {
   private final EditorToolbarResources.Css css;
   private final ToplevelToolbarWidget toolbarUi;
   private final ParticipantId user;
+  private final AttachmentIdGenerator attachmentIdGenerator;
 
   private final EditorContextAdapter editor = new EditorContextAdapter(null);
   private final ButtonUpdater updater = new ButtonUpdater(editor);
 
   private EditToolbar(EditorToolbarResources.Css css, ToplevelToolbarWidget toolbarUi,
-      ParticipantId user) {
+      ParticipantId user, IdGenerator idGenerator) {
     this.css = css;
     this.toolbarUi = toolbarUi;
     this.user = user;
+    attachmentIdGenerator = new AttachmentIdGeneratorImpl(idGenerator);
   }
 
   /**
    * Attaches editor behaviour to a toolbar, adding all the edit buttons.
    */
-  public static EditToolbar create(ParticipantId user) {
+  public static EditToolbar create(ParticipantId user, IdGenerator idGenerator) {
     ToplevelToolbarWidget toolbarUi = new ToplevelToolbarWidget();
     EditorToolbarResources.Css css = EditorToolbarResources.Loader.res.css();
-    return new EditToolbar(css, toolbarUi, user);
+    return new EditToolbar(css, toolbarUi, user, idGenerator);
   }
 
   /** Constructs the initial set of actions in the toolbar. */
@@ -155,6 +169,9 @@ public class EditToolbar {
 
     group = toolbarUi.addGroup();
     createInsertGadgetButton(group, user);
+
+    group = toolbarUi.addGroup();
+    createInsertAttachmentButton(group, user);
   }
 
   private void createBoldButton(ToolbarView toolbar) {
@@ -320,6 +337,82 @@ public class EditToolbar {
       }
     }
   }
+
+  private void createInsertAttachmentButton(ToolbarView toolbar, final ParticipantId user) {
+    // Find the current wave id.
+    String encodedToken = History.getToken();
+    WaveRef waveRef = null;
+    if (encodedToken != null && !encodedToken.isEmpty()) {
+      waveRef = HistorySupport.waveRefFromHistoryToken(encodedToken);
+    }
+    Preconditions.checkState(waveRef != null);
+    final String waveRefToken = URL.encode(GwtWaverefEncoder.encodeToUriQueryString(waveRef));
+
+    new ToolbarButtonViewBuilder().setIcon(css.insertAttachment()).setTooltip("Insert attachment")
+        .applyTo(toolbar.addClickButton(), new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            int tmpCursor = -1;
+            FocusedRange focusedRange = editor.getSelectionHelper().getSelectionRange();
+            if (focusedRange != null) {
+              tmpCursor = focusedRange.getFocus();
+            }
+            final int cursorLoc = tmpCursor;
+            AttachmentPopupView attachmentView = new AttachmentPopupWidget();
+            attachmentView.init(new Listener() {
+
+              @Override
+              public void onShow() {
+              }
+
+              @Override
+              public void onHide() {
+              }
+
+              @Override
+              public void onDone(String encodedWaveRef, String attachmentId, String fullFileName) {
+                // Insert a file name linking to the attachment URL.
+                int lastSlashPos = fullFileName.lastIndexOf("/");
+                int lastBackSlashPos = fullFileName.lastIndexOf("\\");
+                String fileName = fullFileName;
+                if (lastSlashPos != -1) {
+                  fileName = fullFileName.substring(lastSlashPos + 1, fullFileName.length());
+                } else if (lastBackSlashPos != -1) {
+                  fileName = fullFileName.substring(lastBackSlashPos + 1, fullFileName.length());
+                }
+                XmlStringBuilder xml = XmlStringBuilder.createFromXmlString(fileName);
+                int to = -1;
+                int docSize = editor.getDocument().size();
+                if (cursorLoc != -1) {
+                  // Insert the attachment at the cursor location.
+                  CMutableDocument doc = editor.getDocument();
+                  Point<ContentNode> point = doc.locate(cursorLoc);
+                  doc.insertXml(point, xml);
+                } else {
+                  LineContainers.appendLine(editor.getDocument(), xml);
+                }
+                // Calculate the link length for the attachment.
+                to = cursorLoc + editor.getDocument().size() - docSize;
+                String linkValue =
+                    GWT.getHostPageBaseURL() + "attachment/" + attachmentId + "?fileName="
+                        + fileName + "&waveRef=" + encodedWaveRef;
+                EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(),
+                    editor.getCaretAnnotations(), Link.KEY, linkValue, cursorLoc, to);
+                // Store the attachment information as annotations to allow
+                // robots detect and process them.
+                EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(),
+                    editor.getCaretAnnotations(), "attachment/id", attachmentId, cursorLoc, to);
+                EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(),
+                    editor.getCaretAnnotations(), "attachment/fileName", fileName, cursorLoc, to);
+              }
+            });
+
+            attachmentView.setAttachmentId(attachmentIdGenerator.newAttachmentId());
+            attachmentView.setWaveRef(waveRefToken);
+            attachmentView.show();
+          }
+        });
+}
 
   private void createInsertLinkButton(ToolbarView toolbar) {
     // TODO (Yuri Z.) use createTextSelectionController when the full

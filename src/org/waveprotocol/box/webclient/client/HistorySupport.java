@@ -20,9 +20,8 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
 import org.waveprotocol.box.webclient.client.events.Log;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
@@ -60,7 +59,7 @@ public class HistorySupport {
    * @return null if cannot parse into valid waveRef
    */
   @Nullable
-  static WaveRef waveRefFromHistoryToken(String encodedToken) {
+  public static WaveRef waveRefFromHistoryToken(String encodedToken) {
     try {
       return GwtWaverefEncoder.decodeWaveRefFromPath(encodedToken);
     } catch (InvalidWaveRefException e) {

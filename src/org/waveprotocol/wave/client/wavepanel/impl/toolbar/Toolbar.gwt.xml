@@ -4,6 +4,7 @@
   <inherits name="org.waveprotocol.wave.client.wavepanel.view.View" />
   <inherits name="org.waveprotocol.wave.client.wavepanel.impl.edit.Edit" />
   <inherits name="org.waveprotocol.wave.client.editor.toolbar.Toolbar" />
+  <inherits name="org.waveprotocol.wave.media.model.Attachment" />
 
   <source path="" />
 </module>
