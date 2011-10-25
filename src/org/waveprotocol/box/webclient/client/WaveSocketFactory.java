@@ -21,6 +21,7 @@ import com.google.gwt.websockets.client.WebSocket;
 import com.google.gwt.websockets.client.WebSocketCallback;
 
 import com.glines.socketio.client.common.SocketIOConnection;
+import com.glines.socketio.client.common.SocketIOConnectionListener;
 import com.glines.socketio.client.gwt.GWTSocketIOConnectionFactory;
 import com.glines.socketio.common.DisconnectReason;
 import com.glines.socketio.common.SocketIOException;
@@ -49,7 +50,7 @@ public class WaveSocketFactory {
          *  parse the urlBAse and pass the host and port.
          */
         private final SocketIOConnection socket = GWTSocketIOConnectionFactory.INSTANCE.create(
-            new SocketIOConnection.SocketIOConnectionListener() {
+            new SocketIOConnectionListener() {
           @Override
           public void onConnect() {
             callback.onConnect();

@@ -25,10 +25,11 @@ import java.io.IOException;
 /**
  * The server side of WebSocketChannel.
  */
-public class WebSocketServerChannel extends WebSocketChannel implements WebSocket {
+public class WebSocketServerChannel extends WebSocketChannel implements WebSocket,
+    WebSocket.OnTextMessage {
   private static final Log LOG = Log.get(WebSocketServerChannel.class);
 
-  private Outbound outbound;
+  private Connection connection;
 
   /**
    * Creates a new WebSocketServerChannel using the callback for incoming messages.
@@ -40,42 +41,35 @@ public class WebSocketServerChannel extends WebSocketChannel implements WebSocke
   }
 
   /**
-   * Handles an incoming connection
+   * Called when a new websocket connection is accepted.
    *
-   * @param outbound The outbound direction of the new connection.
+   * @param connection The Connection object to use to send messages.
    */
   @Override
-  public void onConnect(Outbound outbound) {
-    this.outbound = outbound;
-  }
-
-  /**
-   * Does nothing, as this only understands String messages, not byte ones.
-   */
-  @Override
-  public void onMessage(byte frame, byte[] data, int offset, int length) {
-    // do nothing. we don't expect this type of message.
+  public void onOpen(Connection connection) {
+    this.connection = connection;
   }
 
   /**
    * Pass on an incoming String message.
    *
-   * @param frame Which framing byte was used
    * @param data The message data itself
    */
   @Override
-  public void onMessage(byte frame, String data) {
+  public void onMessage(String data) {
     handleMessageString(data);
   }
 
   /**
-   * Handle a client disconnect.
+   * Called when an established websocket connection closes
+   * @param closeCode
+   * @param message
    */
   @Override
-  public void onDisconnect() {
-    LOG.info("websocket disconnected: "+this);
+  public void onClose(int closeCode, String message) {
+    LOG.info("websocket disconnected (" + closeCode + " - " + message + "): " + this);
     synchronized (this) {
-      outbound = null;
+      connection = null;
     }
   }
 
@@ -87,13 +81,12 @@ public class WebSocketServerChannel extends WebSocketChannel implements WebSocke
   @Override
   protected void sendMessageString(String data) throws IOException {
     synchronized (this) {
-      if (outbound == null) {
+      if (connection == null) {
         // Just drop the message. It's rude to throw an exception since the
         // caller had no way of knowing.
         LOG.warning("Websocket is not connected");
       } else {
-        // we always use null to frame our UTF-8 strings.
-        outbound.sendMessage((byte) 0x00, data);
+        connection.sendMessage(data);
       }
     }
   }

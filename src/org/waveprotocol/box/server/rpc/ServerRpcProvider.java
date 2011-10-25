@@ -36,8 +36,13 @@ import com.google.protobuf.Service;
 import com.google.protobuf.UnknownFieldSet;
 
 import com.glines.socketio.server.SocketIOInbound;
-import com.glines.socketio.server.SocketIOServlet;
+import com.glines.socketio.server.Transport;
 import com.glines.socketio.server.transport.FlashSocketTransport;
+import com.glines.socketio.server.transport.HTMLFileTransport;
+import com.glines.socketio.server.transport.JSONPPollingTransport;
+import com.glines.socketio.server.transport.XHRMultipartTransport;
+import com.glines.socketio.server.transport.XHRPollingTransport;
+import com.glines.socketio.server.transport.jetty.JettyWebSocketTransport;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -62,6 +67,7 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,6 +76,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.Nullable;
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
@@ -333,6 +340,11 @@ public class ServerRpcProvider {
     }
     final WebAppContext context = new WebAppContext();
 
+    // This disables JSessionIDs in URLs redirects
+    // see: http://stackoverflow.com/questions/7727534/how-do-you-disable-jsessionid-for-jetty-running-with-the-eclipse-jetty-maven-plu
+    // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
+    jettySessionManager.setSessionIdPathParameterName(null);
+
     context.setParentLoaderPriority(true);
 
     if (jettySessionManager != null) {
@@ -359,7 +371,7 @@ public class ServerRpcProvider {
       };
 
       context.addEventListener(contextListener);
-      context.addFilter(GuiceFilter.class, "/*", 0);
+      context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
       httpServer.setHandler(context);
 
       httpServer.start();
@@ -410,13 +422,13 @@ public class ServerRpcProvider {
         flashPolicyServerHost = "0.0.0.0";
       }
     }
-    sioholder.setInitParameter(FlashSocketTransport.FLASHPOLICY_SERVER_HOST_KEY,
+    sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_SERVER_HOST,
         flashPolicyServerHost);
-    sioholder.setInitParameter(FlashSocketTransport.FLASHPOLICY_SERVER_PORT_KEY,
+    sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_SERVER_PORT,
         ""+flashsocketPolicyPort);
     // TODO: Change to use the public http address and all other bound addresses.
-    sioholder.setInitParameter(FlashSocketTransport.FLASHPOLICY_DOMAIN_KEY, "*");
-    sioholder.setInitParameter(FlashSocketTransport.FLASHPOLICY_PORTS_KEY,
+    sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_DOMAIN, "*");
+    sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_PORTS,
         flashPolicyAllowedPorts.toString());
 
     // Serve the static content and GWT web client with the default servlet
@@ -436,9 +448,8 @@ public class ServerRpcProvider {
         // http://web.archiveorange.com/archive/v/d0LdlXf1kN0OXyPNyQZp
         for (Pair<String, ServletHolder> servlet : servletRegistry) {
           String url = servlet.getFirst();
-          @SuppressWarnings({"unchecked"})
-          Class<HttpServlet> clazz = servlet.getSecond().getHeldClass();
-          @SuppressWarnings({"unchecked"})
+          @SuppressWarnings("unchecked")
+          Class<HttpServlet> clazz = (Class<HttpServlet>) servlet.getSecond().getHeldClass();
           Map<String,String> params = servlet.getSecond().getInitParameters();
           serve(url).with(clazz,params);
           bind(clazz).in(Singleton.class);
@@ -504,7 +515,7 @@ public class ServerRpcProvider {
     }
 
     @Override
-    protected WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
+    public WebSocket doWebSocketConnect(HttpServletRequest request, String protocol) {
       ParticipantId loggedInUser =
           provider.sessionManager.getLoggedInUser(request.getSession(false));
 
@@ -525,9 +536,11 @@ public class ServerRpcProvider {
       this.provider = provider;
     }
 
-    SocketIOServlet socketIOServlet = new SocketIOServlet() {
+    AbstractWaveSocketIOServlet socketIOServlet = new AbstractWaveSocketIOServlet( new Transport[] {
+        new XHRMultipartTransport(), new XHRPollingTransport(), new FlashSocketTransport(),
+        new JettyWebSocketTransport(), new JSONPPollingTransport(), new HTMLFileTransport()}) {
       @Override
-      protected SocketIOInbound doSocketIOConnect(HttpServletRequest request, String[] strings) {
+      protected SocketIOInbound doSocketIOConnect(HttpServletRequest request) {
         ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(
             request.getSession(false));
 

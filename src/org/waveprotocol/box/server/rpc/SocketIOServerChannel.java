@@ -21,6 +21,7 @@ import com.glines.socketio.common.DisconnectReason;
 import com.glines.socketio.common.SocketIOException;
 import com.glines.socketio.server.SocketIOFrame;
 import com.glines.socketio.server.SocketIOInbound;
+import com.glines.socketio.server.SocketIOOutbound;
 
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -39,14 +40,6 @@ public class SocketIOServerChannel extends WebSocketChannel implements SocketIOI
    */
   public SocketIOServerChannel(ProtoCallback callback) {
     super(callback);
-  }
-
-  /**
-   * This isn't used at the moment.
-   */
-  @Override
-  public String getProtocol() {
-    return null;
   }
 
   /**

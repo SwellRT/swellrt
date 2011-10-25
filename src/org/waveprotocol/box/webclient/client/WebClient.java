@@ -271,7 +271,7 @@ public class WebClient implements EntryPoint {
   // XXX check formatting wrt GPE
   private native String getWebSocketBaseUrl(String moduleBase) /*-{return "ws" + /:\/\/[^\/]+/.exec(moduleBase)[0] + "/";}-*/;
 
-  private native boolean useSocketIO() /*-{ return !!$wnd.__useSocketIO }-*/;
+  private native boolean useSocketIO() /*-{ return !window.WebSocket }-*/;
 
   /**
    */

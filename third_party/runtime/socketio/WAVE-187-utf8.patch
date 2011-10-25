@@ -1,0 +1,16 @@
+diff -r cd02572742a3 src/com/glines/socketio/server/transport/XHRMultipartTransport.java
+--- a/src/com/glines/socketio/server/transport/XHRMultipartTransport.java	Fri Jan 14 22:22:04 2011 -0800
++++ b/src/com/glines/socketio/server/transport/XHRMultipartTransport.java	Tue Oct 18 01:03:12 2011 +0200
+@@ -69,9 +69,10 @@
+ 			idleCheck.activity();
+ 			Log.debug("Session["+session.getSessionId()+"]: writeData(START): " + data);
+ 			ServletOutputStream os = response.getOutputStream();
+-			os.println("Content-Type: text/plain");
++			os.println("Content-Type: text/plain; charset=utf-8"); 
+ 			os.println();
+-			os.println(data);
++			os.write(data.getBytes());
++			os.println();
+ 			os.println(boundarySeperator);
+ 			response.flushBuffer();
+ 			Log.debug("Session["+session.getSessionId()+"]: writeData(END): " + data);
