@@ -1,0 +1,11 @@
+/build
+/test_out
+/dist
+/gen
+/bin
+/server.config
+/_sessions
+/_accounts
+/_deltas
+/_attachments
+/_certificates
