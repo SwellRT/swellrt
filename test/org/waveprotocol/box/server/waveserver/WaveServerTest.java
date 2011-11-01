@@ -106,7 +106,8 @@ public class WaveServerTest extends TestCase {
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee,
-            WaveServerModule.loadWaveletState(executor, deltaStore, waveletName), waveDomain);
+            WaveServerModule.loadWaveletState(executor, deltaStore, waveletName, executor),
+            waveDomain);
       }
     };
 

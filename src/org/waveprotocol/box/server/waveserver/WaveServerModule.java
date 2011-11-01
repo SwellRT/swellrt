@@ -57,12 +57,15 @@ public class WaveServerModule extends AbstractModule {
   // TODO(soren): move to global config file
   private static final int LISTENER_EXECUTOR_THREAD_COUNT = 2;
   private static final int WAVELET_LOAD_EXECUTOR_THREAD_COUNT = 2;
+  private static final int DELTA_PERSIST_EXECUTOR_THREAD_COUNT = 2;
   private static final IdURIEncoderDecoder URI_CODEC =
       new IdURIEncoderDecoder(new JavaUrlCodec());
   private static final HashedVersionFactory HASH_FACTORY = new HashedVersionFactoryImpl(URI_CODEC);
 
   private final Executor waveletLoadExecutor =
       Executors.newFixedThreadPool(WAVELET_LOAD_EXECUTOR_THREAD_COUNT);
+  private final Executor persistExecutor =
+      Executors.newFixedThreadPool(DELTA_PERSIST_EXECUTOR_THREAD_COUNT);
   private final boolean enableFederation;
 
   public WaveServerModule(boolean enableFederation) {
@@ -114,7 +117,7 @@ public class WaveServerModule extends AbstractModule {
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName), waveDomain);
+            waveletLoadExecutor, deltaStore, waveletName, persistExecutor), waveDomain);
       }
     };
   }
@@ -128,7 +131,7 @@ public class WaveServerModule extends AbstractModule {
       public RemoteWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new RemoteWaveletContainerImpl(waveletName, notifiee,
-            loadWaveletState(waveletLoadExecutor, deltaStore, waveletName));
+            loadWaveletState(waveletLoadExecutor, deltaStore, waveletName, persistExecutor));
       }
     };
   }
@@ -147,21 +150,18 @@ public class WaveServerModule extends AbstractModule {
   }
 
   /**
-   * Returns a future whose result is the state of the wavelet after it has
-   * been loaded from storage.
-   * Any failure is reported as a {@link PersistenceException}.
+   * Returns a future whose result is the state of the wavelet after it has been
+   * loaded from storage. Any failure is reported as a
+   * {@link PersistenceException}.
    */
   @VisibleForTesting
-  static ListenableFuture<DeltaStoreBasedWaveletState> loadWaveletState(
-      Executor executor, final DeltaStore deltaStore, final WaveletName waveletName) {
+  static ListenableFuture<DeltaStoreBasedWaveletState> loadWaveletState(Executor executor,
+      final DeltaStore deltaStore, final WaveletName waveletName, final Executor persistExecutor) {
     ListenableFutureTask<DeltaStoreBasedWaveletState> task =
         new ListenableFutureTask<DeltaStoreBasedWaveletState>(
             new Callable<DeltaStoreBasedWaveletState>() {
               @Override
               public DeltaStoreBasedWaveletState call() throws PersistenceException {
-                // One executor per wave is inefficient; see comment in
-                // DeltaStoreBasedWaveletState.
-                Executor persistExecutor = Executors.newSingleThreadExecutor();
                 return DeltaStoreBasedWaveletState.create(deltaStore.open(waveletName),
                     persistExecutor);
               }
