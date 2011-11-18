@@ -690,6 +690,7 @@ public interface StageTwo {
 
       // Install eager UI features
       installFeatures();
+      installReader();
 
       // Activate liveness.
       getConnector().connect(null);
@@ -711,8 +712,13 @@ public interface StageTwo {
      */
     protected void installFeatures() {
       // Eagerly install some features.
-      Reader.install(getSupplement(), stageOne.getFocusFrame(), getModelAsViewProvider(),
+    }
+
+    protected Reader installReader() {
+      Reader reader =
+          Reader.install(getSupplement(), stageOne.getFocusFrame(), getModelAsViewProvider(),
           getDocumentRegistry());
+      return reader;
     }
   }
 }

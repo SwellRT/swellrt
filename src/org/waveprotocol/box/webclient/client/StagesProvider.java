@@ -34,11 +34,8 @@ import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.wavepanel.view.BlipView;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.BlipQueueRenderer;
-import org.waveprotocol.wave.model.conversation.Conversation;
-import org.waveprotocol.wave.model.conversation.ConversationBlip;
 import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.id.IdGenerator;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
 /**
@@ -118,7 +115,7 @@ public class StagesProvider extends Stages {
   @Override
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
     return haltIfClosed(new StageTwoProvider(
-        this.one = one, waveRef.getWaveId(), channel, isNewWave, idGenerator, profiles));
+        this.one = one, waveRef, channel, isNewWave, idGenerator, profiles));
   }
 
   @Override
@@ -172,33 +169,8 @@ public class StagesProvider extends Stages {
   }
 
   private void handleExistingWave(StageThree three) {
-    // If there's blip reference then focus on that blip.
-    String documentId = waveRef.getDocumentId();
-    if (documentId != null) {
-      ModelAsViewProvider views = two.getModelAsViewProvider();
-      BlipQueueRenderer blipQueue = two.getBlipQueue();
-      ConversationView wave = two.getConversations();
-      blipQueue.flush();
-      // Find conversation
-      Conversation conversation;
-      if (waveRef.hasWaveletId()) {
-        String id = ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveRef.getWaveletId());
-        conversation = wave.getConversation(id);
-      } else {
-        // Unspecified wavelet means root.
-        conversation = wave.getRoot();
-      }
-      if (conversation != null) {
-        // Find selected blip.
-        ConversationBlip blip = wave.getRoot().getBlip(documentId);
-        if (blip != null) {
-          BlipView blipUi = views.getBlipView(blip);
-          if (blipUi != null) {
-            two.getStageOne().getFocusFrame().focus(blipUi);
-          }
-        }
-      }
-    }
+    BlipQueueRenderer blipQueue = two.getBlipQueue();
+    blipQueue.flush();
   }
 
   public void destroy() {

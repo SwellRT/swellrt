@@ -86,7 +86,7 @@ public final class Reader implements FocusFramePresenter.Listener, FocusOrder {
     }
   }
 
-  private boolean isRead(BlipView blipUi) {
+  public boolean isRead(BlipView blipUi) {
     return !supplement.isUnread(models.getBlip(blipUi));
   }
 
