@@ -237,7 +237,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
           public void run() {
             acquireWriteLock();
             try {
-              // waveletState.flush(version); // TODO(soren): implement this
+              waveletState.flush(version);
               notifyOfCommit(version, domainsToNotify);
             } finally {
               releaseWriteLock();

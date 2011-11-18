@@ -45,22 +45,6 @@ import java.util.Iterator;
 class DeltaStoreBasedSnapshotStore implements DeltaAndSnapshotStore {
 
   /**
-   * Wraps an {@link IOException} in a {@link RuntimeException}.
-   */
-  private static class RuntimeIOException extends RuntimeException {
-    private final IOException cause;
-
-    public RuntimeIOException(IOException cause) {
-      super(cause);
-      this.cause = cause;
-    }
-
-    public IOException getIOException() {
-      return cause;
-    }
-  }
-
-  /**
    * Reads the transformed deltas from a {@link WaveletDeltaRecordReader}.
    */
   private static class TransformedWaveletDeltaIterator

@@ -135,6 +135,9 @@ interface WaveletState {
    */
   ListenableFuture<Void> persist(HashedVersion version);
 
+  /** Flushes persisted delta from memory. */
+  void flush(HashedVersion version);
+
   /**
    * Closes the object. No other methods on the object should be invoked after
    * this class.
