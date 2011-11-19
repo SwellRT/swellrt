@@ -95,6 +95,12 @@ import javax.servlet.http.HttpSession;
  */
 public class ServerRpcProvider {
   private static final Log LOG = Log.get(ServerRpcProvider.class);
+  
+  /**
+   * The buffer size is passed to implementations of {@link AbstractWaveSocketIOServlet} as init
+   * param. It defines the response buffer size.
+   */
+  private static final int BUFFER_SIZE = 64 * 1024;
 
   private final InetSocketAddress[] httpAddresses;
   private final Integer flashsocketPolicyPort;
@@ -399,12 +405,12 @@ public class ServerRpcProvider {
     // Servlet where the websocket connection is served from.
     ServletHolder wsholder = addServlet("/socket", WaveWebSocketServlet.class);
     // TODO(zamfi): fix to let messages span frames.
-    wsholder.setInitParameter("bufferSize", "" + 1024 * 1024); // 1M buffer
+    wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
     // Servlet where the websocket connection is served from.
     ServletHolder sioholder = addServlet("/socket.io/*", WaveSocketIOServlet.class );
     // TODO(zamfi): fix to let messages span frames.
-    sioholder.setInitParameter("bufferSize", "" + 1024 * 1024); // 1M buffer
+    sioholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
     // Set flash policy server parameters
     String flashPolicyServerHost = "localhost";
     StringBuilder flashPolicyAllowedPorts = new StringBuilder();
