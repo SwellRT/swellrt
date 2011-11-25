@@ -162,7 +162,8 @@ public class WebClient implements EntryPoint {
 
     setupConnectionIndicator();
 
-    HistorySupport.init();
+    HistorySupport.init(new HistoryProviderDefault());
+    HistoryChangeListener.init();
 
     websocket = new WaveWebSocketClient(useSocketIO(), getWebSocketBaseUrl(GWT.getModuleBaseURL()));
     websocket.connect();

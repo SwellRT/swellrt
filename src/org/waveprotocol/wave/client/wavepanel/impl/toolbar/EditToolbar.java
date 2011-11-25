@@ -23,7 +23,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 
 import org.waveprotocol.box.webclient.client.HistorySupport;
@@ -340,7 +339,7 @@ public class EditToolbar {
 
   private void createInsertAttachmentButton(ToolbarView toolbar, final ParticipantId user) {
     // Find the current wave id.
-    String encodedToken = History.getToken();
+    String encodedToken = HistorySupport.getToken();
     WaveRef waveRef = null;
     if (encodedToken != null && !encodedToken.isEmpty()) {
       waveRef = HistorySupport.waveRefFromHistoryToken(encodedToken);

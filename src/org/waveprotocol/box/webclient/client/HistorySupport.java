@@ -16,12 +16,7 @@
 
 package org.waveprotocol.box.webclient.client;
 
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.History;
 
-import org.waveprotocol.box.webclient.client.events.Log;
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
@@ -33,25 +28,11 @@ import javax.annotation.Nullable;
  * event bus. At the moment, a history token encodes a wave id or wave ref.
  */
 public class HistorySupport {
-  private static final Log LOG = Log.get(HistorySupport.class);
 
-  public static void init() {
-    History.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        String encodedToken = event.getValue();
-        if (encodedToken == null || encodedToken.length() == 0) {
-          return;
-        }
-        WaveRef waveRef = waveRefFromHistoryToken(encodedToken);
-        if (waveRef == null) {
-          LOG.info("History token contains invalid path: " + encodedToken);
-          return;
-        }
-        LOG.info("Changing selected wave based on history event to " + waveRef.toString());
-        ClientEvents.get().fireEvent(new WaveSelectionEvent(waveRef));
-      }
-    });
+  private static HistoryProvider historyProvider;
+
+  public static void init(HistoryProvider historyProvider) {
+    HistorySupport.historyProvider = historyProvider;
   }
 
   /**
@@ -67,10 +48,14 @@ public class HistorySupport {
     }
   }
 
-  static String historyTokenFromWaveref(WaveRef ref) {
+  public static String historyTokenFromWaveref(WaveRef ref) {
     return GwtWaverefEncoder.encodeToUriPathSegment(ref);
   }
 
   private HistorySupport() {
+  }
+
+  public static String getToken() {
+    return historyProvider.getToken();
   }
 }
