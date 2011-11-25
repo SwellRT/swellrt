@@ -2,11 +2,16 @@
 <module rename-to='webclient'>
   <inherits name="org.waveprotocol.box.webclient.WebClient"/>
 
+  <inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
+  
   <!-- Specification of permutation restrictions suitable for production.
        In general, this should support as many permutations as possible -->
 
   <!-- Stack emulation is too slow to use in production. -->
   <set-property name="compiler.emulatedStack" value="false"/>
+
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/> 
 
   <!-- Only build supported clients. -->
   <set-property name="user.agent" value="safari,gecko1_8,ie6,ie8"/>

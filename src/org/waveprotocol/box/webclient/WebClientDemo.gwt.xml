@@ -14,9 +14,14 @@
   <!-- Enable the simple remote handler -->
   <set-property name="gwt.logging.simpleRemoteHandler" value="ENABLED" />
   
+  <inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
+  
   <set-property name="compiler.emulatedStack" value="true"/>
   <set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true" />
   <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
+
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/> 
 
   <!-- Only build supported clients. -->
   <set-property name="user.agent" value="safari,gecko1_8,ie6,ie8"/>

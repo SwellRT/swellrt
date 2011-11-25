@@ -2,10 +2,14 @@
 <module rename-to='webclient'>
   <inherits name='org.waveprotocol.box.webclient.WebClient'/>
 
+  <inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
+
   <set-property name="compiler.emulatedStack" value="true"/>
   <set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true" />
   <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
 
+  <!-- Specify the app entry point class.                         -->
+  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/> 
   <set-property name="user.agent" value="safari" />
   <set-property name="mobile.user.agent" value="not_mobile" />
   <set-property name="loglevel" value="debug" /> 

@@ -4,8 +4,6 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name="com.google.gwt.event.EventBase"/>
 
-  <inherits name='com.google.gwt.user.theme.chrome.Chrome'/>
-
   <inherits name='com.glines.socketio.client.Client'/>
   <inherits name='com.google.gwt.json.JSON'/>
   <inherits name='com.google.gwt.websockets.WebSockets'/>
@@ -30,9 +28,6 @@
   <inherits name='org.waveprotocol.box.webclient.widget.error.Error'/>
   <inherits name='org.waveprotocol.box.webclient.widget.frame.Frame'/>
   <inherits name='org.waveprotocol.box.webclient.widget.loading.Loading'/>
-
-  <!-- Specify the app entry point class.                         -->
-  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/>
 
   <set-configuration-property name="CssResource.obfuscationPrefix" value="SWC" />
 
