@@ -176,7 +176,7 @@ public abstract class WaveletStateTestBase extends TestCase {
 
   public void testDeltaHistoryRequiresCorrectHash() throws Exception {
     appendDeltas(d1);
-
+    target.persist(d1.getResultingVersion());
     // Wrong start hash.
     assertNull(target.getTransformedDeltaHistory(HashedVersion.unsigned(0),
         d1.getResultingVersion()));
@@ -192,6 +192,7 @@ public abstract class WaveletStateTestBase extends TestCase {
 
   public void testSingleDeltaHistoryAccessible() throws Exception {
     appendDeltas(d1);
+    target.persist(d1.getResultingVersion());
     DeltaSequence transformedHistory = target.getTransformedDeltaHistory(V0,
         d1.getResultingVersion());
     assertNotNull(transformedHistory);
@@ -207,7 +208,8 @@ public abstract class WaveletStateTestBase extends TestCase {
 
   public void testDeltaHistoryQueriesCorrectHistory() throws Exception {
     appendDeltas(d1, d2, d3);
-
+    target.persist(d3.getResultingVersion());
+    
     checkHistoryForDeltas(d1);
     checkHistoryForDeltas(d1, d2);
     checkHistoryForDeltas(d2, d3);

@@ -5,6 +5,7 @@
 	<classpathentry kind="src" path="proto_src"/>
 	<classpathentry kind="src" path="gen/messages"/>
 	<classpathentry kind="src" path="gen/gxp"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/servlet-api-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guava/guava-r09.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/antlr/antlr-3.2.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt/gwt-dev.jar"/>
@@ -42,7 +43,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-webapp-8.0.1.v20110908.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-websocket-8.0.1.v20110908.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-xml-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/servlet-api-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jline/jline-0.9.94.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/joda_time/joda-time-1.6.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jsr305/jsr305-src.jar"/>
