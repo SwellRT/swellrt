@@ -55,6 +55,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -96,7 +97,8 @@ public class ActiveApiServletTest extends TestCase {
 
     req = mock(HttpServletRequest.class);
     when(req.getRequestURL()).thenReturn(new StringBuffer("www.example.com/robot"));
-    when(req.getHeaderNames()).thenReturn(new StringTokenizer("Authorization"));
+    when(req.getHeaderNames()).thenReturn(
+        convertRawEnumerationToGeneric(new StringTokenizer("Authorization")));
     when(req.getReader()).thenReturn(new BufferedReader(new StringReader("")));
 
     resp = mock(HttpServletResponse.class);
@@ -109,7 +111,8 @@ public class ActiveApiServletTest extends TestCase {
   }
 
   public void testDoPostExecutesAndWritesResponse() throws Exception {
-    when(req.getHeaders("Authorization")).thenReturn(generateOAuthHeader(ROBOT.getAddress()));
+    when(req.getHeaders("Authorization")).thenReturn(convertRawEnumerationToGeneric(
+        generateOAuthHeader(ROBOT.getAddress())));
 
     String operationId = "op1";
     OperationRequest operation = new OperationRequest("wavelet.create", operationId);
@@ -133,7 +136,7 @@ public class ActiveApiServletTest extends TestCase {
 
   public void testDoPostUnauthorizedWhenParticipantInvalid() throws Exception {
     when(req.getHeaders("Authorization")).thenReturn(
-        generateOAuthHeader("invalid#$example.com"));
+        convertRawEnumerationToGeneric(generateOAuthHeader("invalid#$example.com")));
 
     servlet.doPost(req, resp);
 
@@ -142,7 +145,8 @@ public class ActiveApiServletTest extends TestCase {
 
 
   public void testDoPostUnauthorizedWhenParticipantUnknown() throws Exception {
-    when(req.getHeaders("Authorization")).thenReturn(generateOAuthHeader(UNKNOWN.getAddress()));
+    when(req.getHeaders("Authorization")).thenReturn(
+        convertRawEnumerationToGeneric(generateOAuthHeader(UNKNOWN.getAddress())));
 
     servlet.doPost(req, resp);
 
@@ -150,7 +154,8 @@ public class ActiveApiServletTest extends TestCase {
   }
 
   public void testDoPostUnauthorizedWhenValidationFails() throws Exception {
-    when(req.getHeaders("Authorization")).thenReturn(generateOAuthHeader(ROBOT.getAddress()));
+    when(req.getHeaders("Authorization")).thenReturn(
+        convertRawEnumerationToGeneric(generateOAuthHeader(ROBOT.getAddress())));
     doThrow(new OAuthException("")).when(validator).validateMessage(
         any(OAuthMessage.class), any(OAuthAccessor.class));
 
@@ -161,5 +166,25 @@ public class ActiveApiServletTest extends TestCase {
 
   private StringTokenizer generateOAuthHeader(String address) {
     return new StringTokenizer("OAuth " + OAuth.OAUTH_CONSUMER_KEY + "=\"" + address + "\"", "");
+  }
+  
+  /**
+   * Converts a {@link StringTokenizer} into an @{link {@link Enumeration
+   * <String>}.
+   * 
+   * @author jeden17@gmail.com (Antonio Bello)
+   */
+  private Enumeration<String> convertRawEnumerationToGeneric(final StringTokenizer tokens) {
+    return new Enumeration<String>() {
+      @Override
+      public String nextElement() {
+        return (String) tokens.nextElement();
+      }
+
+      @Override
+      public boolean hasMoreElements() {
+        return tokens.hasMoreElements();
+      }
+    };
   }
 }

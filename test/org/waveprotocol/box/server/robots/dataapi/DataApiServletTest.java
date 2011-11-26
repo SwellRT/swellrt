@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.wave.api.OperationRequest;
 import com.google.wave.api.OperationType;
@@ -143,7 +142,8 @@ public class DataApiServletTest extends TestCase {
 
   public void testDoPostUnauthorizedWhenMissingToken() throws Exception {
     servlet.doPost(req, resp);
-    when(req.getParameterMap()).thenReturn(ImmutableMap.of());
+    Map<String, String[]> emptyMap = Collections.emptyMap();
+    when(req.getParameterMap()).thenReturn(emptyMap);
 
     verify(resp).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), anyString());
   }
