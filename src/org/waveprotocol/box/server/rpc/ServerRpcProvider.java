@@ -349,6 +349,11 @@ public class ServerRpcProvider {
     context.setParentLoaderPriority(true);
 
     if (jettySessionManager != null) {
+      // This disables JSessionIDs in URLs redirects
+      // see: http://stackoverflow.com/questions/7727534/how-do-you-disable-jsessionid-for-jetty-running-with-the-eclipse-jetty-maven-plu
+      // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
+      jettySessionManager.setSessionIdPathParameterName(null);
+      
       context.getSessionHandler().setSessionManager(jettySessionManager);
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
