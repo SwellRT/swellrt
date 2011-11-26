@@ -181,11 +181,12 @@ public class GsonFactory {
   /**
    * An instance creator that creates an empty {@link SearchResult.Digest}.
    */
-  private static class SearchResultDigestInstanceCreator implements InstanceCreator<SearchResult.Digest> {
+  private static class SearchResultDigestInstanceCreator implements
+      InstanceCreator<SearchResult.Digest> {
     @Override
     public SearchResult.Digest createInstance(Type type) {
       List<String> participants = Lists.newLinkedList();
-      return new SearchResult.Digest("", "", "", participants, -1, -1, -1);
+      return new SearchResult.Digest("", "", "", participants, -1, -1, -1, -1);
     }
   }
 }

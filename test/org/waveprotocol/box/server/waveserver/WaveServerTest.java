@@ -33,12 +33,14 @@ import org.mockito.MockitoAnnotations;
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
+import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.waveserver.LocalWaveletContainer.Factory;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignature;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignedDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.federation.WaveletFederationProvider;
+import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -83,6 +85,11 @@ public class WaveServerTest extends TestCase {
   @Mock private WaveletFederationProvider federationRemote;
   @Mock private WaveletNotificationDispatcher notifiee;
   @Mock private RemoteWaveletContainer.Factory remoteWaveletContainerFactory;
+  
+  @Mock private IdGenerator idGenerator;
+
+  private ConversationUtil conversationUtil;
+  private WaveDigester digester;
 
   private CertificateManager certificateManager;
   private DeltaAndSnapshotStore waveletStore;
@@ -112,9 +119,11 @@ public class WaveServerTest extends TestCase {
     };
 
     waveletStore = new DeltaStoreBasedSnapshotStore(deltaStore);
+    conversationUtil = new ConversationUtil(idGenerator);
+    digester = new WaveDigester(conversationUtil);
     waveMap =
         new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com");
+            remoteWaveletContainerFactory, "example.com", digester);
     waveServer =
         new WaveServerImpl(MoreExecutors.sameThreadExecutor(), certificateManager,
             federationRemote, waveMap);
@@ -133,10 +142,8 @@ public class WaveServerTest extends TestCase {
 
     verify(notifiee).waveletUpdate(Matchers.<ReadableWaveletData>any(),
         Matchers.<ImmutableList<WaveletDeltaRecord>>any(), eq(ImmutableSet.of(DOMAIN)));
-    // TODO(anorth): Re-enable this check when WaveletContainerImpl injects an
-    // executor rather than using its own.
-//    verify(notifiee).waveletCommitted(eq(WAVELET_NAME), Matchers.<HashedVersion>any(),
-//        eq(ImmutableSet.of(DOMAIN)));
+    verify(notifiee).waveletCommitted(eq(WAVELET_NAME), Matchers.<HashedVersion>any(),
+        eq(ImmutableSet.of(DOMAIN)));
   }
 
   private void submitDeltaToNewWavelet(WaveletName name, ParticipantId user,

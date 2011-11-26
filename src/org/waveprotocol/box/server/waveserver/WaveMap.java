@@ -34,7 +34,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
+import com.google.wave.api.SearchResult;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.CoreSettings;
@@ -555,6 +555,7 @@ public class WaveMap implements SearchProvider {
   
   private final ConcurrentMap<WaveId, Wave> waves;
   private final WaveletStore<?> store;
+  private final WaveDigester digester;
 
   /** The computing map that holds wave viev per each online user.*/
   private final ConcurrentMap<ParticipantId, Multimap<WaveId, WaveletId>> explicitPerUserWaveViews;
@@ -613,11 +614,13 @@ public class WaveMap implements SearchProvider {
       WaveBus dispatcher,
       final LocalWaveletContainer.Factory localFactory,
       final RemoteWaveletContainer.Factory remoteFactory,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain) {
+      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
+      WaveDigester digester) {
     // NOTE(anorth): DeltaAndSnapshotStore is more specific than necessary, but
     // helps Guice out.
     // TODO(soren): inject a proper executor (with a pool of configurable size)
     this.store = waveletStore;
+    this.digester = digester;
     sharedDomainParticipantId = ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(waveDomain);
     dispatcher.subscribe(subscriber);
     final Executor lookupExecutor = Executors.newSingleThreadExecutor();
@@ -686,7 +689,7 @@ public class WaveMap implements SearchProvider {
   }
 
   @Override
-  public Collection<WaveViewData> search(final ParticipantId user, String query, int startAt,
+  public SearchResult search(final ParticipantId user, String query, int startAt,
       int numResults) {
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
         + (startAt + numResults - 1) + "]");
@@ -696,7 +699,7 @@ public class WaveMap implements SearchProvider {
     } catch (QueryHelper.InvalidQueryException e1) {
       // Invalid query param - stop and return empty search results.
       LOG.warning("Invalid Query. " + e1.getMessage());
-      return Collections.emptyList();
+      return digester.generateSearchResult(user, query, null);
     }
     final List<ParticipantId> withParticipantIds;
     final List<ParticipantId> creatorParticipantIds;
@@ -712,7 +715,7 @@ public class WaveMap implements SearchProvider {
     } catch (InvalidParticipantAddress e) {
       // Invalid address - stop and return empty search results.
       LOG.warning("Invalid participantId: " + e.getAddress() + " in query: " + query);
-      return Collections.emptyList();
+      return digester.generateSearchResult(user, query, null);
     }
     // Maybe should be changed in case other folders in addition to 'inbox' are
     // added.
@@ -772,9 +775,6 @@ public class WaveMap implements SearchProvider {
       if (view != null) {
 	  results.put(waveId, view);
       }
-      // TODO (Yuri Z.) Investigate if it worth to keep the waves views sorted
-      // by LMT so we can stop looping after we have (startAt + numResults)
-      // results.
     }
     List<WaveViewData> searchResultslist = null;
     int searchResultSize = results.values().size();
@@ -789,11 +789,12 @@ public class WaveMap implements SearchProvider {
     }
     LOG.info("Search response to '" + query + "': " + searchResultslist.size() + " results, user: "
         + user);
-    // Memory management wise it's dangerous to return a sublist of a much
-    // longer list, therefore, we return a 'defensive' copy.
-    return ImmutableList.copyOf(searchResultslist);
+    // Memory management wise it's dangerous to expose a sublist of a much
+    // longer list, therefore, we expose a 'defensive' copy.
+    Collection<WaveViewData> l = ImmutableList.copyOf(searchResultslist);
+    return digester.generateSearchResult(user, query, l);
   }
-
+  
   /**
    * Verifies whether the wavelet matches the filter criteria.
    * 

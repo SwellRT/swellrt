@@ -17,10 +17,10 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.data.WaveViewData;
+import com.google.wave.api.SearchResult;
 
-import java.util.Collection;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
 
 /**
  * A provider of search results. SearchProviders can be queried, and reply with a set of
@@ -36,8 +36,8 @@ public interface SearchProvider {
    * @param query the query string
    * @param startAt The offset in the results to return
    * @param numResults The number of results from startAt to return
-   * @return the wavelets which match the specified query
+   * @return the search result with digests which match the specified query
    */
-  Collection<WaveViewData> search(
+  SearchResult search(
       ParticipantId user, String query, int startAt, int numResults);
 }
