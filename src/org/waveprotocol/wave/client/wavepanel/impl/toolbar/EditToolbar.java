@@ -290,7 +290,8 @@ public class EditToolbar {
                 StyleAnnotationHandler.key("fontSize"),
                 StyleAnnotationHandler.key("fontStyle"),
                 StyleAnnotationHandler.key("fontWeight"),
-                StyleAnnotationHandler.key("textDecoration")
+                StyleAnnotationHandler.key("textDecoration"),
+                StyleAnnotationHandler.key("verticalAlign")
                 // NOTE: add more as required.
             ));
             createClearHeadingsListener().onClicked();
