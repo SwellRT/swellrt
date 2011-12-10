@@ -19,8 +19,11 @@
   <property name="use_socketio" value="true" />
   <property name="admin_user" value="@${wave_server_domain}" />
   <property name="welcome_wave_id" value="" />
-  
-  
+  <property name="listener_executor_thread_count" value="1" />
+  <property name="wavelet_load_executor_thread_count" value="2" />
+  <property name="delta_persist_executor_thread_count" value="2" />
+
+
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
   <property name="certificate_private_key" value="${wave_server_domain}.key" />
@@ -77,6 +80,9 @@
           <token key="USE_SOCKETIO" value="${use_socketio}" />
           <token key="ADMIN_USER" value="${admin_user}" />
           <token key="WELCOME_WAVE_ID" value="${welcome_wave_id}" />
+          <token key="LISTENER_EXECUTOR_THREAD_COUNT" value="${listener_executor_thread_count}" />
+          <token key="WAVELET_LOAD_EXECUTOR_THREAD_COUNT" value="${wavelet_load_executor_thread_count}" />
+          <token key="DELTA_PERSIST_EXECUTOR_THREAD_COUNT" value="${delta_persist_executor_thread_count}" />
         </replacetokens>
       </filterchain>
     </copy>

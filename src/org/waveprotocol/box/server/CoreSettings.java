@@ -50,6 +50,9 @@ public class CoreSettings {
   public static final String GADGET_SERVER_PATH = "gadget_server_path";
   public static final String ADMIN_USER = "admin_user";
   public static final String  WELCOME_WAVE_ID = "welcome_wave_id";
+  public static final String LISTENER_EXECUTOR_THREAD_COUNT = "listener_executor_thread_count";
+  public static final String WAVELET_LOAD_EXECUTOR_THREAD_COUNT = "wavelet_load_executor_thread_count";
+  public static final String DELTA_PERSIST_EXECUTOR_THREAD_COUNT = "delta_persist_executor_thread_count";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -151,4 +154,19 @@ public class CoreSettings {
   @Setting(name = WELCOME_WAVE_ID, description = "The welcome wave id.",
       defaultValue = "UNDEFINED")
   private static String welcomeWaveId;
+
+  @Setting(name = LISTENER_EXECUTOR_THREAD_COUNT,
+      description = "The number of threads to process wavelet updates.",
+      defaultValue = "1")
+  private static int listenerExecutorThreadCount;
+
+  @Setting(name = WAVELET_LOAD_EXECUTOR_THREAD_COUNT,
+      description = "The number of threads for loading wavelets.",
+      defaultValue = "2")
+  private static int waveletLoadExecutorThreadCount;
+
+  @Setting(name = DELTA_PERSIST_EXECUTOR_THREAD_COUNT,
+      description = "The number of threads to persist deltas.",
+      defaultValue = "2")
+  private static int deltaPersistExecutorThreadCount;
 }

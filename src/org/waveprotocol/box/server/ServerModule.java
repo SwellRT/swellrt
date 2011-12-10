@@ -57,9 +57,16 @@ import javax.security.auth.login.Configuration;
  */
 public class ServerModule extends AbstractModule {
   private final boolean enableFederation;
+  private final int listenerCount;
+  private final int waveletLoadCount;
+  private final int deltaPersistCount;
 
-  public ServerModule(boolean enableFederation) {
+  public ServerModule(boolean enableFederation, int listenerCount, int waveletLoadCount,
+      int deltaPersistCount) {
     this.enableFederation = enableFederation;
+    this.listenerCount = listenerCount;
+    this.waveletLoadCount = waveletLoadCount;
+    this.deltaPersistCount = deltaPersistCount;
   }
 
   @Override
@@ -73,7 +80,8 @@ public class ServerModule extends AbstractModule {
     bind(WaveletFederationProvider.class).annotatedWith(FederationHostBridge.class).to(
         WaveServerImpl.class);
 
-    install(new WaveServerModule(enableFederation));
+    install(new WaveServerModule(enableFederation, listenerCount, waveletLoadCount,
+        deltaPersistCount));
     TypeLiteral<List<String>> certs = new TypeLiteral<List<String>>() {};
     bind(certs).annotatedWith(Names.named("certs")).toInstance(Arrays.<String> asList());
 

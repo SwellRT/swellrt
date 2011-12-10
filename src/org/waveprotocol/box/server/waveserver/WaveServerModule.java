@@ -54,22 +54,21 @@ import java.util.concurrent.Executors;
  *
  */
 public class WaveServerModule extends AbstractModule {
-  // TODO(soren): move to global config file
-  private static final int LISTENER_EXECUTOR_THREAD_COUNT = 2;
-  private static final int WAVELET_LOAD_EXECUTOR_THREAD_COUNT = 2;
-  private static final int DELTA_PERSIST_EXECUTOR_THREAD_COUNT = 2;
   private static final IdURIEncoderDecoder URI_CODEC =
       new IdURIEncoderDecoder(new JavaUrlCodec());
   private static final HashedVersionFactory HASH_FACTORY = new HashedVersionFactoryImpl(URI_CODEC);
 
-  private final Executor waveletLoadExecutor =
-      Executors.newFixedThreadPool(WAVELET_LOAD_EXECUTOR_THREAD_COUNT);
-  private final Executor persistExecutor =
-      Executors.newFixedThreadPool(DELTA_PERSIST_EXECUTOR_THREAD_COUNT);
+  private final int listenerExecutorThreadCount;
+  private final Executor waveletLoadExecutor;
+  private final Executor persistExecutor;
   private final boolean enableFederation;
 
-  public WaveServerModule(boolean enableFederation) {
+  public WaveServerModule(boolean enableFederation, int listenerCount, int waveletLoadCount,
+      int deltaPersistCount) {
     this.enableFederation = enableFederation;
+    this.listenerExecutorThreadCount = listenerCount;
+    waveletLoadExecutor = Executors.newFixedThreadPool(waveletLoadCount);
+    persistExecutor = Executors.newFixedThreadPool(deltaPersistCount);
   }
 
   @Override
@@ -105,7 +104,7 @@ public class WaveServerModule extends AbstractModule {
     bind(WaveletProvider.class).to(WaveServerImpl.class).asEagerSingleton();
     bind(HashedVersionFactory.class).toInstance(HASH_FACTORY);
     bind(Executor.class).annotatedWith(Names.named("listener_executor")).toInstance(
-        Executors.newFixedThreadPool(LISTENER_EXECUTOR_THREAD_COUNT));
+        Executors.newFixedThreadPool(listenerExecutorThreadCount));
   }
 
   @Provides
