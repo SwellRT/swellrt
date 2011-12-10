@@ -1,3 +1,8 @@
+
+"Wave in a Box" (WIAB) project is a stand alone wave server and rich web client that serves as an Apache Wave reference implementation.
+Apache Wave site: http://incubator.apache.org/wave/
+This project lets developers and enterprise users run wave servers and host waves on their own hardware. And then share those waves with other wave servers.
+ 
 Build:
 
 This code requires Java 6.  If you are on MacOS 10.5 (Leopard) or earlier,
@@ -11,25 +16,40 @@ Wave in a Box uses Ant to build. To run the tests, run:
   ant test
 </code>
 
-To build the server, run just 
+To run tests and then build the server and client run:
 <code>
   ant
 </code>
 
-It will be left in dist/waveinabox-X.Y.jar.
-
-If you want to use the web client, you will also need to run:
+To build the client and server without tests (faster) run:
 <code>
-  ant compile_gwt
+  ant compile-gwt dist-server
+</code>
+ 
+
+It will be created in dist/waveinabox-X.Y.jar.
+
+You need to configure your instance before you can use it. To create a default simple configuration run:
+<code>
+  ant -f server-config.xml
 </code>
 
-The server can be started by running
-./run-server.sh
-The simple web client will be accessable at
-http://localhost:9898/
+To override default values pass them to the ant script. 
+For example, to override wave_server_domain run : ant -f server-config.xml -Dwave_server_domain=example.com
+Take a look at the server.config.example to learn about configuration and possible/default values.
 
-To configure the server, copy run-config.sh.example to run-config.sh and edit
-it.
+The server can be started (on Linux/MacOS) by running
+./run-server.sh
+Or, you can run the server from the compiled classes with ant:
+<code>
+  ant run-server
+</code>
+The web client will be accessible at http://localhost:9898/
+
+To learn more about Wave in a Box and Wave Federation Protocol:
+1. Look at the whitepapers folder - the information is a bit old but still usable.
+2. Watch the Wave Summit videos on YouTube, find the links at: https://cwiki.apache.org/confluence/display/WAVE/Wave+Summit+Talks
+3. Subscribe to the wave-dev mailing list, find instructions at http://incubator.apache.org/wave/mailing-lists.html
 
 Wave Protocol communicates using Protocol Buffers 
 <http://code.google.com/p/protobuf/>

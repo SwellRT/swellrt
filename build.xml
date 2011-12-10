@@ -523,9 +523,8 @@
     <touch file="${dep}/stage"/>
   </target>
 
-  <target name="dist" depends="test, dist-libraries, dist-server, 
-      dist-client-console, dist-robot-client-api, compile-gwt"
-      description="Compiles, tests and assembles artifacts">
+  <target name="dist" depends="test, compile-gwt, dist-server"
+      description="Compiles, tests and creates the binary executable.">
   </target>
 
   <target name="dist-proto" depends="compile-proto" description="Builds the proto jar">
@@ -651,31 +650,6 @@
       </manifest>
     </jar>
     <touch file="${dep}/dist-server"/>
-  </target>
-
-  <target name="dist-client-console" depends="stage" description="Assembles the Wave in a Box console client">
-    <jar destfile="${consoleclient.jar.out}">
-      <fileset dir="${staging.dir}">
-        <include name="com/google/common/**/*" />
-        <include name="com/google/gson/**/*" />
-        <include name="com/google/inject/**/*" />
-        <include name="com/google/protobuf/**/*" />
-        <include name="com/sixfire/websocket/*" />
-        <include name="javax/inject/**/*" />
-        <include name="jline/**/*" />
-        <include name="org/apache/commons/codec/**/*" />
-        <include name="org/codehaus/jackson/**/*" />
-        <include name="org/waveprotocol/**/*" />
-      </fileset>
-      <manifest>
-        <!-- Application entry point -->
-        <attribute name="Main-Class"
-          value="org.waveprotocol.box.consoleclient.ConsoleClient"/>
-        <attribute name="Implementation-Vendor" value="Google, Inc."/>
-        <attribute name="Implementation-Title" value="Wave in a Box Console Client"/>
-        <attribute name="Implementation-Version" value="${waveinabox.version}"/>
-      </manifest>
-    </jar>
   </target>
 
   <!-- This rule should be run whenever the build configuration (i.e. build files, libraries) is changed -->
