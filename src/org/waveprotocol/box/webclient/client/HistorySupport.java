@@ -16,13 +16,6 @@
 
 package org.waveprotocol.box.webclient.client;
 
-
-import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
-import org.waveprotocol.wave.model.waveref.WaveRef;
-import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
-
-import javax.annotation.Nullable;
-
 /**
  * Contains the code to interface the history event mechanism with the client's
  * event bus. At the moment, a history token encodes a wave id or wave ref.
@@ -33,23 +26,6 @@ public class HistorySupport {
 
   public static void init(HistoryProvider historyProvider) {
     HistorySupport.historyProvider = historyProvider;
-  }
-
-  /**
-   * @param encodedToken token to parse into waveref
-   * @return null if cannot parse into valid waveRef
-   */
-  @Nullable
-  public static WaveRef waveRefFromHistoryToken(String encodedToken) {
-    try {
-      return GwtWaverefEncoder.decodeWaveRefFromPath(encodedToken);
-    } catch (InvalidWaveRefException e) {
-      return null;
-    }
-  }
-
-  public static String historyTokenFromWaveref(WaveRef ref) {
-    return GwtWaverefEncoder.encodeToUriPathSegment(ref);
   }
 
   private HistorySupport() {

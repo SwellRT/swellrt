@@ -21,7 +21,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 
 import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
+import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
 import org.waveprotocol.wave.model.waveref.WaveRef;
+import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 import org.waveprotocol.box.webclient.client.events.Log;
 
 /**
@@ -48,8 +50,10 @@ public class HistoryChangeListener {
         if (encodedToken == null || encodedToken.length() == 0) {
           return;
         }
-        WaveRef waveRef = HistorySupport.waveRefFromHistoryToken(encodedToken);
-        if (waveRef == null) {
+        WaveRef waveRef;
+        try {
+          waveRef = GwtWaverefEncoder.decodeWaveRefFromPath(encodedToken);
+        } catch (InvalidWaveRefException e) {
           LOG.info("History token contains invalid path: " + encodedToken);
           return;
         }

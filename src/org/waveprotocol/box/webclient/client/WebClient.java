@@ -66,7 +66,9 @@ import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
 import org.waveprotocol.wave.model.waveref.WaveRef;
+import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -311,8 +313,10 @@ public class WebClient implements EntryPoint {
     });
     String encodedToken = History.getToken();
     if (encodedToken != null && !encodedToken.isEmpty()) {
-      WaveRef fromWaveRef = HistorySupport.waveRefFromHistoryToken(encodedToken);
-      if (waveRef == null) {
+      WaveRef fromWaveRef;
+      try {
+        fromWaveRef = GwtWaverefEncoder.decodeWaveRefFromPath(encodedToken);
+      } catch (InvalidWaveRefException e) {
         LOG.info("History token contains invalid path: " + encodedToken);
         return;
       }
@@ -322,7 +326,7 @@ public class WebClient implements EntryPoint {
         return;
       }
     }
-    History.newItem(HistorySupport.historyTokenFromWaveref(waveRef), false);
+    History.newItem(GwtWaverefEncoder.encodeToUriPathSegment(waveRef), false);
   }
 
   /**

@@ -25,7 +25,6 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Window;
 
-import org.waveprotocol.box.webclient.client.HistorySupport;
 import org.waveprotocol.wave.client.common.util.WaveRefConstants;
 import org.waveprotocol.wave.client.doodad.link.Link;
 import org.waveprotocol.wave.client.doodad.link.Link.InvalidLinkException;
@@ -62,6 +61,7 @@ import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
@@ -113,24 +113,28 @@ public class EditToolbar {
   private final ParticipantId user;
   private final AttachmentIdGenerator attachmentIdGenerator;
 
+  /** The id of the currently loaded wave. */
+  private WaveId waveId;
+
   private final EditorContextAdapter editor = new EditorContextAdapter(null);
   private final ButtonUpdater updater = new ButtonUpdater(editor);
 
   private EditToolbar(EditorToolbarResources.Css css, ToplevelToolbarWidget toolbarUi,
-      ParticipantId user, IdGenerator idGenerator) {
+      ParticipantId user, IdGenerator idGenerator, WaveId waveId) {
     this.css = css;
     this.toolbarUi = toolbarUi;
     this.user = user;
+    this.waveId = waveId;
     attachmentIdGenerator = new AttachmentIdGeneratorImpl(idGenerator);
   }
 
   /**
    * Attaches editor behaviour to a toolbar, adding all the edit buttons.
    */
-  public static EditToolbar create(ParticipantId user, IdGenerator idGenerator) {
+  public static EditToolbar create(ParticipantId user, IdGenerator idGenerator, WaveId waveId) {
     ToplevelToolbarWidget toolbarUi = new ToplevelToolbarWidget();
     EditorToolbarResources.Css css = EditorToolbarResources.Loader.res.css();
-    return new EditToolbar(css, toolbarUi, user, idGenerator);
+    return new EditToolbar(css, toolbarUi, user, idGenerator, waveId);
   }
 
   /** Constructs the initial set of actions in the toolbar. */
@@ -339,12 +343,7 @@ public class EditToolbar {
   }
 
   private void createInsertAttachmentButton(ToolbarView toolbar, final ParticipantId user) {
-    // Find the current wave id.
-    String encodedToken = HistorySupport.getToken();
-    WaveRef waveRef = null;
-    if (encodedToken != null && !encodedToken.isEmpty()) {
-      waveRef = HistorySupport.waveRefFromHistoryToken(encodedToken);
-    }
+    WaveRef waveRef = WaveRef.of(waveId);
     Preconditions.checkState(waveRef != null);
     final String waveRefToken = URL.encode(GwtWaverefEncoder.encodeToUriQueryString(waveRef));
 

@@ -158,7 +158,8 @@ public interface StageThree {
     }
 
     protected EditToolbar createEditToolbar() {
-      return EditToolbar.create(getStageTwo().getSignedInUser(), stageTwo.getIdGenerator());
+      return EditToolbar.create(getStageTwo().getSignedInUser(), stageTwo.getIdGenerator(),
+          stageTwo.getWave().getWaveId());
     }
 
     protected ViewToolbar createViewToolbar() {
