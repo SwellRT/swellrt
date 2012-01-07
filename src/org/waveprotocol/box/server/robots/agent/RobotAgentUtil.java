@@ -29,12 +29,13 @@ import javax.annotation.Nullable;
 
 /**
  * Util methods for the robot agents.
- * 
+ *
  * @author yurize@apache.org (Yuri Zelikov)
  */
 public class RobotAgentUtil {
-  
+
   public static final String CANNOT_CHANGE_PASSWORD_FOR_USER = "Cannot change password for user: ";
+  public static final String CANNOT_CREATE_USER = "Cannot create user: ";
 
   private RobotAgentUtil() {
 
@@ -42,7 +43,7 @@ public class RobotAgentUtil {
 
   /**
    * Appends a message followed by a new line to the end of the blip.
-   * 
+   *
    * @param blip the blip.
    * @param msg the message.
    */
@@ -62,10 +63,10 @@ public class RobotAgentUtil {
     String[] split = blipContent.split("\n");
     return split[split.length - 1];
   }
-  
+
   /**
    * Changes the user password.
-   * 
+   *
    * @param newPassword the new password of the user.
    * @param participantId the user wave address.
    * @param accountStore the account store with user accounts.
@@ -83,5 +84,24 @@ public class RobotAgentUtil {
       throw new IllegalArgumentException(String.format("User %s does not exist on this domain.",
           participantId.getAddress()));
     }
+  }
+
+  /**
+   * Creates a new user.
+   *
+   * @param accountStore the account store with user accounts.
+   * @param participantId requested user wave address.
+   * @param password requested user password
+   * @throws PersistenceException if the persistence layer fails.
+   * @throws IllegalArgumentException if the userId is already in use.
+   */
+  public static void createUser(AccountStore accountStore, ParticipantId participantId, String password)
+    throws PersistenceException, IllegalArgumentException {
+    if (accountStore.getAccount(participantId) != null) {
+      throw new IllegalArgumentException(String.format("User %s already exists on this domain.", participantId.getAddress()));
+    }
+
+    HumanAccountDataImpl account = new HumanAccountDataImpl(participantId, new PasswordDigest(password.toCharArray()));
+    accountStore.putAccount(account);
   }
 }

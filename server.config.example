@@ -109,3 +109,8 @@ waveserver_disable_verification = true
 
 # Set true to disable the verification of signers (certificates)
 waveserver_disable_signer_verification = true
+
+# Set true to prevent anyone registering on your server.
+# When true, only the admin user can use the RegistrationRobot to add new accounts
+# Default value: false
+disable_registration = @DISABLE_REGISTRATION@

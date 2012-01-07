@@ -12,6 +12,7 @@
   <gxp:param name='domain' type='String' />
   <gxp:param name='message' type='String' />
   <gxp:param name='responseType' type='String' />
+  <gxp:param name='disableRegistration' type='Boolean' />
 
 
   <html dir="ltr">
@@ -52,6 +53,10 @@
     </tr>
     <tr>
       <td id="wiab_loginbox_td" valign="top" align="center">
+      <gxp:if cond='disableRegistration == true'>
+      Registration disabled by administrator.
+      </gxp:if>
+      <gxp:if cond='disableRegistration == false'>
       <form id="regForm" name="regForm" method="post" action="">
       <table align="left">
         <tr>
@@ -102,6 +107,7 @@
         </tr>
       </table>
       </form>
+      </gxp:if>
       </td>
     </tr>
   </table>

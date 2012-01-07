@@ -45,6 +45,7 @@ import org.waveprotocol.box.server.robots.RobotRegistrationServlet;
 import org.waveprotocol.box.server.robots.active.ActiveApiServlet;
 import org.waveprotocol.box.server.robots.agent.passwd.PasswordAdminRobot;
 import org.waveprotocol.box.server.robots.agent.passwd.PasswordRobot;
+import org.waveprotocol.box.server.robots.agent.registration.RegistrationRobot;
 import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
 import org.waveprotocol.box.server.robots.dataapi.DataApiServlet;
@@ -215,6 +216,7 @@ public class ServerMain {
     server.addServlet(SessionManager.SIGN_IN_URL, AuthenticationServlet.class);
     server.addServlet("/auth/signout", SignOutServlet.class);
     server.addServlet("/auth/register", UserRegistrationServlet.class);
+
     server.addServlet("/fetch/*", FetchServlet.class);
     server.addServlet("/search/*", SearchServlet.class);
 
@@ -248,6 +250,7 @@ public class ServerMain {
     server.addServlet(PasswordRobot.ROBOT_URI + "/*", PasswordRobot.class);
     server.addServlet(PasswordAdminRobot.ROBOT_URI + "/*", PasswordAdminRobot.class);
     server.addServlet(WelcomeRobot.ROBOT_URI + "/*", WelcomeRobot.class);
+    server.addServlet(RegistrationRobot.ROBOT_URI + "/*", RegistrationRobot.class);
   }
 
   private static void initializeFrontend(Injector injector, ServerRpcProvider server,

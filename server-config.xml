@@ -22,6 +22,7 @@
   <property name="listener_executor_thread_count" value="1" />
   <property name="wavelet_load_executor_thread_count" value="2" />
   <property name="delta_persist_executor_thread_count" value="2" />
+  <property name="disable_registration" value="false" />
 
 
   <!-- Properties for server.federation.config -->
@@ -83,6 +84,7 @@
           <token key="LISTENER_EXECUTOR_THREAD_COUNT" value="${listener_executor_thread_count}" />
           <token key="WAVELET_LOAD_EXECUTOR_THREAD_COUNT" value="${wavelet_load_executor_thread_count}" />
           <token key="DELTA_PERSIST_EXECUTOR_THREAD_COUNT" value="${delta_persist_executor_thread_count}" />
+          <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
         </replacetokens>
       </filterchain>
     </copy>

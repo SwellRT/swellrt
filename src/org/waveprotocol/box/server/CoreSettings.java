@@ -49,10 +49,11 @@ public class CoreSettings {
   public static final String GADGET_SERVER_PORT = "gadget_server_port";
   public static final String GADGET_SERVER_PATH = "gadget_server_path";
   public static final String ADMIN_USER = "admin_user";
-  public static final String  WELCOME_WAVE_ID = "welcome_wave_id";
+  public static final String WELCOME_WAVE_ID = "welcome_wave_id";
   public static final String LISTENER_EXECUTOR_THREAD_COUNT = "listener_executor_thread_count";
   public static final String WAVELET_LOAD_EXECUTOR_THREAD_COUNT = "wavelet_load_executor_thread_count";
   public static final String DELTA_PERSIST_EXECUTOR_THREAD_COUNT = "delta_persist_executor_thread_count";
+  public static final String DISABLE_REGISTRATION = "disable_registration";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -169,4 +170,9 @@ public class CoreSettings {
       description = "The number of threads to persist deltas.",
       defaultValue = "2")
   private static int deltaPersistExecutorThreadCount;
+
+
+  @Setting(name = DISABLE_REGISTRATION,
+      description = "Prevents the register page from being available to anyone", defaultValue = "false")
+  private static boolean disableRegistration;
 }

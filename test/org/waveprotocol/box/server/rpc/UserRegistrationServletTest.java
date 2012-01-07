@@ -18,6 +18,8 @@
 package org.waveprotocol.box.server.rpc;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +50,6 @@ import javax.servlet.http.HttpServletResponse;
 public class UserRegistrationServletTest extends TestCase {
   private final AccountData account = new HumanAccountDataImpl(
       ParticipantId.ofUnsafe("frodo@example.com"), new PasswordDigest("password".toCharArray()));
-  private UserRegistrationServlet servlet;
   private AccountStore store;
 
   @Mock private HttpServletRequest req;
@@ -61,30 +62,38 @@ public class UserRegistrationServletTest extends TestCase {
     MockitoAnnotations.initMocks(this);
     store = new MemoryStore();
     store.putAccount(account);
-    servlet = new UserRegistrationServlet(store, "example.com", welcomeBot);
 
   }
 
-  public void testRegisterNewUser() throws Exception {
-    attemptToRegister(req, resp, "foo@example.com", "internet");
+  public void testRegisterNewUserEnabled() throws Exception {
+    attemptToRegister(req, resp, "foo@example.com", "internet", false);
 
     verify(resp).setStatus(HttpServletResponse.SC_OK);
-    ParticipantId paraticipantId = ParticipantId.ofUnsafe("foo@example.com");
-    AccountData account = store.getAccount(paraticipantId);
+    ParticipantId participantId = ParticipantId.ofUnsafe("foo@example.com");
+    AccountData account = store.getAccount(participantId);
     assertNotNull(account);
     assertTrue(account.asHuman().getPasswordDigest().verify("internet".toCharArray()));
-    verify(welcomeBot).greet(eq(paraticipantId));
+    verify(welcomeBot).greet(eq(participantId));
+  }
+
+  public void testRegisterNewUserDisabled() throws Exception {
+    attemptToRegister(req, resp, "foo@example.com", "internet", true);
+
+    verify(resp).setStatus(HttpServletResponse.SC_FORBIDDEN);
+    ParticipantId participantId = ParticipantId.ofUnsafe("foo@example.com");
+    AccountData account = store.getAccount(participantId);
+    assertNull(account);
   }
 
   public void testDomainInsertedAutomatically() throws Exception {
-    attemptToRegister(req, resp, "sam", "fdsa");
+    attemptToRegister(req, resp, "sam", "fdsa", false);
 
     verify(resp).setStatus(HttpServletResponse.SC_OK);
     assertNotNull(store.getAccount(ParticipantId.ofUnsafe("sam@example.com")));
   }
 
   public void testRegisterExistingUserThrowsError() throws Exception {
-    attemptToRegister(req, resp, "frodo@example.com", "asdf");
+    attemptToRegister(req, resp, "frodo@example.com", "asdf", false);
 
     verify(resp).setStatus(HttpServletResponse.SC_FORBIDDEN);
 
@@ -93,21 +102,21 @@ public class UserRegistrationServletTest extends TestCase {
   }
 
   public void testRegisterUserAtForeignDomainThrowsError() throws Exception {
-    attemptToRegister(req, resp, "bilbo@example2.com", "fdsa");
+    attemptToRegister(req, resp, "bilbo@example2.com", "fdsa", false);
 
     verify(resp).setStatus(HttpServletResponse.SC_FORBIDDEN);
     assertNull(store.getAccount(ParticipantId.ofUnsafe("bilbo@example2.com")));
   }
 
   public void testUsernameTrimmed() throws Exception {
-    attemptToRegister(req, resp, " ben@example.com ", "beetleguice");
+    attemptToRegister(req, resp, " ben@example.com ", "beetleguice", false);
 
     verify(resp).setStatus(HttpServletResponse.SC_OK);
     assertNotNull(store.getAccount(ParticipantId.ofUnsafe("ben@example.com")));
   }
 
   public void testNullPasswordWorks() throws Exception {
-    attemptToRegister(req, resp, "zd@example.com", null);
+    attemptToRegister(req, resp, "zd@example.com", null, false);
 
     verify(resp).setStatus(HttpServletResponse.SC_OK);
     AccountData account = store.getAccount(ParticipantId.ofUnsafe("zd@example.com"));
@@ -117,13 +126,23 @@ public class UserRegistrationServletTest extends TestCase {
 
   public void attemptToRegister(
       HttpServletRequest req, HttpServletResponse resp, String address,
-      String password) throws IOException {
+      String password, boolean disabledRegistration) throws IOException {
+
+    UserRegistrationServlet enabledServlet = new UserRegistrationServlet(store, "example.com", welcomeBot, false);
+    UserRegistrationServlet disabledServlet = new UserRegistrationServlet(store, "example.com", welcomeBot, true);
+
     when(req.getParameter("address")).thenReturn(address);
     when(req.getParameter("password")).thenReturn(password);
     when(req.getLocale()).thenReturn(Locale.ENGLISH);
     PrintWriter writer = mock(PrintWriter.class);
-    when(resp.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
+    when(resp.getWriter()).thenReturn(writer);
 
-    servlet.doPost(req, resp);
+    if (disabledRegistration) {
+      disabledServlet.doPost(req, resp);
+    } else {
+      enabledServlet.doPost(req, resp);
+    }
+
+    verify(writer, atLeastOnce()).append(anyString());
   }
 }
