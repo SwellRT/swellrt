@@ -8,7 +8,7 @@ ARGC=0
 declare -a ARGV
 SUSPEND="n"
 DEBUG_MODE="off"
-DEBUG_PORT="not set"
+DEBUG_PORT="8000"
 while [ -n "$1" ]; do
   case $1 in
     --debug) DEBUG_MODE="on";;
