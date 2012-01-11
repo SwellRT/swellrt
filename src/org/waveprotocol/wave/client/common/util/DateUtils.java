@@ -32,6 +32,7 @@ public final class DateUtils {
   private final static long SEC_MS = 1000;
   private final static long MIN_MS = 60 * SEC_MS;
   private final static long HOUR_MS = 60 * MIN_MS;
+  private final static long DAY_MS = 24 * HOUR_MS;
 
   // Singleton class.
   private DateUtils() { }
@@ -83,13 +84,28 @@ public final class DateUtils {
       GWT.log("formatPastDate can only format time in the past, trying anyway", null);
     }
 
-    if (isRecent(date, now) || onSameDay(date, now)) {
-      return DateTimeFormat.getShortTimeFormat().format(date).toLowerCase();  // AM/PM -> am/pm
+    if (isRecent(date, now, 6 * HOUR_MS) || onSameDay(date, now)) {
+      return formatTime(date);
+    } else if (isRecent(date, now, 30 * DAY_MS)) {
+      return getMonthDayFormat().format(date) + " " + formatTime(date);
     } else if (isSameYear(date, now)) {
       return getMonthDayFormat().format(date);
     } else {
       return DateTimeFormat.getMediumDateFormat().format(date);
     }
+  }
+
+  /**
+   * Formats the specified time as a String.
+   */
+  public String formatTime(Date date) {
+    // NOTE(zdwang): For now skip it for junit code; also see formatPastDate()
+    if (!GWT.isClient()) {
+      return "formatDateTime is not yet implemented in unit test code";
+    }
+
+    // AM/PM -> am/pm for consistency with formatPastDate()
+    return DateTimeFormat.getShortTimeFormat().format(date).toLowerCase();
   }
 
   /**
@@ -100,7 +116,6 @@ public final class DateUtils {
     if (!GWT.isClient()) {
       return "formatDateTime is not yet implemented in unit test code";
     }
-
 
     // AM/PM -> am/pm for consistency with formatPastDate()
     return DateTimeFormat.getShortDateTimeFormat().format(date).toLowerCase();
@@ -116,10 +131,10 @@ public final class DateUtils {
   }
 
   /**
-   * @return true if a duration is less than six hours.
+   * @return true if a duration is less than x ms.
    */
-  private boolean isRecent(Date date, Date now) {
-   return (now.getTime() - date.getTime()) < 6 * HOUR_MS;
+  private boolean isRecent(Date date, Date now, long ms) {
+   return (now.getTime() - date.getTime()) < ms;
   }
 
  /**
