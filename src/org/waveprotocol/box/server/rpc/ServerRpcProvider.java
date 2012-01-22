@@ -95,12 +95,12 @@ import javax.servlet.http.HttpSession;
  */
 public class ServerRpcProvider {
   private static final Log LOG = Log.get(ServerRpcProvider.class);
-  
+
   /**
    * The buffer size is passed to implementations of {@link AbstractWaveSocketIOServlet} as init
    * param. It defines the response buffer size.
    */
-  private static final int BUFFER_SIZE = 64 * 1024;
+  private static final int BUFFER_SIZE = 1024 * 1024;
 
   private final InetSocketAddress[] httpAddresses;
   private final Integer flashsocketPolicyPort;
@@ -353,7 +353,7 @@ public class ServerRpcProvider {
       // see: http://stackoverflow.com/questions/7727534/how-do-you-disable-jsessionid-for-jetty-running-with-the-eclipse-jetty-maven-plu
       // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
       jettySessionManager.setSessionIdPathParameterName(null);
-      
+
       context.getSessionHandler().setSessionManager(jettySessionManager);
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
