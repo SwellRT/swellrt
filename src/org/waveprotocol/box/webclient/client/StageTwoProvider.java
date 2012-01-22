@@ -25,13 +25,7 @@ import org.waveprotocol.wave.client.StageOne;
 import org.waveprotocol.wave.client.StageTwo;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
-import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusBlipSelector;
-import org.waveprotocol.wave.client.wavepanel.impl.focus.ViewTraverser;
-import org.waveprotocol.wave.client.wavepanel.impl.reader.Reader;
-import org.waveprotocol.wave.client.wavepanel.view.BlipView;
-import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
-import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
@@ -136,12 +130,9 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
 
           // Install eager UI.
           installFeatures();
-          Reader reader = installReader();
 
           // Rendering, and therefore the whole stage is now ready.
           whenReady.use(StageTwoProvider.this);
-
-          selectAndFocusOnBlip(reader);
         }
       });
     }
@@ -166,21 +157,5 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   @Override
   protected void fetchWave(final AsyncHolder.Accessor<WaveViewData> whenReady) {
     whenReady.use(WaveViewDataImpl.create(waveRef.getWaveId()));
-  }
-
-  /**
-   * Finds the blip that should receive the focus and selects it.
-   */
-  private void selectAndFocusOnBlip(Reader reader) {
-    ModelAsViewProvider views = getModelAsViewProvider();
-    ConversationView wave = getConversations();
-    StageOne one = getStageOne();
-    FocusBlipSelector blipSelector =
-        FocusBlipSelector.create(waveRef, wave, views, reader, new ViewTraverser());
-    BlipView blipUi = blipSelector.select();
-    // Focus on the selected blip.
-    if (blipUi != null) {
-      one.getFocusFrame().focus(blipUi);
-    }
   }
 }

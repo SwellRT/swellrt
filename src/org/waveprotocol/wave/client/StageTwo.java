@@ -184,6 +184,9 @@ public interface StageTwo {
   /** @return stage one. */
   StageOne getStageOne();
 
+  /** @return Reader. */
+  Reader getReader();
+
   /**
    * Default implementation of the stage two configuration. Each component is
    * defined by a factory method, any of which may be overridden in order to
@@ -232,6 +235,7 @@ public interface StageTwo {
     private BlipQueueRenderer queueRenderer;
     private ModelAsViewProvider modelAsView;
     private DiffController diffController;
+    private Reader reader;
 
     public DefaultProvider(StageOne stageOne) {
       this.stageOne = stageOne;
@@ -379,6 +383,11 @@ public interface StageTwo {
     @Override
     public final DiffController getDiffController() {
       return diffController == null ? diffController = createDiffController() : diffController;
+    }
+
+    @Override
+    public final Reader getReader() {
+      return reader;
     }
 
     /** @return the id mangler for model objects. Subclasses may override. */
@@ -690,7 +699,6 @@ public interface StageTwo {
 
       // Install eager UI features
       installFeatures();
-      installReader();
 
       // Activate liveness.
       getConnector().connect(null);
@@ -712,13 +720,8 @@ public interface StageTwo {
      */
     protected void installFeatures() {
       // Eagerly install some features.
-    }
-
-    protected Reader installReader() {
-      Reader reader =
-          Reader.install(getSupplement(), stageOne.getFocusFrame(), getModelAsViewProvider(),
+      reader = Reader.install(getSupplement(), stageOne.getFocusFrame(), getModelAsViewProvider(),
           getDocumentRegistry());
-      return reader;
     }
   }
 }

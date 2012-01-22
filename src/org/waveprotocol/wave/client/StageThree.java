@@ -43,6 +43,7 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.BlipQueueRenderer;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeFactory;
 import org.waveprotocol.wave.client.widget.popup.PopupFactory;
+import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
@@ -163,7 +164,10 @@ public interface StageThree {
     }
 
     protected ViewToolbar createViewToolbar() {
-      return ViewToolbar.create();
+      ModelAsViewProvider views = stageTwo.getModelAsViewProvider();
+      ConversationView wave = stageTwo.getConversations();
+      return ViewToolbar.create(stageTwo.getStageOne().getFocusFrame(), views, wave,
+          stageTwo.getReader());
     }
 
     protected String getLocalDomain() {

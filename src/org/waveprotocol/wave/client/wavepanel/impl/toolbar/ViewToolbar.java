@@ -17,9 +17,17 @@
 
 package org.waveprotocol.wave.client.wavepanel.impl.toolbar;
 
+import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusBlipSelector;
+import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusFramePresenter;
+import org.waveprotocol.wave.client.wavepanel.impl.focus.ViewTraverser;
+import org.waveprotocol.wave.client.wavepanel.impl.reader.Reader;
+import org.waveprotocol.wave.client.wavepanel.view.BlipView;
+import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.widget.toolbar.ToolbarButtonViewBuilder;
+import org.waveprotocol.wave.client.widget.toolbar.ToolbarView;
 import org.waveprotocol.wave.client.widget.toolbar.ToplevelToolbarWidget;
 import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarClickButton;
+import org.waveprotocol.wave.model.conversation.ConversationView;
 
 /**
  * Attaches actions that can be performed in a Wave's "view mode" to a toolbar.
@@ -29,16 +37,68 @@ import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarClickButton;
 public final class ViewToolbar {
 
   private final ToplevelToolbarWidget toolbarUi;
+  private final FocusFramePresenter focusFrame;
+  private final FocusBlipSelector blipSelector;
+  private final Reader reader;
 
-  private ViewToolbar(ToplevelToolbarWidget toolbarUi) {
+  private ViewToolbar(ToplevelToolbarWidget toolbarUi, FocusFramePresenter focusFrame,
+      ModelAsViewProvider views, ConversationView wave, Reader reader) {
     this.toolbarUi = toolbarUi;
+    this.focusFrame = focusFrame;
+    this.reader = reader;
+    blipSelector = FocusBlipSelector.create(wave, views, reader, new ViewTraverser());
   }
 
-  public static ViewToolbar create() {
-    return new ViewToolbar(new ToplevelToolbarWidget());
+  public static ViewToolbar create(FocusFramePresenter focus,  ModelAsViewProvider views,
+  ConversationView wave, Reader reader) {
+    return new ViewToolbar(new ToplevelToolbarWidget(), focus, views, wave, reader);
   }
 
   public void init() {
+    ToolbarView group = toolbarUi.addGroup();
+
+    new ToolbarButtonViewBuilder().setText("Recent").applyTo(
+        group.addClickButton(), new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            focusFrame.focus(blipSelector.selectMostRecentlyModified());
+          }
+        });
+
+    new ToolbarButtonViewBuilder().setText("Next Unread").applyTo(
+        group.addClickButton(), new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            BlipView focusedBlip = focusFrame.getFocusedBlip();
+            if (focusedBlip == null) {
+              focusedBlip = blipSelector.getOrFindRootBlip();
+              boolean isRead = reader.isRead(focusedBlip);
+              focusFrame.focus(focusedBlip);
+              if (isRead) {
+                focusFrame.focusNext();
+              }
+            } else {
+              focusFrame.focusNext();
+            }
+          }
+        });
+    new ToolbarButtonViewBuilder().setText("Next").applyTo(
+        group.addClickButton(), new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            focusFrame.moveDown();
+          }
+        });
+    new ToolbarButtonViewBuilder().setText("Previous").applyTo(
+        group.addClickButton(), new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            focusFrame.moveUp();
+          }
+        });
+    // Fake group
+    group = toolbarUi.addGroup();
+    new ToolbarButtonViewBuilder().setText("").applyTo(group.addClickButton(), null);
   }
 
   /**

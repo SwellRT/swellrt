@@ -31,6 +31,10 @@ import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
+import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusBlipSelector;
+import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusFramePresenter;
+import org.waveprotocol.wave.client.wavepanel.impl.focus.ViewTraverser;
+import org.waveprotocol.wave.client.wavepanel.impl.reader.Reader;
 import org.waveprotocol.wave.client.wavepanel.view.BlipView;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.BlipQueueRenderer;
@@ -169,8 +173,12 @@ public class StagesProvider extends Stages {
   }
 
   private void handleExistingWave(StageThree three) {
-    BlipQueueRenderer blipQueue = two.getBlipQueue();
-    blipQueue.flush();
+    if (waveRef.hasDocumentId()) {
+      BlipQueueRenderer blipQueue = two.getBlipQueue();
+      blipQueue.flush();
+      selectAndFocusOnBlip(two.getReader(), two.getModelAsViewProvider(), two.getConversations(),
+          one.getFocusFrame(), waveRef);
+    }
   }
 
   public void destroy() {
@@ -191,6 +199,20 @@ public class StagesProvider extends Stages {
       one = null;
     }
     closed = true;
+  }
+
+  /**
+   * Finds the blip that should receive the focus and selects it.
+   */
+  private static void selectAndFocusOnBlip(Reader reader, ModelAsViewProvider views,
+      ConversationView wave, FocusFramePresenter focusFrame, WaveRef waveRef) {
+    FocusBlipSelector blipSelector =
+        FocusBlipSelector.create(wave, views, reader, new ViewTraverser());
+    BlipView blipUi = blipSelector.selectBlipByWaveRef(waveRef);
+    // Focus on the selected blip.
+    if (blipUi != null) {
+      focusFrame.focus(blipUi);
+    }
   }
 
   /**

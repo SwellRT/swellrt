@@ -16,7 +16,6 @@
  */
 package org.waveprotocol.wave.client.wavepanel.impl.focus;
 
-import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusFramePresenter.FocusOrder;
 import org.waveprotocol.wave.client.wavepanel.impl.reader.Reader;
 import org.waveprotocol.wave.client.wavepanel.view.BlipView;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
@@ -37,9 +36,6 @@ import java.util.Map;
  */
 public class FocusBlipSelector {
 
-  /** The reference to the current wave. */
-  private final WaveRef waveRef;
-
   /** The conversation. */
   private final ConversationView wave;
 
@@ -49,51 +45,81 @@ public class FocusBlipSelector {
   /** The blip ordering. */
   private final  ViewTraverser traverser;
 
-  /** The ordering for focus frame movement. */
-  private final Reader reader;
+  /** The root blip. */
+  private BlipView rootBlip;
 
   /**
    * Creates a {@link FocusBlipSelector}.
    *
-   * @param waveRef the reference to the current wave that includes the blip id
-   *        in case the wave was loaded due to a click on a link to this wave.
    * @param wave the he conversation.
    * @param views the model with views.
    * @param traverser the blip ordering.
    * @param reader the ordering of focus frame movement.
    * @return the focus blip selector.
    */
-  public static FocusBlipSelector create(WaveRef waveRef, ConversationView wave,
+  public static FocusBlipSelector create(ConversationView wave,
       ModelAsViewProvider views, Reader reader, ViewTraverser traverser) {
-    return new FocusBlipSelector(waveRef, wave, views, reader, traverser);
+    return new FocusBlipSelector(wave, views, reader, traverser);
   }
 
-  FocusBlipSelector(WaveRef waveRef, ConversationView wave,
+  FocusBlipSelector(ConversationView wave,
       ModelAsViewProvider models, Reader reader, ViewTraverser traverser) {
-    this.waveRef = waveRef;
     this.wave = wave;
     this.views = models;
-    this.reader = reader;
     this.traverser = traverser;
   }
 
   /**
-   * @return the blip that should receive the focus or {@code null} if it was
-   *         impossible to compute it. The strategy for blip selection is like
-   *         follows:
-   *         <ul>
-   *         <li>Try to select the oldest unread blip using {@link FocusOrder}.</li>
-   *         <li>If all blips are already read, then select the most recently
-   *         modified blip.</li>
-   *         </ul>
+   * @return the most recently modified blip.
    */
-  public BlipView select() {
+  public BlipView selectMostRecentlyModified() {
+    Conversation conversation  = wave.getRoot();
+    if (conversation == null) {
+      return null;
+    } else {
+      ConversationBlip blip = wave.getRoot().getRootThread().getFirstBlip();
+      BlipView rootBlipUi = views.getBlipView(blip);
+      if (rootBlipUi == null) {
+        return null;
+      }
+      return findMostRecentlyModified(rootBlipUi);
+    }
+  }
+
+  /**
+   * @return the root blip of the currently displayed wave.
+   */
+  public BlipView getOrFindRootBlip() {
+    if (rootBlip == null) {
+      Conversation conversation  = wave.getRoot();
+      if (conversation == null) {
+        return null;
+      } else {
+        ConversationBlip blip = wave.getRoot().getRootThread().getFirstBlip();
+        BlipView rootBlipUi = views.getBlipView(blip);
+        if (rootBlipUi == null) {
+          return null;
+        }
+        rootBlip =  rootBlipUi;
+      }
+    }
+    return rootBlip;
+  }
+
+  /**
+   * Locates and returns the UI blip view by waveRef.
+   *
+   * @param waveRef the reference to the current wave that includes the blip id.
+   */
+  public BlipView selectBlipByWaveRef(WaveRef waveRef) {
     // Determine if waveRef has a documentId in it - if so, the referenced blip
     // should receive the focus on wave load.
     // First find conversation
     Conversation conversation;
-    if (waveRef.hasWaveletId()) {
+    String documentId = null;
+    if (waveRef != null && waveRef.hasWaveletId()) {
       String id = ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveRef.getWaveletId());
+      documentId = waveRef.getDocumentId();
       conversation = wave.getConversation(id);
     } else {
       // Unspecified wavelet means root.
@@ -104,38 +130,14 @@ public class FocusBlipSelector {
     } else {
       ConversationBlip blip = null;
       // If there's blip reference then focus on that blip.
-      String documentId = waveRef.getDocumentId();
       // Find selected blip.
       if (documentId != null) {
         blip = wave.getRoot().getBlip(documentId);
         if (blip != null) {
           return views.getBlipView(blip);
-        } else {
-          return null;
-        }
-      } else {
-        blip = wave.getRoot().getRootThread().getFirstBlip();
-        BlipView rootBlipUi = views.getBlipView(blip);
-        if (rootBlipUi == null) {
-          return null;
-        }
-        if (reader != null) {
-          if (!reader.isRead(rootBlipUi)) {
-            // Return the root blip since it is unread.
-            return rootBlipUi;
-          }
-          // If no blip was referenced, then try to find the next blip starting
-          // from the root according to the order.
-          BlipView tempUi = reader.getNext(rootBlipUi);
-          if (tempUi != null && !tempUi.getId().equals(rootBlipUi.getId())) {
-            return tempUi;
-          } else {
-            return findMostRecentlyModified(rootBlipUi);
-          }
-        } else {
-          return findMostRecentlyModified(rootBlipUi);
         }
       }
+      return null;
     }
   }
 
