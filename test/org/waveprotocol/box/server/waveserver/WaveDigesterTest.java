@@ -1,5 +1,5 @@
 /**
- * Copyright 2011 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,15 +42,14 @@ import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 
 /**
  * Unit tests for {@link WaveDigester}.
- * 
+ *
  * @author yurize@apache.org (Yuri Zelikov)
  */
 public class WaveDigesterTest extends TestCase {
 
   private static final WaveletId CONVERSATION_WAVELET_ID = WaveletId.of("example.com", "conv+root");
 
-  @Mock
-  private IdGenerator idGenerator;
+  @Mock private IdGenerator idGenerator;
 
   private ConversationUtil conversationUtil;
 
@@ -96,6 +95,24 @@ public class WaveDigesterTest extends TestCase {
     Digest digest = digester.generateDigest(conversation, supplement, observableWaveletData);
 
     assertEquals(title, digest.getTitle());
-    assertEquals(digest.getBlipCount(), 1);
+    assertEquals(1, digest.getBlipCount());
+  }
+
+  public void testUnreadCount() {
+    TestingWaveletData data =
+        new TestingWaveletData(WAVE_ID, CONVERSATION_WAVELET_ID, PARTICIPANT, true);
+    data.appendBlipWithText("blip number 1");
+    data.appendBlipWithText("blip number 2");
+    data.appendBlipWithText("blip number 3");
+    ObservableWaveletData observableWaveletData = data.copyWaveletData().get(0);
+    ObservableWavelet wavelet = OpBasedWavelet.createReadOnly(observableWaveletData);
+    ObservableConversationView conversation = conversationUtil.buildConversation(wavelet);
+
+    SupplementedWave supplement = mock(SupplementedWave.class);
+    when(supplement.isUnread(any(ConversationBlip.class))).thenReturn(true, true, false);
+    Digest digest = digester.generateDigest(conversation, supplement, observableWaveletData);
+
+    assertEquals(3, digest.getBlipCount());
+    assertEquals(2, digest.getUnreadCount());
   }
 }

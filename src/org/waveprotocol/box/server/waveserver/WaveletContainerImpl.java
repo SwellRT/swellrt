@@ -65,7 +65,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
 
   private static final Log LOG = Log.get(WaveletContainerImpl.class);
 
-  private static final int AWAIT_LOAD_TIMEOUT_SECONDS = 20;
+  private static final int AWAIT_LOAD_TIMEOUT_SECONDS = 1000;
 
   protected enum State {
     /** Everything is working fine. */
@@ -102,7 +102,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
   /**
    * Constructs an empty WaveletContainer for a wavelet.
    * WaveletData is not set until a delta has been applied.
-   * 
+   *
    * @param notifiee the subscriber to notify of wavelet updates and commits.
    * @param waveletState the wavelet's delta history and current state.
    * @param waveDomain the wave server domain.
@@ -268,7 +268,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
       releaseReadLock();
     }
   }
-  
+
   @Override
   public HashedVersion getLastCommittedVersion() throws WaveletStateException {
     awaitLoad();
@@ -305,7 +305,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
       releaseReadLock();
     }
   }
-  
+
   @Override
   public <T> T applyFunction(Function<ReadableWaveletData, T> function)
       throws WaveletStateException {
@@ -513,9 +513,9 @@ abstract class WaveletContainerImpl implements WaveletContainer {
       releaseReadLock();
     }
   }
-  
-  
-  
+
+
+
   @Override
   public ParticipantId getSharedDomainParticipant() {
     return sharedDomainParticipantId;
