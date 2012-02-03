@@ -28,7 +28,7 @@
   <gxp:param name='domain' type='String' />
 
   <div class="topbar">
-    <img src="/static/logo.png" alt="logo" class="logo" />
+    <a href="/"><img src="/static/logo.png" alt="logo" class="logo" /></a>
     <div class="title">Wave in a box</div>
     <div class="banner" id="banner"></div>
     <div class="info">
