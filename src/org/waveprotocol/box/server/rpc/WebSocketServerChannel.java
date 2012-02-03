@@ -48,6 +48,7 @@ public class WebSocketServerChannel extends WebSocketChannel implements WebSocke
   @Override
   public void onOpen(Connection connection) {
     this.connection = connection;
+    connection.setMaxIdleTime(0);
   }
 
   /**

@@ -502,6 +502,7 @@ public class ServerRpcProvider {
       SelectChannelConnector connector = new SelectChannelConnector();
       connector.setHost(address.getAddress().getHostAddress());
       connector.setPort(address.getPort());
+      connector.setMaxIdleTime(0);
       list.add(connector);
     }
 
