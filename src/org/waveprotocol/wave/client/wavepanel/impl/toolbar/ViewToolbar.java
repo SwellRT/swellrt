@@ -82,18 +82,18 @@ public final class ViewToolbar {
             }
           }
         });
-    new ToolbarButtonViewBuilder().setText("Next").applyTo(
-        group.addClickButton(), new ToolbarClickButton.Listener() {
-          @Override
-          public void onClicked() {
-            focusFrame.moveDown();
-          }
-        });
     new ToolbarButtonViewBuilder().setText("Previous").applyTo(
         group.addClickButton(), new ToolbarClickButton.Listener() {
           @Override
           public void onClicked() {
             focusFrame.moveUp();
+          }
+        });
+    new ToolbarButtonViewBuilder().setText("Next").applyTo(
+        group.addClickButton(), new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            focusFrame.moveDown();
           }
         });
     // Fake group
