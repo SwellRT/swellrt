@@ -28,12 +28,12 @@ import org.waveprotocol.box.server.robots.operations.FetchProfilesService.Profil
  * gravatar.com and adding their wave address to the main profile. It is
  * impossible to create a main profile with wave address since gravatar requires
  * email address verification.
- * 
+*
  * @author yurize@apache.org (Yuri Zelikov)
  */
 public class GravatarProfilesFetcher implements ProfilesFetcher {
 
-  private static final String GRAVATAR_URL = "http://www.gravatar.com/avatar/";
+  private static final String GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
 
   public static GravatarProfilesFetcher create() {
     return new GravatarProfilesFetcher();

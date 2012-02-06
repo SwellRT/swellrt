@@ -269,10 +269,10 @@ public class WebClient implements EntryPoint {
   }
 
   /**
-   * Returns <code>ws://yourhost[:port]/</code>.
+   * Returns <code>ws(s)://yourhost[:port]/</code>.
    */
   // XXX check formatting wrt GPE
-  private native String getWebSocketBaseUrl(String moduleBase) /*-{return "ws" + /:\/\/[^\/]+/.exec(moduleBase)[0] + "/";}-*/;
+  private native String getWebSocketBaseUrl(String moduleBase) /*-{return ((window.location.protocol == "https:") ? "wss" : "ws") + /:\/\/[^\/]+/.exec(moduleBase)[0] + "/";}-*/;
 
   private native boolean useSocketIO() /*-{ return !window.WebSocket }-*/;
 

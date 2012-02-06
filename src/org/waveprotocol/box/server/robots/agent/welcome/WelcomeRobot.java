@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 
 /**
  * The robot that adds a "Welcome" wave to the inbox of new users.
- * 
+ *
  * @author yurize@apache.org (Yuri Zelikov)
  */
 @SuppressWarnings("serial")
@@ -77,14 +77,14 @@ public class WelcomeRobot extends AbstractBaseRobotAgent {
   /**
    * Greets new users by creating a new wave with welcome message and
    * adding it to the inbox of the new user.
-   * 
+   *
    * @param id the participant id of the new user.
    * @throws IOException if there is a problem submitting the new wave.
    */
   public void greet(ParticipantId id) throws IOException {
     Preconditions.checkNotNull(id);
     RobotAccountData account = null;
-    String rpcUrl = "http://" + getFrontEndAddress() + "/robot/rpc";
+    String rpcUrl = getFrontEndAddress() + "/robot/rpc";
     try {
       account =
         getAccountStore()

@@ -54,6 +54,9 @@ public class CoreSettings {
   public static final String WAVELET_LOAD_EXECUTOR_THREAD_COUNT = "wavelet_load_executor_thread_count";
   public static final String DELTA_PERSIST_EXECUTOR_THREAD_COUNT = "delta_persist_executor_thread_count";
   public static final String DISABLE_REGISTRATION = "disable_registration";
+  public static final String ENABLE_SSL = "enable_ssl";
+  public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
+  public static final String SSL_KEYSTORE_PASSWORD = "ssl_keystore_password";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -171,8 +174,19 @@ public class CoreSettings {
       defaultValue = "2")
   private static int deltaPersistExecutorThreadCount;
 
-
   @Setting(name = DISABLE_REGISTRATION,
       description = "Prevents the register page from being available to anyone", defaultValue = "false")
   private static boolean disableRegistration;
+
+  @Setting(name = ENABLE_SSL,
+      description = "Enables SSL protocol on all address/port combinations", defaultValue = "false")
+  private static boolean enableSsl;
+
+  @Setting(name = SSL_KEYSTORE_PATH,
+      description = "Path to the keystore containing SSL certificase to server", defaultValue = "./wiab.ks")
+  private static String sslKeystorePath;
+
+  @Setting(name = SSL_KEYSTORE_PASSWORD,
+      description = "Password to the SSL keystore", defaultValue = "")
+  private static String sslKeystorePassword;
 }

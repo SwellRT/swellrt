@@ -69,6 +69,9 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
   /** Account store with user and robot accounts. */
   private final AccountStore accountStore;
 
+  /** SSL enabled flag? */
+  private final Boolean isSSLEnabled;
+
   /** The robot registrar. */
   private final RobotRegistrar robotRegistrar;
 
@@ -85,7 +88,8 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
     this(injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WAVE_SERVER_DOMAIN))),
         injector.getInstance(TokenGenerator.class), injector
             .getInstance(ServerFrontendAddressHolder.class), injector
-            .getInstance(AccountStore.class), injector.getInstance(RobotRegistrar.class));
+            .getInstance(AccountStore.class), injector.getInstance(RobotRegistrar.class),
+        injector.getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_SSL))));
   }
 
   /**
@@ -95,11 +99,12 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
    */
   AbstractBaseRobotAgent(String waveDomain, TokenGenerator tokenGenerator,
       ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
-      RobotRegistrar robotRegistator) {
+      RobotRegistrar robotRegistator, Boolean sslEnabled) {
     this.waveDomain = waveDomain;
     this.frontendAddressHolder = frontendAddressHolder;
     this.robotRegistrar = robotRegistator;
     this.accountStore = accountStore;
+    this.isSSLEnabled = sslEnabled;
     ensureRegistered(tokenGenerator, getFrontEndAddress());
   }
 
@@ -115,7 +120,7 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
       return;
     }
     try {
-      String location = "http://" + serverFrontendAddress + getRobotUri();
+      String location = serverFrontendAddress + getRobotUri();
       // In order to re-register the agents if the server frontend address has changed.
       robotRegistrar.registerOrUpdate(robotId, location);
 
@@ -139,10 +144,11 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
   }
 
   /**
-   * Returns the front end address.
+   * Returns the front end address with correct prefix.
    */
   public String getFrontEndAddress() {
-    return frontendAddressHolder.getAddresses().get(0);
+    //TODO(alown): should this really only get the first one?
+    return (this.isSSLEnabled ? "https://" : "http://") + frontendAddressHolder.getAddresses().get(0);
   }
 
   /**

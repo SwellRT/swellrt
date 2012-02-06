@@ -69,7 +69,8 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
     this(injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WAVE_SERVER_DOMAIN))),
         injector.getInstance(TokenGenerator.class), injector
             .getInstance(ServerFrontendAddressHolder.class), injector
-            .getInstance(AccountStore.class), injector.getInstance(RobotRegistrarImpl.class));
+            .getInstance(AccountStore.class), injector.getInstance(RobotRegistrarImpl.class),
+        injector.getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_SSL))));
   }
 
   /**
@@ -79,8 +80,8 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
    */
   AbstractCliRobotAgent(String waveDomain, TokenGenerator tokenGenerator,
       ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
-      RobotRegistrar robotRegistrar) {
-    super(waveDomain, tokenGenerator, frontendAddressHolder, accountStore, robotRegistrar);
+      RobotRegistrar robotRegistrar, Boolean sslEnabled) {
+    super(waveDomain, tokenGenerator, frontendAddressHolder, accountStore, robotRegistrar, sslEnabled);
     parser = new PosixParser();
     helpFormatter = new HelpFormatter();
     options = initOptions();

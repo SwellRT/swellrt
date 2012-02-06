@@ -114,3 +114,12 @@ waveserver_disable_signer_verification = true
 # When true, only the admin user can use the RegistrationRobot to add new accounts
 # Default value: false
 disable_registration = @DISABLE_REGISTRATION@
+
+# Enable SSL for all address/port combinations listed (makes the next 2 settings non-optional)
+enable_ssl = @ENABLE_SSL@
+
+# Path to keystore containg the ssl certificates to server
+ssl_keystore_path = @SSL_KEYSTORE_PATH@
+
+#Password to the keystore
+ssl_keystore_password = @SSL_KEYSTORE_PASSWORD@

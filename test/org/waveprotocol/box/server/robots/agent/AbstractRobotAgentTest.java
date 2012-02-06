@@ -43,8 +43,8 @@ public class AbstractRobotAgentTest extends TestCase {
 
     public FakeRobotAgent(String waveDomain, TokenGenerator tokenGenerator,
         ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
-        RobotRegistrar registrar) {
-      super(waveDomain, tokenGenerator, frontendAddressHolder, accountStore, registrar);
+        RobotRegistrar registrar, Boolean sslEnabled) {
+      super(waveDomain, tokenGenerator, frontendAddressHolder, accountStore, registrar, sslEnabled);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class AbstractRobotAgentTest extends TestCase {
     RobotRegistrar registar = mock(RobotRegistrar.class);
     agent =
         new FakeRobotAgent("example.com", tokenGenerator, frontendAddressHolder, accountStore,
-            registar);
+            registar, false);
   }
 
   public void testPreprocessCommandValidInput() throws Exception {
