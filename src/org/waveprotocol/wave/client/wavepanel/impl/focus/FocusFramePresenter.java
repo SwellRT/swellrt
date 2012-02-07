@@ -205,6 +205,9 @@ public final class FocusFramePresenter
       if (next != null) {
         focus(next);
       }
+      else {
+        focusPrevious();
+      }
     }
   }
 
