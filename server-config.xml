@@ -90,7 +90,7 @@
           <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
-          <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />"
+          <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />
         </replacetokens>
       </filterchain>
     </copy>
