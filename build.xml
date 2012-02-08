@@ -347,6 +347,7 @@
       <!-- Do not include class and package names in compiled JS. -->
       <arg line="-XdisableClassMetadata"/>
       <arg line="-XdisableCastChecking"/>
+      <arg line="-localWorkers 4"/>
       <arg line="${gwt.args}"/>
       <arg value="org.waveprotocol.box.webclient.WebClientProd"/>
     </java>
