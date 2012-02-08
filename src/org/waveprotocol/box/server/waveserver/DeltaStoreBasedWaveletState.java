@@ -159,16 +159,16 @@ class DeltaStoreBasedWaveletState implements WaveletState {
 
   /** The lock that guards access to persistence related state. */
   private Object persistLock = new Object();
-  
+
   /**
    * Indicates the version of the latest appended delta that was already requested to be
    * persisted.
    */
   private HashedVersion latestVersionToPersist = null;
-  
+
   /** The persist task that will be executed next. */
   private ListenableFutureTask<Void> nextPersistTask = null;
-  
+
   /**
    * Processes the persist task and checks if there is another task to do when
    * one task is done. In such a case, it writes all waiting to be persisted
@@ -490,10 +490,10 @@ class DeltaStoreBasedWaveletState implements WaveletState {
 
   @Override
   public void flush(HashedVersion version) {
-    transformedDeltas.remove(version);
-    appliedDeltas.remove(version);
+    transformedDeltas.remove(transformedDeltas.lowerKey(version));
+    appliedDeltas.remove(appliedDeltas.lowerKey(version));
     if (LOG.isFineLoggable()) {
-      LOG.fine("Flushed delta " + version);
+      LOG.fine("Flushed deltas up to version " + version);
     }
   }
 

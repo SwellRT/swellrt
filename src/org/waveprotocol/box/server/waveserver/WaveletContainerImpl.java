@@ -48,6 +48,7 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -235,6 +236,13 @@ abstract class WaveletContainerImpl implements WaveletContainer {
         new Runnable() {
           @Override
           public void run() {
+            try {
+              result.get();
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+              LOG.severe("Version " + version, e);
+            }
             acquireWriteLock();
             try {
               waveletState.flush(version);
