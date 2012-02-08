@@ -45,10 +45,10 @@ import com.glines.socketio.server.transport.XHRPollingTransport;
 import com.glines.socketio.server.transport.jetty.JettyWebSocketTransport;
 
 import org.eclipse.jetty.http.ssl.SslContextFactory;
-import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.bio.SocketConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -354,11 +354,11 @@ public class ServerRpcProvider {
   public void startWebSocketServer(final Injector injector) {
     httpServer = new Server();
 
-    List<SocketConnector> connectors = getSocketConnectors(httpAddresses);
+    List<SelectChannelConnector> connectors = getSelectChannelConnectors(httpAddresses);
     if (connectors.isEmpty()) {
       LOG.severe("No valid http end point address provided!");
     }
-    for (SocketConnector connector : connectors) {
+    for (SelectChannelConnector connector : connectors) {
       httpServer.addConnector(connector);
     }
     final WebAppContext context = new WebAppContext();
@@ -510,12 +510,12 @@ public class ServerRpcProvider {
   }
 
   /**
-   * @return a list of {@link SocketConnector} each bound to a host:port
+   * @return a list of {@link SelectChannelConnector} each bound to a host:port
    *         pair form the list addresses.
    */
-  private List<SocketConnector> getSocketConnectors(
+  private List<SelectChannelConnector> getSelectChannelConnectors(
       InetSocketAddress[] httpAddresses) {
-    List<SocketConnector> list = Lists.newArrayList();
+    List<SelectChannelConnector> list = Lists.newArrayList();
     String[] excludeCiphers = {"SSL_RSA_EXPORT_WITH_RC4_40_MD5", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
                                "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_RSA_WITH_DES_CBC_SHA",
                                "SSL_DHE_RSA_WITH_DES_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
@@ -535,11 +535,11 @@ public class ServerRpcProvider {
     }
 
     for (InetSocketAddress address : httpAddresses) {
-      SocketConnector connector;
+      SelectChannelConnector connector;
       if (sslEnabled) {
-        connector = new SslSocketConnector(sslContextFactory);
+        connector = new SslSelectChannelConnector(sslContextFactory);
       } else {
-        connector = new SocketConnector();
+        connector = new SelectChannelConnector();
       }
       connector.setHost(address.getAddress().getHostAddress());
       connector.setPort(address.getPort());
