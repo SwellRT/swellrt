@@ -121,15 +121,13 @@ public class MemorySearchProvider implements SearchProvider {
   private Multimap<WaveId, WaveletId> createWavesViewToFilter(final ParticipantId user,
       final boolean isAllQuery) {
     Multimap<WaveId, WaveletId> currentUserWavesView;
+    currentUserWavesView = HashMultimap.create();
+    currentUserWavesView.putAll(subscriber.getPerUserWaveView(user));
     if (isAllQuery) {
       // If it is the "all" query - we need to include also waves view of the
       // shared domain participant.
-      currentUserWavesView = HashMultimap.create();
-      currentUserWavesView.putAll(subscriber.getPerUserWaveView(user));
       currentUserWavesView.putAll(subscriber.getPerUserWaveView(sharedDomainParticipantId));
-    } else {
-      currentUserWavesView = subscriber.getPerUserWaveView(user);
-    }
+    } 
     return currentUserWavesView;
   }
 
