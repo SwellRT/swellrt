@@ -109,7 +109,7 @@ final class Wave implements Iterable<WaveletContainer> {
     ImmutableSet<WaveletId> storedWavelets;
     try {
       storedWavelets =
-          FutureUtil.getResultOrPropagateException(getLookedupWavelets(), PersistenceException.class);
+          FutureUtil.getResultOrPropagateException(lookedupWavelets, PersistenceException.class);
     } catch (PersistenceException e) {
       throw new WaveletStateException(
           "Failed to lookup wavelet " + WaveletName.of(waveId, waveletId), e);

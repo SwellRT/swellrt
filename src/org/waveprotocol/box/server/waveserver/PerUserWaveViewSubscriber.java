@@ -19,13 +19,11 @@ package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 
 import org.waveprotocol.box.common.DeltaSequence;
-import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.waveserver.WaveBus.Subscriber;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -39,6 +37,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -77,28 +76,21 @@ public class PerUserWaveViewSubscriber implements Subscriber {
                 // the subscriber.waveletUpdate method until the user logs of
                 // and the key is expired.
                 // On the next login the waves view will be rebuild.
-                ExceptionalIterator<WaveId, WaveServerException> waveIds = waveMap.getWaveIds();
-                try {
-                  while (waveIds.hasNext()) {
-                    WaveId waveId = waveIds.next();
-                    ImmutableSet<WaveletId> waveletIds = waveMap.lookupWavelets(waveId);
-                    for (WaveletId waveletId : waveletIds) {
-                      WaveletContainer c = waveMap.getLocalWavelet(WaveletName.of(waveId, waveletId));
-                      try {
-                        if (!c.hasParticipant(user)) {
-                          continue;
-                        }
-                        // Add this wave to the user view.
-                        userView.put(waveId, waveletId);
-                      } catch (WaveletStateException e) {
-                        LOG.warning("Failed to access wavelet " + c.getWaveletName(), e);
+                Map<WaveId, Wave> waves = waveMap.getWaves();
+                for (Map.Entry<WaveId, Wave> entry : waves.entrySet()) {
+                  Wave wave = entry.getValue();
+                  for (WaveletContainer c : wave) {
+                    WaveletId waveletId = c.getWaveletName().waveletId;
+                    try {
+                      if (!c.hasParticipant(user)) {
+                        continue;
                       }
+                      // Add this wave to the user view.
+                      userView.put(entry.getKey(), waveletId);
+                    } catch (WaveletStateException e) {
+                      LOG.warning("Failed to access wavelet " + c.getWaveletName(), e);
                     }
                   }
-                } catch (WaveletStateException e) {
-                  LOG.severe(String.format("Failed to initialise waves view for user %s", user.getAddress()), e);
-                } catch (WaveServerException e) {
-                  LOG.severe(String.format("Failed to initialise waves view for user %s", user.getAddress()), e);
                 }
                 LOG.info("Initalized waves view for user: " + user.getAddress()
                     + ", number of waves in view: " + userView.size());

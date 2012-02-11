@@ -18,6 +18,7 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -33,6 +34,7 @@ import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -105,6 +107,13 @@ public class WaveMap {
     } catch (PersistenceException e) {
       throw new WaveletStateException("Failed to scan waves", e);
     }
+  }
+
+  /**
+   * Returns defensive copy of the map that holds waves.
+   */
+  Map<WaveId, Wave> getWaves() {
+    return ImmutableMap.copyOf(waves);
   }
 
   public ExceptionalIterator<WaveId, WaveServerException> getWaveIds() {
