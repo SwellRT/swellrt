@@ -119,7 +119,8 @@ public class RobotRegistrationServlet extends HttpServlet {
     try{
       robotAccount = robotRegistrar.registerNew(id, location);
     } catch (RobotRegistrationException e) {
-      doRegisterGet(req, resp, e.getLocalizedMessage());
+      doRegisterGet(req, resp, e.getMessage());
+      return;
     } catch (PersistenceException e) {
       LOG.severe("Failed to retrieve account data for " + id, e);
       doRegisterGet(req, resp, "Failed to retrieve account data for " + id.getAddress());
