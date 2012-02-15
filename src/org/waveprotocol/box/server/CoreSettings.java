@@ -57,6 +57,7 @@ public class CoreSettings {
   public static final String ENABLE_SSL = "enable_ssl";
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
   public static final String SSL_KEYSTORE_PASSWORD = "ssl_keystore_password";
+  public static final String ENABLE_IMPORT = "enable_import";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -189,4 +190,8 @@ public class CoreSettings {
   @Setting(name = SSL_KEYSTORE_PASSWORD,
       description = "Password to the SSL keystore", defaultValue = "")
   private static String sslKeystorePassword;
+
+  @Setting(name = ENABLE_IMPORT,
+      description = "Enable import servlet at <Server URL>/import", defaultValue = "false")
+  private static boolean enableImport;
 }

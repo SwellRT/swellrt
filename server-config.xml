@@ -23,9 +23,7 @@
   <property name="wavelet_load_executor_thread_count" value="2" />
   <property name="delta_persist_executor_thread_count" value="2" />
   <property name="disable_registration" value="false" />
-  <property name="enable_ssl" value="false" />
-  <property name="ssl_keystore_path" value="./wiab.ks" />
-  <property name="ssl_keystore_password" value="" />
+  <property name="enable_import" value="false" />
 
 
   <!-- Properties for server.federation.config -->

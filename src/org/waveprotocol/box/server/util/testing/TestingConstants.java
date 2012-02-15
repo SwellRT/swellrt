@@ -40,13 +40,17 @@ public interface TestingConstants {
 
   public static final String DOMAIN = "host.com";
 
-  public static final String OTHER_USER = "other@" + DOMAIN;
+  public static final String OTHER_USER_NAME = "other";
+
+  public static final String OTHER_USER = OTHER_USER_NAME + "@" + DOMAIN;
 
   public static final ParticipantId OTHER_PARTICIPANT = new ParticipantId(OTHER_USER);
 
   public static final int PORT = 9876;
 
-  public static final String USER = "user@" + DOMAIN;
+  public static final String USER_NAME = "user";
+
+  public static final String USER = USER_NAME + "@" + DOMAIN;
 
   public static final char[] PASSWORD = "password".toCharArray();
 

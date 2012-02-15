@@ -1,0 +1,11 @@
+URL: http://code.google.com/p/google-api-java-client/wiki/OAuth2Draft10
+Version: 1.5
+License: Apache 2.0
+
+License File: COPYING
+
+Description:
+Google APIs Client Libraries
+
+Local Modifications:
+Class-Path field was removed from /META-INF/MANIFEST.MF files.

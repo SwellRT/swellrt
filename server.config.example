@@ -123,3 +123,6 @@ ssl_keystore_path = @SSL_KEYSTORE_PATH@
 
 #Password to the keystore
 ssl_keystore_password = @SSL_KEYSTORE_PASSWORD@
+
+# Enable import of waves via /import URL. Default value: false
+enable_import = @ENABLE_IMPORT@

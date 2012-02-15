@@ -72,6 +72,7 @@ import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
 import org.waveprotocol.wave.util.settings.SettingsBinder;
+import org.waveprotocol.box.server.waveserver.ImportServlet;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -228,6 +229,11 @@ public class ServerMain {
     server.addServlet("/webclient/remote_logging", RemoteLoggingServiceImpl.class);
     server.addServlet("/profile/*", FetchProfilesServlet.class);
     server.addServlet("/waveref/*", WaveRefServlet.class);
+
+    boolean enableImport = injector
+            .getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_IMPORT)));
+    if (enableImport)
+      server.addServlet("/import", ImportServlet.class);
 
     String gadgetHostName =
         injector

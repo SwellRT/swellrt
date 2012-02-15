@@ -75,5 +75,8 @@
 	<classpathentry kind="lib" path="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT.jar" sourcepath="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT.jar" sourcepath="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-fileupload/commons-fileupload.jar" sourcepath="third_party/runtime/commons-fileupload/commons-fileupload-src.zip"/>
+        <classpathentry kind="lib" path="third_party/runtime/google-api-client/google-api-client-1.5.0-beta.jar"/>
+        <classpathentry kind="lib" path="third_party/runtime/google-api-client/google-http-client-1.5.0-beta.jar"/>
+        <classpathentry kind="lib" path="third_party/runtime/google-api-client/google-oauth-client-1.5.0-beta.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

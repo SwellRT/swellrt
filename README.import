@@ -1,0 +1,49 @@
+
+Import all the waves in which specified user is a participant.
+Wave Id's and wavelet Id's remain same, except domains.
+Domains of participants are renamed to Wiab server domain.
+Attachments are not imported now.
+
+Get Google OAuth application Id:
+
+ - Go to https://code.google.com/apis/console/.
+ - Create a new project.
+ - Click on "API Access" on the left, then "Create an OAuth2.0 client id".
+ - Enter a product name. Leave the logo empty. Click "Next".
+ - Application type: Installed application.
+ - Click "Create client ID".
+ 
+Make sure to you have compiled WIAB by running the following command:
+ant dist
+
+Export waves from GWave to JSon files:
+
+ Run 
+ ./run-export.sh <ClientId> <ClientSecret> <ParticipantId> <ExportDir> [-i IncludeWavesList] [-e ExcludeWavesList]
+   Parameters are:
+        ClientId - Google application Id;
+        ClientSecret - Google application secret;
+        ParticipantId - Wave participant name, for example vasya@googlewave.com;
+	ExportDir - directory to write export files;
+	IncludeWavesList - optional, list of waves to include,
+              for example googlewave.com!w+9aLgzbTk0u googlewave.com!w+Cl2NTbgKCW;
+        ExcludeWavesList - optional, list of waves to exclude.
+        
+  Note: For Linux machines you might need to prepend the "!" with "\", i.e.
+    googlewave.com!w+9aLgzbTk0u -> googlewave.com\!w+9aLgzbTk0u
+
+   Copy/paste URL from console to browser. Press Enter.
+   Copy/paste URL received code from browser to console.
+
+Import waves to WIAB:
+
+  Enable the import waves feature in server.config
+    enable_import = true
+
+  Run 
+ ./run-import.sh <WaveServerImportUrl> <WaveServerDomain> <ExportDir>
+    Parameters are:
+	WaveServerImportUrl - URL of import service, for example http://localhost:9898/import;
+	WaveServerDomain - domain of WIAB server, for example local.net;
+	ExportDir - directory with exported waves.
+

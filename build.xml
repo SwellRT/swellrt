@@ -119,6 +119,7 @@
       <srcfiles dir="${src.dir}" includes="org/waveprotocol/box/server/gxp/*.gxp"/>
     </uptodate>
   </target>
+
   <!-- Generates the Java files from templates -->
   <target name="gen-gxp" description="Generates GXP files"
       depends="init, gen-gxp-dep" unless="skip.gen-gxp">
@@ -132,6 +133,7 @@
       <srcfiles dir="${gen.dir}/gxp"/>
     </uptodate>
   </target>
+
   <target name="compile-gxp" depends="init, gen-gxp, compile-gxp-dep"
       unless="skip.compile-gxp" description="Compiles GXP classes">
     <buildjava destdir="${build.src.dir}">
@@ -150,6 +152,7 @@
       <srcfiles dir="${src.dir}" includes="org/waveprotocol/pst/**/*.java"/>
     </uptodate>
   </target>
+
   <target name="dist-pst" depends="init, dist-pst-dep, compile-proto"
       unless="skip.dist-pst" description="Builds the PST tool">
     <delete dir="${build.dir}/pst"/>
@@ -178,6 +181,7 @@
       <srcfiles dir="${build.proto.dir}"/>
     </uptodate>
   </target>
+
   <target name="gen-messages" depends="dist-pst, compile-proto, gen-messages-dep"
       unless="skip.gen-messages"
       description="Generates the DTO message source">
@@ -199,6 +203,7 @@
       <srcfiles dir="${src.dir}" includes="org/waveprotocol/wave/communication/**"/>
     </uptodate>
   </target>
+
   <target name="compile-messages" depends="gen-messages, compile-messages-dep"
       unless="skip.compile-messages" description="Compiles the DTO messages">
     <!--
@@ -229,6 +234,7 @@
       <srcfiles dir="${gen.dir}" includes="**"/>
     </uptodate>
   </target>
+
   <target name="compile" depends="compile-proto, compile-gxp, compile-messages, compile-dep"
       unless="skip.compile" description="Compiles all source">
     <subant target="compile" inheritall="true">
@@ -332,6 +338,7 @@
       <srcfiles dir="${gen.dir}/messages"/>
     </uptodate>
   </target>
+
   <target name="compile-gwt" depends="compile, compile-gwt-dep" 
       description="GWT compile to production JavaScript" unless="skip.compile-gwt">    
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
@@ -504,6 +511,7 @@
       <srcfiles dir="${build.src.dir}"/>
     </uptodate>
   </target>
+
   <target name="stage" depends="compile, stage-dep" 
       description="Copy classes and runtime depenencies to the staging directory" unless="skip.stage">
     <!-- Unzip and copy all the runtime deps into a staging dir -->
@@ -524,7 +532,7 @@
     <touch file="${dep}/stage"/>
   </target>
 
-  <target name="dist" depends="test, compile-gwt, dist-server"
+  <target name="dist" depends="test, compile-gwt, dist-server, dist-import"
       description="Compiles, tests and creates the binary executable.">
   </target>
 
@@ -576,6 +584,7 @@
       <srcfiles dir="${staging.dir}"/>
     </uptodate>
   </target>
+
   <target name="dist-server" depends="stage, dist-server-dep" description="Assembles the Wave in a Box server" unless="skip.dist-server">
     <jar destfile="${server.jar.out}">
       <fileset dir="${staging.dir}">
@@ -620,6 +629,7 @@
         <include name="org/xmpp/**/*" />
         <exclude name="org/waveprotocol/box/webclient/**/*"/>
         <exclude name="org/waveprotocol/box/consoleclient/**/*"/>
+        <exclude name="org/waveprotocol/box/waveimport/**/*"/>
         <exclude name="org/waveprotocol/wave/client/*"/>
         <exclude name="org/waveprotocol/wave/client/account/**/*"/>
         <exclude name="org/waveprotocol/wave/client/autohide/**/*"/>
@@ -640,6 +650,7 @@
         <exclude name="org/waveprotocol/wave/client/wave/**/*"/>
         <exclude name="org/waveprotocol/wave/client/wavepanel/**/*"/>
         <exclude name="org/waveprotocol/wave/client/widget/**/*"/>
+        <exclude name="com/google/api/client/**/*"/>
       </fileset>
       <manifest>
         <!-- Application entry point -->
@@ -651,6 +662,32 @@
       </manifest>
     </jar>
     <touch file="${dep}/dist-server"/>
+  </target>
+
+  <target name="dist-import-dep">
+    <uptodate targetfile="${dep}/dist-import" property="skip.dist-import">
+      <srcfiles dir="${staging.dir}"/>
+    </uptodate>
+  </target>
+
+  <target name="dist-import" depends="stage, dist-import-dep" description="Assembles the Wave Import utilities" unless="skip.dist-import">
+    <jar destfile="${import.jar.out}">
+      <fileset dir="${staging.dir}">
+        <include name="org/waveprotocol/box/waveimport/**/*"/>
+        <include name="org/waveprotocol/box/server/persistence/**/*"/>
+        <include name="org/waveprotocol/wave/**/*"/>
+        <include name="org/waveprotocol/protobuf/**/*"/>
+        <include name="org/apache/http/**/*"/>
+        <include name="org/apache/commons/**/*"/>
+        <include name="com/google/api/client/**/*"/>
+        <include name="com/google/common/**/*"/>
+        <include name="com/google/gson/**/*"/>
+        <include name="com/google/protobuf/**/*"/>
+        <include name="org/codehaus/jackson/**/*"/>
+        <include name="org/json/**/*"/>
+      </fileset>
+    </jar>
+    <touch file="${dep}/dist-import"/>
   </target>
 
   <!-- This rule should be run whenever the build configuration (i.e. build files, libraries) is changed -->
