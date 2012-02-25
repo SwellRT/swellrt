@@ -16,6 +16,8 @@
  */
 package org.waveprotocol.wave.client.wavepanel.impl.edit;
 
+import javax.annotation.Nullable;
+
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -37,6 +39,7 @@ import org.waveprotocol.wave.client.widget.profile.ProfilePopupPresenter;
 import org.waveprotocol.wave.client.widget.profile.ProfilePopupView;
 import org.waveprotocol.wave.model.conversation.Conversation;
 import org.waveprotocol.wave.model.util.Pair;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -90,35 +93,65 @@ public final class ParticipantController {
   }
 
   /**
+   * Constructs a list of {@link ParticipantId} with the supplied string with comma
+   * separated participant addresses. The method will only succeed if all addresses
+   * is valid.
+   *
+   * @param localDomain if provided, automatic suffixing will occur.
+   * @param addresses string with comma separated participant addresses
+   * @return the array of {@link ParticipantId} instances constructed using the given
+   *         addresses string
+   * @throws InvalidParticipantAddress if at least one of the addresses failed validation.
+   */
+  public static ParticipantId[] buildParticipantList(
+      @Nullable String localDomain, String addresses) throws InvalidParticipantAddress {
+    Preconditions.checkNotNull(addresses, "Expected non-null address");
+
+    String[] addressList = addresses.split(",");
+    ParticipantId[] participants = new ParticipantId[addressList.length];
+
+    for (int i = 0; i < addressList.length; i++) {
+      String address = addressList[i].trim();
+
+      if (localDomain != null) {
+        if (!address.isEmpty() && address.indexOf("@") == -1) {
+          // If no domain was specified, assume that the participant is from the local domain.
+          address = address + "@" + localDomain;
+        } else if (address.equals("@")) {
+          // "@" is a shortcut for the shared domain participant.
+          address = address + localDomain;
+        }
+      }
+
+      // Will throw InvalidParticipantAddress if address is not valid
+      participants[i] = ParticipantId.of(address);
+    }
+    return participants;
+  }
+
+  /**
    * Shows an add-participant popup.
    */
   private void handleAddButtonClicked(Element context) {
-    ParticipantId p;
-    String address = Window.prompt("Add a participant: ", "");
-    if (address == null) {
+    String addressString = Window.prompt("Add a participant(s) (separate with comma ','): ", "");
+    if (addressString == null) {
       return;
     }
-    address = address.trim();
-    if (localDomain != null) {
-      if (!address.isEmpty() &&  address.indexOf("@") == -1) {
-        // If no domain was specified, assume that the participant is from the local domain.
-        address = address + "@" + localDomain;
-      } else if (address.equals("@")) {
-        // "@" is a shortcut for the shared domain participant.
-        address = address + localDomain;
-      }
-    }
+
+    ParticipantId[] participants;
 
     try {
-      p = ParticipantId.of(address);
+      participants = buildParticipantList(localDomain, addressString);
     } catch (InvalidParticipantAddress e) {
-      Window.alert("Invalid address: " + address);
+      Window.alert(e.getMessage());
       return;
     }
 
     ParticipantsView participantsUi = views.fromAddButton(context);
     Conversation conversation = models.getParticipants(participantsUi);
-    conversation.addParticipant(p);
+    for (ParticipantId participant : participants) {
+      conversation.addParticipant(participant);
+    }
   }
 
   /**
