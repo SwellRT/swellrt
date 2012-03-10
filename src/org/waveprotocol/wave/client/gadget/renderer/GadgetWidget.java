@@ -906,6 +906,7 @@ public class GadgetWidget extends ObservableSupplementedWave.ListenerImpl
     String url = cleanUrl(metadata.getIframeUrl(view));
     if (url.equals(iframeUrl) && ((token == null) || token.isEmpty())) {
       log("Received metadata matches the cached information.");
+      constructGadgetSizeFromMetadata(metadata, view, url);
       return;
     }
     // NOTE(user): Technically we should not save iframe URLs for gadgets with security tokens,
@@ -921,6 +922,10 @@ public class GadgetWidget extends ObservableSupplementedWave.ListenerImpl
     if ("".equals(ui.getTitleLabelText()) && metadata.hasTitle()) {
       ui.setTitleLabelText(metadata.getTitle());
     }
+    constructGadgetSizeFromMetadata(metadata, view, url);
+  }
+
+  private void constructGadgetSizeFromMetadata(GadgetMetadata metadata, String view, String url) {
     int height =
         (int) (metadata.hasHeight() ? metadata.getHeight() : metadata.getPreferredHeight(view));
     int width =
