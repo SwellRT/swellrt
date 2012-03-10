@@ -31,18 +31,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/jackson/jackson-core-asl-1.5.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jdo/jdo2-api-2.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jdom/jdom.jar" sourcepath="third_party/runtime/jdom/jdom-src.zip"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-client-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-continuation-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-http-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-io-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-security-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-server-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlet-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlets-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-util-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-webapp-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-websocket-8.0.1.v20110908.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-xml-8.0.1.v20110908.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jline/jline-0.9.94.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/joda_time/joda-time-1.6.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jsr305/jsr305-src.jar"/>
@@ -70,6 +58,18 @@
 	<classpathentry kind="lib" path="third_party/test/junit/junit.jar"/>
 	<classpathentry kind="lib" path="third_party/test/junit/src.jar"/>
 	<classpathentry kind="lib" path="third_party/test/mockito/mockito-all-1.8.2.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-client-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-continuation-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-http-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-io-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-security-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-server-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlet-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlets-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-util-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-webapp-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-websocket-8.1.1.v20120215.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-xml-8.1.1.v20120215.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT.jar" sourcepath="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT.jar" sourcepath="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT-sources.jar"/>
