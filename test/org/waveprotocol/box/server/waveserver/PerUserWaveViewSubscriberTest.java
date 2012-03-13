@@ -20,16 +20,16 @@ package org.waveprotocol.box.server.waveserver;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.gwt.thirdparty.guava.common.collect.Maps;
 
 import junit.framework.TestCase;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.waveprotocol.box.common.DeltaSequence;
-import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
 import org.waveprotocol.box.server.util.testing.TestingConstants;
@@ -40,7 +40,8 @@ import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
 
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author yurize@apache.org (Yuri Zelikov)
@@ -53,7 +54,7 @@ public class PerUserWaveViewSubscriberTest extends TestCase implements TestingCo
   private static final ProtocolWaveletDelta DELTA = ProtocolWaveletDelta.newBuilder()
     .setAuthor(USER)
     .setHashedVersion(CoreWaveletOperationSerializer.serialize(BEGIN_VERSION))
-    .addOperation(ProtocolWaveletOperation.newBuilder().setNoOp(true).build()).build();
+    .addOperation(ProtocolWaveletOperation.newBuilder().setAddParticipant(USER).build()).build();
 
   private static final DeltaSequence POJO_DELTAS =
       DeltaSequence.of(CoreWaveletOperationSerializer.deserialize(DELTA, END_VERSION, 0L));
@@ -69,9 +70,19 @@ public class PerUserWaveViewSubscriberTest extends TestCase implements TestingCo
   }
 
   public void testGetPerUserWaveView() throws WaveletStateException {
-    Iterator<WaveId> inner = ImmutableList.of(WAVELET_NAME.waveId).iterator();
-    ExceptionalIterator<WaveId, WaveServerException> iter= ExceptionalIterator.FromIterator.create(inner);
-    when(waveMap.getWaveIds()).thenReturn(iter);
+    LocalWaveletContainer.Factory localFactory = mock(LocalWaveletContainer.Factory.class);
+
+    WaveletNotificationSubscriber notifiee = mock(WaveletNotificationSubscriber.class);
+
+    SettableFuture<ImmutableSet<WaveletId>> lookedupWavelets = SettableFuture.create();
+    lookedupWavelets.set(ImmutableSet.of(WAVELET_NAME.waveletId));
+
+    Wave wave =
+        new Wave(WAVELET_NAME.waveId, lookedupWavelets, notifiee, localFactory, null,
+            WAVELET_NAME.waveId.getDomain());
+    Map<WaveId, Wave> waves = Maps.newHashMap();
+    waves.put(WAVELET_NAME.waveId, wave);
+    when(waveMap.getWaves()).thenReturn(waves);
     ImmutableSet<WaveletId> wavelets = ImmutableSet.of(WAVELET_NAME.waveletId);
     when(waveMap.lookupWavelets(WAVELET_NAME.waveId)).thenReturn(wavelets);
 
@@ -82,10 +93,20 @@ public class PerUserWaveViewSubscriberTest extends TestCase implements TestingCo
     long dummyCreationTime = System.currentTimeMillis();
     WaveletData wavelet = WaveletDataUtil.createEmptyWavelet(WAVELET_NAME, PARTICIPANT,
         BEGIN_VERSION, dummyCreationTime);
-    perUserWaveViewSubscriber.waveletUpdate(wavelet, POJO_DELTAS);
-    Multimap<WaveId, WaveletId> perUserWavesView = perUserWaveViewSubscriber.getPerUserWaveView(PARTICIPANT);
 
-    assertNotNull(perUserWavesView);
+    // The first getPerUserWaveView causes the user's wavelets to be tracked.
+    Multimap<WaveId, WaveletId> perUserWavesView =
+        perUserWaveViewSubscriber.getPerUserWaveView(PARTICIPANT);
+    assertEquals(0, perUserWavesView.size());
+
+    // Mock adding the user to a new wavelet.
+    perUserWaveViewSubscriber.waveletUpdate(wavelet, POJO_DELTAS);
+    perUserWavesView =
+        perUserWaveViewSubscriber.getPerUserWaveView(PARTICIPANT);
+    // Verify the user was actually added.
     assertEquals(1, perUserWavesView.size());
+    Collection<WaveletId> waveletsPerUser = perUserWavesView.get(WAVELET_NAME.waveId);
+    assertNotNull(waveletsPerUser);
+    assertEquals(WAVELET_NAME.waveletId, waveletsPerUser.iterator().next());
   }
 }
