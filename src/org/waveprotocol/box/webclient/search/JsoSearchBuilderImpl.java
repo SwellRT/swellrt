@@ -23,6 +23,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
 
 import org.waveprotocol.box.search.SearchRequest;
 import org.waveprotocol.box.search.SearchResponse;
@@ -167,10 +168,12 @@ public final class JsoSearchBuilderImpl implements SearchBuilder {
   }
 
   private static String getUrl(SearchRequest searchRequest) {
-    String params =
-        "?query=" + searchRequest.getQuery() + "&index=" + searchRequest.getIndex()
-            + "&numResults=" + searchRequest.getNumResults();
-    return SEARCH_URL_BASE + "/" + params;
+      String query = URL.encodeQueryString(searchRequest.getQuery());
+      String params =
+          "?query=" + query +
+          "&index=" + searchRequest.getIndex() +
+          "&numResults=" + searchRequest.getNumResults();
+      return SEARCH_URL_BASE + "/" + params;
   }
 
   @Override
