@@ -125,8 +125,6 @@ class WaveletNotificationDispatcher implements WaveBus, WaveletNotificationSubsc
         s.waveletUpdate(wavelet, sequence);
       } catch (RuntimeException e) {
         LOG.severe("Runtime exception in update to wave bus subscriber " + s, e);
-        // Subscriber is now in an undefined state.
-        subscribers.remove(s);
       }
     }
 
