@@ -39,6 +39,14 @@ public final class Link {
 
   private static final ReadableStringSet WEB_SCHEMES = CollectionUtils.newStringSet(
       "http", "https", "ftp", "mailto");
+  /**
+   * http://en.wikipedia.org/wiki/Fragment_identifier
+   * http://tools.ietf.org/html/rfc3986#section-3.5
+   * fragment    = *( pchar / "/" / "?" )
+   */
+  private static final String COMMON_REGEX = "[\\w\\-:@!\\$&\'\\(\\)\\*\\+,;=\\/\\?\\.]+";
+  private static final String FRAGMENT_URI_REGEX = "#(" + COMMON_REGEX + "|$)";
+  private static final String QUERY_REGEX = "(\\?" + COMMON_REGEX +"|)($|"+ FRAGMENT_URI_REGEX + ")";
 
   private static final String INVALID_LINK_MSG =
       "Invalid link. Should either be a web url\n" +
@@ -125,7 +133,7 @@ public final class Link {
       }
     }
 
-    assert EscapeUtils.extractScheme(uri) != null;
+    assert uri.matches(QUERY_REGEX) || EscapeUtils.extractScheme(uri) != null;
 
     // Otherwise, just return the given link.
     return uri;
@@ -145,7 +153,7 @@ public final class Link {
     String scheme = parts != null ? parts[0] : null;
 
     // Normal web url
-    if (scheme != null && WEB_SCHEMES.contains(scheme)) {
+    if (rawLinkValue.matches(QUERY_REGEX) || (scheme != null && WEB_SCHEMES.contains(scheme))) {
       return rawLinkValue;
     }
 

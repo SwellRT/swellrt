@@ -47,6 +47,15 @@ public class LinkTest extends TestCase {
     checkNormalize("https://example.com/abcd");
     checkNormalize("ftp://example.com/abcd");
     checkNormalize("mailto://example.com/abcd");
+    checkNormalize("#");
+    checkNormalize("#example.com/w+N0tgD7rctjA");
+    checkNormalize("#fragment");
+    checkNormalize("#fragment/?+-:@!$&'()*+,;=");
+    checkNormalize("?param=1&param2");
+    checkNormalize("?param=1&param2#");
+    checkNormalize("?param=1&param2#fragment/?+-:@!$&'()*+,;=");
+    checkNormalizeRejects("#fragment<>");
+    checkNormalizeRejects("?param=1&param2<>");
   }
 
   public void testConvertUri() {
@@ -56,6 +65,12 @@ public class LinkTest extends TestCase {
 
     assertEquals("http://example.com/abcd", Link.toHrefFromUri("http://example.com/abcd"));
     assertEquals("#example.com/abcd", Link.toHrefFromUri("wave://example.com/abcd"));
+    assertEquals("#", Link.toHrefFromUri("#"));
+    assertEquals("#fragment", Link.toHrefFromUri("#fragment"));
+    assertEquals("#fragment/?+-:@!$&'()*+,;=", Link.toHrefFromUri("#fragment/?+-:@!$&'()*+,;="));
+    assertEquals("?param=1&param2", Link.toHrefFromUri("?param=1&param2"));
+    assertEquals("?param=1&param2#", Link.toHrefFromUri("?param=1&param2#"));
+    assertEquals("?param=1&param2#fragment/?+-:@!$&'()*+,;=", Link.toHrefFromUri("?param=1&param2#fragment/?+-:@!$&'()*+,;="));
   }
 
 
