@@ -56,9 +56,11 @@ import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarClickButton;
 import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarToggleButton;
 import org.waveprotocol.wave.media.model.AttachmentIdGenerator;
 import org.waveprotocol.wave.media.model.AttachmentIdGeneratorImpl;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -425,18 +427,27 @@ public class EditToolbar {
                   Window.alert("Select some text to create a link.");
                   return;
                 }
-                String rawLinkValue =
-                    Window.prompt("Enter link: URL or Wave ID.", WaveRefConstants.WAVE_URI_PREFIX);
-                // user hit "ESC" or "cancel"
-                if (rawLinkValue == null) {
-                  return;
-                }
                 try {
-                  String linkAnnotationValue = Link.normalizeLink(rawLinkValue);
+                  // We try to create a link with the current selection, if fails, we ask for a link
+                  Range rg = range.asRange();
+                  String text = DocHelper.getText(editor.getDocument(), rg.getStart(), rg.getEnd());
+                  String linkAnnotationValue = Link.normalizeLink(text);
                   EditorAnnotationUtil.setAnnotationOverSelection(editor, Link.KEY,
                       linkAnnotationValue);
                 } catch (InvalidLinkException e) {
-                  Window.alert(e.getLocalizedMessage());
+                  String rawLinkValue =
+                      Window.prompt("Enter link: URL or Wave ID.", WaveRefConstants.WAVE_URI_PREFIX);
+                  // user hit "ESC" or "cancel"
+                  if (rawLinkValue == null) {
+                    return;
+                  }
+                  try {
+                    String linkAnnotationValue = Link.normalizeLink(rawLinkValue);
+                    EditorAnnotationUtil.setAnnotationOverSelection(editor, Link.KEY,
+                        linkAnnotationValue);
+                  } catch (InvalidLinkException e2) {
+                    Window.alert(e2.getLocalizedMessage());
+                  }
                 }
               }
             });
