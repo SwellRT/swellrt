@@ -44,7 +44,9 @@ import org.waveprotocol.wave.client.editor.toolbar.TextSelectionController;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.gadget.GadgetXmlUtil;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GadgetInfoProviderImpl;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GadgetSelectorWidget;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GwtGadgetInfoParser;
 import org.waveprotocol.wave.client.wavepanel.view.AttachmentPopupView;
 import org.waveprotocol.wave.client.wavepanel.view.AttachmentPopupView.Listener;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
@@ -310,7 +312,7 @@ public class EditToolbar {
         .setIcon(css.insertGadget())
         .applyTo(toolbar.addClickButton(), new ToolbarClickButton.Listener() {
           @Override public void onClicked() {
-            GadgetSelectorWidget selector = new GadgetSelectorWidget();
+            GadgetSelectorWidget selector = new GadgetSelectorWidget(new GadgetInfoProviderImpl(new GwtGadgetInfoParser()));
             selector.addFeaturedOptions();
             final UniversalPopup popup = selector.showInPopup();
             selector.setListener(new GadgetSelectorWidget.Listener() {

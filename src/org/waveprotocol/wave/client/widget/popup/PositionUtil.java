@@ -47,4 +47,14 @@ public class PositionUtil {
   public static int boundToScreenVertical(int y, int height) {
     return Math.min(Math.max(y, 0), Window.getClientHeight() - height - SCREEN_EDGE_PADDING_PIXELS);
   }
+
+  /**
+   * Restricts a popup's height to fit within the screen.
+   *
+   * @param height The proposed height of the popup.
+   * @return The height that the popup need to have to fit inside the screen.
+   */
+  public static int boundHeightToScreen(int height) {
+    return Math.min(height, Window.getClientHeight() - 2 * SCREEN_EDGE_PADDING_PIXELS);
+  }
 }

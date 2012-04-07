@@ -18,12 +18,13 @@
     xmlns:ui="urn:ui:com.google.gwt.uibinder"
     xmlns:g="urn:import:com.google.gwt.user.client.ui"
     xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common" >
-    
+
   <ui:style>
     .self {
       padding: 0 15px;
+      height: 700px;
     }
-    
+
     .custom, .self label {
       margin: 15px 0;
     }
@@ -32,26 +33,40 @@
       display: block;
       font-weight: bold;
     }
-    
+
     .self input {
       width: 503px;
     }
-    
-    .options {
-      width: 550px;
+
+    .dock {
+      width: 600px;
     }
   </ui:style>
-  
+
   <w:ImplPanel ui:field="self" styleName="{style.self}">
-    <!-- Custom gadget --> 
-    <div class="{style.custom}">
-      <label>Enter a custom gadget URL:</label>
-      <input ui:field="gadgetUrl" type="text"/>
-      <g:Button ui:field="useCustom">Use</g:Button>
-    </div>
-    
-    <label>Or, choose one of these gadgets:</label>
-    <!-- featured/recently used gadgets go here -->
-    <g:FlowPanel ui:field="options" styleName="{style.options}"></g:FlowPanel>
-  </w:ImplPanel>
+  <!-- Custom gadget -->
+  <g:DockLayoutPanel unit="PX" ui:field="dockPanel"
+    styleName="{style.dock}">
+    <g:north size="200">
+      <g:HTMLPanel>
+        <div class="{style.custom}">
+          <label>Enter a custom gadget URL:</label>
+          <g:TextBox width="500" ui:field="gadgetUrl" />
+          <g:Button ui:field="useCustom">Use</g:Button>
+        </div>
+
+        <label>Or, choose one of these gadgets:</label>
+        <label>Filter:</label>
+        <g:TextBox width="500" ui:field="gadgetFilter" />
+        <g:ListBox width="80" ui:field="categoryDropBox" />
+      </g:HTMLPanel>
+    </g:north>
+    <g:center>
+      <!-- featured/recently used gadgets go here -->
+      <g:ScrollPanel>
+        <g:FlowPanel ui:field="options" />
+      </g:ScrollPanel>
+    </g:center>
+  </g:DockLayoutPanel>
+</w:ImplPanel>
 </ui:UiBinder>

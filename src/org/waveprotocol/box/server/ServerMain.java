@@ -54,6 +54,7 @@ import org.waveprotocol.box.server.rpc.AttachmentServlet;
 import org.waveprotocol.box.server.rpc.AuthenticationServlet;
 import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
 import org.waveprotocol.box.server.rpc.FetchServlet;
+import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
 import org.waveprotocol.box.server.rpc.SearchServlet;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.rpc.SignOutServlet;
@@ -212,6 +213,7 @@ public class ServerMain {
   }
 
   private static void initializeServlets(Injector injector, ServerRpcProvider server) {
+    server.addServlet("/gadget/gadgetlist", GadgetProviderServlet.class);
     server.addServlet("/attachment/*", AttachmentServlet.class);
 
     server.addServlet(SessionManager.SIGN_IN_URL, AuthenticationServlet.class);
