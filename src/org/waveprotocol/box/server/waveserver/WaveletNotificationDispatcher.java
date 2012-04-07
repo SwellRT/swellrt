@@ -28,10 +28,10 @@ import com.google.protobuf.ByteString;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
-import org.waveprotocol.wave.federation.FederationHostBridge;
-import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
+import org.waveprotocol.wave.federation.FederationHostBridge;
 import org.waveprotocol.wave.federation.Proto.ProtocolHashedVersion;
+import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
@@ -45,7 +45,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * Forwards wave notifications to wave bus subscribers and remote wave servers.
  *
- * Swallows any runtime exception from a wave bus subscriber and removes that
+ * Swallows any runtime exception from a wave bus subscriber but not removes that
  * subscriber. The wave server used to do this swallowing but really things are
  * in bad shape if a subscriber throws a runtime exception.
  * TODO(anorth): Remove this catch and let the server crash.
@@ -146,8 +146,6 @@ class WaveletNotificationDispatcher implements WaveBus, WaveletNotificationSubsc
         s.waveletCommitted(waveletName, version);
       } catch (RuntimeException e) {
         LOG.severe("Runtime exception in commit to wave bus subscriber " + s, e);
-        // Subscriber is now in an undefined state.
-        subscribers.remove(s);
       }
     }
 
