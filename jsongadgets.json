@@ -411,7 +411,7 @@
 "gadgetUrl":"http://goo.gl/JuBfO",
 "author":"MasteringWave",
 "submittedBy":"Yuri",
-"imageUrl":""},
+"imageUrl":"http://masteringwave.com/flash/scrumpoker/scrumpoker.png"},
 
 {"name":"Hostel WithMe",
 "desc":"In partnership with HostelWorld.com. Find the best budget accommodation together with your friends.",
@@ -546,5 +546,32 @@
 "gadgetUrl":"http://wave-chess.appspot.com/wavechess/com.google.wave.chess.client.ChessGadget.gadget.xml",
 "author":"Google",
 "submittedBy":"Yuri",
+"imageUrl":""},
+
+{"name":"Task Board",
+"desc":"SCRUM Task Board.",
+"primaryCategory":"PRODUCTIVITY",
+"secondaryCategory":"TEAM",
+"gadgetUrl":"http://goo.gl/uz5gx",
+"author":"Mastering Wave http://www.masteringwave.com",
+"submittedBy":"Yuri",
+"imageUrl":"http://masteringwave.com/flash/taskboard/taskboard.png"},
+
+{"name":"Strategy Planning Tools",
+"desc":"Strategy Planning Tools.",
+"primaryCategory":"PRODUCTIVITY",
+"secondaryCategory":"TEAM",
+"gadgetUrl":"http://goo.gl/I8ae8",
+"author":"Mastering Wave http://www.masteringwave.com",
+"submittedBy":"Yuri",
+"imageUrl":"http://masteringwave.com/flash/spt/spt.png"},
+
+{"name":"Countdown",
+"desc":"Set up to 20 countdowns to events to which you assign a specific date and a name.",
+"primaryCategory":"UTILITY",
+"secondaryCategory":"TEAM",
+"gadgetUrl":"http://goo.gl/tBY3C",
+"author":"labpixies.com",
+"submittedBy":"Jeremy",
 "imageUrl":""}
   ]
