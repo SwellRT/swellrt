@@ -13,7 +13,7 @@ import org.waveprotocol.wave.model.id.IdSerialiser;
 public final class ApiIdSerializer {
 
   public static IdSerialiser instance() {
-    return DualIdSerialiser.LEGACY;
+    return DualIdSerialiser.MODERN;
   }
 
   private ApiIdSerializer() {
