@@ -20,6 +20,7 @@ package org.waveprotocol.box.server.robots;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -39,8 +40,8 @@ import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.robots.active.ActiveApiOperationServiceRegistry;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOperationServiceRegistry;
-import org.waveprotocol.box.server.robots.operations.NotifyOperationService;
-import org.waveprotocol.box.server.robots.operations.SearchService;
+import org.waveprotocol.box.server.robots.operations.FetchProfilesService.ProfilesFetcher;
+import org.waveprotocol.box.server.robots.operations.GravatarProfilesFetcher;
 import org.waveprotocol.box.server.robots.passive.RobotConnector;
 
 import java.util.concurrent.Executor;
@@ -71,6 +72,7 @@ public class RobotApiModule extends AbstractModule {
         REQUEST_TOKEN_PATH);
     bind(String.class).annotatedWith(Names.named("access_token_path")).toInstance(
         ACCESS_TOKEN_PATH);
+    bind(ProfilesFetcher.class).to(GravatarProfilesFetcher.class).in(Singleton.class);
   }
 
   @Provides
@@ -105,16 +107,16 @@ public class RobotApiModule extends AbstractModule {
   @Singleton
   @Inject
   @Named("ActiveApiRegistry")
-  protected OperationServiceRegistry provideActiveApiRegistry(NotifyOperationService notifyOpService) {
-    return new ActiveApiOperationServiceRegistry(notifyOpService);
+  protected OperationServiceRegistry provideActiveApiRegistry(Injector injector) {
+    return new ActiveApiOperationServiceRegistry(injector);
   }
 
   @Provides
   @Singleton
   @Inject
   @Named("DataApiRegistry")
-  protected OperationServiceRegistry provideDataApiRegistry(SearchService searchService) {
-    return new DataApiOperationServiceRegistry(searchService);
+  protected OperationServiceRegistry provideDataApiRegistry(Injector injector) {
+    return new DataApiOperationServiceRegistry(injector);
   }
 
   @Provides

@@ -18,6 +18,7 @@
 package org.waveprotocol.box.server.robots.dataapi;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.wave.api.OperationType;
 
 import org.waveprotocol.box.server.robots.AbstractOperationServiceRegistry;
@@ -43,7 +44,7 @@ public final class DataApiOperationServiceRegistry extends AbstractOperationServ
   // the default client libraries
   @SuppressWarnings("deprecation")
   @Inject
-  public DataApiOperationServiceRegistry(SearchService searchService) {
+  public DataApiOperationServiceRegistry(Injector injector) {
     super();
 
     // Register all the OperationProviders
@@ -63,9 +64,9 @@ public final class DataApiOperationServiceRegistry extends AbstractOperationServ
     register(OperationType.ROBOT_CREATE_WAVELET, CreateWaveletService.create());
     register(OperationType.ROBOT_FETCH_WAVE, FetchWaveService.create());
     register(OperationType.DOCUMENT_MODIFY, DocumentModifyService.create());
-    register(OperationType.ROBOT_SEARCH, searchService);
+    register(OperationType.ROBOT_SEARCH, injector.getInstance(SearchService.class));
     register(OperationType.WAVELET_SET_TITLE, WaveletSetTitleService.create());
     register(OperationType.ROBOT_FOLDER_ACTION, FolderActionService.create());
-    register(OperationType.ROBOT_FETCH_PROFILES, FetchProfilesService.create());
+    register(OperationType.ROBOT_FETCH_PROFILES, injector.getInstance(FetchProfilesService.class));
   }
 }

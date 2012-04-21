@@ -20,6 +20,7 @@ package org.waveprotocol.box.server.robots.operations;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import com.google.wave.api.FetchProfilesRequest;
 import com.google.wave.api.FetchProfilesResult;
 import com.google.wave.api.InvalidRequestException;
@@ -36,13 +37,13 @@ import java.util.Map;
 
 /**
  * {@link OperationService} for the "fetchProfiles" operation.
- * 
+ *
  * @author yurize@apache.org (Yuri Zelikov)
  */
 public class FetchProfilesService implements OperationService {
 
   public interface ProfilesFetcher {
-    
+
     public static final String UNKNOWN_IMAGE = "/static/images/unknown.jpg";
     public static final String UNKNOWN_PROFILE = "";
 
@@ -93,11 +94,8 @@ public class FetchProfilesService implements OperationService {
 
   private final ProfilesFetcher profilesFetcher;
 
-  public static FetchProfilesService create() {
-    return new FetchProfilesService(GravatarProfilesFetcher.create());
-  }
-
-  FetchProfilesService(ProfilesFetcher profilesFetcher) {
+  @Inject
+  public FetchProfilesService(ProfilesFetcher profilesFetcher) {
     this.profilesFetcher = profilesFetcher;
   }
 

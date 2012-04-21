@@ -18,6 +18,7 @@
 package org.waveprotocol.box.server.robots.active;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.wave.api.OperationType;
 
 import org.waveprotocol.box.server.robots.AbstractOperationServiceRegistry;
@@ -43,9 +44,9 @@ public final class ActiveApiOperationServiceRegistry extends AbstractOperationSe
   // the default client libraries
   @SuppressWarnings("deprecation")
   @Inject
-  public ActiveApiOperationServiceRegistry(NotifyOperationService notifyOpService) {
+  public ActiveApiOperationServiceRegistry(Injector injector) {
     super();
-
+    NotifyOperationService notifyOpService = injector.getInstance(NotifyOperationService.class);
     // Register all the OperationProviders
     register(OperationType.ROBOT_NOTIFY, notifyOpService);
     register(OperationType.ROBOT_NOTIFY_CAPABILITIES_HASH, notifyOpService);
@@ -58,13 +59,13 @@ public final class ActiveApiOperationServiceRegistry extends AbstractOperationSe
     register(OperationType.DOCUMENT_APPEND_INLINE_BLIP, BlipOperationServices.create());
     register(OperationType.DOCUMENT_APPEND_MARKUP, BlipOperationServices.create());
     register(OperationType.DOCUMENT_INSERT_INLINE_BLIP, BlipOperationServices.create());
-    register(
-        OperationType.DOCUMENT_INSERT_INLINE_BLIP_AFTER_ELEMENT, BlipOperationServices.create());
+    register(OperationType.DOCUMENT_INSERT_INLINE_BLIP_AFTER_ELEMENT,
+        BlipOperationServices.create());
     register(OperationType.ROBOT_CREATE_WAVELET, CreateWaveletService.create());
     register(OperationType.ROBOT_FETCH_WAVE, FetchWaveService.create());
     register(OperationType.DOCUMENT_MODIFY, DocumentModifyService.create());
     register(OperationType.WAVELET_SET_TITLE, WaveletSetTitleService.create());
     register(OperationType.ROBOT_FOLDER_ACTION, FolderActionService.create());
-    register(OperationType.ROBOT_FETCH_PROFILES, FetchProfilesService.create());
+    register(OperationType.ROBOT_FETCH_PROFILES, injector.getInstance(FetchProfilesService.class));
   }
 }

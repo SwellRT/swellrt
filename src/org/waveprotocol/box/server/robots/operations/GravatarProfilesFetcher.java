@@ -17,9 +17,12 @@
 
 package org.waveprotocol.box.server.robots.operations;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.google.wave.api.ParticipantProfile;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.robots.operations.FetchProfilesService.ProfilesFetcher;
 
 /**
@@ -33,14 +36,18 @@ import org.waveprotocol.box.server.robots.operations.FetchProfilesService.Profil
  */
 public class GravatarProfilesFetcher implements ProfilesFetcher {
 
-  private static final String GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
+  private final String SECURE_GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
+  private final String NON_SECURE_GRAVATAR_URL = "http://gravatar.com/avatar/";
 
-  public static GravatarProfilesFetcher create() {
-    return new GravatarProfilesFetcher();
-  }
+  private final String gravatarUrl;
 
-  private GravatarProfilesFetcher() {
-
+  @Inject
+  public GravatarProfilesFetcher(@Named(CoreSettings.ENABLE_SSL) boolean enableSsl) {
+    if (enableSsl) {
+      gravatarUrl = SECURE_GRAVATAR_URL;
+    } else {
+      gravatarUrl = NON_SECURE_GRAVATAR_URL;
+    }
   }
 
   /**
@@ -50,7 +57,7 @@ public class GravatarProfilesFetcher implements ProfilesFetcher {
     // Hexadecimal MD5 hash of the requested user's lowercased email address
     // with all whitespace trimmed.
     String emailHash = DigestUtils.md5Hex(email.toLowerCase().trim());
-    return GRAVATAR_URL + emailHash + ".jpg?s=100&d=identicon";
+    return gravatarUrl + emailHash + ".jpg?s=100&d=identicon";
   }
 
   @Override
