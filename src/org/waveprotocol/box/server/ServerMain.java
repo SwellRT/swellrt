@@ -55,12 +55,14 @@ import org.waveprotocol.box.server.rpc.AuthenticationServlet;
 import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
 import org.waveprotocol.box.server.rpc.FetchServlet;
 import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
+import org.waveprotocol.box.server.rpc.NotificationServlet;
 import org.waveprotocol.box.server.rpc.SearchServlet;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.rpc.SignOutServlet;
 import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
 import org.waveprotocol.box.server.rpc.WaveClientServlet;
 import org.waveprotocol.box.server.rpc.WaveRefServlet;
+import org.waveprotocol.box.server.waveserver.ImportServlet;
 import org.waveprotocol.box.server.waveserver.WaveBus;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
@@ -73,7 +75,6 @@ import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
 import org.waveprotocol.wave.util.settings.SettingsBinder;
-import org.waveprotocol.box.server.waveserver.ImportServlet;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -222,6 +223,7 @@ public class ServerMain {
 
     server.addServlet("/fetch/*", FetchServlet.class);
     server.addServlet("/search/*", SearchServlet.class);
+    server.addServlet("/notification/*", NotificationServlet.class);
 
     server.addServlet("/robot/dataapi", DataApiServlet.class);
     server.addServlet(DataApiOAuthServlet.DATA_API_OAUTH_PATH + "/*", DataApiOAuthServlet.class);

@@ -22,11 +22,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.protobuf.MessageLite;
-import com.google.wave.api.JsonRpcConstant.ParamsProperty;
-import com.google.wave.api.JsonRpcResponse;
-import com.google.wave.api.OperationQueue;
-import com.google.wave.api.OperationRequest;
-import com.google.wave.api.ProtocolVersion;
 import com.google.wave.api.SearchResult;
 import com.google.wave.api.SearchResult.Digest;
 import com.google.wave.api.data.converter.EventDataConverterManager;
@@ -35,10 +30,8 @@ import org.waveprotocol.box.search.SearchProto.SearchRequest;
 import org.waveprotocol.box.search.SearchProto.SearchResponse;
 import org.waveprotocol.box.search.SearchProto.SearchResponse.Builder;
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.robots.OperationContextImpl;
 import org.waveprotocol.box.server.robots.OperationServiceRegistry;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
-import org.waveprotocol.box.server.robots.util.OperationUtil;
 import org.waveprotocol.box.server.rpc.ProtoSerializer.SerializationException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.box.webclient.search.SearchService;
@@ -48,7 +41,6 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -64,96 +56,63 @@ import javax.servlet.http.HttpServletResponse;
  */
 @SuppressWarnings("serial")
 @Singleton
-public final class SearchServlet extends HttpServlet {
+public final class SearchServlet extends AbstractSearchServlet {
 
   private static final Log LOG = Log.get(SearchServlet.class);
 
-  public static class SearchResponseUtils {
-
-    /**
-     * Extracts search query params from request.
-     *
-     * @param req the request.
-     * @param response the response.
-     * @return the SearchRequest with query data.
-     */
-    public static SearchRequest parseSearchRequest(HttpServletRequest req,
-        HttpServletResponse response) {
-
-      String query = req.getParameter("query");
-      String index = req.getParameter("index");
-      String numResults = req.getParameter("numResults");
-      SearchRequest searchRequest =
-          SearchRequest.newBuilder().setQuery(query).setIndex(Integer.parseInt(index))
-              .setNumResults(Integer.parseInt(numResults)).build();
-      return searchRequest;
-    }
-
-    /**
-     * Constructs SearchResponse which is a protobuf generated class from the
-     * output of Data API search service. SearchResponse contains the same
-     * information as searchResult.
-     *
-     * @param searchResult the search results with digests.
-     * @return SearchResponse
-     */
-    public static SearchResponse serializeSearchResult(SearchResult searchResult, int total) {
-      Builder searchBuilder = SearchResponse.newBuilder();
-      searchBuilder.setQuery(searchResult.getQuery()).setTotalResults(total);
-      for (SearchResult.Digest searchResultDigest : searchResult.getDigests()) {
-        SearchResponse.Digest digest = serializeDigest(searchResultDigest);
-        searchBuilder.addDigests(digest);
-      }
-      SearchResponse searchResponse = searchBuilder.build();
-      return searchResponse;
-    }
-
-    /**
-     * Copies data from {@link Digest} into {@link SearchResponse.Digest}.
-     */
-    private static SearchResponse.Digest serializeDigest(Digest searchResultDigest) {
-      SearchResponse.Digest.Builder digestBuilder = SearchResponse.Digest.newBuilder();
-      digestBuilder.setBlipCount(searchResultDigest.getBlipCount());
-      digestBuilder.setLastModified(searchResultDigest.getLastModified());
-      digestBuilder.setSnippet(searchResultDigest.getSnippet());
-      digestBuilder.setTitle(searchResultDigest.getTitle());
-      digestBuilder.setUnreadCount(searchResultDigest.getUnreadCount());
-      digestBuilder.setWaveId(searchResultDigest.getWaveId());
-      List<String> participants = searchResultDigest.getParticipants();
-      if (participants.isEmpty()) {
-        // This shouldn't be possible.
-        digestBuilder.setAuthor("nobody@example.com");
-      } else {
-        digestBuilder.setAuthor(participants.get(0));
-        for (int i = 1; i < participants.size(); i++) {
-          digestBuilder.addParticipants(participants.get(i));
-        }
-      }
-      SearchResponse.Digest digest = digestBuilder.build();
-      return digest;
-    }
-  }
-
-  private final ConversationUtil conversationUtil;
-  private final EventDataConverterManager converterManager;
-  private final WaveletProvider waveletProvider;
-  private final SessionManager sessionManager;
-  private final OperationServiceRegistry operationRegistry;
   private final ProtoSerializer serializer;
 
+  /**
+   * Constructs SearchResponse which is a protobuf generated class from the
+   * output of Data API search service. SearchResponse contains the same
+   * information as searchResult.
+   *
+   * @param searchResult the search results with digests.
+   * @return SearchResponse
+   */
+  public static SearchResponse serializeSearchResult(SearchResult searchResult, int total) {
+    Builder searchBuilder = SearchResponse.newBuilder();
+    searchBuilder.setQuery(searchResult.getQuery()).setTotalResults(total);
+    for (SearchResult.Digest searchResultDigest : searchResult.getDigests()) {
+      SearchResponse.Digest digest = serializeDigest(searchResultDigest);
+      searchBuilder.addDigests(digest);
+    }
+    SearchResponse searchResponse = searchBuilder.build();
+    return searchResponse;
+  }
+
+  /**
+   * Copies data from {@link Digest} into {@link SearchResponse.Digest}.
+   */
+  private static SearchResponse.Digest serializeDigest(Digest searchResultDigest) {
+    SearchResponse.Digest.Builder digestBuilder = SearchResponse.Digest.newBuilder();
+    digestBuilder.setBlipCount(searchResultDigest.getBlipCount());
+    digestBuilder.setLastModified(searchResultDigest.getLastModified());
+    digestBuilder.setSnippet(searchResultDigest.getSnippet());
+    digestBuilder.setTitle(searchResultDigest.getTitle());
+    digestBuilder.setUnreadCount(searchResultDigest.getUnreadCount());
+    digestBuilder.setWaveId(searchResultDigest.getWaveId());
+    List<String> participants = searchResultDigest.getParticipants();
+    if (participants.isEmpty()) {
+      // This shouldn't be possible.
+      digestBuilder.setAuthor("nobody@example.com");
+    } else {
+      digestBuilder.setAuthor(participants.get(0));
+      for (int i = 1; i < participants.size(); i++) {
+        digestBuilder.addParticipants(participants.get(i));
+      }
+    }
+    SearchResponse.Digest digest = digestBuilder.build();
+    return digest;
+  }
 
   @Inject
   public SearchServlet(SessionManager sessionManager, EventDataConverterManager converterManager,
       @Named("DataApiRegistry") OperationServiceRegistry operationRegistry,
       WaveletProvider waveletProvider, ConversationUtil conversationUtil, ProtoSerializer serializer) {
-    this.converterManager = converterManager;
-    this.waveletProvider = waveletProvider;
-    this.conversationUtil = conversationUtil;
-    this.sessionManager = sessionManager;
-    this.operationRegistry = operationRegistry;
+    super(conversationUtil, converterManager, waveletProvider, sessionManager, operationRegistry);
     this.serializer = serializer;
   }
-
 
   /**
    * Creates HTTP response to the search query. Main entrypoint for this class.
@@ -166,31 +125,16 @@ public final class SearchServlet extends HttpServlet {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-    SearchRequest searchRequest = SearchResponseUtils.parseSearchRequest(req, response);
-    SearchResponse searchResponse = performSearch(searchRequest, user);
+    SearchRequest searchRequest = parseSearchRequest(req, response);
+    SearchResult searchResult = performSearch(searchRequest, user);
+
+    int totalGuess = computeTotalResultsNumberGuess(searchRequest, searchResult);
+    LOG.fine("Results: " + searchResult.getNumResults() + ", total: " + totalGuess);
+    SearchResponse searchResponse = serializeSearchResult(searchResult, totalGuess);
     serializeObjectToServlet(searchResponse, response);
   }
 
-  /**
-   * Performs search using Data API.
-   */
-  private SearchResponse performSearch(SearchRequest searchRequest, ParticipantId user) {
-    OperationQueue opQueue = new OperationQueue();
-    opQueue.search(searchRequest.getQuery(), searchRequest.getIndex(),
-        searchRequest.getNumResults());
-    OperationContextImpl context =
-        new OperationContextImpl(waveletProvider,
-            converterManager.getEventDataConverter(ProtocolVersion.DEFAULT), conversationUtil);
-    LOG.fine(
-        "Performing query: " + searchRequest.getQuery() + " [" + searchRequest.getIndex() + ", "
-            + (searchRequest.getIndex() + searchRequest.getNumResults()) + "]");
-    OperationRequest operationRequest = opQueue.getPendingOperations().get(0);
-    String opId = operationRequest.getId();
-    OperationUtil.executeOperation(operationRequest, operationRegistry, context, user);
-    JsonRpcResponse jsonRpcResponse = context.getResponses().get(opId);
-    SearchResult searchResult =
-        (SearchResult) jsonRpcResponse.getData().get(ParamsProperty.SEARCH_RESULTS);
-
+  private int computeTotalResultsNumberGuess(SearchRequest searchRequest, SearchResult searchResult) {
     // The Data API does not return the total size of the search result, even
     // though the searcher knows it. The only approximate knowledge that can be
     // gleaned from the Data API is whether there are more search results beyond
@@ -203,8 +147,7 @@ public final class SearchServlet extends HttpServlet {
     } else {
       totalGuess = searchRequest.getIndex() + searchResult.getNumResults();
     }
-    LOG.fine("Results: " + searchResult.getNumResults() + ", total: " + totalGuess);
-    return SearchResponseUtils.serializeSearchResult(searchResult, totalGuess);
+    return totalGuess;
   }
 
   /**
