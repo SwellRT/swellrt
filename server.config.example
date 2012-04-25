@@ -115,14 +115,18 @@ waveserver_disable_signer_verification = true
 # Default value: false
 disable_registration = @DISABLE_REGISTRATION@
 
-# Enable SSL for all address/port combinations listed (makes the next 2 settings non-optional)
+# Enable SSL for all address/port combinations listed (makes the next 2 settings non-optional).
+# Default value: false
 enable_ssl = @ENABLE_SSL@
 
 # Path to keystore containg the ssl certificates to server
+# Note: this is only used when enable_ssl set to true.
 ssl_keystore_path = @SSL_KEYSTORE_PATH@
 
-#Password to the keystore
+#Password to the keystore.
+# Note: this is only used when enable_ssl set to true.
 ssl_keystore_password = @SSL_KEYSTORE_PASSWORD@
 
-# Enable import of waves via /import URL. Default value: false
+# Enable import of waves via /import URL.
+# Default value: false
 enable_import = @ENABLE_IMPORT@

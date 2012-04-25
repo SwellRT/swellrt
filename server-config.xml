@@ -1,6 +1,6 @@
 <project name="server config" basedir="." default="server-config">
   <description>Creates the server configuration file.</description>
-  
+
   <!-- Properties for server.config -->
   <property name="wave_server_domain" value="local.net" />
   <property name="http_frontend_public_address" value="localhost:9898" />
@@ -24,7 +24,9 @@
   <property name="delta_persist_executor_thread_count" value="2" />
   <property name="disable_registration" value="false" />
   <property name="enable_import" value="false" />
-
+  <property name="enable_ssl" value="false" />
+  <property name="ssl_keystore_path" value="wiab.ks" />
+  <property name="ssl_keystore_password" value="changeme" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -40,7 +42,7 @@
   <property name="xmpp_server_ip" value="${xmpp_server_hostname}" />
   <property name="waveserver_disable_verification" value="false" />
   <property name="waveserver_disable_signer_verification" value="false" />
-  
+
   <target name="create-folders">
     <mkdir dir="${signer_info_store_directory}" />
     <mkdir dir="${attachment_store_directory}" />
@@ -86,6 +88,7 @@
           <token key="WAVELET_LOAD_EXECUTOR_THREAD_COUNT" value="${wavelet_load_executor_thread_count}" />
           <token key="DELTA_PERSIST_EXECUTOR_THREAD_COUNT" value="${delta_persist_executor_thread_count}" />
           <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
+          <token key="ENABLE_IMPORT" value="${enable_import}" />
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
           <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />
