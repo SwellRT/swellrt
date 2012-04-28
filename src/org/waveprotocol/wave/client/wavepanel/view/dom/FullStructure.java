@@ -80,7 +80,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * Implements structural accessors and mutators for wave-panel views.
  *
  */
-public final class FullStructure implements UpgradeableDomAsViewProvider {
+public class FullStructure implements UpgradeableDomAsViewProvider {
 
   /** Mapping of kinds to types. */
   private static final ReadableStringSet KNOWN_KINDS;

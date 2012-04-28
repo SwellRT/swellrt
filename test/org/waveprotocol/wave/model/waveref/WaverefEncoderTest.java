@@ -153,7 +153,7 @@ public class WaverefEncoderTest extends TestCase {
         dummyEncoder.encodeToUriQueryString(fullySpecified));
   }
 
-  public void testDecodeCalledWithStringInput() {
+  public void testDecodeCalledWithStringInput() throws InvalidWaveRefException {
     assertEquals(decodeDummyString, dummyEncoder.decode("testString"));
   }
 

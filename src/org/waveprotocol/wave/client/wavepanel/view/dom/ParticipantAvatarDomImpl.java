@@ -32,7 +32,7 @@ public final class ParticipantAvatarDomImpl implements DomView, IntrinsicPartici
     this.self = self.cast();
   }
 
-  static ParticipantAvatarDomImpl of(Element e) {
+  public static ParticipantAvatarDomImpl of(Element e) {
     return new ParticipantAvatarDomImpl(e);
   }
 
@@ -51,7 +51,7 @@ public final class ParticipantAvatarDomImpl implements DomView, IntrinsicPartici
   // Structure.
   //
 
-  void remove() {
+  public void remove() {
     self.removeFromParent();
   }
 

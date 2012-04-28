@@ -108,7 +108,7 @@ public final class KeepFocusInView implements EditorUpdateListener, EditSession.
       // mutate the DOM, so the subsequent measurement queries will force
       // synchronous layout, which can be slow.
       OffsetPosition p = NativeSelectionUtil.slowGetPosition();
-      if (p != null) {
+      if (p != null && p.offsetParent != null) {
         Extent viewportInContent = scroller.getViewport();
         double focusInViewport = measurer.top(viewport, p.offsetParent) + p.top;
         double focusInContent = focusInViewport + viewportInContent.getStart();

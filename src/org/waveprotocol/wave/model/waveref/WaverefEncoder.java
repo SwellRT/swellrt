@@ -229,11 +229,10 @@ public class WaverefEncoder {
     }
     String waveletIdStr = decode(tokens[3]);
     WaveletId waveletId = null;
-
     try {
       waveletId = WaveletId.of(waveletDomain, waveletIdStr);
     } catch (IllegalArgumentException e) {
-      throw new InvalidWaveRefException(path, "Invalid WaveletID:" + e.getMessage());
+      throw new InvalidWaveRefException(path, "Invalid WaveletID", e);
     }
 
     if (tokens.length == 4) {
@@ -251,7 +250,11 @@ public class WaverefEncoder {
    * @param string a percent-encoded US-ASCII string
    * @return the decoded string
    */
-  public String decode(String string) {
-    return encoderDecoder.decode(string);
+  String decode(String string) throws InvalidWaveRefException {
+    try {
+      return encoderDecoder.decode(string);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidWaveRefException(string, "Failed to decode", e);
+    }
   }
 }

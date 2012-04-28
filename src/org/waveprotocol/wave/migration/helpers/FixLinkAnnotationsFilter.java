@@ -136,7 +136,7 @@ public class FixLinkAnnotationsFilter extends NindoCursorDecorator {
   }
 
   public static String normalize(String oldHref) {
-    if (oldHref.startsWith(OLD_PREFIX)) {
+    if (oldHref != null && oldHref.startsWith(OLD_PREFIX)) {
       try {
         return linkValueFromWaveValue(oldHref.substring(OLD_PREFIX.length()));
       } catch (InvalidWaveRefException e) {

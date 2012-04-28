@@ -31,6 +31,11 @@ public class InvalidWaveRefException extends Exception {
     this.ref = ref;
   }
 
+  public InvalidWaveRefException(String ref, String message, Throwable cause) {
+    super(message, cause);
+    this.ref = ref;
+  }
+
   public String getId() {
     return ref;
   }
