@@ -158,7 +158,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
   private final DeltaStore.DeltasAccess deltasAccess;
 
   /** The lock that guards access to persistence related state. */
-  private Object persistLock = new Object();
+  private final Object persistLock = new Object();
 
   /**
    * Indicates the version of the latest appended delta that was already requested to be
@@ -321,13 +321,17 @@ class DeltaStoreBasedWaveletState implements WaveletState {
   public TransformedWaveletDelta getTransformedDeltaByEndVersion(final HashedVersion endVersion) {
     Preconditions.checkArgument(endVersion.getVersion() > 0, "end version %s is not positive",
         endVersion);
-    final TransformedWaveletDelta cachedDelta = transformedDeltas.lowerEntry(endVersion).getValue();
+    Entry<HashedVersion, TransformedWaveletDelta> transformedEntry =
+        transformedDeltas.lowerEntry(endVersion);
+    final TransformedWaveletDelta cachedDelta =
+        transformedEntry != null ? transformedEntry.getValue() : null;
     if (snapshot == null) {
       return null;
     } else {
       WaveletDeltaRecord deltaRecord = getDeltaRecordByEndVersion(endVersion);
       TransformedWaveletDelta delta;
-      if (deltaRecord == null && cachedDelta.getResultingVersion().equals(endVersion)) {
+      if (deltaRecord == null && cachedDelta != null
+          && cachedDelta.getResultingVersion().equals(endVersion)) {
         delta = cachedDelta;
       } else {
         delta = deltaRecord != null ? deltaRecord.getTransformedDelta() : null;
@@ -393,8 +397,10 @@ class DeltaStoreBasedWaveletState implements WaveletState {
       final HashedVersion endVersion) {
     Preconditions.checkArgument(endVersion.getVersion() > 0,
         "end version %s is not positive", endVersion);
+    Entry<HashedVersion, ByteStringMessage<ProtocolAppliedWaveletDelta>> appliedEntry =
+        appliedDeltas.lowerEntry(endVersion);
     final ByteStringMessage<ProtocolAppliedWaveletDelta> cachedDelta =
-        appliedDeltas.lowerEntry(endVersion).getValue();
+        appliedEntry != null ? appliedEntry.getValue() : null;
     WaveletDeltaRecord deltaRecord = getDeltaRecordByEndVersion(endVersion);
     ByteStringMessage<ProtocolAppliedWaveletDelta> appliedDelta;
     if (deltaRecord == null && isDeltaBoundary(endVersion)) {
