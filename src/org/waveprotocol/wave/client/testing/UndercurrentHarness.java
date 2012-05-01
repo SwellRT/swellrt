@@ -132,7 +132,7 @@ public class UndercurrentHarness implements EntryPoint {
 
       @Override
       protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
-        return new StageTwo.DefaultProvider(one) {
+        return new StageTwo.DefaultProvider(one, null) {
 
           @Override
           protected void onStageInit() {
