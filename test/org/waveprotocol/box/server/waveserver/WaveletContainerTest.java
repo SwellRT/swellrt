@@ -70,6 +70,7 @@ public class WaveletContainerTest extends TestCase {
       new IdURIEncoderDecoder(new JavaUrlCodec());
   private static final HashedVersionFactory HASH_FACTORY = new HashedVersionFactoryImpl(URI_CODEC);
   private static final Executor PERSIST_EXECUTOR = MoreExecutors.sameThreadExecutor();
+  private static final Executor STORAGE_CONTINUATION_EXECUTOR = MoreExecutors.sameThreadExecutor();
 
   private static final String localDomain = "example.com";
   private static final WaveletName localWaveletName = WaveletName.of(
@@ -123,12 +124,12 @@ public class WaveletContainerTest extends TestCase {
     WaveletState localWaveletState =
         DeltaStoreBasedWaveletState.create(deltaStore.open(localWaveletName), PERSIST_EXECUTOR);
     localWavelet = new LocalWaveletContainerImpl(localWaveletName, notifiee,
-        Futures.immediateFuture(localWaveletState), localDomain);
+        Futures.immediateFuture(localWaveletState), localDomain, STORAGE_CONTINUATION_EXECUTOR);
     localWavelet.awaitLoad();
     WaveletState remoteWaveletState =
         DeltaStoreBasedWaveletState.create(deltaStore.open(remoteWaveletName), PERSIST_EXECUTOR);
     remoteWavelet = new RemoteWaveletContainerImpl(remoteWaveletName, notifiee,
-        Futures.immediateFuture(remoteWaveletState));
+        Futures.immediateFuture(remoteWaveletState), STORAGE_CONTINUATION_EXECUTOR);
     remoteWavelet.awaitLoad();
   }
 

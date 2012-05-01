@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -85,9 +84,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
     CORRUPTED
   }
 
-  // TODO(soren): inject an executor which can be shared with other wavelets
-  private final Executor storageContinuationExecutor =
-      Executors.newSingleThreadExecutor();
+  private final Executor storageContinuationExecutor;
 
   private final Lock readLock;
   private final ReentrantReadWriteLock.WriteLock writeLock;
@@ -107,14 +104,17 @@ abstract class WaveletContainerImpl implements WaveletContainer {
    * @param notifiee the subscriber to notify of wavelet updates and commits.
    * @param waveletState the wavelet's delta history and current state.
    * @param waveDomain the wave server domain.
+   * @param storageContinuationExecutor the executor used to perform post wavelet loading logic.
    */
   public WaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
-      final ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain) {
+      final ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain,
+      Executor storageContinuationExecutor) {
     this.waveletName = waveletName;
     this.notifiee = notifiee;
     this.sharedDomainParticipantId =
         waveDomain != null ? ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(waveDomain)
             : null;
+    this.storageContinuationExecutor = storageContinuationExecutor;
     ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     this.readLock = readWriteLock.readLock();
     this.writeLock = readWriteLock.writeLock();

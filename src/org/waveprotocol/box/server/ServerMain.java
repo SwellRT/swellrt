@@ -150,6 +150,10 @@ public class ServerMain {
         Names.named(CoreSettings.WAVELET_LOAD_EXECUTOR_THREAD_COUNT)));
     int deltaPersistCount = settingsInjector.getInstance(Key.get(Integer.class,
         Names.named(CoreSettings.DELTA_PERSIST_EXECUTOR_THREAD_COUNT)));
+    int storageContinuationCount = settingsInjector.getInstance(Key.get(Integer.class,
+        Names.named(CoreSettings.STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT)));
+    int lookupCount = settingsInjector.getInstance(Key.get(Integer.class,
+        Names.named(CoreSettings.LOOKUP_EXECUTOR_THREAD_COUNT)));
 
     if (enableFederation) {
       Module federationSettings =
@@ -162,8 +166,8 @@ public class ServerMain {
     PersistenceModule persistenceModule = settingsInjector.getInstance(PersistenceModule.class);
     Injector injector =
         settingsInjector.createChildInjector(new ServerModule(enableFederation, listenerCount,
-            waveletLoadCount, deltaPersistCount), new RobotApiModule(), federationModule,
-            persistenceModule);
+            waveletLoadCount, deltaPersistCount, storageContinuationCount, lookupCount),
+            new RobotApiModule(), federationModule, persistenceModule);
 
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);

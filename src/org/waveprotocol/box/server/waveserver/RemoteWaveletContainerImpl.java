@@ -52,6 +52,7 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -74,11 +75,11 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
    * constructor.
    */
   public RemoteWaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
-      ListenableFuture<? extends WaveletState> waveletStateFuture) {
+      ListenableFuture<? extends WaveletState> waveletStateFuture,
+      Executor storageContinuationExecutor) {
     // We pass here null for waveDomain because you have to be explicit
     // participant on remote wavelet to have access permission.
-    // TODO (Yuri Z.): check if the assumption above is correct.
-    super(waveletName, notifiee, waveletStateFuture, null);
+    super(waveletName, notifiee, waveletStateFuture, null, storageContinuationExecutor);
   }
 
   @Override

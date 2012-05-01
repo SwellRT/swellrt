@@ -33,14 +33,12 @@ import org.mockito.MockitoAnnotations;
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
-import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.waveserver.LocalWaveletContainer.Factory;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignature;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignedDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.federation.WaveletFederationProvider;
-import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -57,7 +55,6 @@ import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * @author josephg@gmail.com (Joseph Gentle)
@@ -85,11 +82,6 @@ public class WaveServerTest extends TestCase {
   @Mock private WaveletFederationProvider federationRemote;
   @Mock private WaveletNotificationDispatcher notifiee;
   @Mock private RemoteWaveletContainer.Factory remoteWaveletContainerFactory;
-  
-  @Mock private IdGenerator idGenerator;
-
-  private ConversationUtil conversationUtil;
-  private WaveDigester digester;
 
   private CertificateManager certificateManager;
   private DeltaAndSnapshotStore waveletStore;
@@ -107,23 +99,24 @@ public class WaveServerTest extends TestCase {
 
     certificateManager = new CertificateManagerImpl(true, localSigner, null, null);
     final DeltaStore deltaStore = new MemoryDeltaStore();
-    final Executor executor = Executors.newSingleThreadExecutor();
+    final Executor waveletLoadExecutor = MoreExecutors.sameThreadExecutor();
+    final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
+    final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
     Factory localWaveletContainerFactory = new LocalWaveletContainer.Factory() {
       @Override
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee,
-            WaveServerModule.loadWaveletState(executor, deltaStore, waveletName, executor),
-            waveDomain);
+            WaveServerModule.loadWaveletState(waveletLoadExecutor, deltaStore, waveletName, persistExecutor),
+            waveDomain, storageContinuationExecutor);
       }
     };
 
     waveletStore = new DeltaStoreBasedSnapshotStore(deltaStore);
-    conversationUtil = new ConversationUtil(idGenerator);
-    digester = new WaveDigester(conversationUtil);
+    Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
     waveMap =
         new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", digester);
+            remoteWaveletContainerFactory, "example.com", lookupExecutor);
     waveServer =
         new WaveServerImpl(MoreExecutors.sameThreadExecutor(), certificateManager,
             federationRemote, waveMap);

@@ -4,8 +4,7 @@
   <!-- Properties for server.config -->
   <property name="wave_server_domain" value="local.net" />
   <property name="http_frontend_public_address" value="localhost:9898" />
-  <property name="http_frontend_addresses"
-            value="${http_frontend_public_address}" />
+  <property name="http_frontend_addresses" value="${http_frontend_public_address}" />
   <property name="resource_bases" value="./war" />
   <property name="signer_info_store_type" value="file" />
   <property name="attachment_store_type" value="disk" />
@@ -20,8 +19,10 @@
   <property name="admin_user" value="@${wave_server_domain}" />
   <property name="welcome_wave_id" value="" />
   <property name="listener_executor_thread_count" value="1" />
-  <property name="wavelet_load_executor_thread_count" value="2" />
-  <property name="delta_persist_executor_thread_count" value="2" />
+  <property name="wavelet_load_executor_thread_count" value="1" />
+  <property name="delta_persist_executor_thread_count" value="1" />
+  <property name="storage_continuation_executor_thread_count" value="1" />
+  <property name="lookup_executor_thread_count" value="1" />
   <property name="disable_registration" value="false" />
   <property name="enable_import" value="false" />
   <property name="enable_ssl" value="false" />
@@ -87,6 +88,8 @@
           <token key="LISTENER_EXECUTOR_THREAD_COUNT" value="${listener_executor_thread_count}" />
           <token key="WAVELET_LOAD_EXECUTOR_THREAD_COUNT" value="${wavelet_load_executor_thread_count}" />
           <token key="DELTA_PERSIST_EXECUTOR_THREAD_COUNT" value="${delta_persist_executor_thread_count}" />
+          <token key="STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT" value="${storage_continuation_executor_thread_count}" />
+          <token key="LOOKUP_EXECUTOR_THREAD_COUNT" value="${lookup_executor_thread_count}" />
           <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
           <token key="ENABLE_IMPORT" value="${enable_import}" />
           <token key="ENABLE_SSL" value="${enable_ssl}" />

@@ -32,6 +32,7 @@ import org.waveprotocol.box.server.robots.register.RobotRegistrar;
 import org.waveprotocol.box.server.robots.register.RobotRegistrarImpl;
 import org.waveprotocol.box.server.rpc.ProtoSerializer;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
+import org.waveprotocol.box.server.waveserver.LookupExecutor;
 import org.waveprotocol.box.server.waveserver.WaveServerImpl;
 import org.waveprotocol.box.server.waveserver.WaveServerModule;
 import org.waveprotocol.wave.federation.FederationHostBridge;
@@ -47,6 +48,8 @@ import org.waveprotocol.wave.model.id.TokenGeneratorImpl;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.security.auth.login.Configuration;
 
@@ -60,13 +63,17 @@ public class ServerModule extends AbstractModule {
   private final int listenerCount;
   private final int waveletLoadCount;
   private final int deltaPersistCount;
+  private final int storageContinuationCount;
+  private final int lookupCount;
 
   public ServerModule(boolean enableFederation, int listenerCount, int waveletLoadCount,
-      int deltaPersistCount) {
+      int deltaPersistCount, int storageContinuationCount, int lookupCount) {
     this.enableFederation = enableFederation;
     this.listenerCount = listenerCount;
     this.waveletLoadCount = waveletLoadCount;
     this.deltaPersistCount = deltaPersistCount;
+    this.storageContinuationCount = storageContinuationCount;
+    this.lookupCount = lookupCount;
   }
 
   @Override
@@ -80,8 +87,11 @@ public class ServerModule extends AbstractModule {
     bind(WaveletFederationProvider.class).annotatedWith(FederationHostBridge.class).to(
         WaveServerImpl.class);
 
+    bind(Executor.class).annotatedWith(LookupExecutor.class).toInstance(
+        Executors.newFixedThreadPool(lookupCount));
+
     install(new WaveServerModule(enableFederation, listenerCount, waveletLoadCount,
-        deltaPersistCount));
+        deltaPersistCount, storageContinuationCount));
     TypeLiteral<List<String>> certs = new TypeLiteral<List<String>>() {};
     bind(certs).annotatedWith(Names.named("certs")).toInstance(Arrays.<String> asList());
 

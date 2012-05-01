@@ -87,13 +87,21 @@ admin_user = @ADMIN_USER@
 # Default value: "" (empty)
 welcome_wave_id = @WELCOME_WAVE_ID@
 
-# Thread counts
-#The number of threads to listen on wavelet updates. Default value: 1
+# The number of threads to listen on wavelet updates. Default value: 1
 listener_executor_thread_count = @LISTENER_EXECUTOR_THREAD_COUNT@
-#The number of threads for loading wavelets. Default value: 2
+
+# The number of threads for loading wavelets. Default value: 1
 wavelet_load_executor_thread_count = @WAVELET_LOAD_EXECUTOR_THREAD_COUNT@
-#The number of threads to persist deltas. Default value: 2
+
+# The number of threads to persist deltas. Default value: 1
 delta_persist_executor_thread_count = @DELTA_PERSIST_EXECUTOR_THREAD_COUNT@
+
+# The number of threads to perform post wavelet loading logic. Default value: 1
+storage_continuation_executor_thread_count = @STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT@
+
+# The number of threads for looking up the wavelet ids
+# while creating a list of all wavelets in the persistent storage. Default value: 1
+lookup_executor_thread_count = @LOOKUP_EXECUTOR_THREAD_COUNT@
 
 # To enable federation, edit the server.federation.config file and include it here.
 # Or run ant -f server-config.xml server-federation-config

@@ -31,8 +31,6 @@ import org.mockito.MockitoAnnotations;
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
-import org.waveprotocol.box.server.robots.util.ConversationUtil;
-import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -55,12 +53,8 @@ public class WaveMapTest extends TestCase {
   @Mock private WaveletNotificationDispatcher notifiee;
   @Mock private RemoteWaveletContainer.Factory remoteWaveletContainerFactory;
 
-  @Mock private IdGenerator idGenerator;
-
   private DeltaAndSnapshotStore waveletStore;
   private WaveMap waveMap;
-  private ConversationUtil conversationUtil;
-  private WaveDigester digester;
 
   @Override
   protected void setUp() throws Exception {
@@ -68,6 +62,7 @@ public class WaveMapTest extends TestCase {
 
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
+    final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {
           @Override
@@ -81,16 +76,14 @@ public class WaveMapTest extends TestCase {
               throw new RuntimeException(e);
             }
             return new LocalWaveletContainerImpl(waveletName, notifiee,
-                Futures.immediateFuture(waveletState), DOMAIN);
+                Futures.immediateFuture(waveletState), DOMAIN, storageContinuationExecutor);
           }
         };
 
-    conversationUtil = new ConversationUtil(idGenerator);
-    digester = new WaveDigester(conversationUtil);
     waveletStore = mock(DeltaAndSnapshotStore.class);
     waveMap =
         new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", digester);
+            remoteWaveletContainerFactory, "example.com", storageContinuationExecutor);
   }
 
   public void testWaveMapStartsEmpty() throws WaveServerException {

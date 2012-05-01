@@ -184,6 +184,7 @@ public class MemorySearchProviderTest extends TestCase {
 
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
+    final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {
           @Override
@@ -197,13 +198,13 @@ public class MemorySearchProviderTest extends TestCase {
               throw new RuntimeException(e);
             }
             return new LocalWaveletContainerImpl(waveletName, notifiee,
-                Futures.immediateFuture(waveletState), DOMAIN);
+                Futures.immediateFuture(waveletState), DOMAIN, storageContinuationExecutor);
           }
         };
 
     waveMap =
         new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", digester);
+            remoteWaveletContainerFactory, "example.com", storageContinuationExecutor);
     searchProvider = new MemorySearchProvider(notifiee, DOMAIN, digester, waveMap, subscriber);
   }
 

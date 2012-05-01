@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * A collection of wavelets, local and remote, held in memory.
@@ -75,12 +74,10 @@ public class WaveMap {
       final LocalWaveletContainer.Factory localFactory,
       final RemoteWaveletContainer.Factory remoteFactory,
       @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
-      WaveDigester digester) {
+      @LookupExecutor final Executor lookupExecutor) {
     // NOTE(anorth): DeltaAndSnapshotStore is more specific than necessary, but
     // helps Guice out.
-    // TODO(soren): inject a proper executor (with a pool of configurable size)
     this.store = waveletStore;
-    final Executor lookupExecutor = Executors.newSingleThreadExecutor();
     waves = new MapMaker().makeComputingMap(new Function<WaveId, Wave>() {
       @Override
       public Wave apply(WaveId waveId) {

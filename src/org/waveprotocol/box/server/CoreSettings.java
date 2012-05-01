@@ -53,6 +53,8 @@ public class CoreSettings {
   public static final String LISTENER_EXECUTOR_THREAD_COUNT = "listener_executor_thread_count";
   public static final String WAVELET_LOAD_EXECUTOR_THREAD_COUNT = "wavelet_load_executor_thread_count";
   public static final String DELTA_PERSIST_EXECUTOR_THREAD_COUNT = "delta_persist_executor_thread_count";
+  public static final String STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT = "storage_continuation_executor_thread_count";
+  public static final String LOOKUP_EXECUTOR_THREAD_COUNT = "lookup_executor_thread_count";
   public static final String DISABLE_REGISTRATION = "disable_registration";
   public static final String ENABLE_SSL = "enable_ssl";
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
@@ -167,13 +169,23 @@ public class CoreSettings {
 
   @Setting(name = WAVELET_LOAD_EXECUTOR_THREAD_COUNT,
       description = "The number of threads for loading wavelets.",
-      defaultValue = "2")
+      defaultValue = "1")
   private static int waveletLoadExecutorThreadCount;
 
   @Setting(name = DELTA_PERSIST_EXECUTOR_THREAD_COUNT,
       description = "The number of threads to persist deltas.",
-      defaultValue = "2")
+      defaultValue = "1")
   private static int deltaPersistExecutorThreadCount;
+
+  @Setting(name = STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT,
+      description = "The number of threads to perform post wavelet loading logic.",
+      defaultValue = "1")
+  private static int storageContinuationExecutorThreadCount;
+
+  @Setting(name = LOOKUP_EXECUTOR_THREAD_COUNT,
+      description = "The number of threads to perform post wavelet loading logic.",
+      defaultValue = "1")
+  private static int lookupExecutorThreadCount;
 
   @Setting(name = DISABLE_REGISTRATION,
       description = "Prevents the register page from being available to anyone", defaultValue = "false")

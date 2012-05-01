@@ -42,6 +42,8 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
+import java.util.concurrent.Executor;
+
 /**
  * A local wavelet may be updated by submits. The local wavelet will perform
  * operational transformation on the submitted delta and assign it the latest
@@ -77,8 +79,9 @@ class LocalWaveletContainerImpl extends WaveletContainerImpl implements LocalWav
   }
 
   public LocalWaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
-      ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain) {
-    super(waveletName, notifiee, waveletStateFuture, waveDomain);
+      ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain,
+      Executor storageContinuationExecutor) {
+    super(waveletName, notifiee, waveletStateFuture, waveDomain, storageContinuationExecutor);
   }
 
   @Override

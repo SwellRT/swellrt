@@ -54,6 +54,7 @@ public class LocalWaveletContainerImplTest extends TestCase {
       new IdURIEncoderDecoder(new JavaUrlCodec());
   private static final HashedVersionFactory HASH_FACTORY = new HashedVersionFactoryImpl(URI_CODEC);
   private static final Executor PERSIST_EXECUTOR = MoreExecutors.sameThreadExecutor();
+  private static final Executor STORAGE_CONTINUATION_EXECUTOR = MoreExecutors.sameThreadExecutor();
 
   private static final WaveletName WAVELET_NAME = WaveletName.of("a", "a", "b", "b");
   private static final ProtocolSignature SIGNATURE = ProtocolSignature.newBuilder()
@@ -87,7 +88,7 @@ public class LocalWaveletContainerImplTest extends TestCase {
     WaveletState waveletState = DeltaStoreBasedWaveletState.create(deltaStore.open(WAVELET_NAME),
         PERSIST_EXECUTOR);
     wavelet = new LocalWaveletContainerImpl(WAVELET_NAME, notifiee,
-        Futures.immediateFuture(waveletState), null);
+        Futures.immediateFuture(waveletState), null, STORAGE_CONTINUATION_EXECUTOR);
     wavelet.awaitLoad();
   }
 

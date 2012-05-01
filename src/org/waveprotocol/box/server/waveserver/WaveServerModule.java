@@ -61,14 +61,16 @@ public class WaveServerModule extends AbstractModule {
   private final int listenerExecutorThreadCount;
   private final Executor waveletLoadExecutor;
   private final Executor persistExecutor;
+  private final Executor storageContinuationExecutor;
   private final boolean enableFederation;
 
   public WaveServerModule(boolean enableFederation, int listenerCount, int waveletLoadCount,
-      int deltaPersistCount) {
+      int deltaPersistCount, int storageContinuationCount) {
     this.enableFederation = enableFederation;
     this.listenerExecutorThreadCount = listenerCount;
     waveletLoadExecutor = Executors.newFixedThreadPool(waveletLoadCount);
     persistExecutor = Executors.newFixedThreadPool(deltaPersistCount);
+    storageContinuationExecutor = Executors.newFixedThreadPool(storageContinuationCount);
   }
 
   @Override
@@ -116,7 +118,8 @@ public class WaveServerModule extends AbstractModule {
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, persistExecutor), waveDomain);
+            waveletLoadExecutor, deltaStore, waveletName, persistExecutor), waveDomain,
+            storageContinuationExecutor);
       }
     };
   }
@@ -129,8 +132,9 @@ public class WaveServerModule extends AbstractModule {
       @Override
       public RemoteWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
-        return new RemoteWaveletContainerImpl(waveletName, notifiee,
-            loadWaveletState(waveletLoadExecutor, deltaStore, waveletName, persistExecutor));
+        return new RemoteWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
+            waveletLoadExecutor, deltaStore, waveletName, persistExecutor),
+            storageContinuationExecutor);
       }
     };
   }
