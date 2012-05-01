@@ -19,6 +19,7 @@
 package org.waveprotocol.box.webclient.client;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 
 import org.waveprotocol.wave.client.StageOne;
@@ -60,10 +61,12 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    * @param waveId the id of the wave to open, or null to create a new wave
    * @param channel communication channel
    * @param idGenerator
+   * @param unsavedIndicatorElement
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
-      boolean isNewWave, IdGenerator idGenerator, ProfileManager profiles) {
-    super(stageOne);
+      boolean isNewWave, IdGenerator idGenerator, ProfileManager profiles,
+      Element unsavedIndicatorElement) {
+    super(stageOne, unsavedIndicatorElement);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
     Preconditions.checkArgument(waveRef.getWaveId() != null);

@@ -34,6 +34,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
+import org.waveprotocol.box.webclient.client.events.Log;
 import org.waveprotocol.box.webclient.client.events.NetworkStatusEvent;
 import org.waveprotocol.box.webclient.client.events.NetworkStatusEventHandler;
 import org.waveprotocol.box.webclient.client.events.WaveCreationEvent;
@@ -48,7 +49,6 @@ import org.waveprotocol.box.webclient.search.SearchPanelWidget;
 import org.waveprotocol.box.webclient.search.SearchPresenter;
 import org.waveprotocol.box.webclient.search.SimpleSearch;
 import org.waveprotocol.box.webclient.search.WaveStore;
-import org.waveprotocol.box.webclient.client.events.Log;
 import org.waveprotocol.box.webclient.widget.error.ErrorIndicatorPresenter;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;
 import org.waveprotocol.box.webclient.widget.loading.LoadingIndicator;
@@ -301,9 +301,10 @@ public class WebClient implements EntryPoint {
     UIObject.setVisible(waveFrame.getElement(), true);
     waveHolder.getElement().appendChild(loading);
     Element holder = waveHolder.getElement().appendChild(Document.get().createDivElement());
-    StagesProvider wave = new StagesProvider(
-        holder, waveHolder, waveRef, channel, idGenerator, profiles, waveStore, isNewWave,
-        Session.get().getDomain());
+    Element unsavedIndicator = Document.get().getElementById("unsavedStateContainer");
+    StagesProvider wave =
+        new StagesProvider(holder, unsavedIndicator, waveHolder, waveRef, channel, idGenerator,
+            profiles, waveStore, isNewWave, Session.get().getDomain());
     this.wave = wave;
     wave.load(new Command() {
       @Override

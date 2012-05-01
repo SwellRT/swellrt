@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 
+import org.waveprotocol.box.webclient.client.SavedStateIndicator;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
@@ -85,6 +86,7 @@ import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiple
 import org.waveprotocol.wave.concurrencycontrol.channel.ViewChannelFactory;
 import org.waveprotocol.wave.concurrencycontrol.channel.ViewChannelImpl;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
+import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListenerFactory;
 import org.waveprotocol.wave.model.conversation.ConversationBlip;
 import org.waveprotocol.wave.model.conversation.ConversationThread;
@@ -237,8 +239,11 @@ public interface StageTwo {
     private DiffController diffController;
     private Reader reader;
 
-    public DefaultProvider(StageOne stageOne) {
+    private final Element unsavedIndicatorElement;
+
+    public DefaultProvider(StageOne stageOne, Element unsavedIndicatorElement) {
       this.stageOne = stageOne;
+      this.unsavedIndicatorElement = unsavedIndicatorElement;
     }
 
     /**
@@ -525,7 +530,20 @@ public interface StageTwo {
           .build();
 
       ViewChannelFactory viewFactory = ViewChannelImpl.factory(createWaveViewService(), logger);
-      UnsavedDataListenerFactory unsyncedListeners = UnsavedDataListenerFactory.NONE;
+      UnsavedDataListenerFactory unsyncedListeners = new UnsavedDataListenerFactory() {
+
+        private final UnsavedDataListener listener = new SavedStateIndicator(
+            unsavedIndicatorElement);
+
+        @Override
+        public UnsavedDataListener create(WaveletId waveletId) {
+          return listener;
+        }
+
+        @Override
+        public void destroy(WaveletId waveletId) {
+        }
+      };
 
       WaveletId udwId = getIdGenerator().newUserDataWaveletId(getSignedInUser().getAddress());
       final IdFilter filter = IdFilter.of(Collections.singleton(udwId),

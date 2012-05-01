@@ -39,7 +39,8 @@
       </gxp:if>
       <gxp:if cond='username != null'>
         <gxp:eval expr='username' /><span class="domain">@<gxp:eval expr='domain' /></span> |
-        <span id="netstatus" class="offline">Offline</span> | 
+        <span id='unsavedStateContainer' style="width: 60px">Saved</span> |
+        <span id="netstatus" class="offline">Offline</span> |
         <a href="/auth/signout?r=/">Sign out</a>
       </gxp:if>
     </div>

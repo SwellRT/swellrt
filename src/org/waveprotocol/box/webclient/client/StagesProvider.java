@@ -57,6 +57,7 @@ public class StagesProvider extends Stages {
   };
 
   private final Element wavePanelElement;
+  private final Element unsavedIndicatorElement;
   private final LogicalPanel rootPanel;
   private final WaveRef waveRef;
   private final RemoteViewServiceMultiplexer channel;
@@ -82,10 +83,12 @@ public class StagesProvider extends Stages {
    * @param isNewWave true if the wave is a new client-created wave
    * @param idGenerator
    */
-  public StagesProvider(Element wavePanelElement, LogicalPanel rootPanel, WaveRef waveRef,
-      RemoteViewServiceMultiplexer channel, IdGenerator idGenerator, ProfileManager profiles,
-      WaveStore store, boolean isNewWave, String localDomain) {
+  public StagesProvider(Element wavePanelElement, Element unsavedIndicatorElement,
+      LogicalPanel rootPanel, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+      IdGenerator idGenerator, ProfileManager profiles, WaveStore store, boolean isNewWave,
+      String localDomain) {
     this.wavePanelElement = wavePanelElement;
+    this.unsavedIndicatorElement = unsavedIndicatorElement;
     this.rootPanel = rootPanel;
     this.waveRef = waveRef;
     this.channel = channel;
@@ -119,7 +122,7 @@ public class StagesProvider extends Stages {
   @Override
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
     return haltIfClosed(new StageTwoProvider(
-        this.one = one, waveRef, channel, isNewWave, idGenerator, profiles));
+        this.one = one, waveRef, channel, isNewWave, idGenerator, profiles, unsavedIndicatorElement));
   }
 
   @Override
