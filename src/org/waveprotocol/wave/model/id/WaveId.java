@@ -153,7 +153,7 @@ public final class WaveId implements Comparable<WaveId>, Serializable {
    */
   public String serialise() {
     if (cachedSerialisation == null) {
-      cachedSerialisation = LegacyIdSerialiser.INSTANCE.serialiseWaveId(this);
+      cachedSerialisation = DualIdSerialiser.MODERN.serialiseWaveId(this);
     }
     return cachedSerialisation;
   }
