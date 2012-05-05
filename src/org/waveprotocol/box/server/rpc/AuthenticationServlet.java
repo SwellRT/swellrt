@@ -78,15 +78,18 @@ public class AuthenticationServlet extends HttpServlet {
   private final Configuration configuration;
   private final SessionManager sessionManager;
   private final String domain;
+  private final String analyticsAccount;
 
   @Inject
   public AuthenticationServlet(Configuration configuration, SessionManager sessionManager,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain) {
+      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
+      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
     Preconditions.checkNotNull(configuration, "Configuration is null");
     Preconditions.checkNotNull(sessionManager, "Session manager is null");
     this.configuration = configuration;
     this.sessionManager = sessionManager;
     this.domain = domain.toLowerCase();
+    this.analyticsAccount = analyticsAccount;
   }
 
   @SuppressWarnings("unchecked")
@@ -137,7 +140,7 @@ public class AuthenticationServlet extends HttpServlet {
       LOG.info("User authentication failed: " + e.getLocalizedMessage());
       resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
       AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
-          responseType);
+          analyticsAccount, responseType);
       return;
     }
 
@@ -212,7 +215,7 @@ public class AuthenticationServlet extends HttpServlet {
       resp.setStatus(HttpServletResponse.SC_OK);
       resp.setContentType("text/html;charset=utf-8");
       AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, "",
-          RESPONSE_STATUS_NONE);
+          RESPONSE_STATUS_NONE, analyticsAccount);
     }
   }
 

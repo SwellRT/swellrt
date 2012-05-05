@@ -25,8 +25,8 @@ import com.google.inject.name.Named;
 
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.RobotAccountData;
-import org.waveprotocol.box.server.gxp.robots.RobotRegistrationPage;
-import org.waveprotocol.box.server.gxp.robots.RobotRegistrationSuccessPage;
+import org.waveprotocol.box.server.gxp.RobotRegistrationPage;
+import org.waveprotocol.box.server.gxp.RobotRegistrationSuccessPage;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.register.RobotRegistrar;
 import org.waveprotocol.box.server.robots.util.RobotsUtil.RobotRegistrationException;
@@ -55,12 +55,15 @@ public class RobotRegistrationServlet extends HttpServlet {
 
   private final RobotRegistrar robotRegistrar;
   private final String domain;
+  private final String analyticsAccount;
 
   @Inject
   private RobotRegistrationServlet(@Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
-      RobotRegistrar robotRegistrar) {
+      RobotRegistrar robotRegistrar,
+      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
     this.robotRegistrar = robotRegistrar;
     this.domain = domain;
+    this.analyticsAccount = analyticsAccount;
   }
 
   @Override
@@ -90,7 +93,8 @@ public class RobotRegistrationServlet extends HttpServlet {
    */
   private void doRegisterGet(HttpServletRequest req, HttpServletResponse resp, String message)
       throws IOException {
-    RobotRegistrationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message);
+    RobotRegistrationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
+        analyticsAccount);
     resp.setContentType("text/html");
     resp.setStatus(HttpServletResponse.SC_OK);
   }
@@ -139,7 +143,7 @@ public class RobotRegistrationServlet extends HttpServlet {
   private void onRegisterSuccess(HttpServletRequest req, HttpServletResponse resp,
       RobotAccountData robotAccount) throws IOException {
     RobotRegistrationSuccessPage.write(resp.getWriter(), new GxpContext(req.getLocale()),
-        robotAccount.getId().getAddress(), robotAccount.getConsumerSecret());
+        robotAccount.getId().getAddress(), robotAccount.getConsumerSecret(), analyticsAccount);
     resp.setContentType("text/html");
     resp.setStatus(HttpServletResponse.SC_OK);
   }

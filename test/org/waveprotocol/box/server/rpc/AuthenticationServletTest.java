@@ -73,7 +73,9 @@ public class AuthenticationServletTest extends TestCase {
         new HumanAccountDataImpl(USER, new PasswordDigest("password".toCharArray()));
     store.putAccount(account);
 
-    servlet = new AuthenticationServlet(AuthTestUtil.makeConfiguration(), manager, "examPLe.com");
+    servlet =
+        new AuthenticationServlet(AuthTestUtil.makeConfiguration(), manager, "examPLe.com",
+            "UA-someid");
     AccountStoreHolder.init(store, "eXaMple.com");
   }
 

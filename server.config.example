@@ -131,7 +131,7 @@ enable_ssl = @ENABLE_SSL@
 # Note: this is only used when enable_ssl set to true.
 ssl_keystore_path = @SSL_KEYSTORE_PATH@
 
-#Password to the keystore.
+# Password to the keystore.
 # Note: this is only used when enable_ssl set to true.
 ssl_keystore_password = @SSL_KEYSTORE_PASSWORD@
 
@@ -148,3 +148,7 @@ search_type = @SEARCH_TYPE@
 # for other search types.
 # Default value: _indexes
 index_directory = @INDEX_DIRECTORY@
+
+ # Google Analytics account.
+ # Default value: empty
+analytics_account = @ANALYTICS_ACCOUNT@

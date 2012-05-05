@@ -30,6 +30,7 @@
   <property name="ssl_keystore_password" value="changeme" />
   <property name="search_type" value="lucene" />
   <property name="index_directory" value="_indexes" />
+  <property name="analytics_account" value="" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -99,6 +100,7 @@
           <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />
           <token key="SEARCH_TYPE" value="${search_type}" />
           <token key="INDEX_DIRECTORY" value="${index_directory}" />
+          <token key="ANALYTICS_ACCOUNT" value="${analytics_account}" />
         </replacetokens>
       </filterchain>
     </copy>

@@ -54,17 +54,20 @@ public final class UserRegistrationServlet extends HttpServlet {
   private final String domain;
   private final WelcomeRobot welcomeBot;
   private final boolean registrationDisabled;
+  private final String analyticsAccount;
 
   private final Log LOG = Log.get(UserRegistrationServlet.class);
 
   @Inject
   public UserRegistrationServlet(AccountStore accountStore,
       @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain, WelcomeRobot welcomeBot,
-      @Named(CoreSettings.DISABLE_REGISTRATION) boolean registrationDisabled) {
+      @Named(CoreSettings.DISABLE_REGISTRATION) boolean registrationDisabled,
+      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
     this.accountStore = accountStore;
     this.domain = domain;
     this.welcomeBot = welcomeBot;
     this.registrationDisabled = registrationDisabled;
+    this.analyticsAccount = analyticsAccount;
   }
 
   @Override
@@ -162,6 +165,6 @@ public final class UserRegistrationServlet extends HttpServlet {
     dest.setCharacterEncoding("UTF-8");
     dest.setContentType("text/html;charset=utf-8");
     UserRegistrationPage.write(dest.getWriter(), new GxpContext(locale), domain, message,
-        responseType, registrationDisabled);
+        responseType, registrationDisabled, analyticsAccount);
   }
 }

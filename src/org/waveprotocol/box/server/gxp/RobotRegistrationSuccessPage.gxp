@@ -5,17 +5,22 @@
 -->
 
 <gxp:template
-  name='org.waveprotocol.box.server.gxp.robots.RobotRegistrationSuccessPage'
-  xmlns='http://www.w3.org/1999/xhtml' xmlns:gxp='http://google.com/2001/gxp'>
+  name='org.waveprotocol.box.server.gxp.RobotRegistrationSuccessPage'
+  xmlns='http://www.w3.org/1999/xhtml'
+  xmlns:expr='http://google.com/2001/gxp/expressions'
+  xmlns:call='http://google.com/2001/gxp/call'
+  xmlns:gxp='http://google.com/2001/gxp'>
 
   <gxp:param name='token' type='String' />
   <gxp:param name='tokenSecret' type='String' />
+  <gxp:param name='analyticsAccount' type='String'/>
 
   <html>
   <head>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <title>Robot Successfully Registered</title>
   <link rel="shortcut icon" href="/static/favicon.ico" />
+  <call:AnalyticsFragment expr:account='analyticsAccount'/>
   </head>
 
   <body>

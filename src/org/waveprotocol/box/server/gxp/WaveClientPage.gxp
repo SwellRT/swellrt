@@ -23,6 +23,8 @@
 <gxp:template
     name='org.waveprotocol.box.server.gxp.WaveClientPage'
     xmlns='http://www.w3.org/1999/xhtml'
+    xmlns:expr='http://google.com/2001/gxp/expressions'
+    xmlns:call='http://google.com/2001/gxp/call'
     xmlns:gxp='http://google.com/2001/gxp'>
 
   <gxp:import class="org.json.JSONObject" />
@@ -31,6 +33,7 @@
   <gxp:param name='clientFlags' type='JSONObject' />
   <gxp:param name='topBar' type='HtmlClosure' />
   <gxp:param name='useSocketIO' type='boolean' />
+  <gxp:param name='analyticsAccount' type='String'/>
 
   <!-- Generate doctype to trigger standards mode -->
   <html gxp:doctype='transitional'>
@@ -110,6 +113,7 @@
       </style>
       <!-- GWT-compiled JS. -->
       <script type="text/javascript" language="javascript" src="webclient/webclient.nocache.js" />
+      <call:AnalyticsFragment expr:account='analyticsAccount'/>
     </head>
 
     <body>

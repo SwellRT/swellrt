@@ -7,13 +7,15 @@
 <gxp:template
   name='org.waveprotocol.box.server.gxp.UserRegistrationPage'
   xmlns='http://www.w3.org/1999/xhtml'
+  xmlns:expr='http://google.com/2001/gxp/expressions'
+  xmlns:call='http://google.com/2001/gxp/call'
   xmlns:gxp='http://google.com/2001/gxp'>
 
   <gxp:param name='domain' type='String' />
   <gxp:param name='message' type='String' />
   <gxp:param name='responseType' type='String' />
   <gxp:param name='disableRegistration' type='Boolean' />
-
+  <gxp:param name='analyticsAccount' type='String'/>
 
   <html dir="ltr">
   <head>
@@ -21,7 +23,7 @@
   <link type="text/css" rel="stylesheet" href="/static/auth.css" />
   <title>Register a New Account - Wave in a Box</title>
   <link rel="shortcut icon" href="/static/favicon.ico" />
-
+  <call:AnalyticsFragment expr:account='analyticsAccount'/>
   </head>
   <body onload="init()">
   <table width="100%" border="0" align="center" cellpadding="0"

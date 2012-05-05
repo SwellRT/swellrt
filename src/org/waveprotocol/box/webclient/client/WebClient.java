@@ -303,7 +303,7 @@ public class WebClient implements EntryPoint {
     Element holder = waveHolder.getElement().appendChild(Document.get().createDivElement());
     Element unsavedIndicator = Document.get().getElementById("unsavedStateContainer");
     StagesProvider wave =
-        new StagesProvider(holder, unsavedIndicator, waveHolder, waveRef, channel, idGenerator,
+        new StagesProvider(holder, unsavedIndicator, waveHolder, waveFrame, waveRef, channel, idGenerator,
             profiles, waveStore, isNewWave, Session.get().getDomain());
     this.wave = wave;
     wave.load(new Command() {

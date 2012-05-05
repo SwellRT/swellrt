@@ -17,9 +17,9 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +38,6 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -128,8 +127,10 @@ public class UserRegistrationServletTest extends TestCase {
       HttpServletRequest req, HttpServletResponse resp, String address,
       String password, boolean disabledRegistration) throws IOException {
 
-    UserRegistrationServlet enabledServlet = new UserRegistrationServlet(store, "example.com", welcomeBot, false);
-    UserRegistrationServlet disabledServlet = new UserRegistrationServlet(store, "example.com", welcomeBot, true);
+    UserRegistrationServlet enabledServlet =
+        new UserRegistrationServlet(store, "example.com", welcomeBot, false, "UA-someid");
+    UserRegistrationServlet disabledServlet =
+        new UserRegistrationServlet(store, "example.com", welcomeBot, true, "UA-someid");
 
     when(req.getParameter("address")).thenReturn(address);
     when(req.getParameter("password")).thenReturn(password);

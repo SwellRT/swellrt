@@ -62,6 +62,7 @@ public class CoreSettings {
   public static final String ENABLE_IMPORT = "enable_import";
   public static final String SEARCH_TYPE = "search_type";
   public static final String INDEX_DIRECTORY = "index_directory";
+  public static final String ANALYTICS_ACCOUNT = "analytics_account";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -216,4 +217,7 @@ public class CoreSettings {
   @Setting(name = SEARCH_TYPE,
       description = "The wave search type", defaultValue = "lucene")
   private static String searchType;
+
+  @Setting(name = ANALYTICS_ACCOUNT, description = "Google analytics id")
+  private static String analyticsAccount;
 }
