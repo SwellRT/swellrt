@@ -60,6 +60,8 @@ public class CoreSettings {
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
   public static final String SSL_KEYSTORE_PASSWORD = "ssl_keystore_password";
   public static final String ENABLE_IMPORT = "enable_import";
+  public static final String SEARCH_TYPE = "search_type";
+  public static final String INDEX_DIRECTORY = "index_directory";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -206,4 +208,12 @@ public class CoreSettings {
   @Setting(name = ENABLE_IMPORT,
       description = "Enable import servlet at <Server URL>/import", defaultValue = "false")
   private static boolean enableImport;
+
+  @Setting(name = INDEX_DIRECTORY,
+      description = "Location on disk where the index is persisted", defaultValue = "_indexes")
+  private static String indexDirectory;
+
+  @Setting(name = SEARCH_TYPE,
+      description = "The wave search type", defaultValue = "lucene")
+  private static String searchType;
 }

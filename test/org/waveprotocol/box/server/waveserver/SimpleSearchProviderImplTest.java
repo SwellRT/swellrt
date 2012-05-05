@@ -61,7 +61,7 @@ import java.util.concurrent.Executor;
 /**
  * @author yurize@apache.org (Yuri Zelikov)
  */
-public class MemorySearchProviderTest extends TestCase {
+public class SimpleSearchProviderImplTest extends TestCase {
 
   private static final String DOMAIN = "example.com";
   private static final WaveId WAVE_ID = WaveId.of(DOMAIN, "abc123");
@@ -160,7 +160,7 @@ public class MemorySearchProviderTest extends TestCase {
   @Mock private WaveletNotificationDispatcher notifiee;
   @Mock private DeltaAndSnapshotStore waveletStore;
   @Mock private RemoteWaveletContainer.Factory remoteWaveletContainerFactory;
-  @Mock private PerUserWaveViewSubscriber subscriber;
+  @Mock private PerUserWaveViewProvider waveViewProvider;
 
   private SearchProvider searchProvider;
   private ConversationUtil conversationUtil;
@@ -175,9 +175,9 @@ public class MemorySearchProviderTest extends TestCase {
     wavesViews.put(USER2, wavesViewUser2);
     wavesViews.put(SHARED_USER, wavesViewUser3);
 
-    when(subscriber.getPerUserWaveView(USER1)).thenReturn(wavesViewUser1);
-    when(subscriber.getPerUserWaveView(USER2)).thenReturn(wavesViewUser2);
-    when(subscriber.getPerUserWaveView(SHARED_USER)).thenReturn(wavesViewUser3);
+    when(waveViewProvider.retrievePerUserWaveView(USER1)).thenReturn(wavesViewUser1);
+    when(waveViewProvider.retrievePerUserWaveView(USER2)).thenReturn(wavesViewUser2);
+    when(waveViewProvider.retrievePerUserWaveView(SHARED_USER)).thenReturn(wavesViewUser3);
 
     conversationUtil = new ConversationUtil(idGenerator);
     digester = new WaveDigester(conversationUtil);
@@ -185,6 +185,7 @@ public class MemorySearchProviderTest extends TestCase {
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
+    final Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {
           @Override
@@ -204,8 +205,8 @@ public class MemorySearchProviderTest extends TestCase {
 
     waveMap =
         new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", storageContinuationExecutor);
-    searchProvider = new MemorySearchProvider(notifiee, DOMAIN, digester, waveMap, subscriber);
+            remoteWaveletContainerFactory, "example.com", lookupExecutor);
+    searchProvider = new SimpleSearchProviderImpl(DOMAIN, digester, waveMap, waveViewProvider);
   }
 
   @Override

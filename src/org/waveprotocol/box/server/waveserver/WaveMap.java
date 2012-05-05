@@ -107,6 +107,15 @@ public class WaveMap {
   }
 
   /**
+   * Unloads all wavelets from memory.
+   *
+   * @throws WaveletStateException if storage access fails.
+   */
+  public void unloadAllWavelets() throws WaveletStateException {
+    waves.clear();
+  }
+
+  /**
    * Returns defensive copy of the map that holds waves.
    */
   Map<WaveId, Wave> getWaves() {

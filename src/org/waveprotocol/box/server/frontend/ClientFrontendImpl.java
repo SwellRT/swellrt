@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 
 import org.waveprotocol.box.common.DeltaSequence;
-import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.common.comms.WaveClientRpc;
 import org.waveprotocol.box.server.waveserver.WaveBus;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
@@ -71,8 +70,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     ClientFrontendImpl impl =
         new ClientFrontendImpl(waveletProvider, waveletInfo);
 
-    // Initialize all waves here until a separate index system exists.
-    impl.initialiseAllWaves();
     wavebus.subscribe(impl);
     return impl;
   }
@@ -180,24 +177,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
 
   private String generateChannelID() {
     return "ch" + channel_counter.addAndGet(1);
-  }
-
-  /**
-   * Initializes in-memory state for all waves by scanning
-   * the wavelet provider.
-   */
-  @VisibleForTesting
-  void initialiseAllWaves() throws WaveServerException {
-    // It is still required because of the current implementation of search
-    // functionality that creates per user wave views by traversing all the
-    // waves.
-    // TODO (Yuri Z.) Remove this method and replace with lazy waves loading
-    // instead.
-    ExceptionalIterator<WaveId, WaveServerException> witr = waveletProvider.getWaveIds();
-    while (witr.hasNext()) {
-      WaveId waveId = witr.next();
-      waveletInfo.initialiseWave(waveId);
-    }
   }
 
   @Override

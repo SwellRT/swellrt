@@ -228,7 +228,6 @@ public class ClientFrontendImplTest extends TestCase {
    */
   public void testUninterestingDeltasDontUpdateIndex() throws WaveServerException {
     provideWaves(Collections.<WaveId> emptySet());
-    clientFrontend.initialiseAllWaves();
 
     OpenListener listener = openWave(INDEX_WAVE_ID, IdFilters.ALL_IDS);
     verifyChannelId(listener);

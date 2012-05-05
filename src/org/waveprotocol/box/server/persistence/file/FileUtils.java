@@ -319,4 +319,12 @@ public class FileUtils {
 
     return stringBuilder.toString();
   }
+
+  public static boolean isDirExistsAndNonEmpty(String dir) {
+    File baseDir = new File(dir);
+    if (!(baseDir.exists() && baseDir.isDirectory()) || baseDir.list().length == 0) {
+      return false;
+    }
+    return true;
+  }
 }

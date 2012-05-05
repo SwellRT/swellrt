@@ -138,3 +138,13 @@ ssl_keystore_password = @SSL_KEYSTORE_PASSWORD@
 # Enable import of waves via /import URL.
 # Default value: false
 enable_import = @ENABLE_IMPORT@
+
+# Currently supported search types: memory, lucene.
+# Default value: lucene.
+search_type = @SEARCH_TYPE@
+
+# The location where search indexes are stored on disk.
+# Note: This is only used when using the lucene search type. It is ignored
+# for other search types.
+# Default value: _indexes
+index_directory = @INDEX_DIRECTORY@

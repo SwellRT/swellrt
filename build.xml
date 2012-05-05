@@ -615,6 +615,7 @@
         <include name="org/apache/commons/httpclient/**/*" />
         <include name="org/apache/commons/lang/**/*" />
         <include name="org/apache/commons/logging/**/*" />
+        <include name="org/apache/lucene/**/*" />
         <include name="org/apache/commons/io/**/*" />
         <include name="org/bson/**/*" />
         <include name="org/codehaus/jackson/**/*" />

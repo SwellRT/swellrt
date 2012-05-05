@@ -63,9 +63,13 @@ import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
 import org.waveprotocol.box.server.rpc.WaveClientServlet;
 import org.waveprotocol.box.server.rpc.WaveRefServlet;
 import org.waveprotocol.box.server.waveserver.ImportServlet;
+import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
+import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
+import org.waveprotocol.box.server.waveserver.WaveIndexer;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
+import org.waveprotocol.box.server.waveserver.WaveletStateException;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.federation.FederationSettings;
 import org.waveprotocol.wave.federation.FederationTransport;
@@ -164,10 +168,11 @@ public class ServerMain {
 
     Module federationModule = buildFederationModule(settingsInjector, enableFederation);
     PersistenceModule persistenceModule = settingsInjector.getInstance(PersistenceModule.class);
+    Module searchModule = settingsInjector.getInstance(SearchModule.class);
     Injector injector =
         settingsInjector.createChildInjector(new ServerModule(enableFederation, listenerCount,
             waveletLoadCount, deltaPersistCount, storageContinuationCount, lookupCount),
-            new RobotApiModule(), federationModule, persistenceModule);
+            new RobotApiModule(), federationModule, persistenceModule, searchModule);
 
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
@@ -184,6 +189,7 @@ public class ServerMain {
     initializeRobots(injector, waveBus);
     initializeFrontend(injector, server, waveBus);
     initializeFederation(injector);
+    initializeSearch(injector, waveBus);
 
     LOG.info("Starting server");
     server.startWebSocketServer(injector);
@@ -283,5 +289,17 @@ public class ServerMain {
   private static void initializeFederation(Injector injector) {
     FederationTransport federationManager = injector.getInstance(FederationTransport.class);
     federationManager.startFederation();
+  }
+
+  private static void initializeSearch(Injector injector, WaveBus waveBus)
+      throws WaveletStateException, WaveServerException {
+    PerUserWaveViewDistpatcher waveViewDistpatcher =
+        injector.getInstance(PerUserWaveViewDistpatcher.class);
+    PerUserWaveViewBus.Listener listener = injector.getInstance(PerUserWaveViewBus.Listener.class);
+    waveViewDistpatcher.addListener(listener);
+    waveBus.subscribe(waveViewDistpatcher);
+
+    WaveIndexer waveIndexer = injector.getInstance(WaveIndexer.class);
+    waveIndexer.remakeIndex();
   }
 }

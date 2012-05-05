@@ -1,0 +1,11 @@
+URL: http://lucene.apache.org/
+VERSION: 3.5.0
+License: License: Apache 2.0
+License File: COPYING
+
+Description:
+Provides Java-based indexing and search technology.
+
+Local Modifications:
+None.
+

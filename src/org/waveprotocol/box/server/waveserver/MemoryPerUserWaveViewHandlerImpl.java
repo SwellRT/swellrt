@@ -14,27 +14,21 @@
  * limitations under the License.
  *
  */
-
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
-import org.waveprotocol.box.common.DeltaSequence;
-import org.waveprotocol.box.server.waveserver.WaveBus.Subscriber;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.operation.wave.AddParticipant;
-import org.waveprotocol.wave.model.operation.wave.RemoveParticipant;
-import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
-import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
-import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Map;
@@ -42,13 +36,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Listens on the {@link WaveBus} and keeps the per user waves view up to date.
- *
  * @author yurize@apache.org (Yuri Zelikov)
  */
-public class PerUserWaveViewSubscriber implements Subscriber {
+@Singleton
+public class MemoryPerUserWaveViewHandlerImpl implements PerUserWaveViewHandler {
 
-  private static final Log LOG = Log.get(PerUserWaveViewSubscriber.class);
+  private static final Log LOG = Log.get(MemoryPerUserWaveViewHandlerImpl.class);
 
   /**
    * The period of time in minutes the per user waves view should be actively
@@ -60,7 +53,7 @@ public class PerUserWaveViewSubscriber implements Subscriber {
   public ConcurrentMap<ParticipantId, Multimap<WaveId, WaveletId>> explicitPerUserWaveViews;
 
   @Inject
-  public PerUserWaveViewSubscriber(final WaveMap waveMap) {
+  public MemoryPerUserWaveViewHandlerImpl(final WaveMap waveMap) {
     // Let the view expire if it not accessed for some time.
     explicitPerUserWaveViews =
         new MapMaker().expireAfterAccess(PER_USER_WAVES_VIEW_CACHE_MINUTES, TimeUnit.MINUTES)
@@ -72,10 +65,6 @@ public class PerUserWaveViewSubscriber implements Subscriber {
 
                 // Create initial per user waves view by looping over all waves
                 // in the waves store.
-                // After that the view is maintained up to date continuously in
-                // the subscriber.waveletUpdate method until the user logs of
-                // and the key is expired.
-                // On the next login the waves view will be rebuild.
                 Map<WaveId, Wave> waves = waveMap.getWaves();
                 for (Map.Entry<WaveId, Wave> entry : waves.entrySet()) {
                   Wave wave = entry.getValue();
@@ -100,49 +89,44 @@ public class PerUserWaveViewSubscriber implements Subscriber {
   }
 
   @Override
-  public void waveletUpdate(ReadableWaveletData wavelet, DeltaSequence deltas) {
-    WaveletId waveletId = wavelet.getWaveletId();
-    // Find whether participants where added/removed and update the views
-    // accordingly.
-    for (TransformedWaveletDelta delta : deltas) {
-      for (WaveletOperation op : delta) {
-        if (op instanceof AddParticipant) {
-          ParticipantId user = ((AddParticipant) op).getParticipantId();
-          // Check first if we need to update views for this user.
-          if (explicitPerUserWaveViews.containsKey(user)) {
-            Multimap<WaveId, WaveletId> perUserView = explicitPerUserWaveViews.get(user);
-            WaveId waveId = wavelet.getWaveId();
-            if (!perUserView.containsEntry(waveId, waveletId)) {
-              perUserView.put(waveId, waveletId);
-              LOG.fine("Added wavelet: " + WaveletName.of(waveId, waveletId)
-                  + " to the view of user: " + user.getAddress());
-            }
-          }
-        } else if (op instanceof RemoveParticipant) {
-          ParticipantId user = ((RemoveParticipant) op).getParticipantId();
-          if (explicitPerUserWaveViews.containsKey(user)) {
-            Multimap<WaveId, WaveletId> perUserView = explicitPerUserWaveViews.get(user);
-            WaveId waveId = wavelet.getWaveId();
-            if (perUserView.containsEntry(waveId, waveletId)) {
-              perUserView.remove(waveId, waveletId);
-              LOG.fine("Removed wavelet: " + WaveletName.of(waveId, waveletId)
-                  + " from the view of user: " + user.getAddress());
-            }
-          }
-        }
+  public ListenableFuture<Void> onParticipantAdded(WaveletName waveletName, ParticipantId user) {
+    if (explicitPerUserWaveViews.containsKey(user)) {
+      Multimap<WaveId, WaveletId> perUserView = explicitPerUserWaveViews.get(user);
+      if (!perUserView.containsEntry(waveletName.waveId, waveletName.waveletId)) {
+        perUserView.put(waveletName.waveId, waveletName.waveletId);
+        LOG.fine("Added wavelet: " + waveletName + " to the view of user: " + user.getAddress());
       }
     }
+    SettableFuture<Void> task = SettableFuture.create();
+    task.set(null);
+    return task;
   }
 
   @Override
-  public void waveletCommitted(WaveletName waveletName, HashedVersion version) {
-    // No op.
+  public ListenableFuture<Void> onParticipantRemoved(WaveletName waveletName, ParticipantId user) {
+    if (explicitPerUserWaveViews.containsKey(user)) {
+      Multimap<WaveId, WaveletId> perUserView = explicitPerUserWaveViews.get(user);
+      if (perUserView.containsEntry(waveletName.waveId, waveletName.waveletId)) {
+        perUserView.remove(waveletName.waveId, waveletName.waveletId);
+        LOG.fine("Removed wavelet: " + waveletName
+            + " from the view of user: " + user.getAddress());
+      }
+    }
+    SettableFuture<Void> task = SettableFuture.create();
+    task.set(null);
+    return task;
   }
 
-  /**
-   * Returns the per user waves view.
-   */
-  public Multimap<WaveId, WaveletId> getPerUserWaveView(ParticipantId user) {
+  @Override
+  public Multimap<WaveId, WaveletId> retrievePerUserWaveView(ParticipantId user) {
     return explicitPerUserWaveViews.get(user);
+  }
+
+  @Override
+  public ListenableFuture<Void> onWaveInit(WaveletName waveletName) {
+    // No op.
+    SettableFuture<Void> task = SettableFuture.create();
+    task.set(null);
+    return task;
   }
 }

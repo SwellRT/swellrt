@@ -1,5 +1,5 @@
 /**
- * Copyright 2012 Apache Wave
+ * Copyright 2012 Apache Wave.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,30 +47,28 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implements {@link SearchProvider} by scanning in memory waves views.
+ * Search provider that reads user specific info from user data wavelet.
  *
  * @author yurize@apache.org (Yuri Zelikov)
  */
-public class MemorySearchProvider implements SearchProvider {
+public class SimpleSearchProviderImpl implements SearchProvider {
 
-  private static final Log LOG = Log.get(MemorySearchProvider.class);
+  private static final Log LOG = Log.get(SimpleSearchProviderImpl.class);
 
   private final WaveDigester digester;
   private final WaveMap waveMap;
 
   private final ParticipantId sharedDomainParticipantId;
 
-  private final PerUserWaveViewSubscriber subscriber;
+  private final PerUserWaveViewProvider waveViewProvider;
 
   @Inject
-  public MemorySearchProvider(WaveBus dispatcher,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
-      WaveDigester digester, final WaveMap waveMap, PerUserWaveViewSubscriber subscriber) {
+  public SimpleSearchProviderImpl(@Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
+      WaveDigester digester, final WaveMap waveMap, PerUserWaveViewProvider userWaveViewProvider) {
     this.digester = digester;
     this.waveMap = waveMap;
-    this.subscriber = subscriber;
+    this.waveViewProvider = userWaveViewProvider;
     sharedDomainParticipantId = ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(waveDomain);
-    dispatcher.subscribe(subscriber);
   }
 
   @Override
@@ -122,12 +120,12 @@ public class MemorySearchProvider implements SearchProvider {
       final boolean isAllQuery) {
     Multimap<WaveId, WaveletId> currentUserWavesView;
     currentUserWavesView = HashMultimap.create();
-    currentUserWavesView.putAll(subscriber.getPerUserWaveView(user));
+    currentUserWavesView.putAll(waveViewProvider.retrievePerUserWaveView(user));
     if (isAllQuery) {
       // If it is the "all" query - we need to include also waves view of the
       // shared domain participant.
-      currentUserWavesView.putAll(subscriber.getPerUserWaveView(sharedDomainParticipantId));
-    } 
+      currentUserWavesView.putAll(waveViewProvider.retrievePerUserWaveView(sharedDomainParticipantId));
+    }
     return currentUserWavesView;
   }
 

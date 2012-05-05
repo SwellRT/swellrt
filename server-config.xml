@@ -28,6 +28,8 @@
   <property name="enable_ssl" value="false" />
   <property name="ssl_keystore_path" value="wiab.ks" />
   <property name="ssl_keystore_password" value="changeme" />
+  <property name="search_type" value="lucene" />
+  <property name="index_directory" value="_indexes" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -95,6 +97,8 @@
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
           <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />
+          <token key="SEARCH_TYPE" value="${search_type}" />
+          <token key="INDEX_DIRECTORY" value="${index_directory}" />
         </replacetokens>
       </filterchain>
     </copy>

@@ -78,6 +78,7 @@ public class ServerModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    bind(WaveServerImpl.class).in(Singleton.class);
     // Receive updates from the outside world, and push them into our local Wave
     // Server.
     bind(WaveletFederationListener.Factory.class).annotatedWith(FederationRemoteBridge.class).to(

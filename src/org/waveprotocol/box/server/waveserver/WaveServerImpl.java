@@ -54,6 +54,7 @@ import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Collection;
@@ -66,7 +67,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The main class that services the FederationHost, FederationRemote and ClientFrontend.
  */
 @Singleton
-public class WaveServerImpl implements WaveletProvider,
+public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvider,
     WaveletFederationProvider, WaveletFederationListener.Factory {
 
   private static final Log LOG = Log.get(WaveServerImpl.class);
@@ -280,7 +281,6 @@ public class WaveServerImpl implements WaveletProvider,
   @Override
   public void initialize() throws WaveServerException {
     Preconditions.checkState(!initialized, "Wave server already initialized");
-    waveMap.loadAllWavelets();
     initialized = true;
   }
 
@@ -320,6 +320,12 @@ public class WaveServerImpl implements WaveletProvider,
     } else {
       return wavelet.getSnapshot();
     }
+  }
+
+  @Override
+  public ReadableWaveletData getReadableWaveletData(WaveletName waveletName)
+      throws WaveServerException {
+    return getSnapshot(waveletName).snapshot;
   }
 
   @Override

@@ -102,8 +102,8 @@ public class WaveServerModule extends AbstractModule {
     bind(CertificateManager.class).to(CertificateManagerImpl.class).in(Singleton.class);
     bind(DeltaAndSnapshotStore.class).to(DeltaStoreBasedSnapshotStore.class).in(Singleton.class);
     bind(WaveMap.class).in(Singleton.class);
-    bind(SearchProvider.class).to(MemorySearchProvider.class).in(Singleton.class);
     bind(WaveletProvider.class).to(WaveServerImpl.class).asEagerSingleton();
+    bind(ReadableWaveletDataProvider.class).to(WaveServerImpl.class).in(Singleton.class);
     bind(HashedVersionFactory.class).toInstance(HASH_FACTORY);
     bind(Executor.class).annotatedWith(Names.named("listener_executor")).toInstance(
         Executors.newFixedThreadPool(listenerExecutorThreadCount));
