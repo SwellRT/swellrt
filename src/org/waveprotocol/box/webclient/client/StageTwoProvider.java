@@ -19,7 +19,6 @@
 package org.waveprotocol.box.webclient.client;
 
 import com.google.common.base.Preconditions;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 
 import org.waveprotocol.wave.client.StageOne;
@@ -27,6 +26,7 @@ import org.waveprotocol.wave.client.StageTwo;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
+import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
@@ -65,8 +65,8 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       boolean isNewWave, IdGenerator idGenerator, ProfileManager profiles,
-      Element unsavedIndicatorElement) {
-    super(stageOne, unsavedIndicatorElement);
+      UnsavedDataListener unsavedDataListener) {
+    super(stageOne, unsavedDataListener);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
     Preconditions.checkArgument(waveRef.getWaveId() != null);

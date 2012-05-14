@@ -15,11 +15,10 @@
  *
  */
 
-package org.waveprotocol.wave.client.wavepanel.impl.title;
+package org.waveprotocol.box.webclient.client;
 
 import com.google.gwt.user.client.Window;
 
-import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.box.webclient.search.WaveContext;
 import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;

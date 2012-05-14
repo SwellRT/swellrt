@@ -36,7 +36,6 @@ import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusBlipSelector;
 import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusFramePresenter;
 import org.waveprotocol.wave.client.wavepanel.impl.focus.ViewTraverser;
 import org.waveprotocol.wave.client.wavepanel.impl.reader.Reader;
-import org.waveprotocol.wave.client.wavepanel.impl.title.WindowTitleHandler;
 import org.waveprotocol.wave.client.wavepanel.view.BlipView;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.BlipQueueRenderer;
@@ -127,8 +126,8 @@ public class StagesProvider extends Stages {
 
   @Override
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
-    return haltIfClosed(new StageTwoProvider(
-        this.one = one, waveRef, channel, isNewWave, idGenerator, profiles, unsavedIndicatorElement));
+    return haltIfClosed(new StageTwoProvider(this.one = one, waveRef, channel, isNewWave,
+        idGenerator, profiles, new SavedStateIndicator(unsavedIndicatorElement)));
   }
 
   @Override

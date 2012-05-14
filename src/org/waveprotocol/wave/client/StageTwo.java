@@ -19,7 +19,6 @@ import com.google.common.base.Preconditions;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Command;
 
-import org.waveprotocol.box.webclient.client.SavedStateIndicator;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
@@ -239,11 +238,11 @@ public interface StageTwo {
     private DiffController diffController;
     private Reader reader;
 
-    private final Element unsavedIndicatorElement;
+    private final UnsavedDataListener unsavedDataListener;
 
-    public DefaultProvider(StageOne stageOne, Element unsavedIndicatorElement) {
+    public DefaultProvider(StageOne stageOne, UnsavedDataListener unsavedDataListener) {
       this.stageOne = stageOne;
-      this.unsavedIndicatorElement = unsavedIndicatorElement;
+      this.unsavedDataListener = unsavedDataListener;
     }
 
     /**
@@ -532,8 +531,7 @@ public interface StageTwo {
       ViewChannelFactory viewFactory = ViewChannelImpl.factory(createWaveViewService(), logger);
       UnsavedDataListenerFactory unsyncedListeners = new UnsavedDataListenerFactory() {
 
-        private final UnsavedDataListener listener = new SavedStateIndicator(
-            unsavedIndicatorElement);
+        private final UnsavedDataListener listener = unsavedDataListener;
 
         @Override
         public UnsavedDataListener create(WaveletId waveletId) {
