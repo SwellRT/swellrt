@@ -226,6 +226,9 @@ public enum KeyCombo {
   /***/
   ORDER_K,
 
+  /***/
+  ORDER_SHIFT_K,
+
   /** Formatting combos */
   ORDER_B,
 

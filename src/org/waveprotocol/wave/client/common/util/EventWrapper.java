@@ -172,6 +172,7 @@ public class EventWrapper {
         put('Q' + orderKey, KeyCombo.ORDER_Q);
         put('R' + orderKey + SHIFT, KeyCombo.ORDER_SHIFT_R);
         put('V' + orderKey + SHIFT, KeyCombo.ORDER_SHIFT_V);
+        put('K' + orderKey + SHIFT, KeyCombo.ORDER_SHIFT_K);
 
         // Plaintext paste in Safari
         put('V' | orderKey | ALT | SHIFT, KeyCombo.ORDER_ALT_SHIFT_V);

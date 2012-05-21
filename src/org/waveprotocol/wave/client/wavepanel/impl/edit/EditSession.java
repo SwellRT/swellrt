@@ -17,6 +17,7 @@
 package org.waveprotocol.wave.client.wavepanel.impl.edit;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import org.waveprotocol.wave.client.common.util.EventWrapper;
@@ -27,6 +28,8 @@ import org.waveprotocol.wave.client.common.util.SignalEvent;
 import org.waveprotocol.wave.client.debug.logger.LogLevel;
 import org.waveprotocol.wave.client.doodad.selection.SelectionExtractor;
 import org.waveprotocol.wave.client.editor.Editor;
+import org.waveprotocol.wave.client.editor.EditorAction;
+import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.EditorSettings;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
@@ -37,6 +40,7 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wavepanel.WavePanel;
 import org.waveprotocol.wave.client.wavepanel.impl.WavePanelImpl;
 import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusFramePresenter;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.LinkerHelper;
 import org.waveprotocol.wave.client.wavepanel.view.BlipView;
 import org.waveprotocol.wave.client.wavepanel.view.IntrinsicBlipMetaView.MenuOption;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
@@ -153,6 +157,18 @@ public final class EditSession
     container.doAdopt(editor.getWidget());
     editor.init(null, KEY_BINDINGS, EDITOR_SETTINGS);
     editor.addKeySignalListener(this);
+    KEY_BINDINGS.registerAction(KeyCombo.ORDER_K, new EditorAction() {
+      @Override
+      public void execute(EditorContext context) {
+        LinkerHelper.onCreateLink(context);
+      }
+    });
+    KEY_BINDINGS.registerAction(KeyCombo.ORDER_SHIFT_K, new EditorAction() {
+      @Override
+      public void execute(EditorContext context) {
+        LinkerHelper.onClearLink(context);
+      }
+    });
     editor.setEditing(true);
     editor.focus(false);
     editing = blipUi;
