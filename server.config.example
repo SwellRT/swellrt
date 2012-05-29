@@ -71,10 +71,6 @@ delta_store_directory = @DELTA_STORE_DIRECTORY@
 # Default value: _sessions
 sessions_store_directory = @SESSIONS_STORE_DIRECTORY@
 
-# Set false to use raw WebSockets instead of Socket.IO (still a bit experimental) in the webclient
-# Default value: true
-use_socketio = @USE_SOCKETIO@
-
 # Note: the default value for admin is an invalid user id that cannot be registered.
 # To become an admin: Register a user and set its address as the value below.
 # Admin has a privilege to change passwords of other users using an agent robot.

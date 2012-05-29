@@ -32,7 +32,6 @@
   <gxp:param name='sessionJson' type='JSONObject' />
   <gxp:param name='clientFlags' type='JSONObject' />
   <gxp:param name='topBar' type='HtmlClosure' />
-  <gxp:param name='useSocketIO' type='boolean' />
   <gxp:param name='analyticsAccount' type='String'/>
 
   <!-- Generate doctype to trigger standards mode -->
@@ -46,7 +45,6 @@
       <script type="text/javascript" language="javascript">
         var __session = <gxp:eval expr='sessionJson' />;
         var __client_flags = <gxp:eval expr='clientFlags' />;
-        var __useSocketIO = <gxp:eval expr='useSocketIO' />;
       </script>
       <style type="text/css">
         /* TODO: Minimize this. */

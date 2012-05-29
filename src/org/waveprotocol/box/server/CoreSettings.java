@@ -44,7 +44,6 @@ public class CoreSettings {
   public static final String DELTA_STORE_DIRECTORY = "delta_store_directory";
   public static final String SESSIONS_STORE_DIRECTORY = "sessions_store_directory";
   public static final String FLASHSOCKET_POLICY_PORT = "flashsocket_policy_port";
-  public static final String USE_SOCKETIO = "use_socketio";
   public static final String GADGET_SERVER_HOSTNAME = "gadget_server_hostname";
   public static final String GADGET_SERVER_PORT = "gadget_server_port";
   public static final String GADGET_SERVER_PATH = "gadget_server_path";
@@ -140,10 +139,6 @@ public class CoreSettings {
       description = "Port on which to listen for Flashsocket policy requests.",
       defaultValue = "843")
   private static int flashsocketPolicyPort;
-
-  @Setting(name = USE_SOCKETIO,
-      description = "Enable use of Socket.IO instead of native WebSockets", defaultValue = "false")
-  private static boolean useSocketIO;
 
   @Setting(name = GADGET_SERVER_HOSTNAME, description = "The hostname of the gadget server.",
       defaultValue = "gmodules.com")
