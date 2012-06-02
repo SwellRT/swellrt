@@ -63,7 +63,6 @@ public final class WindowTitleHandler implements WaveStore.Listener {
       windowTitle = DEFAULT_TITLE;
     }
     Window.setTitle(windowTitle);
-    waveFrame.setTitle(waveTitle);
     waveFrame.setTitleText(waveTitle);
   }
 
