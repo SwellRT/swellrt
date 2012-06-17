@@ -482,7 +482,7 @@
         <path location="${build.proto.dir}"/>
         <path location="${build.messages.dir}"/>
       </classpath>
-      <jvmarg value="-Dorg.eclipse.jetty.util.log.DEBUG=true"/>
+      <jvmarg value="-Dorg.eclipse.jetty.LEVEL=DEBUG"/>
       <jvmarg value="-Djava.security.auth.login.config=jaas.config"/>
       <jvmarg value="-Dwave.server.config=server.config"/>
     </java>
@@ -497,7 +497,7 @@
         <path location="${build.proto.dir}"/>
         <path location="${build.messages.dir}"/>
       </classpath>
-      <jvmarg value="-Dorg.eclipse.jetty.util.log.DEBUG=true"/>
+      <jvmarg value="-Dorg.eclipse.jetty.LEVEL=DEBUG"/>
       <jvmarg value="-Djava.security.auth.login.config=jaas.config"/>
       <jvmarg value="-Dwave.server.config=server.config"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=10898"/>

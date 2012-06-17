@@ -15,7 +15,7 @@ WAVEINABOX_VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" build.properties | grep ^waveina
 . process-script-args.sh
 
 exec java $DEBUG_FLAGS \
-  -Dorg.eclipse.jetty.util.log.DEBUG=true \
+  -Dorg.eclipse.jetty.LEVEL=DEBUG \
   -Djava.security.auth.login.config=jaas.config \
   -Dwave.server.config=server.config \
   -jar dist/waveinabox-server-$WAVEINABOX_VERSION.jar
