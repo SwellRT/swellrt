@@ -44,6 +44,8 @@ public class CoreSettings {
   public static final String DELTA_STORE_DIRECTORY = "delta_store_directory";
   public static final String SESSIONS_STORE_DIRECTORY = "sessions_store_directory";
   public static final String FLASHSOCKET_POLICY_PORT = "flashsocket_policy_port";
+  public static final String WEBSOCKET_MAX_MESSAGE_SIZE = "websocket_max_message_size";
+  public static final String WEBSOCKET_MAX_IDLE_TIME = "websocket_max_idle_time";
   public static final String GADGET_SERVER_HOSTNAME = "gadget_server_hostname";
   public static final String GADGET_SERVER_PORT = "gadget_server_port";
   public static final String GADGET_SERVER_PATH = "gadget_server_path";
@@ -139,6 +141,14 @@ public class CoreSettings {
       description = "Port on which to listen for Flashsocket policy requests.",
       defaultValue = "843")
   private static int flashsocketPolicyPort;
+
+  @Setting(name = WEBSOCKET_MAX_IDLE_TIME,
+      description = "The time in ms that the websocket connection can be idle before closing", defaultValue = "0")
+  private static int websocketMaxIdleTime;
+
+  @Setting(name = WEBSOCKET_MAX_MESSAGE_SIZE,
+      description = "Maximum websocket message size to be received in MB", defaultValue = "2")
+  private static int websocketMaxMessageSize;
 
   @Setting(name = GADGET_SERVER_HOSTNAME, description = "The hostname of the gadget server.",
       defaultValue = "gmodules.com")

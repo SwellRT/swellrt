@@ -71,6 +71,14 @@ delta_store_directory = @DELTA_STORE_DIRECTORY@
 # Default value: _sessions
 sessions_store_directory = @SESSIONS_STORE_DIRECTORY@
 
+# The time in ms that the websocket connection can be idle before closing
+# Default value: 0
+websocket_max_idle_time = @WEBSOCKET_MAX_IDLE_TIME@
+
+# Maximum websocket message size to be received in MB
+# Default value: 2
+websocket_max_message_size = @WEBSOCKET_MAX_MESSAGE_SIZE@
+
 # Note: the default value for admin is an invalid user id that cannot be registered.
 # To become an admin: Register a user and set its address as the value below.
 # Admin has a privilege to change passwords of other users using an agent robot.
