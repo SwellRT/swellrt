@@ -9,11 +9,14 @@
   <entry-point class="org.waveprotocol.wave.client.testing.UndercurrentHarness" />
   <source path=""/>
 
-<!-- Those comments beginning with the words "comment" or "Uncomment" have
+  <!-- Those comments beginning with the words "comment" or "Uncomment" have
      special meaning to the PRESUBMIT.py script. -->
-<!-- comment out the next line to build all client types -->
+  <!-- comment out the next line to build all client types -->
 
-<set-property name="loglevel" value="none"/>
-<set-property name="compiler.emulatedStack" value="false"/>
+  <set-property name="loglevel" value="none"/>
+  <set-property name="compiler.emulatedStack" value="false"/>
+
+  <!-- For make CSS obfuscation more pretty -->
+  <set-configuration-property name="CssResource.style" value="pretty"/>
 
 </module>
