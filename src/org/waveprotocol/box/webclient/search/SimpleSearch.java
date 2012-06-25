@@ -79,7 +79,8 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
     void activate(WaveContext wave) {
       Preconditions.checkState(dynamicDigest == null);
       dynamicDigest = WaveBasedDigest.create(wave, staticDigest);
-      dynamicDigest.addListener(this);
+      // TODO(vjrj) add the listener again when this issue is addressed:
+      // https://issues.apache.org/jira/browse/WAVE-354
       fireOnChanged();
     }
 
