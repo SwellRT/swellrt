@@ -27,14 +27,14 @@ import java.util.Set;
 public interface IntrinsicBlipMetaView {
 
   enum MenuOption {
-    /** Option to edit this blip. */
-    EDIT,
     /** Option to reply to this blip. */
     REPLY,
     /** Option to delete this blip. */
     DELETE,
     /** Option to link to this blip. */
-    LINK, ;
+    LINK,
+    /** Option to edit this blip. */
+    EDIT,;
   }
 
   /**
