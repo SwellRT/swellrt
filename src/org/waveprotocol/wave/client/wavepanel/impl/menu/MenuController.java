@@ -19,6 +19,7 @@ package org.waveprotocol.wave.client.wavepanel.impl.menu;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.user.client.Window;
 
 import org.waveprotocol.wave.client.wavepanel.WavePanel;
 import org.waveprotocol.wave.client.wavepanel.event.WaveClickHandler;
@@ -73,7 +74,10 @@ public final class MenuController implements WaveClickHandler {
         actions.reply(item.getParent().getParent());
         break;
       case DELETE:
-        actions.delete(item.getParent().getParent());
+        // We delete the blip without confirmation if shift key is pressed
+        if (event.getNativeEvent().getShiftKey()
+            || Window.confirm("Please confirm the deletion of this message"))
+          actions.delete(item.getParent().getParent());
         break;
       case LINK:
         actions.popupLink(item.getParent().getParent());
