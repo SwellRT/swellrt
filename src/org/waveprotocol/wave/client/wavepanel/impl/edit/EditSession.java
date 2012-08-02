@@ -222,11 +222,7 @@ public final class EditSession
 
   @Override
   public void onFocusMoved(BlipView oldUi, BlipView newUi) {
-    boolean wasEditing = isEditing();
     endSession();
-    if (wasEditing && newUi != null) {
-      startEditing(newUi);
-    }
   }
 
   @Override
