@@ -33,7 +33,7 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
  *
  */
 public final class FocusFramePresenter
-    implements SourcesEvents<FocusFramePresenter.Listener>, WavePanelImpl.LifecycleListener {
+    implements BlipEditStatusListener, SourcesEvents<FocusFramePresenter.Listener>, WavePanelImpl.LifecycleListener {
 
   public interface Listener {
     void onFocusMoved(BlipView oldUi, BlipView newUi);
@@ -237,5 +237,14 @@ public final class FocusFramePresenter
   /** @return the view that is currently focused. */
   public BlipView getFocusedBlip() {
     return blip;
+  }
+
+  /**
+   * Sets the blip style depending on if is editing or not.
+   *
+   * @param editing the new editing
+   */
+  public void setEditing(boolean editing) {
+    view.setEditing(editing);
   }
 }

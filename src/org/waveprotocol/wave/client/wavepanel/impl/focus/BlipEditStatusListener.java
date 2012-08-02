@@ -1,5 +1,5 @@
 /**
- * Copyright 2010 Google Inc.
+ * Copyright 2012 Apache Wave
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,17 @@
  * limitations under the License.
  *
  */
-package org.waveprotocol.wave.client.wavepanel.view;
+package org.waveprotocol.wave.client.wavepanel.impl.focus;
 
 /**
- * View for a focus frame that highlights the document in a blip.
- *
+ * The listener interface for receiving edit blip focus events.
  */
-public interface FocusFrameView {
-   void setEditing(boolean editing);
+public interface BlipEditStatusListener {
+
+  /**
+   * Sets the blip editing focus.
+   *
+   * @param editing set if the blip is beeing editing or not.
+   */
+  void setEditing(boolean editing);
 }

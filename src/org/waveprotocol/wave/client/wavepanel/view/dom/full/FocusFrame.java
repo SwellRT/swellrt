@@ -38,6 +38,10 @@ import org.waveprotocol.wave.client.wavepanel.view.FocusFrameView;
  */
 public final class FocusFrame implements FocusFrameView {
 
+  public interface CssEditingResource extends CssResource {
+    String editing();
+  }
+
   @UiTemplate("FocusFrameIE.ui.xml")
   interface IeBinder extends UiBinder<DivElement, FocusFrame> {
 
@@ -118,7 +122,7 @@ public final class FocusFrame implements FocusFrameView {
     }
 
     /** CSS for this widget. */
-    public interface Css extends CssResource {
+    public interface Css extends CssEditingResource {
       // Button categories
       String editorButton();
 
@@ -168,7 +172,7 @@ public final class FocusFrame implements FocusFrameView {
     }
 
     /** CSS for this widget. */
-    public interface Css extends CssResource {
+    public interface Css extends CssEditingResource {
       String focus();
     }
 
@@ -177,7 +181,7 @@ public final class FocusFrame implements FocusFrameView {
     Css3Binder INSTANCE = GWT.create(Css3Binder.class);
   }
 
-  private static final CssResource css =
+  private static final CssEditingResource css =
       UserAgent.isIE() ? IeBinder.res.css() : Css3Binder.res.css();
   private static final UiBinder<DivElement, FocusFrame> BINDER =
       UserAgent.isIE() ? IeBinder.INSTANCE : Css3Binder.INSTANCE;
@@ -186,6 +190,8 @@ public final class FocusFrame implements FocusFrameView {
     StyleInjector.inject(css.getText(), true);
   }
 
+  @UiField
+  DivElement frame;
   private final Element element;
 
   /**
@@ -197,5 +203,15 @@ public final class FocusFrame implements FocusFrameView {
 
   public Element getElement() {
     return element;
+  }
+
+  @Override
+  public void setEditing(boolean editing) {
+    if (editing) {
+      frame.addClassName(css.editing());
+    }
+    else {
+      frame.removeClassName(css.editing());
+    }
   }
 }

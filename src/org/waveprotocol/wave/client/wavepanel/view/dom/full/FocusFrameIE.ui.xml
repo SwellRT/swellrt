@@ -6,7 +6,7 @@
     xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
     >
   <ui:with field='res' type='org.waveprotocol.wave.client.wavepanel.view.dom.full.FocusFrame.IeBinder.Resources'/>
-  <div>
+  <div ui:field='frame'>
     <div class='{res.css.display}'>
       <div class='{res.css.northWest}'></div>
       <div class='{res.css.north}'></div>

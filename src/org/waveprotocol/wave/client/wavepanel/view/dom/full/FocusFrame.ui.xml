@@ -6,6 +6,6 @@
     xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
     >
   <ui:with field='res' type='org.waveprotocol.wave.client.wavepanel.view.dom.full.FocusFrame.Css3Binder.Resources'/>
-  <div class='{res.css.focus}'>
+  <div ui:field='frame' class='{res.css.focus}'>
   </div>
 </ui:UiBinder>
