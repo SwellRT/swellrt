@@ -34,7 +34,9 @@ public interface IntrinsicBlipMetaView {
     /** Option to link to this blip. */
     LINK,
     /** Option to edit this blip. */
-    EDIT,;
+    EDIT,
+    /** Option to finish edit this blip. */
+    EDIT_DONE,;
   }
 
   /**

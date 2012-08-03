@@ -46,6 +46,7 @@ import java.util.Set;
  */
 public final class BlipMetaViewBuilder implements UiBuilder, IntrinsicBlipMetaView {
 
+
   /** An enum for all the components of a blip view. */
   public enum Components implements Component {
     /** The avatar element. */
@@ -85,17 +86,23 @@ public final class BlipMetaViewBuilder implements UiBuilder, IntrinsicBlipMetaVi
 
   public static final String OPTION_ID_ATTRIBUTE = "o";
   public static final String OPTION_SELECTED_ATTRIBUTE = "s";
-  public final static Set<MenuOption> DISABLED_WHILE_EDITING_MENU_OPTIONS_SET = EnumSet.of(
+  private static final EnumSet<MenuOption> MENU_OPTIONS_BEFORE_EDITING = EnumSet.of(
       IntrinsicBlipMetaView.MenuOption.REPLY, IntrinsicBlipMetaView.MenuOption.DELETE,
+      IntrinsicBlipMetaView.MenuOption.EDIT,
       IntrinsicBlipMetaView.MenuOption.LINK);
+  public final static Set<MenuOption> ENABLED_WHILE_EDITING_MENU_OPTIONS_SET = EnumSet.of(
+      IntrinsicBlipMetaView.MenuOption.EDIT_DONE);
+  public final static Set<MenuOption> DISABLED_WHILE_EDITING_MENU_OPTIONS_SET = MENU_OPTIONS_BEFORE_EDITING;
 
 
   static {
     MENU_CODES.put(MenuOption.EDIT, EscapeUtils.fromSafeConstant("e"));
+    MENU_CODES.put(MenuOption.EDIT_DONE, EscapeUtils.fromSafeConstant("x"));
     MENU_CODES.put(MenuOption.REPLY, EscapeUtils.fromSafeConstant("r"));
     MENU_CODES.put(MenuOption.DELETE, EscapeUtils.fromSafeConstant("d"));
     MENU_CODES.put(MenuOption.LINK, EscapeUtils.fromSafeConstant("l"));
     MENU_LABELS.put(MenuOption.EDIT, EscapeUtils.fromSafeConstant("Edit"));
+    MENU_LABELS.put(MenuOption.EDIT_DONE, EscapeUtils.fromSafeConstant("Done"));
     MENU_LABELS.put(MenuOption.REPLY, EscapeUtils.fromSafeConstant("Reply"));
     MENU_LABELS.put(MenuOption.DELETE, EscapeUtils.fromSafeConstant("Delete"));
     MENU_LABELS.put(MenuOption.LINK, EscapeUtils.fromSafeConstant("Link"));
@@ -121,7 +128,7 @@ public final class BlipMetaViewBuilder implements UiBuilder, IntrinsicBlipMetaVi
   private String metaline;
   private String avatarUrl;
   private boolean read = true;
-  private final Set<MenuOption> options = EnumSet.allOf(MenuOption.class);
+  private final Set<MenuOption> options = MENU_OPTIONS_BEFORE_EDITING;
   private final Set<MenuOption> selected = EnumSet.noneOf(MenuOption.class);
 
   //

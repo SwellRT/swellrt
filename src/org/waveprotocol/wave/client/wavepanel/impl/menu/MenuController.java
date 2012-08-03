@@ -64,11 +64,10 @@ public final class MenuController implements WaveClickHandler {
     BlipMenuItemView item = panel.asBlipMenuItem(context);
     switch (item.getOption()) {
       case EDIT:
-        if (item.isSelected()) {
-          actions.stopEditing();
-        } else {
-          actions.startEditing(item.getParent().getParent());
-        }
+        actions.startEditing(item.getParent().getParent());
+        break;
+      case EDIT_DONE:
+        actions.stopEditing();
         break;
       case REPLY:
         actions.reply(item.getParent().getParent());
