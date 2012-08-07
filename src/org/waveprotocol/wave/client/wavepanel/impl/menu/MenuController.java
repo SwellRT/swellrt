@@ -18,11 +18,11 @@ package org.waveprotocol.wave.client.wavepanel.impl.menu;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Window;
 
 import org.waveprotocol.wave.client.wavepanel.WavePanel;
-import org.waveprotocol.wave.client.wavepanel.event.WaveClickHandler;
+import org.waveprotocol.wave.client.wavepanel.event.WaveMouseDownHandler;
 import org.waveprotocol.wave.client.wavepanel.impl.edit.Actions;
 import org.waveprotocol.wave.client.wavepanel.view.BlipMenuItemView;
 import org.waveprotocol.wave.client.wavepanel.view.View.Type;
@@ -33,7 +33,7 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.full.TypeCodes;
  * Interprets user gestures on blip menu items.
  *
  */
-public final class MenuController implements WaveClickHandler {
+public final class MenuController implements WaveMouseDownHandler {
   private final DomAsViewProvider panel;
   private final Actions actions;
 
@@ -53,11 +53,11 @@ public final class MenuController implements WaveClickHandler {
    */
   public static void install(Actions handler, WavePanel panel) {
     MenuController controller = new MenuController(handler, panel.getViewProvider());
-    panel.getHandlers().registerClickHandler(TypeCodes.kind(Type.MENU_ITEM), controller);
+    panel.getHandlers().registerMouseDownHandler(TypeCodes.kind(Type.MENU_ITEM), controller);
   }
 
   @Override
-  public boolean onClick(ClickEvent event, Element context) {
+  public boolean onMouseDown(MouseDownEvent event, Element context) {
     if (event.getNativeButton() != NativeEvent.BUTTON_LEFT) {
       return false;
     }
