@@ -82,7 +82,7 @@ public class GadgetWidget extends ObservableSupplementedWave.ListenerImpl
 
   private static final String GADGET_RELAY_PATH = "gadgets/files/container/rpc_relay.html";
   private static final int DEFAULT_HEIGHT_PX = 100;
-  private static final int DEFAULT_WIDTH_PX = 600;
+  private static final String DEFAULT_WIDTH = "99%";
 
   /**
    * Helper class to analyze element changes in the gadget state and prefs.
@@ -939,7 +939,7 @@ public class GadgetWidget extends ObservableSupplementedWave.ListenerImpl
     if (width > 0){
       setIframeWidth(String.valueOf(width));
     } else {
-      setIframeWidth(String.valueOf(DEFAULT_WIDTH_PX));
+      setIframeWidth(DEFAULT_WIDTH);
     }
   }
 
@@ -1340,13 +1340,21 @@ public class GadgetWidget extends ObservableSupplementedWave.ListenerImpl
       return;
     }
     log("Set IFrame width ", width);
-    try {
-      int widthValue = parseSizeString(width);
-      ui.setIframeWidth(widthValue + "px");
+    if (width.contains("%")) {
+      ui.setIframeWidth(width);
       ui.makeInline();
-      scheduleGadgetAttributeUpdate(LAST_KNOWN_WIDTH_ATTRIBUTE, Long.toString(widthValue));
-    } catch (NumberFormatException e) {
-      log("Invalid width (ignored): ", width);
+      scheduleGadgetAttributeUpdate(LAST_KNOWN_WIDTH_ATTRIBUTE, width);
+    } else {
+      try {
+        int widthValue = parseSizeString(width);
+        if (widthValue > 0) {
+          ui.setIframeWidth(widthValue + "px");
+        }
+        ui.makeInline();
+        scheduleGadgetAttributeUpdate(LAST_KNOWN_WIDTH_ATTRIBUTE, Long.toString(widthValue));
+      } catch (NumberFormatException e) {
+        log("Invalid width (ignored): ", width);
+      }
     }
   }
 
