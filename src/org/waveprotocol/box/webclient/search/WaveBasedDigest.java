@@ -161,6 +161,7 @@ public final class WaveBasedDigest
     }
   }
 
+  @SuppressWarnings("unused")
   private void invalidateLmt() {
     lastModified = NO_TIME;
   }
@@ -248,10 +249,8 @@ public final class WaveBasedDigest
 
   @Override
   public void onLastModifiedTimeChanged(ObservableWavelet wavelet, long oldTime, long newTime) {
-    if (oldTime >= lastModified || lastModified <= newTime) {
-      invalidateLmt();
-      fireOnChanged();
-    }
+    // TODO (Yuri Z.): Invoke fireOnChanged() here in case lastModifiedTime changed after solving
+    // the issue https://issues.apache.org/jira/browse/WAVE-354.
   }
 
   @Override
