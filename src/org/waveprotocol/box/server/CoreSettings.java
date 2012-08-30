@@ -28,6 +28,7 @@ import java.util.List;
 public class CoreSettings {
   public static final String WAVE_SERVER_DOMAIN = "wave_server_domain";
   public static final String HTTP_FRONTEND_PUBLIC_ADDRESS = "http_frontend_public_address";
+  public static final String HTTP_WEBSOCKET_PUBLIC_ADDRESS = "http_websocket_public_address";
   public static final String HTTP_FRONTEND_ADDRESSES = "http_frontend_addresses";
   public static final String RESOURCE_BASES = "resource_bases";
   public static final String WAVESERVER_DISABLE_VERIFICATION = "waveserver_disable_verification";
@@ -71,6 +72,10 @@ public class CoreSettings {
   @Setting(name = HTTP_FRONTEND_PUBLIC_ADDRESS, defaultValue = "localhost:9898",
       description = "The server's public address.")
   private static String httpFrontEndPublicAddress;
+
+  @Setting(name = HTTP_WEBSOCKET_PUBLIC_ADDRESS, defaultValue = "localhost:9898",
+      description = "The server's websocket public address.")
+  private static String httpWebsocketPublicAddress;
 
   @Setting(name = HTTP_FRONTEND_ADDRESSES, defaultValue = "localhost:9898",
       description = "A comman seperated list of address on which to listen for connections."

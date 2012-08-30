@@ -31,6 +31,7 @@
   <gxp:import class="org.waveprotocol.box.server.gxp.TopBar" />
   <gxp:param name='sessionJson' type='JSONObject' />
   <gxp:param name='clientFlags' type='JSONObject' />
+  <gxp:param name='websocketAddress' type='String' />
   <gxp:param name='topBar' type='HtmlClosure' />
   <gxp:param name='analyticsAccount' type='String'/>
 
@@ -44,6 +45,7 @@
       <!-- Session variables. -->
       <script type="text/javascript" language="javascript">
         var __session = <gxp:eval expr='sessionJson' />;
+        var __websocket_address = <gxp:eval expr='websocketAddress' />;
         var __client_flags = <gxp:eval expr='clientFlags' />;
       </script>
       <style type="text/css">

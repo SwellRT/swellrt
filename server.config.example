@@ -14,6 +14,12 @@ wave_server_domain = @WAVE_SERVER_DOMAIN@
 # Default value: localhost:9898
 http_frontend_public_address = @HTTP_FRONTEND_PUBLIC_ADDRESS@
 
+# A optional host:port address on which to listen for websocket connections.
+# If no value is set for http_websocket_public_address it defaults to the first address specified
+# by http_frontend_public_address.
+# Default value: localhost:9898
+http_websocket_public_address = @HTTP_WEBSOCKET_PUBLIC_ADDRESS@
+
 # Default value: values passed to http_frontend_public_address.
 http_frontend_addresses = @HTTP_FRONTEND_ADDRESSES@
 
