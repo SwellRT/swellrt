@@ -24,6 +24,7 @@ import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
+import org.waveprotocol.wave.client.common.util.DateUtils;
 import org.waveprotocol.wave.client.concurrencycontrol.LiveChannelBinder;
 import org.waveprotocol.wave.client.concurrencycontrol.MuxConnector;
 import org.waveprotocol.wave.client.concurrencycontrol.WaveletOperationalizer;
@@ -585,7 +586,7 @@ public interface StageTwo {
 
     /** @return the renderer of intrinsic blip state. Subclasses may override. */
     protected ShallowBlipRenderer createBlipDetailer() {
-      return new UndercurrentShallowBlipRenderer(getProfileManager(), getSupplement());
+      return new UndercurrentShallowBlipRenderer(getProfileManager(), getSupplement(), DateUtils.getInstance());
     }
 
     /** @return the thread state monitor. Subclasses may override. */
