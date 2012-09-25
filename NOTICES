@@ -1,0 +1,19 @@
+Apache Wave
+      Copyright 2012 The Apache Software Foundation
+
+      This product includes software developed at
+      -The Apache Software Foundation (http://www.apache.org/)
+      -the DOM4J Project (http://www.dom4j.org)
+      -the JDOM Project (http://www.jdom.org/)
+      -Joda.org (http://www.joda.org/)
+
+
+
+Mockito uses:
+-Cglib - Apache License 2.0
+-ASM - BSD license
+
+Mockito all distribution uses:
+-Objenesis - MIT license
+-Hamcrest - BSD license
+
