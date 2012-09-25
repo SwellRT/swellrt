@@ -32,6 +32,11 @@ http_frontend_public_address = @HTTP_FRONTEND_PUBLIC_ADDRESS@
 # Default value: localhost:9898
 http_websocket_public_address = @HTTP_WEBSOCKET_PUBLIC_ADDRESS@
 
+# An optional host:port address for which the client is told to attempt websocket connections.
+# If no value is set for http_websocket_presented_address it defaults to http_websocket_public_address
+# Default value: localhost:9898
+http_websocket_presented_address = @HTTP_WEBSOCKET_PRESENTED_ADDRESS@
+
 # Default value: values passed to http_frontend_public_address.
 http_frontend_addresses = @HTTP_FRONTEND_ADDRESSES@
 

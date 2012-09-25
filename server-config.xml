@@ -5,6 +5,7 @@
   <property name="wave_server_domain" value="local.net" />
   <property name="http_frontend_public_address" value="localhost:9898" />
   <property name="http_websocket_public_address" value="${http_frontend_public_address}" />
+  <property name="http_websocket_presented_address" value="${http_frontend_public_address}" />
   <property name="http_frontend_addresses" value="${http_frontend_public_address}" />
   <property name="resource_bases" value="./war" />
   <property name="signer_info_store_type" value="file" />
@@ -74,6 +75,8 @@
                  value="${http_frontend_public_address}" />
           <token key="HTTP_WEBSOCKET_PUBLIC_ADDRESS"
                  value="${http_websocket_public_address}" />
+          <token key="HTTP_WEBSOCKET_PRESENTED_ADDRESS"
+                 value="${http_websocket_presented_address}" />
           <token key="HTTP_FRONTEND_ADDRESSES"
                  value="${http_frontend_addresses}" />
           <token key="RESOURCE_BASES" value="${resource_bases}" />
