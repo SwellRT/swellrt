@@ -89,7 +89,7 @@ public final class JsoSearchBuilderImpl implements SearchBuilder {
   }
 
   @Override
-  public void search(final Callback callback) {
+  public Request search(final Callback callback) {
     Preconditions.checkArgument(searchRequest != null,
         "call SearchBuilder.newSearch method to construct a new query");
     Preconditions.checkArgument(searchRequest.getQuery() != null, "new query should be set");
@@ -130,9 +130,10 @@ public final class JsoSearchBuilderImpl implements SearchBuilder {
     });
 
     try {
-      requestBuilder.send();
+      return requestBuilder.send();
     } catch (RequestException e) {
       callback.onFailure(e.getMessage());
+      return null;
     }
   }
 

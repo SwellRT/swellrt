@@ -18,6 +18,8 @@
 
 package org.waveprotocol.box.webclient.search;
 
+import com.google.gwt.http.client.Request;
+
 /**
  * Implementation of {@link SearchService}.
  *
@@ -26,10 +28,10 @@ package org.waveprotocol.box.webclient.search;
 public class SearchServiceImpl implements SearchService {
 
   public static SearchBuilder SEARCH_BUILDER = JsoSearchBuilderImpl.create();
-  
+
   @Override
-  public void search(String query, int index, int numResults, Callback callback) {
-    SEARCH_BUILDER.newSearch().setQuery(query).setIndex(index).setNumResults(numResults)
+  public Request search(String query, int index, int numResults, Callback callback) {
+    return SEARCH_BUILDER.newSearch().setQuery(query).setIndex(index).setNumResults(numResults)
         .search(callback);
   }
 

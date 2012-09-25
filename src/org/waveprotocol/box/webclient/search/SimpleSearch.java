@@ -18,6 +18,8 @@ package org.waveprotocol.box.webclient.search;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Window;
 
 import org.waveprotocol.box.webclient.search.SearchService.Callback;
 import org.waveprotocol.box.webclient.search.SearchService.DigestSnapshot;
@@ -200,6 +202,12 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
   /** Total size of the search result. */
   private int total = 0;
 
+  private Request previousRequest;
+
+  private String previousQuery;
+
+  private int previousSize;
+
   @VisibleForTesting
   SimpleSearch(SearchService searcher, WaveStore store) {
     this.searcher = searcher;
@@ -245,11 +253,20 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
 
   @Override
   public void find(String query, int size) {
-    Callback request = new Callback() {
+    if (previousRequest != null && previousRequest.isPending()) {
+      if (query.equals(previousQuery) && size == previousSize) {
+        // Same query, we should wait to the response
+        return;
+      }
+    }
+    previousQuery = query;
+    previousSize = size;
+    Callback callback = new Callback() {
       @Override
       public void onFailure(String message) {
         if (outstanding == this) {
           outstanding = null;
+          previousRequest = null;
           handleFailure(message);
         }
       }
@@ -258,18 +275,19 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
       public void onSuccess(int total, List<DigestSnapshot> snapshots) {
         if (outstanding == this) {
           outstanding = null;
+          previousRequest = null;
           handleSuccess(total, 0, snapshots);
         }
       }
     };
 
     if (outstanding == null) {
-      outstanding = request;
-      searcher.search(query, 0, size, request);
+      outstanding = callback;
+      previousRequest = searcher.search(query, 0, size, callback);
       fireOnStateChanged();
     } else {
-      outstanding = request;
-      searcher.search(query, 0, size, request);
+      outstanding = callback;
+      previousRequest = searcher.search(query, 0, size, callback);
     }
   }
 

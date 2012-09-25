@@ -17,6 +17,8 @@
 
 package org.waveprotocol.box.webclient.search;
 
+import com.google.gwt.http.client.Request;
+
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.ValueUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -157,5 +159,5 @@ public interface SearchService {
    * @param callback callback through which the search query results are
    *        returned.
    */
-  void search(String query, int index, int numResults, Callback callback);
+  Request search(String query, int index, int numResults, Callback callback);
 }

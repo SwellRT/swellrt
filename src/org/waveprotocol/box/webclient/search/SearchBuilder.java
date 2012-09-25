@@ -17,6 +17,8 @@
 
 package org.waveprotocol.box.webclient.search;
 
+import com.google.gwt.http.client.Request;
+
 import org.waveprotocol.box.webclient.search.SearchService.Callback;
 
 /**
@@ -52,7 +54,8 @@ public interface SearchBuilder {
    * Performs a full text search on the waves.
    *
    * @param callback the callback through which the search query results are returned.
+   * @return the http request
    */
-  void search(final Callback callback);
+  Request search(final Callback callback);
 
 }

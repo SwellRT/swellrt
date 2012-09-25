@@ -17,6 +17,8 @@
 
 package org.waveprotocol.box.webclient.search;
 
+import com.google.gwt.http.client.Request;
+
 /**
  * Implementation of {@link SearchService}.
  *
@@ -35,8 +37,8 @@ public final class RemoteSearchService implements SearchService {
   }
 
   @Override
-  public void search(String query, int index, int numResults, Callback callback) {
-    searcher.newSearch().setQuery(query).setIndex(index).setNumResults(numResults)
+  public Request search(String query, int index, int numResults, Callback callback) {
+    return searcher.newSearch().setQuery(query).setIndex(index).setNumResults(numResults)
         .search(callback);
   }
 }

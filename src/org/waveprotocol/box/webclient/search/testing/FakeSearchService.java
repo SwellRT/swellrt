@@ -16,6 +16,7 @@
 package org.waveprotocol.box.webclient.search.testing;
 
 import com.google.common.base.Joiner;
+import com.google.gwt.http.client.Request;
 
 import org.waveprotocol.box.webclient.search.SearchService;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
@@ -98,7 +99,7 @@ public final class FakeSearchService implements SearchService {
   }
 
   @Override
-  public void search(String query, final int index, final int numResults, final Callback callback) {
+  public Request search(String query, final int index, final int numResults, final Callback callback) {
     timer.scheduleDelayed(new Task() {
       @Override
       public void execute() {
@@ -107,5 +108,6 @@ public final class FakeSearchService implements SearchService {
         callback.onSuccess(canned.size(), canned.subList(from, to));
       }
     }, FAKE_DELAY_MS);
+    return null;
   }
 }
