@@ -32,7 +32,7 @@ public class UserAgentRuntimeProperties {
   private static final UserAgentRuntimeProperties INSTANCE = createInstance();
 
   private static UserAgentRuntimeProperties createInstance() {
-    return GWT.isScript() ? new UserAgentRuntimeProperties(getNativeUserAgent())
+    return GWT.isClient() ? new UserAgentRuntimeProperties(getNativeUserAgent())
                           : new UserAgentRuntimeProperties("");
   }
 

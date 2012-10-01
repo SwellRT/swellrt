@@ -31,8 +31,10 @@ import org.waveprotocol.wave.model.document.util.Point;
  * leading and trailing inline text. If that is not present, we sometimes
  * cannot tell the difference between a new paragraph or inline text.
  *
+ * Also works for Firefox >= 15
+ *
  */
-class PasteBufferImplSafari extends PasteBufferImpl {
+class PasteBufferImplSafariAndNewFirefox extends PasteBufferImpl {
 
   private boolean markersStripped = false;
 

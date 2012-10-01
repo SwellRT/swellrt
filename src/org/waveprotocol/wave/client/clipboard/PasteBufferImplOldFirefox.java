@@ -25,7 +25,7 @@ import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
 import org.waveprotocol.wave.model.document.util.Point;
 
 /**
- * Firefox implementation of the paste buffer. We cannot use a standard div set
+ * Firefox old implementation of the paste buffer. We cannot use a standard div set
  * to contentEditable because pasting any javascript will automatically
  * execute it. Instead, use an offscreen iframe whose document is set to
  * "designMode". This is roughly equivalent to contentEditable with the
@@ -47,10 +47,10 @@ import org.waveprotocol.wave.model.document.util.Point;
  * event, we are not protected.
  *
  * Tested on: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.2)
- * Gecko/20100115 Firefox/3.6 GTB7.0
+ * Gecko/20100115 Firefox/3.6 GTB7.0 < 15.0
  *
  */
-class PasteBufferImplFirefox extends PasteBufferImpl {
+class PasteBufferImplOldFirefox extends PasteBufferImpl {
 
   private final IFrameElement iframe;
 
@@ -58,7 +58,7 @@ class PasteBufferImplFirefox extends PasteBufferImpl {
    * Protected empty constructor. Will be created by factory constructor in
    * PasteBufferImpl.
    */
-  protected PasteBufferImplFirefox() {
+  protected PasteBufferImplOldFirefox() {
     iframe = Document.get().createIFrameElement();
   }
 

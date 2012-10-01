@@ -50,13 +50,13 @@ public class PasteBufferImpl {
    */
   static PasteBufferImpl create() {
     PasteBufferImpl pasteBuffer;
-   
-    if (UserAgent.isSafari()) {
-      pasteBuffer = new PasteBufferImplSafari();
+
+    if (UserAgent.isSafari() || QuirksConstants.FIREFOX_GREATER_THAN_VER_15) {
+      pasteBuffer = new PasteBufferImplSafariAndNewFirefox();
     } else if (UserAgent.isFirefox() && !QuirksConstants.SANITIZES_PASTED_CONTENT) {
       // Older versions of firefox doesn't sanitize pasted content and requires the
       // paste buffer to be an iframe to prevent XSS.
-      pasteBuffer = new PasteBufferImplFirefox();
+      pasteBuffer = new PasteBufferImplOldFirefox();
     } else {
       pasteBuffer = new PasteBufferImpl();
     }
