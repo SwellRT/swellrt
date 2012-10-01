@@ -721,9 +721,9 @@
     </zip>
   </target>
 
-  <target name="release-robot-client-api" depends="dist" description="Creates a zip for the java robot client release">
+  <target name="release-robot-client-api" depends="dist-libraries" description="Creates a zip for the java robot client release">
     <delete file="${dist.dir}/${release.robot.name}"/>
-    <zip destfile="${dist.dir}/${release.robot.name}">	
+    <zip destfile="${dist.dir}/${release.robot.name}">
       <zipfileset dir="${dist.dir}" includes="model.jar"/>
       <zipfileset dir="${dist.dir}" includes="wave-api-${waveinabox.version}.jar"/>
       <zipfileset dir="${lib.dir}/runtime/commons_codec" includes="*.jar"/>

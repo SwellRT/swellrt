@@ -1,10 +1,10 @@
-<!-- 
+<!--
 Copyright (C) 2010 Google Inc.
 See COPYING for license.
 -->
 <project name="api">
   <import file="${build.common.path}"/>
-  <property name="libname" value="api"/>
+  <property name="libname" value="wave-api-${waveinabox.version}"/>
   <patternset id="srcs">
     <include name="com/google/wave/api/**"/>
   </patternset>
