@@ -167,7 +167,7 @@ public class WebClient implements EntryPoint {
     HistorySupport.init(new HistoryProviderDefault());
     HistoryChangeListener.init();
 
-    websocket = new WaveWebSocketClient(useSocketIO(), getWebSocketBaseUrl());
+    websocket = new WaveWebSocketClient(websocketNotAvailable(), getWebSocketBaseUrl());
     websocket.connect();
 
     if (Session.get().isLoggedIn()) {
@@ -274,7 +274,7 @@ public class WebClient implements EntryPoint {
   // XXX check formatting wrt GPE
   private native String getWebSocketBaseUrl() /*-{return ((window.location.protocol == "https:") ? "wss" : "ws") + "://" +  $wnd.__websocket_address + "/";}-*/;
 
-  private native boolean useSocketIO() /*-{ return !window.WebSocket }-*/;
+  private native boolean websocketNotAvailable() /*-{ return !window.WebSocket }-*/;
 
   /**
    */

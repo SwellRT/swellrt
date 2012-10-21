@@ -49,6 +49,7 @@ import java.util.Queue;
  * Wrapper around SocketIO that handles the FedOne client-server protocol.
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
+  private static final int MAX_INITIAL_FAILURES = 2;
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
   private static final int RECONNECT_TIME_MS = 5000;
   private static final String JETTY_SESSION_TOKEN_NAME = "JSESSIONID";
@@ -88,7 +89,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     }
   }
 
-  private final WaveSocket socket;
+  private WaveSocket socket;
   private final IntMap<SubmitResponseCallback> submitRequestCallbacks;
 
   /**
@@ -108,6 +109,12 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final RepeatingCommand reconnectCommand = new RepeatingCommand() {
     @Override
     public boolean execute() {
+      if (!connectedAtLeastOnce && !websocketNotAvailable && connectTry > MAX_INITIAL_FAILURES) {
+        // Let's try to use socketio, seems that websocket it's not working
+        // (we are under a proxy or similar)
+        socket = WaveSocketFactory.create(true, urlBase, WaveWebSocketClient.this);
+      }
+      connectTry++;
       if (connected == ConnectState.DISCONNECTED) {
         LOG.info("Attemping to reconnect");
         connected = ConnectState.CONNECTING;
@@ -116,10 +123,16 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       return true;
     }
   };
+  private final boolean websocketNotAvailable;
+  private boolean connectedAtLeastOnce = false;
+  private long connectTry = 0;
+  private final String urlBase;
 
-  public WaveWebSocketClient(boolean useSocketIO, String urlBase) {
+  public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
+    this.websocketNotAvailable = websocketNotAvailable;
+    this.urlBase = urlBase;
     submitRequestCallbacks = CollectionUtils.createIntMap();
-    socket = WaveSocketFactory.create(useSocketIO, urlBase, this);
+    socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, this);
   }
 
   /**
@@ -144,6 +157,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onConnect() {
     connected = ConnectState.CONNECTED;
+    connectedAtLeastOnce = true;
 
     // Sends the session cookie to the server via an RPC to work around browser bugs.
     // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
@@ -214,4 +228,5 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         messages.add(message);
     }
   }
+
 }
