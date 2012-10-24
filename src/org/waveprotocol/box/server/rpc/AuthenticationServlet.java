@@ -26,10 +26,16 @@ import com.google.inject.name.Named;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.gxp.AuthenticationPage;
+import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
+import org.waveprotocol.box.server.util.RegistrationUtil;
+import org.waveprotocol.wave.model.id.WaveIdentifiers;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
@@ -46,14 +52,19 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
+import java.security.cert.X509Certificate;
 import java.security.Principal;
 
 import javax.inject.Singleton;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.Rdn;
+import javax.naming.ldap.LdapName;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
+import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -72,23 +83,46 @@ public class AuthenticationServlet extends HttpServlet {
   public static final String RESPONSE_STATUS_NONE = "NONE";
   public static final String RESPONSE_STATUS_FAILED = "FAILED";
   public static final String RESPONSE_STATUS_SUCCESS = "SUCCESS";
+  // The Object ID of the PKCS #9 email address stored in the client certificate.
+  // Source: http://www.rsa.com/products/bsafe/documentation/sslc251html/group__AD__COMMON__OIDS.html
+  private static final String OID_EMAIL = "1.2.840.113549.1.9.1";
 
   private static final Log LOG = Log.get(AuthenticationServlet.class);
 
+  private final AccountStore accountStore;
   private final Configuration configuration;
   private final SessionManager sessionManager;
   private final String domain;
+  private final boolean isClientAuthEnabled;
+  private final String clientAuthCertDomain;
+  private final boolean isRegistrationDisabled;
+  private final boolean isLoginPageDisabled;
+  private boolean failedClientAuth = false;
+private final WelcomeRobot welcomeBot;
   private final String analyticsAccount;
 
   @Inject
-  public AuthenticationServlet(Configuration configuration, SessionManager sessionManager,
+  public AuthenticationServlet(AccountStore accountStore,
+      Configuration configuration, SessionManager sessionManager,
       @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
+      @Named(CoreSettings.ENABLE_CLIENTAUTH) boolean isClientAuthEnabled,
+      @Named(CoreSettings.CLIENTAUTH_CERT_DOMAIN) String clientAuthCertDomain,
+      @Named(CoreSettings.DISABLE_REGISTRATION) boolean isRegistrationDisabled,
+      @Named(CoreSettings.DISABLE_LOGINPAGE) boolean isLoginPageDisabled,
+    WelcomeRobot welcomeBot,
       @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
+    Preconditions.checkNotNull(accountStore, "AccountStore is null");
     Preconditions.checkNotNull(configuration, "Configuration is null");
     Preconditions.checkNotNull(sessionManager, "Session manager is null");
+    this.accountStore = accountStore;
     this.configuration = configuration;
     this.sessionManager = sessionManager;
     this.domain = domain.toLowerCase();
+    this.isClientAuthEnabled = isClientAuthEnabled;
+    this.clientAuthCertDomain = clientAuthCertDomain.toLowerCase();
+    this.isRegistrationDisabled = isRegistrationDisabled;
+    this.isLoginPageDisabled = isLoginPageDisabled;
+    this.welcomeBot = welcomeBot;
     this.analyticsAccount = analyticsAccount;
   }
 
@@ -132,39 +166,79 @@ public class AuthenticationServlet extends HttpServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     req.setCharacterEncoding("UTF-8");
     LoginContext context;
-    try {
-      context = login(req.getReader());
-    } catch (LoginException e) {
-      String message = "The username or password you entered is incorrect.";
-      String responseType = RESPONSE_STATUS_FAILED;
-      LOG.info("User authentication failed: " + e.getLocalizedMessage());
-      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-      AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
-          analyticsAccount, responseType);
-      return;
-    }
+    Subject subject;
+    ParticipantId loggedInAddress = null;
 
-    Subject subject = context.getSubject();
-
-    ParticipantId loggedInAddress;
-    try {
-      loggedInAddress = getLoggedInUser(subject);
-    } catch (InvalidParticipantAddress e1) {
-      throw new IllegalStateException(
-          "The user provided valid authentication information, but the username"
-              + " isn't a valid user address.");
-    }
-
-    if (loggedInAddress == null) {
+    if (isClientAuthEnabled) {
+      boolean skipClientAuth = false;
       try {
-        context.logout();
-      } catch (LoginException e) {
-        // Logout failed. Absorb the error, since we're about to throw an
-        // illegal state exception anyway.
+        X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
+
+        if (certs == null) {
+          if (isLoginPageDisabled) {
+            throw new IllegalStateException(
+                "No client X.509 certificate provided (you need to get a certificate"
+                    + "from your systems manager and import it into your browser).");
+          }
+          else {
+            failedClientAuth = true;
+            skipClientAuth = true;
+            doGet(req, resp);
+          }
+        }
+
+        if (!skipClientAuth) {
+          failedClientAuth = false;
+          subject = new Subject();
+          for (X509Certificate cert : certs) {
+            X500Principal principal = cert.getSubjectX500Principal();
+            subject.getPrincipals().add(principal);
+          }
+          loggedInAddress = getLoggedInUser(subject);
+        }
+      } catch (InvalidParticipantAddress e1) {
+        throw new IllegalStateException(
+            "The user provided valid authentication information, but the username"
+                + " isn't a valid user address.");
       }
-      throw new IllegalStateException(
-          "The user provided valid authentication information, but we don't "
-              + "know how to map their identity to a wave user address.");
+    }
+
+    if (!isLoginPageDisabled && loggedInAddress == null) {
+      try {
+        context = login(req.getReader());
+      } catch (LoginException e) {
+        String message = "The username or password you entered is incorrect.";
+        String responseType = RESPONSE_STATUS_FAILED;
+        LOG.info("User authentication failed: " + e.getLocalizedMessage());
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        resp.setContentType("text/html;charset=utf-8");
+        AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
+            responseType, isLoginPageDisabled, analyticsAccount);
+        return;
+      }
+
+      subject = context.getSubject();
+
+      try {
+        loggedInAddress = getLoggedInUser(subject);
+      } catch (InvalidParticipantAddress e1) {
+        throw new IllegalStateException(
+            "The user provided valid authentication information, but the username"
+                + " isn't a valid user address.");
+      }
+
+      if (loggedInAddress == null) {
+        try {
+          context.logout();
+        } catch (LoginException e) {
+          // Logout failed. Absorb the error, since we're about to throw an
+          // illegal state exception anyway.
+        }
+
+        throw new IllegalStateException(
+            "The user provided valid authentication information, but we don't "
+                + "know how to map their identity to a wave user address.");
+      }
     }
 
     HttpSession session = req.getSession(true);
@@ -192,10 +266,74 @@ public class AuthenticationServlet extends HttpServlet {
       if (p instanceof ParticipantPrincipal) {
         address = ((ParticipantPrincipal) p).getName();
         break;
+      } else if (p instanceof X500Principal) {
+        return attemptClientCertificateLogin((X500Principal)p);
       }
     }
 
     return address == null ? null : ParticipantId.of(address);
+  }
+
+  /**
+   * Attempts to authenticate the user using their client certificate.
+   *
+   * Retrieves the email from their certificate, using it as the wave username.
+   * If the user doesn't exist and registration is enabled, it will automatically create an account
+   * before continuing. Otherwise it will simply check if the account exists and authenticate based
+   * on that.
+   *
+   * @throws RuntimeException The encoding of the email is unsupported on this system
+   * @throws InvalidParticipantAddress The email address doesn't correspond to an account
+   */
+  private ParticipantId attemptClientCertificateLogin(X500Principal p)
+      throws RuntimeException, InvalidParticipantAddress {
+    String distinguishedName = p.getName();
+    try {
+      LdapName ldapName = new LdapName(distinguishedName);
+      for (Rdn rdn: ldapName.getRdns()) {
+        if (rdn.getType().equals(OID_EMAIL)) {
+          String email = decodeEmailFromCertificate((byte[])rdn.getValue());
+          if (email.endsWith("@" + clientAuthCertDomain)) {
+            // Check we decoded the string correctly.
+            Preconditions.checkState(WaveIdentifiers.isValidIdentifier(email),
+                "The decoded email is not a valid wave identifier");
+            ParticipantId id = ParticipantId.of(email);
+            if (!RegistrationUtil.doesAccountExist(accountStore, id)) {
+              if (!isRegistrationDisabled) {
+                if (!RegistrationUtil.createAccountIfMissing(accountStore, id, null, welcomeBot)) {
+                  return null;
+                }
+              } else {
+                throw new InvalidNameException(
+                    "User doesn't already exist, and registration disabled by administrator");
+              }
+            }
+            return id;
+          }
+        }
+      }
+    } catch (UnsupportedEncodingException ex) {
+      throw new RuntimeException(ex);
+    } catch (InvalidNameException ex) {
+      throw new InvalidParticipantAddress(distinguishedName,
+          "Certificate does not contain a valid distinguished name");
+    }
+    return null;
+  }
+
+  /**
+   * Decodes the user email from the X.509 certificate.
+   *
+   * Email address is assumed to be valid in ASCII, and less than 128 characters long
+   *
+   * @param encoded Output from rdn.getValue(). 1st byte is the tag, second is the length.
+   * @return The decoded email in ASCII
+   * @throws UnsupportedEncodingException The email address wasn't in ASCII
+   */
+  private String decodeEmailFromCertificate(byte[] encoded) throws UnsupportedEncodingException {
+    // Check for < 130, since first 2 bytes are taken up as stated above.
+    Preconditions.checkState(encoded.length < 130,"The email address is longer than expected");
+    return new String(encoded, 2, encoded.length - 2, "ascii");
   }
 
   /**
@@ -212,10 +350,22 @@ public class AuthenticationServlet extends HttpServlet {
     if (user != null) {
       redirectLoggedInUser(req, resp);
     } else {
-      resp.setStatus(HttpServletResponse.SC_OK);
+      if (isClientAuthEnabled && !failedClientAuth) {
+          X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
+          if (certs != null) {
+            doPost(req, resp);
+          }
+      }
+
+      if (!isLoginPageDisabled) {
+        resp.setStatus(HttpServletResponse.SC_OK);
+      }
+      else {
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      }
       resp.setContentType("text/html;charset=utf-8");
       AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, "",
-          RESPONSE_STATUS_NONE, analyticsAccount);
+          RESPONSE_STATUS_NONE, isLoginPageDisabled, analyticsAccount);
     }
   }
 

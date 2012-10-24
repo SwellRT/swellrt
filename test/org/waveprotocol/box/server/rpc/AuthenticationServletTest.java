@@ -37,6 +37,7 @@ import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryStore;
+import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 
@@ -63,6 +64,7 @@ public class AuthenticationServletTest extends TestCase {
   @Mock private HttpServletResponse resp;
   @Mock private HttpSession session;
   @Mock private SessionManager manager;
+  @Mock private WelcomeRobot welcomeBot;
 
   @Override
   protected void setUp() throws Exception {
@@ -73,9 +75,8 @@ public class AuthenticationServletTest extends TestCase {
         new HumanAccountDataImpl(USER, new PasswordDigest("password".toCharArray()));
     store.putAccount(account);
 
-    servlet =
-        new AuthenticationServlet(AuthTestUtil.makeConfiguration(), manager, "examPLe.com",
-            "UA-someid");
+    servlet = new AuthenticationServlet(store, AuthTestUtil.makeConfiguration(),
+        manager, "examPLe.com", false, "", false, false, welcomeBot, "UA-someid");
     AccountStoreHolder.init(store, "eXaMple.com");
   }
 

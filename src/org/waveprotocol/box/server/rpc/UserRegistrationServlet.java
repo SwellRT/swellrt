@@ -29,6 +29,7 @@ import org.waveprotocol.box.server.gxp.UserRegistrationPage;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
+import org.waveprotocol.box.server.util.RegistrationUtil;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
@@ -130,13 +131,8 @@ public final class UserRegistrationServlet extends HttpServlet {
       return "Invalid username";
     }
 
-    try {
-      if (accountStore.getAccount(id) != null) {
+    if(RegistrationUtil.doesAccountExist(accountStore, id)) {
         return "Account already exists";
-      }
-    } catch (PersistenceException e) {
-      LOG.severe("Failed to retreive account data for " + id, e);
-      return "An unexpected error occured while trying to retrieve account status";
     }
 
     if (password == null) {
@@ -144,19 +140,11 @@ public final class UserRegistrationServlet extends HttpServlet {
       password = "";
     }
 
-    HumanAccountDataImpl account =
-      new HumanAccountDataImpl(id, new PasswordDigest(password.toCharArray()));
-    try {
-      accountStore.putAccount(account);
-    } catch (PersistenceException e) {
-      LOG.severe("Failed to create new account for " + id, e);
+    if (!RegistrationUtil.createAccountIfMissing(accountStore, id,
+          new PasswordDigest(password.toCharArray()), welcomeBot)) {
       return "An unexpected error occured while trying to create the account";
     }
-    try {
-      welcomeBot.greet(account.getId());
-    } catch (IOException e) {
-      LOG.warning("Failed to create a welcome wavelet for " + id, e);
-    }
+
     return null;
   }
 

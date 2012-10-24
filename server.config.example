@@ -166,6 +166,15 @@ ssl_keystore_password = @SSL_KEYSTORE_PASSWORD@
 # Default value: false
 enable_import = @ENABLE_IMPORT@
 
+# Enable client x509 cert. authentication?
+enable_clientauth = @ENABLE_CLIENTAUTH@
+
+# Domain of the email to look for as email field of x509 client auth certificates when using client authentication
+clientauth_cert_domain = @CLIENTAUTH_CERT_DOMAIN@
+
+# Disable login page to force x509-only authentication
+disable_loginpage = @DISABLE_LOGINPAGE@
+
 # Currently supported search types: memory, lucene.
 # Default value: lucene.
 search_type = @SEARCH_TYPE@

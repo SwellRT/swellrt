@@ -67,8 +67,33 @@ Then, after updating a proto file, run
   ant -f build-proto.xml compile compile_json
 </code>
 
-Note: this generates files into proto_src. If files here exist without 
+Note: this generates files into proto_src. If files here exist without
 write permission, you will get permission denied errors from this step.
 
 Note also that you don't need protoc unless you want to change the proto
 files.
+
+
+To enable SSL:
+
+Create a Java keystore for your server (e.g. using http://portecle.sourceforge.net/).
+You will need a key (e.g. called "server") whose subject Common Name (CN) is
+the hostname of your server.
+
+Set enable_ssl = true and set the ssl_keystore_path and ssl_keystore_password options.
+
+
+To enable X.509 client authentication:
+
+If your users have X.509 certificates which include their email address, you can have
+them logged in automatically (with their wave ID being the same as their email address):
+You can get X.509 certificates issued from any normal CA (e.g. StartSSL offer them for free).
+You can get your CA's certficate from their website, though note they might provide more than 1 certificate which you need to chain before your client certificates are considered trusted.
+
+1. Add the signing CA to your keystore file.
+2. Set enable_clientauth = true
+3. Set clientauth_cert_domain (to the part after the "@" in your email addresses).
+4. (optional) Set disable_loginpage = true to prevent password-based logins.
+
+Users will be automatically logged in when they access the site, with the
+username taken from the email address in their certificate.

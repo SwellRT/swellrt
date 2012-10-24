@@ -63,6 +63,9 @@ public class CoreSettings {
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
   public static final String SSL_KEYSTORE_PASSWORD = "ssl_keystore_password";
   public static final String ENABLE_IMPORT = "enable_import";
+  public static final String ENABLE_CLIENTAUTH = "enable_clientauth";
+  public static final String CLIENTAUTH_CERT_DOMAIN = "clientauth_cert_domain";
+  public static final String DISABLE_LOGINPAGE = "disable_loginpage";
   public static final String SEARCH_TYPE = "search_type";
   public static final String INDEX_DIRECTORY = "index_directory";
   public static final String ANALYTICS_ACCOUNT = "analytics_account";
@@ -224,6 +227,18 @@ public class CoreSettings {
   @Setting(name = ENABLE_IMPORT,
       description = "Enable import servlet at <Server URL>/import", defaultValue = "false")
   private static boolean enableImport;
+
+  @Setting(name = ENABLE_CLIENTAUTH,
+      description = "Enable x509 certificated based authentication", defaultValue = "false")
+  private static boolean enableClientAuth;
+
+  @Setting(name = CLIENTAUTH_CERT_DOMAIN,
+      description = "Domain of email address in x509 cert", defaultValue = "")
+  private static String clientAuthCertDomain;
+
+  @Setting(name = DISABLE_LOGINPAGE,
+      description = "Disable login page to force x509 only", defaultValue = "false")
+  private static boolean disableLoginPage;
 
   @Setting(name = INDEX_DIRECTORY,
       description = "Location on disk where the index is persisted", defaultValue = "_indexes")

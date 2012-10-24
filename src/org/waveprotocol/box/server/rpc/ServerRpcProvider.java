@@ -540,6 +540,11 @@ public class ServerRpcProvider {
       sslContextFactory.setKeyStorePassword(sslKeystorePassword);
       sslContextFactory.setAllowRenegotiate(false);
       sslContextFactory.setExcludeCipherSuites(excludeCiphers);
+
+      // Note: we only actually needed client auth for AuthenticationServlet.
+      // Using Need instead of Want prevents web-sockets from working on
+      // Chrome.
+      sslContextFactory.setWantClientAuth(true);
     }
 
     for (InetSocketAddress address : httpAddresses) {
