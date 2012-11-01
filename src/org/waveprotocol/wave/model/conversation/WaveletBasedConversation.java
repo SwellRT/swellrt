@@ -377,6 +377,12 @@ public final class WaveletBasedConversation implements ObservableConversation {
   }
 
   @Override
+  public void addParticipantIds(Set<ParticipantId> participants) {
+    checkIsUsable();
+    wavelet.addParticipantIds(participants);
+  }
+
+  @Override
   public void addParticipant(ParticipantId participant) {
     checkIsUsable();
     wavelet.addParticipant(participant);

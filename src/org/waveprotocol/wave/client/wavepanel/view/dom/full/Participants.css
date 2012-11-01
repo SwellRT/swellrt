@@ -88,7 +88,7 @@
   /* Positioned contained for add button. */
   position: relative;
   /* Room for absolutely positioned add button. */
-  padding-right: 4.5em;
+  padding-right: 11em;
 }
 
 .participant {
@@ -98,7 +98,7 @@
 
 /* Name-based rendering. */
 div.participant {
-  line-height: 42px;
+  line-height: 44px;
   margin: 4px 0 0 12px;
   text-decoration: underline;
   color: blue;
@@ -142,7 +142,7 @@ img.participant {
   padding: 14px 0 8px 4px;
   background-color: #c9e2fc;
   bottom: 0;
-  width: 4em;
+  width: 10em;
 }
 
 .extra {
@@ -161,6 +161,12 @@ img.participant {
    * scroll bars) due to 1px aliasing.
    */
   padding-top: 21px;
+}
+
+.newWaveWithParticipantsButton {
+  position: absolute;
+  width: 7em;
+  margin-left: 5px;
 }
 
 /*
@@ -184,6 +190,6 @@ img.participant {
 @sprite .addButton {
   gwt-image: 'addButton';
   /* The button is a span, to conform to HTML's backward schema. */
-  display: block;
+  display: inline-block;
   cursor: pointer;
 }

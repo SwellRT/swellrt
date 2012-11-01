@@ -69,6 +69,9 @@ public interface DomAsViewProvider {
   /** @return the participants view that surrounds the button {@code source}. */
   ParticipantsView fromAddButton(Element source);
 
+  /** @return the participants view that surrounds the button {@code source}. */
+  ParticipantsView fromNewWaveWithParticipantsButton(Element source);
+
   /** @return {@code source} exposed as a top-conversation view. */
   TopConversationView asTopConversation(Element source);
 

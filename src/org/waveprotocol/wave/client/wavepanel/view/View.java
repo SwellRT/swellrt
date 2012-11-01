@@ -63,6 +63,7 @@ public interface View {
     PARTICIPANT,
     PARTICIPANTS,
     ADD_PARTICIPANT,
+    NEW_WAVE_WITH_PARTICIPANTS,
   }
 
   Type getType();

@@ -174,4 +174,17 @@ public final class OutputHelper {
         + "></img>");
     builder.append(img);
   }
+
+  public static void button(SafeHtmlBuilder builder,
+      String id,
+      String clazz,
+      String kind,
+      String title,
+      String caption) {
+    builder.appendHtmlConstant("<button " //
+        + (id != null ? " id='" + id + "'" : "") //
+        + (clazz != null ? " class='" + clazz + "'" : "") //
+        + (kind != null ? " " + BuilderHelper.KIND_ATTRIBUTE + "='" + kind + "'" : "") //
+        + ">"+ caption + "</button>");
+  }
 }

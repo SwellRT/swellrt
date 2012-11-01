@@ -1,0 +1,41 @@
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common" xmlns:g="urn:import:com.google.gwt.user.client.ui">
+
+  <ui:style>
+    .self {
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      margin: 0px 0px;
+    }
+
+    .img {
+      float: left;
+    }
+
+    .img img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .tx {
+      float: left;
+      vertical-align:middle;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .img, .tx, .self h3 {
+      margin: 15px;
+    }
+  </ui:style>
+
+  <w:ImplPanel ui:field="self" styleName="{style.self}">
+     <div class="{style.img}">
+       <img ui:field="image"/>
+    </div>
+    <div class="{style.tx}">
+      <h3 ui:field="title"/>
+    </div>
+  </w:ImplPanel>
+</ui:UiBinder>

@@ -201,7 +201,7 @@ public interface StageThree {
       WaveTitleHandler.install(edit, models);
       ReplyIndicatorController.install(actions, edit, panel);
       EditController.install(focus, actions, panel);
-      ParticipantController.install(panel, models, profiles, getLocalDomain());
+      ParticipantController.install(panel, models, profiles, getLocalDomain(), user);
       KeepFocusInView.install(edit, panel);
       stageTwo.getDiffController().upgrade(edit);
     }

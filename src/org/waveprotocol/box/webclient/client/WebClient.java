@@ -48,6 +48,7 @@ import org.waveprotocol.box.webclient.search.SearchPanelRenderer;
 import org.waveprotocol.box.webclient.search.SearchPanelWidget;
 import org.waveprotocol.box.webclient.search.SearchPresenter;
 import org.waveprotocol.box.webclient.search.SimpleSearch;
+import org.waveprotocol.box.webclient.search.WaveContext;
 import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.box.webclient.widget.error.ErrorIndicatorPresenter;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;
@@ -71,6 +72,7 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -152,13 +154,12 @@ public class WebClient implements EntryPoint {
         new WaveCreationEventHandler() {
 
           @Override
-          public void onCreateRequest(WaveCreationEvent event) {
+          public void onCreateRequest(WaveCreationEvent event, Set<ParticipantId> participantSet) {
             LOG.info("WaveCreationEvent received");
             if (channel == null) {
               throw new RuntimeException("Spaghetti attack.  Create occured before login");
             }
-
-            openWave(WaveRef.of(idGenerator.newWaveId()), true);
+            openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
           }
         });
 
@@ -208,7 +209,7 @@ public class WebClient implements EntryPoint {
         new SearchPresenter.WaveActionHandler() {
           @Override
           public void onCreateWave() {
-            ClientEvents.get().fireEvent(WaveCreationEvent.CREATE_NEW_WAVE);
+            ClientEvents.get().fireEvent(new WaveCreationEvent());
           }
 
           @Override
@@ -228,7 +229,7 @@ public class WebClient implements EntryPoint {
     ClientEvents.get().addWaveSelectionEventHandler(new WaveSelectionEventHandler() {
       @Override
       public void onSelection(WaveRef waveRef) {
-        openWave(waveRef, false);
+        openWave(waveRef, false, null);
       }
     });
   }
@@ -288,8 +289,10 @@ public class WebClient implements EntryPoint {
    *
    * @param waveRef wave id to open
    * @param isNewWave whether the wave is being created by this client session.
+   * @param participants the participants to add to the newly created wave.
+   *        {@code null} if only the creator should be added
    */
-  private void openWave(WaveRef waveRef, boolean isNewWave) {
+  private void openWave(WaveRef waveRef, boolean isNewWave, Set<ParticipantId> participants) {
     LOG.info("WebClient.openWave()");
 
     if (wave != null) {
@@ -304,7 +307,7 @@ public class WebClient implements EntryPoint {
     Element unsavedIndicator = Document.get().getElementById("unsavedStateContainer");
     StagesProvider wave =
         new StagesProvider(holder, unsavedIndicator, waveHolder, waveFrame, waveRef, channel, idGenerator,
-            profiles, waveStore, isNewWave, Session.get().getDomain());
+            profiles, waveStore, isNewWave, Session.get().getDomain(), participants);
     this.wave = wave;
     wave.load(new Command() {
       @Override

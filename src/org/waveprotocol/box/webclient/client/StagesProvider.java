@@ -41,7 +41,10 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.BlipQueueRenderer;
 import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
+
+import java.util.Set;
 
 /**
  * Stages for loading the undercurrent Wave Panel
@@ -75,6 +78,8 @@ public class StagesProvider extends Stages {
   private StageThree three;
   private WaveContext wave;
 
+  private Set<ParticipantId> participants;
+
   /**
    * @param wavePanelElement the DOM element to become the wave panel.
    * @param unsavedIndicatorElement the element that displays the wave saved state.
@@ -86,11 +91,13 @@ public class StagesProvider extends Stages {
    * @param channel the communication channel.
    * @param isNewWave true if the wave is a new client-created wave
    * @param idGenerator
+   * @param participants the participants to add to the newly created wave. null
+   *                     if only the creator should be added
    */
   public StagesProvider(Element wavePanelElement, Element unsavedIndicatorElement,
       LogicalPanel rootPanel, FramedPanel waveFrame, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, ProfileManager profiles, WaveStore store, boolean isNewWave,
-      String localDomain) {
+      String localDomain, Set<ParticipantId> participants) {
     this.wavePanelElement = wavePanelElement;
     this.unsavedIndicatorElement = unsavedIndicatorElement;
     this.waveFrame = waveFrame;
@@ -102,6 +109,7 @@ public class StagesProvider extends Stages {
     this.waveStore = store;
     this.isNewWave = isNewWave;
     this.localDomain = localDomain;
+    this.participants = participants;
   }
 
   @Override
@@ -127,7 +135,7 @@ public class StagesProvider extends Stages {
   @Override
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
     return haltIfClosed(new StageTwoProvider(this.one = one, waveRef, channel, isNewWave,
-        idGenerator, profiles, new SavedStateIndicator(unsavedIndicatorElement)));
+        idGenerator, profiles, new SavedStateIndicator(unsavedIndicatorElement), participants));
   }
 
   @Override

@@ -17,18 +17,25 @@
 package org.waveprotocol.box.webclient.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import java.util.Set;
 
 public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
   public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
 
-  public static final WaveCreationEvent CREATE_NEW_WAVE = new WaveCreationEvent();
+  private final Set<ParticipantId> participants;
 
-  private WaveCreationEvent() {
+  public WaveCreationEvent() {
+    this.participants = null;
+  }
+
+  public WaveCreationEvent(Set<ParticipantId> participants) {
+    this.participants = participants;
   }
 
   @Override
   protected void dispatch(WaveCreationEventHandler handler) {
-    handler.onCreateRequest(this);
+    handler.onCreateRequest(this, participants);
   }
 
   @Override

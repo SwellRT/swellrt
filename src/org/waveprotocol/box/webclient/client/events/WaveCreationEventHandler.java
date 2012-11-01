@@ -17,10 +17,12 @@
 package org.waveprotocol.box.webclient.client.events;
 
 import com.google.gwt.event.shared.EventHandler;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import java.util.Set;
 
 public abstract class WaveCreationEventHandler implements EventHandler {
   /**
    * Called when something wants to create a new wave.
    */
-  public abstract void onCreateRequest(WaveCreationEvent event);
+  public abstract void onCreateRequest(WaveCreationEvent event, Set<ParticipantId> participants);
 }

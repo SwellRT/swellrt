@@ -35,6 +35,8 @@ import org.waveprotocol.wave.model.wave.data.WaveViewData;
 import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
+import java.util.Set;
+
 /**
  * Provides stage 2 of the staged loading of the wave panel
  *
@@ -56,16 +58,20 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    * new protocol.
    */
   private AsyncHolder.Accessor<StageTwo> whenReady;
+  private final Set<ParticipantId> otherParticipants;
 
   /**
    * @param waveId the id of the wave to open, or null to create a new wave
    * @param channel communication channel
    * @param idGenerator
+   * @param otherParticipants the participants to add to the newly created wave,
+   *        in addition to the creator. {@code null} if only the creator
+   *        should be added.
    * @param unsavedIndicatorElement
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       boolean isNewWave, IdGenerator idGenerator, ProfileManager profiles,
-      UnsavedDataListener unsavedDataListener) {
+      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants) {
     super(stageOne, unsavedDataListener);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
@@ -75,6 +81,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
     this.isNewWave = isNewWave;
     this.idGenerator = idGenerator;
     this.profiles = profiles;
+    this.otherParticipants = otherParticipants;
   }
 
   @Override
@@ -110,6 +117,9 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
     if (isNewWave) {
       // For a new wave, initial state comes from local initialization.
       getConversations().createRoot().getRootThread().appendBlip();
+
+      // Adding any initial participant to the new wave
+      getConversations().getRoot().addParticipantIds(otherParticipants);
       super.install();
       whenReady.use(StageTwoProvider.this);
     } else {

@@ -120,6 +120,15 @@ public interface Wavelet {
   Set<ParticipantId> getParticipantIds();
 
   /**
+   * Adds a set of participant ids to this conversation. Does nothing for
+   * participants that are already participant on this conversation. Does
+   * nothing if the participants set is {@code null}.
+   *
+   * @param participants the participant ids to add
+   */
+  void addParticipantIds(Set<ParticipantId> participants);
+
+  /**
    * Gets the version number of this wavelet.
    *
    * @return this wavelet's version

@@ -21,6 +21,7 @@ import static org.waveprotocol.wave.client.uibuilder.OutputHelper.closeSpan;
 import static org.waveprotocol.wave.client.uibuilder.OutputHelper.open;
 import static org.waveprotocol.wave.client.uibuilder.OutputHelper.openSpan;
 import static org.waveprotocol.wave.client.uibuilder.OutputHelper.openSpanWith;
+import static org.waveprotocol.wave.client.uibuilder.OutputHelper.button;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gwt.resources.client.ClientBundle;
@@ -68,6 +69,7 @@ public final class ParticipantsViewBuilder implements UiBuilder {
     String expandButton();
     String collapseButton();
     String addButton();
+    String newWaveWithParticipantsButton();
   }
 
   /** An enum for all the components of a participants view. */
@@ -132,6 +134,9 @@ public final class ParticipantsViewBuilder implements UiBuilder {
             }
             closeSpan(output);
             appendSpan(output, null, css.addButton(), TypeCodes.kind(Type.ADD_PARTICIPANT));
+            button(output, null, css.newWaveWithParticipantsButton(),
+                TypeCodes.kind(Type.NEW_WAVE_WITH_PARTICIPANTS),
+                "New wave with the participants of current wave", "New wave");
           }
           closeSpan(output);
 
@@ -139,6 +144,9 @@ public final class ParticipantsViewBuilder implements UiBuilder {
           openSpan(output, null, css.simple(), null);
           {
             appendSpan(output, null, css.addButton(), TypeCodes.kind(Type.ADD_PARTICIPANT));
+            button(output, null, css.newWaveWithParticipantsButton(),
+                TypeCodes.kind(Type.NEW_WAVE_WITH_PARTICIPANTS),
+                "New wave with the participants of current wave", "New wave");
           }
           closeSpan(output);
         }

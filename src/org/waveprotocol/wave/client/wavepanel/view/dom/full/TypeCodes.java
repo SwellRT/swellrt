@@ -62,6 +62,7 @@ public final class TypeCodes {
     TYPES.put("p", Type.PARTICIPANT);
     TYPES.put("i", Type.MENU_ITEM);
     TYPES.put("a", Type.ADD_PARTICIPANT);
+    TYPES.put("npw", Type.NEW_WAVE_WITH_PARTICIPANTS);
 
     TYPES.each(new ProcV<Type>() {
       @Override

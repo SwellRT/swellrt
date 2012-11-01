@@ -23,6 +23,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 
+import org.waveprotocol.box.webclient.client.ClientEvents;
+import org.waveprotocol.box.webclient.client.events.WaveCreationEvent;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.safehtml.EscapeUtils;
@@ -35,6 +37,7 @@ import org.waveprotocol.wave.client.wavepanel.view.View.Type;
 import org.waveprotocol.wave.client.wavepanel.view.dom.DomAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.TypeCodes;
+import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
 import org.waveprotocol.wave.client.widget.profile.ProfilePopupPresenter;
 import org.waveprotocol.wave.client.widget.profile.ProfilePopupView;
 import org.waveprotocol.wave.model.conversation.Conversation;
@@ -42,6 +45,8 @@ import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import java.util.Set;
 
 /**
  * Installs the add/remove participant controls.
@@ -52,26 +57,31 @@ public final class ParticipantController {
   private final ModelAsViewProvider models;
   private final ProfileManager profiles;
   private final String localDomain;
+  private final ParticipantId user;
+  private UniversalPopup popup = null;
 
   /**
    * @param localDomain nullable. if provided, automatic suffixing will occur.
+   * @param user the logged in user
    */
   ParticipantController(
       DomAsViewProvider views, ModelAsViewProvider models, ProfileManager profiles,
-      String localDomain) {
+      String localDomain, ParticipantId user) {
     this.views = views;
     this.models = models;
     this.profiles = profiles;
     this.localDomain = localDomain;
+    this.user = user;
   }
 
   /**
    * Builds and installs the participant control feature.
+   * @param user the logged in user
    */
   public static void install(WavePanel panel, ModelAsViewProvider models, ProfileManager profiles,
-      String localDomain) {
+      String localDomain, ParticipantId user) {
     ParticipantController controller =
-        new ParticipantController(panel.getViewProvider(), models, profiles, localDomain);
+        new ParticipantController(panel.getViewProvider(), models, profiles, localDomain, user);
     controller.install(panel.getHandlers());
   }
 
@@ -83,6 +93,14 @@ public final class ParticipantController {
         return true;
       }
     });
+    handlers.registerClickHandler(TypeCodes.kind(Type.NEW_WAVE_WITH_PARTICIPANTS),
+      new WaveClickHandler() {
+        @Override
+        public boolean onClick(ClickEvent event, Element context) {
+          handleNewWaveWithParticipantsButtonClicked(context);
+          return true;
+        }
+      });
     handlers.registerClickHandler(TypeCodes.kind(Type.PARTICIPANT), new WaveClickHandler() {
       @Override
       public boolean onClick(ClickEvent event, Element context) {
@@ -127,6 +145,34 @@ public final class ParticipantController {
       participants[i] = ParticipantId.of(address);
     }
     return participants;
+  }
+
+  /**
+   * Creates a new wave with the participants of the current wave. Showing
+   * a popup dialog where the user can chose to deselect users that should not
+   * be participants in the new wave
+   */
+  private void handleNewWaveWithParticipantsButtonClicked(Element context) {
+    ParticipantsView participantsUi = views.fromNewWaveWithParticipantsButton(context);
+    ParticipantSelectorWidget selector = new ParticipantSelectorWidget();
+    popup = null;
+    selector.setListener(new ParticipantSelectorWidget.Listener() {
+      @Override
+      public void onSelect(Set<ParticipantId> participants) {
+        if (popup != null) {
+          popup.hide();
+        }
+        ClientEvents.get().fireEvent(
+            new WaveCreationEvent(participants));
+      }
+
+      @Override
+      public void onCancel() {
+        popup.hide();
+      }
+    });
+    popup = selector.showInPopup(user,
+        models.getParticipants(participantsUi).getParticipantIds(), profiles);
   }
 
   /**

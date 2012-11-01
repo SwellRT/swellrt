@@ -469,6 +469,19 @@ public class OpBasedWavelet implements ObservableWavelet {
   //
 
   /**
+   * Creates and consumes an {@link AddParticipant} operation for each
+   * participant in the set.
+   */
+  @Override
+  public void addParticipantIds(Set<ParticipantId> participants) {
+    if (participants != null) {
+      for (ParticipantId participant : participants) {
+        addParticipant(participant);
+      }
+    }
+  }
+
+  /**
    * Creates and consumes an {@link AddParticipant} operation.
    */
   @Override

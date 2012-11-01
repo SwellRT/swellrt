@@ -35,7 +35,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * White-box test for {@link OpBasedWavelet}.
@@ -96,6 +98,23 @@ public abstract class OpBasedWaveletTestBase extends TestCase {
 
     assertTrue(sink.getConsumedOp() instanceof AddParticipant);
     assertEquals(creator, ((AddParticipant) sink.getConsumedOp()).getParticipantId());
+  }
+
+  public void testAddingParticipantIdSetProducesManyOperations() {
+    target.addParticipant(target.getCreatorId());
+    Set<ParticipantId> participants = new HashSet<ParticipantId>();
+    for (int i = 0; i < 20; i++) {
+      ParticipantId participant = new ParticipantId("foo" + i + "@bar.com");
+      participants.add(participant);
+    }
+    target.addParticipantIds(participants);
+    List<WaveletOperation> operations = sink.getOps();
+    for (WaveletOperation op : operations) {
+      assertTrue("The operation was not an AddParticipant operator",
+          op instanceof AddParticipant);
+      participants.remove(((AddParticipant)op).getParticipantId());
+    }
+    assertEquals("Not all participants resulted in an operation",0, participants.size());
   }
 
   public void testAddingManyParticipantProducesManyOperations() {

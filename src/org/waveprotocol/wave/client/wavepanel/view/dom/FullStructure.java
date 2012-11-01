@@ -807,6 +807,17 @@ public class FullStructure implements UpgradeableDomAsViewProvider {
     return asParticipants(e);
   }
 
+  @Override
+  public ParticipantsView fromNewWaveWithParticipantsButton(Element e) {
+    Preconditions.checkArgument(e == null || typeOf(e) == Type.NEW_WAVE_WITH_PARTICIPANTS);
+    while (e != null && !hasKnownType(e)) {
+      e = e.getParentElement();
+    }
+    // Assume that the nearest kinded ancestor of the add button is the
+    // participants view (an exception is thrown if not).
+    return asParticipants(e);
+  }
+
   private AnchorView asAnchor(View v) {
     Preconditions.checkArgument(v == null || v.getType() == Type.ANCHOR);
     return (AnchorView) v;

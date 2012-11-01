@@ -307,6 +307,12 @@ public final class CcBasedWavelet implements ObservableWavelet {
   //
 
   @Override
+  public void addParticipantIds(Set<ParticipantId> participants) {
+    checkNotFailed();
+    wavelet.addParticipantIds(participants);
+  }
+
+  @Override
   public void addParticipant(ParticipantId participant) {
     checkNotFailed();
     wavelet.addParticipant(participant);
