@@ -17,8 +17,7 @@
 
 package org.waveprotocol.wave.client.doodad.attachment.testing;
 
-import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager.Attachment;
-import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager.UploadStatusCode;
+import org.waveprotocol.wave.media.model.Attachment;
 
 /**
  * Super simple attachment
@@ -92,13 +91,8 @@ public class FakeAttachment implements Attachment {
 
 
   @Override
-  public UploadStatusCode getUploadStatusCode() {
-    return UploadStatusCode.NOT_UPLOADING;
-  }
-
-  @Override
-  public double getUploadStatusProgress() {
-    return 0.0;
+  public Status getStatus() {
+    return Status.NOT_UPLOADING;
   }
 
   @Override
@@ -112,22 +106,7 @@ public class FakeAttachment implements Attachment {
   }
 
   @Override
-  public Image getImage() {
-    throw new AssertionError("Not implemented");
-  }
-
-  @Override
   public Long getSize() {
-    throw new AssertionError("Not implemented");
-  }
-
-  @Override
-  public String getStatus() {
-    throw new AssertionError("Not implemented");
-  }
-
-  @Override
-  public Thumbnail getThumbnail() {
     throw new AssertionError("Not implemented");
   }
 

@@ -51,6 +51,8 @@ import org.waveprotocol.box.server.rpc.Rpc.CancelRpc;
 import org.waveprotocol.box.server.rpc.Rpc.RpcFinished;
 import org.waveprotocol.box.server.rpc.proto.CancelRpcProtoImpl;
 import org.waveprotocol.box.server.rpc.proto.RpcFinishedProtoImpl;
+import org.waveprotocol.box.attachment.AttachmentProto.AttachmentsResponse;
+import org.waveprotocol.box.attachment.proto.AttachmentsResponseProtoImpl;
 import org.waveprotocol.wave.communication.gson.GsonException;
 import org.waveprotocol.wave.communication.gson.GsonSerializable;
 import org.waveprotocol.wave.communication.json.RawStringData;
@@ -156,6 +158,8 @@ public final class ProtoSerializer {
 
     add(SearchResponse.class, SearchResponseProtoImpl.class);
     add(ProfileResponse.class, ProfileResponseProtoImpl.class);
+
+    add(AttachmentsResponse.class, AttachmentsResponseProtoImpl.class);
   }
 
   /** Adds a binding between a proto class and a DTO message class. */

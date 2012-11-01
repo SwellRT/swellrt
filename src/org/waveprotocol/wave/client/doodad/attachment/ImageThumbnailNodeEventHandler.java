@@ -68,7 +68,7 @@ final class ImageThumbnailNodeEventHandler extends NodeEventHandlerImpl {
             // TODO(nigeltao): Is it necessary to open a window here? All attachments are set to
             // content-disposition=attachment which means the browser should download them.
             // The current implementation means we always get a blank tab.
-            Window.open(url, "_blank", "");
+            Window.open(url, thumbnail.getCaptionText(), "");
           }
         }
       }

@@ -188,3 +188,8 @@ index_directory = @INDEX_DIRECTORY@
  # Google Analytics account.
  # Default value: empty
 analytics_account = @ANALYTICS_ACCOUNT@
+
+# Directory that holds the thumbnails for attachments.
+# Icon must be in PNG format, and named as MIME type with replacing '/' to '_'.
+# For example thumbnail file for ZIP format (MIME type application/zip) must be named application_zip.
+thumbnail_patterns_directory = @THUMBNAIL_PATTERNS_DIRECTORY@

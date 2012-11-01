@@ -18,11 +18,11 @@
 package org.waveprotocol.wave.client.doodad.attachment.render;
 
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
-import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager.Attachment;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.misc.Caption;
+import org.waveprotocol.wave.media.model.Attachment;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Property;

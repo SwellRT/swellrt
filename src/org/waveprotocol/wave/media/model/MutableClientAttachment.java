@@ -24,7 +24,7 @@ package org.waveprotocol.wave.media.model;
  * Implementations of this class should be thread-safe.
  *
  */
-public interface MutableClientAttachment extends ClientAttachment {
+public interface MutableClientAttachment extends Attachment {
   /**
    * Sets the relative URL to download this attachment.
    *
@@ -70,7 +70,7 @@ public interface MutableClientAttachment extends ClientAttachment {
    * @param height the height of the image
    * @return the image metadata representation
    */
-  Image setImage(int width, int height);
+  ImageMetadata setImage(int width, int height);
 
   /**
    * Sets the malware status of the attachment.
@@ -94,14 +94,14 @@ public interface MutableClientAttachment extends ClientAttachment {
    * @param height the height of the thumbnail
    * @return the thumbnail metadata representation
    */
-  Thumbnail setThumbnail(int width, int height);
+  ImageMetadata setThumbnail(int width, int height);
 
   /**
    * Sets the upload status of the attachment.
    *
    * @param status the upload status.
    */
-  void setStatus(String status);
+  void setStatus(Status status);
 
   /**
    * Sets the relative URL to download the thumbnail for this attachment.

@@ -19,6 +19,7 @@
   <inherits name="org.waveprotocol.box.common.Common"/>
   <inherits name='org.waveprotocol.box.common.comms.WaveClientRpc'/>
   <inherits name='org.waveprotocol.box.search.Search'/>
+  <inherits name='org.waveprotocol.box.attachment.Attachment'/>
   <inherits name='org.waveprotocol.box.profile.Profile'/>
   <inherits name='org.waveprotocol.box.webclient.common.communication.Communication'/>
   <!-- TODO(hearnden): delete webclient.common.  It's not common to anything. -->

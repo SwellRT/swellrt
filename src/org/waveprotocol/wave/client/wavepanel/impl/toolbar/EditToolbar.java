@@ -64,6 +64,9 @@ import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
+import org.waveprotocol.wave.client.editor.content.FocusedContentRange;
+import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
+import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
 
 /**
  * Attaches actions that can be performed in a Wave's "edit mode" to a toolbar.
@@ -378,30 +381,29 @@ public class EditToolbar {
                 } else if (lastBackSlashPos != -1) {
                   fileName = fullFileName.substring(lastBackSlashPos + 1, fullFileName.length());
                 }
-                XmlStringBuilder xml = XmlStringBuilder.createFromXmlString(fileName);
-                int to = -1;
-                int docSize = editor.getDocument().size();
-                if (cursorLoc != -1) {
-                  // Insert the attachment at the cursor location.
-                  CMutableDocument doc = editor.getDocument();
-                  Point<ContentNode> point = doc.locate(cursorLoc);
-                  doc.insertXml(point, xml);
+                /*
+                 * From UploadToolbarAction in Walkaround
+                 * @author hearnden@google.com (David Hearnden)
+                 */
+                CMutableDocument doc = editor.getDocument();
+                FocusedContentRange selection = editor.getSelectionHelper().getSelectionPoints();
+                Point<ContentNode> point;
+                if (selection != null) {
+                  point = selection.getFocus();
                 } else {
-                  LineContainers.appendLine(editor.getDocument(), xml);
+                  // Focus was probably lost.  Bring it back.
+                  editor.focus(false);
+                  selection = editor.getSelectionHelper().getSelectionPoints();
+                  if (selection != null) {
+                    point = selection.getFocus();
+                  } else {
+                    // Still no selection.  Oh well, put it at the end.
+                    point = doc.locate(doc.size() - 1);
+                  }
                 }
-                // Calculate the link length for the attachment.
-                to = cursorLoc + editor.getDocument().size() - docSize;
-                String linkValue =
-                    GWT.getHostPageBaseURL() + "attachment/" + attachmentId + "?fileName="
-                        + fileName + "&waveRef=" + encodedWaveRef;
-                EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(),
-                    editor.getCaretAnnotations(), Link.KEY, linkValue, cursorLoc, to);
-                // Store the attachment information as annotations to allow
-                // robots detect and process them.
-                EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(),
-                    editor.getCaretAnnotations(), "attachment/id", attachmentId, cursorLoc, to);
-                EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(),
-                    editor.getCaretAnnotations(), "attachment/fileName", fileName, cursorLoc, to);
+                XmlStringBuilder content = ImageThumbnail.constructXml(attachmentId, fileName);
+                ImageThumbnailWrapper thumbnail = ImageThumbnailWrapper.of(doc.insertXml(point, content));
+                thumbnail.setAttachmentId(attachmentId);
               }
             });
 

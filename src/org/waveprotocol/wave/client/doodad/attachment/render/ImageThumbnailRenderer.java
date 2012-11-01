@@ -20,19 +20,22 @@ package org.waveprotocol.wave.client.doodad.attachment.render;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import java.util.logging.Logger;
 import org.waveprotocol.wave.client.doodad.attachment.AttachmentConstants;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnailAttachmentHandler;
 import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager;
-import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager.Attachment;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.gwt.GwtRenderingMutationHandler;
+import org.waveprotocol.wave.media.model.Attachment;
 
 /**
  * Renderer implementation for ImageThumbnails.
  *
  */
 public class ImageThumbnailRenderer extends GwtRenderingMutationHandler {
+
+  private static final Logger LOG = Logger.getLogger(ImageThumbnailRenderer.class.getName());
 
   private final SimpleAttachmentManager manager;
   private final ImageThumbnailAttachmentHandler attachmentHandler;

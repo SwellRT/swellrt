@@ -69,6 +69,7 @@ public class CoreSettings {
   public static final String SEARCH_TYPE = "search_type";
   public static final String INDEX_DIRECTORY = "index_directory";
   public static final String ANALYTICS_ACCOUNT = "analytics_account";
+  public static final String THUMBNAIL_PATTERNS_DIRECTORY = "thumbnail_patterns_directory";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -250,4 +251,9 @@ public class CoreSettings {
 
   @Setting(name = ANALYTICS_ACCOUNT, description = "Google analytics id")
   private static String analyticsAccount;
+
+  @Setting(name = THUMBNAIL_PATTERNS_DIRECTORY,
+      description = "Thumbnail patterns directory",
+      defaultValue = "")
+  private static String thumbnailPatternsDirectory;
 }

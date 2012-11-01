@@ -50,6 +50,7 @@
     <protoc proto="${src.dir}/org/waveprotocol/box/server/persistence/protos/account-store.proto" />
     <protoc proto="${src.dir}/org/waveprotocol/box/server/persistence/protos/delta-store.proto" />
     <protoc proto="${src.dir}/org/waveprotocol/box/server/rpc/rpc.proto" />
+    <protoc proto="${src.dir}/org/waveprotocol/box/attachment/attachment.proto" />
     <protoc proto="${src.dir}/org/waveprotocol/wave/concurrencycontrol/clientserver.proto" />
     <protoc proto="${src.dir}/org/waveprotocol/wave/diff/diff.proto" />
     <protoc proto="${src.dir}/org/waveprotocol/wave/federation/federation.protodevel"/>

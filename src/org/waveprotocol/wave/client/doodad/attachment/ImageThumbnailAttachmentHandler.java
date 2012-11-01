@@ -17,12 +17,12 @@
 
 package org.waveprotocol.wave.client.doodad.attachment;
 
-import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager.Attachment;
-import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager.UploadStatusCode;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailRenderer;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailView;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
-import org.waveprotocol.wave.media.model.AttachmentV3.ImageMetadata;
+import org.waveprotocol.wave.media.model.Attachment;
+import org.waveprotocol.wave.media.model.Attachment.ImageMetadata;
+import org.waveprotocol.wave.media.model.Attachment.Status;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IdentityMap;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -125,7 +125,7 @@ public class ImageThumbnailAttachmentHandler implements SimpleAttachmentManager.
       renderer.getView(e).setThumbnailSize(metadata.getWidth(), metadata.getHeight());
     }
 
-    if (metadata == null && c.getUploadStatusCode() == UploadStatusCode.FAILED_AND_NOT_RETRYABLE) {
+    if (metadata == null && c.getStatus() == Status.FAILED_AND_NOT_RETRYABLE) {
       renderer.getView(e).displayDeadImage(
           attachmentLoadingFailedTooltip);
     }
@@ -139,14 +139,14 @@ public class ImageThumbnailAttachmentHandler implements SimpleAttachmentManager.
     }
 
     ImageThumbnailView v = renderer.getView(e);
-    switch (c.getUploadStatusCode()) {
+    switch (c.getStatus()) {
       case NOT_UPLOADING:
       case SUCCEEDED:
         v.hideUploadProgress();
         break;
       case IN_PROGRESS:
       case FAILED_AND_RETRYABLE:
-        v.setUploadProgress(c.getUploadStatusProgress());
+        v.setUploadProgress(((double)c.getUploadedByteCount())/c.getSize());
         v.showUploadProgress();
         break;
       case FAILED_AND_NOT_RETRYABLE:

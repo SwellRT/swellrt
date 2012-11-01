@@ -149,258 +149,6 @@ class ImageThumbnailWidget extends Composite implements ImageThumbnailView {
     DataResource chromeLoadingAttachment();
   }
 
-  /** UiBinder */
-  interface Binder extends UiBinder<HTMLPanel, ImageThumbnailWidget> {}
-  private static final Binder BINDER = GWT.create(Binder.class);
-
-  /**
-   * Singleton instance of resource bundle
-   */
-  static final Resources.Css css = GWT.<Resources>create(Resources.class).css();
-  static {
-    StyleInjector.inject(css.getText());
-  }
-
-  /**
-   * Specifies whether or not to set the width of the image container element.
-   */
-  private static final boolean DO_FRAME_WIDTH_UPDATE = UserAgent.isIE();
-
-  public ImageThumbnailWidget() {
-    initWidget(BINDER.createAndBindUi(this));
-
-    // Restore the desired attributes of widget elements in the template (GWT rips them out)
-
-    Element element = getElement();
-    addStyleName(css.imageThumbnail());
-    // Make the thumbnail as a whole uneditable and unselectable.
-    element.setAttribute("contentEditable", "false");
-    DomHelper.makeUnselectable(element);
-
-    errorLabel.setVisible(false);
-    spin.setVisible(true);
-
-    Element imageElement = image.getElement();
-    imageElement.addClassName(css.image());
-    imageElement.getStyle().setVisibility(Visibility.HIDDEN);
-
-    button = ButtonFactory.createIconToggleButton(
-        IconButtonStyle.PLUS_MINUS, "Options", new ToggleButtonListener() {
-          public void onOff() {
-            Event.getCurrentEvent().stopPropagation();
-            Event.getCurrentEvent().preventDefault();
-            if (listener != null) {
-              listener.onRequestSetFullSizeMode(false);
-            }
-          }
-
-          public void onOn() {
-            Event.getCurrentEvent().stopPropagation();
-            Event.getCurrentEvent().preventDefault();
-            if (listener != null) {
-              listener.onRequestSetFullSizeMode(true);
-            }
-          }
-        });
-    button.addStyleName(css.thumbSizeButton());
-    DebugClassHelper.addDebugClass(button.getElement(), "image_toggle");
-
-    menuButtonContainer.add(button);
-    final Element buttonContainerElement = menuButtonContainer.getElement();
-
-    buttonContainerElement.getStyle().setDisplay(Display.NONE);
-
-    addDomHandler(new MouseOverHandler() {
-      public void onMouseOver(MouseOverEvent event) {
-        resizeButtonVisible = true;
-        updateResizeButton();
-      }
-    }, MouseOverEvent.getType());
-
-    addDomHandler(new MouseOutHandler() {
-      public void onMouseOut(MouseOutEvent event) {
-        resizeButtonVisible = false;
-        updateResizeButton();
-      }
-    }, MouseOutEvent.getType());
-  }
-
-  @UiHandler("image")
-  void onImageClicked(ClickEvent ignored) {
-    handleImageRegionClicked();
-  }
-
-  @UiHandler("spin")
-  void onSpinClicked(ClickEvent ignored) {
-    handleImageRegionClicked();
-  }
-
-  @UiHandler("errorLabel")
-  void onErrorClicked(ClickEvent ignored) {
-    handleImageRegionClicked();
-  }
-
-  private void handleImageRegionClicked() {
-    if (listener != null) {
-      listener.onClickImage();
-    }
-  }
-
-  /**
-   * The double buffer loaded used to load the thumbnail.
-   */
-  private DoubleBufferImage doubleBufferLoader;
-
-  /**
-   * Image widget representing the thumbnail image.
-   */
-  @UiField Image image;
-
-  /**
-   * The container to which we will add our drop down menu button
-   */
-  @UiField SimplePanel menuButtonContainer;
-
-  /**
-   * Caption panel to put the caption.
-   */
-  @UiField SimplePanel captionPanel;
-
-  /**
-   * The Label that contains the spinning wheel
-   */
-  @UiField Label spin;
-
-  /**
-   * The Label that contains the error image
-   */
-  @UiField Label errorLabel;
-
-  /**
-   * The fancy chrome around the thumbnail
-   */
-  @UiField HTMLPanel chromeContainer;
-
-  /**
-   * The progress widget.
-   */
-  @UiField ProgressWidget progressWidget;
-
-  private String attachmentUrl;
-
-  private String thumbnailUrl;
-
-  private ImageThumbnailViewListener listener;
-
-  private final ToggleButtonWidget button;
-
-  private boolean resizeButtonVisible = false;
-
-  // logical state
-
-  // TODO(danilatos): Move this state out of the display. Ideally displays should
-  // be stateless.
-  private boolean isFullSize = false;
-
-  private int thumbnailWidth, thumbnailHeight;
-
-  private int attachmentWidth, attachmentHeight;
-
-  @Override
-  public void displayDeadImage(String toolTip) {
-    this.hideUploadProgress();
-    this.spin.setVisible(false);
-    this.errorLabel.setTitle(toolTip);
-    this.errorLabel.setVisible(true);
-  }
-
-  private final Scheduler.Task clearButtonTask = new Scheduler.Task() {
-    public void execute() {
-      Style style = menuButtonContainer.getElement().getStyle();
-      if (resizeButtonVisible) {
-        style.setDisplay(Display.BLOCK);
-      } else {
-        style.setDisplay(Display.NONE);
-      }
-    }
-  };
-
-  private void updateResizeButton() {
-    ScheduleCommand.addCommand(clearButtonTask);
-  }
-
-  @Override
-  public void setListener(ImageThumbnailViewListener listener) {
-    this.listener = listener;
-  }
-
-  @Override
-  public void setThumbnailSize(int width, int height) {
-    this.thumbnailWidth = width;
-    this.thumbnailHeight = height;
-
-    if (isFullSize) {
-      return;
-    }
-
-    image.setPixelSize(width, height);
-    //TODO(user,danilatos): Whinge about how declarative UI doesn't let us avoid this hack:
-    Style pstyle = image.getElement().getParentElement().getParentElement().getStyle();
-    if (width == 0) {
-      image.setWidth("");
-      pstyle.clearWidth();
-    } else {
-      pstyle.setWidth(width, Unit.PX);
-    }
-    if (height == 0) {
-      image.setHeight("");
-      pstyle.clearHeight();
-    } else {
-      pstyle.setHeight(height, Unit.PX);
-    }
-
-    // NOTE(user): IE requires that the imageCaptionContainer element has a width
-    //   in order to correctly center the caption.
-    if (DO_FRAME_WIDTH_UPDATE) {
-      captionPanel.getElement().getStyle().setWidth(width, Unit.PX);
-    }
-  }
-
-  @Override
-  public void setAttachmentSize(int width, int height) {
-    this.attachmentWidth = width;
-    this.attachmentHeight = height;
-  }
-
-  public void setFullSizeMode(boolean isOn) {
-    isFullSize = isOn;
-    button.setOn(isOn);
-    Style pstyle = image.getElement().getParentElement().getParentElement().getStyle();
-    if (isOn) {
-      chromeContainer.getElement().getStyle().setDisplay(Display.NONE);
-
-      image.setPixelSize(attachmentWidth, attachmentHeight);
-      if (attachmentWidth == 0) {
-        image.setWidth("");
-        pstyle.clearWidth();
-      } else {
-        pstyle.setWidth(attachmentWidth, Unit.PX);
-      }
-      if (attachmentHeight == 0) {
-        image.setHeight("");
-        pstyle.clearHeight();
-      } else {
-        pstyle.setHeight(attachmentHeight, Unit.PX);
-      }
-
-      setAttachmentUrl(attachmentUrl);
-    } else {
-      chromeContainer.getElement().getStyle().clearDisplay();
-      setThumbnailSize(thumbnailWidth, thumbnailHeight);
-      setThumbnailUrl(thumbnailUrl);
-    }
-  }
-
   private static class DoubleBufferImage {
 
     /**
@@ -532,49 +280,229 @@ class ImageThumbnailWidget extends Composite implements ImageThumbnailView {
     }
   }
 
+  /** UiBinder */
+  interface Binder extends UiBinder<HTMLPanel, ImageThumbnailWidget> {}
+  private static final Binder BINDER = GWT.create(Binder.class);
+
   /**
-   * Sets the {@code src} attribute of the image element, and performs any other browser-specific
-   * actions to make the image display nicely.
-   *
-   * {@inheritDoc}
+   * Singleton instance of resource bundle
    */
-  public void setThumbnailUrl(String url) {
-    // TODO(patcoleman): concurrency issue here, in the sense that there is nothing enforcing
-    // setThumbnailUrl and setAttachmentUrl to be called in the same event loop. That currently
-    // is happening, though should be enforced or this code should be changed, otherwise resizing
-    // between these two calls will result in no images being loaded :(
-    if (url.equals(thumbnailUrl)) {
-      return;
-    }
+  static final Resources.Css css = GWT.<Resources>create(Resources.class).css();
+  static {
+    StyleInjector.inject(css.getText());
+  }
 
-    this.thumbnailUrl = url;
+  /**
+   * Specifies whether or not to set the width of the image container element.
+   */
+  private static final boolean DO_FRAME_WIDTH_UPDATE = UserAgent.isIE();
 
-    if (!isFullSize) { // load image into buffer if it is to be displayed
-      if (doubleBufferLoader == null) {
-        doubleBufferLoader = new DoubleBufferImage(spin, errorLabel, image);
+  public ImageThumbnailWidget() {
+    initWidget(BINDER.createAndBindUi(this));
+
+    // Restore the desired attributes of widget elements in the template (GWT rips them out)
+
+    Element element = getElement();
+    addStyleName(css.imageThumbnail());
+    // Make the thumbnail as a whole uneditable and unselectable.
+    element.setAttribute("contentEditable", "false");
+    DomHelper.makeUnselectable(element);
+
+    errorLabel.setVisible(false);
+    spin.setVisible(true);
+
+    Element imageElement = image.getElement();
+    imageElement.addClassName(css.image());
+    imageElement.getStyle().setVisibility(Visibility.HIDDEN);
+
+    button = ButtonFactory.createIconToggleButton(
+        IconButtonStyle.PLUS_MINUS, "Options", new ToggleButtonListener() {
+          public void onOff() {
+            Event.getCurrentEvent().stopPropagation();
+            Event.getCurrentEvent().preventDefault();
+            if (listener != null) {
+              listener.onRequestSetFullSizeMode(false);
+            }
+          }
+
+          public void onOn() {
+            Event.getCurrentEvent().stopPropagation();
+            Event.getCurrentEvent().preventDefault();
+            if (listener != null) {
+              listener.onRequestSetFullSizeMode(true);
+            }
+          }
+        });
+    button.addStyleName(css.thumbSizeButton());
+    DebugClassHelper.addDebugClass(button.getElement(), "image_toggle");
+
+    menuButtonContainer.add(button);
+    final Element buttonContainerElement = menuButtonContainer.getElement();
+
+    buttonContainerElement.getStyle().setDisplay(Display.NONE);
+
+    addDomHandler(new MouseOverHandler() {
+      public void onMouseOver(MouseOverEvent event) {
+        if (isContentImage() && !errorLabel.isVisible()) {
+          resizeButtonVisible = true;
+          updateResizeButton();
+        }
       }
-      doubleBufferLoader.loadImage(url);
-      DOM.setStyleAttribute(image.getElement(), "visibility", "");
-    } else {
-      Image.prefetch(url);
+    }, MouseOverEvent.getType());
+
+    addDomHandler(new MouseOutHandler() {
+      public void onMouseOut(MouseOutEvent event) {
+        resizeButtonVisible = false;
+        updateResizeButton();
+      }
+    }, MouseOutEvent.getType());
+  }
+
+  @UiHandler("image")
+  void onImageClicked(ClickEvent ignored) {
+    handleImageRegionClicked();
+  }
+
+  @UiHandler("spin")
+  void onSpinClicked(ClickEvent ignored) {
+    handleImageRegionClicked();
+  }
+
+  @UiHandler("errorLabel")
+  void onErrorClicked(ClickEvent ignored) {
+    handleImageRegionClicked();
+  }
+
+  private void handleImageRegionClicked() {
+    if (listener != null) {
+      listener.onClickImage();
     }
   }
 
   /**
-   * Set link to follow when the user click on the thumbnail
-   *
-   * {@inheritDoc}
+   * The double buffer loaded used to load the thumbnail.
    */
+  private DoubleBufferImage doubleBufferLoader;
+
+  /**
+   * Image widget representing the thumbnail image.
+   */
+  @UiField Image image;
+
+  /**
+   * The container to which we will add our drop down menu button
+   */
+  @UiField SimplePanel menuButtonContainer;
+
+  /**
+   * Caption panel to put the caption.
+   */
+  @UiField SimplePanel captionPanel;
+
+  /**
+   * The Label that contains the spinning wheel
+   */
+  @UiField Label spin;
+
+  /**
+   * The Label that contains the error image
+   */
+  @UiField Label errorLabel;
+
+  /**
+   * The fancy chrome around the thumbnail
+   */
+  @UiField HTMLPanel chromeContainer;
+
+  /**
+   * The progress widget.
+   */
+  @UiField ProgressWidget progressWidget;
+
+  private String attachmentUrl;
+
+  private String thumbnailUrl;
+
+  private ImageThumbnailViewListener listener;
+
+  private final ToggleButtonWidget button;
+
+  private boolean resizeButtonVisible = false;
+
+  // logical state
+
+  // TODO(danilatos): Move this state out of the display. Ideally displays should
+  // be stateless.
+  private boolean isFullSize = false;
+
+  private int thumbnailWidth, thumbnailHeight;
+
+  private int attachmentWidth, attachmentHeight;
+
+  private final Scheduler.Task clearButtonTask = new Scheduler.Task() {
+    public void execute() {
+      Style style = menuButtonContainer.getElement().getStyle();
+      if (resizeButtonVisible) {
+        style.setDisplay(Display.BLOCK);
+      } else {
+        style.setDisplay(Display.NONE);
+      }
+    }
+  };
+
+  @Override
+  public void displayDeadImage(String toolTip) {
+    this.hideUploadProgress();
+    this.spin.setVisible(false);
+    this.errorLabel.setTitle(toolTip);
+    this.errorLabel.setVisible(true);
+  }
+
+  @Override
+  public void setListener(ImageThumbnailViewListener listener) {
+    this.listener = listener;
+  }
+
+  @Override
+  public void setThumbnailUrl(String url) {
+    this.thumbnailUrl = url;
+  }
+
+  @Override
   public void setAttachmentUrl(String url) {
     this.attachmentUrl = url;
+  }
 
-    if (isFullSize) { // load image into buffer if it is to be displayed
-      if (doubleBufferLoader == null) {
-        doubleBufferLoader = new DoubleBufferImage(spin, errorLabel, image);
-      }
-      doubleBufferLoader.loadImage(url);
-      DOM.setStyleAttribute(image.getElement(), "visibility", "");
+  @Override
+  public void setThumbnailSize(int width, int height) {
+    this.thumbnailWidth = width;
+    this.thumbnailHeight = height;
+
+    if (!isFullSize) {
+      setImageSize();
     }
+  }
+
+  @Override
+  public void setAttachmentSize(int width, int height) {
+    this.attachmentWidth = width;
+    this.attachmentHeight = height;
+
+    if (isFullSize) {
+      setImageSize();
+    }
+  }
+
+  @Override
+  public void setFullSizeMode(boolean isOn) {
+    isFullSize = isOn;
+    button.setOn(isOn);
+    if (isOn) {
+      chromeContainer.getElement().getStyle().setDisplay(Display.NONE);
+    } else {
+      chromeContainer.getElement().getStyle().clearDisplay();
+    }
+    setImageSize();
   }
 
   /** {@inheritDoc} */
@@ -601,4 +529,48 @@ class ImageThumbnailWidget extends Composite implements ImageThumbnailView {
   public Element getCaptionContainer() {
     return captionPanel.getElement();
   }
+
+  private void updateResizeButton() {
+    ScheduleCommand.addCommand(clearButtonTask);
+  }
+
+  private void setImageSize() {
+    int width = isFullSize?attachmentWidth:thumbnailWidth;
+    int height = isFullSize?attachmentHeight:thumbnailHeight;
+    image.setPixelSize(width, height);
+    //TODO(user,danilatos): Whinge about how declarative UI doesn't let us avoid this hack:
+    Style pstyle = image.getElement().getParentElement().getParentElement().getStyle();
+    if (width == 0) {
+      image.setWidth("");
+      pstyle.clearWidth();
+    } else {
+      pstyle.setWidth(width, Unit.PX);
+    }
+    if (height == 0) {
+      image.setHeight("");
+      pstyle.clearHeight();
+    } else {
+      pstyle.setHeight(height, Unit.PX);
+    }
+
+    String url = isFullSize?attachmentUrl:thumbnailUrl;
+    if (url != null) {
+      if (doubleBufferLoader == null) {
+        doubleBufferLoader = new DoubleBufferImage(spin, errorLabel, image);
+      }
+      doubleBufferLoader.loadImage(url);
+      DOM.setStyleAttribute(image.getElement(), "visibility", "");
+    }
+
+    // NOTE(user): IE requires that the imageCaptionContainer element has a width
+    //   in order to correctly center the caption.
+    if (DO_FRAME_WIDTH_UPDATE) {
+      captionPanel.getElement().getStyle().setWidth(width, Unit.PX);
+    }
+  }
+
+  private boolean isContentImage() {
+    return attachmentWidth != 0 && attachmentHeight != 0;
+  }
+
 }

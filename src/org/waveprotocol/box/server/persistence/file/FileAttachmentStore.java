@@ -22,8 +22,6 @@ import com.google.inject.name.Named;
 
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
-import org.waveprotocol.box.server.persistence.AttachmentUtil;
-import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.util.CharBase64;
 
 import java.io.File;
@@ -33,62 +31,51 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
+import org.waveprotocol.box.attachment.AttachmentMetadata;
+import org.waveprotocol.box.attachment.AttachmentProto;
+import org.waveprotocol.box.attachment.proto.AttachmentMetadataProtoImpl;
+import org.waveprotocol.wave.media.model.AttachmentId;
 
 /**
  * An implementation of AttachmentStore which uses files on disk
  *
  * @author josephg@gmail.com (Joseph Gentle)
+ * @author akaplanov@gmail.com (A. Kaplanov)
  */
 public class FileAttachmentStore implements AttachmentStore {
+
+  private final String META_EXT = ".meta";
+  private final String THUMBNAIL_EXT = ".thumbnail";
+
   /**
-   * The directory in which the attachments are stored. This directory is created lazily
-   * when the first attachment is stored.
+   * The directory in which the attachments are stored.
    */
   private final String basePath;
 
   @Inject
   public FileAttachmentStore(@Named(CoreSettings.ATTACHMENT_STORE_DIRECTORY) String basePath) {
     this.basePath = basePath;
-  }
-
-  private static String encodeId(String id) {
-    try {
-      return CharBase64.encode(id.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public String getAttachmentPath(WaveletName waveletName, String attachmentId) {
-    String waveletNamePrefix = FileUtils.waveletNameToPathSegment(waveletName);
-    return basePath + File.separatorChar + waveletNamePrefix + File.separatorChar
-        + encodeId(attachmentId);
-  }
-
-  /** Gets the file which stores an attachment with the specified ID. */
-  private File getAttachmentFile(WaveletName waveletName, String attachmentId, boolean createDir) {
-    File file = new File(getAttachmentPath(waveletName, attachmentId));
-    if (!file.exists() && createDir) {
-      file.getParentFile().mkdirs();
-    }
-
-    return file;
+    new File(basePath).mkdirs();
   }
 
   @Override
-  public AttachmentData getAttachment(WaveletName waveletName, String attachmentId) {
-    final File file = getAttachmentFile(waveletName, attachmentId, false);
-
-    if (!file.exists() || !file.canRead()) {
+  public AttachmentMetadata getMetadata(AttachmentId attachmentId) throws IOException {
+    File file = new File(getMetadataPath(attachmentId));
+    if (!file.exists()) {
       return null;
     }
+    AttachmentProto.AttachmentMetadata protoMetadata =
+        AttachmentProto.AttachmentMetadata.parseFrom(new FileInputStream(file));
+    return new AttachmentMetadataProtoImpl(protoMetadata);
+  }
 
+  @Override
+  public AttachmentData getAttachment(AttachmentId attachmentId) throws IOException {
+    final File file = new File(getAttachmentPath(attachmentId));
+    if (!file.exists()) {
+      return null;
+    }
     return new AttachmentData() {
-      @Override
-      public Date getLastModifiedDate() {
-        return new Date(file.lastModified());
-      }
 
       @Override
       public InputStream getInputStream() throws IOException {
@@ -96,38 +83,100 @@ public class FileAttachmentStore implements AttachmentStore {
       }
 
       @Override
-      public long getContentSize() {
+      public long getSize() {
         return file.length();
-      }
-
-      @Override
-      public void writeDataTo(OutputStream out) throws IOException {
-        InputStream is = getInputStream();
-        AttachmentUtil.writeTo(is, out);
-        is.close();
       }
     };
   }
 
   @Override
-  public boolean storeAttachment(WaveletName waveletName, String id, InputStream data) throws IOException {
-    File file = getAttachmentFile(waveletName, id, true);
-
-    if (file.exists()) {
-      return false;
-    } else {
-      FileOutputStream stream = new FileOutputStream(file);
-      AttachmentUtil.writeTo(data, stream);
-      stream.close();
-      return true;
+  public AttachmentData getThumbnail(AttachmentId attachmentId) throws IOException {
+    final File file = new File(getThumbnailPath(attachmentId));
+    if (!file.exists()) {
+      return null;
     }
+    return new AttachmentData() {
+
+      @Override
+      public InputStream getInputStream() throws IOException {
+        return new FileInputStream(file);
+      }
+
+      @Override
+      public long getSize() {
+        return file.length();
+      }
+    };
   }
 
   @Override
-  public void deleteAttachment(WaveletName waveletName, String id) {
-    File file = new File(getAttachmentPath(waveletName, id));
+  public void storeMetadata(AttachmentId attachmentId, AttachmentMetadata metaData) throws IOException {
+    File file = new File(getMetadataPath(attachmentId));
+    if (file.exists()) {
+      throw new IOException("Attachment already exist");
+    }
+    FileOutputStream stream = new FileOutputStream(file);
+    AttachmentMetadataProtoImpl proto = new AttachmentMetadataProtoImpl(metaData);
+    proto.getPB().writeTo(stream);
+    stream.close();
+  }
+
+  @Override
+  public void storeAttachment(AttachmentId attachmentId, InputStream data) throws IOException {
+    File file = new File(getAttachmentPath(attachmentId));
+    if (file.exists()) {
+      throw new IOException("Attachment already exist");
+    }
+    FileOutputStream stream = new FileOutputStream(file);
+    writeTo(data, stream);
+    stream.close();
+  }
+
+  @Override
+  public void storeThumnail(AttachmentId attachmentId, InputStream data) throws IOException {
+    File file = new File(getThumbnailPath(attachmentId));
+    if (file.exists()) {
+      throw new IOException("Attachment already exist");
+    }
+    FileOutputStream stream = new FileOutputStream(file);
+    writeTo(data, stream);
+    stream.close();
+  }
+
+  @Override
+  public void deleteAttachment(AttachmentId attachmentId) {
+    File file = new File(getAttachmentPath(attachmentId));
     if (file.exists()) {
       file.delete();
     }
   }
+
+  private String getMetadataPath(AttachmentId attachmentId) {
+    return basePath + File.separatorChar + encodeId(attachmentId) + META_EXT;
+  }
+
+  private String getAttachmentPath(AttachmentId attachmentId) {
+    return basePath + File.separatorChar + encodeId(attachmentId);
+  }
+
+  private String getThumbnailPath(AttachmentId attachmentId) {
+    return basePath + File.separatorChar + encodeId(attachmentId) + THUMBNAIL_EXT;
+  }
+
+  private static void writeTo(InputStream source, OutputStream dest) throws IOException {
+    byte[] buffer = new byte[256];
+    int length;
+    while ((length = source.read(buffer)) != -1) {
+      dest.write(buffer, 0, length);
+    }
+  }
+
+  private static String encodeId(AttachmentId id) {
+    try {
+      return CharBase64.encode(id.serialise().getBytes("UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }

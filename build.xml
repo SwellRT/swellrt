@@ -191,6 +191,7 @@
     <pstmessage proto="${build.proto.dir}/org/waveprotocol/box/search/SearchProto.class"/>
     <pstmessage proto="${build.proto.dir}/org/waveprotocol/box/profile/ProfilesProto.class"/>
     <pstmessage proto="${build.proto.dir}/org/waveprotocol/box/server/rpc/Rpc.class"/>
+    <pstmessage proto="${build.proto.dir}/org/waveprotocol/box/attachment/AttachmentProto.class"/>
     <pstmessage proto="${build.proto.dir}/org/waveprotocol/wave/federation/Proto.class"/>
     <pstmessage proto="${build.proto.dir}/org/waveprotocol/wave/concurrencycontrol/ClientServer.class"/>
     <pstmessage proto="${build.proto.dir}/org/waveprotocol/wave/diff/Diff.class"/>
@@ -433,6 +434,7 @@
       <arg value="-noserver" />
       <arg line="-bindAddress 0.0.0.0" />
       <arg line="${gwt.args}"/>
+      <arg line="-startupUrl http://localhost:9898"/>
       <arg value="org.waveprotocol.box.webclient.WebClientProd"/>
     </java>
   </target>

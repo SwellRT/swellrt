@@ -23,19 +23,29 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.waveprotocol.wave.model.id.IdConstants;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
+import org.waveprotocol.wave.model.waveref.WaveRef;
+import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
+import org.waveprotocol.wave.util.logging.Log;
 
 /**
  * Some utility methods for managing attachment data objects
- * 
+ *
  * @author josephg@gmail.com (Joseph Gentle)
  */
 public class AttachmentUtil {
+  private static final Log LOG = Log.get(AttachmentUtil.class);
+
   private AttachmentUtil() {}
-  
+
   /**
    * Write an input stream to an output stream. This will often be useful for
    * implementors of AttachmentData.writeDataTo().
-   * 
+   *
    * @param source The InputStream to read from
    * @param dest The OutputStream to write to
    * @throws IOException
@@ -50,7 +60,7 @@ public class AttachmentUtil {
 
   /**
    * Write the attachment out to a string.
-   * 
+   *
    * @param encoding The string encoding format of the data. Eg, "UTF-8".
    * @return A string representation of the attachment data.
    * @throws IOException
@@ -58,7 +68,32 @@ public class AttachmentUtil {
   public static String writeAttachmentDataToString(
       AttachmentData data, String encoding) throws IOException {
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-    data.writeDataTo(stream);
+    writeTo(data.getInputStream(), stream);
     return stream.toString(encoding);
   }
+
+  /**
+   * Decode wavelet name.
+   *
+   * @param waveRefStr encoded name.
+   * @return WaveletName object.
+   */
+  public static WaveletName waveRef2WaveletName(String waveRefStr) {
+    WaveRef waveRef = null;
+    try {
+      waveRef = JavaWaverefEncoder.decodeWaveRefFromPath(waveRefStr);
+    } catch (InvalidWaveRefException e) {
+      LOG.warning("Cannot decode: " + waveRefStr, e);
+      return null;
+    }
+
+    WaveId waveId = waveRef.getWaveId();
+    WaveletId waveletId =
+        waveRef.getWaveletId() != null ? waveRef.getWaveletId() : WaveletId.of(waveId.getDomain(),
+            IdConstants.CONVERSATION_ROOT_WAVELET);
+
+    WaveletName waveletName = WaveletName.of(waveId, waveletId);
+    return waveletName;
+  }
+
 }

@@ -18,6 +18,7 @@
 package org.waveprotocol.wave.client.doodad.attachment.testing;
 
 import org.waveprotocol.wave.client.doodad.attachment.SimpleAttachmentManager;
+import org.waveprotocol.wave.media.model.Attachment;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IdentitySet;
 import org.waveprotocol.wave.model.util.StringMap;

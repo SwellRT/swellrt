@@ -51,6 +51,8 @@ import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.media.model.AttachmentId;
+import org.waveprotocol.box.attachment.AttachmentMetadata;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -180,73 +182,73 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   }
 
   @Override
-  public AttachmentData getAttachment(WaveletName waveletName, String id) {
+  public AttachmentData getAttachment(AttachmentId attachmentId) {
 
-    String completeAttachmentId = computeCompleteAttachmentId(waveletName, id);
-    final GridFSDBFile attachment = getAttachmentGrid().findOne(completeAttachmentId);
+    final GridFSDBFile attachment = getAttachmentGrid().findOne(attachmentId.serialise());
 
     if (attachment == null) {
       return null;
     } else {
       return new AttachmentData() {
-        @Override
-        public void writeDataTo(OutputStream out) throws IOException {
-          attachment.writeTo(out);
-        }
 
         @Override
-        public Date getLastModifiedDate() {
-          return attachment.getUploadDate();
-        }
-
-        @Override
-        public long getContentSize() {
-          return attachment.getLength();
-        }
-
-        @Override
-        public InputStream getInputStream() {
+        public InputStream getInputStream() throws IOException {
           return attachment.getInputStream();
+        }
+
+        @Override
+        public long getSize() {
+          return attachment.getLength();
         }
       };
     }
   }
 
   @Override
-  public boolean storeAttachment(WaveletName waveletName, String id, InputStream data)
+  public void storeAttachment(AttachmentId attachmentId, InputStream data)
       throws IOException {
-    // This method returns false if the attachment is already in the database.
-    // Unfortunately, as far as I can tell the only way to do this is to perform
-    // a second database query.
-    if (getAttachment(waveletName, id) != null) {
-      return false;
-    } else {
-      String completeAttachmentId = computeCompleteAttachmentId(waveletName, id);
-      GridFSInputFile file = getAttachmentGrid().createFile(data, completeAttachmentId);
+    GridFSInputFile file = getAttachmentGrid().createFile(data, attachmentId.serialise());
 
-      try {
-        file.save();
-      } catch (MongoException e) {
-        // Unfortunately, file.save() wraps any IOException thrown in a
-        // 'MongoException'. Since the interface explicitly throws IOExceptions,
-        // we unwrap any IOExceptions thrown.
-        Throwable innerException = e.getCause();
-        if (innerException instanceof IOException) {
-          throw (IOException) innerException;
-        } else {
-          throw e;
-        }
+    try {
+      file.save();
+    } catch (MongoException e) {
+      // Unfortunately, file.save() wraps any IOException thrown in a
+      // 'MongoException'. Since the interface explicitly throws IOExceptions,
+      // we unwrap any IOExceptions thrown.
+      Throwable innerException = e.getCause();
+      if (innerException instanceof IOException) {
+        throw (IOException) innerException;
+      } else {
+        throw e;
       }
-      return true;
     }
   }
 
   @Override
-  public void deleteAttachment(WaveletName waveletName, String id) {
-    String completeAttachmentId = computeCompleteAttachmentId(waveletName, id);
-    getAttachmentGrid().remove(completeAttachmentId);
+  public void deleteAttachment(AttachmentId attachmentId) {
+    getAttachmentGrid().remove(attachmentId.serialise());
   }
 
+
+  @Override
+  public AttachmentMetadata getMetadata(AttachmentId attachmentId) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public AttachmentData getThumbnail(AttachmentId attachmentId) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void storeMetadata(AttachmentId attachmentId, AttachmentMetadata metaData) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public void storeThumnail(AttachmentId attachmentId, InputStream dataData) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
   // ******** AccountStore
 

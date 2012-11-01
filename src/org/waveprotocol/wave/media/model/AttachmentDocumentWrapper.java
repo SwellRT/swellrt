@@ -39,45 +39,6 @@ import org.waveprotocol.wave.model.util.Serializer.EnumSerializer;
  */
 public class AttachmentDocumentWrapper<N, E extends N, T extends N>
     implements MutableClientAttachment {
-  private static class ImageImpl implements Image {
-    private final int width;
-    private final int height;
-
-    public ImageImpl(int width, int height) {
-      this.width = width;
-      this.height = height;
-    }
-
-    @Override
-    public int getHeight() {
-      return height;
-    }
-
-    @Override
-    public int getWidth() {
-      return width;
-    }
-  }
-
-  private static class ThumbnailImpl implements Thumbnail {
-    private final int width;
-    private final int height;
-
-    public ThumbnailImpl(int width, int height) {
-      this.width = width;
-      this.height = height;
-    }
-
-    @Override
-    public int getHeight() {
-      return height;
-    }
-
-    @Override
-    public int getWidth() {
-      return width;
-    }
-  }
 
   /**
    * Represents a name of an entity in the document.
@@ -96,6 +57,7 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
    */
   // VisibleForTesting
   enum KeyName {
+    ATTACHMENT_ID,
     ATTACHMENT_SIZE,
     ATTACHMENT_URL,
     CREATOR,
@@ -118,12 +80,36 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
     }
   }
 
+    class ImageMetadataImpl implements ImageMetadata {
+
+    private final int width;
+    private final int height;
+
+    public ImageMetadataImpl(int width, int height) {
+      this.width = width;
+      this.height = height;
+    }
+
+
+    @Override
+    public int getWidth() {
+      return width;
+    }
+
+    @Override
+    public int getHeight() {
+      return height;
+    }
+
+  }
+
   private final DocumentBasedBasicMap<E, KeyName, String> dataMap;
 
   private final ObservableMutableDocument<N, E, T> internalDocument;
 
-  private volatile ImageImpl image = null;
-  private volatile ThumbnailImpl thumbnail = null;
+  private ImageMetadata image;
+
+  private ImageMetadata thumbnail;
 
   /**
    * Factory method for creating AttachmentDocumentWrappers.
@@ -150,6 +136,11 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
   }
 
   @Override
+  public String getAttachmentId() {
+    return dataMap.get(KeyName.ATTACHMENT_ID);
+  }
+
+  @Override
   public String getAttachmentUrl() {
     return dataMap.get(KeyName.ATTACHMENT_URL);
   }
@@ -170,12 +161,12 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
   }
 
   @Override
-  public ImageImpl getImage() {
+  public ImageMetadata getContentImageMetadata() {
     if (image == null) {
       Integer width = getAsInt(KeyName.IMAGE_WIDTH);
       Integer height = getAsInt(KeyName.IMAGE_HEIGHT);
       if (width != null && height != null) {
-        image = new ImageImpl(width, height);
+        image = new ImageMetadataImpl(width, height);
       }
     }
     return image;
@@ -192,12 +183,12 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
   }
 
   @Override
-  public ThumbnailImpl getThumbnail() {
+  public ImageMetadata getThumbnailImageMetadata() {
     if (thumbnail == null) {
       Integer width = getAsInt(KeyName.THUMBNAIL_WIDTH);
       Integer height = getAsInt(KeyName.THUMBNAIL_HEIGHT);
       if (width != null && height != null) {
-        thumbnail = new ThumbnailImpl(width, height);
+        thumbnail = new ImageMetadataImpl(width, height);
       }
     }
     return thumbnail;
@@ -226,8 +217,8 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
   }
 
   @Override
-  public String getStatus() {
-    return dataMap.get(KeyName.STATUS);
+  public Status getStatus() {
+    return Status.valueOf(dataMap.get(KeyName.STATUS));
   }
 
   @Override
@@ -251,10 +242,10 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
   }
 
   @Override
-  public Image setImage(int width, int height) {
+  public ImageMetadata setImage(int width, int height) {
     dataMap.put(KeyName.IMAGE_WIDTH, Integer.toString(width));
     dataMap.put(KeyName.IMAGE_HEIGHT, Integer.toString(height));
-    image = new ImageImpl(width, height);
+    image = new ImageMetadataImpl(width, height);
     return image;
   }
 
@@ -278,15 +269,15 @@ public class AttachmentDocumentWrapper<N, E extends N, T extends N>
    * throughout the code base.
    */
   @Override
-  public void setStatus(String status) {
-    dataMap.put(KeyName.STATUS, status);
+  public void setStatus(Status status) {
+    dataMap.put(KeyName.STATUS, status.name());
   }
 
   @Override
-  public Thumbnail setThumbnail(int width, int height) {
+  public ImageMetadata setThumbnail(int width, int height) {
     dataMap.put(KeyName.THUMBNAIL_WIDTH, Integer.toString(width));
     dataMap.put(KeyName.THUMBNAIL_HEIGHT, Integer.toString(height));
-    thumbnail = new ThumbnailImpl(width, height);
+    thumbnail = new ImageMetadataImpl(width, height);
     return thumbnail;
   }
 

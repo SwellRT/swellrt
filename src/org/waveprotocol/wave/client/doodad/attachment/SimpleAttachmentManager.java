@@ -18,8 +18,7 @@
 
 package org.waveprotocol.wave.client.doodad.attachment;
 
-import org.waveprotocol.wave.media.model.AttachmentV3;
-import org.waveprotocol.wave.media.model.ClientAttachment;
+import org.waveprotocol.wave.media.model.Attachment;
 
 /**
  * @author danilatos@google.com (Daniel Danilatos)
@@ -27,27 +26,13 @@ import org.waveprotocol.wave.media.model.ClientAttachment;
  */
 public interface SimpleAttachmentManager {
 
-  public enum UploadStatusCode {
-    NOT_UPLOADING,
-    SUCCEEDED,
-    IN_PROGRESS,
-    FAILED_AND_RETRYABLE,
-    FAILED_AND_NOT_RETRYABLE;
-  }
-
   public interface Listener {
     void onContentUpdated(Attachment attachment);
     void onThumbnailUpdated(Attachment attachment);
     void onUploadStatusUpdated(Attachment attachment);
   }
 
-  public interface Attachment extends ClientAttachment, AttachmentV3 {
-    UploadStatusCode getUploadStatusCode();
-    double getUploadStatusProgress();
-  }
-
   Attachment getAttachment(String id);
-
 
   public void addListener(Listener l);
 
