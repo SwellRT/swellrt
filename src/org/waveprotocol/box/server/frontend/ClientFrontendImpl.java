@@ -93,7 +93,8 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     LOG.info("received openRequest from " + loggedInUser + " for " + waveId + ", filter "
         + waveletIdFilter + ", known wavelets: " + knownWavelets);
 
-    // TODO(josephg): Make it possible for this to succeed & return public waves.
+    // TODO(josephg): Make it possible for this to succeed & return public
+    // waves.
     if (loggedInUser == null) {
       openListener.onFailure("Not logged in");
       return;
@@ -114,65 +115,62 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
 
     String channelId = generateChannelID();
     UserManager userManager = waveletInfo.getUserManager(loggedInUser);
-    synchronized (userManager) {
-      WaveViewSubscription subscription =
-          userManager.subscribe(waveId, waveletIdFilter, channelId, openListener);
-      LOG.info("Subscribed " + loggedInUser + " to " + waveId + " channel " + channelId);
+    WaveViewSubscription subscription =
+        userManager.subscribe(waveId, waveletIdFilter, channelId, openListener);
+    LOG.info("Subscribed " + loggedInUser + " to " + waveId + " channel " + channelId);
 
-      Set<WaveletId> waveletIds;
-      try {
-        waveletIds = waveletInfo.visibleWaveletsFor(subscription, loggedInUser);
-      } catch (WaveServerException e1) {
-        waveletIds = Sets.newHashSet();
-        LOG.warning("Failed to retrieve visible wavelets for " + loggedInUser, e1);
-      }
-      for (WaveletId waveletId : waveletIds) {
-        WaveletName waveletName = WaveletName.of(waveId, waveletId);
-        // Ensure that implicit participants will also receive updates.
-        // TODO (Yuri Z.) If authorizing participant was removed from the wave
-        // (the shared domain participant), then all implicit participant that
-        // were authorized should be unsubsrcibed.
-        waveletInfo.notifyAddedImplcitParticipant(waveletName, loggedInUser);
-        // The WaveletName by which the waveletProvider knows the relevant deltas
-
-        // TODO(anorth): if the client provides known wavelets, calculate
-        // where to start sending deltas from.
-
-        CommittedWaveletSnapshot snapshotToSend;
-
-        // Send a snapshot of the current state.
-        // TODO(anorth): calculate resync point if the client already knows
-        // a snapshot.
-        try {
-          snapshotToSend = waveletProvider.getSnapshot(waveletName);
-        } catch (WaveServerException e) {
-          LOG.warning("Failed to retrieve snapshot for wavelet " + waveletName, e);
-          openListener.onFailure("Wave server failure retrieving wavelet");
-          return;
-        }
-
-        LOG.info("snapshot in response is: " + (snapshotToSend != null));
-        if (snapshotToSend == null) {
-          // Send deltas.
-          openListener.onUpdate(waveletName, snapshotToSend, DeltaSequence.empty(),
-              null, null, channelId);
-        } else {
-          // Send the snapshot.
-          openListener.onUpdate(waveletName, snapshotToSend, DeltaSequence.empty(),
-              snapshotToSend.committedVersion, null, channelId);
-        }
-      }
-
-      WaveletName dummyWaveletName = createDummyWaveletName(waveId);
-      if (waveletIds.size() == 0) {
-        // Send message with just the channel id.
-        LOG.info("sending just a channel id for " + dummyWaveletName);
-        openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, null,
-            channelId);
-      }
-      LOG.info("sending marker for " + dummyWaveletName);
-      openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, true, null);
+    Set<WaveletId> waveletIds;
+    try {
+      waveletIds = waveletInfo.visibleWaveletsFor(subscription, loggedInUser);
+    } catch (WaveServerException e1) {
+      waveletIds = Sets.newHashSet();
+      LOG.warning("Failed to retrieve visible wavelets for " + loggedInUser, e1);
     }
+    for (WaveletId waveletId : waveletIds) {
+      WaveletName waveletName = WaveletName.of(waveId, waveletId);
+      // Ensure that implicit participants will also receive updates.
+      // TODO (Yuri Z.) If authorizing participant was removed from the wave
+      // (the shared domain participant), then all implicit participant that
+      // were authorized should be unsubsrcibed.
+      waveletInfo.notifyAddedImplcitParticipant(waveletName, loggedInUser);
+      // The WaveletName by which the waveletProvider knows the relevant deltas
+
+      // TODO(anorth): if the client provides known wavelets, calculate
+      // where to start sending deltas from.
+
+      CommittedWaveletSnapshot snapshotToSend;
+
+      // Send a snapshot of the current state.
+      // TODO(anorth): calculate resync point if the client already knows
+      // a snapshot.
+      try {
+        snapshotToSend = waveletProvider.getSnapshot(waveletName);
+      } catch (WaveServerException e) {
+        LOG.warning("Failed to retrieve snapshot for wavelet " + waveletName, e);
+        openListener.onFailure("Wave server failure retrieving wavelet");
+        return;
+      }
+
+      LOG.info("snapshot in response is: " + (snapshotToSend != null));
+      if (snapshotToSend == null) {
+        // Send deltas.
+        openListener.onUpdate(waveletName, snapshotToSend, DeltaSequence.empty(), null, null,
+            channelId);
+      } else {
+        // Send the snapshot.
+        openListener.onUpdate(waveletName, snapshotToSend, DeltaSequence.empty(),
+            snapshotToSend.committedVersion, null, channelId);
+      }
+    }
+
+    WaveletName dummyWaveletName = createDummyWaveletName(waveId);
+    if (waveletIds.size() == 0) {
+      // Send message with just the channel id.
+      LOG.info("sending just a channel id for " + dummyWaveletName);
+      openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, null, channelId);
+    }
+    LOG.info("sending marker for " + dummyWaveletName);
+    openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, true, null);
   }
 
   private String generateChannelID() {
