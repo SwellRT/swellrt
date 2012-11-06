@@ -110,9 +110,9 @@
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
           <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />
-          <token key="ENABLE_CLIENTAUTH" value="${enable_clientauth}" />"
-          <token key="CLIENTAUTH_CERT_DOMAIN" value="${clientauth_cert_domain}" />"
-          <token key="DISABLE_LOGINPAGE" value="${disable_loginpage}" />"
+          <token key="ENABLE_CLIENTAUTH" value="${enable_clientauth}" />
+          <token key="CLIENTAUTH_CERT_DOMAIN" value="${clientauth_cert_domain}" />
+          <token key="DISABLE_LOGINPAGE" value="${disable_loginpage}" />
           <token key="SEARCH_TYPE" value="${search_type}" />
           <token key="INDEX_DIRECTORY" value="${index_directory}" />
           <token key="ANALYTICS_ACCOUNT" value="${analytics_account}" />
