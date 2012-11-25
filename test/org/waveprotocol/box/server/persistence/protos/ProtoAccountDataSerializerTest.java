@@ -1,18 +1,20 @@
 /**
- * Copyright 2010 Google Inc.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.waveprotocol.box.server.persistence.protos;
@@ -39,7 +41,7 @@ import java.util.EnumSet;
 import java.util.Map;
 /**
  * Testcases for {@link ProtoAccountDataSerializer}
- * 
+ *
  * @author tad.glines@gmail.com (Tad Glines)
  */
 public class ProtoAccountDataSerializerTest extends TestCase {
@@ -66,11 +68,11 @@ public class ProtoAccountDataSerializerTest extends TestCase {
         EventType.WAVELET_BLIP_CREATED, new Capability(EventType.WAVELET_BLIP_CREATED));
     capabilities.put(EventType.DOCUMENT_CHANGED,
         new Capability(EventType.DOCUMENT_CHANGED, CollectionUtils.newArrayList(Context.SIBLINGS)));
-    
+
     capabilities.put(EventType.BLIP_SUBMITTED,
         new Capability(EventType.BLIP_SUBMITTED,
             CollectionUtils.newArrayList(Context.SIBLINGS, Context.PARENT), "blah"));
-    
+
     robotAccountWithCapabilities =
         new RobotAccountDataImpl(ROBOT_ID, "example.com", "secret", new RobotCapabilities(
             capabilities, "FAKEHASH", ProtocolVersion.DEFAULT), true);
@@ -88,10 +90,10 @@ public class ProtoAccountDataSerializerTest extends TestCase {
 
     EnumSet<Context> cset1 = EnumSet.copyOf(c1.getContexts());
     EnumSet<Context> cset2 = EnumSet.copyOf(c2.getContexts());
-    
+
     return cset1.equals(cset2);
   }
-  
+
   private boolean compareRobotCapabilities(RobotCapabilities r1, RobotCapabilities r2) {
     if (r1.getProtocolVersion() != r2.getProtocolVersion() ||
         !r1.getCapabilitiesHash().equals(r2.getCapabilitiesHash())) {
@@ -100,7 +102,7 @@ public class ProtoAccountDataSerializerTest extends TestCase {
 
     Map<EventType, Capability> map1 = r1.getCapabilitiesMap();
     Map<EventType, Capability> map2 = r1.getCapabilitiesMap();
-    
+
     for (EventType eventType : map1.keySet()) {
       Capability c1 = map1.get(eventType);
       Capability c2 = map2.get(eventType);
@@ -114,10 +116,10 @@ public class ProtoAccountDataSerializerTest extends TestCase {
         return false;
       }
     }
-    
+
     return true;
   }
-  
+
   public final void testHumanAccount() {
     ProtoAccountData data = ProtoAccountDataSerializer.serialize(humanAccount);
     AccountData account = ProtoAccountDataSerializer.deserialize(data);

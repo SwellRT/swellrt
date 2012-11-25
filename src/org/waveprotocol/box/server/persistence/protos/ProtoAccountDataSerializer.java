@@ -1,18 +1,20 @@
 /**
- * Copyright 2010 Google Inc.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.waveprotocol.box.server.persistence.protos;
@@ -47,7 +49,7 @@ import java.util.Map;
 
 /**
  * This class is used to serialize and deserialize {@link AccountData} and {@link ProtoAccountData}
- * 
+ *
  * @author tad.glines@gmail.com (Tad Glines)
  */
 public class ProtoAccountDataSerializer {
@@ -69,7 +71,7 @@ public class ProtoAccountDataSerializer {
     }
     return builder.build();
   }
-  
+
   private static ProtoHumanAccountData serialize(HumanAccountData account) {
     Preconditions.checkNotNull(account, "account is null");
     ProtoHumanAccountData.Builder builder = ProtoHumanAccountData.newBuilder();
@@ -78,7 +80,7 @@ public class ProtoAccountDataSerializer {
     }
     return builder.build();
   }
-  
+
   private static ProtoPasswordDigest serialize(PasswordDigest digest) {
     Preconditions.checkNotNull(digest, "digest is null");
     return ProtoPasswordDigest.newBuilder()
@@ -98,7 +100,7 @@ public class ProtoAccountDataSerializer {
     }
     return builder.build();
   }
-  
+
   private static ProtoRobotCapabilities serialize(RobotCapabilities capabilities) {
     ProtoRobotCapabilities.Builder builder = ProtoRobotCapabilities.newBuilder();
     builder.setProtocolVersion(capabilities.getProtocolVersion().getVersionString());
@@ -110,7 +112,7 @@ public class ProtoAccountDataSerializer {
     }
     return builder.build();
   }
-  
+
   private static ProtoRobotCapability serialize(Capability capability) {
     ProtoRobotCapability.Builder builder = ProtoRobotCapability.newBuilder();
     builder.setEventType(capability.getEventType().name());
@@ -120,7 +122,7 @@ public class ProtoAccountDataSerializer {
     }
     return builder.build();
   }
-  
+
   /**
    * Deserialize {@link ProtoAccountData} into {@link AccountData}.
    */
@@ -139,7 +141,7 @@ public class ProtoAccountDataSerializer {
             "ProtoAccountData contains neither HumanAccountData nor RobotAccountData.");
     }
   }
-  
+
   private static HumanAccountData deserialize(String account_id, ProtoHumanAccountData data) {
     ParticipantId id = ParticipantId.ofUnsafe(account_id);
     if (data.hasPasswordDigest()) {
@@ -152,7 +154,7 @@ public class ProtoAccountDataSerializer {
   private static PasswordDigest deserialize(ProtoPasswordDigest data) {
     return PasswordDigest.from(data.getSalt().toByteArray(), data.getDigest().toByteArray());
   }
-  
+
   private static RobotAccountData deserialize(String account_id, ProtoRobotAccountData data) {
     ParticipantId id = ParticipantId.ofUnsafe(account_id);
     RobotCapabilities capabilities = null;
@@ -162,7 +164,7 @@ public class ProtoAccountDataSerializer {
     return new RobotAccountDataImpl(id, data.getUrl(), data.getConsumerSecret(),
         capabilities, data.getIsVerified());
   }
-  
+
   private static RobotCapabilities deserialize(ProtoRobotCapabilities data) {
     Map<EventType, Capability> capabilities = Maps.newHashMap();
     for (ProtoRobotCapability capabilityData: data.getCapabilityList()) {
@@ -172,7 +174,7 @@ public class ProtoAccountDataSerializer {
     return new RobotCapabilities(capabilities, data.getCapabilitiesHash(),
         ProtocolVersion.fromVersionString(data.getProtocolVersion()));
   }
-  
+
   private static Capability deserialize(ProtoRobotCapability data) {
     List<Context> contexts = Lists.newArrayList();
     for (String str: data.getContextList()) {

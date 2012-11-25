@@ -1,18 +1,20 @@
 /**
- * Copyright 2010 Google Inc.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.waveprotocol.box.server.persistence.file;
@@ -40,7 +42,7 @@ import java.util.Map;
 
 /**
  * A flat file based implementation of {@link AccountStore}
- * 
+ *
  * @author tad.glines@gmail.com (Tad Glines)
  */
 public class FileAccountStore implements AccountStore {
@@ -49,7 +51,7 @@ public class FileAccountStore implements AccountStore {
   private final Map<ParticipantId, AccountData> accounts = Maps.newHashMap();
 
   private static final Log LOG = Log.get(FileAccountStore.class);
-  
+
   @Inject
   public FileAccountStore(@Named(CoreSettings.ACCOUNT_STORE_DIRECTORY) String accountStoreBasePath) {
     Preconditions.checkNotNull(accountStoreBasePath, "Requested path is null");
@@ -61,7 +63,7 @@ public class FileAccountStore implements AccountStore {
     FileUtils.performDirectoryChecks(accountStoreBasePath, ACCOUNT_FILE_EXTENSION, "account store",
         LOG);
   }
-  
+
   @Override
   public AccountData getAccount(ParticipantId id) throws PersistenceException {
     synchronized (accounts) {
@@ -103,7 +105,7 @@ public class FileAccountStore implements AccountStore {
     return accountStoreBasePath + File.separator + id.getAddress().toLowerCase()
         + ACCOUNT_FILE_EXTENSION;
   }
-  
+
   private AccountData readAccount(ParticipantId id) throws PersistenceException {
     File accountFile = new File(participantIdToFileName(id));
     FileInputStream file = null;
@@ -121,7 +123,7 @@ public class FileAccountStore implements AccountStore {
       FileUtils.closeAndIgnoreException(file, accountFile, LOG);
     }
   }
-  
+
   private void writeAccount(AccountData account) throws PersistenceException {
     File accountFile = new File(participantIdToFileName(account.getId()));
     OutputStream file = null;
