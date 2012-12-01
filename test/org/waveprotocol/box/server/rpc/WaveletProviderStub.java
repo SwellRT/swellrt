@@ -22,6 +22,7 @@ package org.waveprotocol.box.server.rpc;
 import com.google.common.collect.ImmutableSet;
 
 import org.waveprotocol.box.common.ExceptionalIterator;
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.box.server.util.TestDataUtil;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
@@ -35,7 +36,6 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
 
-import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -88,8 +88,8 @@ public class WaveletProviderStub implements WaveletProvider {
   }
 
   @Override
-  public Collection<TransformedWaveletDelta> getHistory(WaveletName waveletName,
-      HashedVersion versionStart, HashedVersion versionEnd) {
+  public void getHistory(WaveletName waveletName, HashedVersion versionStart, HashedVersion versionEnd,
+      Receiver<TransformedWaveletDelta> receiver) throws WaveServerException {
     throw new UnsupportedOperationException();
   }
 

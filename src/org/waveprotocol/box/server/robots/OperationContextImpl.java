@@ -23,6 +23,7 @@ import static org.waveprotocol.box.server.robots.util.OperationUtil.buildUserDat
 import static org.waveprotocol.box.server.robots.util.RobotsUtil.createEmptyRobotWavelet;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.wave.api.ApiIdSerializer;
 import com.google.wave.api.InvalidRequestException;
@@ -41,23 +42,28 @@ import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.robots.util.OperationUtil;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.wave.model.conversation.Conversation;
 import org.waveprotocol.wave.model.conversation.ConversationBlip;
 import org.waveprotocol.wave.model.conversation.ObservableConversationView;
-import org.waveprotocol.wave.model.id.InvalidIdException;
-import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.id.WaveletId;
-import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.schema.SchemaCollection;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.impl.ObservablePluggableMutableDocument;
 import org.waveprotocol.wave.model.wave.data.impl.WaveletDataImpl;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
+import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
+import org.waveprotocol.wave.model.id.InvalidIdException;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class which provides context for robot operations and gives access to the
@@ -332,6 +338,60 @@ public class OperationContextImpl implements OperationContext, OperationResults 
     return responses.containsKey(operationId);
   }
 
+  @Override
+  public ImmutableSet<WaveletId> getVisibleWaveletIds(OperationRequest operation, ParticipantId participant)
+      throws InvalidRequestException {
+    Set<WaveletId> waveletIds = new HashSet<WaveletId>();
+    try {
+      WaveId waveId = ApiIdSerializer.instance().deserialiseWaveId(
+          OperationUtil.<String>getRequiredParameter(operation, ParamsProperty.WAVE_ID));
+      ImmutableSet<WaveletId> ids = waveletProvider.getWaveletIds(waveId);
+      for (WaveletId waveletId: ids) {
+        WaveletName waveletName = WaveletName.of(waveId, waveletId);
+        if (waveletProvider.checkAccessPermission(waveletName, participant)) {
+          waveletIds.add(waveletId);
+        }
+      }
+    } catch (InvalidIdException ex) {
+      throw new InvalidRequestException("Invalid id", operation, ex);
+    } catch (WaveServerException e) {
+      LOG.severe("Error of access to wave", e);
+    }
+    return ImmutableSet.copyOf(waveletIds);
+  }
+
+  @Override
+  public CommittedWaveletSnapshot getWaveletSnapshot(WaveletName waveletName, ParticipantId participant)
+    throws InvalidRequestException {
+    try {
+      if (!waveletProvider.checkAccessPermission(waveletName, participant)) {
+        throw new InvalidRequestException("Access rejected");
+      }
+      return waveletProvider.getSnapshot(waveletName);
+    } catch (WaveServerException ex) {
+      LOG.severe("Error of access to wavelet " + waveletName, ex);
+      return null;
+    }
+  }
+
+  @Override
+  public void getDeltas(WaveletName waveletName, ParticipantId participant,
+      HashedVersion fromVersion, HashedVersion toVersion, Receiver<TransformedWaveletDelta> receiver)
+      throws InvalidRequestException {
+    try {
+      if (!waveletProvider.checkAccessPermission(waveletName, participant)) {
+        throw new InvalidRequestException("Access rejected");
+      }
+      Preconditions.checkState(fromVersion.compareTo(toVersion) <= 0);
+      if (fromVersion.equals(toVersion)) {
+        return;
+      }
+      waveletProvider.getHistory(waveletName, fromVersion, toVersion, receiver);
+    } catch (WaveServerException ex) {
+      LOG.severe("Error of access to wavelet " + waveletName, ex);
+    }
+  }
+
   /**
    * Stores a response in this context.
    *
@@ -342,24 +402,5 @@ public class OperationContextImpl implements OperationContext, OperationResults 
     Preconditions.checkState(
         !responses.containsKey(operationId), "Overwriting an existing response");
     responses.put(operationId, response);
-  }
-
-  /**
-   * Takes snapshot of a wavelet, checking access for the given participant.
-   *
-   * @return snapshot on success, null on failure
-   */
-  private CommittedWaveletSnapshot getWaveletSnapshot(WaveletName waveletName, ParticipantId participant) {
-    try {
-      if (!waveletProvider.checkAccessPermission(waveletName, participant)) {
-        LOG.severe(
-            participant + " tried to open " + waveletName + " which it isn't participating in");
-        return null;
-      }
-      return waveletProvider.getSnapshot(waveletName);
-    } catch (WaveServerException e) {
-      LOG.severe("Cannot access wavelet " + waveletName, e);
-      return null;
-    }
   }
 }

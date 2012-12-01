@@ -19,6 +19,7 @@
 
 package com.google.wave.api;
 
+import com.google.wave.api.impl.RawAttachmentData;
 import com.google.wave.api.impl.DocumentModifyAction;
 import com.google.wave.api.impl.DocumentModifyQuery;
 import com.google.wave.api.impl.WaveletData;
@@ -100,6 +101,7 @@ public class JsonRpcConstant {
     WAVE_ID("waveId", String.class),
     WAVELET_ID("waveletId", String.class),
     BLIP_ID("blipId", String.class),
+    ATTACHMENT_ID("attachmentId", String.class),
 
     // Operation specific parameters.
     ANNOTATION("annotation", Annotation.class),
@@ -139,10 +141,15 @@ public class JsonRpcConstant {
     THREADS("threads", Map.class),
     WAVELET_DATA("waveletData", WaveletData.class),
     WAVELET_TITLE("waveletTitle", String.class),
-    RAW_DELTAS_FROM_VERSION("rawDeltasFromVersion", Long.class),
-    RETURN_RAW_SNAPSHOT("returnRawSnapshot", Boolean.class),
-    RAW_SNAPSHOT("rawSnapshot", List.class),
-    RAW_DELTAS("rawDeltas", List.class);
+    RETURN_WAVELET_IDS("returnWaveletIds", Boolean.class),
+    WAVELET_IDS("waveletIds", List.class),
+    RAW_SNAPSHOT("rawSnapshot", String.class),
+    FROM_VERSION("fromVersion", byte[].class),
+    TO_VERSION("toVersion", byte[].class),
+    RAW_DELTAS("rawDeltas", List.class),
+    TARGET_VERSION("targetVersion", byte[].class),
+    ATTACHMENT_DATA("attachmentData", RawAttachmentData.class),
+    IMPORTED_FROM_VERSION("importedFromVersion", Long.class);
 
     private static final Logger LOG = Logger.getLogger(ParamsProperty.class.getName());
 

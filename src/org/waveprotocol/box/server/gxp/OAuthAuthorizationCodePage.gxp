@@ -1,0 +1,44 @@
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  GXP template for the OAuth authorization page.
+  Generate "ant gen_gxp".
+  Author: akaplanov@google.com (A. Kaplanov)
+-->
+
+<gxp:template
+  name='org.waveprotocol.box.server.gxp.OAuthAuthorizationCodePage'
+  xmlns='http://www.w3.org/1999/xhtml' xmlns:gxp='http://google.com/2001/gxp'>
+
+  <gxp:param name='code' type='String' />
+
+  <html>
+
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <title>Authorization code</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" />
+  </head>
+
+  <body>
+    <div>
+      <div>Please copy this code, switch to your application and paste it there:</div>
+      <input id="code" type="text" readonly="readonly" style="width:500px" onclick="this.focus();this.select();">
+        <gxp:attr name='value'>
+          <gxp:eval expr='code'/>
+        </gxp:attr>
+      </input>
+    </div>
+  </body>
+  </html>
+</gxp:template>

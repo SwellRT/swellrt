@@ -1,0 +1,52 @@
+Export/Import Utilities.
+
+Use for:
+- backup of specified waves.
+- transform waves between Wiab instances.
+
+1. Login.
+
+Login to Wiab performed using user or robot account.
+To login with robot account specify parameters "consumer_key" and "consumer_secret".
+If this parameters are not defined, you will be prompted to open specified URL in the browser,
+login at the server and copy/paste secret code to program.
+
+2. Export.
+
+Downloads waves data to the specified directory.
+
+Use: WaveExport <server URL> <export directory>
+   [-consumer_key     Robot consumer key]
+   [-consumer_secret  Robot consumer secret]
+   [-search           Search query]
+   [-include          Include waves list]
+   [-include_file     Include waves list file]
+   [-exclude          Exclude waves list]
+
+By default are exported all waves, in which logged in user or robot are participant.
+You may modify search query, specify it in the parameter "search".
+It is also possible to specify a list of included and excluded waves (parameters "include", "include_file", "exclude").
+
+For each wave is determined the list of visible wavelets, which are uploaded to the special files in the specified directory.
+
+Export uploads:
+- wavelet snapshot;
+- the history of wavelet changes in the deltas;
+- attachments for all wavelet history.
+
+3. Import.
+
+Uploads waves data from the specified directory.
+
+Use: WaveImport <server URL> <export directory>
+   [-consumer_key    Robot consumer key]
+   [-consumer_secret Robot consumer secret]
+   [-wave_domain     Target wave domain]
+
+If a server domain in which the data is imported, different from the source domain,
+it must be specified in the parameter "wave_domain".
+Iidentifiers of waves and wavelets will be changed to the specified domain.
+Domain of the participants also will be changed.
+
+If the server already has a wavelet with the specified identifier, the import will be made from the current version of the wavelet,
+or wavelet is skipped.

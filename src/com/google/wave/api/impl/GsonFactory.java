@@ -20,11 +20,7 @@
 package com.google.wave.api.impl;
 
 import com.google.common.collect.Lists;
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.wave.api.Annotation;
 import com.google.wave.api.Attachment;
@@ -37,11 +33,13 @@ import com.google.wave.api.Range;
 import com.google.wave.api.BlipThread;
 import com.google.wave.api.SearchResult;
 
+import org.apache.commons.codec.binary.Base64;
+import org.waveprotocol.wave.model.id.WaveletId;
+
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
+import java.io.UnsupportedEncodingException;
 
 /**
  * A factory to instantiate a {@link Gson} instance, with pre-registered type
@@ -54,6 +52,10 @@ public class GsonFactory {
   public static final Type PARTICIPANT_LIST_TYPE = new TypeToken<List<String>>(){}.getType();
   public static final Type THREAD_MAP_TYPE = new TypeToken<Map<String, BlipThread>>(){}.getType();
   public static final Type STRING_MAP_TYPE = new TypeToken<Map<String, String>>(){}.getType();
+  public static final Type WAVELET_ID_LIST_TYPE = new TypeToken<List<WaveletId>>(){}.getType();
+  public static final Type RAW_DELTAS_TYPE = new TypeToken<List<byte[]>>(){}.getType();
+  public static final Type RAW_ATTACHMENT_MAP_TYPE = new TypeToken<Map<String, RawAttachmentData>>(){}
+      .getType();
   public static final Type OPERATION_REQUEST_LIST_TYPE = new TypeToken<List<OperationRequest>>(){}
       .getType();
   public static final Type JSON_RPC_RESPONSE_LIST_TYPE = new TypeToken<List<JsonRpcResponse>>(){}
@@ -115,7 +117,10 @@ public class GsonFactory {
         .registerTypeAdapter(Range.class, new RangeInstanceCreator())
         .registerTypeAdapter(BlipThread.class, new ThreadInstanceCreator())
         .registerTypeAdapter(SearchResult.class, new SearchResultInstanceCreator())
-        .registerTypeAdapter(SearchResult.Digest.class, new SearchResultDigestInstanceCreator());
+        .registerTypeAdapter(SearchResult.Digest.class, new SearchResultDigestInstanceCreator())
+        .registerTypeAdapter(WaveletId.class, new WaveletIdInstanceCreator())
+        .registerTypeAdapter(RawAttachmentData.class, new AttachmentDataInstanceCreator())
+        .registerTypeAdapter(byte[].class, new ByteArrayGsonAdaptor());
 
     // Register custom type adapters.
     for (Entry<Type, Object> entry : customTypeAdapters.entrySet()) {
@@ -171,7 +176,7 @@ public class GsonFactory {
       return new BlipThread(null, -1, null, null);
     }
   }
-  
+
   /**
    * An instance creator that creates an empty {@link SearchResult}.
    */
@@ -181,7 +186,7 @@ public class GsonFactory {
       return new SearchResult("");
     }
   }
-  
+
   /**
    * An instance creator that creates an empty {@link SearchResult.Digest}.
    */
@@ -191,6 +196,57 @@ public class GsonFactory {
     public SearchResult.Digest createInstance(Type type) {
       List<String> participants = Lists.newLinkedList();
       return new SearchResult.Digest("", "", "", participants, -1, -1, -1, -1);
+    }
+  }
+
+  /**
+   * An instance creator that creates an empty {@link WaveletId}.
+   */
+  private static class WaveletIdInstanceCreator implements
+      InstanceCreator<WaveletId> {
+    @Override
+    public WaveletId createInstance(Type type) {
+      return WaveletId.of("dummy", "dummy");
+    }
+  }
+
+  /**
+   * An instance creator that creates an empty {@link AttachmentData}.
+   */
+  private static class AttachmentDataInstanceCreator implements InstanceCreator<RawAttachmentData> {
+    @Override
+    public RawAttachmentData createInstance(Type type) {
+      return new RawAttachmentData("", "", new byte[0]);
+    }
+  }
+
+  /**
+   * An instance creator serializer and deserializer that creates
+   * serializes and deserializes an empty {@link ByteString}.
+   */
+  private static class ByteArrayGsonAdaptor implements InstanceCreator<byte[]>,
+      JsonSerializer<byte[]>, JsonDeserializer<byte[]> {
+    @Override
+    public byte[] createInstance(Type type) {
+      return new byte[0];
+    }
+
+    @Override
+    public JsonElement serialize(byte[] bytes, Type type, JsonSerializationContext jsc) {
+      try {
+        return new JsonPrimitive(new String(Base64.encodeBase64(bytes), "UTF-8"));
+      } catch (UnsupportedEncodingException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+
+    @Override
+    public byte[] deserialize(JsonElement je, Type type, JsonDeserializationContext jdc) throws JsonParseException {
+      try {
+        return Base64.decodeBase64(je.getAsString().getBytes("UTF-8"));
+      } catch (UnsupportedEncodingException ex) {
+        throw new RuntimeException(ex);
+      }
     }
   }
 }

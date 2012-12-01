@@ -64,7 +64,6 @@ import org.waveprotocol.box.server.rpc.SignOutServlet;
 import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
 import org.waveprotocol.box.server.rpc.WaveClientServlet;
 import org.waveprotocol.box.server.rpc.WaveRefServlet;
-import org.waveprotocol.box.server.waveserver.ImportServlet;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
@@ -251,11 +250,6 @@ public class ServerMain {
     server.addServlet("/webclient/remote_logging", RemoteLoggingServiceImpl.class);
     server.addServlet("/profile/*", FetchProfilesServlet.class);
     server.addServlet("/waveref/*", WaveRefServlet.class);
-
-    boolean enableImport = injector
-            .getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_IMPORT)));
-    if (enableImport)
-      server.addServlet("/import", ImportServlet.class);
 
     String gadgetHostName =
         injector

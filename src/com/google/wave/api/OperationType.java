@@ -84,6 +84,13 @@ public enum OperationType {
   ROBOT_NOTIFY("robot.notify"),
   ROBOT_SEARCH("robot.search"),
 
+  ROBOT_EXPORT_SNAPSHOT("robot.exportSnapshot"),
+  ROBOT_EXPORT_DELTAS("robot.exportDeltas"),
+  ROBOT_EXPORT_ATTACHMENT("robot.exportAttachment"),
+  ROBOT_IMPORT_SNAPSHOT("robot.importSnapshot"),
+  ROBOT_IMPORT_DELTAS("robot.importDeltas"),
+  ROBOT_IMPORT_ATTACHMENT("robot.importAttachment"),
+
   // Remove these deprecated operations once all robots are upgraded to v0.21.
   @Deprecated WAVELET_ADD_PARTICIPANT("wavelet.participant.add"),
   @Deprecated WAVELET_REMOVE_PARTICIPANT("wavelet.participant.remove"),

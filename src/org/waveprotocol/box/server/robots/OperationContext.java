@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.robots;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.wave.api.InvalidRequestException;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
 import com.google.wave.api.OperationRequest;
@@ -33,6 +34,11 @@ import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
+import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
+import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.box.common.Receiver;
+import org.waveprotocol.wave.model.version.HashedVersion;
 
 import java.util.Map;
 
@@ -100,7 +106,7 @@ public interface OperationContext {
    * wavelet for specified wavelet id doesn't exist - the method returns
    * null. However, for user data wavelets the method will create a new empty one
    * and return it.
-   * 
+   *
    * @param waveId the wave id of the wavelet to open.
    * @param waveletId the wavelet id of the wavelet to open.
    * @param participant the id of the participant that wants to open the
@@ -115,7 +121,7 @@ public interface OperationContext {
    * wavelet for specified wavelet id doesn't exist - the method returns
    * null. However, for user data wavelets the method will create a new empty one
    * and return it.
-   * 
+   *
    * @param operation the operation specifying which wavelet to open.
    * @param participant the id of the participant that wants to open the
    *        wavelet.
@@ -182,4 +188,37 @@ public interface OperationContext {
    * and ids.
    */
   ConversationUtil getConversationUtil();
+
+  /**
+   * Gets the list of wavelet Ids that are visible to the user.
+   *
+   * @param operation the operation specifying wave.
+   * @param participant the user.
+   * @return set of wavelet Ids, visible to the user.
+   */
+  ImmutableSet<WaveletId> getVisibleWaveletIds(OperationRequest operation, ParticipantId participant)
+      throws InvalidRequestException;
+
+  /**
+   * Takes snapshot of a wavelet, checking access for the given participant.
+   *
+   * @param waveletName the wavelet name of the wavelet to get.
+   * @param participant the user.
+   * @return snapshot on success, null on failure
+   */
+  CommittedWaveletSnapshot getWaveletSnapshot(WaveletName waveletName, ParticipantId participant)
+      throws InvalidRequestException;
+
+  /**
+   * Takes deltas history of a wavelet, checking access for the given participant.
+   *
+   * @param waveletName the wavelet name of the wavelet to get.
+   * @param participant the user.
+   * @param fromVersion start version (inclusive), minimum 0.
+   * @param toVersion start version (exclusive).
+   * @param receiver the transformed deltas receiver.
+   */
+  void getDeltas(WaveletName waveletName, ParticipantId participant,
+      HashedVersion fromVersion, HashedVersion toVersion, Receiver<TransformedWaveletDelta> receiver)
+      throws InvalidRequestException;
 }

@@ -25,10 +25,7 @@ import com.google.wave.api.Wavelet;
 import com.google.wave.api.impl.EventMessageBundle;
 import com.google.wave.api.impl.WaveletData;
 
-import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Event triggered when a wavelet is fetched. This event is triggered after a
@@ -49,15 +46,6 @@ public class WaveletFetchedEvent extends AbstractEvent {
   /** The threads that are associated with the fetched wavelet. */
   private final Map<String, BlipThread> threads;
 
-  /** Raw deltas.  Null if not requested. */
-  @Nullable private final List<String> rawDeltas;
-
-  /**
-   * Raw snapshot.  The first element is the wavelet metadata, the
-   * rest are blips.  Null if no snapshot was requested.
-   */
-  @Nullable private final List<String> rawSnapshot;
-
   /**
    * Constructor.
    *
@@ -74,15 +62,12 @@ public class WaveletFetchedEvent extends AbstractEvent {
    */
   public WaveletFetchedEvent(Wavelet wavelet, EventMessageBundle bundle, String modifiedBy,
       Long timestamp, String message, String rootBlipId, WaveletData waveletData,
-      Map<String, BlipData> blips, Map<String, BlipThread> threads,
-      @Nullable List<String> rawDeltas, @Nullable List<String> rawSnapshot) {
+      Map<String, BlipData> blips, Map<String, BlipThread> threads) {
     super(EventType.WAVELET_FETCHED, wavelet, bundle, modifiedBy, timestamp, rootBlipId);
     this.message = message;
     this.waveletData = waveletData;
     this.blips = blips;
     this.threads = threads;
-    this.rawDeltas = rawDeltas;
-    this.rawSnapshot = rawSnapshot;
   }
 
   /**
@@ -93,8 +78,6 @@ public class WaveletFetchedEvent extends AbstractEvent {
     this.waveletData = null;
     this.blips = null;
     this.threads = null;
-    this.rawDeltas = null;
-    this.rawSnapshot = null;
   }
 
   /**
@@ -134,14 +117,6 @@ public class WaveletFetchedEvent extends AbstractEvent {
    */
   public Map<String, BlipThread> getThreads() {
     return threads;
-  }
-
-  @Nullable public List<String> getRawDeltas() {
-    return rawDeltas;
-  }
-
-  @Nullable public List<String> getRawSnapshot() {
-    return rawSnapshot;
   }
 
   /**

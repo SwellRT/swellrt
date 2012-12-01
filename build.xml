@@ -432,7 +432,6 @@
       <arg value="-noserver" />
       <arg line="-bindAddress 0.0.0.0" />
       <arg line="${gwt.args}"/>
-      <arg line="-startupUrl http://localhost:9898"/>
       <arg value="org.waveprotocol.box.webclient.WebClientProd"/>
     </java>
   </target>
@@ -532,7 +531,7 @@
     <touch file="${dep}/stage"/>
   </target>
 
-  <target name="dist" depends="test, compile-gwt, dist-server, dist-import"
+  <target name="dist" depends="test, compile-gwt, dist-server, dist-export-import"
       description="Compiles, tests and creates the binary executable.">
   </target>
 
@@ -630,7 +629,7 @@
         <include name="org/xmpp/**/*" />
         <exclude name="org/waveprotocol/box/webclient/**/*"/>
         <exclude name="org/waveprotocol/box/consoleclient/**/*"/>
-        <exclude name="org/waveprotocol/box/waveimport/**/*"/>
+        <exclude name="org/waveprotocol/box/expimp/**/*"/>
         <exclude name="org/waveprotocol/wave/client/*"/>
         <exclude name="org/waveprotocol/wave/client/account/**/*"/>
         <exclude name="org/waveprotocol/wave/client/autohide/**/*"/>
@@ -665,30 +664,35 @@
     <touch file="${dep}/dist-server"/>
   </target>
 
-  <target name="dist-import-dep">
-    <uptodate targetfile="${dep}/dist-import" property="skip.dist-import">
+  <target name="dist-export-import-dep">
+    <uptodate targetfile="${dep}/dist-export-import" property="skip.dist-export-import">
       <srcfiles dir="${staging.dir}"/>
     </uptodate>
   </target>
 
-  <target name="dist-import" depends="stage, dist-import-dep" description="Assembles the Wave Import utilities" unless="skip.dist-import">
-    <jar destfile="${import.jar.out}">
+  <target name="dist-export-import" depends="stage, dist-export-import-dep" description="Assembles the Wave Export/Import utilities" unless="skip.dist-export-import">
+    <jar destfile="${export-import.jar.out}">
       <fileset dir="${staging.dir}">
-        <include name="org/waveprotocol/box/waveimport/**/*"/>
+	<include name="org/waveprotocol/box/server/common/**/*"/>
+        <include name="org/waveprotocol/box/expimp/**/*"/>
         <include name="org/waveprotocol/box/server/persistence/**/*"/>
+        <include name="org/waveprotocol/box/server/rpc/**/*"/>
         <include name="org/waveprotocol/wave/**/*"/>
         <include name="org/waveprotocol/protobuf/**/*"/>
+        <include name="org/waveprotocol/box/attachment/**/*"/>
+        <include name="org/waveprotocol/box/common/comms/**/*"/>
         <include name="org/apache/http/**/*"/>
         <include name="org/apache/commons/**/*"/>
-        <include name="com/google/api/client/**/*"/>
+        <include name="com/google/wave/api/**/*"/>
         <include name="com/google/common/**/*"/>
         <include name="com/google/gson/**/*"/>
         <include name="com/google/protobuf/**/*"/>
         <include name="org/codehaus/jackson/**/*"/>
         <include name="org/json/**/*"/>
+        <include name="net/oauth/**/*"/>
       </fileset>
     </jar>
-    <touch file="${dep}/dist-import"/>
+    <touch file="${dep}/dist-export-import"/>
   </target>
 
   <!-- This rule should be run whenever the build configuration (i.e. build files, libraries) is changed -->

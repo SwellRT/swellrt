@@ -290,7 +290,6 @@ public class ClientFrontendImplTest extends TestCase {
     DELTA.get(0).apply(wavelet);
     CommittedWaveletSnapshot snapshot = new CommittedWaveletSnapshot(wavelet, V0);
     when(waveletProvider.getSnapshot(name)).thenReturn(snapshot);
-    when(waveletProvider.getHistory(name, V0, V1)).thenReturn(DELTAS);
     when(waveletProvider.getWaveletIds(name.waveId)).thenReturn(ImmutableSet.of(name.waveletId));
     return snapshot;
   }

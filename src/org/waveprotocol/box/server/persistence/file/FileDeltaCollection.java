@@ -240,7 +240,8 @@ public class FileDeltaCollection implements DeltasAccess {
 
       WaveletDeltaRecord lastDelta = null;
       for (WaveletDeltaRecord delta : deltas) {
-        index.addDelta(delta.transformed.getAppliedAtVersion(), delta.transformed.size(),
+        index.addDelta(delta.getTransformedDelta().getAppliedAtVersion(),
+            delta.getTransformedDelta().size(),
             file.getFilePointer());
         writeDelta(delta);
         lastDelta = delta;
@@ -248,7 +249,7 @@ public class FileDeltaCollection implements DeltasAccess {
 
       // fsync() before returning.
       file.getChannel().force(true);
-      endVersion = lastDelta.transformed.getResultingVersion();
+      endVersion = lastDelta.getTransformedDelta().getResultingVersion();
     } catch (IOException e) {
       throw new PersistenceException(e);
     }
@@ -545,8 +546,8 @@ public class FileDeltaCollection implements DeltasAccess {
     long headerPointer = file.getFilePointer();
     file.write(new byte[DeltaHeader.HEADER_LENGTH]);
 
-    int appliedLength = writeAppliedDelta(delta.applied);
-    int transformedLength = writeTransformedWaveletDelta(delta.transformed);
+    int appliedLength = writeAppliedDelta(delta.getAppliedDelta());
+    int transformedLength = writeTransformedWaveletDelta(delta.getTransformedDelta());
 
     long endPointer = file.getFilePointer();
     file.seek(headerPointer);

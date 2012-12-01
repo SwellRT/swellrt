@@ -103,6 +103,7 @@ public class DataApiOAuthServletTest extends TestCase {
   private static final String REQUEST_TOKEN_PATH = "/request_token";
   private static final String AUTHORIZE_TOKEN_PATH = "/authorize_token";
   private static final String ACCESS_TOKEN_PATH = "/access_token";
+  private static final String GET_ALL_TOKENS_PATH = "/get_all_tokens";
   private static final ParticipantId ALEX = ParticipantId.ofUnsafe("alex@example.com");
   private static final String CALLBACK_VALUE = "callback";
 
@@ -142,7 +143,8 @@ public class DataApiOAuthServletTest extends TestCase {
     consumer = new OAuthConsumer("", "consumerkey", "consumersecret", serviceProvider);
 
     servlet =
-        new DataApiOAuthServlet(REQUEST_TOKEN_PATH, AUTHORIZE_TOKEN_PATH, ACCESS_TOKEN_PATH,
+        new DataApiOAuthServlet(REQUEST_TOKEN_PATH,
+            AUTHORIZE_TOKEN_PATH, ACCESS_TOKEN_PATH, GET_ALL_TOKENS_PATH,
             serviceProvider, validator, tokenContainer, sessionManager, tokenGenerator);
   }
 

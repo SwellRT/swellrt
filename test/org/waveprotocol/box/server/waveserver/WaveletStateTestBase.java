@@ -19,16 +19,13 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import static org.mockito.Mockito.mock;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
-import org.mockito.Mockito;
-import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -44,16 +41,20 @@ import org.waveprotocol.wave.model.version.HashedVersionFactoryImpl;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
+import org.waveprotocol.wave.federation.Proto;
+import org.waveprotocol.box.common.ListReceiver;
+import org.waveprotocol.box.common.Receiver;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Tests for {@link WaveletState} implementations.
  *
  * @author anorth@google.com (Alex North)
+ * @author akaplanov@gmail.com (Andrew Kaplanov)
  */
 public abstract class WaveletStateTestBase extends TestCase {
 
@@ -146,14 +147,14 @@ public abstract class WaveletStateTestBase extends TestCase {
 
   public void testDeltasAccessibleByBeginVersion() throws Exception {
     appendDeltas(d1, d2, d3);
-    assertEquals(d1.transformed, target.getTransformedDelta(V0));
-    assertEquals(d1.applied, target.getAppliedDelta(V0));
+    assertEquals(d1.getTransformedDelta(), target.getTransformedDelta(V0));
+    assertEquals(d1.getAppliedDelta(), target.getAppliedDelta(V0));
 
-    assertEquals(d2.transformed, target.getTransformedDelta(d1.getResultingVersion()));
-    assertEquals(d2.applied, target.getAppliedDelta(d1.getResultingVersion()));
+    assertEquals(d2.getTransformedDelta(), target.getTransformedDelta(d1.getResultingVersion()));
+    assertEquals(d2.getAppliedDelta(), target.getAppliedDelta(d1.getResultingVersion()));
 
-    assertEquals(d3.transformed, target.getTransformedDelta(d2.getResultingVersion()));
-    assertEquals(d3.applied, target.getAppliedDelta(d2.getResultingVersion()));
+    assertEquals(d3.getTransformedDelta(), target.getTransformedDelta(d2.getResultingVersion()));
+    assertEquals(d3.getAppliedDelta(), target.getAppliedDelta(d2.getResultingVersion()));
 
     // Wrong hashes return null.
     assertNull(target.getTransformedDelta(HashedVersion.unsigned(0)));
@@ -163,9 +164,9 @@ public abstract class WaveletStateTestBase extends TestCase {
   public void testDeltasAccesssibleByEndVersion() throws Exception {
     appendDeltas(d1, d2, d3);
     for (WaveletDeltaRecord d : Arrays.asList(d1, d2, d3)) {
-      assertEquals(d.transformed,
+      assertEquals(d.getTransformedDelta(),
           target.getTransformedDeltaByEndVersion(d.getResultingVersion()));
-      assertEquals(d.applied,
+      assertEquals(d.getAppliedDelta(),
           target.getAppliedDeltaByEndVersion(d.getResultingVersion()));
     }
 
@@ -179,43 +180,76 @@ public abstract class WaveletStateTestBase extends TestCase {
   public void testDeltaHistoryRequiresCorrectHash() throws Exception {
     appendDeltas(d1);
     target.persist(d1.getResultingVersion());
+    Receiver<TransformedWaveletDelta> transformedDeltasReceiver =
+        new ListReceiver<TransformedWaveletDelta>();
+    Receiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>> appliedDeltasReceiver =
+        new ListReceiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>>();
     // Wrong start hash.
-    assertNull(target.getTransformedDeltaHistory(HashedVersion.unsigned(0),
-        d1.getResultingVersion()));
-    assertNull(target.getAppliedDeltaHistory(HashedVersion.unsigned(0),
-        d1.getResultingVersion()));
+    checkGetTransformedDeltasThrowsException(HashedVersion.unsigned(0), d1.getResultingVersion(), transformedDeltasReceiver,
+        IllegalArgumentException.class);
+    checkGetAppliedDeltasThrowsException(HashedVersion.unsigned(0), d1.getResultingVersion(), appliedDeltasReceiver,
+        IllegalArgumentException.class);
 
     // Wrong end hash.
-    assertNull(target.getTransformedDeltaHistory(V0,
-        HashedVersion.unsigned(d1.getResultingVersion().getVersion())));
-    assertNull(target.getAppliedDeltaHistory(V0,
-        HashedVersion.unsigned(d1.getResultingVersion().getVersion())));
+    checkGetTransformedDeltasThrowsException(V0, HashedVersion.unsigned(d1.getResultingVersion().getVersion()),
+        transformedDeltasReceiver, IllegalArgumentException.class);
+    checkGetAppliedDeltasThrowsException(V0, HashedVersion.unsigned(d1.getResultingVersion().getVersion()),
+        appliedDeltasReceiver, IllegalArgumentException.class);
+  }
+
+  private void checkGetTransformedDeltasThrowsException(HashedVersion startVersion, HashedVersion endVersion,
+      Receiver<TransformedWaveletDelta> receiver, Class exceptionClass) {
+    try {
+      target.getTransformedDeltaHistory(startVersion, endVersion, receiver);
+      fail("Expected exception not thrown.");
+    } catch (Exception ex) {
+      assertEquals(IllegalArgumentException.class, exceptionClass);
+    }
+  }
+
+  private void checkGetAppliedDeltasThrowsException(HashedVersion startVersion, HashedVersion endVersion,
+      Receiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>> receiver, Class exceptionClass) {
+    try {
+      target.getAppliedDeltaHistory(startVersion, endVersion, receiver);
+      fail("Expected exception not thrown.");
+    } catch (Exception ex) {
+      assertEquals(IllegalArgumentException.class, exceptionClass);
+    }
   }
 
   public void testSingleDeltaHistoryAccessible() throws Exception {
     appendDeltas(d1);
     target.persist(d1.getResultingVersion());
-    DeltaSequence transformedHistory = target.getTransformedDeltaHistory(V0,
-        d1.getResultingVersion());
-    assertNotNull(transformedHistory);
-    assertEquals(1, transformedHistory.size());
-    assertEquals(d1.transformed, transformedHistory.get(0));
+    ListReceiver<TransformedWaveletDelta> transformedDeltasReceiver =
+        new ListReceiver<TransformedWaveletDelta>();
+    target.getTransformedDeltaHistory(V0, d1.getResultingVersion(), transformedDeltasReceiver);
+    assertEquals(1, transformedDeltasReceiver.size());
+    assertEquals(d1.getTransformedDelta(), transformedDeltasReceiver.get(0));
 
-    Collection<ByteStringMessage<ProtocolAppliedWaveletDelta>> appliedHistory =
-        target.getAppliedDeltaHistory(V0, d1.getResultingVersion());
-    assertNotNull(appliedHistory);
-    assertEquals(1, appliedHistory.size());
-    assertEquals(d1.applied, Iterables.getOnlyElement(appliedHistory));
+    ListReceiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>> appliedDeltasReceiver =
+        new ListReceiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>>();
+    target.getAppliedDeltaHistory(V0, d1.getResultingVersion(), appliedDeltasReceiver);
+    assertEquals(1, appliedDeltasReceiver.size());
+    assertEquals(d1.getAppliedDelta(), Iterables.getOnlyElement(appliedDeltasReceiver));
   }
 
   public void testDeltaHistoryQueriesCorrectHistory() throws Exception {
     appendDeltas(d1, d2, d3);
     target.persist(d3.getResultingVersion());
-    
+
     checkHistoryForDeltas(d1);
     checkHistoryForDeltas(d1, d2);
     checkHistoryForDeltas(d2, d3);
     checkHistoryForDeltas(d1, d2, d3);
+  }
+
+  public void testDeltaHistoryInterruptQueriesCorrectHistory() throws Exception {
+    appendDeltas(d1, d2, d3);
+    target.persist(d3.getResultingVersion());
+
+    checkHistoryForDeltasWithInterrupt(0, d1);
+    checkHistoryForDeltasWithInterrupt(1, d1, d2);
+    checkHistoryForDeltasWithInterrupt(2, d1, d2, d3);
   }
 
   /**
@@ -223,24 +257,72 @@ public abstract class WaveletStateTestBase extends TestCase {
    * delta facets produces correct results.
    */
   private void checkHistoryForDeltas(WaveletDeltaRecord... deltas) {
-    HashedVersion beginVersion = deltas[0].appliedAtVersion;
-    HashedVersion endVersion = deltas[deltas.length - 1].transformed.getResultingVersion();
+    HashedVersion beginVersion = deltas[0].getAppliedAtVersion();
+    HashedVersion endVersion = deltas[deltas.length - 1].getTransformedDelta().getResultingVersion();
 
     {
       List<TransformedWaveletDelta> expected = Lists.newArrayListWithExpectedSize(deltas.length);
       for (WaveletDeltaRecord d : deltas) {
-        expected.add(d.transformed);
+        expected.add(d.getTransformedDelta());
       }
-      assertEquals(expected, target.getTransformedDeltaHistory(beginVersion, endVersion));
+      ListReceiver<TransformedWaveletDelta> transformedDeltasReceiver =
+        new ListReceiver<TransformedWaveletDelta>();
+      target.getTransformedDeltaHistory(beginVersion, endVersion, transformedDeltasReceiver);
+      assertTrue(Iterables.elementsEqual(expected, transformedDeltasReceiver));
     }
     {
       List<ByteStringMessage<ProtocolAppliedWaveletDelta>> expected =
           Lists.newArrayListWithExpectedSize(deltas.length);
       for (WaveletDeltaRecord d : deltas) {
-        expected.add(d.applied);
+        expected.add(d.getAppliedDelta());
       }
-      assertTrue(Iterables.elementsEqual(expected,
-          target.getAppliedDeltaHistory(beginVersion, endVersion)));
+    ListReceiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>> appliedDeltasReceiver =
+        new ListReceiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>>();
+    target.getAppliedDeltaHistory(beginVersion, endVersion, appliedDeltasReceiver);
+      assertTrue(Iterables.elementsEqual(expected, appliedDeltasReceiver));
+    }
+  }
+
+private void checkHistoryForDeltasWithInterrupt(final int interruptIndex, WaveletDeltaRecord... deltas) {
+    HashedVersion beginVersion = deltas[0].getAppliedAtVersion();
+    HashedVersion endVersion = deltas[interruptIndex].getTransformedDelta().getResultingVersion();
+
+    {
+      List<TransformedWaveletDelta> expected = Lists.newArrayListWithExpectedSize(interruptIndex+1);
+      for (int i=0; i <= interruptIndex; i++) {
+        expected.add(deltas[i].getTransformedDelta());
+      }
+      final AtomicInteger index = new AtomicInteger(0);
+      final List<TransformedWaveletDelta> transformedDeltas = new ArrayList<TransformedWaveletDelta>();
+      target.getTransformedDeltaHistory(beginVersion, endVersion, new Receiver<TransformedWaveletDelta>() {
+
+        @Override
+        public boolean put(TransformedWaveletDelta delta) {
+          transformedDeltas.add(delta);
+          return index.getAndIncrement() < interruptIndex;
+        }
+      });
+      assertTrue(Iterables.elementsEqual(expected, transformedDeltas));
+    }
+    {
+      List<ByteStringMessage<ProtocolAppliedWaveletDelta>> expected =
+          Lists.newArrayListWithExpectedSize(interruptIndex+1);
+      for (int i=0; i <= interruptIndex; i++) {
+        expected.add(deltas[i].getAppliedDelta());
+      }
+      final AtomicInteger index = new AtomicInteger(0);
+      final List<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>> appliedDeltas =
+          new ArrayList<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>>();
+      target.getAppliedDeltaHistory(beginVersion, endVersion,
+          new Receiver<ByteStringMessage<ProtocolAppliedWaveletDelta>>() {
+
+        @Override
+        public boolean put(ByteStringMessage<ProtocolAppliedWaveletDelta> delta) {
+          appliedDeltas.add(delta);
+          return index.getAndIncrement() < interruptIndex;
+        }
+      });
+      assertTrue(Iterables.elementsEqual(expected, appliedDeltas));
     }
   }
 
@@ -283,9 +365,10 @@ public abstract class WaveletStateTestBase extends TestCase {
   private void appendDeltas(WaveletDeltaRecord... deltas) throws InvalidProtocolBufferException,
       OperationException {
     for (WaveletDeltaRecord delta : deltas) {
-      target.appendDelta(delta.appliedAtVersion, delta.transformed, delta.applied);
+      target.appendDelta(delta);
     }
   }
+
 
   /**
    * Creates a delta of no-ops and builds the corresponding applied and

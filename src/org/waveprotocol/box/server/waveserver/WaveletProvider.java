@@ -22,6 +22,7 @@ package org.waveprotocol.box.server.waveserver;
 import com.google.common.collect.ImmutableSet;
 
 import org.waveprotocol.box.common.ExceptionalIterator;
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -30,8 +31,6 @@ import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-
-import java.util.Collection;
 
 /**
  * Provides wavelet snapshots and history, and accepts delta submissions to
@@ -80,14 +79,14 @@ public interface WaveletProvider {
    * @param waveletName name of wavelet.
    * @param versionStart start version (inclusive), minimum 0.
    * @param versionEnd end version (exclusive).
-   * @return deltas in the range as requested, ordered by applied version.
+   * @param receiver of deltas.
    * @throws AccessControlException if {@code versionStart} or
    *         {@code versionEnd} are not in the wavelet history.
    * @throws WaveServerException if storage access fails or if the wavelet is in
    *         a bad state
    */
-  Collection<TransformedWaveletDelta> getHistory(WaveletName waveletName,
-      HashedVersion versionStart, HashedVersion versionEnd) throws WaveServerException;
+  void getHistory(WaveletName waveletName, HashedVersion versionStart, HashedVersion versionEnd,
+      Receiver<TransformedWaveletDelta> receiver) throws WaveServerException;
 
   /**
    * Check if the specified participantId has access to the named wavelet.

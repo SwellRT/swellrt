@@ -20,7 +20,6 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Preconditions;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
@@ -36,9 +35,9 @@ import javax.annotation.Nullable;
  * @author soren@google.com (Soren Lassen)
  */
 public class WaveletDeltaRecord {
-  public final HashedVersion appliedAtVersion;
-  @Nullable public final ByteStringMessage<ProtocolAppliedWaveletDelta> applied;
-  public final TransformedWaveletDelta transformed;
+  private final HashedVersion appliedAtVersion;
+  @Nullable private final ByteStringMessage<ProtocolAppliedWaveletDelta> applied;
+  private final TransformedWaveletDelta transformed;
 
   /**
    * @param appliedAtVersion the version which the transformed delta applies at

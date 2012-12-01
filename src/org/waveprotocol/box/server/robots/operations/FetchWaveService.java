@@ -19,6 +19,9 @@
 
 package org.waveprotocol.box.server.robots.operations;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import com.google.wave.api.InvalidRequestException;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
 import com.google.wave.api.OperationRequest;
@@ -31,16 +34,21 @@ import com.google.wave.api.impl.WaveletData;
 import org.waveprotocol.box.server.robots.OperationContext;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.robots.util.OperationUtil;
+
 import org.waveprotocol.wave.model.conversation.Conversation;
 import org.waveprotocol.wave.model.conversation.ObservableConversation;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.Wavelet;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
+
+import java.util.Map;
 
 /**
  * {@link OperationService} for the "fetchWave" operation.
  *
  * @author ljvderijk@google.com (Lennard de Rijk)
+ * @author akaplanov@gmail.com (Andrew Kaplanov)
  */
 public class FetchWaveService implements OperationService {
 
@@ -48,25 +56,31 @@ public class FetchWaveService implements OperationService {
   }
 
   @Override
-  public void execute(
-      OperationRequest operation, OperationContext context, ParticipantId participant)
+  public void execute(OperationRequest operation, OperationContext context, ParticipantId participant)
       throws InvalidRequestException {
-    OpBasedWavelet wavelet = context.openWavelet(operation, participant);
-    ObservableConversation conversation =
-        context.openConversation(operation, participant).getRoot();
+    if (OperationUtil.<Boolean>getOptionalParameter(operation, ParamsProperty.RETURN_WAVELET_IDS, false)) {
+      ImmutableSet<WaveletId> waveletIds = context.getVisibleWaveletIds(operation, participant);
+      Map<ParamsProperty, Object> data =
+          ImmutableMap.<ParamsProperty, Object>of(ParamsProperty.WAVELET_IDS, waveletIds);
+      context.constructResponse(operation, data);
+    } else {
+      OpBasedWavelet wavelet = context.openWavelet(operation, participant);
+      ObservableConversation conversation =
+          context.openConversation(operation, participant).getRoot();
 
-    EventMessageBundle messages =
-        mapWaveletToMessageBundle(context.getConverter(), participant, wavelet, conversation);
+      EventMessageBundle messages =
+          mapWaveletToMessageBundle(context.getConverter(), participant, wavelet, conversation);
 
-    String rootBlipId = ConversationUtil.getRootBlipId(conversation);
-    String message = OperationUtil.getOptionalParameter(operation, ParamsProperty.MESSAGE);
+      String rootBlipId = ConversationUtil.getRootBlipId(conversation);
+      String message = OperationUtil.getOptionalParameter(operation, ParamsProperty.MESSAGE);
 
-    WaveletFetchedEvent event =
-        new WaveletFetchedEvent(null, null, participant.getAddress(), System.currentTimeMillis(),
-            message, rootBlipId, messages.getWaveletData(), messages.getBlipData(),
-            messages.getThreads(), null, null);
+      WaveletFetchedEvent event =
+          new WaveletFetchedEvent(null, null, participant.getAddress(), System.currentTimeMillis(),
+          message, rootBlipId, messages.getWaveletData(), messages.getBlipData(),
+          messages.getThreads());
 
-    context.processEvent(operation, event);
+      context.processEvent(operation, event);
+    }
   }
 
   /**

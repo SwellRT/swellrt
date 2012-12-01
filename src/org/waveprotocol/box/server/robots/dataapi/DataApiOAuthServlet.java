@@ -42,6 +42,8 @@ import org.waveprotocol.box.server.gxp.OAuthAuthorizeTokenPage;
 import org.waveprotocol.wave.model.id.TokenGenerator;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
+import org.waveprotocol.box.server.gxp.OAuthAuthorizationCodePage;
+import org.waveprotocol.wave.model.util.CharBase64;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -58,6 +60,7 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet responsible for the 3-legged OAuth dance required for the Data api.
  *
  * @author ljvderijk@google.com (Lennard de Rijk)
+ * @author akaplanov@gmail.com (A. Kaplanov)
  */
 @SuppressWarnings("serial")
 @Singleton
@@ -68,12 +71,14 @@ public class DataApiOAuthServlet extends HttpServlet {
   private static final String ANONYMOUS_TOKEN = "anonymous";
   private static final String ANONYMOUS_TOKEN_SECRET = "anonymous";
   private static final String HTML_CONTENT_TYPE = "text/html";
+  private static final String PLAIN_CONTENT_TYPE = "text/plain";
   private static final int TOKEN_LENGTH = 8;
   private static final int XSRF_TOKEN_TIMEOUT_HOURS = 12;
 
   private final String requestTokenPath;
   private final String authorizeTokenPath;
   private final String accessTokenPath;
+  private final String allTokensPath;
   private final OAuthServiceProvider serviceProvider;
   private final OAuthValidator validator;
   private final DataApiTokenContainer tokenContainer;
@@ -85,12 +90,15 @@ public class DataApiOAuthServlet extends HttpServlet {
   @Inject
   public DataApiOAuthServlet(@Named("request_token_path") String requestTokenPath,
       @Named("authorize_token_path") String authorizeTokenPath,
-      @Named("access_token_path") String accessTokenPath, OAuthServiceProvider serviceProvider,
+      @Named("access_token_path") String accessTokenPath,
+      @Named("all_tokens_path") String allTokensPath,
+      OAuthServiceProvider serviceProvider,
       OAuthValidator validator, DataApiTokenContainer tokenContainer,
       SessionManager sessionManager, TokenGenerator tokenGenerator) {
     this.requestTokenPath = requestTokenPath;
     this.authorizeTokenPath = authorizeTokenPath;
     this.accessTokenPath = accessTokenPath;
+    this.allTokensPath = allTokensPath;
     this.serviceProvider = serviceProvider;
     this.validator = validator;
     this.tokenContainer = tokenContainer;
@@ -119,6 +127,8 @@ public class DataApiOAuthServlet extends HttpServlet {
       doAuthorizeToken(req, resp);
     } else if (pathInfo.equals(accessTokenPath)) {
       doExchangeToken(req, resp);
+    } else if (pathInfo.equals(allTokensPath)) {
+      doAllTokens(req, resp);
     } else {
       resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
@@ -221,7 +231,7 @@ public class DataApiOAuthServlet extends HttpServlet {
     Preconditions.checkNotNull(user, "User must be supplied");
     // Ask the user for permission.
     OAuthAuthorizeTokenPage.write(resp.getWriter(), new GxpContext(req.getLocale()),
-        DataApiTokenContainer.ACCESS_TOKEN_EXPIRATION, getOrGenerateXsrfToken(user));
+        user.getAddress(), getOrGenerateXsrfToken(user));
     resp.setContentType(HTML_CONTENT_TYPE);
     resp.setStatus(HttpServletResponse.SC_OK);
     return;
@@ -260,7 +270,7 @@ public class DataApiOAuthServlet extends HttpServlet {
         resp.sendError(e.getHttpStatusCode(), e.getMessage());
         return;
       }
-      resp.setContentType("text/plain");
+      resp.setContentType(PLAIN_CONTENT_TYPE);
       resp.getWriter().append("No access granted, you can now close this page.");
       resp.setStatus(HttpServletResponse.SC_OK);
       return;
@@ -335,6 +345,47 @@ public class DataApiOAuthServlet extends HttpServlet {
         out);
     out.close();
     resp.setStatus(HttpServletResponse.SC_OK);
+  }
+
+  /**
+   * Perform full Auth dance and print tokens.
+   */
+  private void doAllTokens(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    OAuthMessage message = new HttpRequestMessage(req, req.getRequestURL().toString());
+    String requestToken = message.getToken();
+    if (requestToken == null) {
+      OAuthConsumer consumer =
+          new OAuthConsumer("", ANONYMOUS_TOKEN, ANONYMOUS_TOKEN_SECRET, serviceProvider);
+      OAuthAccessor accessor = tokenContainer.generateRequestToken(consumer);
+      String url = accessor.consumer.serviceProvider.userAuthorizationURL
+          + "?oauth_token=" + accessor.requestToken + "&oauth_callback="
+          + req.getRequestURL().toString() + "&hd=default";
+      resp.sendRedirect(url);
+    } else {
+      OAuthAccessor accessor;
+      try {
+        accessor = tokenContainer.getRequestTokenAccessor(requestToken);
+      } catch (OAuthProblemException e) {
+        LOG.info("Request token unknown", e);
+        resp.sendError(e.getHttpStatusCode(), e.getMessage());
+        return;
+      }
+      OAuthAccessor authorizedAccessor;
+      try {
+        authorizedAccessor = tokenContainer.generateAccessToken(accessor.requestToken);
+      } catch (OAuthProblemException e) {
+        LOG.info("Request token unknown", e);
+        resp.sendError(e.getHttpStatusCode(), e.getMessage());
+        return;
+      }
+      String authorizationCode = authorizedAccessor.requestToken + " "
+          + authorizedAccessor.accessToken + " " + authorizedAccessor.tokenSecret;
+      String base64AuthCode = CharBase64.encode(authorizationCode.getBytes());
+      OAuthAuthorizationCodePage.write(resp.getWriter(), new GxpContext(req.getLocale()),
+          base64AuthCode);
+      resp.setContentType(HTML_CONTENT_TYPE);
+      resp.setStatus(HttpServletResponse.SC_OK);
+    }
   }
 
   /**

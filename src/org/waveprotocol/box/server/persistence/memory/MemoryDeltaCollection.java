@@ -85,19 +85,19 @@ public class MemoryDeltaCollection implements DeltasAccess {
   @Override
   public HashedVersion getResultingVersion(long version) {
     WaveletDeltaRecord delta = getDelta(version);
-    return (delta != null) ? delta.transformed.getResultingVersion() : null;
+    return (delta != null) ? delta.getTransformedDelta().getResultingVersion() : null;
   }
 
   @Override
   public ByteStringMessage<ProtocolAppliedWaveletDelta> getAppliedDelta(long version) {
     WaveletDeltaRecord delta = getDelta(version);
-    return (delta != null) ? delta.applied : null;
+    return (delta != null) ? delta.getAppliedDelta() : null;
   }
 
   @Override
   public TransformedWaveletDelta getTransformedDelta(long version) {
     WaveletDeltaRecord delta = getDelta(version);
-    return (delta != null) ? delta.transformed : null;
+    return (delta != null) ? delta.getTransformedDelta() : null;
   }
 
   @Override
@@ -112,12 +112,12 @@ public class MemoryDeltaCollection implements DeltasAccess {
       //            start     end
       // After:    ... |   D   |  D + 1 |
       //                     start     end
-      long startVersion = delta.transformed.getAppliedAtVersion();
+      long startVersion = delta.getTransformedDelta().getAppliedAtVersion();
       Preconditions.checkState(
           (startVersion == 0 && endVersion == null) ||
           (startVersion == endVersion.getVersion()));
       deltas.put(startVersion, delta);
-      endVersion = delta.transformed.getResultingVersion();
+      endVersion = delta.getTransformedDelta().getResultingVersion();
       endDeltas.put(endVersion.getVersion(), delta);
     }
   }

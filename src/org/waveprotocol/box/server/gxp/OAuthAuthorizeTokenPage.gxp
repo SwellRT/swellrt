@@ -20,7 +20,7 @@
   name='org.waveprotocol.box.server.gxp.OAuthAuthorizeTokenPage'
   xmlns='http://www.w3.org/1999/xhtml' xmlns:gxp='http://google.com/2001/gxp'>
 
-  <gxp:param name='numberOfMinutes' type='int' />
+  <gxp:param name='user' type='String' />
   <gxp:param name='xsrfToken' type='String' />
 
   <html>
@@ -32,10 +32,9 @@
   </head>
 
   <body>
+  <div>You logged as <gxp:eval expr='user' />.</div>
   A program would like to access your waves and perform operations on your
-  behalf. If you authorize the program it will have access to your data for
-  <gxp:eval expr='numberOfMinutes' />
-  minutes.
+  behalf.
 
   <form method="post" action=""><input type="hidden" name="token">
   <gxp:attr name='value'>

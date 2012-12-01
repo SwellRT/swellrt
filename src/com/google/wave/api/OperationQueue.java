@@ -21,10 +21,12 @@ package com.google.wave.api;
 
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
 import com.google.wave.api.OperationRequest.Parameter;
+import com.google.wave.api.impl.RawAttachmentData;
 
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.media.model.AttachmentId;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -216,10 +218,10 @@ public class OperationQueue implements Serializable {
     }
     return newWavelet;
   }
-  
+
   /**
    * Appends search operation for specified query.
-   * 
+   *
    * @param query the query to execute.
    * @param index the index from which to return results.
    * @param numresults the number of results to return.
@@ -252,6 +254,79 @@ public class OperationQueue implements Serializable {
    */
   public void fetchWavelet(WaveId waveId, WaveletId waveletId) {
     appendOperation(OperationType.ROBOT_FETCH_WAVE, waveId, waveletId, null);
+  }
+
+  /**
+   * Retrieves list of wave wavelets ids.
+   *
+   * @param waveId the id of the wave.
+   */
+  public void retrieveWaveletIds(WaveId waveId) {
+    appendOperation(OperationType.ROBOT_FETCH_WAVE, waveId, null, null,
+        Parameter.of(ParamsProperty.RETURN_WAVELET_IDS, true));
+  }
+
+  /**
+   * Exports snapshot of wavelet.
+   *
+   * @param waveId the id of the wave that should be exported.
+   * @param waveletId the id of the wavelet that should be exported.
+   */
+  public void exportSnapshot(WaveId waveId, WaveletId waveletId) {
+    appendOperation(OperationType.ROBOT_EXPORT_SNAPSHOT, waveId, waveletId, null);
+  }
+
+  /**
+   * Exports deltas of wavelet.
+   *
+   * @param waveId the id of the wave that should be exported.
+   * @param waveletId the id of the wavelet that should be exported.
+   * @param fromVersion start version.
+   * @param toVersion to version.
+   */
+  public void exportRawDeltas(WaveId waveId, WaveletId waveletId,
+      byte[] fromVersion, byte[] toVersion) {
+    appendOperation(OperationType.ROBOT_EXPORT_DELTAS, waveId, waveletId, null,
+        Parameter.of(ParamsProperty.FROM_VERSION, fromVersion),
+        Parameter.of(ParamsProperty.TO_VERSION, toVersion));
+  }
+
+  /**
+   * Export attachment.
+   *
+   * @param attachmentId the id of attachment.
+   */
+  public void exportAttachment(AttachmentId attachmentId) {
+    appendOperation(OperationType.ROBOT_EXPORT_ATTACHMENT,
+        Parameter.of(ParamsProperty.ATTACHMENT_ID, attachmentId.serialise()));
+  }
+
+  /**
+   * Imports deltas of wavelet.
+   *
+   * @param waveId the id of the wave that should be imported.
+   * @param waveletId the id of the wavelet that should be imported.
+   * @param history the history in deltas.
+   */
+  public void importRawDeltas(WaveId waveId, WaveletId waveletId, List<byte[]> history) {
+    appendOperation(OperationType.ROBOT_IMPORT_DELTAS,
+        waveId, waveletId, null, Parameter.of(ParamsProperty.RAW_DELTAS, history));
+  }
+
+  /**
+   * Imports attachment.
+   *
+   * @param waveId the id of the wave that should be imported.
+   * @param waveletId the id of the wavelet that should be imported.
+   * @param attachmentId the id of attachment.
+   * @param attachmentData the attachment data.
+   */
+  public void importAttachment(WaveId waveId, WaveletId waveletId,
+      AttachmentId attachmentId, RawAttachmentData attachmentData) {
+    appendOperation(OperationType.ROBOT_IMPORT_ATTACHMENT,
+        waveId, waveletId, null,
+        Parameter.of(ParamsProperty.ATTACHMENT_ID, attachmentId.serialise()),
+        Parameter.of(ParamsProperty.ATTACHMENT_DATA, attachmentData));
   }
 
   /**

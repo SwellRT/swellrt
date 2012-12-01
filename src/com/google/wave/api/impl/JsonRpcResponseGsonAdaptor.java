@@ -26,7 +26,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.google.gson.reflect.TypeToken;
+
 import com.google.wave.api.JsonRpcResponse;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
 import com.google.wave.api.JsonRpcConstant.ResponseProperty;
@@ -70,11 +70,15 @@ public class JsonRpcResponseGsonAdaptor implements JsonDeserializer<JsonRpcRespo
         Object object = null;
         if (parameterType == ParamsProperty.BLIPS) {
           object = context.deserialize(parameter.getValue(), GsonFactory.BLIP_MAP_TYPE);
-        } else if (parameterType == ParamsProperty.PARTICIPANTS_ADDED || 
+        } else if (parameterType == ParamsProperty.PARTICIPANTS_ADDED ||
             parameterType == ParamsProperty.PARTICIPANTS_REMOVED) {
           object = context.deserialize(parameter.getValue(), GsonFactory.PARTICIPANT_LIST_TYPE);
         } else if (parameterType == ParamsProperty.THREADS) {
           object = context.deserialize(parameter.getValue(), GsonFactory.THREAD_MAP_TYPE);
+        } else if (parameterType == ParamsProperty.WAVELET_IDS) {
+          object = context.deserialize(parameter.getValue(), GsonFactory.WAVELET_ID_LIST_TYPE);
+        } else if (parameterType == ParamsProperty.RAW_DELTAS) {
+          object = context.deserialize(parameter.getValue(), GsonFactory.RAW_DELTAS_TYPE);
         } else {
           object = context.deserialize(parameter.getValue(), parameterType.clazz());
         }

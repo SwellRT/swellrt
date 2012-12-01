@@ -24,17 +24,7 @@ import com.google.inject.Injector;
 import com.google.wave.api.OperationType;
 
 import org.waveprotocol.box.server.robots.AbstractOperationServiceRegistry;
-import org.waveprotocol.box.server.robots.operations.BlipOperationServices;
-import org.waveprotocol.box.server.robots.operations.CreateWaveletService;
-import org.waveprotocol.box.server.robots.operations.DoNothingService;
-import org.waveprotocol.box.server.robots.operations.DocumentModifyService;
-import org.waveprotocol.box.server.robots.operations.FetchProfilesService;
-import org.waveprotocol.box.server.robots.operations.FetchWaveService;
-import org.waveprotocol.box.server.robots.operations.FolderActionService;
-import org.waveprotocol.box.server.robots.operations.OperationService;
-import org.waveprotocol.box.server.robots.operations.ParticipantServices;
-import org.waveprotocol.box.server.robots.operations.SearchService;
-import org.waveprotocol.box.server.robots.operations.WaveletSetTitleService;
+import org.waveprotocol.box.server.robots.operations.*;
 
 /**
  * A registry of {@link OperationService}s for the data API.
@@ -70,5 +60,10 @@ public final class DataApiOperationServiceRegistry extends AbstractOperationServ
     register(OperationType.WAVELET_SET_TITLE, WaveletSetTitleService.create());
     register(OperationType.ROBOT_FOLDER_ACTION, FolderActionService.create());
     register(OperationType.ROBOT_FETCH_PROFILES, injector.getInstance(FetchProfilesService.class));
+    register(OperationType.ROBOT_EXPORT_SNAPSHOT, ExportSnapshotService.create());
+    register(OperationType.ROBOT_EXPORT_DELTAS, ExportDeltasService.create());
+    register(OperationType.ROBOT_EXPORT_ATTACHMENT, injector.getInstance(ExportAttachmentService.class));
+    register(OperationType.ROBOT_IMPORT_DELTAS, injector.getInstance(ImportDeltasService.class));
+    register(OperationType.ROBOT_IMPORT_ATTACHMENT, injector.getInstance(ImportAttachmentService.class));
   }
 }

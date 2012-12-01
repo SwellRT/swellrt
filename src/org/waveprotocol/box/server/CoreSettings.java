@@ -64,7 +64,6 @@ public class CoreSettings {
   public static final String ENABLE_SSL = "enable_ssl";
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
   public static final String SSL_KEYSTORE_PASSWORD = "ssl_keystore_password";
-  public static final String ENABLE_IMPORT = "enable_import";
   public static final String ENABLE_CLIENTAUTH = "enable_clientauth";
   public static final String CLIENTAUTH_CERT_DOMAIN = "clientauth_cert_domain";
   public static final String DISABLE_LOGINPAGE = "disable_loginpage";
@@ -226,10 +225,6 @@ public class CoreSettings {
   @Setting(name = SSL_KEYSTORE_PASSWORD,
       description = "Password to the SSL keystore", defaultValue = "")
   private static String sslKeystorePassword;
-
-  @Setting(name = ENABLE_IMPORT,
-      description = "Enable import servlet at <Server URL>/import", defaultValue = "false")
-  private static boolean enableImport;
 
   @Setting(name = ENABLE_CLIENTAUTH,
       description = "Enable x509 certificated based authentication", defaultValue = "false")

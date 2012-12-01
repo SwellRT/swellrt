@@ -32,6 +32,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.crypto.SignatureException;
 import org.waveprotocol.wave.crypto.SignerInfo;
@@ -57,9 +58,9 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
+import org.waveprotocol.wave.model.operation.TransformException;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -209,14 +210,27 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
   @Override
   public void requestHistory(WaveletName waveletName, String domain,
       ProtocolHashedVersion startVersion, ProtocolHashedVersion endVersion,
-      long lengthLimit, HistoryResponseListener listener) {
+      final long lengthLimit, HistoryResponseListener listener) {
     LocalWaveletContainer wavelet = loadLocalWavelet(waveletName, listener);
     if (wavelet != null) {
-      Collection<ByteStringMessage<ProtocolAppliedWaveletDelta>> deltaHistory;
+      final ImmutableList.Builder<ByteString> deltaHistoryBytes = ImmutableList.builder();
+      final AtomicInteger length = new AtomicInteger(0);
       try {
-        deltaHistory = wavelet.requestHistory(
+        wavelet.requestHistory(
             CoreWaveletOperationSerializer.deserialize(startVersion),
-            CoreWaveletOperationSerializer.deserialize(endVersion));
+            CoreWaveletOperationSerializer.deserialize(endVersion),
+            new Receiver<ByteStringMessage<ProtocolAppliedWaveletDelta>>() {
+
+          @Override
+          public boolean put(ByteStringMessage<ProtocolAppliedWaveletDelta> delta) {
+            ByteString bytes = delta.getByteString();
+            deltaHistoryBytes.add(bytes);
+            if (length.addAndGet(bytes.size()) >= lengthLimit) {
+              return false;
+            }
+            return true;
+          }
+        });
       } catch (WaveServerException e) {
         LOG.severe("Error retrieving wavelet history: " + waveletName + " " + startVersion +
             " - " + endVersion);
@@ -226,14 +240,9 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
         return;
       }
 
-      // TODO(soren): enforce length limit
-      ImmutableList.Builder<ByteString> deltaHistoryBytes = ImmutableList.builder();
-      for (ByteStringMessage<ProtocolAppliedWaveletDelta> d : deltaHistory) {
-        deltaHistoryBytes.add(d.getByteString());
-      }
       // Now determine whether we received the entire requested wavelet history.
       LOG.info("Found deltaHistory between " + startVersion + " - " + endVersion
-          + ", returning to requester domain " + domain + " -- " + deltaHistory);
+          + ", returning to requester domain " + domain);
       listener.onSuccess(deltaHistoryBytes.build(), endVersion, endVersion.getVersion());
     }
   }
@@ -287,15 +296,15 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
   }
 
   @Override
-  public Collection<TransformedWaveletDelta> getHistory(WaveletName waveletName,
-      HashedVersion startVersion, HashedVersion endVersion) throws WaveServerException {
+  public void getHistory(WaveletName waveletName, HashedVersion startVersion, HashedVersion endVersion,
+      Receiver<TransformedWaveletDelta> receiver) throws WaveServerException {
     Preconditions.checkState(initialized, "Wave server not yet initialized");
     WaveletContainer wavelet = getWavelet(waveletName);
     if (wavelet == null) {
       throw new AccessControlException(
           "Client request for history made for non-existent wavelet: " + waveletName);
     }
-    return wavelet.requestTransformedHistory(startVersion, endVersion);
+    wavelet.requestTransformedHistory(startVersion, endVersion, receiver);
   }
 
   @Override

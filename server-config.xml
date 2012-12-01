@@ -27,7 +27,6 @@
   <property name="storage_continuation_executor_thread_count" value="1" />
   <property name="lookup_executor_thread_count" value="1" />
   <property name="disable_registration" value="false" />
-  <property name="enable_import" value="false" />
   <property name="enable_ssl" value="false" />
   <property name="ssl_keystore_path" value="wiab.ks" />
   <property name="ssl_keystore_password" value="changeme" />
@@ -106,7 +105,6 @@
           <token key="STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT" value="${storage_continuation_executor_thread_count}" />
           <token key="LOOKUP_EXECUTOR_THREAD_COUNT" value="${lookup_executor_thread_count}" />
           <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
-          <token key="ENABLE_IMPORT" value="${enable_import}" />
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
           <token key="SSL_KEYSTORE_PASSWORD" value="${ssl_keystore_password}" />

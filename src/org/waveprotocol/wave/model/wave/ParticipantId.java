@@ -1,20 +1,18 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright 2009 Google Inc.
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package org.waveprotocol.wave.model.wave;
@@ -91,6 +89,16 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   }
 
   /**
+   * @return the name in the address. If no "@" occurs, it will be the
+   *         whole string, if more than one occurs, it will be the part before
+   *         the last "@".
+   */
+  public String getName() {
+    String[] parts = address.split(DOMAIN_PREFIX);
+    return parts[0];
+  }
+
+  /**
    * @return the domain name in the address. If no "@" occurs, it will be the
    *         whole string, if more than one occurs, it will be the part after
    *         the last "@".
@@ -119,6 +127,19 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   @Override
   public String toString() {
     return getAddress();
+  }
+
+  /**
+   * Constructs a {@link ParticipantId} with the supplied name and domain.
+   *
+   * @param name the name of participant.
+   * @param domain the domain of participant.
+   * @return an instance of {@link ParticipantId} constructed using the given
+   *         address.
+   * @throws InvalidParticipantAddress if the validation on the address fails.
+   */
+  public static ParticipantId of(String name, String domain) throws InvalidParticipantAddress {
+    return ParticipantId.of(name + ParticipantId.DOMAIN_PREFIX + domain);
   }
 
   /**

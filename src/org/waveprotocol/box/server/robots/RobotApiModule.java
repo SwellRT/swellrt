@@ -62,6 +62,7 @@ public class RobotApiModule extends AbstractModule {
   private static final String AUTHORIZE_TOKEN_PATH = "/OAuthAuthorizeToken";
   private static final String REQUEST_TOKEN_PATH = "/OAuthGetRequestToken";
   private static final String ACCESS_TOKEN_PATH = "/OAuthGetAccessToken";
+  private static final String ALL_TOKENS_PATH = "/OAuthGetAllTokens";
 
   @Override
   protected void configure() {
@@ -74,6 +75,8 @@ public class RobotApiModule extends AbstractModule {
         REQUEST_TOKEN_PATH);
     bind(String.class).annotatedWith(Names.named("access_token_path")).toInstance(
         ACCESS_TOKEN_PATH);
+    bind(String.class).annotatedWith(Names.named("all_tokens_path")).toInstance(
+        ALL_TOKENS_PATH);
     bind(ProfilesFetcher.class).to(GravatarProfilesFetcher.class).in(Singleton.class);
   }
 
@@ -151,6 +154,6 @@ public class RobotApiModule extends AbstractModule {
    */
   private String getOAuthUrl(String publicAddress, String postFix) {
     return String.format(
-        "http://%s/%s%s", publicAddress, DataApiOAuthServlet.DATA_API_OAUTH_PATH, postFix);
+        "http://%s%s%s", publicAddress, DataApiOAuthServlet.DATA_API_OAUTH_PATH, postFix);
   }
 }

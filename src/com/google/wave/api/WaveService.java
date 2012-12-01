@@ -21,8 +21,17 @@ package com.google.wave.api;
 
 import com.google.gson.Gson;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
+import com.google.wave.api.impl.RawAttachmentData;
 import com.google.wave.api.impl.GsonFactory;
+import com.google.wave.api.impl.RawDeltasListener;
 import com.google.wave.api.impl.WaveletData;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.waveprotocol.wave.model.id.InvalidIdException;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.media.model.AttachmentId;
 
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
@@ -36,12 +45,6 @@ import net.oauth.http.HttpClient;
 import net.oauth.http.HttpMessage;
 import net.oauth.http.HttpResponseMessage;
 import net.oauth.signature.OAuthSignatureMethod;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.waveprotocol.wave.model.id.InvalidIdException;
-import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.id.WaveletId;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -63,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -70,16 +74,21 @@ import java.util.logging.Logger;
  */
 public class WaveService {
 
+  /** Infinite {@code urlfetch} fetch timeout. */
+  public static final int FETCH_INFINITE_TIMEOUT = 0;
+
+  /** Default {@code urlfetch} fetch timeout in ms. */
+  public static final int FETCH_DEFAILT_TIMEOUT_IN_MS = 10 * 1000;
+
   /**
    * Helper class to make outgoing OAuth HTTP requests.
    */
   static class HttpFetcher implements HttpClient {
 
-    /** The {@code urlfetch} fetch timeout in ms. */
-    private static final int URLFETCH_TIMEOUT_IN_MS = 10 * 1000;
-
     private static final String HTTP_POST_METHOD = "POST";
     private static final String HTTP_PUT_METHOD = "PUT";
+
+    private int fetchTimeout = FETCH_DEFAILT_TIMEOUT_IN_MS;
 
     @Override
     public HttpResponseMessage execute(HttpMessage request, Map<String, Object> stringObjectMap)
@@ -89,7 +98,7 @@ public class WaveService {
       HttpURLConnection conn = null;
       // Open the connection.
       conn = (HttpURLConnection) request.url.openConnection();
-      conn.setReadTimeout(URLFETCH_TIMEOUT_IN_MS);
+      conn.setReadTimeout(fetchTimeout);
       conn.setRequestMethod(request.method);
       // Add the headers
       if (request.headers != null) {
@@ -142,6 +151,16 @@ public class WaveService {
         result.append(s);
       }
       return result.toString();
+    }
+
+    /**
+     * Sets the fetch timeout to a specified timeout, in milliseconds.
+     * A timeout of zero is interpreted as an infinite timeout.
+     *
+     * @param fetchTimeout
+     */
+    void setTimeout(int fetchTimeout) {
+      this.fetchTimeout = fetchTimeout;
     }
   }
 
@@ -426,7 +445,9 @@ public class WaveService {
       }
 
       OAuthAccessor accessor = consumerData.getAccessor();
-      LOG.info("Signature base string: " + OAuthSignatureMethod.getBaseString(message));
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Signature base string: " + OAuthSignatureMethod.getBaseString(message));
+      }
       VALIDATOR.validateMessage(message, accessor);
     } catch (NoSuchAlgorithmException e) {
       throw new OAuthException("Error validating OAuth request", e);
@@ -606,29 +627,23 @@ public class WaveService {
     }
     return newWavelet;
   }
-  
+
   /**
    * Requests SearchResult for a query.
-   * 
+   *
    * @param query the query to execute.
    * @param index the index from which to return results.
    * @param numresults the number of results to return.
    * @param rpcServerUrl the active gateway.
-   * 
+   *
    * @throws IOException if remote server returns error.
    */
   public SearchResult search(String query, Integer index, Integer numResults, String rpcServerUrl)
       throws IOException {
     OperationQueue opQueue = new OperationQueue();
     opQueue.search(query, index, numResults);
-    JsonRpcResponse response = makeRpc(opQueue, rpcServerUrl).get(1);
-    if (response.isError()) {
-      throw new IOException(response.getErrorMessage());
-    }
-    opQueue.clear();
-    SearchResult searchResult =
-        (SearchResult) response.getData().get(ParamsProperty.SEARCH_RESULTS);
-    return searchResult;
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
+    return (SearchResult) response.get(ParamsProperty.SEARCH_RESULTS);
   }
 
   /**
@@ -669,16 +684,11 @@ public class WaveService {
     OperationQueue opQueue = new OperationQueue(proxyForId);
     opQueue.fetchWavelet(waveId, waveletId);
 
-    // Get the response for the robot.fetchWavelet() operation, which is the
-    // second operation, since makeRpc prepends the robot.notify() operation.
-    JsonRpcResponse response = makeRpc(opQueue, rpcServerUrl).get(1);
-    if (response.isError()) {
-      throw new IOException(response.getErrorMessage());
-    }
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
 
     // Deserialize wavelet.
     opQueue.clear();
-    WaveletData waveletData = (WaveletData) response.getData().get(ParamsProperty.WAVELET_DATA);
+    WaveletData waveletData = (WaveletData) response.get(ParamsProperty.WAVELET_DATA);
     Map<String, Blip> blips = new HashMap<String, Blip>();
     Map<String, BlipThread> threads = new HashMap<String, BlipThread>();
     Wavelet wavelet = Wavelet.deserialize(opQueue, blips, threads, waveletData);
@@ -686,7 +696,7 @@ public class WaveService {
     // Deserialize threads.
     @SuppressWarnings("unchecked")
     Map<String, BlipThread> tempThreads =
-        (Map<String, BlipThread>) response.getData().get(ParamsProperty.THREADS);
+        (Map<String, BlipThread>) response.get(ParamsProperty.THREADS);
     for (Map.Entry<String, BlipThread> entry : tempThreads.entrySet()) {
       BlipThread thread = entry.getValue();
       threads.put(entry.getKey(),
@@ -696,12 +706,126 @@ public class WaveService {
     // Deserialize blips.
     @SuppressWarnings("unchecked")
     Map<String, BlipData> blipDatas =
-        (Map<String, BlipData>) response.getData().get(ParamsProperty.BLIPS);
+        (Map<String, BlipData>) response.get(ParamsProperty.BLIPS);
     for (Map.Entry<String, BlipData> entry : blipDatas.entrySet()) {
       blips.put(entry.getKey(), Blip.deserialize(opQueue, wavelet, entry.getValue()));
     }
 
     return wavelet;
+  }
+
+  /**
+   * Retrieves wavelets ids of the specified wave.
+   *
+   * @param waveId the id of the wave.
+   * @param rpcServerUrl the URL of the JSON-RPC request handler.
+   * @return list of wavelets ids.
+   * @throws IOException if there is a problem fetching the wavelet.
+   */
+  public List<WaveletId> retrieveWaveletIds(WaveId waveId, String rpcServerUrl)
+      throws IOException {
+    OperationQueue opQueue = new OperationQueue();
+    opQueue.retrieveWaveletIds(waveId);
+
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
+    @SuppressWarnings("unchecked")
+    List<WaveletId> list = (List<WaveletId>)response.get(ParamsProperty.WAVELET_IDS);
+    return list;
+  }
+
+  /**
+   * Exports wavelet deltas history.
+   *
+   * @param waveId the id of the wave to export.
+   * @param waveletId the id of the wavelet to export.
+   * @param rpcServerUrl the URL of the JSON-RPC request handler.
+   * @return WaveletSnapshot in Json.
+   * @throws IOException if there is a problem fetching the wavelet.
+   */
+  public String exportRawSnapshot(WaveId waveId, WaveletId waveletId, String rpcServerUrl) throws IOException {
+    OperationQueue opQueue = new OperationQueue();
+    opQueue.exportSnapshot(waveId, waveletId);
+
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
+    return (String)response.get(ParamsProperty.RAW_SNAPSHOT);
+  }
+
+  /**
+   * Exports wavelet deltas history.
+   *
+   * @param waveId the id of the wave to export.
+   * @param waveletId the id of the wavelet to export.
+   * @param fromVersion start ProtocolHashedVersion.
+   * @param toVersion end ProtocolHashedVersion.
+   * @param rpcServerUrl the URL of the JSON-RPC request handler.
+   * @return history of deltas.
+   * @throws IOException if there is a problem fetching the deltas.
+   */
+  public void exportRawDeltas(WaveId waveId, WaveletId waveletId,
+      byte[] fromVersion, byte[] toVersion, String rpcServerUrl,
+      RawDeltasListener listener) throws IOException {
+    OperationQueue opQueue = new OperationQueue();
+    opQueue.exportRawDeltas(waveId, waveletId, fromVersion, toVersion);
+
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
+    @SuppressWarnings("unchecked")
+    List<byte[]> rawHistory = (List<byte[]>)response.get(ParamsProperty.RAW_DELTAS);
+    byte[] rawTargetVersion = (byte[])response.get(ParamsProperty.TARGET_VERSION);
+    listener.onSuccess(rawHistory, rawTargetVersion);
+  }
+
+  /**
+   * Exports attachment.
+   *
+   * @param attachmentId the id of attachment.
+   * @param rpcServerUrl the URL of the JSON-RPC request handler.
+   * @return the data of attachment.
+   * @throws IOException if there is a problem fetching the wavelet.
+   */
+  public RawAttachmentData exportAttachment(AttachmentId attachmentId,
+      String rpcServerUrl) throws IOException {
+    OperationQueue opQueue = new OperationQueue();
+    opQueue.exportAttachment(attachmentId);
+
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
+    return (RawAttachmentData)response.get(ParamsProperty.ATTACHMENT_DATA);
+  }
+
+  /**
+   * Imports deltas to wavelet.
+   *
+   * @param waveId the id of the wave to import.
+   * @param waveletId the id of the wavelet to import.
+   * @param history the history of deltas.
+   * @param rpcServerUrl the URL of the JSON-RPC request handler.
+   * @return the version from which importing started.
+   * @throws IOException if there is a problem fetching the wavelet.
+   */
+  public long importRawDeltas(WaveId waveId, WaveletId waveletId,
+      List<byte[]> history, String rpcServerUrl) throws IOException {
+    OperationQueue opQueue = new OperationQueue();
+    opQueue.importRawDeltas(waveId, waveletId, history);
+
+    Map<ParamsProperty, Object> response = makeSingleOperationRpc(opQueue, rpcServerUrl);
+    return (Long)response.get(ParamsProperty.IMPORTED_FROM_VERSION);
+  }
+
+  /**
+   * Imports attachment.
+   *
+   * @param waveId the id of the wave to import.
+   * @param waveletId the id of the wavelet to import.
+   * @param attachmentId the id of attachment.
+   * @param attachmentData the data of attachment.
+   * @param rpcServerUrl the URL of the JSON-RPC request handler.
+   * @throws IOException if there is a problem fetching the wavelet.
+   */
+  public void importAttachment(WaveId waveId, WaveletId waveletId, AttachmentId attachmentId,
+      RawAttachmentData attachmentData, String rpcServerUrl) throws IOException {
+    OperationQueue opQueue = new OperationQueue();
+    opQueue.importAttachment(waveId, waveletId, attachmentId, attachmentData);
+
+    makeSingleOperationRpc(opQueue, rpcServerUrl);
   }
 
   /**
@@ -717,6 +841,25 @@ public class WaveService {
    */
   protected boolean hasConsumerData(String rpcServerUrl) {
     return consumerDataMap.containsKey(rpcServerUrl);
+  }
+
+  /**
+   * Submits the given operation.
+   *
+   * @param opQueue the operation queue with operation to be submitted.
+   * @param rpcServerUrl the active gateway to send the operations to.
+   * @return the data of response.
+   * @throws IllegalStateException if this method is called prior to setting the
+   *         proper consumer key, secret, and handler URL.
+   * @throws IOException if there is a problem submitting the operations, or error response.
+   */
+  private Map<ParamsProperty, Object> makeSingleOperationRpc(OperationQueue opQueue, String rpcServerUrl)
+      throws IOException {
+    JsonRpcResponse response = makeRpc(opQueue, rpcServerUrl).get(0);
+    if (response.isError()) {
+      throw new IOException(response.getErrorMessage());
+    }
+    return response.getData();
   }
 
   /**
@@ -759,7 +902,9 @@ public class WaveService {
       if (!consumerDataObj.isUserAuthenticated()) {
         String url = createOAuthUrlString(
             json, consumerDataObj.getRpcServerUrl(), consumerDataObj.getAccessor());
-        LOG.info("JSON request to be sent: " + json);
+        if (LOG.isLoggable(Level.FINE)) {
+          LOG.fine("JSON request to be sent: " + json);
+        }
         HttpMessage request = new HttpMessage("POST", new URL(url), bodyStream);
         request.headers.add(
             new SimpleEntry<String, String>(HttpMessage.CONTENT_TYPE, JSON_MIME_TYPE));
@@ -770,14 +915,16 @@ public class WaveService {
         OAuthAccessor accessor = consumerDataObj.getAccessor();
         OAuthMessage message = accessor.newRequestMessage("POST", rpcServerUrl, null, bodyStream);
         message.getHeaders().add(
-            new SimpleEntry<String, String>(HttpMessage.CONTENT_TYPE, "application/json"));
+            new SimpleEntry<String, String>(HttpMessage.CONTENT_TYPE, JSON_MIME_TYPE));
         message.getHeaders().add(new SimpleEntry<String, String>("oauth_version", "1.0"));
         OAuthClient client = new OAuthClient(httpFetcher);
         responseStream = client.invoke(message, net.oauth.ParameterStyle.BODY).getBodyAsStream();
       }
 
       String responseString = HttpFetcher.readInputStream(responseStream);
-      LOG.info("Response returned: " + responseString);
+      if (LOG.isLoggable(Level.FINE)) {
+        LOG.fine("Response returned: " + responseString);
+      }
 
       List<JsonRpcResponse> responses = null;
       if (responseString.startsWith("[")) {
@@ -786,6 +933,7 @@ public class WaveService {
         responses = new ArrayList<JsonRpcResponse>(1);
         responses.add(SERIALIZER.fromJson(responseString, JsonRpcResponse.class));
       }
+      responses.remove(0); // removes response to the notify operation.
       return responses;
     } catch (OAuthException e) {
       LOG.warning("OAuthException when constructing the OAuth parameters: " + e);
@@ -832,7 +980,9 @@ public class WaveService {
     // Add other parameters.
 
     message.addRequiredParameters(accessor);
-    LOG.info("Signature base string: " + OAuthSignatureMethod.getBaseString(message));
+    if (LOG.isLoggable(Level.FINE)) {
+      LOG.fine("Signature base string: " + OAuthSignatureMethod.getBaseString(message));
+    }
 
     // Construct the resulting URL.
     StringBuilder sb = new StringBuilder(rpcServerUrl);
@@ -847,5 +997,15 @@ public class WaveService {
       }
     }
     return sb.toString();
+  }
+
+  /**
+   * Sets the fetch timeout to a specified timeout, in milliseconds.
+   * A timeout of zero is interpreted as an infinite timeout.
+   *
+   * @param fetchTimeout
+   */
+  public void setFetchFimeout(int fetchTimeout) {
+    httpFetcher.setTimeout(fetchTimeout);
   }
 }
