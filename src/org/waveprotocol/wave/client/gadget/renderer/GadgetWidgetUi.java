@@ -340,6 +340,7 @@ public class GadgetWidgetUi extends Composite implements Hoverable {
    */
   public void setIframeHeight(long height) {
     getIframeElement().setAttribute("height", height + "px");
+    gadgetFrame.setHeight(height + "px");
     if (height > MAX_SMALL_GADGET_HEIGHT) {
       if (throbberState == ThrobberState.SMALL) {
         gadgetIframe.removeStyleName(CSS.loadingGadgetSmallThrobber());
