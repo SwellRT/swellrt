@@ -41,12 +41,16 @@
   position: relative;
 }
 
+.gadgetIframe {
+  border: 0px solid transparent;
+}
+
 .loadingGadgetFrame {
   border: 1px solid #b8c6d9;
 }
 
 .loadedGadgetFrame {
-  border: 1px solid transparent;
+  border: 0px solid transparent;
 }
 
 @sprite .loadingGadgetLargeThrobber {

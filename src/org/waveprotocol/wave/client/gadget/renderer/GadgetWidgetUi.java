@@ -138,6 +138,7 @@ public class GadgetWidgetUi extends Composite implements Hoverable {
     String title();
     String gadgetFrame();
     String iframeDiv();
+    String gadgetIframe();
     String loadedGadgetFrame();
     String loadingGadgetFrame();
     String loadingGadgetSmallThrobber();
@@ -268,6 +269,11 @@ public class GadgetWidgetUi extends Composite implements Hoverable {
     iframe.setAttribute("height", height + "px");
     // TODO(user): scrolling policy/settings for the wave gadgets.
     iframe.setScrolling("no");
+
+    //remove default style
+    gadgetIframe.removeStyleName("gwt-Frame");
+    gadgetIframe.addStyleName(CSS.gadgetIframe());
+
     iframeDiv.add(gadgetIframe);
   }
 
