@@ -2,17 +2,19 @@
 "Wave in a Box" (WIAB) project is a stand alone wave server and rich web client that serves as an Apache Wave reference implementation.
 Apache Wave site: http://incubator.apache.org/wave/
 This project lets developers and enterprise users run wave servers and host waves on their own hardware. And then share those waves with other wave servers.
- 
+
 Build:
 
 This code requires Java 6.  If you are on MacOS 10.5 (Leopard) or earlier,
 you'll need to install it from
-http://www.apple.com/support/downloads/javaformacosx105update1.html - 
+http://www.apple.com/support/downloads/javaformacosx105update1.html -
 MacOS 10.5 ships with Java 5 by default.
+
 
 Wave in a Box uses Ant to build. To run the tests, run:
 
 <code>
+./get_third_party.sh
   ant test
 </code>
 
