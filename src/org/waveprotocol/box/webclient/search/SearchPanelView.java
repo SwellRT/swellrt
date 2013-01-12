@@ -58,6 +58,12 @@ public interface SearchPanelView {
   /** @return the search toolbar. */
   GroupingToolbar.View getToolbar();
 
+  /** @return the first digest. */
+  DigestView getFirst();
+
+  /** @return the last digest. */
+  DigestView getLast();
+
   /** @return the digest view after another. */
   DigestView getNext(DigestView ref);
 
@@ -66,6 +72,9 @@ public interface SearchPanelView {
 
   /** @return a rendering of {@code digest}. */
   DigestView insertBefore(DigestView ref, Digest digest);
+
+  /** @return a rendering of {@code digest}. */
+  DigestView insertAfter(DigestView ref, Digest digest);
 
   /** Removes all digest views. */
   void clearDigests();

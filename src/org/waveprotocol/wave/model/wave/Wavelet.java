@@ -23,6 +23,7 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 
 import java.util.Set;
 
@@ -161,4 +162,6 @@ public interface Wavelet {
    * @return this wavelet's wave id
    */
   WaveId getWaveId();
+
+  ObservableWaveletData getWaveletData();
 }

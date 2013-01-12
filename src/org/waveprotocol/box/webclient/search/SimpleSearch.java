@@ -83,7 +83,7 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
      */
     void activate(WaveContext wave) {
       Preconditions.checkState(dynamicDigest == null);
-      dynamicDigest = WaveBasedDigest.create(wave, staticDigest);
+      dynamicDigest = WaveBasedDigest.create(wave);
       dynamicDigest.addListener(this);
       fireOnChanged();
     }
@@ -103,14 +103,11 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
     }
 
     /**
-     * Updates the static digest. If this proxy is not currently live, this
-     * fires a change event.
+     * Updates the static digest. Do nothing if this digest is currently live.
      */
     void update(DigestSnapshot snapshot) {
       staticDigest = snapshot;
-      if (dynamicDigest != null) {
-        dynamicDigest.setDelegate(staticDigest);
-      } else {
+      if (dynamicDigest == null) {
         fireOnChanged();
       }
     }
@@ -332,19 +329,17 @@ public final class SimpleSearch implements Search, WaveStore.Listener {
         DigestProxy oldDigest = getDigest(i);
         results.remove(i);
         digests.remove(ModernIdSerialiser.INSTANCE.serialiseWaveId(oldDigest.getWaveId()));
-        fireOnDigestRemoved(i, oldDigest);
         oldDigest.destroy();
       }
       // Now grow from nothing up to the new result size.
       if (this.total != total) {
         this.total = total;
-        fireOnTotalChanged(total);
       }
       ensureMinimumSize(total == Search.UNKNOWN_SIZE ? from + newDigests.size() : total);
       for (int to = from + newDigests.size(), i = from; i < to; i++) {
         results.set(i, newDigests.get(i - from));
-        fireOnDigestReady(i, getDigest(i));
       }
+      fireOnTotalChanged(total);
       fireOnStateChanged();
     }
   }

@@ -590,4 +590,9 @@ public class OpBasedWavelet implements ObservableWavelet {
   public void touch() {
     authoriseApplyAndSend(new NoOp(createContext()));
   }
+
+  @Override
+  public ObservableWaveletData getWaveletData() {
+    return wavelet;
+  }
 }

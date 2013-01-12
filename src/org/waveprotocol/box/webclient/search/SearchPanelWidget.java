@@ -161,6 +161,16 @@ public class SearchPanelWidget extends Composite implements SearchPanelView {
   }
 
   @Override
+  public DigestDomImpl getFirst() {
+    return digests.getFirst();
+  }
+
+  @Override
+  public DigestDomImpl getLast() {
+    return digests.getLast();
+  }
+
+  @Override
   public DigestDomImpl getNext(DigestView ref) {
     return digests.getNext(narrow(ref));
   }
@@ -181,6 +191,24 @@ public class SearchPanelWidget extends Composite implements SearchPanelView {
     digests.insertBefore(refDomImpl, digestUi);
     list.insertBefore(digestUi.getElement(), refElement);
 
+    return digestUi;
+  }
+
+  @Override
+  public DigestDomImpl insertAfter(DigestView ref, Digest digest) {
+    DigestDomImpl digestUi = digestPool.get();
+    renderer.render(digest, digestUi);
+
+    DigestDomImpl refDomImpl = narrow(ref);
+    Element refElement = refDomImpl != null ? refDomImpl.getElement() : showMore;
+    byId.put(digestUi.getId(), digestUi);
+    if (refElement != showMore) {
+      digests.insertAfter(refDomImpl, digestUi);
+      list.insertAfter(digestUi.getElement(), refElement);
+    } else {
+      digests.insertBefore(refDomImpl, digestUi);
+      list.insertBefore(digestUi.getElement(), refElement);
+    }
     return digestUi;
   }
 

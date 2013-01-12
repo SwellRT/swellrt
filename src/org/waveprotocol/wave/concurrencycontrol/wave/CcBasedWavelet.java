@@ -406,4 +406,9 @@ public final class CcBasedWavelet implements ObservableWavelet {
   public String toString() {
     return wavelet.toString();
   }
+
+  @Override
+  public ObservableWaveletData getWaveletData() {
+    return wavelet.getWaveletData();
+  }
 }

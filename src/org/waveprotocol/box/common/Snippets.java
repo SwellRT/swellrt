@@ -44,6 +44,8 @@ import java.util.Set;
  */
 public final class Snippets {
 
+  public static final int DIGEST_SNIPPET_LENGTH = 140;
+
   /**
    * Concatenates all of the text for the given documents in
    * {@link WaveletData}.
