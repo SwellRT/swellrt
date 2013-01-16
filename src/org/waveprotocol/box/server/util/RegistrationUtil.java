@@ -42,6 +42,41 @@ public class RegistrationUtil {
   private RegistrationUtil() {
   }
 
+  /**
+   * Checks if a new username is correct and generates its ParticipantId. On error returns
+   * exception containing an error message. On success, returns the id.
+   *
+   * @param domain the domain
+   * @param username the new username
+   * @return the new participant id
+   * @throws InvalidParticipantAddress if the new username is an invalid participant address
+   */
+  public static ParticipantId checkNewUsername(String domain, String username) throws InvalidParticipantAddress {
+    ParticipantId id = null;
+
+      // First, some cleanup on the parameters.
+      if (username == null) {
+        throw new InvalidParticipantAddress(username, "Username portion of address cannot be empty");
+      }
+      username = username.trim().toLowerCase();
+      if (username.contains(ParticipantId.DOMAIN_PREFIX)) {
+        id = ParticipantId.of(username);
+      } else {
+        id = ParticipantId.of(username + ParticipantId.DOMAIN_PREFIX + domain);
+      }
+      if (id.getAddress().indexOf("@") < 1) {
+        throw new InvalidParticipantAddress(username, "Username portion of address cannot be empty");
+      }
+      String[] usernameSplit = id.getAddress().split("@");
+      if (usernameSplit.length != 2 || !usernameSplit[0].matches("[\\w\\.]+")) {
+        throw new InvalidParticipantAddress(username, "Only letters (a-z), numbers (0-9), and periods (.) are allowed in Username");
+      }
+      if (!id.getDomain().equals(domain)) {
+        throw new InvalidParticipantAddress(username,"You can only create users at the " + domain + " domain");
+      }
+    return id;
+  }
+
   public static boolean createAccountIfMissing(AccountStore accountStore, ParticipantId id,
       PasswordDigest password, WelcomeRobot welcomeBot) {
     HumanAccountDataImpl account = new HumanAccountDataImpl(id, password);

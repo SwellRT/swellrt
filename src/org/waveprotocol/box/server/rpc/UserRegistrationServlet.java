@@ -24,17 +24,14 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.box.server.gxp.UserRegistrationPage;
 import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.box.server.util.RegistrationUtil;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -58,8 +55,6 @@ public final class UserRegistrationServlet extends HttpServlet {
   private final WelcomeRobot welcomeBot;
   private final boolean registrationDisabled;
   private final String analyticsAccount;
-
-  private final Log LOG = Log.get(UserRegistrationServlet.class);
 
   @Inject
   public UserRegistrationServlet(AccountStore accountStore,
@@ -107,30 +102,10 @@ public final class UserRegistrationServlet extends HttpServlet {
    */
   private String tryCreateUser(String username, String password) {
     ParticipantId id = null;
-
     try {
-      // First, some cleanup on the parameters.
-      if (username == null) {
-        return "Username portion of address cannot be empty";
-      }
-      username = username.trim().toLowerCase();
-      if (username.contains(ParticipantId.DOMAIN_PREFIX)) {
-        id = ParticipantId.of(username);
-      } else {
-        id = ParticipantId.of(username + ParticipantId.DOMAIN_PREFIX + domain);
-      }
-      if (id.getAddress().indexOf("@") < 1) {
-        return "Username portion of address cannot be empty";
-      }
-      String[] usernameSplit = id.getAddress().split("@");
-      if (usernameSplit.length != 2 || !usernameSplit[0].matches("[\\w\\.]+")) {
-        return "Only letters (a-z), numbers (0-9), and periods (.) are allowed in Username";
-      }
-      if (!id.getDomain().equals(domain)) {
-        return "You can only create users at the " + domain + " domain";
-      }
-    } catch (InvalidParticipantAddress e) {
-      return "Invalid username";
+      id = RegistrationUtil.checkNewUsername(domain, username);
+    } catch (InvalidParticipantAddress exception) {
+      return exception.getMessage();
     }
 
     if(RegistrationUtil.doesAccountExist(accountStore, id)) {
