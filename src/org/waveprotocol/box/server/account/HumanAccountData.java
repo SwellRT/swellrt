@@ -24,15 +24,15 @@ import org.waveprotocol.box.server.authentication.PasswordDigest;
 /**
  * {@link HumanAccountData} representing an account from a human.
  *
- *  Stores the user's authentication information. Should eventually also store
- * profile information and whatnot.
+ *  Stores the user's authentication information.
  *
  * @author ljvderijk@google.com (Lennard de Rijk)
  * @author josephg@gmail.com (Joseph Gentle)
+ * @author akaplanov@gmail.com (Andrew Kaplanov)
  */
 public interface HumanAccountData extends AccountData {
   /**
-   * Get the user's password digest. The digest can be used to authenticate the
+   * Gets the user's password digest. The digest can be used to authenticate the
    * user.
    *
    *  This method will return null if password based authentication is disabled
@@ -42,4 +42,17 @@ public interface HumanAccountData extends AccountData {
    *         disabled for the user, or no password is set.
    */
   PasswordDigest getPasswordDigest();
+
+  /**
+   * Gets user's locale.
+   *
+   * @return The user's locale.
+   */
+  String getLocale();
+
+  /**
+   * Sets the user's locale.
+   *
+   */
+  void setLocale(String locale);
 }

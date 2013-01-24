@@ -25,6 +25,7 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import org.waveprotocol.box.webclient.search.i18n.DigestDomMessages;
 
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.common.safehtml.SafeHtml;
@@ -37,6 +38,8 @@ import org.waveprotocol.wave.client.uibuilder.BuilderHelper;
  * @author hearnden@google.com (David Hearnden)
  */
 public final class DigestDomImpl implements DigestView {
+  private static final DigestDomMessages messages = GWT.create(DigestDomMessages.class);
+
   /** HTML attribute used to hold an id unique within digest widgets. */
   static String DIGEST_ID_ATTRIBUTE = "di";
 
@@ -157,15 +160,14 @@ public final class DigestDomImpl implements DigestView {
     html.appendHtmlConstant("<span class='" + css.unreadCount() + "'>");
     html.appendHtmlConstant(String.valueOf(unread));
     html.appendHtmlConstant("</span>");
-    html.appendHtmlConstant(" of ");
-    html.appendHtmlConstant(String.valueOf(total));
+    html.appendHtmlConstant(" " + messages.of(total));
     return html.toSafeHtml();
   }
 
   private SafeHtml renderReadMessages(int total) {
     SafeHtmlBuilder html = new SafeHtmlBuilder();
     html.appendHtmlConstant(String.valueOf(total));
-    html.appendHtmlConstant(" msgs");
+    html.appendHtmlConstant(" " + messages.msgs());
     return html.toSafeHtml();
   }
 

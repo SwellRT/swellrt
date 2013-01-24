@@ -4,22 +4,24 @@
     type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget.Style' />
   <ui:with field='res'
     type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget.Resources' />
+  <ui:with field='msg'
+    type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.i18n.AttachmentMessages' />
   <g:HTMLPanel styleName="{res.style.self}">
     <g:HorizontalPanel>
       <g:HorizontalPanel horizontalAlignment="ALIGN_LEFT" width="150px;">
-        <g:Label styleName="{res.style.title}">Upload attachment</g:Label>
+        <g:Label styleName="{res.style.title}"><ui:text from="{msg.uploadAttachment}"/></g:Label>
       </g:HorizontalPanel>
       <g:HorizontalPanel horizontalAlignment="ALIGN_RIGHT" ui:field="spinnerPanel"
         styleName="{res.style.spinnerPanel}">
         <g:Image resource="{res.spinner}" title="Loading" styleName="{res.style.spinner}"
           ui:field="spinnerImg" />
-        <g:Label ui:field="status" styleName="{res.style.status}">Loading...</g:Label>
+        <g:Label ui:field="status" styleName="{res.style.status}"><ui:text from="{msg.loading}"/></g:Label>
       </g:HorizontalPanel>
     </g:HorizontalPanel>
     <g:FormPanel ui:field="form">
       <g:HorizontalPanel>
         <g:FileUpload ui:field="fileUpload" name="uploadFormElement"></g:FileUpload>
-        <g:Button ui:field="uploadBtn">Upload file</g:Button>
+        <g:Button ui:field="uploadBtn"><ui:text from="{msg.uploadFile}"/></g:Button>
         <g:Hidden ui:field="formAttachmentId" name="attachmentId"></g:Hidden>
         <g:Hidden ui:field="formWaveRef" name="waveRef"></g:Hidden>
       </g:HorizontalPanel>

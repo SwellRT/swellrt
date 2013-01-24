@@ -36,10 +36,12 @@
         <a href="/auth/signin?r=/">Sign In</a>
       </gxp:if>
       <gxp:if cond='username != null'>
+        <img src="/static/earth.png" alt="earth" class="earth" />
+        <select id="lang" class="lang" size="1"/> |
         <gxp:eval expr='username' /><span class="domain">@<gxp:eval expr='domain' /></span> |
         <span id='unsavedStateContainer' style="width: 60px">Saved</span> |
         <span id="netstatus" class="offline">Offline</span> |
-        <a href="/auth/signout?r=/">Sign out</a>
+        <a id="signout" href="/auth/signout?r=/">Sign out</a>
       </gxp:if>
     </div>
   </div>

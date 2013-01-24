@@ -19,9 +19,11 @@
 
 package org.waveprotocol.box.webclient.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 
 import org.waveprotocol.box.common.SessionConstants;
+import org.waveprotocol.box.webclient.client.i18n.SessionMessages;
 
 /**
  * Session data for the web client.
@@ -32,12 +34,14 @@ public abstract class Session implements SessionConstants {
 
   private static final Session INSTANCE;
 
+  private static SessionMessages messages = GWT.create(SessionMessages.class);
+
   static {
     // In the future we could inject other Session instances for testing.
     if (JsSession.isAvailable()) {
       INSTANCE = new JsSession();
     } else {
-      Window.alert("Warning: Session data not available.");
+      Window.alert(messages.sessionDataNotAvailable());
       INSTANCE = new StubSession();
     }
   }

@@ -25,18 +25,21 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.waveprotocol.box.common.SessionConstants;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.gxp.TopBar;
 import org.waveprotocol.box.server.gxp.WaveClientPage;
 import org.waveprotocol.box.server.util.RandomBase64Generator;
+import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.box.server.util.UrlParameters;
 import org.waveprotocol.wave.client.util.ClientFlagsBase;
 import org.waveprotocol.wave.common.bootstrap.FlagConstants;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -109,13 +112,21 @@ public class WaveClientServlet extends HttpServlet {
       return;
     }
 
-    String username = null;
-    String userDomain = null;
-    if (id != null) {
-      String[] parts = id.getAddress().split("@");
-      username = parts[0];
-      userDomain = id.getDomain();
+    AccountData account = sessionManager.getLoggedInAccount(request.getSession(false));
+    if (account != null) {
+      String locale = account.asHuman().getLocale();
+      if (locale != null) {
+        String requestLocale = UrlParameters.getParameters(request.getQueryString()).get("locale");
+        if (requestLocale == null) {
+          response.sendRedirect(UrlParameters.addParameter(request.getRequestURL().toString(), "locale", locale));
+          return;
+        }
+      }
     }
+
+    String[] parts = id.getAddress().split("@");
+    String username = parts[0];
+    String userDomain = id.getDomain();
 
     try {
       WaveClientPage.write(response.getWriter(), new GxpContext(request.getLocale()),

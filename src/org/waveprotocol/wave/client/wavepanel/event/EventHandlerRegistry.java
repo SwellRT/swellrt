@@ -41,4 +41,9 @@ public interface EventHandlerRegistry {
    * Registers a click handler for an element kind.
    */
   void registerDoubleClickHandler(String kind, WaveDoubleClickHandler handler);
+
+  /**
+   * Registers a change handler for an element kind.
+   */
+  void registerChangeHandler(String kind, WaveChangeHandler handler);
 }

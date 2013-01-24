@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.client.wavepanel.impl.toolbar;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 
 import org.waveprotocol.wave.client.common.util.WaveRefConstants;
@@ -26,6 +27,7 @@ import org.waveprotocol.wave.client.doodad.link.Link;
 import org.waveprotocol.wave.client.doodad.link.Link.InvalidLinkException;
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.i18n.LinkerMessages;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
 import org.waveprotocol.wave.model.document.util.Range;
@@ -35,6 +37,7 @@ import org.waveprotocol.wave.model.document.util.Range;
  * while editing a document via the toolbar or via shortcuts
  */
 public class LinkerHelper {
+  private static final LinkerMessages messages = GWT.create(LinkerMessages.class);
 
   /**
    * Helper for insert links while editing a document
@@ -44,7 +47,7 @@ public class LinkerHelper {
   public static void onCreateLink(EditorContext editor) {
     FocusedRange range = editor.getSelectionHelper().getSelectionRange();
     if (range == null || range.isCollapsed()) {
-      Window.alert("Select some text to create a link.");
+      Window.alert(messages.selectSomeText());
       return;
     }
     try {
@@ -56,7 +59,7 @@ public class LinkerHelper {
       EditorAnnotationUtil.setAnnotationOverSelection(editor, Link.KEY, linkAnnotationValue);
     } catch (InvalidLinkException e) {
       String rawLinkValue =
-          Window.prompt("Enter link: URL or Wave ID.", WaveRefConstants.WAVE_URI_PREFIX);
+          Window.prompt(messages.enterLink(), WaveRefConstants.WAVE_URI_PREFIX);
       // user hit "ESC" or "cancel"
       if (rawLinkValue == null) {
         return;

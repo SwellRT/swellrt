@@ -19,7 +19,9 @@
 
 package org.waveprotocol.box.webclient.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import org.waveprotocol.box.webclient.client.i18n.SavedStateMessages;
 
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
@@ -34,9 +36,11 @@ import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
  */
 public class SavedStateIndicator implements UnsavedDataListener {
 
+  private static final SavedStateMessages messages = GWT.create(SavedStateMessages.class);
+
   private enum SavedState {
-    SAVED("Saved"),
-    UNSAVED("Unsaved...");
+    SAVED(messages.saved()),
+    UNSAVED(messages.unsaved());
 
     final String message;
 
@@ -70,6 +74,7 @@ public class SavedStateIndicator implements UnsavedDataListener {
   public SavedStateIndicator(Element element) {
     this.element = element;
     this.scheduler = SchedulerInstance.getLowPriorityTimer();
+    scheduler.schedule(updateTask);
   }
 
   public void saved() {

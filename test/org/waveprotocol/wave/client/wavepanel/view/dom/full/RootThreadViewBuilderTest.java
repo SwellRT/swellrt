@@ -20,6 +20,7 @@
 package org.waveprotocol.wave.client.wavepanel.view.dom.full;
 
 
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.ReplyBoxMessages;
 import junit.framework.TestCase;
 
 import org.waveprotocol.wave.client.uibuilder.HtmlClosure;
@@ -28,18 +29,20 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.full.RootThreadViewBuilde
 public class RootThreadViewBuilderTest extends TestCase {
   private RootThreadViewBuilder.Css css;
   private ReplyBoxViewBuilder.Css indicatorCss;
+  private ReplyBoxMessages messages;
 
   @Override
   protected void setUp() {
     css = UiBuilderTestHelper.mockCss(RootThreadViewBuilder.Css.class);
     indicatorCss = UiBuilderTestHelper.mockCss(ReplyBoxViewBuilder.Css.class);
+    messages = UiBuilderTestHelper.mockReplyBoxMessages(ReplyBoxMessages.class);
   }
 
   public void testRoot() throws Exception {
     String id = "askljfalikwh4rlkhs";
     String indicatorId = "laskdfjlksjf";
-    RootThreadViewBuilder builder = new RootThreadViewBuilder(id, HtmlClosure.EMPTY, 
-        new ReplyBoxViewBuilder(indicatorCss, indicatorId), css);
+    RootThreadViewBuilder builder = new RootThreadViewBuilder(id, HtmlClosure.EMPTY,
+        new ReplyBoxViewBuilder(indicatorCss, messages, indicatorId), css);
     UiBuilderTestHelper.verifyHtml(builder, id, Components.values());
   }
 }

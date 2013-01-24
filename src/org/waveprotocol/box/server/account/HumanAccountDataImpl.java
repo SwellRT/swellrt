@@ -28,10 +28,12 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * Human Account. Expected to be expanded when authentication is implemented.
  *
  * @author ljvderijk@google.com (Lennard de Rijk)
+ * @author akaplanov@gmail.com (Andrew kaplanov)
  */
 public final class HumanAccountDataImpl implements HumanAccountData {
   private final ParticipantId id;
   private final PasswordDigest passwordDigest;
+  private String locale;
 
   /**
    * Creates an {@link HumanAccountData} for the given username, with no
@@ -71,6 +73,16 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   }
 
   @Override
+  public String getLocale() {
+    return locale;
+  }
+
+  @Override
+  public void setLocale(String locale) {
+    this.locale = locale;
+  }
+
+  @Override
   public boolean isHuman() {
     return true;
   }
@@ -96,6 +108,7 @@ public final class HumanAccountDataImpl implements HumanAccountData {
     int result = 1;
     result = prime * result + ((id == null) ? 0 : id.hashCode());
     result = prime * result + ((passwordDigest == null) ? 0 : passwordDigest.hashCode());
+    result = prime * result + ((locale == null) ? 0 : locale.hashCode());
     return result;
   }
 
@@ -111,6 +124,9 @@ public final class HumanAccountDataImpl implements HumanAccountData {
     if (passwordDigest == null) {
       if (other.passwordDigest != null) return false;
     } else if (!passwordDigest.equals(other.passwordDigest)) return false;
+    if (locale == null) {
+      if (other.locale != null) return false;
+    } else if (!locale.equals(other.locale)) return false;
     return true;
   }
 }

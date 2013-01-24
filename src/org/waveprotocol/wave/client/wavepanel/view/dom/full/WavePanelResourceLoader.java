@@ -24,6 +24,8 @@ import com.google.gwt.dom.client.StyleInjector;
 
 import org.waveprotocol.wave.client.editor.EditorImpl;
 import org.waveprotocol.wave.client.wavepanel.view.dom.CssProvider;
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.BlipMessages;
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.ReplyBoxMessages;
 
 /**
  * This class is responsible for loading all the Css resources needed by the
@@ -46,6 +48,12 @@ public final class WavePanelResourceLoader {
       GWT.create(TopConversationViewBuilder.Resources.class);
   private final static ParticipantsViewBuilder.Resources participants =
       GWT.create(ParticipantsViewBuilder.Resources.class);
+
+  private final static BlipMessages blipMessages =
+      GWT.create(BlipMessages.class);
+
+  private final static ReplyBoxMessages replyBoxMessages =
+      GWT.create(ReplyBoxMessages.class);
 
   static {
     // Inject all CSS synchronously. CSS must be injected synchronously, so that
@@ -93,6 +101,14 @@ public final class WavePanelResourceLoader {
 
   public static ParticipantsViewBuilder.Resources getParticipants() {
     return participants;
+  }
+
+  public static BlipMessages getBlipMessages() {
+    return blipMessages;
+  }
+
+  public static ReplyBoxMessages getReplyBoxMessages() {
+    return replyBoxMessages;
   }
 
   /**

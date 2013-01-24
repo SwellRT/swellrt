@@ -26,6 +26,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -283,9 +285,38 @@ public final class EventDispatcherPanel extends ComplexPanel
     }
   }
 
+  /**
+   * Handler collection for change vents.
+   */
+  private final class ChangeHandlers
+      extends HandlerCollection<ChangeEvent, WaveChangeHandler> implements ChangeHandler {
+    ChangeHandlers() {
+      super(getElement(), "change");
+    }
+
+    @Override
+    void registerGwtHandler() {
+      addDomHandler(this, ChangeEvent.getType());
+    }
+
+
+    @Override
+    boolean dispatch(ChangeEvent event, Element context, WaveChangeHandler handler) {
+      return handler.onChange(event, context);
+    }
+
+    @Override
+    public void onChange(ChangeEvent event) {
+      if (dispatch(event, event.getNativeEvent().getEventTarget().<Element>cast())) {
+        event.stopPropagation();
+      }
+    }
+  }
+
   private final DoubleClickHandlers doubleClickHandlers;
   private final ClickHandlers clickHandlers;
   private final MouseDownHandlers mouseDownHandlers;
+  private final ChangeHandlers changeHandlers;
 
   EventDispatcherPanel(Element baseElement) {
     setElement(baseElement);
@@ -294,6 +325,7 @@ public final class EventDispatcherPanel extends ComplexPanel
     doubleClickHandlers = new DoubleClickHandlers();
     clickHandlers = new ClickHandlers();
     mouseDownHandlers = new MouseDownHandlers();
+    changeHandlers = new ChangeHandlers();
   }
 
   /**
@@ -344,6 +376,11 @@ public final class EventDispatcherPanel extends ComplexPanel
   @Override
   public void registerMouseDownHandler(String kind, WaveMouseDownHandler handler) {
     mouseDownHandlers.register(kind, handler);
+  }
+
+  @Override
+  public void registerChangeHandler(String kind, WaveChangeHandler handler) {
+    changeHandlers.register(kind, handler);
   }
 
   @Override

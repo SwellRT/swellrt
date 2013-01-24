@@ -19,6 +19,8 @@
 
 package org.waveprotocol.wave.client.wavepanel.view.dom.full;
 
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.ReplyBoxMessages;
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.BlipMessages;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.fail;
@@ -203,4 +205,29 @@ public class UiBuilderTestHelper {
     }));
   }
 
+  /** @return a mock constants */
+  public static <T extends BlipMessages> T mockBlipMessages(Class<T> constantsClass) {
+    return Mockito.mock(constantsClass, Mockito.withSettings().defaultAnswer( // \u2620
+    new Answer<String>() {
+      int i;
+
+      @Override
+      public String answer(InvocationOnMock invocation) throws Throwable {
+        return "asdf" + i++;
+      }
+    }));
+  }
+
+  /** @return a mock constants */
+  public static <T extends ReplyBoxMessages> T mockReplyBoxMessages(Class<T> constantsClass) {
+    return Mockito.mock(constantsClass, Mockito.withSettings().defaultAnswer( // \u2620
+    new Answer<String>() {
+      int i;
+
+      @Override
+      public String answer(InvocationOnMock invocation) throws Throwable {
+        return "asdf" + i++;
+      }
+    }));
+  }
 }

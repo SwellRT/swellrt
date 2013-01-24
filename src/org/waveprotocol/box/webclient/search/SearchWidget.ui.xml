@@ -1,16 +1,19 @@
 <!-- Template for SearchWidget. Author: hearnden@google.com (David Hearnden) -->
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder" xmlns:g="urn:import:com.google.gwt.user.client.ui">
-  <ui:with field="css" type="org.waveprotocol.box.webclient.search.SearchWidget.Css" />
+  <ui:with
+    field="css" type="org.waveprotocol.box.webclient.search.SearchWidget.Css" />
+  <ui:with
+    field="msg" type="org.waveprotocol.box.webclient.search.i18n.SearchWidgetMessages" />
   <g:HTMLPanel styleName='{css.self}'>
    <div class='{css.search}'>
      <div class='{css.searchButtonsPanel}'>
        <g:Button ui:field='searchButtonShared' title='Show shared waves'
-           styleName='{css.searchButton}'>Shared</g:Button>
+           styleName='{css.searchButton}'><ui:text from="{msg.shared}"/></g:Button>
        <g:Button ui:field='searchButtonAll' title='Show all waves'
-           styleName='{css.searchButton}'>All</g:Button>
+           styleName='{css.searchButton}'><ui:text from="{msg.all}"/></g:Button>
        <g:Button ui:field='searchButtonInbox' title='Show waves in my inbox'
-           styleName='{css.searchButton}'>Inbox</g:Button>
+           styleName='{css.searchButton}'><ui:text from="{msg.inbox}"/></g:Button>
      </div>
      <div class='{css.searchboxContainer}'>
        <g:TextBox ui:field='query' styleName='{css.query}'/>

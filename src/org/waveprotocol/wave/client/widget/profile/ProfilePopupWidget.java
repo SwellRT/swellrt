@@ -42,6 +42,7 @@ import org.waveprotocol.wave.client.widget.popup.PopupEventSourcer;
 import org.waveprotocol.wave.client.widget.popup.PopupFactory;
 import org.waveprotocol.wave.client.widget.popup.RelativePopupPositioner;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
+import org.waveprotocol.wave.client.widget.profile.i18n.ProfilePopupMessages;
 
 /**
  * Widget implementation of a profile card.

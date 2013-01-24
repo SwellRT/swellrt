@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Window;
 import org.waveprotocol.wave.client.wavepanel.WavePanel;
 import org.waveprotocol.wave.client.wavepanel.event.WaveMouseDownHandler;
 import org.waveprotocol.wave.client.wavepanel.impl.edit.Actions;
+import org.waveprotocol.wave.client.wavepanel.impl.menu.i18n.MenuMessages;
 import org.waveprotocol.wave.client.wavepanel.view.BlipMenuItemView;
 import org.waveprotocol.wave.client.wavepanel.view.View.Type;
 import org.waveprotocol.wave.client.wavepanel.view.dom.DomAsViewProvider;
@@ -39,6 +40,7 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.full.TypeCodes;
 public final class MenuController implements WaveMouseDownHandler {
   private final DomAsViewProvider panel;
   private final Actions actions;
+  private final MenuMessages messages;
 
   /**
    * Creates a manu handler.
@@ -46,16 +48,17 @@ public final class MenuController implements WaveMouseDownHandler {
    * @param actions
    * @param panel
    */
-  private MenuController(Actions actions, DomAsViewProvider panel) {
+  private MenuController(Actions actions, DomAsViewProvider panel, MenuMessages messages) {
     this.actions = actions;
     this.panel = panel;
+    this.messages = messages;
   }
 
   /**
    * Installs the focus-frame feature in a wave panel.
    */
-  public static void install(Actions handler, WavePanel panel) {
-    MenuController controller = new MenuController(handler, panel.getViewProvider());
+  public static void install(Actions handler, WavePanel panel, MenuMessages messages) {
+    MenuController controller = new MenuController(handler, panel.getViewProvider(), messages);
     panel.getHandlers().registerMouseDownHandler(TypeCodes.kind(Type.MENU_ITEM), controller);
   }
 
@@ -77,9 +80,9 @@ public final class MenuController implements WaveMouseDownHandler {
         break;
       case DELETE:
         // We delete the blip without confirmation if shift key is pressed
-        if (event.getNativeEvent().getShiftKey()
-            || Window.confirm("Please confirm the deletion of this message"))
+        if (event.getNativeEvent().getShiftKey() || Window.confirm(messages.confirmDeletion())) {
           actions.delete(item.getParent().getParent());
+        }
         break;
       case LINK:
         actions.popupLink(item.getParent().getParent());

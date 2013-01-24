@@ -20,6 +20,7 @@
 
 package org.waveprotocol.wave.client;
 
+import com.google.gwt.core.client.GWT;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.doodad.selection.SelectionExtractor;
@@ -37,9 +38,11 @@ import org.waveprotocol.wave.client.wavepanel.impl.edit.EditController;
 import org.waveprotocol.wave.client.wavepanel.impl.edit.EditSession;
 import org.waveprotocol.wave.client.wavepanel.impl.edit.KeepFocusInView;
 import org.waveprotocol.wave.client.wavepanel.impl.edit.ParticipantController;
+import org.waveprotocol.wave.client.wavepanel.impl.edit.i18n.ParticipantMessages;
 import org.waveprotocol.wave.client.wavepanel.impl.focus.FocusFramePresenter;
 import org.waveprotocol.wave.client.wavepanel.impl.indicator.ReplyIndicatorController;
 import org.waveprotocol.wave.client.wavepanel.impl.menu.MenuController;
+import org.waveprotocol.wave.client.wavepanel.impl.menu.i18n.MenuMessages;
 import org.waveprotocol.wave.client.wavepanel.impl.title.WaveTitleHandler;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.EditToolbar;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.ToolbarSwitcher;
@@ -198,15 +201,18 @@ public interface StageThree {
       ModelAsViewProvider models = stageTwo.getModelAsViewProvider();
       ProfileManager profiles = stageTwo.getProfileManager();
 
+      MenuMessages menuMessages = GWT.create(MenuMessages.class);
+      ParticipantMessages participantMessages = GWT.create(ParticipantMessages.class);
+
       Actions actions = getEditActions();
       EditSession edit = getEditSession();
-      MenuController.install(actions, panel);
+      MenuController.install(actions, panel, menuMessages);
       ToolbarSwitcher.install(stageTwo.getStageOne().getWavePanel(), getEditSession(),
           getViewToolbar(), getEditToolbar());
       WaveTitleHandler.install(edit, models);
       ReplyIndicatorController.install(actions, edit, panel);
       EditController.install(focus, actions, panel);
-      ParticipantController.install(panel, models, profiles, getLocalDomain(), user);
+      ParticipantController.install(panel, models, profiles, getLocalDomain(), user, participantMessages);
       KeepFocusInView.install(edit, panel);
       stageTwo.getDiffController().upgrade(edit);
     }

@@ -19,9 +19,9 @@
 
 package org.waveprotocol.box.webclient.search;
 
-import org.waveprotocol.box.webclient.client.ClientEvents;
-import org.waveprotocol.box.webclient.client.events.WaveCreationEvent;
+import com.google.gwt.core.client.GWT;
 import org.waveprotocol.box.webclient.search.Search.State;
+import org.waveprotocol.box.webclient.search.i18n.SearchPresenterMessages;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.scheduler.Scheduler.IncrementalTask;
@@ -58,6 +58,8 @@ public final class SearchPresenter
     /** Handles a wave selection action. */
     void onWaveSelected(WaveId id);
   }
+
+  private static final SearchPresenterMessages messages = GWT.create(SearchPresenterMessages.class);
 
   /** How often to repeat the search query. */
   private final static int POLLING_INTERVAL_MS = 15000; // 15s
@@ -164,7 +166,7 @@ public final class SearchPresenter
   private void initToolbarMenu() {
     GroupingToolbar.View toolbarUi = searchUi.getToolbar();
     ToolbarView group = toolbarUi.addGroup();
-    new ToolbarButtonViewBuilder().setText("New Wave").applyTo(
+    new ToolbarButtonViewBuilder().setText(messages.newWave()).applyTo(
         group.addClickButton(), new ToolbarClickButton.Listener() {
           @Override
           public void onClicked() {
@@ -214,9 +216,9 @@ public final class SearchPresenter
     String totalStr;
     if (search.getTotal() != Search.UNKNOWN_SIZE) {
       resultEnd = Math.min(resultEnd, search.getTotal());
-      totalStr = String.valueOf(search.getTotal());
+      totalStr = messages.of(search.getTotal());
     } else {
-      totalStr = "unknown";
+      totalStr = messages.ofUnknown();
     }
     searchUi.setTitleText(queryText + " (0-" + resultEnd + " of " + totalStr + ")");
   }
@@ -278,7 +280,7 @@ public final class SearchPresenter
   public void onQueryEntered() {
     queryText = searchUi.getSearch().getQuery();
     querySize = DEFAULT_PAGE_SIZE;
-    searchUi.setTitleText("Searching...");
+    searchUi.setTitleText(messages.searching());
     doSearch();
   }
 

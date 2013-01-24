@@ -20,6 +20,7 @@
 package org.waveprotocol.wave.client.wavepanel.view.dom.full;
 
 
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.ReplyBoxMessages;
 import junit.framework.TestCase;
 
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ReplyBoxViewBuilder.Components;
@@ -30,15 +31,17 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.full.ReplyBoxViewBuilder.
  */
 public class ReplyBoxBuilderTest extends TestCase {
   private ReplyBoxViewBuilder.Css css;
+  private ReplyBoxMessages messages;
 
   @Override
   protected void setUp() {
     css = UiBuilderTestHelper.mockCss(ReplyBoxViewBuilder.Css.class);
+    messages = UiBuilderTestHelper.mockReplyBoxMessages(ReplyBoxMessages.class);
   }
 
   public void testInline() throws Exception {
     String id = "askljfalikwh4rlkhs";
-    ReplyBoxViewBuilder builder = new ReplyBoxViewBuilder(css, id);
+    ReplyBoxViewBuilder builder = new ReplyBoxViewBuilder(css, messages, id);
     UiBuilderTestHelper.verifyHtml(builder, id, Components.values());
   }
 }

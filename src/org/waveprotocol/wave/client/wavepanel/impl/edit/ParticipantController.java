@@ -41,6 +41,7 @@ import org.waveprotocol.wave.client.wavepanel.view.View.Type;
 import org.waveprotocol.wave.client.wavepanel.view.dom.DomAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.ModelAsViewProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.TypeCodes;
+import org.waveprotocol.wave.client.wavepanel.impl.edit.i18n.ParticipantMessages;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
 import org.waveprotocol.wave.client.widget.profile.ProfilePopupPresenter;
 import org.waveprotocol.wave.client.widget.profile.ProfilePopupView;
@@ -62,6 +63,7 @@ public final class ParticipantController {
   private final ProfileManager profiles;
   private final String localDomain;
   private final ParticipantId user;
+  private final ParticipantMessages messages;
   private UniversalPopup popup = null;
 
   /**
@@ -70,12 +72,13 @@ public final class ParticipantController {
    */
   ParticipantController(
       DomAsViewProvider views, ModelAsViewProvider models, ProfileManager profiles,
-      String localDomain, ParticipantId user) {
+      String localDomain, ParticipantId user, ParticipantMessages messages) {
     this.views = views;
     this.models = models;
     this.profiles = profiles;
     this.localDomain = localDomain;
     this.user = user;
+    this.messages = messages;
   }
 
   /**
@@ -83,9 +86,10 @@ public final class ParticipantController {
    * @param user the logged in user
    */
   public static void install(WavePanel panel, ModelAsViewProvider models, ProfileManager profiles,
-      String localDomain, ParticipantId user) {
+      String localDomain, ParticipantId user, ParticipantMessages messages) {
     ParticipantController controller =
-        new ParticipantController(panel.getViewProvider(), models, profiles, localDomain, user);
+        new ParticipantController(panel.getViewProvider(), models, profiles,
+          localDomain, user, messages);
     controller.install(panel.getHandlers());
   }
 
@@ -216,7 +220,7 @@ public final class ParticipantController {
     // it.
     final ProfilePopupView profileView = participantView.showParticipation();
     ProfilePopupPresenter profileUi = ProfilePopupPresenter.create(profile, profileView, profiles);
-    profileUi.addControl(EscapeUtils.fromSafeConstant("Remove"), new ClickHandler() {
+    profileUi.addControl(EscapeUtils.fromSafeConstant(messages.remove()), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         participation.first.removeParticipant(participation.second);

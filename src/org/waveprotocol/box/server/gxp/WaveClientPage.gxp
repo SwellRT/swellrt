@@ -86,6 +86,16 @@
           margin-left: 0.5em;
         }
 
+        .earth {
+          /* Earth image is 24px high.  4px padding brings it to 32px, which is the topbar height. */
+          padding: 4px;
+          float: left;
+        }
+
+        .lang {
+          height: 19px;
+        }
+
         .domain {
           color: #606060;
         }

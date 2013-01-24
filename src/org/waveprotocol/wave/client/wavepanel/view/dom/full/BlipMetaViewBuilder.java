@@ -35,6 +35,7 @@ import org.waveprotocol.wave.client.uibuilder.BuilderHelper.Component;
 import org.waveprotocol.wave.client.uibuilder.UiBuilder;
 import org.waveprotocol.wave.client.wavepanel.view.IntrinsicBlipMetaView;
 import org.waveprotocol.wave.client.wavepanel.view.View.Type;
+import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.BlipMessages;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.StringMap;
 
@@ -97,26 +98,6 @@ public final class BlipMetaViewBuilder implements UiBuilder, IntrinsicBlipMetaVi
       IntrinsicBlipMetaView.MenuOption.EDIT_DONE);
   public final static Set<MenuOption> DISABLED_WHILE_EDITING_MENU_OPTIONS_SET = MENU_OPTIONS_BEFORE_EDITING;
 
-
-  static {
-    MENU_CODES.put(MenuOption.EDIT, EscapeUtils.fromSafeConstant("e"));
-    MENU_CODES.put(MenuOption.EDIT_DONE, EscapeUtils.fromSafeConstant("x"));
-    MENU_CODES.put(MenuOption.REPLY, EscapeUtils.fromSafeConstant("r"));
-    MENU_CODES.put(MenuOption.DELETE, EscapeUtils.fromSafeConstant("d"));
-    MENU_CODES.put(MenuOption.LINK, EscapeUtils.fromSafeConstant("l"));
-    MENU_LABELS.put(MenuOption.EDIT, EscapeUtils.fromSafeConstant("Edit"));
-    MENU_LABELS.put(MenuOption.EDIT_DONE, EscapeUtils.fromSafeConstant("Done"));
-    MENU_LABELS.put(MenuOption.REPLY, EscapeUtils.fromSafeConstant("Reply"));
-    MENU_LABELS.put(MenuOption.DELETE, EscapeUtils.fromSafeConstant("Delete"));
-    MENU_LABELS.put(MenuOption.LINK, EscapeUtils.fromSafeConstant("Link"));
-    for (MenuOption option : MENU_CODES.keySet()) {
-      MENU_OPTIONS.put(MENU_CODES.get(option).asString(), option);
-    }
-    assert MENU_CODES.keySet().equals(MENU_LABELS.keySet());
-    assert MENU_OPTIONS.countEntries() == MENU_CODES.size();
-    assert new HashSet<MenuOption>(Arrays.asList(MenuOption.values())).equals(MENU_LABELS.keySet());
-  }
-
   /**
    * A unique id for this builder.
    */
@@ -147,17 +128,19 @@ public final class BlipMetaViewBuilder implements UiBuilder, IntrinsicBlipMetaVi
    *        characters
    */
   public static BlipMetaViewBuilder create(String id, UiBuilder content) {
-    return new BlipMetaViewBuilder(WavePanelResourceLoader.getBlip().css(), id, nonNull(content));
+    return new BlipMetaViewBuilder(WavePanelResourceLoader.getBlip().css(),
+        WavePanelResourceLoader.getBlipMessages(), id, nonNull(content));
   }
 
   @VisibleForTesting
-  BlipMetaViewBuilder(BlipViewBuilder.Css css, String id, UiBuilder content) {
+  BlipMetaViewBuilder(BlipViewBuilder.Css css, BlipMessages messages, String id, UiBuilder content) {
     // must not contain ', it is especially troublesome because it cause
     // security issues.
     Preconditions.checkArgument(!id.contains("\'"));
     this.css = css;
     this.id = id;
     this.content = content;
+    buildMenuModel(messages);
   }
 
   @Override
@@ -285,5 +268,24 @@ public final class BlipMetaViewBuilder implements UiBuilder, IntrinsicBlipMetaVi
       throw new IllegalArgumentException("No such option: " + option);
     }
     return code;
+  }
+
+  private static void buildMenuModel(BlipMessages messages) {
+    MENU_CODES.put(MenuOption.EDIT, EscapeUtils.fromSafeConstant("e"));
+    MENU_CODES.put(MenuOption.EDIT_DONE, EscapeUtils.fromSafeConstant("x"));
+    MENU_CODES.put(MenuOption.REPLY, EscapeUtils.fromSafeConstant("r"));
+    MENU_CODES.put(MenuOption.DELETE, EscapeUtils.fromSafeConstant("d"));
+    MENU_CODES.put(MenuOption.LINK, EscapeUtils.fromSafeConstant("l"));
+    MENU_LABELS.put(MenuOption.EDIT, EscapeUtils.fromSafeConstant(messages.edit()));
+    MENU_LABELS.put(MenuOption.EDIT_DONE, EscapeUtils.fromSafeConstant(messages.done()));
+    MENU_LABELS.put(MenuOption.REPLY, EscapeUtils.fromSafeConstant(messages.reply()));
+    MENU_LABELS.put(MenuOption.DELETE, EscapeUtils.fromSafeConstant(messages.delete()));
+    MENU_LABELS.put(MenuOption.LINK, EscapeUtils.fromSafeConstant(messages.link()));
+    for (MenuOption option : MENU_CODES.keySet()) {
+      MENU_OPTIONS.put(MENU_CODES.get(option).asString(), option);
+    }
+    assert MENU_CODES.keySet().equals(MENU_LABELS.keySet());
+    assert MENU_OPTIONS.countEntries() == MENU_CODES.size();
+    assert new HashSet<MenuOption>(Arrays.asList(MenuOption.values())).equals(MENU_LABELS.keySet());
   }
 }

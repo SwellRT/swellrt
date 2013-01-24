@@ -5,6 +5,9 @@
     xmlns:ui="urn:ui:com.google.gwt.uibinder"
     xmlns:gwt="urn:import:com.google.gwt.user.client.ui"
 >
+  <ui:with field='msg'
+         type='org.waveprotocol.box.webclient.widget.error.i18n.ErrorMessages' />
+
   <ui:style type='org.waveprotocol.box.webclient.widget.error.ErrorIndicatorWidget.Style'>
 
   .alert {
@@ -44,16 +47,16 @@
   </ui:style>
   <gwt:HTMLPanel>
     <span class="{style.alert}">
-      <em>"Everything's shiny, Cap'n. Not to fret!"</em>
-      An error has occurred, please
+      <em><ui:text from="{msg.everythingShiny}"/></em>
+      <ui:text from="{msg.errorHasOccurred}"/>. <ui:text from="{msg.please}"/>
       <a href="#" onclick="window.location.replace(window.location.href.replace(/#.*/, ''));">
-      refresh</a>.
+      <ui:text from="{msg.refreshPage}"/></a>.
       <gwt:Anchor href="javascript:;" ui:field="showDetail" visible="false">
-        Show error detail
+        <ui:text from="{msg.showErrorDetail}"/>.
       </gwt:Anchor>
       </span>
     <div ui:field="detail" class="{style.detail}">
-      <h3>Stack trace:</h3>
+      <h3><ui:text from="{msg.stackTrace}"/></h3>
       <span ui:field="stack" class="{style.stack}"></span>
       <span ui:field="bug"></span>
     </div>

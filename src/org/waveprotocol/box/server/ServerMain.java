@@ -93,6 +93,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+import org.waveprotocol.box.server.rpc.LocaleServlet;
 
 /**
  * Wave Server entrypoint.
@@ -238,6 +239,7 @@ public class ServerMain {
     server.addServlet("/auth/signout", SignOutServlet.class);
     server.addServlet("/auth/register", UserRegistrationServlet.class);
 
+    server.addServlet("/locale/*", LocaleServlet.class);
     server.addServlet("/fetch/*", FetchServlet.class);
     server.addServlet("/search/*", SearchServlet.class);
     server.addServlet("/notification/*", NotificationServlet.class);

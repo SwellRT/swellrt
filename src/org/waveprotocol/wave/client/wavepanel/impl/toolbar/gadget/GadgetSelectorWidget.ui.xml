@@ -15,58 +15,94 @@
  *
  -->
 <ui:UiBinder
-    xmlns:ui="urn:ui:com.google.gwt.uibinder"
-    xmlns:g="urn:import:com.google.gwt.user.client.ui"
-    xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common" >
+  xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:g="urn:import:com.google.gwt.user.client.ui"
+  xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common" >
+
+  <ui:with field='msg'
+           type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.i18n.GadgetSelectorMessages' />
 
   <ui:style>
     .self {
-      padding: 0 15px;
-      height: 700px;
+    padding: 0 15px;
+    height: 700px;
     }
 
     .custom, .self label {
-      margin: 15px 0;
+    margin: 15px 0;
     }
 
     .self label {
-      display: block;
-      font-weight: bold;
+    display: block;
+    font-weight: bold;
     }
 
     .self input {
-      width: 503px;
+    width: 503px;
     }
 
     .dock {
-      width: 600px;
+    width: 600px;
+    }
+
+    .param {
+    width: 100%;
+    }
+
+    .left {
+    overflow: hidden;
+    }
+
+    .right {
+    float: right;
+    margin-left: 5px;
     }
   </ui:style>
 
   <w:ImplPanel ui:field="self" styleName="{style.self}">
-  <!-- Custom gadget -->
-  <g:DockLayoutPanel unit="PX" ui:field="dockPanel"
-    styleName="{style.dock}">
-    <g:north size="200">
-      <g:HTMLPanel>
-        <div class="{style.custom}">
-          <label>Enter a custom gadget URL:</label>
-          <g:TextBox width="500" ui:field="gadgetUrl" />
-          <g:Button ui:field="useCustom">Use</g:Button>
-        </div>
+    <!-- Custom gadget -->
+    <g:DockLayoutPanel unit="PX" ui:field="dockPanel"
+                     styleName="{style.dock}">
+      <g:north size="200">
+        <g:HTMLPanel>
+          <div class="{style.custom}">
+            <label>
+              <ui:text from="{msg.enterCustomGadgetURL}"/>
+            </label>
+            <div class="{style.param}">
+              <div class="{style.right}">
+                <g:Button ui:field="useCustom">
+                  <ui:text from="{msg.use}"/>
+                </g:Button>
+              </div>
+              <div class="{style.left}">
+                <g:TextBox width="100%" ui:field="gadgetUrl" />
+              </div>
+            </div>
+          </div>
 
-        <label>Or, choose one of these gadgets:</label>
-        <label>Filter:</label>
-        <g:TextBox width="500" ui:field="gadgetFilter" />
-        <g:ListBox width="80" ui:field="categoryDropBox" />
-      </g:HTMLPanel>
-    </g:north>
-    <g:center>
-      <!-- featured/recently used gadgets go here -->
-      <g:ScrollPanel>
-        <g:FlowPanel ui:field="options" />
-      </g:ScrollPanel>
-    </g:center>
-  </g:DockLayoutPanel>
-</w:ImplPanel>
+          <label>
+            <ui:text from="{msg.orChooseOneOfTheseGadgets}"/>
+          </label>
+          <label>
+            <ui:text from="{msg.filter}"/>
+          </label>
+          <div class="{style.param}">
+            <div class="{style.right}">
+              <g:ListBox ui:field="categoryDropBox" />
+            </div>
+            <div class="{style.left}">
+              <g:TextBox width="100%" ui:field="gadgetFilter" />
+            </div>
+          </div>
+        </g:HTMLPanel>
+      </g:north>
+      <g:center>
+        <!-- featured/recently used gadgets go here -->
+        <g:ScrollPanel>
+          <g:FlowPanel ui:field="options" />
+        </g:ScrollPanel>
+      </g:center>
+    </g:DockLayoutPanel>
+  </w:ImplPanel>
 </ui:UiBinder>

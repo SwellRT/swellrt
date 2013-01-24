@@ -1,8 +1,13 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder">
-  <ui:with field="css" type="org.waveprotocol.box.webclient.widget.loading.LoadingIndicator.Css"/>
+  <ui:with
+    field="css"
+    type="org.waveprotocol.box.webclient.widget.loading.LoadingIndicator.Css"/>
+  <ui:with
+    field="msg"
+    type="org.waveprotocol.box.webclient.widget.loading.i18n.LoadingMessages" />
   <div class='{css.loading}' ui:field='loading'>
     <div class='{css.loadingImage}'/>
-    <div>Loading</div>
+    <div><ui:text from="{msg.loading}"/></div>
   </div>
 </ui:UiBinder>
