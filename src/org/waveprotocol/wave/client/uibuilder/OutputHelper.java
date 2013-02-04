@@ -187,6 +187,7 @@ public final class OutputHelper {
       String caption) {
     builder.appendHtmlConstant("<button " //
         + (id != null ? " id='" + id + "'" : "") //
+        + (title != null ? " title='" + title + "'" : "") //
         + (clazz != null ? " class='" + clazz + "'" : "") //
         + (kind != null ? " " + BuilderHelper.KIND_ATTRIBUTE + "='" + kind + "'" : "") //
         + ">"+ caption + "</button>");
