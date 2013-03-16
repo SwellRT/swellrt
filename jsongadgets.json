@@ -717,5 +717,14 @@
 "gadgetUrl":"http://wave-api.appspot.com/public/gadgets/bidder.xml",
 "author":"Google Wave APIs Team",
 "submittedBy":"Jeremy",
-"imageUrl":"http://wave-samples-gallery.appspot.com/images?img_id=6001&img_type=screenshot"}
+"imageUrl":"http://wave-samples-gallery.appspot.com/images?img_id=6001&img_type=screenshot"},
+
+{"name":"Taskboardy+",
+"desc":"It's an improved version of the Taskboardy gadget. Allows to maintain a taskboard, as in Scrum, with operations such as Create/Update/Delete a User Story; Create/Update/Rank/Delete a Task; Update status, owner and related url of the tasks. It's translated to English and Spanish.",
+"primaryCategory":"PRODUCTIVITY",
+"secondaryCategory":"UTILITY",
+"gadgetUrl":"http://taskboardy.googlecode.com/svn/trunk/taskboardy2.xml",
+"author":"Patricio Gonzalez Sevilla 'patriciog'",
+"submittedBy":"patriciog",
+"imageUrl":"http://taskboardy.googlecode.com/svn/trunk/screenshot.png"}
   ]
