@@ -21,6 +21,8 @@ package org.waveprotocol.wave.client.gadget.renderer;
 
 import static org.waveprotocol.wave.client.gadget.GadgetLog.log;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.ui.Widget;
 
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -39,7 +41,7 @@ import org.waveprotocol.wave.model.supplement.ObservableSupplementedWave;
 public class GadgetRenderer extends GwtRenderingMutationHandler {
   private static final Property<GadgetWidget> GADGET_WIDGET = Property.immutable("GadgetWidget");
 
-  private static final Locale CURRENT_LOCALE = new SessionLocale("");
+  private static final Locale CURRENT_LOCALE = new SessionLocale(GWT.isClient()? LocaleInfo.getCurrentLocale().getLocaleName(): "");
 
   private final WaveletName waveletName;
 
