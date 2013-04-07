@@ -22,9 +22,6 @@
   <!-- Import classpath definitions. -->
   <import file="${build.classpath.path}"/>
 
-  <!-- Pull in the Emma tasks -->
-  <taskdef resource="emma_ant.properties" classpathref="test.libpath"/>
-
   <!-- Import macros -->
   <import file="${build.macros.path}"/>
 
@@ -254,8 +251,22 @@
     <touch file="${dep}/compile"/>
   </target>
 
-  <target name="compile-tests" depends="compile" 
+  <target name="check-test-dependencies" description="Checks dependencies for test compilation are
+    available">
+    <available file="third_party/test/emma/emma_ant.jar" property="test.dependencies.1.present"/>
+    <available file="third_party/test/emma/emma.jar" property="test.dependencies.2.present"/>
+    <available file="third_party/test/junit/junit.jar" property="test.dependencies.3.present"/>
+    <available file="third_party/test/junit/src.jar" property="test.dependencies.4.present"/>
+    <fail message="${missing.dependencies.test} third_party/test/emma/emma_ant.jar" unless="test.dependencies.1.present"/>
+    <fail message="${missing.dependencies.test} third_party/test/emma/emma.jar" unless="test.dependencies.2.present"/>
+    <fail message="${missing.dependencies.test} third_party/test/junit/junit.jar" unless="test.dependencies.3.present"/>
+    <fail message="${missing.dependencies.test} third_party/test/junit/src.jar" unless="test.dependencies.4.present"/>
+  </target>
+
+  <target name="compile-tests" depends="check-test-dependencies,compile"
       description="Compiles all unit tests">
+            <!-- Pull in the Emma tasks -->
+    <taskdef resource="emma_ant.properties" classpathref="test.libpath"/>
     <buildjava destdir="${build.test.dir}">
       <src path="${test.dir}" />
       <classpath>
@@ -746,6 +757,17 @@
     </zip>
   </target>
 
+  <target name="get-third-party" description="Download third party dependencies">
+    <get src="http://repo1.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar"
+      dest="third_party/test/emma/emma.jar"/>
+    <get src="http://repo1.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar"
+      dest="third_party/test/emma/emma_ant.jar"/>
+    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10.jar"
+      dest="third_party/test/junit/junit.jar"/>
+    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10-sources.jar"
+      dest="third_party/test/junit/src.jar"/>
+  </target>
+
   <target name="doc" depends="stage" description="Builds the Java documentation for the mode, protocol, and Wave in a Box">
     <javadoc sourcepath="${src.dir}" destdir="${docs.dir}" linksource="yes" author="yes" protected="yes"
         windowtitle="${ant.project.name} Documentation">
@@ -756,6 +778,6 @@
       </classpath>
       <doctitle>${ant.project.name}</doctitle>
       <footer>&lt;a href="http://www.waveprotocol.org/"&gt;Wave Project&lt;a/&gt;</footer>
-    </javadoc> 
+    </javadoc>
   </target>
 </project>

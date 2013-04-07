@@ -14,7 +14,7 @@ MacOS 10.5 ships with Java 5 by default.
 Wave in a Box uses Ant to build. To run the tests, run:
 
 <code>
-./get_third_party.sh
+  ant get-third-party
   ant test
 </code>
 
