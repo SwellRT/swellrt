@@ -22,6 +22,7 @@ fi
 
 # The version of Wave in a Box, extracted from the build.properties file
 WAVEINABOX_VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" build.properties | grep ^waveinabox.version= | cut -f2 -d=`
+NAME=`sed "s/[\\t ]*=[\\t ]*/=/g" build.properties | grep ^name= | cut -f2 -d=`
 
 . process-script-args.sh
 
@@ -29,4 +30,4 @@ exec java $DEBUG_FLAGS \
   -Dorg.eclipse.jetty.LEVEL=DEBUG \
   -Djava.security.auth.login.config=jaas.config \
   -Dwave.server.config=server.config \
-  -jar dist/waveinabox-server-$WAVEINABOX_VERSION.jar
+  -jar dist/$NAME-server-$WAVEINABOX_VERSION.jar
