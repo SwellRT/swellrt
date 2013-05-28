@@ -34,7 +34,6 @@
   <tstamp>
     <format property="LOG_STAMP" pattern="yyyy-MM-dd_HH-mm-ss"/>
   </tstamp>
-  <property name="release.name" value="wave-${DSTAMP_INT}.zip"/>
   <property name="release.robot.name" value="wave-robot-client${DSTAMP_INT}.zip"/>
   <property name="release.robot.python.name" value="wave-robot-python-client${DSTAMP_INT}.zip"/>
   <property name="build.log.filename" value="build_${LOG_STAMP}.log"/>
@@ -341,6 +340,10 @@
   <target name="test-all" depends="compile-tests, test, test-gwt, test-large, test-mongodb"
       description="Run all tests, including GWT"/>
 
+  <!--=====
+      GWT
+      ======-->
+
   <target name="compile-gwt-dep">
     <uptodate targetfile="${dep}/compile-gwt" property="skip.compile-gwt">
       <srcfiles dir="${lib.dir}"/>
@@ -429,6 +432,10 @@
     <touch file="${dep}/compile-gwt-dev"/>
   </target>
 
+  <!--=====
+      Hosted
+      ======-->
+
   <target name="hosted-gwt" depends="compile" 
       description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
@@ -477,6 +484,10 @@
     </java>
   </target>
 
+  <!--=====
+      Server
+      ======-->
+
   <target name="check-server-config" description="Checks server configuration is available">
     <available file="server.config" property="server.config.present"/>
     <fail message="You need to copy server.config.example to server.config and edit it."
@@ -513,6 +524,10 @@
       <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=10898"/>
     </java>
   </target>
+
+  <!--=====
+      Distribution
+      ======-->
 
   <target name="stage-dep">
     <uptodate targetfile="${dep}/stage" property="skip.stage">
@@ -728,14 +743,84 @@
     </junit>
   </target>
 
-  <target name="release" depends="dist, release-robot-client-api, release-robot-client-python-api" description="Creates a zip for a release">
-    <delete file="${dist.dir}/${release.name}"/>
-    <zip destfile="${dist.dir}/${release.name}">
-      <zipfileset dir="${dist.dir}" includes="*.jar"/>
-      <zipfileset dir="${basedir}" includes="COPYING"/>
-    </zip>
+  <!--=====
+      Release creation
+      ======-->
+
+  <target name="release" depends="release-bin,release-src" description="Creates unsigned release">
   </target>
 
+  <target name="release-src" description="Creates unsigned tar+zip for server source release">
+    <delete file="${dist.dir}/${release.src.path}.tar.bz2" />
+    <delete file="${dist.dir}/${release.src.path}.zip" />
+    <tar destfile="${dist.dir}/${release.src.path}.tar" longfile="gnu">
+      <!-- Include everything except built stuff in tree -->
+      <tarfileset dir="." prefix="${release.src.path}">
+        <exclude name="build/" />
+        <exclude name="dist/" />
+        <exclude name="gen/" />
+        <exclude name="test_out/" />
+        <exclude name="third_party/test/emma/*.jar" />
+        <exclude name="third_party/test/junit/*.jar" />
+        <exclude name="war/webclient/" />
+      </tarfileset>
+      <!-- Setup permissions -->
+      <tarfileset dir="." prefix="${release.src.path}" filemode="755">
+        <include name="check-certificates.sh" />
+        <include name="make_cert.sh" />
+        <include name="run-server.sh" />
+        <include name="run-export.sh" />
+        <include name="run-import.sh" />
+      </tarfileset>
+    </tar>
+    <bzip2 destfile="${dist.dir}/${release.src.path}.tar.bz2" src="${dist.dir}/${release.src.path}.tar" />
+    <zip destfile="${dist.dir}/${release.src.path}.zip">
+      <tarfileset src="${dist.dir}/${release.src.path}.tar" />
+    </zip>
+    <delete file="${dist.dir}/${release.src.path}.tar" />
+  </target>
+
+  <target name="release-bin" depends="dist" description="Creates unsigned tar+zip for server binary release">
+    <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
+    <delete file="${dist.dir}/${release.bin.path}.zip"/>
+    <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
+      <!-- Actual jars -->
+      <tarfileset dir="${dist.dir}" includes="*.jar" prefix="${release.bin.path}/dist" />
+      <tarfileset dir="${basedir}" prefix="${release.bin.path}">
+        <!-- Documentation + Licensing -->
+        <include name="DISCLAIMER" />
+        <include name="KEYS" />
+        <include name="LICENSE" />
+        <include name="NOTICE" />
+        <include name="README" />
+        <include name="README.export-import" />
+        <!-- Helper scripts -->
+        <include name="process-script-args.sh" />
+        <!-- Configuration -->
+        <include name="jaas.config" />
+        <include name="jsongadgets.json" />
+        <include name="server.config.example" />
+        <include name="server.federation.config.example" />
+      </tarfileset>
+      <!-- Helper scripts -->
+      <tarfileset dir="${basedir}" prefix="${release.bin.path}" filemode="755">
+        <include name="check-certificates.sh" />
+        <include name="make_cert.sh" />
+        <include name="run-server.sh" />
+        <include name="run-export.sh" />
+        <include name="run-import.sh" />
+      </tarfileset>
+      <!-- WAR static content -->
+      <tarfileset dir="." includes="war/" prefix="${release.bin.path}" />
+    </tar>
+    <bzip2 destfile="${dist.dir}/${release.bin.path}.tar.bz2" src="${dist.dir}/${release.bin.path}.tar" />
+    <zip destfile="${dist.dir}/${release.bin.path}.zip">
+      <tarfileset src="${dist.dir}/${release.bin.path}.tar" />
+    </zip>
+    <delete file="${dist.dir}/${release.bin.path}.tar"/>
+  </target>
+
+  <!-- TODO: re-use these when the api code is useful again -->
   <target name="release-robot-client-api" depends="dist-libraries" description="Creates a zip for the java robot client release">
     <delete file="${dist.dir}/${release.robot.name}"/>
     <zip destfile="${dist.dir}/${release.robot.name}">
@@ -756,6 +841,10 @@
       <zipfileset dir="${basedir}" includes="COPYING"/>
     </zip>
   </target>
+
+  <!--=====
+      Other
+      ======-->
 
   <target name="get-third-party" description="Download third party dependencies">
     <get src="http://repo1.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar"
