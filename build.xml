@@ -208,7 +208,7 @@
       gobbles up those files and compiles them too, a subsequent step has to
       go and delete those overzealously compiled files, because they will be
       compiled again later.
-    -->    
+    -->
     <javac srcdir="${gen.dir}/messages"
            destdir="${build.messages.dir}"
            sourcepath="${src.dir}">
@@ -352,8 +352,8 @@
     </uptodate>
   </target>
 
-  <target name="compile-gwt" depends="compile, compile-gwt-dep" 
-      description="GWT compile to production JavaScript" unless="skip.compile-gwt">    
+  <target name="compile-gwt" depends="compile, compile-gwt-dep"
+      description="GWT compile to production JavaScript" unless="skip.compile-gwt">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
         <pathelement location="${src.dir}"/>
@@ -383,9 +383,9 @@
       <srcfiles dir="${gen.dir}/messages"/>
     </uptodate>
   </target>
-  
-  <target name="compile-gwt-demo" depends="compile, compile-gwt-dev-dep" 
-       description="GWT compile to a 'demo' production JavaScript with remote logging enabled." 
+
+  <target name="compile-gwt-demo" depends="compile, compile-gwt-dev-dep"
+       description="GWT compile to a 'demo' production JavaScript with remote logging enabled."
        unless="skip.compile-gwt-dev">
      <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
        <classpath>
@@ -406,9 +406,9 @@
      <delete file="${dep}/compile-gwt"/>
      <touch file="${dep}/compile-gwt-dev"/>
    </target>
-  
-  <target name="compile-gwt-dev" depends="compile, compile-gwt-dev-dep" 
-      description="GWT compile of a restricted set of permutations suitable for development." 
+
+  <target name="compile-gwt-dev" depends="compile, compile-gwt-dev-dep"
+      description="GWT compile of a restricted set of permutations suitable for development."
       unless="skip.compile-gwt-dev">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
@@ -436,7 +436,7 @@
       Hosted
       ======-->
 
-  <target name="hosted-gwt" depends="compile" 
+  <target name="hosted-gwt" depends="compile"
       description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
@@ -537,7 +537,7 @@
     </uptodate>
   </target>
 
-  <target name="stage" depends="compile, stage-dep" 
+  <target name="stage" depends="compile, stage-dep"
       description="Copy classes and runtime depenencies to the staging directory" unless="skip.stage">
     <!-- Unzip and copy all the runtime deps into a staging dir -->
     <unzip dest="${staging.dir}">
@@ -836,7 +836,7 @@
 
   <target name="release-robot-client-python-api" description="Creates a zip for the python robot client release">
     <delete file="${dist.dir}/${release.robot.python.name}"/>
-    <zip destfile="${dist.dir}/${release.robot.python.name}">	
+    <zip destfile="${dist.dir}/${release.robot.python.name}">
       <zipfileset dir="${src.dir}/python/api" includes="**/*.py"/>
       <zipfileset dir="${basedir}" includes="COPYING"/>
     </zip>
