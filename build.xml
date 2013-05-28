@@ -580,8 +580,8 @@
         <exclude name="org/waveprotocol/box/server/waveserver/**/*" />
       </fileset>
       <manifest>
-        <attribute name="Implementation-Vendor" value="Google, Inc."/>
-        <attribute name="Implementation-Title" value="Google Wave Reference Impl API"/>
+        <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
+        <attribute name="Implementation-Title" value="Apache Wave Reference Impl API"/>
         <attribute name="Implementation-Version" value="${waveinabox.version}"/>
       </manifest>
     </jar>
@@ -667,8 +667,8 @@
         <!-- Application entry point -->
         <attribute name="Main-Class"
           value="org.waveprotocol.box.server.ServerMain"/>
-        <attribute name="Implementation-Vendor" value="Google, Inc."/>
-        <attribute name="Implementation-Title" value="Wave in a Box Server"/>
+        <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
+        <attribute name="Implementation-Title" value="Apache Wave Server"/>
         <attribute name="Implementation-Version" value="${waveinabox.version}"/>
       </manifest>
     </jar>
