@@ -538,7 +538,7 @@
   </target>
 
   <target name="stage" depends="compile, stage-dep"
-      description="Copy classes and runtime depenencies to the staging directory" unless="skip.stage">
+      description="Copy classes and runtime dependencies to the staging directory" unless="skip.stage">
     <!-- Unzip and copy all the runtime deps into a staging dir -->
     <unzip dest="${staging.dir}">
       <fileset dir="${lib.runtime}">
@@ -582,6 +582,16 @@
       	<include name="com/google/wave/api/oauth/**/*" />
       	<include name="com/google/wave/api/v2/**/*" />
       </fileset>
+      <manifest>
+        <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+        <attribute name="Specification-Title" value="Apache Wave Robot Client API"/>
+        <attribute name="Specification-Version" value="${waveinabox.version}"/>
+        <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
+        <attribute name="Implementation-Title" value="Apache Wave Robot Client API"/>
+        <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+        <attribute name="Built-By" value="${user.name}"/>
+      </manifest>
+      <metainf dir="." includes="LICENSE, NOTICE" />
     </jar>
   </target>
 
@@ -595,10 +605,15 @@
         <exclude name="org/waveprotocol/box/server/waveserver/**/*" />
       </fileset>
       <manifest>
-        <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
+        <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+        <attribute name="Specification-Title" value="Apache Wave Reference Impl API"/>
+        <attribute name="Specification-Version" value="${waveinabox.version}"/>
+        <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
         <attribute name="Implementation-Title" value="Apache Wave Reference Impl API"/>
         <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+        <attribute name="Built-By" value="${user.name}"/>
       </manifest>
+      <metainf dir="." includes="LICENSE, NOTICE" />
     </jar>
   </target>
 
@@ -682,10 +697,15 @@
         <!-- Application entry point -->
         <attribute name="Main-Class"
           value="org.waveprotocol.box.server.ServerMain"/>
-        <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
+        <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+        <attribute name="Specification-Title" value="Apache Wave Server"/>
+        <attribute name="Specification-Version" value="${waveinabox.version}"/>
+        <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
         <attribute name="Implementation-Title" value="Apache Wave Server"/>
         <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+        <attribute name="Built-By" value="${user.name}"/>
       </manifest>
+      <metainf dir="." includes="LICENSE, NOTICE" />
     </jar>
     <touch file="${dep}/dist-server"/>
   </target>
@@ -717,6 +737,16 @@
         <include name="org/json/**/*"/>
         <include name="net/oauth/**/*"/>
       </fileset>
+      <manifest>
+        <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+        <attribute name="Specification-Title" value="Apache Wave Export/Import Utilities"/>
+        <attribute name="Specification-Version" value="${waveinabox.version}"/>
+        <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
+        <attribute name="Implementation-Title" value="Apache Wave Export/Import Utilities"/>
+        <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+        <attribute name="Built-By" value="${user.name}"/>
+      </manifest>
+      <metainf dir="." includes="LICENSE, NOTICE" />
     </jar>
     <touch file="${dep}/dist-export-import"/>
   </target>
