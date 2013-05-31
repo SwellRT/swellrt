@@ -829,6 +829,7 @@
         <!-- Helper scripts -->
         <include name="process-script-args.sh" />
         <!-- Configuration -->
+        <include name="build.properties" />
         <include name="jaas.config" />
         <include name="jsongadgets.json" />
         <include name="server.config.example" />
