@@ -818,12 +818,14 @@
       <tarfileset dir="${dist.dir}" includes="*.jar" prefix="${release.bin.path}/dist" />
       <tarfileset dir="${basedir}" prefix="${release.bin.path}">
         <!-- Documentation + Licensing -->
+        <include name="CHANGES" />
         <include name="DISCLAIMER" />
         <include name="KEYS" />
         <include name="LICENSE" />
         <include name="NOTICE" />
         <include name="README" />
         <include name="README.export-import" />
+        <include name="RELEASE-NOTES" />
         <!-- Helper scripts -->
         <include name="process-script-args.sh" />
         <!-- Configuration -->
