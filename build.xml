@@ -834,6 +834,7 @@
         <include name="jsongadgets.json" />
         <include name="server.config.example" />
         <include name="server.federation.config.example" />
+        <include name="wiab-logging.conf" />
       </tarfileset>
       <!-- Helper scripts -->
       <tarfileset dir="${basedir}" prefix="${release.bin.path}" filemode="755">
