@@ -1,7 +1,9 @@
 URL: http://www.gnu.org/software/libidn/
-VERSION: 1.15
-License: LGPL
+VERSION: 1.26
+License: Apache 2.0
 License File: LICENSE
+
+Thanks to Oliver Hitz for agreeing to relicense this.
 
 Description:
 Encodes and decodes internationalized domain names.
