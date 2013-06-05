@@ -27,7 +27,7 @@ NAME=`sed "s/[\\t ]*=[\\t ]*/=/g" build.properties | grep ^name= | cut -f2 -d=`
 . process-script-args.sh
 
 exec java $DEBUG_FLAGS \
-  -Djava.util.logging.config.file=wiab-logging.conf
+  -Djava.util.logging.config.file=wiab-logging.conf \
   -Djava.security.auth.login.config=jaas.config \
   -Dwave.server.config=server.config \
   -jar dist/$NAME-server-$WAVEINABOX_VERSION.jar
