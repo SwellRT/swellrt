@@ -8028,3 +8028,505 @@ Changed paths:
 
 Creating wave-0.4-release branch
 ------------------------------------------------------------------------
+r1488388 | al | 2013-05-31 21:29:36 +0100 (Fri, 31 May 2013) | 4 lines
+Changed paths:
+   A /incubator/wave/branches/wave-0.4-release/CHANGES
+   M /incubator/wave/branches/wave-0.4-release/README
+   A /incubator/wave/branches/wave-0.4-release/RELEASE-NOTES
+   M /incubator/wave/branches/wave-0.4-release/build.xml
+
+Add CHANGES, RELEASE-NOTES for 0.4
+
+Also ensure they are included in the binary releases.
+
+------------------------------------------------------------------------
+r1488391 | al | 2013-05-31 21:33:21 +0100 (Fri, 31 May 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/build.properties
+
+Bump version number in build.properties
+
+------------------------------------------------------------------------
+r1488422 | al | 2013-05-31 23:27:21 +0100 (Fri, 31 May 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/build.xml
+
+Forgot build.properties needs to be in binary release.
+
+------------------------------------------------------------------------
+r1489315 | al | 2013-06-04 09:08:04 +0100 (Tue, 04 Jun 2013) | 2 lines
+Changed paths:
+   D /incubator/wave/branches/wave-0.4-release/issue_exporter.py
+   D /incubator/wave/branches/wave-0.4-release/request_codereview
+   D /incubator/wave/branches/wave-0.4-release/spec
+   D /incubator/wave/branches/wave-0.4-release/whitepapers
+
+Remove spec, whitepapers, request_codereview, issue_exporter from branch.
+
+------------------------------------------------------------------------
+r1489328 | al | 2013-06-04 09:25:34 +0100 (Tue, 04 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release
+   M /incubator/wave/branches/wave-0.4-release/build.xml
+   M /incubator/wave/branches/wave-0.4-release/run-server.sh
+   A /incubator/wave/branches/wave-0.4-release/wiab-logging.conf (from /incubator/wave/trunk/wiab-logging.conf:1489326)
+
+Merge in logging improvements from trunk, add to release script.
+
+------------------------------------------------------------------------
+r1489329 | al | 2013-06-04 09:26:57 +0100 (Tue, 04 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/build.xml
+
+Add thumbnail_patterns, and platforms to binary release.
+
+------------------------------------------------------------------------
+r1489355 | al | 2013-06-04 10:31:01 +0100 (Tue, 04 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/NOTICE
+
+Update NOTICE to Apache style.
+
+------------------------------------------------------------------------
+r1489356 | al | 2013-06-04 10:31:49 +0100 (Tue, 04 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/third_party/runtime/libidn/LICENSE
+   M /incubator/wave/branches/wave-0.4-release/third_party/runtime/libidn/README.google
+   A /incubator/wave/branches/wave-0.4-release/third_party/runtime/libidn/libidn-1.26.jar
+
+Update libidn to 1.26 (Apache licensed)
+
+------------------------------------------------------------------------
+r1489364 | al | 2013-06-04 11:04:41 +0100 (Tue, 04 Jun 2013) | 2 lines
+Changed paths:
+   D /incubator/wave/branches/wave-0.4-release/third_party/runtime/third_party
+   D /incubator/wave/trunk/third_party/runtime/third_party
+
+Remove some replicated(empty) third_party/runtime/third_party dirs
+
+------------------------------------------------------------------------
+r1489740 | al | 2013-06-05 09:31:41 +0100 (Wed, 05 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/.classpath
+   M /incubator/wave/branches/wave-0.4-release/.gitignore
+   M /incubator/wave/branches/wave-0.4-release/.project
+   M /incubator/wave/branches/wave-0.4-release/.project_template
+   M /incubator/wave/branches/wave-0.4-release/jaas.config
+   M /incubator/wave/branches/wave-0.4-release/proto_src/org/waveprotocol/box/attachment/AttachmentProto.java
+   M /incubator/wave/branches/wave-0.4-release/proto_src/org/waveprotocol/box/server/persistence/protos/ProtoAccountStoreData.java
+   M /incubator/wave/branches/wave-0.4-release/server-config.xml
+   M /incubator/wave/branches/wave-0.4-release/server.federation.config
+   D /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/logo.gif
+   M /incubator/wave/branches/wave-0.4-release/war/.gitignore
+   M /incubator/wave/branches/wave-0.4-release/war/static/logo.png
+
+Add TM to logo, add some missing license headers
+
+------------------------------------------------------------------------
+r1489742 | al | 2013-06-05 09:48:23 +0100 (Wed, 05 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/src/com/google/gwt/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/com/google/gwt/websockets/WebSockets.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/com/google/wave/api/data/Data.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/com/google/wave/api/robot/Robot.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/attachment/Attachment.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/common/Common.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/common/ListReceiver.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/common/Receiver.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/common/comms/WaveClientRpc.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/profile/Profile.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/search/Search.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/server/persistence/mongodb/mongodb.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/server/waveserver/ImportServlet.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/WaveExport.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/WaveImport.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/RobotApi.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/RobotSearchDigest.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/RobotSearchDigestGsonImpl.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/RobotSearchDigestImpl.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/RobotSearchDigestUtil.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/oauth/NeedNewOAuthTokenException.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/oauth/OAuthCredentials.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/oauth/OAuthRequestHelper.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/oauth/OAuthedFetchService.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/oauth/StableUserId.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/waveimport/google/oauth/UserContext.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/WebClient.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/WebClientDemo.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/WebClientDev.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/WebClientProd.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/DebugMessagePanel.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/WebClient.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SavedStateMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SavedStateMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SavedStateMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SessionMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SessionMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SessionMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SessionMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/SessionMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/WebClientMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/WebClientMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/WebClientMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/WebClientMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/client/i18n/WebClientMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/common/Common.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/common/communication/Communication.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/profile/Profile.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/DigestDomImpl.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/Search.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/SearchPanelWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/SearchWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/DigestDomMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/DigestDomMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/DigestDomMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/DigestDomMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/DigestDomMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchPresenterMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchPresenterMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchPresenterMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchPresenterMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchPresenterMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchWidgetMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchWidgetMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchWidgetMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/i18n/SearchWidgetMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/search/mock/search.html
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/Error.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/ErrorIndicatorWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/i18n/ErrorMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/i18n/ErrorMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/i18n/ErrorMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/i18n/ErrorMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/error/i18n/ErrorMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/frame/Frame.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/frame/FramedPanel.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/Loading.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/LoadingIndicator.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/i18n/LoadingMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/i18n/LoadingMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/i18n/LoadingMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/i18n/LoadingMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/box/webclient/widget/loading/i18n/LoadingMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/protobuf/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/Client.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/account/Account.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/autohide/Autohide.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/clipboard/Clipboard.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/safehtml/SafeHtml.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/scrub/Scrub.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/util/Util.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/util/useragents.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/webdriver/Webdriver.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/concurrencycontrol/ConcurrencyControl.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/debug/logger/Logger.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/debug/logger/testing/restrict_permutations.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/doodad/Doodad.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/doodad/attachment/Attachment.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/doodad/attachment/render/ImageThumbnailWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/Editor.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/constants/Constants.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/content/paragraph/constants/Constants.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/examples/img/CaptionedImageWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/examples/img/TestModule.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/harness/EditorHarness.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/harness/EditorTest.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/selection/html/Html.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/testing/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/testtools/TestTools_Gwt.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/editor/toolbar/Toolbar.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/gadget/Gadget.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/gadget/renderer/GadgetWidgetUi.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/paging/Paging.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/render/Render.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/scheduler/Scheduler.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/scheduler/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/scheduler/testing/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/scroll/Scroll.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/testing/UndercurrentHarness.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/uibuilder/UiBuilder.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/util/ClientFlags.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/util/ClientFlagsTesting.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wave/Wave.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/WavePanel.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/block/Block.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/event/Event.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/event/WaveChangeHandler.java
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/Base.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/Impl.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/collapse/Collapse.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/diff/Diff.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/Edit.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ActionMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ActionMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ActionMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ActionMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ActionMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ParticipantMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ParticipantMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ParticipantMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ParticipantMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/edit/i18n/ParticipantMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/focus/Focus.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/indicator/ReplyIndicator.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/menu/Menu.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/menu/i18n/MenuMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/menu/i18n/MenuMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/menu/i18n/MenuMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/menu/i18n/MenuMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/menu/i18n/MenuMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/reader/Reader.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/Toolbar.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/attachment/AttachmentPopupWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/attachment/i18n/AttachmentMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/attachment/i18n/AttachmentMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/attachment/i18n/AttachmentMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/attachment/i18n/AttachmentMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/attachment/i18n/AttachmentMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetCategoryMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetCategoryMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetCategoryMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetCategoryMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetCategoryMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetSelectorMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetSelectorMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetSelectorMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetSelectorMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/gadget/i18n/GadgetSelectorMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/LinkerMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/LinkerMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/LinkerMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/LinkerMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/LinkerMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/ToolbarMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/ToolbarMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/ToolbarMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/ToolbarMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/ToolbarMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/render/Render.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/View.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/Dom.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/BlipLinkPopupWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/FocusFrame.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/FocusFrameIE.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipLinkMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipLinkMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipLinkMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipLinkMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipLinkMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/BlipMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ParticipantMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ParticipantMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ParticipantMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ParticipantMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ParticipantMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ReplyBoxMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ReplyBoxMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ReplyBoxMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ReplyBoxMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/dom/full/i18n/ReplyBoxMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/fake/Fake.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/wavepanel/view/impl/Impl.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/button/Button.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/button/text/TextButton.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/common/Common.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/generic/Generic.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/menu/Menu.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/overflowpanel/OverflowPanel.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/popup/Popup.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/popup/desktopchrome/DesktopPopupChrome.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/popup/desktopchrome/DropdownPopupChrome.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/popup/simple/Simple.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/popup/testing/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/profile/ProfilePopupWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/profile/i18n/ProfilePopupMessages_en.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/profile/i18n/ProfilePopupMessages_es.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/profile/i18n/ProfilePopupMessages_fr.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/profile/i18n/ProfilePopupMessages_ru.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/profile/i18n/ProfilePopupMessages_sl.properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/progress/Progress.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/toolbar/Toolbar.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/toolbar/ToplevelToolbarWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/toolbar/buttons/HorizontalToolbarButtonWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/widget/toolbar/buttons/VerticalToolbarButtonWidget.ui.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/common/bootstrap/FlagConstants.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/common/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/common/logging/Logging.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/common/logging/Print.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/communication/Communication.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/communication/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/communication/gwt/Gwt.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/communication/json/Json.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/concurrencycontrol/Channel.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/concurrencycontrol/Client.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/concurrencycontrol/Common.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/concurrencycontrol/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/concurrencycontrol/Wave.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/concurrencycontrol/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/crypto/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/diff/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/federation/Federation.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/federation/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/media/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/media/model/Attachment.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/migration/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/Model.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/account/Account.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/conversation/Conversation.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/conversation/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/gadget/Gadget.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/richtext/RichText.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/schema/account/Account.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/schema/conversation/Conversation.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/schema/supplement/Supplement.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/supplement/Supplement.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/testing/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/model/util/Util.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/testing/Testing.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/testing/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/util/build.xml
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/util/escapers/Escapers.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/common/util/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/annotation/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/content/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/event/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/extract/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/gwt/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/impl/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/integration/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/keys/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/restrict_permutations.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/selection/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/undo/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/editor/util/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/gadget/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/scheduler/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/util/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/wavepanel/block/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/wavepanel/event/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/wavepanel/impl/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/wavepanel/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/widget/overflowpanel/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/widget/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/client/widget/toolbar/Tests.gwt.xml
+
+Rat a load more files
+
+------------------------------------------------------------------------
+r1489761 | al | 2013-06-05 10:17:07 +0100 (Wed, 05 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/api/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/builder/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/gson/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/jso/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/pojo/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/proto/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/pst/templates/util/properties
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/common/util/quirks_strings
+   M /incubator/wave/branches/wave-0.4-release/src/org/waveprotocol/wave/client/doodad/experimental/htmltemplate/supporting_js.jslib
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/__init__.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/appengine_robot_runner.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/blip.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/blip_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/commandline_robot_runner.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/commandline_robot_runner_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/django_oauth.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/element.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/element_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/errors.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/events.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/module_test_runner.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/oauth/__init__.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/ops.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/ops_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/robot.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/robot_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/run_unit_tests.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/search.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/search_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/__init__.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/decoder.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/encoder.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/jsonfilter.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/ordered_dict.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/scanner.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/simplejson/tool.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/testdata.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/util.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/util_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/wavelet.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/wavelet_test.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/waveservice.py
+   M /incubator/wave/branches/wave-0.4-release/src/python/api/waveservice_test.py
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/concurrencycontrol/Tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad1.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad10.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad11.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad12.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad13.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad14.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad15.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad16.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad17.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad18.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad19.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad2.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad20.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad21.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad22.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad23.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad24.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad3.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad4.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad5.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad6.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad7.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad8.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/bad9.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good1.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good10.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good11.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good12.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good13.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good14.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good15.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good16.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good2.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good3.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good4.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good5.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good6.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good7.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good8.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/experimental/schema/good9.schema
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/supplement/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/test/org/waveprotocol/wave/model/tests.gwt.xml
+   M /incubator/wave/branches/wave-0.4-release/third_party/runtime/bouncycastle/LICENSE.html
+   M /incubator/wave/branches/wave-0.4-release/tools/eclipse-launch/src.org.waveprotocol.wave.client.editor.examples.img.Img_Example-launch
+   M /incubator/wave/branches/wave-0.4-release/tools/eclipse-launch/src.org.waveprotocol.wave.client.editor.harness.EditorTest-launch
+
+Manually fix the rest of the licenses
+
+------------------------------------------------------------------------
+r1489803 | al | 2013-06-05 11:42:03 +0100 (Wed, 05 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/run-server.sh
+   M /incubator/wave/trunk/run-server.sh
+
+Add missing backslash following 11957.
+
+------------------------------------------------------------------------
+r1489938 | al | 2013-06-05 16:58:51 +0100 (Wed, 05 Jun 2013) | 2 lines
+Changed paths:
+   M /incubator/wave/branches/wave-0.4-release/war/static/logo.png
+
+Fix logo to fit in current WIAB position.
+
+------------------------------------------------------------------------
