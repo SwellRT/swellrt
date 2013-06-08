@@ -20,13 +20,11 @@
 package org.waveprotocol.wave.client.wavepanel.impl.toolbar;
 
 import com.google.common.base.Preconditions;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.http.client.URL;
 
-import org.waveprotocol.wave.client.doodad.link.Link;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.EditorContextAdapter;
@@ -43,6 +41,7 @@ import org.waveprotocol.wave.client.editor.toolbar.TextSelectionController;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.gadget.GadgetXmlUtil;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.color.ColorHelper;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GadgetInfoProviderImpl;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GadgetSelectorWidget;
 import org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.GwtGadgetInfoParser;
@@ -159,6 +158,10 @@ public class EditToolbar {
     createHeadingButton(group);
 
     group = toolbarUi.addGroup();
+    createFontColorButton(group);
+    createFontBackColorButton(group);
+
+    group = toolbarUi.addGroup();
     createIndentButton(group);
     createOutdentButton(group);
 
@@ -200,6 +203,28 @@ public class EditToolbar {
     new ToolbarButtonViewBuilder()
         .setIcon(css.underline())
         .applyTo(b, createTextSelectionController(b, "textDecoration", "underline"));
+  }
+
+  private void createFontBackColorButton(ToolbarView toolbar) {
+    final ToolbarClickButton button = toolbar.addClickButton();
+    new ToolbarButtonViewBuilder()
+    .setIcon(css.backcolor())
+    .applyTo(button, new ToolbarClickButton.Listener() {
+      @Override  public void onClicked() {
+        ColorHelper.onSetBackColor(editor, button);
+      }
+    });
+  }
+
+  private void createFontColorButton(ToolbarView toolbar) {
+    final ToolbarClickButton button = toolbar.addClickButton();
+    new ToolbarButtonViewBuilder()
+    .setIcon(css.color())
+    .applyTo(button, new ToolbarClickButton.Listener() {
+      @Override  public void onClicked() {
+        ColorHelper.onSetColor(editor, button);
+      }
+    });
   }
 
   private void createStrikethroughButton(ToolbarView toolbar) {
