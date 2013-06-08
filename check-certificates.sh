@@ -14,51 +14,60 @@
 
 
 # This script will test your certificates, verifying that
-# the options are set correctly in run-config.sh, that the
+# the options are set correctly in the config files, that the
 # public and private keys match, and that the whole certificate
 # chain can be verified up to the root certificate.
 
-if [ -r run-config.sh ]; then
-  . run-config.sh
-else
-  echo "You need to copy run-config.sh.example to run-config.sh and configure"; exit 1
+srv_cfg=server.config
+if [ ! -f $srv_cfg ]; then
+  echo "You need to generate a valid $srv_cfg file."; exit 1
+fi
+fed_cfg=server.federation.config
+if [ ! -f $fed_cfg ]; then
+  echo "You need to generate a valid $fed_cfg file."; exit 1
 fi
 
-if [ $WAVESERVER_DISABLE_VERIFICATION != "false" ]; then
-  echo "ERROR: WAVESERVER_DISABLE_VERIFICATION should be set to false" 
+function get()
+{
+  # retrieve value from federation config file. may fail if a variable is set in both files
+  grep "^\s*$1\>" "$fed_cfg" "$srv_cfg"| sed 's/.*=\s*//g' | tail -1
+}
+
+if [ "$(get waveserver_disable_verification)" != "false" ]; then
+  echo "ERROR: waveserver_disable_verification should be set to false"
   exit 1
 fi
 
-if [ $WAVESERVER_DISABLE_SIGNER_VERIFICATION != "false" ]; then
-  echo "ERROR: WAVESERVER_DISABLE_SIGNER_VERIFICATION should be set to false" 
+if [ "$(get waveserver_disable_signer_verification)" != "false" ]; then
+  echo "ERROR: waveserver_disable_signer_verification should be set to false"
   exit 1
 fi
 
-if [ ! -e $PRIVATE_KEY_FILENAME ]; then
-  echo "ERROR: Private key does not exist:" $PRIVATE_KEY_FILENAME
+if [ ! -e "$(get certificate_private_key)" ]; then
+  echo "ERROR: Private key \"$(get certificate_private_key)\" does not exist"
   exit 1
 fi
 
 # Break apart the certificate list on the commas.
-certlist=(`echo $CERTIFICATE_FILENAME_LIST | sed 's/,/ /g'`) 
+certlist=(`echo $(get certificate_files) | sed 's/,/ /g'`)
 
 if [ "`openssl x509 -modulus -in ${certlist[0]} -noout`" != "`openssl \
-  rsa -in $PRIVATE_KEY_FILENAME  -modulus -noout`" ]; then
+  rsa -in $(get certificate_private_key)  -modulus -noout`" ]; then
   echo "ERROR: Public and private key do not match!"
   exit 1
 fi
 
 # Reverse the order of the list for passing into openssl.
-len=${#certlist[@]} 
-for (( i = 0; $i < $len/2; i++ )); do 
+len=${#certlist[@]}
+for (( i = 0; $i < $len/2; i++ )); do
   swap=$len-$i-1
   tmp=${certlist[i]}
-  certlist[i]=${certlist[$swap]} 
-  certlist[$swap]=$tmp 
-done 
+  certlist[i]=${certlist[$swap]}
+  certlist[$swap]=$tmp
+done
 
 # Verify that each file in the certificate list exists.
-for (( i=0; $i < $len; i++ )); do 
+for (( i=0; $i < $len; i++ )); do
   if [ ! -e ${certlist[$i]} ]; then
     echo "ERROR: Certificate file does not exist:" ${certlist[$i]}
     exit 1
@@ -69,12 +78,14 @@ done
 if (( $len > 1 )); then
   verifycmd="openssl verify -CAfile ${certlist[@]}"
 else
-  verifycmd="openssl verify ${certlist[@]}" 
+  verifycmd="openssl verify ${certlist[@]}"
 fi
 
-if $verifycmd | grep -q "OK$" ; then 
+if $verifycmd | grep -q "OK$" ; then
   echo "SUCCESS: The certificates have been verified and are working correctly"
+  exit 0
 else
   echo "ERROR: Certificate chain failed to verify"
-  $verifycmd 
+  $verifycmd
+  exit 1
 fi
