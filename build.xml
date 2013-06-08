@@ -845,6 +845,8 @@
       </tarfileset>
       <!-- WAR static content -->
       <tarfileset dir="." includes="war/" prefix="${release.bin.path}" />
+      <tarfileset dir="." includes="thumbnail_patterns/" prefix="${release.bin.path}" />
+      <tarfileset dir="." includes="platforms/" prefix="${release.bin.path}" />
     </tar>
     <bzip2 destfile="${dist.dir}/${release.bin.path}.tar.bz2" src="${dist.dir}/${release.bin.path}.tar" />
     <zip destfile="${dist.dir}/${release.bin.path}.zip">
