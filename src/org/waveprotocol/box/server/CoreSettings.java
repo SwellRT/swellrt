@@ -182,7 +182,7 @@ public class CoreSettings {
   private static String adminUser;
 
   @Setting(name = WELCOME_WAVE_ID, description = "The welcome wave id.",
-      defaultValue = "UNDEFINED")
+      defaultValue = "")
   private static String welcomeWaveId;
 
   @Setting(name = LISTENER_EXECUTOR_THREAD_COUNT,
