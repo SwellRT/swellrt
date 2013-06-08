@@ -31,7 +31,7 @@ public class FederationSettings {
   public static final String XMPP_SERVER_HOSTNAME = "xmpp_server_hostname";
   public static final String XMPP_SERVER_SECRET = "xmpp_server_secret";
   public static final String XMPP_COMPONENT_NAME = "xmpp_component_name";
-  public static final String XMPP_SERVER_PORT = "xmpp_server_port";
+  public static final String XMPP_SERVER_COMPONENT_PORT = "xmpp_server_component_port";
   public static final String XMPP_SERVER_IP = "xmpp_server_ip";
   public static final String XMPP_SERVER_DESCRIPTION = "xmpp_server_description";
   public static final String XMPP_DISCO_FAILED_EXPIRY_SECS = "xmpp_disco_failed_expiry_secs";
@@ -51,7 +51,7 @@ public class FederationSettings {
   @Setting(name = XMPP_COMPONENT_NAME)
   private static String xmppComponentName;
 
-  @Setting(name = XMPP_SERVER_PORT)
+  @Setting(name = XMPP_SERVER_COMPONENT_PORT)
   private static int xmppServerPort;
 
   @Setting(name = XMPP_SERVER_IP)

@@ -48,7 +48,7 @@ xmpp_server_description = @XMPP_SERVER_DESCRIPTION@
 xmpp_server_hostname = @XMPP_SERVER_HOSTNAME@
 
 # Default value: 5275
-xmpp_server_port = @XMPP_SERVER_PORT@
+xmpp_server_component_port = @XMPP_SERVER_COMPONENT_PORT@
 
 # Default value: wavesandbox.com
 xmpp_server_ping = @XMPP_SERVER_PING@
