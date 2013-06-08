@@ -1,0 +1,51 @@
+Apache Wave
+===========
+
+What is it?
+-----------
+
+Wave is a distributed, near-real-time, rich collaboration platform that allows
+users to work together in new and exciting ways. Wave allows for flexible modes
+of communication, blending chat, email and collaborative document editing in to
+one seamless environment. Wave provides a lively and responsive environment
+that promotes more fluid and dynamic collaboration between users. The addition
+of Robots and Gagets allow the Wave platform to provide intelligence,
+integration, and customizability to the users experience.
+
+The Latest Version
+------------------
+
+Details of the latest version can be found on the Apache Wave project web site
+<https://incubator.apache.org/wave>.
+
+Details of any changes from the previous version can be found in the file named
+"CHANGES" is this directory.
+
+Compatability Issues
+--------------------
+
+Being the first Apache Wave release, there are no possible compatibility changes
+with previous versions of Apache Wave.
+
+If you are upgrading from a Wave-in-a-Box installation, please ensure your
+configuration file contains all keys listed in the sample configuration in file
+named 'server.config.example' in this directory.
+
+Licensing
+---------
+
+This software is licensed under the terms you may find in the files named
+"LICENSE" and "NOTICE" in this directory.
+
+Documentation
+-------------
+
+Please see the file named "README" for instructions on how to install Apache
+Wave on your machine.
+
+You may also find it helpful to refer to the documentation on the wiki at
+<https://cwiki.apache.org/confluence/display/WAVE>.
+
+Thanks for using Wave.
+                                          The Apache Wave Project
+                                          <https://incubator.apache.org/wave>
