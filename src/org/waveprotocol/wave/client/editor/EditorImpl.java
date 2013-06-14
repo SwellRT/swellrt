@@ -723,6 +723,11 @@ public class EditorImpl extends LogicalPanel.Impl implements
           doStyle(start, end, "textDecoration", "underline");
           settings.getInstrumentor().record(Action.SHORTCUT_UNDERLINE);
           return true;
+        case CTRL_SHIFT_5:
+        case ORDER_SHIFT_5:
+          doStyle(start, end, "textDecoration", "line-through");
+          settings.getInstrumentor().record(Action.SHORTCUT_LINETHROUGH);
+          return true;
       }
 
       return false;
@@ -763,6 +768,11 @@ public class EditorImpl extends LogicalPanel.Impl implements
         case ORDER_U:
           doCollapsedStyle(caret, "textDecoration", "underline");
           settings.getInstrumentor().record(Action.SHORTCUT_UNDERLINE);
+          return true;
+        case CTRL_SHIFT_5:
+        case ORDER_SHIFT_5:
+          doCollapsedStyle(caret, "textDecoration", "line-through");
+          settings.getInstrumentor().record(Action.SHORTCUT_LINETHROUGH);
           return true;
       }
 
