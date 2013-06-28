@@ -30,8 +30,10 @@
   <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true" />
 
   <!-- Specify the app entry point class.                         -->
-  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/> 
+  <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/>
   <set-property name="user.agent" value="safari" />
   <set-property name="mobile.user.agent" value="not_mobile" />
-  <set-property name="loglevel" value="debug" /> 
+  <set-property name="loglevel" value="debug" />
+
+  <extend-property name="locale" values="en,ru"/>
 </module>
