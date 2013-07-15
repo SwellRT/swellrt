@@ -882,15 +882,120 @@
       Other
       ======-->
 
-  <target name="get-third-party" description="Download third party dependencies">
-    <get src="http://repo1.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar"
-      dest="third_party/test/emma/emma.jar"/>
-    <get src="http://repo1.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar"
-      dest="third_party/test/emma/emma_ant.jar"/>
-    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10.jar"
-      dest="third_party/test/junit/junit.jar"/>
-    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10-sources.jar"
-      dest="third_party/test/junit/src.jar"/>
+  <!-- TODO: put all in one massive third_party folder? move, rest to notices/licenses as required? -->
+  <!-- TODO: checksums? Most of these could be intercepted during download! -->
+  <target name="get-third-party" depends="get-third-party-codegen, get-third-party-runtime, get-third-party-test" description="Download all third party dependencies">
+  </target>
+
+  <target name="get-third-party-codegen" description="Download code generating third party dependencies">
+    <get src="http://www.antlr3.org/download/antlr-3.2.jar" dest="third_party/codegen/antlr/antlr-3.2.jar" />
+    <get src="http://repo2.maven.org/maven2/com/google/gwt/gwt-dev/2.1.1/gwt-dev-2.1.1.jar" dest="third_party/codegen/gwt/gwt-dev.jar" />
+    <get src="http://repo2.maven.org/maven2/com/google/gwt/gwt-user/2.1.1/gwt-user-2.1.1.jar" dest="third_party/codegen/gwt/gwt-user.jar" />
+
+    <!-- TODO: How? These have customizations! -->
+    <get src="" dest="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT-sources.jar" />
+    <get src="" dest="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT.jar" />
+
+    <get src="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" dest="third_party/codegen/velocity/velocity-1.6.3.jar" />
+    <get src="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3-dep.jar" dest="third_party/codegen/velocity/velocity-1.6.3-dep.jar" />
+  </target>
+
+  <target name="get-third-party-runtime" description="Download run time third party dependencies">
+    <!-- TODO: How to get these? -->
+    <get src="" dest="third_party/runtime/guava/guava-r09-gwt.jar" />
+    <get src="1.1.1?" dest="third_party/runtime/jdom/jdom.jar" />
+    <get src="" dest="third_party/runtime/jsr305-src.jar" />
+    <get src="v0r47" dest="third_party/runtime/jsr305.jar" />
+    <get src="" dest="third_party/runtime/libidn/libidn-1.26.jar" />
+    <get src="" dest="third_party/runtime/mongo-driver/mongo-java-driver-r2.1-0-src.zip" />
+    <get src="" dest="third_party/runtime/protobuf-format-java/protobuf-format-java-1.1.jar" />
+    <get src="" dest="third_party/runtime/websocket/websocket.jar" />
+
+    <!-- TODO: Built from revision 1123 in svn, ugh... -->
+    <get src="" dest="third_party/runtime/oauth/oauth-common-src.jar" />
+    <get src="" dest="third_party/runtime/oauth/oauth-provider-src.jar" />
+    <get src="" dest="third_party/runtime/oauth/oauth-consumer-src.jar" />
+    <get src="" dest="third_party/runtime/oauth/oauth-common.jar" />
+    <get src="" dest="third_party/runtime/oauth/oauth-consumer.jar" />
+    <get src="" dest="third_party/runtime/oauth/oauth-provider.jar" />
+
+    <!-- TODO: Do is SocketIO used anymore? -->
+    <get src="" dest="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT-sources.jar" />
+    <get src="" dest="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT.jar" />
+    <get src="" dest="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT-sources.jar" />
+    <get src="" dest="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT.jar" />
+
+    <!-- TODO: local patches on top of 1.0.0 -->
+    <get src="" dest="third_party/runtime/whack/whack.jar" />
+    <get src="" dest="third_party/runtime/whack/xmpp.jar" />
+
+    <get src="http://repo1.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" dest="third_party/runtime/aopalliance/aopalliance.jar" />
+    <get src="http://repo2.maven.org/maven2/org/bouncycastle/bcprov-jdk16/1.45/bcprov-jdk16-1.45.jar" dest="third_party/runtime/bcprov-jdk16-145.jar" />
+    <!-- TODO: why this inconsistency in '-' or '_' ? -->
+    <get src="http://repo1.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar" dest="third_party/runtime/commons-fileupload/commons-fileupload.jar" />
+    <get src="https://archive.apache.org/dist/commons/fileupload/source/commons-fileupload-1.2.2-src.zip" dest="third_party/runtime/commons-fileupload/commons-fileupload-src.zip" />
+    <get src="http://repo1.maven.org/maven2/commons-cli/commons-cli/1.2/commons-cli-1.2.jar" dest="third_party/runtime/commons-cli/commons-cli-1.2.jar" />
+    <get src="http://repo1.maven.org/maven2/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" dest="third_party/runtime/commons_codec/commons-codec-1.4.jar" />
+    <get src="https://archive.apache.org/dist/commons/codec/source/commons-codec-1.4-src.zip" dest="third_party/runtime/commons-codec-1.4-sources.zip" />
+    <get src="http://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar" dest="third_party/runtime/commons_collections/commons-collections-3.2.1.jar" />
+    <get src="http://repo1.maven.org/maven2/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar" dest="third_party/runtime/commons_configuration/commons-configuration-1.6.jar" />
+    <get src="http://repo1.maven.org/maven2/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar" dest="third_party/runtime/commons_httpclient/commons-httpclient-3.1.jar" />
+    <get src="https://archive.apache.org/dist/httpcomponents/commons-httpclient/source/commons-httpclient-3.1-src.zip" dest="third_party/runtime/commmons_httpclient/commons-httpclient-3.1-src.zip" />
+    <get src="http://repo1.maven.org/maven2/commons-lang/commons-lang/2.5/commons-lang-2.5.jar" dest="third_party/runtime/commons_lang/commons-lang-2.5.jar" />
+    <get src="http://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-adapters.jar" dest="third_party/runtime/commons_logging/commons-logging-adapters-1.1.1.jar" />
+    <get src="http://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-api.jar" dest="third_party/runtime/commons_logging/commons-logging-api-1.1.1.jar" />
+    <get src="http://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar" dest="third_party/runtime/commons_logging/commons-logging-1.1.1.jar" />
+    <get src="https://archive.apache.org/dist/commons/logging/source/commons-logging-1.1.1-src.zip" dest="third_party/runtime/commons_logging/commons-logging-1.1.1-sources.jar" />
+    <get src="http://repo1.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar" dest="third_party/runtime/dom4j/dom4j-1.6.1.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/code/gson/gson/1.4/gson-1.4.jar" dest="third_party/runtime/gson/gson-1.4.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/guava/guava/r09/guava-r09.jar" dest="third_party/runtime/guava/guava-r09.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/3.0/guice-assistedinject-3.0.jar" dest="third_party/runtime/guice/guice-assistedinject-3.0.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar" dest="third_party/runtime/guice/guice-servlet-3.0.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/inject/guice/3.0/guice-3.0.jar" dest="third_party/runtime/guice/guice-3.0.jar" />
+    <get src="http://repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar" dest="third_party/runtime/guice/javax.inject.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/gxp/google-gxp/0.2.4-beta/google-gxp-0.2.4-beta.jar" dest="third_party/runtime/gxp-0.2.4-beta.jar" />
+    <!-- TODO: Why do we have both GSON + Jackson? -->
+    <get src="http://repository.codehaus.org/org/codehaus/jackson/jackson-core-asl/1.5.2/jackson-core-asl-1.5.2.jar" dest="third_party/runtime/jackson/jackson-core-asl-1.5.2.jar" />
+    <get src="http://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" dest="third_party/runtime/jdo/jdo2-api-2.2.jar" />
+    <get src="http://www.jdom.org/dist/binary/archive/jdom-1.1.1.zip" dest="third_party/runtime/jdom/jdom-src.zip" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-client/8.1.1.v20120215/jetty-client-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-client-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-continuation/8.1.1.v20120215/jetty-continuation-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-continuation-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-http/8.1.1.v20120215/jetty-http-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-http-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-io/8.1.1.v20120215/jetty-io-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-io-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-security/8.1.1.v20120215/jetty-security-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-security-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-server/8.1.1.v20120215/jetty-server-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-server-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlet/8.1.1.v20120215/jetty-servlet-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-servlet-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-servlets/8.1.1.v20120215/jetty-servlets-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-servlets-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-util/8.1.1.v20120215/jetty-util-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-util-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-webapp/8.1.1.v20120215/jetty-webapp-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-webapp-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-websocket/8.1.1.v20120215/jetty-websocket-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-websocket-8.1.1.v20120215.jar" />
+    <get src="http://repo1.maven.org/maven2/org/eclipse/jetty/jetty-xml/8.1.1.v20120215/jetty-xml-8.1.1.v20120215.jar" dest="third_party/runtime/jetty/jetty-xml-8.1.1.v20120215.jar" />
+    <!-- TODO: Is this the correct servlet api jar? (seems to be larger) -->
+    <get src="http://repo1.maven.org/maven2/org/mortbay/jetty/servlet-api/3.0.20100224/servlet-api-3.0.20100224.jar" dest="third_party/runtime/jetty/servlet-api-3.0.jar" />
+    <get src="http://repo1.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" dest="third_party/runtime/jline/jline-0.9.94.jar" />
+    <get src="http://repo1.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" dest="third_party/runtime/joda-time-1.6.jar" />
+    <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" dest="third_party/runtime/lucene/lucene-core-3.5.0.jar" />
+    <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0-javadoc.jar" dest="third_party/runtime/lucene/lucene-core-3.5.0-javadoc.jar" />
+    <!-- TODO: Do people use MongoDB, or can I kill that code? -->
+    <get src="https://github.com/downloads/mongodb/mongo-java-driver/mongo-2.1.jar" dest="third_party/runtime/mongo-driver/mongo-2.1.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0.jar" dest="third_party/runtime/protobuf/protobuf-java-2.3.0.jar" />
+    <get src="http://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0-sources.jar" dest="third_party/runtime/protobuf/protobuf-2.3.0-src.jar" />
+    <get src="http://repo1.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" dest="third_party/runtime/xpp3-1.1.4c.jar" />
+    <get src="http://repo1.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" dest="third_party/runtime/xpp3_xpath-1.1.4c.jar" />
+  </target>
+
+  <target name="get-third-party-test" description="Download testing third party dependencies">
+    <get src="http://repo1.maven.org/maven2/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar" dest="third_party/test/ant-junit/ant-junit.jar" />
+    <get src="http://download.forge.objectweb.org/asm/asm-3.2.jar" dest="third_party/test/asm/asm-3.2.jar" />
+    <get src="http://repo1.maven.org/maven2/cglib/cglib/2.2/cglib-2.2.jar" dest="third_party/test/cglib/cglib-2.2.jar" />
+    <get src="http://repo1.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar" dest="third_party/test/emma/emma.jar" />
+    <get src="http://repo1.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar" dest="third_party/test/emma/emma_ant.jar" />
+    <get src="https://hamcrest.googlecode.com/files/hamcrest-all-1.2.jar" dest="third_party/test/hamcrest/hamcrest-all-1.2.jar" />
+    <get src="http://repo1.maven.org/maven2/org/jmock/jmock-junit3/2.5.1/jmock-junit3-2.5.1.jar" dest="third_party/test/jmock/jmock-junit3-2.5.1.jar" />
+    <get src="http://repo1.maven.org/maven2/org/jmock/jmock/2.5.1/jmock-2.5.1.jar" dest="third_party/test/jmock-2.5.1.jar" />
+    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10.jar" dest="third_party/test/junit/junit.jar" />
+    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10-sources.jar" dest="third_party/test/junit/src.jar" />
+    <get src="http://repo1.maven.org/maven2/org/mockito/mockito-all/1.8.2/mockito-all-1.8.2.jar" dest="third_party/test/mockito/mockito-all-1.8.2.jar" />
   </target>
 
   <target name="doc" depends="stage" description="Builds the Java documentation for the mode, protocol, and Wave in a Box">
