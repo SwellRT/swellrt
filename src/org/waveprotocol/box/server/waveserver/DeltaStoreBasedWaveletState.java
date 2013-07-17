@@ -19,6 +19,8 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+import static java.lang.String.format;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -26,7 +28,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
-import com.google.gxp.compiler.io.RuntimeIOException;
+
+import org.waveprotocol.box.common.ListReceiver;
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
@@ -41,8 +45,6 @@ import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 import org.waveprotocol.wave.util.logging.Log;
-import org.waveprotocol.box.common.ListReceiver;
-import org.waveprotocol.box.common.Receiver;
 
 import java.io.IOException;
 import java.util.List;
@@ -309,7 +311,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
       try {
         delta = lookup(version);
       } catch (IOException e) {
-        throw new RuntimeIOException(e);
+        throw new RuntimeIOException(new IOException(format("Version : %d", version), e));
       }
       if (delta == null && cachedEntry != null) {
         return cachedEntry.getKey();
@@ -330,7 +332,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
       try {
         nowDelta = lookup(beginVersion.getVersion());
       } catch (IOException e) {
-        throw new RuntimeIOException(e);
+        throw new RuntimeIOException(new IOException(format("Begin version : %s",
+            beginVersion.toString()), e));
       }
       return nowDelta != null ? nowDelta.getTransformedDelta() : null;
     }
@@ -371,7 +374,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
             }
           });
     } catch (IOException e) {
-      throw new RuntimeIOException(e);
+      throw new RuntimeIOException(new IOException(format("Start version : %s, end version: %s",
+          startVersion.toString(), endVersion.toString()), e));
     }
   }
 
@@ -386,7 +390,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
       try {
         record = lookup(beginVersion.getVersion());
       } catch (IOException e) {
-        new RuntimeIOException(e);
+        throw new RuntimeIOException(new IOException(format("Begin version : %s",
+            beginVersion.toString()), e));
       }
       return record != null ? record.getAppliedDelta() : null;
     }
@@ -423,7 +428,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
         }
       });
     } catch (IOException e) {
-      throw new RuntimeIOException(e);
+      throw new RuntimeIOException(new IOException(format("Start version : %s, end version: %s",
+          startVersion.toString(), endVersion.toString()), e));
     }
   }
 
@@ -499,7 +505,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     try {
       return deltasAccess.getDeltaByEndVersion(version);
     } catch (IOException e) {
-      throw new RuntimeIOException(e);
+      throw new RuntimeIOException(new IOException(format("Version : %d", version), e));
     }
   }
 
