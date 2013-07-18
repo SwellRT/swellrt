@@ -30,7 +30,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.waveprotocol.box.common.CommonConstants.INDEX_WAVE_ID;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -85,6 +84,7 @@ public class ClientFrontendImplTest extends TestCase {
       new HashedVersionFactoryImpl(URI_CODEC);
 
   private static final WaveId WAVE_ID = WaveId.of("example.com", "waveId");
+  private static final WaveId INDEX_WAVE_ID = WaveId.of("indexdomain", "indexwave");
   private static final WaveletId W1 =
       WaveletId.of("example.com", IdConstants.CONVERSATION_ROOT_WAVELET);
   private static final WaveletId W2 = WaveletId.of("example.com", "conv+2");
