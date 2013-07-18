@@ -658,7 +658,6 @@
         <include name="org/apache/lucene/**/*" />
         <include name="org/apache/commons/io/**/*" />
         <include name="org/bson/**/*" />
-        <include name="org/codehaus/jackson/**/*" />
         <include name="org/dom4j/**/*" />
         <include name="org/eclipse/**/*" />
         <include name="org/jdom/**/*" />
@@ -733,7 +732,6 @@
         <include name="com/google/common/**/*"/>
         <include name="com/google/gson/**/*"/>
         <include name="com/google/protobuf/**/*"/>
-        <include name="org/codehaus/jackson/**/*"/>
         <include name="org/json/**/*"/>
         <include name="net/oauth/**/*"/>
       </fileset>

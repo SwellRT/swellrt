@@ -28,7 +28,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/guice/guice-servlet-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice/javax.inject.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gxp/gxp-0.2.4-beta.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jackson/jackson-core-asl-1.5.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jdo/jdo2-api-2.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jdom/jdom.jar" sourcepath="third_party/runtime/jdom/jdom-src.zip"/>
 	<classpathentry kind="lib" path="third_party/runtime/jline/jline-0.9.94.jar"/>
