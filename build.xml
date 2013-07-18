@@ -361,7 +361,7 @@
         <path refid="libpath"/>
         <path refid="test.libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <!-- Small Javascript size. -->
       <arg line="-style OBFUSCATED"/>
       <!-- Do not include class and package names in compiled JS. -->
@@ -444,7 +444,7 @@
         <pathelement location="${gen.dir}/messages"/>
         <path refid="libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
       <arg value="-noserver" />
