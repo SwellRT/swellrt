@@ -42,4 +42,5 @@
   <set-property name="loglevel" value="none" />
 
   <extend-property name="locale" values="en,ru,sl,fr,es,de,zh_TW"/>
+  <set-property-fallback name="locale" value="en"/>
 </module>
