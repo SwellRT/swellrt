@@ -773,6 +773,8 @@
   <target name="release-src" description="Creates unsigned tar+zip for server source release">
     <delete file="${dist.dir}/${release.src.path}.tar.bz2" />
     <delete file="${dist.dir}/${release.src.path}.zip" />
+    <copy file="LICENSE.src" tofile="LICENSE" />
+    <copy file="NOTICE.src" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.src.path}.tar" longfile="gnu">
       <!-- Include everything except built stuff in tree -->
       <tarfileset dir="." prefix="${release.src.path}">
@@ -782,6 +784,8 @@
         <exclude name="test_out/" />
         <exclude name="third_party/" />
         <exclude name="war/webclient/" />
+        <exclude name="LICENSE.*" />
+        <exclude name="NOTICE.*" />
       </tarfileset>
       <!-- Setup permissions -->
       <tarfileset dir="." prefix="${release.src.path}" filemode="755">
@@ -797,11 +801,15 @@
       <tarfileset src="${dist.dir}/${release.src.path}.tar" />
     </zip>
     <delete file="${dist.dir}/${release.src.path}.tar" />
+    <delete file="LICENSE" />
+    <delete file="NOTICE" />
   </target>
 
   <target name="release-bin" depends="dist" description="Creates unsigned tar+zip for server binary release">
     <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
     <delete file="${dist.dir}/${release.bin.path}.zip"/>
+    <copy file="LICENSE.bin" tofile="LICENSE" />
+    <copy file="NOTICE.bin" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
       <!-- Actual jars -->
       <tarfileset dir="${dist.dir}" includes="*.jar" prefix="${release.bin.path}/dist" />
@@ -844,6 +852,8 @@
       <tarfileset src="${dist.dir}/${release.bin.path}.tar" />
     </zip>
     <delete file="${dist.dir}/${release.bin.path}.tar"/>
+    <delete file="LICENSE" />
+    <delete file="NOTICE" />
   </target>
 
   <!-- TODO: re-use these when the api code is useful again -->
