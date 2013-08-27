@@ -165,7 +165,9 @@
     </sequential>
   </macrodef>
 
-  <!-- Task which compiles GXP templates -->
-  <taskdef name="gxpc" classname="com.google.gxp.compiler.ant.GxpcTask"
-      classpath="${lib.runtime}/gxp/gxp-0.2.4-beta.jar" />
+  <target name="define-gxpc" depends="get-third-party-runtime">
+    <!-- Task which compiles GXP templates -->
+    <taskdef name="gxpc" classname="com.google.gxp.compiler.ant.GxpcTask"
+      classpath="${lib.runtime}/google-gxp-0.2.4-beta.jar" />
+  </target>
 </project>
