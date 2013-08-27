@@ -41,6 +41,8 @@ import org.waveprotocol.wave.client.concurrencycontrol.MuxConnector;
 import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.util.NullTypedSource;
 import org.waveprotocol.wave.client.util.OverridingTypedSource;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.color.ComplexColorPicker;
+import org.waveprotocol.wave.client.wavepanel.impl.toolbar.color.SampleCustomColorPicker;
 import org.waveprotocol.wave.common.bootstrap.FlagConstants;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
 import org.waveprotocol.wave.model.conversation.Conversation;
@@ -202,6 +204,9 @@ public class UndercurrentHarness implements EntryPoint {
         ClientFlags.resetWithSourceForTesting(OverridingTypedSource.of(new NullTypedSource())
             .withBoolean(FlagConstants.ENABLE_UNDERCURRENT_EDITING, true)
             .build());
+
+        // Only for test additional color pickers
+        new SampleCustomColorPicker(ComplexColorPicker.getInstance());
 
         return new StageThree.DefaultProvider(two) {
           @Override

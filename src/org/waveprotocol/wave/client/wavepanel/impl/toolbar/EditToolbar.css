@@ -15,6 +15,14 @@
  * author: patcoleman@google.com (Pat Coleman)
  */
 
+@sprite .backcolor {
+  gwt-image: 'backcolor';
+}
+
+@sprite .color {
+  gwt-image: 'color';
+}
+
 @sprite .bold {
   gwt-image: 'bold';
 }

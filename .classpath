@@ -23,6 +23,8 @@
 	<classpathentry kind="lib" path="third_party/codegen/antlr/antlr-3.2.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt/gwt-dev.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt/gwt-user.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt/validation-api-1.0.0.GA.jar" sourcepath="third_party/codegen/gwt/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt/validation-api-1.0.0.GA-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/velocity/velocity-1.6.3-dep.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/velocity/velocity-1.6.3.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/aopalliance/aopalliance.jar"/>
@@ -41,7 +43,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/guice/guice-servlet-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice/javax.inject.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gxp/gxp-0.2.4-beta.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jackson/jackson-core-asl-1.5.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jdo/jdo2-api-2.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jdom/jdom.jar" sourcepath="third_party/runtime/jdom/jdom-src.zip"/>
 	<classpathentry kind="lib" path="third_party/runtime/jline/jline-0.9.94.jar"/>

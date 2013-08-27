@@ -246,6 +246,10 @@ public enum KeyCombo {
   CTRL_SHIFT_2,
   /***/
   CTRL_SHIFT_3,
+  /***/
+  CTRL_SHIFT_5,
+  /***/
+  ORDER_SHIFT_5,
 
   OTHER,
 }

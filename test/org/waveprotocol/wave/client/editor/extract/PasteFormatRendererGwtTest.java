@@ -49,7 +49,7 @@ import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 public class PasteFormatRendererGwtTest extends GWTTestCase {
 
   /** GWT version where invalid closing-br tags appear in innerHTML strings. */
-  private final static String INVALID_BR_GWT_VERSION = "2.1.1";
+  private final static String INVALID_BR_GWT_VERSION = "2.5.1";
 
   @Override
   public String getModuleName() {

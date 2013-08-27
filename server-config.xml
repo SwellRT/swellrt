@@ -60,7 +60,8 @@
   <property name="xmpp_jid" value="${xmpp_component_name}.${wave_server_domain}" />
   <property name="xmpp_server_description" value="&quot;Wave in a Box&quot;" />
   <property name="xmpp_server_hostname" value="${wave_server_domain}" />
-  <property name="xmpp_server_port" value="5275" />
+  <property name="xmpp_server_component_port" value="5275" />
+  <property name="xmpp_server_to_server_port" value="5269" />
   <property name="xmpp_server_ping" value="wavesandbox.com" />
   <property name="xmpp_server_ip" value="${xmpp_server_hostname}" />
   <property name="waveserver_disable_verification" value="false" />
@@ -152,7 +153,7 @@
           <token key="XMPP_JID" value="${xmpp_jid}" />
           <token key="XMPP_SERVER_DESCRIPTION" value="${xmpp_server_description}" />
           <token key="XMPP_SERVER_HOSTNAME" value="${xmpp_server_hostname}" />
-          <token key="XMPP_SERVER_PORT" value="${xmpp_server_port}" />
+          <token key="XMPP_SERVER_COMPONENT_PORT" value="${xmpp_server_component_port}" />
           <token key="XMPP_SERVER_PING" value="${xmpp_server_ping}" />
           <token key="XMPP_SERVER_IP" value="${xmpp_server_ip}" />
           <token key="WAVESERVER_DISABLE_VERIFICATION" value="${waveserver_disable_verification}" />
@@ -161,5 +162,32 @@
         </replacetokens>
       </filterchain>
     </copy>
+  </target>
+
+  <target name="prosody-config" depends="server-federation-config"
+      description="Run to create the server, federation and prosody configuration files.
+      ant -f server-config.xml server-federation-config prosody-config -Dserver_federation_config=server.federation.config">
+      <echo>Generating ${certificate_domain}.cfg.lua</echo>
+    <copy file="${certificate_domain}.cfg.lua"
+               tofile="${certificate_domain}.cfg.lua.old"
+               overwrite="true"
+               failonerror="false" />
+    <copy file="prosody.cfg.lua.example" tofile="${certificate_domain}.cfg.lua" overwrite="true">
+      <filterchain>
+        <replacetokens>
+          <token key="BASEDIR" value="${basedir}" />
+          <token key="XMPP_SERVER_SECRET" value="${xmpp_server_secret}" />
+          <token key="CERTIFICATE_PRIVATE_KEY" value="${certificate_private_key}" />
+          <token key="CERTIFICATE_DOMAIN" value="${certificate_domain}" />
+          <token key="XMPP_JID" value="${xmpp_jid}" />
+          <token key="XMPP_SERVER_DESCRIPTION" value="${xmpp_server_description}" />
+          <token key="XMPP_SERVER_COMPONENT_PORT" value="${xmpp_server_component_port}" />
+          <token key="XMPP_SERVER_TO_SERVER_PORT" value="${xmpp_server_to_server_port}" />
+        </replacetokens>
+      </filterchain>
+    </copy>
+    <echo>Please, manually copy ${certificate_domain}.cfg.lua to your prosody configuration directory.</echo>
+    <echo>E.g. sudo cp ${certificate_domain}.cfg.lua /etc/prosody/conf.d/${certificate_domain}.cfg.lua</echo>
+    <echo>Additionally, ensure your ${certificate_domain} SRV record points to port ${xmpp_server_to_server_port}</echo>
   </target>
 </project>

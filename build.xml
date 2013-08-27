@@ -361,7 +361,7 @@
         <path refid="libpath"/>
         <path refid="test.libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <!-- Small Javascript size. -->
       <arg line="-style OBFUSCATED"/>
       <!-- Do not include class and package names in compiled JS. -->
@@ -444,7 +444,7 @@
         <pathelement location="${gen.dir}/messages"/>
         <path refid="libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
       <arg value="-noserver" />
@@ -658,7 +658,6 @@
         <include name="org/apache/lucene/**/*" />
         <include name="org/apache/commons/io/**/*" />
         <include name="org/bson/**/*" />
-        <include name="org/codehaus/jackson/**/*" />
         <include name="org/dom4j/**/*" />
         <include name="org/eclipse/**/*" />
         <include name="org/jdom/**/*" />
@@ -733,7 +732,6 @@
         <include name="com/google/common/**/*"/>
         <include name="com/google/gson/**/*"/>
         <include name="com/google/protobuf/**/*"/>
-        <include name="org/codehaus/jackson/**/*"/>
         <include name="org/json/**/*"/>
         <include name="net/oauth/**/*"/>
       </fileset>

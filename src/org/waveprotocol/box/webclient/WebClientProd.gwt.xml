@@ -41,5 +41,6 @@
   <!-- Turn off logging, because it's really slow. -->
   <set-property name="loglevel" value="none" />
 
-  <extend-property name="locale" values="en,ru,sl,fr,es"/>
+  <extend-property name="locale" values="en,ru,sl,fr,es,de,zh_TW"/>
+  <set-property-fallback name="locale" value="en"/>
 </module>

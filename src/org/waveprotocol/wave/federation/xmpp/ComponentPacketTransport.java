@@ -69,7 +69,7 @@ public class ComponentPacketTransport implements Component, OutgoingPacketTransp
       @Named(FederationSettings.XMPP_SERVER_HOSTNAME) String serverDomain,
       @Named(FederationSettings.XMPP_SERVER_SECRET) String serverSecret,
       @Named(FederationSettings.XMPP_SERVER_IP) String serverAddress,
-      @Named(FederationSettings.XMPP_SERVER_PORT) int serverPort) {
+      @Named(FederationSettings.XMPP_SERVER_COMPONENT_PORT) int serverPort) {
     this.handler = handler;
     this.componentName = componentName;
     this.serverDomain = serverDomain;

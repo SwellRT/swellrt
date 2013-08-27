@@ -67,7 +67,7 @@ public class WelcomeRobot extends AbstractBaseRobotAgent {
     super(injector);
     String welcomeWaveIdStr =
       injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WELCOME_WAVE_ID)));
-    if (!"UNDEFINED".equals(welcomeWaveIdStr)) {
+    if (!"".equals(welcomeWaveIdStr)) {
       try {
         welcomeWaveId = WaveId.ofChecked(getWaveDomain(), welcomeWaveIdStr);
       } catch (InvalidIdException e) {

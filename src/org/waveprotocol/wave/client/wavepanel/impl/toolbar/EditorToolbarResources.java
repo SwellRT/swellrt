@@ -32,6 +32,8 @@ import com.google.gwt.resources.client.ImageResource;
  */
 public interface EditorToolbarResources extends ClientBundle {
   interface Css extends CssResource {
+    String color();
+    String backcolor();
     String bold();
     String italic();
     String underline();
@@ -57,6 +59,8 @@ public interface EditorToolbarResources extends ClientBundle {
     String insertAttachment();
   }
 
+  @Source("images/edit/backcolor.png") ImageResource backcolor();
+  @Source("images/edit/color.png") ImageResource color();
   @Source("images/edit/bold.png") ImageResource bold();
   @Source("images/edit/italic.png") ImageResource italic();
   @Source("images/edit/underline.png") ImageResource underline();

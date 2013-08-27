@@ -1,0 +1,12 @@
+component_ports = { @XMPP_SERVER_COMPONENT_PORT@ }
+s2s_ports = { @XMPP_SERVER_TO_SERVER_PORT@ }
+
+VirtualHost "@CERTIFICATE_DOMAIN@"
+       enabled = true
+       ssl = {
+               key = "@BASEDIR@/@CERTIFICATE_PRIVATE_KEY@";
+               certificate = "@BASEDIR@/@CERTIFICATE_DOMAIN@.crt";
+               }
+
+Component "@XMPP_JID@"
+       component_secret = "@XMPP_SERVER_SECRET@"

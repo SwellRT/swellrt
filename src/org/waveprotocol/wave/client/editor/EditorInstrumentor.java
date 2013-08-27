@@ -45,6 +45,7 @@ public interface EditorInstrumentor {
     SHORTCUT_OPENNEARBYPOPUP,
     SHORTCUT_HEADINGSTYLE,
     SHORTCUT_ALIGNMENT,
+    SHORTCUT_LINETHROUGH,
 
     // Copy & Paste,
     CLIPBOARD_COPY,
