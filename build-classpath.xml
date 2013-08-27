@@ -17,17 +17,13 @@
   <!-- Classpath of external dependencies -->
   <path id="libpath">
     <fileset dir="${lib.runtime}">
-      <include name="*/*.jar"/>
+      <include name="*.jar"/>
     </fileset>
     <fileset dir="${lib.codegen}">
-      <include name="*/*.jar"/>
+      <include name="*.jar"/>
     </fileset>
-    <!-- Hamcrest, JUnit, and Mockito included for some classes in 
-        src/**/testing/. -->
     <fileset dir="${lib.test}">
-      <include name="hamcrest/*.jar"/>
-      <include name="junit/*.jar"/>
-      <include name="mockito/*.jar"/>
+      <include name="*.jar"/>
     </fileset>
     <!-- PST -->
     <fileset dir="${dist.dir}">
@@ -38,7 +34,7 @@
   <!-- Classpath for testing only -->
   <path id="test.libpath">
     <fileset dir="${lib.test}">
-      <include name="**/*.jar"/>
+      <include name="*.jar"/>
     </fileset>
   </path>
 </project>

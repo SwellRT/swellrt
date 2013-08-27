@@ -22,5 +22,4 @@
 /_attachments
 /_certificates
 /_indexes
-/third_party/test/emma/*.jar
-/third_party/test/junit/*.jar
+/third_party
