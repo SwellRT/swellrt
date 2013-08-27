@@ -31,6 +31,7 @@ import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentMap;
@@ -41,6 +42,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author soren@google.com (Soren Lassen)
  */
 final class Wave implements Iterable<WaveletContainer> {
+  private static final Log LOG = Log.get(Wave.class);
+
   private class WaveletCreator<T extends WaveletContainer> implements Function<WaveletId, T> {
     private final WaveletContainer.Factory<T> factory;
 
@@ -120,6 +123,18 @@ final class Wave implements Iterable<WaveletContainer> {
       throw new WaveletStateException(
           "Interrupted looking up wavelet " + WaveletName.of(waveId, waveletId), e);
     }
+
+    if(LOG.isFineLoggable()) {
+      if(storedWavelets != null) {
+        if(storedWavelets.contains(waveletId)) {
+          LOG.fine("Wavelet is in storedWavelets");
+        }
+        if(waveletsMap.containsKey(waveletId)) {
+          LOG.fine("Wavelet is in wavletsMap");
+        }
+      }
+    }
+
     // Since waveletsMap is a computing map, we must call containsKey(waveletId)
     // to tell if waveletId is mapped, we cannot test if get(waveletId) returns null.
     if (storedWavelets != null && !storedWavelets.contains(waveletId)

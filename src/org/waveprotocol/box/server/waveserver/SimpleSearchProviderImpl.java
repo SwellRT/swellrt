@@ -111,6 +111,13 @@ public class SimpleSearchProviderImpl implements SearchProvider {
     Function<ReadableWaveletData, Boolean> filterWaveletsFunction =
         createFilterWaveletsFunction(user, isAllQuery, withParticipantIds, creatorParticipantIds);
     Map<WaveId, WaveViewData> results = filterWavesViewBySearchCriteria(filterWaveletsFunction, currentUserWavesView);
+
+    if(LOG.isFineLoggable()) {
+      for(Map.Entry e : results.entrySet()) {
+        LOG.fine("filtered results contains: " + e.getKey());
+      }
+    }
+
     Collection<WaveViewData> searchResult =
         computeSearchResult(user, startAt, numResults, queryParams, results);
     LOG.info("Search response to '" + query + "': " + searchResult.size() + " results, user: "
@@ -128,6 +135,13 @@ public class SimpleSearchProviderImpl implements SearchProvider {
       // shared domain participant.
       currentUserWavesView.putAll(waveViewProvider.retrievePerUserWaveView(sharedDomainParticipantId));
     }
+
+    if(LOG.isFineLoggable()) {
+      for(Map.Entry e : currentUserWavesView.entries()) {
+        LOG.fine("unfiltered view contains: " + e.getKey() + " " + e.getValue());
+      }
+    }
+
     return currentUserWavesView;
   }
 
@@ -167,16 +181,39 @@ public class SimpleSearchProviderImpl implements SearchProvider {
       for (WaveletId waveletId : waveletIds) {
         WaveletContainer waveletContainer = null;
         WaveletName waveletname = WaveletName.of(waveId, waveletId);
+
+        // TODO (alown): Find some way to use isLocalWavelet to do this properly!
         try {
-          waveletContainer = waveMap.getLocalWavelet(waveletname);
+          if(LOG.isFineLoggable()) {
+            LOG.fine("Trying as a remote wavelet");
+          }
+          waveletContainer = waveMap.getRemoteWavelet(waveletname);
         } catch (WaveletStateException e) {
-          LOG.severe(String.format("Failed to get local wavelet %s", waveletname.toString()), e);
+          LOG.severe(String.format("Failed to get remote wavelet %s", waveletname.toString()), e);
+        } catch (NullPointerException e) {
+          // This is a fairly normal case of it being a local-only wave.
+          // Yet this only seems to appear in the test suite.
+          // Continuing is completely harmless here.
+          LOG.info(String.format("%s is definitely not a remote wavelet. (Null key)", waveletname.toString()), e);
         }
+
+        if(waveletContainer == null) {
+          try {
+            if(LOG.isFineLoggable()) {
+                LOG.fine("Trying as a local wavelet");
+            }
+            waveletContainer = waveMap.getLocalWavelet(waveletname);
+          } catch (WaveletStateException e) {
+            LOG.severe(String.format("Failed to get local wavelet %s", waveletname.toString()), e);
+          }
+        }
+
         // TODO (Yuri Z.) This loop collects all the wavelets that match the
         // query, so the view is determined by the query. Instead we should
         // look at the user's wave view and determine if the view matches the query.
         try {
           if (waveletContainer == null || !waveletContainer.applyFunction(matchesFunction)) {
+            LOG.fine("----doesn't match: " + waveletContainer);
             continue;
           }
           if (view == null) {

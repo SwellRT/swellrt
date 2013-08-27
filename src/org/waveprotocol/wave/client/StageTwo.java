@@ -463,7 +463,7 @@ public interface StageTwo {
         }
       };
       WaveViewImpl<OpBasedWavelet> wave =
-          WaveViewImpl.create(waveletFactory, getWaveData().getWaveId(), getIdGenerator(),
+          WaveViewImpl.create(waveletFactory, snapshot.getWaveId(), getIdGenerator(),
               getSignedInUser(), WaveletConfigurator.ADD_CREATOR);
 
       // Populate the initial state.

@@ -35,6 +35,7 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,6 +49,7 @@ import java.util.Set;
  * @see ClientFrontendImpl
  */
 public class WaveletInfo {
+  private static final Log LOG = Log.get(WaveletInfo.class);
 
   /** Information we hold in memory for each wavelet. */
   private static class PerWavelet {
@@ -135,6 +137,10 @@ public class WaveletInfo {
    * Initializes front-end information from the wave store, if necessary.
    */
   public void initialiseWave(WaveId waveId) throws WaveServerException {
+    if(LOG.isFineLoggable()) {
+      LOG.fine("frontend initialiseWave(" + waveId +")");
+    }
+
     if (!perWavelet.containsKey(waveId)) {
       Map<WaveletId, PerWavelet> wavelets = perWavelet.get(waveId);
       for (WaveletId waveletId : waveletProvider.getWaveletIds(waveId)) {
@@ -144,6 +150,9 @@ public class WaveletInfo {
         PerWavelet waveletInfo = wavelets.get(waveletId);
         synchronized (waveletInfo) {
           waveletInfo.currentVersion = wavelet.getHashedVersion();
+          if(LOG.isFineLoggable()) {
+            LOG.fine("frontend wavelet " + waveletId + " @" + wavelet.getHashedVersion().getVersion());
+          }
           waveletInfo.explicitParticipants.addAll(wavelet.getParticipants());
         }
       }

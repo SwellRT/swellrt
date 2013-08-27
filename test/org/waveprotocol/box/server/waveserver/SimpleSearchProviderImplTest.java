@@ -207,7 +207,7 @@ public class SimpleSearchProviderImplTest extends TestCase {
 
     waveMap =
         new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", lookupExecutor);
+            remoteWaveletContainerFactory, DOMAIN, lookupExecutor);
     searchProvider = new SimpleSearchProviderImpl(DOMAIN, digester, waveMap, waveViewProvider);
   }
 

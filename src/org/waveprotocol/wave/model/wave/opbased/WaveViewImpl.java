@@ -131,7 +131,7 @@ public final class WaveViewImpl<T extends ObservableWavelet> implements Observab
     this.viewer = viewer;
     this.idGenerator = idGenerator;
     this.configurator = configurator;
-    this.rootId = idGenerator.newConversationRootWaveletId();
+    this.rootId = idGenerator.buildConversationRootWaveletId(waveId);
     this.userDataId = idGenerator.newUserDataWaveletId(viewer.getAddress());
   }
 

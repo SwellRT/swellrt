@@ -229,6 +229,9 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
    */
   private void participantUpdate(WaveletName waveletName, ParticipantId participant,
       DeltaSequence newDeltas, boolean add, boolean remove) {
+    if(LOG.isFineLoggable()) {
+      LOG.fine("Notifying " + participant + " for " + waveletName);
+    }
     if (add) {
       waveletInfo.notifyAddedExplicitWaveletParticipant(waveletName, participant);
     }
@@ -249,6 +252,11 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     }
 
     WaveletName waveletName = WaveletName.of(wavelet.getWaveId(), wavelet.getWaveletId());
+
+    if(waveletInfo.getCurrentWaveletVersion(waveletName).getVersion() == 0 && LOG.isWarningLoggable()) {
+      LOG.warning("Wavelet does not appear to have been initialized by client. Continuing anyway.");
+    }
+
     waveletInfo.syncWaveletVersion(waveletName, newDeltas);
 
     Set<ParticipantId> remainingparticipants =

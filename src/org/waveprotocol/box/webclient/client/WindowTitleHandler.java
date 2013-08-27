@@ -57,10 +57,8 @@ public final class WindowTitleHandler implements WaveStore.Listener {
 
   @Override
   public void onOpened(WaveContext wave) {
-    Document document =
-        wave.getConversations().getRoot().getRootThread().getFirstBlip().getContent();
-    String waveTitle = TitleHelper.extractTitle(document);
-     String windowTitle = formatTitle(waveTitle);
+    String waveTitle = TitleHelper.getTitle(wave);
+    String windowTitle = formatTitle(waveTitle);
     if (waveTitle == null || waveTitle.isEmpty()) {
       windowTitle = DEFAULT_TITLE;
     }
