@@ -891,11 +891,8 @@
     <get src="http://www.antlr3.org/download/antlr-3.2.jar" dest="third_party/codegen/antlr/antlr-3.2.jar" />
     <get src="http://repo2.maven.org/maven2/com/google/gwt/gwt-dev/2.1.1/gwt-dev-2.1.1.jar" dest="third_party/codegen/gwt/gwt-dev.jar" />
     <get src="http://repo2.maven.org/maven2/com/google/gwt/gwt-user/2.1.1/gwt-user-2.1.1.jar" dest="third_party/codegen/gwt/gwt-user.jar" />
-
-    <!-- TODO: How? These have customizations! -->
-    <get src="" dest="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT-sources.jar" />
-    <get src="" dest="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT.jar" />
-
+    <get src="http://archiva.comunes.org/repository/comunes-internal/com/glines/socketio/java/socketio-gwt-sources/2012-10-21/socketio-gwt-sources-2012-10-21.jar" dest="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT-sources.jar" />
+    <get src="http://archiva.comunes.org/repository/comunes-internal/com/glines/socketio/java/socketio-gwt/2012-10-21/socketio-gwt-2012-10-21.jar" dest="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT.jar" />
     <get src="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" dest="third_party/codegen/velocity/velocity-1.6.3.jar" />
     <get src="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3-dep.jar" dest="third_party/codegen/velocity/velocity-1.6.3-dep.jar" />
   </target>
@@ -908,22 +905,7 @@
     <get src="v0r47" dest="third_party/runtime/jsr305.jar" />
     <get src="" dest="third_party/runtime/libidn/libidn-1.26.jar" />
     <get src="" dest="third_party/runtime/mongo-driver/mongo-java-driver-r2.1-0-src.zip" />
-    <get src="" dest="third_party/runtime/protobuf-format-java/protobuf-format-java-1.1.jar" />
     <get src="" dest="third_party/runtime/websocket/websocket.jar" />
-
-    <!-- TODO: Built from revision 1123 in svn, ugh... -->
-    <get src="" dest="third_party/runtime/oauth/oauth-common-src.jar" />
-    <get src="" dest="third_party/runtime/oauth/oauth-provider-src.jar" />
-    <get src="" dest="third_party/runtime/oauth/oauth-consumer-src.jar" />
-    <get src="" dest="third_party/runtime/oauth/oauth-common.jar" />
-    <get src="" dest="third_party/runtime/oauth/oauth-consumer.jar" />
-    <get src="" dest="third_party/runtime/oauth/oauth-provider.jar" />
-
-    <!-- TODO: Do is SocketIO used anymore? -->
-    <get src="" dest="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT-sources.jar" />
-    <get src="" dest="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT.jar" />
-    <get src="" dest="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT-sources.jar" />
-    <get src="" dest="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT.jar" />
 
     <!-- TODO: local patches on top of 1.0.0 -->
     <get src="" dest="third_party/runtime/whack/whack.jar" />
@@ -931,7 +913,6 @@
 
     <get src="http://repo1.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" dest="third_party/runtime/aopalliance/aopalliance.jar" />
     <get src="http://repo2.maven.org/maven2/org/bouncycastle/bcprov-jdk16/1.45/bcprov-jdk16-1.45.jar" dest="third_party/runtime/bcprov-jdk16-145.jar" />
-    <!-- TODO: why this inconsistency in '-' or '_' ? -->
     <get src="http://repo1.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar" dest="third_party/runtime/commons-fileupload/commons-fileupload.jar" />
     <get src="https://archive.apache.org/dist/commons/fileupload/source/commons-fileupload-1.2.2-src.zip" dest="third_party/runtime/commons-fileupload/commons-fileupload-src.zip" />
     <get src="http://repo1.maven.org/maven2/commons-cli/commons-cli/1.2/commons-cli-1.2.jar" dest="third_party/runtime/commons-cli/commons-cli-1.2.jar" />
@@ -978,8 +959,19 @@
     <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0-javadoc.jar" dest="third_party/runtime/lucene/lucene-core-3.5.0-javadoc.jar" />
     <!-- TODO: Do people use MongoDB, or can I kill that code? -->
     <get src="https://github.com/downloads/mongodb/mongo-java-driver/mongo-2.1.jar" dest="third_party/runtime/mongo-driver/mongo-2.1.jar" />
+    <get src="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth/20100527/oauth-20100527-sources.jar" dest="third_party/runtime/oauth/oauth-common-src.jar" />
+    <get src="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-provider/20100527/oauth-provider-20100527-sources.jar" dest="third_party/runtime/oauth/oauth-provider-src.jar" />
+    <get src="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527-sources.jar" dest="third_party/runtime/oauth/oauth-consumer-src.jar" />
+    <get src="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth/20100527/oauth-20100527.jar" dest="third_party/runtime/oauth/oauth-common.jar" />
+    <get src="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-provider/20100527/oauth-provider-20100527.jar" dest="third_party/runtime/oauth/oauth-provider.jar" />
+    <get src="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527.jar" dest="third_party/runtime/oauth/oauth-consumer.jar" />
     <get src="http://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0.jar" dest="third_party/runtime/protobuf/protobuf-java-2.3.0.jar" />
     <get src="http://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0-sources.jar" dest="third_party/runtime/protobuf/protobuf-2.3.0-src.jar" />
+    <get src="https://protobuf-java-format.googlecode.com/files/protobuf-format-java-1.1.jar" dest="third_party/runtime/protobuf-format-java/protobuf-format-java-1.1.jar" />
+    <get src="http://archiva.comunes.org/repository/comunes-internal/com/glines/socketio/java/socketio-core-sources/2012-10-21/socketio-core-sources-2012-10-21.jar" dest="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT-sources.jar" />
+    <get src="http://archiva.comunes.org/repository/comunes-internal/com/glines/socketio/java/socketio-core/2012-10-21/socketio-core-2012-10-21.jar" dest="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT.jar" />
+    <get src="http://archiva.comunes.org/repository/comunes-internal/com/glines/socketio/java/socketio-jetty-sources/2012-10-21/socketio-jetty-sources-2012-10-21.jar" dest="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT-sources.jar" />
+    <get src="http://archiva.comunes.org/repository/comunes-internal/com/glines/socketio/java/socketio-jetty/2012-10-21/socketio-jetty-2012-10-21.jar" dest="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT.jar" />
     <get src="http://repo1.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" dest="third_party/runtime/xpp3-1.1.4c.jar" />
     <get src="http://repo1.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" dest="third_party/runtime/xpp3_xpath-1.1.4c.jar" />
   </target>
