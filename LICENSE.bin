@@ -1,3 +1,17 @@
+***THE FOLLOWING LICENSE APPLIES TO***
+- Apache Wave
+- Apache Commons CLI, Codec, Collection, Configuration, File Upload, HTTP Client, Lang, Logging libraries included in the generated jar files
+- Google GXP, GSON, Guava, Guice included in the generated jar files
+- Javax.inject included in the generated jar files
+- Apache JDO2 included in the generated jar files
+- Jetty Client, Continuation, HTTP, IO, Security, Server, Servlet, Servlets, Util, Webapp, Websocket, XML are included in the generated jar files
+- Joda Time library included in the generated jar files
+- LibIDN Java library included in the generated jar files
+- Apache Lucene Core included in the generated jar files
+- Mongo Java Driver included in the generated jar files
+- OAuth Java libraries included in the generated jar files
+- Servlet API Specification library included in the generated jar files
+- Whack XMPP Java library included in the generated jar files
 
                                  Apache License
                            Version 2.0, January 2004
@@ -201,65 +215,238 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-***FOLLOWING LICENSE APPLIES TO***
--The OAuth python library located at /src/python/api/oauth/
--the wave Socket.IO servlet located at /src/org/waveprotocol/box/server/rpc/AbstractWaveSocketIOServlet.java
--the Socket.IO library located at /third_party/runtime/socketio
--WebSocket located at /third_party/runtime/websocket
--mockito located at /third_party/test/mockito
+***THE FOLLOWING LICENSE APPLIES TO***
+- AOP Alliance included in the generated jar files
 
-The MIT License
+The person or persons who have associated work with this document (the
+"Dedicator" or "Certifier") hereby either (a) certifies that, to the best of
+his knowledge, the work of authorship identified is in the public domain of
+the country from which the work is published, or (b) hereby dedicates whatever
+copyright the dedicators holds in the work of authorship identified below (the
+"Work") to the public domain. A certifier, moreover, dedicates any copyright
+interest he may have in the associated work, and for these purposes, is
+described as a "dedicator" below.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+A certifier has taken reasonable steps to verify the copyright status of this
+work. Certifier recognizes that his good faith efforts may not shield him from
+liability if in fact the work certified is not in the public domain.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+Dedicator makes this dedication for the benefit of the public at large and to
+the detriment of the Dedicator's heirs and successors. Dedicator intends this
+dedication to be an overt act of relinquishment in perpetuate of all present
+and future rights under copyright law, whether vested or contingent, in the
+Work. Dedicator understands that such relinquishment of all rights includes
+the relinquishment of all rights to enforce (by lawsuit or otherwise) those
+copyrights in the Work.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-***FOLLOWING LICENSE APPLIES TO***
--jsr305 located at /third_party/runtime/jsr305
--hamcrest located at /third_party/test/hamcrest
-
-http://www.opensource.org/licenses/bsd-license.php
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-    * Neither the name of the JSR305 expert group nor the names of its
-      contributors may be used to endorse or promote products derived from
-      this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+Dedicator recognizes that, once placed in the public domain, the Work may be
+freely reproduced, distributed, transmitted, used, modified, built upon, or
+otherwise exploited by anyone for any purpose, commercial or non-commercial,
+and in any way, including by methods that have not yet been invented or
+conceived.
 
 ***THE FOLLOWING LICENSE APPLIES TO***
--XPP3 located at /third_party/runtime/xpp3
+- Bouncy Castle library included in the generated jar files
+  Copyright (c) 2000 - 2013 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
+- Socket.IO libraries included in the generated jar files
+  Copyright (c) 2011 Guillermo Rauch <guillermo@learnboost.com>
+  Copyright (c) 2010 Tad Glines
+- Java Websocket Client library included in the generated jar files
+  Copyright (c) 2009 Adam MacBeth
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+***THE FOLLOWING LICENSE APPLIES TO***
+- Dom4j included in the generated jar files
+
+Copyright 2001-2010 (C) MetaStuff, Ltd. All Rights Reserved.
+
+Redistribution and use of this software and associated documentation
+("Software"), with or without modification, are permitted provided
+that the following conditions are met:
+
+1. Redistributions of source code must retain copyright
+   statements and notices.  Redistributions must also contain a
+   copy of this document.
+
+2. Redistributions in binary form must reproduce the
+   above copyright notice, this list of conditions and the
+   following disclaimer in the documentation and/or other
+   materials provided with the distribution.
+
+3. The name "DOM4J" must not be used to endorse or promote
+   products derived from this Software without prior written
+   permission of MetaStuff, Ltd.  For written permission,
+   please contact dom4j-info@metastuff.com.
+
+4. Products derived from this Software may not be called "DOM4J"
+   nor may "DOM4J" appear in their names without prior written
+   permission of MetaStuff, Ltd. DOM4J is a registered
+   trademark of MetaStuff, Ltd.
+
+5. Due credit should be given to the DOM4J Project -
+   http://dom4j.sourceforge.net
+
+THIS SOFTWARE IS PROVIDED BY METASTUFF, LTD. AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+METASTUFF, LTD. OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+
+***THE FOLLOWING LICENSE APPLIES TO***
+- JDOM 1 included in the generated jar files
+
+ $Id: LICENSE.txt,v 1.11 2004/02/06 09:32:57 jhunter Exp $
+
+ Copyright (C) 2000-2004 Jason Hunter & Brett McLaughlin.
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions, and the following disclaimer.
+
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions, and the disclaimer that follows
+    these conditions in the documentation and/or other materials
+    provided with the distribution.
+
+ 3. The name "JDOM" must not be used to endorse or promote products
+    derived from this software without prior written permission.  For
+    written permission, please contact <request_AT_jdom_DOT_org>.
+
+ 4. Products derived from this software may not be called "JDOM", nor
+    may "JDOM" appear in their name, without prior written permission
+    from the JDOM Project Management <request_AT_jdom_DOT_org>.
+
+ In addition, we request (but do not require) that you include in the
+ end-user documentation provided with the redistribution and/or in the
+ software itself an acknowledgement equivalent to the following:
+     "This product includes software developed by the
+      JDOM Project (http://www.jdom.org/)."
+ Alternatively, the acknowledgment may be graphical using the logos
+ available at http://www.jdom.org/images/logos.
+
+ THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED.  IN NO EVENT SHALL THE JDOM AUTHORS OR THE PROJECT
+ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+ This software consists of voluntary contributions made by many
+ individuals on behalf of the JDOM Project and was originally
+ created by Jason Hunter <jhunter_AT_jdom_DOT_org> and
+ Brett McLaughlin <brett_AT_jdom_DOT_org>.  For more information
+ on the JDOM Project, please see <http://www.jdom.org/>.
+
+***THE FOLLOWING LICENSE APPLIES TO***
+- JLine library included in the generated jar files
+
+Copyright (c) 2002-2006, Marc Prud'hommeaux <mwp1@cornell.edu>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or
+without modification, are permitted provided that the following
+conditions are met:
+
+Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with
+the distribution.
+
+Neither the name of JLine nor the names of its contributors
+may be used to endorse or promote products derived from this
+software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+
+***THE FOLLOWING LICENSE APPLIES TO***
+- JSR305 specification library included in the generated jar files
+
+Copyright (c) 2007-2013 jsr-305 project
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+Neither the name of the <ORGANIZATION> nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+***THE FOLLOWING LICENSE APPLIES TO***
+- Protobuf Java libraries included in the generated jar files
+
+Copyright 2008, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Code generated by the Protocol Buffer compiler is owned by the owner
+of the input file used when generating it.  This code is not
+standalone and requires a support library to be linked with it.  This
+support library is itself covered by the above license.
+
+***THE FOLLOWING LICENSE APPLIES TO***
+- XPP3 Java XML parser libraries included in the generated jar files
 
 Indiana University Extreme! Lab Software License
 
@@ -267,33 +454,33 @@ Version 1.1.1
 
 Copyright (c) 2002 Extreme! Lab, Indiana University. All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
+Redistribution and use in source and binary forms, with or without 
+modification, are permitted provided that the following conditions 
 are met:
 
-1. Redistributions of source code must retain the above copyright notice,
+1. Redistributions of source code must retain the above copyright notice, 
    this list of conditions and the following disclaimer.
 
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in
+2. Redistributions in binary form must reproduce the above copyright 
+   notice, this list of conditions and the following disclaimer in 
    the documentation and/or other materials provided with the distribution.
 
-3. The end-user documentation included with the redistribution, if any,
+3. The end-user documentation included with the redistribution, if any, 
    must include the following acknowledgment:
 
-  "This product includes software developed by the Indiana University
+  "This product includes software developed by the Indiana University 
   Extreme! Lab (http://www.extreme.indiana.edu/)."
 
-Alternately, this acknowledgment may appear in the software itself,
+Alternately, this acknowledgment may appear in the software itself, 
 if and wherever such third-party acknowledgments normally appear.
 
-4. The names "Indiana Univeristy" and "Indiana Univeristy Extreme! Lab"
-must not be used to endorse or promote products derived from this
-software without prior written permission. For written permission,
+4. The names "Indiana Univeristy" and "Indiana Univeristy Extreme! Lab" 
+must not be used to endorse or promote products derived from this 
+software without prior written permission. For written permission, 
 please contact http://www.extreme.indiana.edu/.
 
-5. Products derived from this software may not use "Indiana Univeristy"
-name nor may "Indiana Univeristy" appear in their name, without prior
+5. Products derived from this software may not use "Indiana Univeristy" 
+name nor may "Indiana Univeristy" appear in their name, without prior 
 written permission of the Indiana University.
 
 THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED
@@ -307,59 +494,3 @@ BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-***THE FOLLOWING LICENSE APPLIES TO***
--SimpleJSON located at /src/python/api/simplejson/
-
-Copyright (c) 2006 Bob Ippolito
-                                                                               
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to 
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-                                                                              
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-                                                                          
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER       
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-***THE FOLLOWING LICENSE APPLIES TO***
--Protobuf Descriptors located at /src/google/protobuf/descriptor.proto
-
-Protocol Buffers - Google's data interchange format
-Copyright 2008 Google Inc.  All rights reserved.
-http://code.google.com/p/protobuf/
-                                                                  
-Redistribution and use in source and binary forms, with or without    
-modification, are permitted provided that the following conditions are
-met:
-                                                                    
-    * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above         
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.                                             
-    * Neither the name of Google Inc. nor the names of its          
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-                                                                   
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT    
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT     
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT  
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
