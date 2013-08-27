@@ -38,7 +38,7 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 interface LocalWaveletContainer extends WaveletContainer {
 
   /**
-   * Manufactures remote wavelet containers.
+   * Manufactures local wavelet containers.
    */
   interface Factory extends WaveletContainer.Factory<LocalWaveletContainer> { }
 

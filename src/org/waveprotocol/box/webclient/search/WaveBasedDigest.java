@@ -179,8 +179,7 @@ public final class WaveBasedDigest
 
   @Override
   public String getTitle() {
-    return TitleHelper.extractTitle(
-        wave.getConversations().getRoot().getRootThread().getFirstBlip().getContent());
+    return TitleHelper.getTitle(wave);
   }
 
   @Override

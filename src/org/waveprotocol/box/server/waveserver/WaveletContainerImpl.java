@@ -57,6 +57,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import javax.annotation.Nullable;
+
 /**
  * Contains the history of a wavelet - applied and transformed deltas plus the
  * content of the wavelet.
@@ -484,7 +486,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
 
   @Override
   public void requestHistory(HashedVersion startVersion, HashedVersion endVersion,
-      Receiver<ByteStringMessage<ProtocolAppliedWaveletDelta>> receiver) 
+      Receiver<ByteStringMessage<ProtocolAppliedWaveletDelta>> receiver)
       throws AccessControlException, WaveletStateException {
     acquireReadLock();
     try {
@@ -548,7 +550,11 @@ abstract class WaveletContainerImpl implements WaveletContainer {
     }
   }
 
+  @Nullable
   protected HashedVersion getCurrentVersion() {
+    if(waveletState == null)
+      return null;
+
     return waveletState.getCurrentVersion();
   }
 

@@ -19,7 +19,9 @@
 
 package org.waveprotocol.wave.model.conversation;
 
-
+//TODO (alown): should the WaveContext live under model instead?
+import org.waveprotocol.box.webclient.search.WaveContext;
+import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.MutableDocument;
 import org.waveprotocol.wave.model.document.ReadableWDocument;
 import org.waveprotocol.wave.model.document.operation.Attributes;
@@ -239,6 +241,50 @@ public final class TitleHelper {
     }
   }
 
+  /**
+   * An error-absorbing title retrieving convenience function.
+   * Please use this rather than doing:
+   * wave.getConversations().getRoot().getRootThread().getFirstBlip().getContent()
+   * as that is the cause of _many_ shiny's in the client.
+   * In the event something went wrong, or no title exists will return the empty string.
+   * This is deliberate, so that it doesn't propagate an error for a rather non-critical
+   * code path.
+   */
+  public static String getTitle(WaveContext waveCtx) {
+    ObservableConversationView conversations = waveCtx.getConversations();
+    if(conversations == null) {
+      return "";
+    }
+
+    ObservableConversation rootConversation = conversations.getRoot();
+    if(rootConversation == null) {
+      return "";
+    }
+
+    ObservableConversationThread rootThread = rootConversation.getRootThread();
+    if(rootThread == null) {
+      return "";
+    }
+
+    ObservableConversationBlip firstBlip = rootThread.getFirstBlip();
+    if(firstBlip == null) {
+      return "";
+    }
+
+    Document doc = firstBlip.getContent();
+    if(doc == null) {
+      return "";
+    }
+
+    String title = extractTitle(doc);
+    if(title == null) {
+      return "";
+    }
+
+    return title;
+  }
+
   private TitleHelper() {
   }
 }
+

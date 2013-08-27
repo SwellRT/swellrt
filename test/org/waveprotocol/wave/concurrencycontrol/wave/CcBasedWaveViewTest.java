@@ -65,7 +65,7 @@ public class CcBasedWaveViewTest extends TestCase {
   private static final WaveId WAVE_ID = WaveId.of("example.com", "waveId_1");
   private static final WaveletId GENERATED_WAVELET_ID = WaveletId.of("example.com", "some_id");
   private static final WaveletId ROOT_WAVELET_ID
-      = new IdGeneratorImpl("example.com", null).newConversationRootWaveletId();
+      = new IdGeneratorImpl("example.com", null).buildConversationRootWaveletId(WAVE_ID);
   private static final String GENERATED_BLIP_ID = "some blip id";
   private static final ParticipantId USER_ID = new ParticipantId("userId_1@example.com");
   private static final SchemaProvider SCHEMAS = SchemaCollection.empty();
@@ -210,6 +210,11 @@ public class CcBasedWaveViewTest extends TestCase {
 
     @Override
     public WaveletId newConversationRootWaveletId() {
+      return ROOT_WAVELET_ID;
+    }
+
+    @Override
+    public WaveletId buildConversationRootWaveletId(WaveId waveId) {
       return ROOT_WAVELET_ID;
     }
 

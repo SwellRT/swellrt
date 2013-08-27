@@ -51,7 +51,9 @@ import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.util.logging.Log;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.concurrent.Executor;
@@ -71,6 +73,13 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
    */
   private final NavigableMap<HashedVersion, ByteStringMessage<ProtocolAppliedWaveletDelta>>
       pendingDeltas = Maps.newTreeMap();
+
+  /**
+   * Tracks the highest version commit notice received, which can not be performed
+   * due to not yet having the required deltas. This must only be access under writeLock.
+   */
+  private boolean pendingCommit = false;
+  private HashedVersion pendingCommitVersion;
 
   /**
    * Create a new RemoteWaveletContainerImpl. Just pass through to the parent
@@ -95,11 +104,47 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
 
   @Override
   public void commit(HashedVersion version) {
+    try {
+      awaitLoad();
+    }
+    catch(WaveletStateException ex) {
+      LOG.warning("Failed to load " + getWaveletName() + " to perform commit.", ex);
+      acquireWriteLock();
+      markStateCorrupted();
+      releaseWriteLock();
+      return;
+    }
+
     acquireWriteLock();
     try {
-      persist(version, ImmutableSet.<String>of());
+      attemptCommit(version);
     } finally {
       releaseWriteLock();
+    }
+  }
+
+  /**
+   * Attempts to commit at the given version.
+   * This will only succeed if we are actually up to date.
+   * If not, then the history is assumed to be coming, and so we can just skip the whole task.
+   * */
+  private void attemptCommit(HashedVersion version) {
+    HashedVersion expectedVersion = getCurrentVersion();
+    if(expectedVersion == null || version.getVersion() == expectedVersion.getVersion()) {
+      LOG.info("Committed " + getWaveletName() + " at version " + version.getVersion());
+      persist(version, ImmutableSet.<String>of());
+      if(pendingCommitVersion == null || (version.getVersion() >= pendingCommitVersion.getVersion())) {
+        pendingCommit = false;
+      }
+    } else {
+      LOG.info("Ignoring commit request at " + version.getVersion() +
+          " since only at " + expectedVersion.getVersion());
+      if(pendingCommitVersion == null ||
+          (pendingCommitVersion != null && pendingCommitVersion.getVersion() < version.getVersion())) {
+        pendingCommitVersion = version;
+      }
+      LOG.info("pendingCommitVersion is now " + pendingCommitVersion.getVersion());
+      pendingCommit = true;
     }
   }
 
@@ -176,6 +221,18 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
       List<ByteStringMessage<ProtocolAppliedWaveletDelta>> appliedDeltas,
       final String domain, final WaveletFederationProvider federationProvider,
       final CertificateManager certificateManager, final SettableFuture<Void> futureResult) {
+
+    try {
+      awaitLoad();
+    }
+    catch(WaveletStateException ex) {
+      LOG.warning("Failed to load " + getWaveletName() + " to perform update.", ex);
+      acquireWriteLock();
+      markStateCorrupted();
+      releaseWriteLock();
+      return;
+    }
+
     LOG.info("Passed signer info check, now applying all " + appliedDeltas.size() + " deltas");
     acquireWriteLock();
     try {
@@ -229,6 +286,11 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
             pendingDeltas.firstEntry();
         HashedVersion appliedAt = first.getKey();
         ByteStringMessage<ProtocolAppliedWaveletDelta> appliedDelta = first.getValue();
+
+        if(LOG.isInfoLoggable()) {
+          LOG.info("pendingDeltas.size(): " + Integer.toString(pendingDeltas.size()));
+          LOG.info("current appliedAt: " + appliedAt.getVersion() + " expected: " + expectedVersion.getVersion());
+        }
 
         // If we don't have the right version it implies there is a history we need, so set up a
         // callback to request it and fall out of this update
@@ -310,14 +372,8 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
         pendingDeltas.remove(appliedAt);
       }
 
-      if (!haveRequestedHistory) {
-        notifyOfDeltas(resultingDeltas.build(), ImmutableSet.<String>of());
-        futureResult.set(null);
-      } else if (!resultingDeltas.build().isEmpty()) {
-        LOG.severe("History requested but non-empty result, non-contiguous deltas?");
-      } else {
-        LOG.info("History requested, ignoring callback");
-      }
+      commitAndNotifyResultingDeltas(resultingDeltas, futureResult);
+
     } catch (WaveServerException e) {
       LOG.warning("Update failure", e);
       // TODO(soren): make everyone throw FederationException instead
@@ -326,6 +382,30 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
           new FederationException(FederationErrors.badRequest(e.getMessage())));
     } finally {
       releaseWriteLock();
+    }
+  }
+
+  /**
+   * Commits the resulting deltas, notifying the server of them.
+   * Assumes that everything in resultingDeltas is now in-order, since
+   * even if the original stream was non-contiguous, we have requestedHistory.
+   * Even if not, it is still safe to commit up to the fragmented point.
+   */
+  private void commitAndNotifyResultingDeltas(
+      ImmutableList.Builder<WaveletDeltaRecord> resultingDeltas,
+      final SettableFuture<Void> futureResult) {
+    if(!resultingDeltas.build().isEmpty()) {
+      notifyOfDeltas(resultingDeltas.build(), ImmutableSet.<String>of());
+      futureResult.set(null);
+
+      //Attempt to run any pending commit
+      if(pendingCommit) {
+        releaseWriteLock();
+        commit(pendingCommitVersion);
+        acquireWriteLock();
+      }
+    } else {
+      LOG.info("No deltas in list (fetching history?), ignoring callback");
     }
   }
 

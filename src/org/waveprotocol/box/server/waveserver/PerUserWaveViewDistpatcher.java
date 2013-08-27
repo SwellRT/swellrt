@@ -30,6 +30,7 @@ import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -39,6 +40,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author yurize@apache.org (Yuri Zelikov)
  */
 public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWaveViewBus {
+  private static final Log LOG = Log.get(PerUserWaveViewDistpatcher.class);
 
   private static final CopyOnWriteArraySet<PerUserWaveViewBus.Listener> listeners =
       new CopyOnWriteArraySet<PerUserWaveViewBus.Listener>();
@@ -48,11 +50,19 @@ public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWa
     WaveletId waveletId = wavelet.getWaveletId();
     WaveId waveId = wavelet.getWaveId();
     WaveletName waveletName = WaveletName.of(waveId, waveletId);
+    if(LOG.isInfoLoggable()) {
+      LOG.info("Got update for " + waveId + " " + waveletId);
+    }
+
     // Find whether participants were added/removed and update the views
     // accordingly.
     for (TransformedWaveletDelta delta : deltas) {
       for (WaveletOperation op : delta) {
         if (op instanceof AddParticipant) {
+          if(LOG.isInfoLoggable()) {
+            LOG.info("Update contains AddParticipant for " + ((AddParticipant)op).getParticipantId());
+          }
+
           ParticipantId user = ((AddParticipant) op).getParticipantId();
           // Check first if we need to update views for this user.
           for (Listener listener : listeners) {

@@ -61,6 +61,13 @@ public interface IdGenerator {
   WaveletId newConversationRootWaveletId();
 
   /**
+   * Creates/gets a root wavelet id for the given waveId
+   * (Federation happy version of newConversationRootWaveletId)
+   */
+
+  WaveletId buildConversationRootWaveletId(WaveId waveId);
+
+  /**
    * Creates a user data wavelet id.
    *
    * Per-user data wavelets are specified by a leading token "user" followed by

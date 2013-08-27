@@ -97,7 +97,10 @@ public class MemoryPerUserWaveViewHandlerImpl implements PerUserWaveViewHandler 
       Multimap<WaveId, WaveletId> perUserView = explicitPerUserWaveViews.get(user);
       if (!perUserView.containsEntry(waveletName.waveId, waveletName.waveletId)) {
         perUserView.put(waveletName.waveId, waveletName.waveletId);
-        LOG.fine("Added wavelet: " + waveletName + " to the view of user: " + user.getAddress());
+        if(LOG.isFineLoggable()) {
+          LOG.fine("Added wavelet: " + waveletName + " to the view of user: " + user.getAddress());
+          LOG.fine("View size is now: " + perUserView.size());
+        }
       }
     }
     SettableFuture<Void> task = SettableFuture.create();

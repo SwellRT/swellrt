@@ -75,6 +75,7 @@ public class IdGeneratorImpl implements IdGenerator, IdConstants {
     return build(IdConstants.BLIP_PREFIX, peekUniqueToken());
   }
 
+  //NOTE: These are _NOT_ federation happy. Ensure that your caller is!
   @Override
   public WaveId newWaveId() {
     return WaveId.of(defaultDomain, newId(WAVE_PREFIX));
@@ -88,6 +89,11 @@ public class IdGeneratorImpl implements IdGenerator, IdConstants {
   @Override
   public WaveletId newConversationWaveletId() {
     return WaveletId.of(defaultDomain, newId(CONVERSATION_WAVELET_PREFIX));
+  }
+
+  @Override
+  public WaveletId buildConversationRootWaveletId(WaveId waveId) {
+    return WaveletId.of(waveId.getDomain(), CONVERSATION_ROOT_WAVELET);
   }
 
   @Override

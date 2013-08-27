@@ -138,7 +138,7 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
 
         if (isLocalWavelet(waveletName)) {
           LOG.warning("Got commit update for local wavelet " + waveletName);
-          callback.onFailure(FederationErrors.badRequest("Received comit update to local wavelet"));
+          callback.onFailure(FederationErrors.badRequest("Received commit update to local wavelet"));
           return;
         }
 
@@ -153,15 +153,27 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
         if (wavelet != null) {
           wavelet.commit(CoreWaveletOperationSerializer.deserialize(committedVersion));
         } else {
-          // TODO(soren): This should really be changed to create the wavelet if it doesn't
-          // already exist and go get history up committedVersion. Moreover, when the
-          // protocol is enhanced to deliver commit updates reliably, we will probably need
-          // to only return success when we successfully retrieved history and persisted it all.
-         LOG.info("Got commit update for missing wavelet " + waveletName);
+          if(LOG.isInfoLoggable()) {
+            LOG.info("Got commit update for missing wavelet " + waveletName);
+          }
+          createAndCommitRemoteWavelet(waveletName, committedVersion);
         }
         callback.onSuccess();
       }
     };
+  }
+
+  /**
+   * Creates the non-existent remote wavelet container at this server and commits it.
+   * Calling commit at this known version, forces the history to be fetched up to this point.
+   * TODO (alown): Possible race condition here with update? (Though I don't think it would result in
+   * anything more serious than repeated history fetches.)
+   */
+  private void createAndCommitRemoteWavelet(WaveletName waveletName, ProtocolHashedVersion committedVersion) {
+    RemoteWaveletContainer wavelet = getOrCreateRemoteWavelet(waveletName);
+    HashedVersion v = CoreWaveletOperationSerializer.deserialize(committedVersion);
+    wavelet.commit(v);
+    LOG.info("Passed commit message for version " + v.getVersion() + " to RemoteWavelet");
   }
 
   //
