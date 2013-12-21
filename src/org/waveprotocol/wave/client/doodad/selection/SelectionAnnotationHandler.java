@@ -33,6 +33,7 @@ import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.scheduler.TimerService;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationMutationHandler;
 import org.waveprotocol.wave.model.document.MutableDocument;
 import org.waveprotocol.wave.model.document.util.DocumentContext;
@@ -58,17 +59,17 @@ import java.util.Queue;
  *
  * Currently, a user's selection is defined as a group of two or three annotations.
  *
- *  - Data annotation, with the prefix {@link #DATA_PREFIX}
+ *  - Data annotation, with the prefix {@link #AnnotationConstants.USER_DATA}
  *    This annotation always covers the entire document.
  *    Its value is of the form "address,timestamp[,compositionstate]" where address is
  *    the user's id, timestamp is the number of milliseconds since the Epoch, UTC.
  *    An optional composition state may also be included, for indicating uncommitted
  *    IME composition text.
- *  - Hotspot annotation, with the prefix {@link #END_PREFIX}
+ *  - Hotspot annotation, with the prefix {@link #AnnotationConstants.USER_END}
  *    This annotation starts from where the user's blinking caret would be, and
  *    extends to the end of the document.
  *    Its value is their address
- *  - Range annotation, with the prefix {@link #RANGE_PREFIX}
+ *  - Range annotation, with the prefix {@link #AnnotationConstants.USER_RANGE}
  *    This annotation extends over the user's selected range. if their selection
  *    is collapsed, this annotation is not present.
  *    Its value is their address.
@@ -131,19 +132,11 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     Preconditions.checkNotNull(sessionId, "Session Id to ignore must not be null");
     SelectionAnnotationHandler selection = new SelectionAnnotationHandler(
         registries.getPaintRegistry(), sessionId, profiles, timer, carets);
-    registries.getAnnotationHandlerRegistry().registerHandler(PREFIX, selection);
+    registries.getAnnotationHandlerRegistry().
+      registerHandler(AnnotationConstants.USER_PREFIX, selection);
     profiles.addListener(selection);
     return selection;
   }
-
-  /**
-   * Annotation key prefix
-   */
-  private static final String PREFIX = "user";
-
-  private static final String RANGE_PREFIX = PREFIX + "/r/";
-  private static final String END_PREFIX = PREFIX + "/e/";
-  private static final String DATA_PREFIX = PREFIX + "/d/";
 
   // Do proper random colours at some point...
   private static final RgbColor[] COLOURS = new RgbColor[] {
@@ -168,27 +161,27 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
    * @return full annotation key
    */
   public static String rangeKey(String sessionId) {
-    return RANGE_PREFIX + sessionId;
+    return AnnotationConstants.USER_RANGE + sessionId;
   }
 
   public static String endKey(String sessionId) {
-    return END_PREFIX + sessionId;
+    return AnnotationConstants.USER_END + sessionId;
   }
 
   public static String dataKey(String sessionId) {
-    return DATA_PREFIX + sessionId;
+    return AnnotationConstants.USER_DATA + sessionId;
   }
 
   public static String rangeSuffix(String rangeKey) {
-    return rangeKey.substring(RANGE_PREFIX.length());
+    return rangeKey.substring(AnnotationConstants.USER_RANGE.length());
   }
 
   public static String endSuffix(String endKey) {
-    return endKey.substring(END_PREFIX.length());
+    return endKey.substring(AnnotationConstants.USER_END.length());
   }
 
   public static String dataSuffix(String dataKey) {
-    return dataKey.substring(DATA_PREFIX.length());
+    return dataKey.substring(AnnotationConstants.USER_DATA.length());
   }
 
   private final String ignoreSessionId;
@@ -331,7 +324,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       // discover which sessions have hilighted this range:
       String sessions = "";
       for (Map.Entry<String, Object> entry : from.entrySet()) {
-        if (entry.getKey().startsWith(RANGE_PREFIX)) {
+        if (entry.getKey().startsWith(AnnotationConstants.USER_RANGE)) {
           String sessionId = endSuffix(entry.getKey());
           String address = (String) entry.getValue();
           if (address == null || getActiveSessionData(sessionId) == null) {
@@ -358,7 +351,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       E usersContainer = null;
 
       for (Map.Entry<String, Object> entry : after.entrySet()) {
-        if (entry.getKey().startsWith(END_PREFIX)) {
+        if (entry.getKey().startsWith(AnnotationConstants.USER_END)) {
           // get the user's address:
           String address = (String) entry.getValue();
           if (address == null) {
@@ -469,14 +462,14 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
     data.bundle = null;
     painterRegistry.unregisterBoundaryFunction(
-        CollectionUtils.newStringSet(END_PREFIX + data.sessionId), boundaryFunc);
+        CollectionUtils.newStringSet(AnnotationConstants.USER_END + data.sessionId), boundaryFunc);
     painterRegistry.unregisterPaintFunction(
-        CollectionUtils.newStringSet(RANGE_PREFIX + data.sessionId), spreadFunc);
+        CollectionUtils.newStringSet(AnnotationConstants.USER_RANGE + data.sessionId), spreadFunc);
 
     int size = document.size();
-    int rangeStart = document.firstAnnotationChange(0, size, RANGE_PREFIX + data.sessionId, null);
-    int rangeEnd = document.lastAnnotationChange(0, size, RANGE_PREFIX + data.sessionId, null);
-    int hotSpot = document.firstAnnotationChange(0, size, END_PREFIX + data.sessionId, null);
+    int rangeStart = document.firstAnnotationChange(0, size, AnnotationConstants.USER_RANGE + data.sessionId, null);
+    int rangeEnd = document.lastAnnotationChange(0, size, AnnotationConstants.USER_RANGE + data.sessionId, null);
+    int hotSpot = document.firstAnnotationChange(0, size, AnnotationConstants.USER_END + data.sessionId, null);
 
     if (rangeStart == -1) {
       rangeStart = rangeEnd = hotSpot;
@@ -492,13 +485,13 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
        re-register the paint functions we just cleaned up.
 
     if (data.address.equals(currentUserAddress)) {
-      document.setAnnotation(0, size, DATA_PREFIX + data.sessionId, null);
+      document.setAnnotation(0, size, AnnotationConstants.USER_DATA + data.sessionId, null);
       if (rangeStart >= 0) {
         assert rangeEnd > rangeStart;
-        document.setAnnotation(rangeStart, rangeEnd, RANGE_PREFIX + data.sessionId, null);
+        document.setAnnotation(rangeStart, rangeEnd, AnnotationConstants.USER_RANGE + data.sessionId, null);
       }
       if (hotSpot >= 0) {
-        document.setAnnotation(hotSpot, size, END_PREFIX + data.sessionId, null);
+        document.setAnnotation(hotSpot, size, AnnotationConstants.USER_END + data.sessionId, null);
       }
     }
     */
@@ -555,9 +548,9 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       return;
     }
 
-    if (key.startsWith(DATA_PREFIX) && newValue != null) {
+    if (key.startsWith(AnnotationConstants.USER_DATA) && newValue != null) {
       updateCaretData(dataSuffix(key), (String) newValue, bundle);
-    } else if (key.startsWith(RANGE_PREFIX)) {
+    } else if (key.startsWith(AnnotationConstants.USER_RANGE)) {
       painterRegistry.registerPaintFunction(
           CollectionUtils.newStringSet(key), spreadFunc);
       painterRegistry.getPainter().scheduleRepaint(bundle, start, end);

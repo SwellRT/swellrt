@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.model.richtext;
 
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.ReadableDocument;
 import org.waveprotocol.wave.model.document.operation.Attributes;
 import org.waveprotocol.wave.model.document.operation.Nindo;
@@ -54,31 +55,19 @@ public class RichTextMutationBuilder {
 
   private static final String INDENT_ATTR = "i";
 
-  private static final String STYLE_KEY_FONT_WEIGHT = "style/fontWeight";
-
-  private static final String STYLE_KEY_FONT_STYLE = "style/fontStyle";
-
-  private static final String STYLE_KEY_TEXT_DECORATION = "style/textDecoration";
-
-  private static final String STYLE_KEY_COLOR = "style/color";
-
-  private static final String STYLE_KEY_BG_COLOR = "style/backgroundColor";
-
-  private static final String STYLE_KEY_FONT_FAMILY = "style/fontFamily";
-
   /** Default annotation values for certain keys */
   private static final StringMap<ReadableStringSet> defaultAnnotations =
       CollectionUtils.createStringMap();
 
   static {
-    defaultAnnotations.put(STYLE_KEY_TEXT_DECORATION, CollectionUtils.newStringSet("none"));
-    defaultAnnotations.put(STYLE_KEY_FONT_WEIGHT, CollectionUtils.newStringSet("normal"));
-    defaultAnnotations.put(STYLE_KEY_FONT_STYLE, CollectionUtils.newStringSet("normal"));
-    defaultAnnotations.put(STYLE_KEY_BG_COLOR, CollectionUtils.newStringSet("initial",
+    defaultAnnotations.put(AnnotationConstants.STYLE_TEXT_DECORATION, CollectionUtils.newStringSet("none"));
+    defaultAnnotations.put(AnnotationConstants.STYLE_FONT_WEIGHT, CollectionUtils.newStringSet("normal"));
+    defaultAnnotations.put(AnnotationConstants.STYLE_FONT_STYLE, CollectionUtils.newStringSet("normal"));
+    defaultAnnotations.put(AnnotationConstants.STYLE_BG_COLOR, CollectionUtils.newStringSet("initial",
         "transparent"));
     // Default font family and color are dependent on user-agent settings, but
     // make up a default color anyway
-    defaultAnnotations.put(STYLE_KEY_COLOR, CollectionUtils.newStringSet("black"));
+    defaultAnnotations.put(AnnotationConstants.STYLE_COLOR, CollectionUtils.newStringSet("black"));
   }
 
   /** This map records all annotations currently started. */
@@ -244,46 +233,46 @@ public class RichTextMutationBuilder {
         }
         break;
       case STYLE_FONT_WEIGHT_START:
-        startAnnotation(builder, STYLE_KEY_FONT_WEIGHT, tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.STYLE_FONT_WEIGHT, tokenizer.getData());
         break;
       case STYLE_FONT_WEIGHT_END:
-        endAnnotation(builder, STYLE_KEY_FONT_WEIGHT);
+        endAnnotation(builder, AnnotationConstants.STYLE_FONT_WEIGHT);
         break;
       case STYLE_FONT_STYLE_START:
-        startAnnotation(builder, STYLE_KEY_FONT_STYLE, tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.STYLE_FONT_STYLE, tokenizer.getData());
         break;
       case STYLE_FONT_STYLE_END:
-        endAnnotation(builder, STYLE_KEY_FONT_STYLE);
+        endAnnotation(builder, AnnotationConstants.STYLE_FONT_STYLE);
         break;
       case STYLE_TEXT_DECORATION_START:
-        startAnnotation(builder, STYLE_KEY_TEXT_DECORATION, tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.STYLE_TEXT_DECORATION, tokenizer.getData());
         break;
       case STYLE_TEXT_DECORATION_END:
-        endAnnotation(builder, STYLE_KEY_TEXT_DECORATION);
+        endAnnotation(builder, AnnotationConstants.STYLE_TEXT_DECORATION);
         break;
       case STYLE_COLOR_START:
-        startAnnotation(builder, STYLE_KEY_COLOR, tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.STYLE_COLOR, tokenizer.getData());
         break;
       case STYLE_COLOR_END:
-        endAnnotation(builder, STYLE_KEY_COLOR);
+        endAnnotation(builder, AnnotationConstants.STYLE_COLOR);
         break;
       case STYLE_BG_COLOR_START:
-        startAnnotation(builder, STYLE_KEY_BG_COLOR, tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.STYLE_BG_COLOR, tokenizer.getData());
         break;
       case STYLE_BG_COLOR_END:
-        endAnnotation(builder, STYLE_KEY_BG_COLOR);
+        endAnnotation(builder, AnnotationConstants.STYLE_BG_COLOR);
         break;
       case STYLE_FONT_FAMILY_START:
-        startAnnotation(builder, STYLE_KEY_FONT_FAMILY, tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.STYLE_FONT_FAMILY, tokenizer.getData());
         break;
       case STYLE_FONT_FAMILY_END:
-        endAnnotation(builder, STYLE_KEY_FONT_FAMILY);
+        endAnnotation(builder, AnnotationConstants.STYLE_FONT_FAMILY);
         break;
       case LINK_START:
-        startAnnotation(builder, "link/manual", tokenizer.getData());
+        startAnnotation(builder, AnnotationConstants.LINK_MANUAL, tokenizer.getData());
         break;
       case LINK_END:
-        endAnnotation(builder, "link/manual");
+        endAnnotation(builder, AnnotationConstants.LINK_MANUAL);
         break;
       case UNORDERED_LIST_START:
       case ORDERED_LIST_START:

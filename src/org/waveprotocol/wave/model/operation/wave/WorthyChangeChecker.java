@@ -21,6 +21,7 @@ package org.waveprotocol.wave.model.operation.wave;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
 import org.waveprotocol.wave.model.document.operation.Attributes;
 import org.waveprotocol.wave.model.document.operation.AttributesUpdate;
@@ -40,14 +41,6 @@ import org.waveprotocol.wave.model.util.ValueUtils;
 public class WorthyChangeChecker {
 
   private WorthyChangeChecker() {}
-
-  // NOTE(anorth): These constants are duplicated from internal models.
-  // Keep them in sync.
-  private static final String SELECTION_ANNOTATION_PREFIX = "user/";
-  private static final String LINKY_ANNOTATION = "link/auto";
-  private static final String SPELLY_ANNOTATION = "spell";
-  private static final String LANGUAGE_ANNOTATION = "lang";
-  private static final String ROSY_ANNOTATION = "tr/1";
 
   // Copied from Blips.
   @VisibleForTesting
@@ -138,11 +131,11 @@ public class WorthyChangeChecker {
         String oldValue = map.getOldValue(i);
         String newValue = map.getNewValue(i);
         if (!ValueUtils.equal(oldValue, newValue) &&
-            !key.startsWith(SELECTION_ANNOTATION_PREFIX) &&
-            !key.equals(SPELLY_ANNOTATION) &&
-            !key.equals(LINKY_ANNOTATION) &&
-            !key.equals(ROSY_ANNOTATION) &&
-            !key.equals(LANGUAGE_ANNOTATION)) {
+            !key.startsWith(AnnotationConstants.USER_PREFIX) &&
+            !key.startsWith(AnnotationConstants.SPELLY_PREFIX) &&
+            !key.startsWith(AnnotationConstants.LINK_PREFIX) &&
+            !key.startsWith(AnnotationConstants.ROSY_PREFIX) &&
+            !key.startsWith(AnnotationConstants.LANGUAGE_PREFIX)) {
           throw TRUE;
         }
       }

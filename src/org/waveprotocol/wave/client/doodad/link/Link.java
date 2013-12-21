@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 
 import org.waveprotocol.wave.client.common.safehtml.EscapeUtils;
 import org.waveprotocol.wave.client.common.util.WaveRefConstants;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.id.DualIdSerialiser;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -67,31 +68,6 @@ public final class Link {
     }
   }
 
-  /** Key prefix */
-  public static final String PREFIX = "link";
-
-  /** The primary key used for links. This is the same as the prefix on its own. */
-  public static final String KEY = PREFIX;
-
-  /** Key for 'linky' agent created links. */
-  public static final String AUTO_KEY = PREFIX + "/auto";
-
-  /**
-   * Key for manually created links.
-   * @deprecated use the "link" key. Delete this after old links have been cleaned up.
-   */
-  @Deprecated
-  public static final String MANUAL_KEY = PREFIX + "/manual";
-  /**
-   * Key for wave links.
-   *
-   * @deprecated Use the key "link" with value of the form:
-   *             wave://example.com/w+1234/~/conv+root/b+abcd
-   *
-   *             Delete this after old links have been cleaned up.
-   */
-  @Deprecated
-  public static final String WAVE_KEY = PREFIX + "/wave";
   /**
    * Array of all link keys
    *
@@ -99,7 +75,11 @@ public final class Link {
    * should expose LINK_KEYS as a set, and have ORDERED_LINK_KEYS for code that
    * relies on specific ordering.
    */
-  public static final String[] LINK_KEYS = {KEY, AUTO_KEY, MANUAL_KEY, WAVE_KEY};
+  public static final String[] LINK_KEYS = {
+    AnnotationConstants.LINK_PREFIX,
+    AnnotationConstants.LINK_AUTO,
+    AnnotationConstants.LINK_MANUAL,
+    AnnotationConstants.LINK_WAVE};
 
   private Link() {
   }

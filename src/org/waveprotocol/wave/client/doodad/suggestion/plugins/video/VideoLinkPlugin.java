@@ -29,6 +29,7 @@ import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.ContentTextNode;
 import org.waveprotocol.wave.client.editor.sugg.Menu;
 import org.waveprotocol.wave.client.gadget.StateMap;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.RangeTracker;
 import org.waveprotocol.wave.model.util.StringMap;
 
@@ -104,7 +105,7 @@ public class VideoLinkPlugin implements Plugin {
 
       menu.addItem(EMBED_VIDEO,
           new GadgetCommand<ContentNode, ContentElement, ContentTextNode>(MOVIE_GADGET_URL,
-              stateMap, mutableDocument, Link.AUTO_KEY, replacementRangeHelper));
+              stateMap, mutableDocument, AnnotationConstants.LINK_AUTO, replacementRangeHelper));
     }
   }
 }

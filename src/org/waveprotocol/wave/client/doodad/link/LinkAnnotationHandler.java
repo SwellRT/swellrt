@@ -19,13 +19,6 @@
 
 package org.waveprotocol.wave.client.doodad.link;
 
-import static org.waveprotocol.wave.client.doodad.link.Link.AUTO_KEY;
-import static org.waveprotocol.wave.client.doodad.link.Link.KEY;
-import static org.waveprotocol.wave.client.doodad.link.Link.LINK_KEYS;
-import static org.waveprotocol.wave.client.doodad.link.Link.MANUAL_KEY;
-import static org.waveprotocol.wave.client.doodad.link.Link.PREFIX;
-import static org.waveprotocol.wave.client.doodad.link.Link.WAVE_KEY;
-
 import org.waveprotocol.wave.client.doodad.suggestion.Suggestion;
 import org.waveprotocol.wave.client.doodad.suggestion.SuggestionRenderer;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
@@ -36,6 +29,7 @@ import org.waveprotocol.wave.client.editor.content.PainterRegistry;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.sugg.SuggestionsManager.HasSuggestions;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.AnnotationFamily;
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.DefaultAnnotationBehaviour;
 import org.waveprotocol.wave.model.document.AnnotationMutationHandler;
@@ -86,7 +80,7 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
   }
 
   /** Set of all link keys */
-  private static final ReadableStringSet KEYS = CollectionUtils.newStringSet(LINK_KEYS);
+  private static final ReadableStringSet KEYS = CollectionUtils.newStringSet(Link.LINK_KEYS);
   private static final ReadableStringSet BOUNDARY_KEYS = KEYS;
 
   /**
@@ -103,13 +97,13 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
         new LinkAnnotationHandler(painterRegistry.getPainter());
 
     AnnotationRegistry annotationRegistry = registries.getAnnotationHandlerRegistry();
-    annotationRegistry.registerHandler(PREFIX, handler);
+    annotationRegistry.registerHandler(AnnotationConstants.LINK_PREFIX, handler);
     // Don't register behaviour on the link/auto key, since an external agent
     // puts it there resulting in surprising behaviour mid-typing (e.g. if
     // the text is bold, the bold will suddenly get ended because of the link)
-    registerBehaviour(annotationRegistry, KEY);
-    registerBehaviour(annotationRegistry, MANUAL_KEY);
-    registerBehaviour(annotationRegistry, WAVE_KEY);
+    registerBehaviour(annotationRegistry, AnnotationConstants.LINK_PREFIX);
+    registerBehaviour(annotationRegistry, AnnotationConstants.LINK_MANUAL);
+    registerBehaviour(annotationRegistry, AnnotationConstants.LINK_WAVE);
 
     painterRegistry.registerPaintFunction(KEYS, new RenderFunc(augmenter));
     painterRegistry.registerBoundaryFunction(BOUNDARY_KEYS, boundaryFunc);
@@ -146,16 +140,16 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
   @SuppressWarnings("deprecation")
   public static String getLink(Map<String, Object> map) {
     Object ret = null;
-    if (map.containsKey(KEY)) {
-      ret = Link.toHrefFromUri((String) map.get(KEY));
-    } else if (map.containsKey(MANUAL_KEY)) {
-        ret = Link.toHrefFromUri((String) map.get(MANUAL_KEY));
-    } else if (map.containsKey(WAVE_KEY)) {
-      // This is for backwards compatibility. Stop supporting WAVE_KEY once
+    if (map.containsKey(AnnotationConstants.LINK_PREFIX)) {
+      ret = Link.toHrefFromUri((String) map.get(AnnotationConstants.LINK_PREFIX));
+    } else if (map.containsKey(AnnotationConstants.LINK_MANUAL)) {
+        ret = Link.toHrefFromUri((String) map.get(AnnotationConstants.LINK_MANUAL));
+    } else if (map.containsKey(AnnotationConstants.LINK_WAVE)) {
+      // This is for backwards compatibility. Stop supporting AnnotationConstants.LINK_WAVE once
       // the data is cleaned.
-      ret = Link.toHrefFromUri((String) map.get(WAVE_KEY));
-    } else if (map.containsKey(AUTO_KEY)) {
-      ret = Link.toHrefFromUri((String) map.get(AUTO_KEY));
+      ret = Link.toHrefFromUri((String) map.get(AnnotationConstants.LINK_WAVE));
+    } else if (map.containsKey(AnnotationConstants.LINK_AUTO)) {
+      ret = Link.toHrefFromUri((String) map.get(AnnotationConstants.LINK_AUTO));
     }
     if (ret instanceof String) {
       return (String) ret;
