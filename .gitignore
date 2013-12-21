@@ -26,3 +26,4 @@
 /third_party/test/junit/*.jar
 /gwt-unitCache
 war/WEB-INF
+*.old
