@@ -85,7 +85,7 @@ public class PointRange<N> {
   }
 
   /** {@inheritDoc} */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public final boolean equals(Object obj) {
     if (this == obj) {

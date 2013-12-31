@@ -132,7 +132,7 @@ public class Utf16UtilTest extends TestCase {
   ));
 
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public static List<String> concatenateLists(List... lists) {
     int len = 0;
     for (List l : lists) {

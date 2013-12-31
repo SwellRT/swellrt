@@ -97,12 +97,12 @@
 
   <target name="compile-proto" depends="init, compile-proto-dep"
       unless="skip.compile-proto" description="Compiles protocol buffers">
-    <buildjava destdir="${build.proto.dir}">
+    <buildproto destdir="${build.proto.dir}">
       <src path="${src.proto.dir}"/>
       <classpath>
         <path refid="libpath"/>
       </classpath>
-    </buildjava>
+    </buildproto>
     <touch file="${dep}/compile-proto"/>
   </target>
 

@@ -243,7 +243,7 @@ public class AnnotationTreeTest extends AnnotationSetTestBase {
 
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void testModificationFromListener() throws OperationException {
     final int callCounter[] = new int[] { 0 };
     // Chicken-and-egg problem: listener needs a reference to m in a final local

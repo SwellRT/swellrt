@@ -321,7 +321,7 @@ public class ContentDocument {
     }
   };
 
-  @SuppressWarnings({"unchecked", "fallthrough"}) // NodeMutationHandler is generic
+  @SuppressWarnings({"unchecked", "fallthrough", "rawtypes"}) // NodeMutationHandler is generic
   private void setupBehaviour(ContentElement element, Level oldLevel) {
     AgentAdapter e = (AgentAdapter) element;
 

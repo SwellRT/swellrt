@@ -73,6 +73,7 @@ public class SimpleSearchProviderImpl implements SearchProvider {
     sharedDomainParticipantId = ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(waveDomain);
   }
 
+  @SuppressWarnings("rawtypes")
   @Override
   public SearchResult search(final ParticipantId user, String query, int startAt,
       int numResults) {
@@ -125,6 +126,7 @@ public class SimpleSearchProviderImpl implements SearchProvider {
     return digester.generateSearchResult(user, query, searchResult);
   }
 
+  @SuppressWarnings("rawtypes")
   private Multimap<WaveId, WaveletId> createWavesViewToFilter(final ParticipantId user,
       final boolean isAllQuery) {
     Multimap<WaveId, WaveletId> currentUserWavesView;

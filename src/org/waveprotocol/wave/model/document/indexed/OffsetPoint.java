@@ -106,7 +106,7 @@ public final class OffsetPoint<T> {
   }
 
   /** {@inheritDoc} */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

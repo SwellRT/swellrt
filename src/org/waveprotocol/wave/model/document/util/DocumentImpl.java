@@ -39,7 +39,7 @@ public class DocumentImpl extends MutableDocumentImpl<Doc.N, Doc.E, Doc.T> imple
    */
   // Unfortunately, java does not permit <N extends N, E extends N & Doc.E, ...>
   // which would be required to make this typesafe.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public DocumentImpl(OperationSequencer<Nindo> sequencer,
       ReadableWDocument document) {
     super(sequencer, document);

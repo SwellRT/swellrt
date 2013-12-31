@@ -75,7 +75,7 @@ public class ObservablePluggableMutableDocument extends PluggableMutableDocument
     // time with wild cards (which then propagate everywhere, causing nastiness).
     //
     // Avoiding use of call-site wild cards with an unchecked conversion instead.
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void onDocumentEvents(EventBundle event) {
       if (isPaused) {

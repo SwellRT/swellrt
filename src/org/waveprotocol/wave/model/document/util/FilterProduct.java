@@ -52,6 +52,7 @@ public class FilterProduct<N, E extends N, T extends N> extends FilteredView<N, 
    * Constructs a product of multiple filters, given a resolution strategy.
    * See {@link #argumentCheck} for details on preconditions for parameters.
    */
+  @SuppressWarnings("unchecked")
   public FilterProduct(SkipStrategy<N> resolver, FilteredView<N, E, T>... filters) {
     super(argumentCheck(filters));
     this.filters = filters;
@@ -79,6 +80,7 @@ public class FilterProduct<N, E extends N, T extends N> extends FilteredView<N, 
    * @param filters The sub-filters for this product.
    * @return The readable inner document that all the filters wrap around.
    */
+  @SuppressWarnings("unchecked")
   public static <N, E extends N, T extends N> ReadableDocument<N, E, T>
       argumentCheck(FilteredView<N, E, T>... filters) {
     assert filters.length > 0;

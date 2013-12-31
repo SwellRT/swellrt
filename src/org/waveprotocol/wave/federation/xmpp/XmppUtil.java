@@ -63,7 +63,7 @@ public class XmppUtil {
    * Helper method to translate from the XMPP package (1.4 without generics) to
    * type-safe element lists.
    */
-  @SuppressWarnings({"cast", "unchecked"})
+  @SuppressWarnings({"cast", "unchecked", "rawtypes"})
   public static List<Element> toSafeElementList(List elements) {
     return (List<Element>) elements;
   }

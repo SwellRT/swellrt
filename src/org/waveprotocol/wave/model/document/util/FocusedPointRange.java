@@ -87,7 +87,7 @@ public class FocusedPointRange<N> {
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public final boolean equals(Object obj) {
     if (this == obj) return true;

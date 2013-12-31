@@ -941,6 +941,7 @@ public class CollectionUtils {
    * @param elements the elements that the set should contain
    * @return a newly created {@code HashSet} containing those elements.
    */
+  @SuppressWarnings("unchecked")
   public static <E> HashSet<E> newHashSet(E... elements) {
     int capacity = Math.max((int) (elements.length / .75f) + 1, 16);
     HashSet<E> set = new HashSet<E>(capacity);
@@ -984,6 +985,7 @@ public class CollectionUtils {
    * @param elements the elements that the set should contain
    * @return a newly created set containing those elements.
    */
+  @SuppressWarnings("unchecked")
   public static <E> Set<E> immutableSet(E... elements) {
     // TODO(anorth): optimise to a truly immutable set.
     return Collections.unmodifiableSet(newHashSet(elements));
@@ -1030,6 +1032,7 @@ public class CollectionUtils {
   }
 
   /** Creates a new linked list containing the provided elements. */
+  @SuppressWarnings("unchecked")
   public static <T> LinkedList<T> newLinkedList(T... elements) {
     return newLinkedList(Arrays.asList(elements));
   }
@@ -1049,6 +1052,7 @@ public class CollectionUtils {
   }
 
   /** Creates a new array list containing the provided elements. */
+  @SuppressWarnings("unchecked")
   public static <T> ArrayList<T> newArrayList(T... elements) {
     return newArrayList(Arrays.asList(elements));
   }

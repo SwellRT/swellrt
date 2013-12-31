@@ -36,6 +36,7 @@ public class CompositeRendererHelper implements ResultProducingRenderHelper<Safe
 
   private final ResultProducingRenderHelper<? extends UiBuilder>[] helpers;
 
+  @SuppressWarnings("unchecked")
   public CompositeRendererHelper(ResultProducingRenderHelper<? extends UiBuilder> ... helpers){
     this.helpers = helpers;
   }

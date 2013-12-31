@@ -37,7 +37,7 @@ public class ButtonBuilder {
   /**
    * Properties supported by all types of buttons.
    */
-  @SuppressWarnings({"unchecked"}) // we're doing some clever tricks in here
+  @SuppressWarnings({"unchecked", "rawtypes"}) // we're doing some clever tricks in here
   public abstract static class Base<T extends Base> {
     protected String text;
     protected String tooltip;

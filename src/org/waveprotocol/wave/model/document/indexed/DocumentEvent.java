@@ -185,7 +185,7 @@ public abstract class DocumentEvent<N, E extends N, T extends N> {
       return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
@@ -239,7 +239,7 @@ public abstract class DocumentEvent<N, E extends N, T extends N> {
       return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
@@ -285,7 +285,7 @@ public abstract class DocumentEvent<N, E extends N, T extends N> {
       return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
@@ -333,7 +333,7 @@ public abstract class DocumentEvent<N, E extends N, T extends N> {
       result = prime * result + location;
       return result;
     }
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;
@@ -537,7 +537,7 @@ public abstract class DocumentEvent<N, E extends N, T extends N> {
       return result;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public boolean equals(Object obj) {
       if (this == obj) return true;

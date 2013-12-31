@@ -131,7 +131,7 @@ public class ElementRobotTest extends TestCase {
     assertEquals("5", element.getProperty("width"));
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private static Element createElementWithProperty(ElementType type, String key, Object value) {
     Map properties = new HashMap();
     properties.put(key, value);

@@ -607,6 +607,7 @@ public class EditToolbar {
         StyleAnnotationHandler.key(styleName), value));
   }
 
+  @SuppressWarnings("unchecked")
   private static <E> E[] asArray(E... elements) {
     return elements;
   }

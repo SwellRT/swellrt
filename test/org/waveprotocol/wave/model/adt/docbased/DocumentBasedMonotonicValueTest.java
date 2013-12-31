@@ -80,6 +80,7 @@ public class DocumentBasedMonotonicValueTest extends TestCase {
       return expectedValues.get(expectedValues.size() - 1);
     }
 
+    @SuppressWarnings("unchecked")
     void expect(C ... expectedValues) {
       this.expectedValues.addAll(Arrays.asList(expectedValues));
     }

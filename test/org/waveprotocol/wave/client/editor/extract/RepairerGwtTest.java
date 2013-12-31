@@ -232,6 +232,7 @@ public class RepairerGwtTest extends GWTTestCase {
       range = 0;
     }
 
+    @SuppressWarnings("static")
     public void fail() {
       RepairerGwtTest.this.fail("Ended up with " + full + ", " + range);
     }

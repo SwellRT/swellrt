@@ -79,6 +79,7 @@ public final class Response {
   /**
    * Creates a response which returns a list of values.
    */
+  @SuppressWarnings("unchecked")
   public static <T> ResponseAnswer<List<T>> ofList(T... responses) {
     return new ResponseAnswer<List<T>>(Arrays.asList(responses));
   }

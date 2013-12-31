@@ -73,14 +73,33 @@
         <!-- Deprecation warnings are generated for .class files for some
              compilers, e.g. org.hamcrest.Matcher -> org.hamcrest.BaseMatcher. -->
         <compilerarg value="-Xlint:-deprecation"/>
-	<!-- TODO(akaplanov): remove -Xlint:-static after protobuf issue  will be fixed
-        issue  -->
-        <compilerarg value="-Xlint:-static"/>
+        <compilerarg value="-Werror"/>
         <javac-elements/>
       </javac>
     </sequential>
   </macrodef>
 
+  <!-- TODO(akaplanov): remove this and use buildjava after protobuf issue
+       https://code.google.com/p/protobuf/issues/detail?id=323 will be fixed -->
+  <macrodef name="buildproto">
+    <attribute name="srcpattern" description="Pattern id describing files to build"
+        default="default-src-pattern"/>
+    <!--attribute name="srcdir" description="Source root directory"/-->
+    <attribute name="destdir" description="Build root directory"/>
+    <element name="javac-elements" description="Extra elements to pass to javac" implicit="true"/>
+    <sequential>
+      <patternset id="default-src-pattern">
+        <include name="**/*.java"/>
+      </patternset>
+      <javac destdir="@{destdir}" debug="true">
+        <exclude name="org/waveprotocol/pst/**"/>
+        <patternset refid="@{srcpattern}"/>
+        <compilerarg value="-Xlint:none"/>
+        <javac-elements/>
+      </javac>
+    </sequential>
+  </macrodef>
+  
   <!-- Macro which packages class and source files into jars -->
   <macrodef name="distlib">
     <attribute name="srcpattern" description="Pattern id describing files to package"/>

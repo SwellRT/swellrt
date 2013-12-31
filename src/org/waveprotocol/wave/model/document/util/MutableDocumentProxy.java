@@ -54,7 +54,7 @@ public class MutableDocumentProxy<N, E extends N, T extends N>
       super(delegate, noDelegateErrorMessage);
     }
 
-    @SuppressWarnings("unchecked") // Adapter
+    @SuppressWarnings({"unchecked", "rawtypes"}) // Adapter
     public DocumentProxy(MutableDocument delegate, String noDelegateErrorMessage) {
       super(delegate, noDelegateErrorMessage);
       Preconditions.checkArgument(delegate.getDocumentElement() instanceof Doc.E,

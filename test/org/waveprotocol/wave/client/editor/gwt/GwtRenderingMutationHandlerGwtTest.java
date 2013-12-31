@@ -63,6 +63,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
     }
   }
 
+  @SuppressWarnings("static")
   public void testRegistersContainerNodelet() {
     complexHandler(Flow.INLINE);
 
@@ -76,6 +77,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
 
   }
 
+  @SuppressWarnings("static")
   public void testReceivesNewWidgetSafely() {
     simpleHandler(Flow.INLINE);
 
@@ -104,6 +106,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
   }
 
 
+  @SuppressWarnings("static")
   public void testReceivesNewWidgetWithContainerNodeletSafely() {
     complexHandler(Flow.INLINE);
 
@@ -130,6 +133,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
   }
 
 
+  @SuppressWarnings("static")
   private void simpleHandler(final Flow flow) {
     handler = new GwtRenderingMutationHandler(flow) {
       @Override
@@ -141,6 +145,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
     initDoc();
   }
 
+  @SuppressWarnings("static")
   private void deferredHandler(final Flow flow) {
     handler = new GwtRenderingMutationHandler(flow) {
       @Override
@@ -152,6 +157,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
     initDoc();
   }
 
+  @SuppressWarnings("static")
   private void complexHandler(final Flow flow) {
     handler = new GwtRenderingMutationHandler(flow) {
       @Override
@@ -168,6 +174,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
     initDoc();
   }
 
+  @SuppressWarnings("static")
   private FlowPanel createComplexWidget() {
     FlowPanel panel = new FlowPanel();
     FlowPanel child = new FlowPanel();
@@ -175,6 +182,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
     return panel;
   }
 
+  @SuppressWarnings("static")
   private void initDoc() {
     Editor.ROOT_HANDLER_REGISTRY.registerRenderingMutationHandler("ab", handler);
     Editor.ROOT_HANDLER_REGISTRY.registerRenderingMutationHandler("cd", handler);
@@ -184,6 +192,7 @@ public class GwtRenderingMutationHandlerGwtTest extends GWTTestCase {
     panel = (EditorImpl) doc.getContext().editing().editorContext();
   }
 
+  @SuppressWarnings("static")
   private AgentAdapter elem(String tagName) {
     return (AgentAdapter) doc.getAnnotatableContent().transparentCreate(tagName,
         Collections.<String, String>emptyMap(),
