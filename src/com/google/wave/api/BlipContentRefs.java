@@ -643,6 +643,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @param newProperties an array of new properties map.
    * @return an instance of this blip references, for chaining.
    */
+  @SuppressWarnings("unchecked")
   public BlipContentRefs updateElement(Map<String, String>... newProperties) {
     return execute(ModifyHow.UPDATE_ELEMENT, null, (Object[]) newProperties);
   }

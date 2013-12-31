@@ -43,7 +43,7 @@ public class DocumentBasedManifestTest extends TestCase {
   /**
    * Tests that the manifest appropriately delegates to its composite values.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void testWiringUp() {
     // Manifest's delegates
     final ObservableManifestThread rootThread = mock(ObservableManifestThread.class);

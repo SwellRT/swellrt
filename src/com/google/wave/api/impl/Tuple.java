@@ -41,6 +41,7 @@ public class Tuple<A> {
    * @param elements The elements of the tuple
    * @return A new tuple that contains {@code elements}
    */
+  @SuppressWarnings("unchecked")
   public static <A> Tuple<A> of(A ... elements) {
     return new Tuple<A>(elements);
   }
@@ -50,6 +51,7 @@ public class Tuple<A> {
    *
    * @param elements The elements of the tuple.
    */
+  @SuppressWarnings("unchecked")
   public Tuple(A ... elements) {
     this.elements = elements;
   }

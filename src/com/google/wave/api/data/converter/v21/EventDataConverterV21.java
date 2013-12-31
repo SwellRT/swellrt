@@ -87,7 +87,7 @@ public class EventDataConverterV21 implements EventDataConverter {
 
     // Add the tags.
     if (wavelet.getDocument(IdConstants.TAGS_DOC_ID) != null) {
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings({"unchecked", "rawtypes"})
       TagsDocument tags = new TagsDocument(wavelet.getDocument(IdConstants.TAGS_DOC_ID));
       tags.addListener(new TagsDocument.Listener() {
         @Override

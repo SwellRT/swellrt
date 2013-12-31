@@ -46,7 +46,7 @@ public class DocumentBasedManifestThreadTest extends TestCase {
   /**
    * Test the delegation is wired up properly
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void testWiringUp() {
     // Create mock list and value.
     ObservableElementList<ObservableManifestBlip, String> blips = mock(

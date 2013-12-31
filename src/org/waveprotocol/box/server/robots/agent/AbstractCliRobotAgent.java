@@ -200,7 +200,7 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
     // Create Options.
     Options options = new Options();
     // The robot has only "help" option.
-    @SuppressWarnings("static-access")
+    @SuppressWarnings({"static-access", "static"})
     Option help = OptionBuilder.withDescription("Displays help for the command.").create("help");
     options.addOption(help);
     return options;

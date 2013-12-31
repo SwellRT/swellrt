@@ -65,6 +65,7 @@ public final class AnchorManagerTest extends TestCase {
    * @param xs elements for the collection
    * @return a collection describing {@code xs}.
    */
+  @SuppressWarnings("unchecked")
   private static <T> Collection<T> collection(T... xs) {
     return CollectionUtils.newHashSet(xs);
   }

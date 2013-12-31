@@ -113,6 +113,7 @@ public class CopyOnWriteSetTest extends TestCase {
    * @param xs  items to put in the set
    * @return a set containing {@code xs}.
    */
+  @SuppressWarnings("unchecked")
   private static <T> Set<T> setOf(T ... xs) {
     return new HashSet<T>(Arrays.asList(xs));
   }

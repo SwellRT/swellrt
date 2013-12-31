@@ -89,7 +89,7 @@ public class ValidSelectionStrategy implements SkipStrategy<ContentNode> {
    * @param renderedFilter Rendered view of the document
    * @return Selection filtered view of the document.
    */
-  @SuppressWarnings("unchecked") // TODO(patcoleman) Deal with varargs + generics
+  @SuppressWarnings({"unchecked", "rawtypes"}) // TODO(patcoleman) Deal with varargs + generics
   public static FilteredView<ContentNode, ContentElement, ContentTextNode> buildSelectionFilter(
       FilteredView<ContentNode, ContentElement, ContentTextNode> persistentFilter,
       FilteredView<ContentNode, ContentElement, ContentTextNode> renderedFilter) {

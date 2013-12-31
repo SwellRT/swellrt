@@ -651,6 +651,7 @@ public final class RandomNindoGenerator {
     final RandomProvider r;
     final Parameters p;
     final DocumentSchema schemaConstraints;
+    @SuppressWarnings("rawtypes")
     NindoAutomaton a;
     NindoCursor targetDoc;
     final IndexedDocument<Node, Element, Text> doc;
@@ -677,6 +678,7 @@ public final class RandomNindoGenerator {
           new EndAnnotationGenerator()
           );
 
+    @SuppressWarnings("rawtypes")
     Nindo generate() {
       while (true) {
         this.a = new NindoAutomaton(schemaConstraints, doc);

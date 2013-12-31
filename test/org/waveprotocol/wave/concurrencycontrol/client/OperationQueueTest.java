@@ -475,6 +475,7 @@ public class OperationQueueTest extends TestCase {
     assertTrue("Expected queue size <= " + maxSize + ", was " + estimate, estimate <= maxSize);
   }
 
+  @SuppressWarnings("unchecked")
   private static <T> List<T> list(T... es) {
     return Collections.unmodifiableList(CollectionUtils.newArrayList(es));
   }

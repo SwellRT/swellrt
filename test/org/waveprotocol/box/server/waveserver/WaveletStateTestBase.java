@@ -197,6 +197,7 @@ public abstract class WaveletStateTestBase extends TestCase {
         appliedDeltasReceiver, IllegalArgumentException.class);
   }
 
+  @SuppressWarnings("rawtypes")
   private void checkGetTransformedDeltasThrowsException(HashedVersion startVersion, HashedVersion endVersion,
       Receiver<TransformedWaveletDelta> receiver, Class exceptionClass) {
     try {
@@ -207,6 +208,7 @@ public abstract class WaveletStateTestBase extends TestCase {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   private void checkGetAppliedDeltasThrowsException(HashedVersion startVersion, HashedVersion endVersion,
       Receiver<ByteStringMessage<Proto.ProtocolAppliedWaveletDelta>> receiver, Class exceptionClass) {
     try {
