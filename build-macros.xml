@@ -68,13 +68,14 @@
       <javac destdir="@{destdir}" debug="true">
         <exclude name="org/waveprotocol/pst/**"/>
         <patternset refid="@{srcpattern}"/>
-        <!-- TODO(anorth): enable -Werror after fixing warnings. -->
-        <compilerarg value="-Werror"/>
         <compilerarg value="-Xlint:all"/>
         <compilerarg value="-Xlint:-serial"/>
         <!-- Deprecation warnings are generated for .class files for some
              compilers, e.g. org.hamcrest.Matcher -> org.hamcrest.BaseMatcher. -->
         <compilerarg value="-Xlint:-deprecation"/>
+	<!-- TODO(akaplanov): remove -Xlint:-static after protobuf issue  will be fixed
+        issue  -->
+        <compilerarg value="-Xlint:-static"/>
         <javac-elements/>
       </javac>
     </sequential>
@@ -112,9 +113,10 @@
           metadatafile="${coverage.dir}/metadata.emma" mode="copy"/>
       </emma>
 
-      <junit fork="yes" forkmode="@{forkmode}" printsummary="yes" 
+      <junit fork="yes" forkmode="@{forkmode}" printsummary="yes"
           showoutput="no" haltonfailure="no" failureProperty="test.failed">
         <jvmarg value="-Xmx512M"/>
+	<jvmarg value="-XX:-UseSplitVerifier"/>
         <jvmarg value="-ea"/>
         <!-- Emma arguments -->
         <jvmarg value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma" />

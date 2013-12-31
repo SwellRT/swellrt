@@ -54,11 +54,8 @@
 	<classpathentry kind="lib" path="third_party/test/emma/emma.jar"/>
 	<classpathentry kind="lib" path="third_party/test/emma/emma_ant.jar"/>
 	<classpathentry kind="lib" path="third_party/test/hamcrest/hamcrest-all-1.2.jar"/>
-	<classpathentry kind="lib" path="third_party/test/jmock/jmock-2.5.1.jar"/>
-	<classpathentry kind="lib" path="third_party/test/jmock/jmock-junit3-2.5.1.jar"/>
 	<classpathentry kind="lib" path="third_party/test/junit/junit.jar"/>
 	<classpathentry kind="lib" path="third_party/test/junit/src.jar"/>
-	<classpathentry kind="lib" path="third_party/test/mockito/mockito-all-1.8.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-client-8.1.1.v20120215.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-continuation-8.1.1.v20120215.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-http-8.1.1.v20120215.jar"/>
@@ -77,5 +74,8 @@
 	<classpathentry kind="lib" path="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT.jar" sourcepath="third_party/runtime/socketio/socketio-jetty-0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-fileupload/commons-fileupload.jar" sourcepath="third_party/runtime/commons-fileupload/commons-fileupload-src.zip"/>
 	<classpathentry kind="lib" path="third_party/runtime/lucene/lucene-core-3.5.0.jar"/>
+	<classpathentry kind="lib" path="third_party/test/jmock/jmock-2.6.0.jar"/>
+	<classpathentry kind="lib" path="third_party/test/jmock/jmock-junit3-2.6.0.jar"/>
+	<classpathentry kind="lib" path="third_party/test/mockito/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

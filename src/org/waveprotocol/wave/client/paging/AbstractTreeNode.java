@@ -38,11 +38,11 @@ public abstract class AbstractTreeNode<T extends AbstractTreeNode<T>> implements
   // * first is null <=> last is null
   // * next or prev is non-null => parent is non-null
   //
-  private T parent;
-  private T first;
-  private T last;
-  private T next;
-  private T prev;
+  protected T parent;
+  protected T first;
+  protected T last;
+  protected T next;
+  protected T prev;
 
   protected AbstractTreeNode() {
   }
@@ -81,7 +81,7 @@ public abstract class AbstractTreeNode<T extends AbstractTreeNode<T>> implements
   /**
    * Sets the external structural fields of this node.
    */
-  private T set(T parent, T prev, T next) {
+  protected T set(T parent, T prev, T next) {
     this.parent = parent;
     this.prev = prev;
     this.next = next;
@@ -151,7 +151,7 @@ public abstract class AbstractTreeNode<T extends AbstractTreeNode<T>> implements
    *
    * @param child node to remove
    */
-  private void removeChild(T child) {
+  protected void removeChild(T child) {
     if (child == first) {
       first = child.next;
     } else {
