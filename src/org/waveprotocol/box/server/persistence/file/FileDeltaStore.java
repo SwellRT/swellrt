@@ -108,7 +108,7 @@ public class FileDeltaStore implements DeltaStore {
       try {
         deltas.close();
       } catch (IOException e) {
-        Log.info("Failed to close deltas file " + name, e);
+        Log.getLog().info("Failed to close deltas file " + name, e);
       }
     }
 
