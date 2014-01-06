@@ -43,6 +43,7 @@ import com.glines.socketio.server.transport.HTMLFileTransport;
 import com.glines.socketio.server.transport.JSONPPollingTransport;
 import com.glines.socketio.server.transport.XHRMultipartTransport;
 import com.glines.socketio.server.transport.XHRPollingTransport;
+import com.glines.socketio.server.transport.jetty.JettyWebSocketTransport;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jetty.server.Connector;
@@ -425,6 +426,10 @@ public class ServerRpcProvider {
     // TODO(zamfi): fix to let messages span frames.
     wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
+    // Set flash policy server parameters
+    String flashPolicyServerHost = "localhost";
+    StringBuilder flashPolicyAllowedPorts = new StringBuilder();
+
     // Servlet where the socketio connection is served from.
     // TODO(akaplanov): add servlet when https://github.com/vjrj/Socket.IO-Java will updated to Jetty v9.
     //   ServletHolder sioholder = addServlet("/socket.io/*", WaveSocketIOServlet.class );
@@ -439,9 +444,6 @@ public class ServerRpcProvider {
     // sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_PORTS,
     //     flashPolicyAllowedPorts.toString());
     
-    // Set flash policy server parameters
-    String flashPolicyServerHost = "localhost";
-    StringBuilder flashPolicyAllowedPorts = new StringBuilder();
     /*
      * Loop through addresses, collect list of ports, and determine if we are to use "localhost"
      * of the AnyHost wildcard.
@@ -612,8 +614,7 @@ public class ServerRpcProvider {
 
     AbstractWaveSocketIOServlet socketIOServlet = new AbstractWaveSocketIOServlet( new Transport[] {
         new XHRMultipartTransport(), new XHRPollingTransport(), new FlashSocketTransport(),
-        // TODO(akaplanov): add JettyWebSocketTransport when https://github.com/vjrj/Socket.IO-Java will updated to Jetty v9.
-        new JSONPPollingTransport(), new HTMLFileTransport()}) {
+        new JettyWebSocketTransport(), new JSONPPollingTransport(), new HTMLFileTransport()}) {    
       @Override
       protected SocketIOInbound doSocketIOConnect(HttpServletRequest request) {
         ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(
