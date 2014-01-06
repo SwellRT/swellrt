@@ -434,7 +434,7 @@ public class ServerRpcProvider {
     // TODO(akaplanov): add servlet when https://github.com/vjrj/Socket.IO-Java will updated to Jetty v9.
     //   ServletHolder sioholder = addServlet("/socket.io/*", WaveSocketIOServlet.class );
     //   // TODO(zamfi): fix to let messages span frames.
-    //   sioholder.setInitParameter("bufferSize", "" + BUFFER_SIZE); 
+    //   sioholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
     // sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_SERVER_HOST,
     //     flashPolicyServerHost);
     // sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_SERVER_PORT,
@@ -443,7 +443,7 @@ public class ServerRpcProvider {
     // sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_DOMAIN, "*");
     // sioholder.setInitParameter(FlashSocketTransport.PARAM_FLASHPOLICY_PORTS,
     //     flashPolicyAllowedPorts.toString());
-    
+
     /*
      * Loop through addresses, collect list of ports, and determine if we are to use "localhost"
      * of the AnyHost wildcard.
@@ -614,7 +614,7 @@ public class ServerRpcProvider {
 
     AbstractWaveSocketIOServlet socketIOServlet = new AbstractWaveSocketIOServlet( new Transport[] {
         new XHRMultipartTransport(), new XHRPollingTransport(), new FlashSocketTransport(),
-        new JettyWebSocketTransport(), new JSONPPollingTransport(), new HTMLFileTransport()}) {    
+        new JettyWebSocketTransport(), new JSONPPollingTransport(), new HTMLFileTransport()}) {
       @Override
       protected SocketIOInbound doSocketIOConnect(HttpServletRequest request) {
         ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(
