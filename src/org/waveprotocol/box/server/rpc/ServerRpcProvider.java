@@ -432,6 +432,7 @@ public class ServerRpcProvider {
 
     // Servlet where the socketio connection is served from.
     // TODO(akaplanov): add servlet when https://github.com/vjrj/Socket.IO-Java will updated to Jetty v9.
+    // Issue https://issues.apache.org/jira/browse/WAVE-405.
     //   ServletHolder sioholder = addServlet("/socket.io/*", WaveSocketIOServlet.class );
     //   // TODO(zamfi): fix to let messages span frames.
     //   sioholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);

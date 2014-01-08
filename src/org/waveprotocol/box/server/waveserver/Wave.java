@@ -80,7 +80,7 @@ final class Wave implements Iterable<WaveletContainer> {
     this.waveId = waveId;
     this.lookedupWavelets = lookedupWavelets;
     this.notifiee = notifiee;
-    
+
     this.localWavelets = CacheBuilder.newBuilder().build(
         new WaveletCreator<LocalWaveletContainer>(localFactory, waveDomain));
     this.remoteWavelets = CacheBuilder.newBuilder().build(

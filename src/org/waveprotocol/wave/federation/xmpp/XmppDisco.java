@@ -103,7 +103,7 @@ public class XmppDisco {
           }
         });
   }
-  
+
   /**
    * Set the manager instance for this class. Must be invoked before any other
    * methods are used.

@@ -403,7 +403,7 @@ public class RemoteDisco {
     }
 
     // Set either the result JID or error state.
-    
+
     try {
       if (jid != null) {
         this.remoteJid = jid;

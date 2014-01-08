@@ -147,7 +147,7 @@ public class WebSocketClientRpcChannel implements ClientRpcChannel {
       client.connect(clientChannel, uri, request).get();
     } catch (Exception ex) {
       throw new IOException(ex);
-    } 
+    }
     return client;
   }
 }
