@@ -5,9 +5,8 @@
 	<classpathentry kind="src" path="proto_src"/>
 	<classpathentry kind="src" path="gen/messages"/>
 	<classpathentry kind="src" path="gen/gxp"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/servlet-api-3.0.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/guava/guava-r09.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/antlr/antlr-3.2.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/servlet-api-3.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt/gwt-dev.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt/gwt-user.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt/validation-api-1.0.0.GA.jar" sourcepath="third_party/codegen/gwt/validation-api-1.0.0.GA-sources.jar"/>
@@ -24,7 +23,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/commons_lang/commons-lang-2.5.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons_logging/commons-logging-1.1.1.jar" sourcepath="third_party/runtime/commons_logging/commons-logging-1.1.1-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/dom4j/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/gson/gson-1.4.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice/guice-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice/guice-assistedinject-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice/guice-servlet-3.0.jar"/>
@@ -42,7 +40,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/oauth/oauth-consumer.jar" sourcepath="third_party/runtime/oauth/oauth-consumer-src.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/oauth/oauth-provider.jar" sourcepath="third_party/runtime/oauth/oauth-provider-src.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/protobuf-format-java/protobuf-format-java-1.1.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/protobuf/protobuf-java-2.3.0.jar" sourcepath="third_party/runtime/protobuf/protobuf-2.3.0-src.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket/websocket.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/whack/whack.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/whack/xmpp.jar"/>
@@ -56,18 +53,6 @@
 	<classpathentry kind="lib" path="third_party/test/hamcrest/hamcrest-all-1.2.jar"/>
 	<classpathentry kind="lib" path="third_party/test/junit/junit.jar"/>
 	<classpathentry kind="lib" path="third_party/test/junit/src.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-client-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-continuation-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-http-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-io-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-security-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-server-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlet-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlets-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-util-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-webapp-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-websocket-8.1.1.v20120215.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-xml-8.1.1.v20120215.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT.jar" sourcepath="third_party/runtime/socketio/socketio-core-0.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT.jar" sourcepath="third_party/codegen/socketio/socketio-gwt-0.1-SNAPSHOT-sources.jar"/>
@@ -77,5 +62,27 @@
 	<classpathentry kind="lib" path="third_party/test/jmock/jmock-2.6.0.jar"/>
 	<classpathentry kind="lib" path="third_party/test/jmock/jmock-junit3-2.6.0.jar"/>
 	<classpathentry kind="lib" path="third_party/test/mockito/mockito-all-1.9.5.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/gson/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/guava/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/guava/guava-gwt-15.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-annotations-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-client-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-continuation-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-http-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-io-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-proxy-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-security-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-server-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlet-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-servlets-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-util-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-webapp-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/jetty-xml-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/websocket-api-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/websocket-client-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/websocket-common-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/websocket-server-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/jetty/websocket-servlet-9.1.1.v20140108.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/protobuf/protobuf-java-2.5.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
