@@ -27,3 +27,4 @@
 /gwt-unitCache
 war/WEB-INF
 *.old
+*.log*
