@@ -35,7 +35,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/jsr305/jsr305-src.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/jsr305/jsr305.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/libidn/libidn-1.26.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/mongo-driver/mongo-2.1.jar" sourcepath="third_party/runtime/mongo-driver/mongo-java-driver-r2.1-0-src.zip"/>
 	<classpathentry kind="lib" path="third_party/runtime/oauth/oauth-common.jar" sourcepath="third_party/runtime/oauth/oauth-common-src.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/oauth/oauth-consumer.jar" sourcepath="third_party/runtime/oauth/oauth-consumer-src.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/oauth/oauth-provider.jar" sourcepath="third_party/runtime/oauth/oauth-provider-src.jar"/>
@@ -62,6 +61,7 @@
 	<classpathentry kind="lib" path="third_party/test/jmock/jmock-2.6.0.jar"/>
 	<classpathentry kind="lib" path="third_party/test/jmock/jmock-junit3-2.6.0.jar"/>
 	<classpathentry kind="lib" path="third_party/test/mockito/mockito-all-1.9.5.jar"/>
+        <classpathentry kind="lib" path="third_party/runtime/mongo-driver/mongo-java-driver-2.11.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gson/gson-2.2.4.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guava/guava-15.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guava/guava-gwt-15.0.jar"/>
