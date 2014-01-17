@@ -39,7 +39,6 @@ import java.util.Collection;
  * A MongoDB based Delta Access implementation using a simple <b>deltas</b>
  * collection, storing a delta record per each MongoDb document.
  * 
- * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
  * 
  */
@@ -50,7 +49,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   /** MongoDB Collection object for delta storage */
   private final DBCollection deltaDbCollection;
-
 
   /**
    * Construct a new Delta Access object for the wavelet
@@ -65,7 +63,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   @Override
   public WaveletName getWaveletName() {
-
     return waveletName;
   }
 
@@ -80,7 +77,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     query.put(MongoDbDeltaStoreUtil.FIELD_WAVE_ID, waveletName.waveId.serialise());
     query.put(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID, waveletName.waveletId.serialise());
 
-
     return query;
   }
 
@@ -88,9 +84,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
   public boolean isEmpty() {
 
     return deltaDbCollection.count(createWaveletDBQuery()) == 0;
-
   }
-
 
   @Override
   public HashedVersion getEndVersion() {
@@ -101,7 +95,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
     DBObject sort = new BasicDBObject();
     sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, -1); // Descending
-
 
     DBObject field = new BasicDBObject();
     field.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION, 1);
@@ -117,7 +110,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
   @Override
   public WaveletDeltaRecord getDelta(long version) throws IOException {
 
-
     DBObject query = createWaveletDBQuery();
     query.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, version);
 
@@ -130,13 +122,11 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     } catch (PersistenceException e) {
       throw new IOException(e);
     }
-
     return waveletDelta;
   }
 
   @Override
   public WaveletDeltaRecord getDeltaByEndVersion(long version) throws IOException {
-
     DBObject query = createWaveletDBQuery();
     query.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, version);
 
@@ -145,13 +135,11 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     WaveletDeltaRecord waveletDelta = null;
 
     if (result != null)
-
     try {
       MongoDbDeltaStoreUtil.deserializeWaveletDeltaRecord(result);
     } catch (PersistenceException e) {
       throw new IOException(e);
     }
-
     return waveletDelta;
   }
 
@@ -166,15 +154,11 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     if (result != null)
       return MongoDbDeltaStoreUtil.deserializeHashedVersion((DBObject) result
           .get(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION));
-
     return null;
-
   }
 
   @Override
   public HashedVersion getResultingVersion(long version) throws IOException {
-
-
     DBObject query = createWaveletDBQuery();
     query.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, version);
 
@@ -183,7 +167,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     if (result != null)
       return MongoDbDeltaStoreUtil.deserializeHashedVersion((DBObject) result
           .get(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION));
-
     return null;
   }
 
@@ -193,7 +176,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
     WaveletDeltaRecord delta = getDelta(version);
     return (delta != null) ? delta.getAppliedDelta() : null;
-
   }
 
   @Override
@@ -201,7 +183,6 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
     WaveletDeltaRecord delta = getDelta(version);
     return (delta != null) ? delta.getTransformedDelta() : null;
-
   }
 
   @Override
@@ -218,5 +199,4 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
           waveletName.waveId.serialise(), waveletName.waveletId.serialise()));
     }
   }
-
 }
