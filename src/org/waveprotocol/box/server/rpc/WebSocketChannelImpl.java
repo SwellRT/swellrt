@@ -67,14 +67,12 @@ public class WebSocketChannelImpl extends WebSocketChannel {
 
   @Override
   protected void sendMessageString(String data) throws IOException {
-    Session s;
     synchronized (this) {
-      s = session;
-    }
-    if (s == null) {
-      LOG.warning("Websocket is not connected");
-    } else {
-      s.getRemote().sendStringByFuture(data);
+      if (session == null) {
+        LOG.warning("Websocket is not connected");
+      } else {
+        session.getRemote().sendStringByFuture(data);
+      }
     }
   }
 }
