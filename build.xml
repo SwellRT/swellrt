@@ -1,15 +1,20 @@
 <!--
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  *
  * Author: dhanji@google.com (Dhanji R. Prasanna)
  *         anorth@google.com (Alex North)
@@ -50,6 +55,7 @@
     <delete dir="${test.out.dir}"/>
     <delete dir="war/waveharness"/>
     <delete dir="war/webclient"/>
+    <delete dir="${lib.dir}"/>
   </target>
 
   <target name="init-logging" description="Enable logging to file">
@@ -109,14 +115,13 @@
   <!-- === GXP targets === -->
   <target name="gen-gxp-dep">
     <uptodate targetfile="${dep}/gen-gxp" property="skip.gen-gxp">
-      <srcfiles dir="${lib.runtime}/gxp"/>
       <srcfiles dir="${src.dir}" includes="org/waveprotocol/box/server/gxp/*.gxp"/>
     </uptodate>
   </target>
 
   <!-- Generates the Java files from templates -->
   <target name="gen-gxp" description="Generates GXP files"
-      depends="init, gen-gxp-dep" unless="skip.gen-gxp">
+      depends="init, define-gxpc, gen-gxp-dep" unless="skip.gen-gxp">
     <gxpc srcdir="${src.dir}" srcpaths="${src.dir}" destdir="${gen.dir}/gxp"
         target="org.waveprotocol.box.server.gxp" />
     <touch file="${dep}/gen-gxp"/>
@@ -250,19 +255,7 @@
     <touch file="${dep}/compile"/>
   </target>
 
-  <target name="check-test-dependencies" description="Checks dependencies for test compilation are
-    available">
-    <available file="third_party/test/emma/emma_ant.jar" property="test.dependencies.1.present"/>
-    <available file="third_party/test/emma/emma.jar" property="test.dependencies.2.present"/>
-    <available file="third_party/test/junit/junit.jar" property="test.dependencies.3.present"/>
-    <available file="third_party/test/junit/src.jar" property="test.dependencies.4.present"/>
-    <fail message="${missing.dependencies.test} third_party/test/emma/emma_ant.jar" unless="test.dependencies.1.present"/>
-    <fail message="${missing.dependencies.test} third_party/test/emma/emma.jar" unless="test.dependencies.2.present"/>
-    <fail message="${missing.dependencies.test} third_party/test/junit/junit.jar" unless="test.dependencies.3.present"/>
-    <fail message="${missing.dependencies.test} third_party/test/junit/src.jar" unless="test.dependencies.4.present"/>
-  </target>
-
-  <target name="compile-tests" depends="check-test-dependencies,compile"
+  <target name="compile-tests" depends="get-third-party,compile"
       description="Compiles all unit tests">
             <!-- Pull in the Emma tasks -->
     <taskdef resource="emma_ant.properties" classpathref="test.libpath"/>
@@ -531,8 +524,8 @@
 
   <target name="stage-dep">
     <uptodate targetfile="${dep}/stage" property="skip.stage">
-      <srcfiles dir="${lib.runtime}" includes="**/*.jar"/>
-      <srcfiles dir="${lib.codegen}" includes="gwt/gwt-user.jar"/>
+      <srcfiles dir="${lib.runtime}" includes="*.jar"/>
+      <srcfiles dir="${lib.codegen}" includes="gwt/gwt-user-*.jar"/>
       <srcfiles dir="${build.src.dir}"/>
     </uptodate>
   </target>
@@ -542,7 +535,7 @@
     <!-- Unzip and copy all the runtime deps into a staging dir -->
     <unzip dest="${staging.dir}">
       <fileset dir="${lib.runtime}">
-        <include name="*/*.jar"/>
+        <include name="*.jar"/>
       </fileset>
     </unzip>
     <copy todir="${web.default.staging.dir}" preservelastmodified="true">
@@ -550,8 +543,7 @@
     </copy>
     <unzip dest="${staging.dir}">
       <fileset dir="${lib.codegen}">
-         <include name="gwt/gwt-user.jar"/>
-         <include name="gwt/gwt-dev.jar"/>
+         <include name="gwt-*.jar"/>
       </fileset>
       <patternset>
         <exclude name="javax/servlet/**/*"/>
@@ -789,6 +781,8 @@
   <target name="release-src" description="Creates unsigned tar+zip for server source release">
     <delete file="${dist.dir}/${release.src.path}.tar.bz2" />
     <delete file="${dist.dir}/${release.src.path}.zip" />
+    <copy file="LICENSE.src" tofile="LICENSE" />
+    <copy file="NOTICE.src" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.src.path}.tar" longfile="gnu">
       <!-- Include everything except built stuff in tree -->
       <tarfileset dir="." prefix="${release.src.path}">
@@ -796,9 +790,10 @@
         <exclude name="dist/" />
         <exclude name="gen/" />
         <exclude name="test_out/" />
-        <exclude name="third_party/test/emma/*.jar" />
-        <exclude name="third_party/test/junit/*.jar" />
+        <exclude name="third_party/" />
         <exclude name="war/webclient/" />
+        <exclude name="LICENSE.*" />
+        <exclude name="NOTICE.*" />
       </tarfileset>
       <!-- Setup permissions -->
       <tarfileset dir="." prefix="${release.src.path}" filemode="755">
@@ -814,11 +809,15 @@
       <tarfileset src="${dist.dir}/${release.src.path}.tar" />
     </zip>
     <delete file="${dist.dir}/${release.src.path}.tar" />
+    <delete file="LICENSE" />
+    <delete file="NOTICE" />
   </target>
 
   <target name="release-bin" depends="dist" description="Creates unsigned tar+zip for server binary release">
     <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
     <delete file="${dist.dir}/${release.bin.path}.zip"/>
+    <copy file="LICENSE.bin" tofile="LICENSE" />
+    <copy file="NOTICE.bin" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
       <!-- Actual jars -->
       <tarfileset dir="${dist.dir}" includes="*.jar" prefix="${release.bin.path}/dist" />
@@ -832,6 +831,7 @@
         <include name="README" />
         <include name="README.export-import" />
         <include name="RELEASE-NOTES" />
+        <include name="THANKS" />
         <!-- Helper scripts -->
         <include name="process-script-args.sh" />
         <!-- Configuration -->
@@ -839,7 +839,9 @@
         <include name="jaas.config" />
         <include name="jsongadgets.json" />
         <include name="server.config.example" />
+        <include name="server.federation.config" />
         <include name="server.federation.config.example" />
+        <include name="wiab-logging.conf" />
       </tarfileset>
       <!-- Helper scripts -->
       <tarfileset dir="${basedir}" prefix="${release.bin.path}" filemode="755">
@@ -859,6 +861,8 @@
       <tarfileset src="${dist.dir}/${release.bin.path}.tar" />
     </zip>
     <delete file="${dist.dir}/${release.bin.path}.tar"/>
+    <delete file="LICENSE" />
+    <delete file="NOTICE" />
   </target>
 
   <!-- TODO: re-use these when the api code is useful again -->
@@ -887,15 +891,107 @@
       Other
       ======-->
 
-  <target name="get-third-party" description="Download third party dependencies">
-    <get src="http://repo1.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar"
-      dest="third_party/test/emma/emma.jar"/>
-    <get src="http://repo1.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar"
-      dest="third_party/test/emma/emma_ant.jar"/>
-    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10.jar"
-      dest="third_party/test/junit/junit.jar"/>
-    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.10/junit-4.10-sources.jar"
-      dest="third_party/test/junit/src.jar"/>
+  <!-- TODO: move notices/licenses as required? -->
+  <!-- TODO: checksums? Most of these could be intercepted during download! -->
+  <target name="get-third-party" depends="get-third-party-codegen, get-third-party-runtime, get-third-party-test" description="Download all third party dependencies">
+  </target>
+
+  <target name="get-third-party-codegen" description="Download code generating third party dependencies">
+    <get dest="${lib.codegen}" usetimestamp="true" skipexisting="true">
+      <url url="http://www.antlr3.org/download/antlr-3.2.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.1.1/gwt-dev-2.1.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.1.1/gwt-user-2.1.1.jar" />
+      <url url="http://wave.alown.co.uk/third_party/socketio-gwt-0.1-SNAPSHOT.jar" />
+      <url url="http://wave.alown.co.uk/third_party/socketio-gwt-0.1-SNAPSHOT-sources.jar" />
+      <url url="https://gwt-validation.googlecode.com/svn-history/r220/trunk/sample/gwt-validation-sample/war/WEB-INF/lib/validation-api-1.0.0.GA.jar" />
+      <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" />
+      <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3-dep.jar" />
+    </get>
+  </target>
+
+  <target name="get-third-party-runtime" description="Download run time third party dependencies">
+    <get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
+      <url url="http://central.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" />
+      <url url="http://central.maven.org/maven2/org/bouncycastle/bcprov-jdk16/1.45/bcprov-jdk16-1.45.jar" />
+      <url url="http://central.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar" />
+      <url url="https://archive.apache.org/dist/commons/fileupload/source/commons-fileupload-1.2.2-src.zip" />
+      <url url="http://central.maven.org/maven2/commons-cli/commons-cli/1.2/commons-cli-1.2.jar" />
+      <url url="http://central.maven.org/maven2/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" />
+      <url url="https://archive.apache.org/dist/commons/codec/source/commons-codec-1.4-src.zip" />
+      <url url="http://central.maven.org/maven2/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar" />
+      <url url="http://central.maven.org/maven2/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar" />
+      <url url="http://central.maven.org/maven2/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar" />
+      <url url="https://archive.apache.org/dist/httpcomponents/commons-httpclient/source/commons-httpclient-3.1-src.zip" />
+      <url url="http://central.maven.org/maven2/commons-lang/commons-lang/2.5/commons-lang-2.5.jar" />
+      <!--<url url="http://central.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-adapters.jar" />
+      <url url="http://central.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-api.jar" />
+      <url url="https://archive.apache.org/dist/commons/logging/source/commons-logging-1.1.1-src.zip" />-->
+      <url url="http://central.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar" />
+      <url url="http://central.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/code/gson/gson/1.4/gson-1.4.jar" />
+      <url url="http://central.maven.org/maven2/com/google/guava/guava/r09/guava-r09.jar" />
+      <url url="http://wave.alown.co.uk/third_party/guava-r09-gwt.jar" />
+      <url url="http://central.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/3.0/guice-assistedinject-3.0.jar" />
+      <url url="http://central.maven.org/maven2/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar" />
+      <url url="http://central.maven.org/maven2/com/google/inject/guice/3.0/guice-3.0.jar" />
+      <url url="http://central.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gxp/google-gxp/0.2.4-beta/google-gxp-0.2.4-beta.jar" />
+      <url url="http://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" />
+      <url url="http://central.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar" />
+      <url url="http://central.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-client/8.1.1.v20120215/jetty-client-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-continuation/8.1.1.v20120215/jetty-continuation-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-http/8.1.1.v20120215/jetty-http-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-io/8.1.1.v20120215/jetty-io-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-security/8.1.1.v20120215/jetty-security-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-server/8.1.1.v20120215/jetty-server-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-servlet/8.1.1.v20120215/jetty-servlet-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-servlets/8.1.1.v20120215/jetty-servlets-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-util/8.1.1.v20120215/jetty-util-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-webapp/8.1.1.v20120215/jetty-webapp-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-websocket/8.1.1.v20120215/jetty-websocket-8.1.1.v20120215.jar" />
+      <url url="http://central.maven.org/maven2/org/eclipse/jetty/jetty-xml/8.1.1.v20120215/jetty-xml-8.1.1.v20120215.jar" />
+      <!-- TODO: Is this the correct servlet api jar? (seems to be larger) -->
+      <url url="http://central.maven.org/maven2/org/mortbay/jetty/servlet-api/3.0.20100224/servlet-api-3.0.20100224.jar" />
+      <url url="http://central.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" />
+      <url url="http://central.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" />
+      <url url="http://ftp.unicamp.br/pub/gnu/libidn/libidn-1.28.jar" />
+      <url url="http://central.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" />
+      <url url="http://cloud.github.com/downloads/mongodb/mongo-java-driver/mongo-2.1.jar" />
+      <!--<url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth/20100527/oauth-20100527-sources.jar" />
+      <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-provider/20100527/oauth-provider-20100527-sources.jar" />
+      <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527-sources.jar" />-->
+      <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth/20100527/oauth-20100527.jar" />
+      <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-provider/20100527/oauth-provider-20100527.jar" />
+      <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527.jar" />
+      <url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0.jar" />
+      <!--<url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.3.0/protobuf-java-2.3.0-sources.jar" />-->
+      <url url="https://protobuf-java-format.googlecode.com/files/protobuf-format-java-1.1.jar" />
+      <url url="http://wave.alown.co.uk/third_party/socketio-core-0.1-SNAPSHOT.jar" />
+      <url url="http://wave.alown.co.uk/third_party/socketio-core-0.1-SNAPSHOT-sources.jar" />
+      <url url="http://wave.alown.co.uk/third_party/socketio-jetty-0.1-SNAPSHOT.jar" />
+      <url url="http://wave.alown.co.uk/third_party/socketio-jetty-0.1-SNAPSHOT-sources.jar" />
+      <url url="http://wave.alown.co.uk/third_party/websocket.jar" />
+      <url url="http://wave.alown.co.uk/third_party/whack.jar" />
+      <url url="http://wave.alown.co.uk/third_party/xmpp.jar" />
+      <url url="http://central.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
+      <url url="http://central.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" />
+    </get>
+  </target>
+
+  <target name="get-third-party-test" description="Download testing third party dependencies">
+    <get dest="${lib.test}" usetimestamp="true" skipexisting="true">
+      <url url="http://central.maven.org/maven2/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar" />
+      <url url="http://download.forge.objectweb.org/asm/asm-3.2.jar" />
+      <url url="http://central.maven.org/maven2/cglib/cglib/2.2/cglib-2.2.jar" />
+      <url url="http://central.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar" />
+      <url url="http://central.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar" />
+      <url url="https://hamcrest.googlecode.com/files/hamcrest-all-1.2.jar" />
+      <url url="http://central.maven.org/maven2/org/jmock/jmock-junit3/2.5.1/jmock-junit3-2.5.1.jar" />
+      <url url="http://central.maven.org/maven2/org/jmock/jmock/2.5.1/jmock-2.5.1.jar" />
+      <url url="http://central.maven.org/maven2/junit/junit/4.10/junit-4.10.jar" />
+      <url url="http://central.maven.org/maven2/org/mockito/mockito-all/1.8.2/mockito-all-1.8.2.jar" />
+    </get>
   </target>
 
   <target name="doc" depends="stage" description="Builds the Java documentation for the mode, protocol, and Wave in a Box">

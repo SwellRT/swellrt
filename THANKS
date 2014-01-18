@@ -1,0 +1,17 @@
+For those who are directly included in the releases, attribution has been given
+in the LICENSE and NOTICE files included in the source and binary releases
+This project makes use of many other people's work, which whilst not
+required to be attributed, it is always nice to do so.
+
+As such, many thanks are given to the following projects which are used by
+Apache Wave, and have yet to be acknowledged.
+
+Apache Ant
+Apache Velocity
+The EMMA Project
+The Antlr Project
+The cglib Project
+The GWT Project
+The OW2 Consortium (ASM)
+The Hamcrest Project
+The Tango Desktop Project
