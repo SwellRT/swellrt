@@ -28,11 +28,11 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Class to lazily setup and manage the MongoDb connection.
@@ -41,7 +41,7 @@ import java.util.logging.Logger;
  *
  */
 public class MongoDbProvider {
-  private static final Logger LOG = Logger.getLogger(MongoDbProvider.class.getName());
+  private static final Log LOG = Log.get(MongoDbProvider.class);
 
   /** Location of the MongoDB properties file in the classpath. */
   private static final String PROPERTIES_LOC =
@@ -76,7 +76,7 @@ public class MongoDbProvider {
    * Separated store for Deltas {@link MongoDbDeltaStore}
    */
   private MongoDbDeltaStore mongoDbDeltaStore;
-  
+
   /** Stores whether we have successfully setup a live {@link Mongo} instance. */
   private boolean isRunning;
 
@@ -189,18 +189,18 @@ public class MongoDbProvider {
     }
     return mongoDbStore;
   }
-  
+
   /**
-   * Returns a {@link MongoDbDeltaStore} instance created from the settings in this 
+   * Returns a {@link MongoDbDeltaStore} instance created from the settings in this
    * provider.
    */
   public MongoDbDeltaStore provideMongoDbDeltaStore() {
     if (mongoDbDeltaStore == null) {
       mongoDbDeltaStore = new MongoDbDeltaStore(getDatabase());
     }
-    
+
     return mongoDbDeltaStore;
-    
+
   }
-  
+
 }

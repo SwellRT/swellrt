@@ -135,7 +135,7 @@ public class FileAttachmentStore implements AttachmentStore {
   }
 
   @Override
-  public void storeThumnail(AttachmentId attachmentId, InputStream data) throws IOException {
+  public void storeThumbnail(AttachmentId attachmentId, InputStream data) throws IOException {
     File file = new File(getThumbnailPath(attachmentId));
     if (file.exists()) {
       throw new IOException("Attachment already exist");

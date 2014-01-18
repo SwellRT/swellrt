@@ -36,7 +36,6 @@ import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
 import org.waveprotocol.wave.model.document.operation.Attributes;
 import org.waveprotocol.wave.model.document.operation.AttributesUpdate;
 import org.waveprotocol.wave.model.document.operation.DocOp;
-import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.operation.impl.AnnotationBoundaryMapImpl;
 import org.waveprotocol.wave.model.document.operation.impl.AttributesImpl;
@@ -307,8 +306,7 @@ public class CoreWaveletOperationSerializer {
       ops.add(deserialize(op, context));
     }
     HashedVersion hashedVersion = deserialize(delta.getHashedVersion());
-    return new WaveletDelta(new ParticipantId(delta.getAuthor()),
-        deserialize(delta.getHashedVersion()), ops);
+    return new WaveletDelta(new ParticipantId(delta.getAuthor()), hashedVersion, ops);
   }
 
   /**

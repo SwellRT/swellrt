@@ -18,11 +18,11 @@
  */
 package org.waveprotocol.box.server.persistence;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import org.waveprotocol.box.attachment.AttachmentMetadata;
 import org.waveprotocol.wave.media.model.AttachmentId;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An attachment store is a place for storing attachment data.
@@ -90,7 +90,7 @@ public interface AttachmentStore {
    * @param metaData attachment metadata
    * @throws IOException
    */
-  void storeThumnail(AttachmentId attachmentId, InputStream dataData) throws IOException;
+  void storeThumbnail(AttachmentId attachmentId, InputStream dataData) throws IOException;
 
   /**
    * Delete the specified attachment from the store. If the attachment does

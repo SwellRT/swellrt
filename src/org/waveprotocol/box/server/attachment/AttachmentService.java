@@ -164,7 +164,7 @@ public class AttachmentService {
   private void storeThumbnail(AttachmentId attachemntId, BufferedImage thumbnail) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ImageIO.write(thumbnail, THUMBNAIL_FORMAT_NAME, out);
-    store.storeThumnail(attachemntId, new ByteArrayInputStream(out.toByteArray()));
+    store.storeThumbnail(attachemntId, new ByteArrayInputStream(out.toByteArray()));
   }
 
   private static String waveletName2WaveRef(WaveletName waveletName) {
