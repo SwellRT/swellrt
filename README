@@ -37,30 +37,19 @@ software:
 Build
 ------
 
-This code requires Java 6.  If you are on MacOS 10.5 (Leopard) or earlier,
-you'll need to install it from
-http://www.apple.com/support/downloads/javaformacosx105update1.html -
-MacOS 10.5 ships with Java 5 by default.
+Wave in a Box uses Ant to build.
 
-
-Wave in a Box uses Ant to build. To run the tests, run:
+To run the tests (optional), run:
 
 <code>
-  ant get-third-party
-  ant test
+  ant get-third-party test
 </code>
 
+To build the client and server run:
 <code>
-  ant
+  ant get-third-party compile-gwt dist-server
 </code>
-
-To build the client and server without tests (faster) run:
-<code>
-  ant compile-gwt dist-server
-</code>
-
-
-It will be created in dist/waveinabox-X.Y.jar.
+It will be created in dist/wave-in-a-box-server-X.Y-incubating.jar.
 
 You need to configure your instance before you can use it. To create a default simple configuration run:
 <code>
@@ -73,14 +62,16 @@ Take a look at the server.config.example to learn about configuration and possib
 
 The server can be started (on Linux/MacOS) by running
 ./run-server.sh
+Or on Windows by running
+run-server.bat
 Or, you can run the server from the compiled classes with ant:
 <code>
   ant run-server
 </code>
-The web client will be accessible at http://localhost:9898/
+The web client will be accessible by default at http://localhost:9898/
 
 To learn more about Wave in a Box and Wave Federation Protocol:
-1. Look at the whitepapers folder - the information is a bit old but still usable.
+1. Look at the white papers folder - the information is a bit old but still usable.
 2. Watch the Wave Summit videos on YouTube, find the links at: https://cwiki.apache.org/confluence/display/WAVE/Wave+Summit+Talks
 3. Subscribe to the wave-dev mailing list, find instructions at http://incubator.apache.org/wave/mailing-lists.html
 
