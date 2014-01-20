@@ -71,19 +71,15 @@
            Apache Wave lets you communicate and collaborate in real time
           </span>
           <p>
-            <img src="/static/document.png" class="icon" alt="Doc pic." />
             <b>Wave is equal parts conversation and document.</b>
             People can communicate and work together with richly formatted text,
             gadgets, robots and more. 
           </p>
           <p>
-            <img src="/static/earth.png" class="icon" alt="Shared pic."/>
             <b>Wave is shared.</b> Any participant can reply anywhere in the message,
             edit the content and add participants at any point in the process.
           </p>
           <p>
-            <img src="/static/microphone.png" class="icon" 
-                style="padding: 0 5px; height: 29px; width: 18px" alt="Microphone pic."/>
             <b>Wave is live.</b> 
             With live transmission as you type, participants on a wave can have faster
             conversations, see edits and interact with extensions in real-time. 
