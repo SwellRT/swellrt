@@ -573,7 +573,10 @@ public class ServerRpcProvider {
     @SuppressWarnings("cast")
     @Override
     public void configure(WebSocketServletFactory factory) {
-      if (websocketMaxIdleTime != 0) {
+      if (websocketMaxIdleTime == 0) {
+        // Jetty does not allow to set infinite timeout.
+        factory.getPolicy().setIdleTimeout(Integer.MAX_VALUE);
+      } else {
         factory.getPolicy().setIdleTimeout(websocketMaxIdleTime);
       }
       factory.getPolicy().setMaxTextMessageSize(websocketMaxMessageSize * 1024 * 1024);

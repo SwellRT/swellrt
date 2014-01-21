@@ -548,9 +548,6 @@
         <include name="*.jar"/>
       </fileset>
     </unzip>
-    <copy todir="${web.default.staging.dir}" preservelastmodified="true">
-      <fileset file="${web.default}"/>
-    </copy>
     <unzip dest="${staging.dir}">
       <fileset dir="${lib.codegen}">
          <include name="gwt-*.jar"/>

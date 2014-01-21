@@ -35,6 +35,7 @@
   <property name="account_store_directory" value="_accounts" />
   <property name="delta_store_directory" value="_deltas" />
   <property name="sessions_store_directory" value="_sessions" />
+  <property name="session_cookie_max_age" value="-1" />
   <property name="websocket_max_message_size" value="2" />
   <property name="websocket_max_idle_time" value="0" />
   <property name="admin_user" value="@${wave_server_domain}" />
@@ -114,6 +115,7 @@
                  value="${account_store_directory}" />
           <token key="DELTA_STORE_DIRECTORY" value="${delta_store_directory}" />
           <token key="SESSIONS_STORE_DIRECTORY" value="${sessions_store_directory}" />
+          <token key="SESSION_COOKIE_MAX_AGE" value="${session_cookie_max_age}" />
           <token key="WEBSOCKET_MAX_MESSAGE_SIZE" value="${websocket_max_message_size}" />
           <token key="WEBSOCKET_MAX_IDLE_TIME" value="${websocket_max_idle_time}" />
           <token key="ADMIN_USER" value="${admin_user}" />

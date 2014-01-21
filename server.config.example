@@ -99,6 +99,11 @@ delta_store_directory = @DELTA_STORE_DIRECTORY@
 # Default value: _sessions
 sessions_store_directory = @SESSIONS_STORE_DIRECTORY@
 
+# Max age of session cookie in seconds.
+# -1 means cookie lives in the browser current session only.
+# Default value: -1
+session_cookie_max_age = @SESSION_COOKIE_MAX_AGE@
+
 # The time in ms that the websocket connection can be idle before closing
 # Default value: 0
 websocket_max_idle_time = @WEBSOCKET_MAX_IDLE_TIME@

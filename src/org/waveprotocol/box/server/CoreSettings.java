@@ -47,6 +47,7 @@ public class CoreSettings {
   public static final String DELTA_STORE_TYPE = "delta_store_type";
   public static final String DELTA_STORE_DIRECTORY = "delta_store_directory";
   public static final String SESSIONS_STORE_DIRECTORY = "sessions_store_directory";
+  public static final String SESSION_COOKIE_MAX_AGE = "session_cookie_max_age";
   public static final String FLASHSOCKET_POLICY_PORT = "flashsocket_policy_port";
   public static final String WEBSOCKET_MAX_MESSAGE_SIZE = "websocket_max_message_size";
   public static final String WEBSOCKET_MAX_IDLE_TIME = "websocket_max_idle_time";
@@ -151,6 +152,11 @@ public class CoreSettings {
           + "wave-in-a-box process.",
       defaultValue = "_sessions")
   private static String sessionsStoreDirectory;
+
+  @Setting(name = SESSION_COOKIE_MAX_AGE,
+      description = "Max age of session cookie in seconds. "
+          + "-1 means cookie lives in the browser current session only", defaultValue = "-1")
+  private static int sessionCookieMaxAge;
 
   @Setting(name = FLASHSOCKET_POLICY_PORT,
       description = "Port on which to listen for Flashsocket policy requests.",
