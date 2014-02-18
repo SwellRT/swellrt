@@ -22,6 +22,7 @@ package org.waveprotocol.box.server.persistence.mongodb;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
 
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
@@ -38,9 +39,9 @@ import java.util.Collection;
 /**
  * A MongoDB based Delta Access implementation using a simple <b>deltas</b>
  * collection, storing a delta record per each MongoDb document.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
@@ -52,7 +53,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   /**
    * Construct a new Delta Access object for the wavelet
-   * 
+   *
    * @param waveletName The wavelet name.
    * @param deltaDbCollection The MongoDB deltas collection
    */
@@ -68,7 +69,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   /**
    * Create a new DBObject for a common query to select this wavelet
-   * 
+   *
    * @return DBObject query
    */
   protected DBObject createWaveletDBQuery() {
@@ -194,9 +195,11 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
   public void append(Collection<WaveletDeltaRecord> newDeltas) throws PersistenceException {
 
     for (WaveletDeltaRecord delta : newDeltas) {
-
+      // Using Journaled Write Concern
+      // (http://docs.mongodb.org/manual/core/write-concern/#journaled)
       deltaDbCollection.insert(MongoDbDeltaStoreUtil.serialize(delta,
-          waveletName.waveId.serialise(), waveletName.waveletId.serialise()));
+          waveletName.waveId.serialise(), waveletName.waveletId.serialise()),
+          WriteConcern.JOURNALED);
     }
   }
 }

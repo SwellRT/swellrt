@@ -27,6 +27,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
+import com.mongodb.WriteConcern;
 
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.FileNotFoundPersistenceException;
@@ -41,9 +42,9 @@ import java.util.List;
 /**
  * A MongoDB based Delta Store implementation using a simple <b>deltas</b>
  * collection, storing a delta record per each MongoDb document.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class MongoDbDeltaStore implements DeltaStore {
 
@@ -55,7 +56,7 @@ public class MongoDbDeltaStore implements DeltaStore {
 
   /**
    * Construct a new store
-   * 
+   *
    * @param database the database connection object
    */
   public MongoDbDeltaStore(DB database) {
@@ -77,7 +78,9 @@ public class MongoDbDeltaStore implements DeltaStore {
     criteria.put(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID, waveletName.waveletId.serialise());
 
     try {
-      getDeltaDbCollection().remove(criteria);
+      // Using Journaled Write Concern
+      // (http://docs.mongodb.org/manual/core/write-concern/#journaled)
+      getDeltaDbCollection().remove(criteria, WriteConcern.JOURNALED);
     } catch (MongoException e) {
       throw new PersistenceException(e);
     }
@@ -138,7 +141,7 @@ public class MongoDbDeltaStore implements DeltaStore {
 
   /**
    * Access to deltas collection
-   * 
+   *
    * @return DBCollection of deltas
    */
   private DBCollection getDeltaDbCollection() {
