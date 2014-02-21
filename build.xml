@@ -995,6 +995,7 @@
       <url url="http://wave.alown.co.uk/third_party/xmpp.jar" />
       <url url="http://central.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
       <url url="http://central.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" />
+      <url url="http://repo1.maven.org/maven2/org/gnu/inet/libidn/1.15/libidn-1.15.jar" />
     </get>
   </target>
 
