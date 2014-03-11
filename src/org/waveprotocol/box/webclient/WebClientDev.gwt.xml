@@ -36,4 +36,8 @@
   <set-property name="loglevel" value="debug" />
 
   <extend-property name="locale" values="en,ru"/>
+
+  <!-- collapse all properties to decrease the amount of time spend compiling -->
+  <collapse-all-properties />
+
 </module>
