@@ -41,4 +41,13 @@
   <!-- For make CSS obfuscation more pretty -->
   <set-configuration-property name="CssResource.style" value="pretty"/>
 
+  <!--  This linker is required for superdev mode -->
+  <add-linker name="xsiframe" />
+  <set-configuration-property name="devModeRedirectEnabled" value="true"/>
+  <!--  enable source maps -->
+  <set-property name="compiler.useSourceMaps" value="true" />
+
+  <!-- collapse all properties to decrease the amount of time spend compiling -->
+  <collapse-all-properties />
+
 </module>

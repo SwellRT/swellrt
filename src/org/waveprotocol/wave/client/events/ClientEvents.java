@@ -17,23 +17,12 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client;
+package org.waveprotocol.wave.client.events;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.event.shared.HandlerRegistration;
-
-import org.waveprotocol.box.webclient.client.events.DebugMessageEvent;
-import org.waveprotocol.box.webclient.client.events.DebugMessageEventHandler;
-import org.waveprotocol.box.webclient.client.events.NetworkStatusEvent;
-import org.waveprotocol.box.webclient.client.events.NetworkStatusEventHandler;
-import org.waveprotocol.box.webclient.client.events.WaveCreationEvent;
-import org.waveprotocol.box.webclient.client.events.WaveCreationEventHandler;
-import org.waveprotocol.box.webclient.client.events.WaveOpenEvent;
-import org.waveprotocol.box.webclient.client.events.WaveOpenEventHandler;
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEventHandler;
 
 public class ClientEvents {
   private static final ClientEvents INSTANCE = GWT.create(ClientEvents.class);

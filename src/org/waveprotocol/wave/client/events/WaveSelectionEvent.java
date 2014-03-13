@@ -17,34 +17,28 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
-
+package org.waveprotocol.wave.client.events;
 import com.google.gwt.event.shared.GwtEvent;
 
-public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
-  public enum ConnectionStatus {
-    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED;
-  }
+import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.waveref.WaveRef;
 
-  public static final Type<NetworkStatusEventHandler> TYPE = new Type<NetworkStatusEventHandler>();
+public class WaveSelectionEvent extends GwtEvent<WaveSelectionEventHandler> {
+  public static final GwtEvent.Type<WaveSelectionEventHandler> TYPE = new GwtEvent.Type<WaveSelectionEventHandler>();
+  private final WaveRef waveRef;
 
-  private final ConnectionStatus status;
-
-  public NetworkStatusEvent(ConnectionStatus status) {
-    this.status = status;
+  public WaveSelectionEvent(WaveRef waveRef) {
+    this.waveRef = Preconditions.checkNotNull(waveRef,"null waveref");
   }
 
   @Override
-  public com.google.gwt.event.shared.GwtEvent.Type<NetworkStatusEventHandler> getAssociatedType() {
+  public Type<WaveSelectionEventHandler> getAssociatedType() {
     return TYPE;
   }
 
-  public ConnectionStatus getStatus() {
-    return status;
+  @Override
+  protected void dispatch(WaveSelectionEventHandler handler) {
+    handler.onSelection(waveRef);
   }
 
-  @Override
-  protected void dispatch(NetworkStatusEventHandler handler) {
-    handler.onNetworkStatus(this);
-  }
 }

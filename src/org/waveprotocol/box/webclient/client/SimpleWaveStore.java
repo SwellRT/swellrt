@@ -21,8 +21,8 @@ package org.waveprotocol.box.webclient.client;
 
 import com.google.common.base.Preconditions;
 
-import org.waveprotocol.box.webclient.search.WaveContext;
 import org.waveprotocol.box.webclient.search.WaveStore;
+import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;

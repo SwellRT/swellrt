@@ -17,28 +17,32 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
+
 import com.google.gwt.event.shared.GwtEvent;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import java.util.Set;
 
-import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.waveref.WaveRef;
+public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
+  public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
 
-public class WaveSelectionEvent extends GwtEvent<WaveSelectionEventHandler> {
-  public static final GwtEvent.Type<WaveSelectionEventHandler> TYPE = new GwtEvent.Type<WaveSelectionEventHandler>();
-  private final WaveRef waveRef;
+  private final Set<ParticipantId> participants;
 
-  public WaveSelectionEvent(WaveRef waveRef) {
-    this.waveRef = Preconditions.checkNotNull(waveRef,"null waveref");
+  public WaveCreationEvent() {
+    this.participants = null;
+  }
+
+  public WaveCreationEvent(Set<ParticipantId> participants) {
+    this.participants = participants;
   }
 
   @Override
-  public Type<WaveSelectionEventHandler> getAssociatedType() {
+  protected void dispatch(WaveCreationEventHandler handler) {
+    handler.onCreateRequest(this, participants);
+  }
+
+  @Override
+  public com.google.gwt.event.shared.GwtEvent.Type<WaveCreationEventHandler> getAssociatedType() {
     return TYPE;
   }
-
-  @Override
-  protected void dispatch(WaveSelectionEventHandler handler) {
-    handler.onSelection(waveRef);
-  }
-
 }

@@ -21,11 +21,10 @@ package org.waveprotocol.box.webclient.client;
 
 import com.google.gwt.user.client.Window;
 
-import org.waveprotocol.box.webclient.search.WaveContext;
 import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;
 import org.waveprotocol.wave.model.conversation.TitleHelper;
-import org.waveprotocol.wave.model.document.Document;
+import org.waveprotocol.wave.model.document.WaveContext;
 
 /**
  * Sets the browser window title to the wave title.

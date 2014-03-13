@@ -17,10 +17,15 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
 
 import com.google.gwt.event.shared.EventHandler;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import java.util.Set;
 
-public abstract class DebugMessageEventHandler implements EventHandler {
-  public abstract void onDebugMessage(DebugMessageEvent event);
+public abstract class WaveCreationEventHandler implements EventHandler {
+  /**
+   * Called when something wants to create a new wave.
+   */
+  public abstract void onCreateRequest(WaveCreationEvent event, Set<ParticipantId> participants);
 }

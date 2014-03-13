@@ -17,32 +17,18 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.doodad.attachment;
 
-import com.google.gwt.event.shared.GwtEvent;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import java.util.Set;
+public class AttachmentManagerProvider {
 
-public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
-  public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
+  private static SimpleAttachmentManager instance;
 
-  private final Set<ParticipantId> participants;
-
-  public WaveCreationEvent() {
-    this.participants = null;
+  public static SimpleAttachmentManager get() {
+    return instance;
   }
 
-  public WaveCreationEvent(Set<ParticipantId> participants) {
-    this.participants = participants;
+  public static void init(SimpleAttachmentManager manager) {
+    instance = manager;
   }
 
-  @Override
-  protected void dispatch(WaveCreationEventHandler handler) {
-    handler.onCreateRequest(this, participants);
-  }
-
-  @Override
-  public com.google.gwt.event.shared.GwtEvent.Type<WaveCreationEventHandler> getAssociatedType() {
-    return TYPE;
-  }
 }

@@ -29,8 +29,9 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import org.waveprotocol.box.webclient.client.events.DebugMessageEvent;
-import org.waveprotocol.box.webclient.client.events.DebugMessageEventHandler;
+import org.waveprotocol.wave.client.events.ClientEvents;
+import org.waveprotocol.wave.client.events.DebugMessageEvent;
+import org.waveprotocol.wave.client.events.DebugMessageEventHandler;
 
 import java.util.Date;
 

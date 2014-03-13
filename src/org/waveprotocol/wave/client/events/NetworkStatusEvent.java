@@ -17,46 +17,34 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-public class DebugMessageEvent extends GwtEvent<DebugMessageEventHandler> {
-  public enum Severity {
-    INFO, SEVERE;
+public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
+  public enum ConnectionStatus {
+    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED;
   }
 
-  public static final Type<DebugMessageEventHandler> TYPE = new Type<DebugMessageEventHandler>();
+  public static final Type<NetworkStatusEventHandler> TYPE = new Type<NetworkStatusEventHandler>();
 
-  public final Severity severity;
-  public final String message;
-  public final Throwable error;
+  private final ConnectionStatus status;
 
-  public DebugMessageEvent(Severity severity, String message, Throwable error) {
-    this.severity = severity;
-    this.message = message;
-    this.error = error;
+  public NetworkStatusEvent(ConnectionStatus status) {
+    this.status = status;
   }
 
   @Override
-  public com.google.gwt.event.shared.GwtEvent.Type<DebugMessageEventHandler> getAssociatedType() {
+  public com.google.gwt.event.shared.GwtEvent.Type<NetworkStatusEventHandler> getAssociatedType() {
     return TYPE;
   }
 
-  public Throwable getError() {
-    return error;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public Severity getSeverity() {
-    return severity;
+  public ConnectionStatus getStatus() {
+    return status;
   }
 
   @Override
-  protected void dispatch(DebugMessageEventHandler handler) {
-    handler.onDebugMessage(this);
+  protected void dispatch(NetworkStatusEventHandler handler) {
+    handler.onNetworkStatus(this);
   }
 }

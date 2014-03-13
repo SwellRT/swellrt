@@ -21,8 +21,8 @@ package org.waveprotocol.box.webclient.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import org.waveprotocol.box.webclient.client.i18n.SavedStateMessages;
 
+import org.waveprotocol.box.webclient.client.i18n.SavedStateMessages;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.scheduler.TimerService;

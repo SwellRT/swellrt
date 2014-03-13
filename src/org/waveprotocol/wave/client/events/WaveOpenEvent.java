@@ -17,12 +17,27 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
 
-import com.google.gwt.event.shared.EventHandler;
+import com.google.gwt.event.shared.GwtEvent;
 
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
-public abstract class WaveSelectionEventHandler implements EventHandler {
-  public abstract void onSelection(WaveRef id);
+public class WaveOpenEvent extends GwtEvent<WaveOpenEventHandler> {
+  public static final GwtEvent.Type<WaveOpenEventHandler> TYPE = new GwtEvent.Type<WaveOpenEventHandler>();
+  private final WaveRef id;
+
+  public WaveOpenEvent(WaveRef waveRef) {
+    this.id = waveRef;
+  }
+
+  @Override
+  public Type<WaveOpenEventHandler> getAssociatedType() {
+    return TYPE;
+  }
+
+  @Override
+  protected void dispatch(WaveOpenEventHandler handler) {
+    handler.onOpen(id);
+  }  
 }

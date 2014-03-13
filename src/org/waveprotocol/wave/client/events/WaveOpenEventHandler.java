@@ -17,38 +17,12 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.search;
+package org.waveprotocol.wave.client.events;
 
-import org.waveprotocol.wave.model.document.WaveContext;
-import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.wave.SourcesEvents;
+import com.google.gwt.event.shared.EventHandler;
 
-import java.util.Map;
+import org.waveprotocol.wave.model.waveref.WaveRef;
 
-/**
- * Reveals access to a group of open waves.
- *
- * @author hearnden@google.com (David Hearnden)
- */
-public interface WaveStore extends SourcesEvents<WaveStore.Listener> {
-
-  interface Listener {
-    void onOpened(WaveContext wave);
-    void onClosed(WaveContext wave);
-  }
-
-  /**
-   * Adds a wave to the store.
-   */
-  void add(WaveContext wave);
-
-  /**
-   * Removes a wave from the store.
-   */
-  void remove(WaveContext wave);
-
-  /**
-   * @return the collection of currently open waves.
-   */
-  Map<WaveId, WaveContext> getOpenWaves();
+public abstract class WaveOpenEventHandler implements EventHandler {
+  public abstract void onOpen(WaveRef id);
 }

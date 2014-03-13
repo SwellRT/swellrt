@@ -24,6 +24,7 @@ import org.waveprotocol.wave.client.state.BlipReadStateMonitor;
 import org.waveprotocol.wave.model.conversation.Conversation;
 import org.waveprotocol.wave.model.conversation.ConversationStructure;
 import org.waveprotocol.wave.model.conversation.TitleHelper;
+import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.CollectionUtils;

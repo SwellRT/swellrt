@@ -43,13 +43,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
-import org.waveprotocol.box.webclient.client.events.Log;
-import org.waveprotocol.box.webclient.client.events.NetworkStatusEvent;
-import org.waveprotocol.box.webclient.client.events.NetworkStatusEventHandler;
-import org.waveprotocol.box.webclient.client.events.WaveCreationEvent;
-import org.waveprotocol.box.webclient.client.events.WaveCreationEventHandler;
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEventHandler;
 import org.waveprotocol.box.webclient.client.i18n.WebClientMessages;
 import org.waveprotocol.box.webclient.profile.RemoteProfileManagerImpl;
 import org.waveprotocol.box.webclient.search.RemoteSearchService;
@@ -67,14 +60,24 @@ import org.waveprotocol.wave.client.common.safehtml.SafeHtml;
 import org.waveprotocol.wave.client.common.safehtml.SafeHtmlBuilder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.debug.logger.LogLevel;
+import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerImpl;
+import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerProvider;
+import org.waveprotocol.wave.client.events.ClientEvents;
+import org.waveprotocol.wave.client.events.Log;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent;
+import org.waveprotocol.wave.client.events.NetworkStatusEventHandler;
+import org.waveprotocol.wave.client.events.WaveCreationEvent;
+import org.waveprotocol.wave.client.events.WaveCreationEventHandler;
+import org.waveprotocol.wave.client.events.WaveSelectionEvent;
+import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
+import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
+import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
 import org.waveprotocol.wave.client.widget.common.ImplPanel;
 import org.waveprotocol.wave.client.widget.popup.CenterPopupPositioner;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeFactory;
 import org.waveprotocol.wave.client.widget.popup.PopupFactory;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
-import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
-import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -210,6 +213,7 @@ public class WebClient implements EntryPoint {
     // cleared.
     self.getElement().getStyle().clearPosition();
     splitPanel.setWidgetMinSize(searchPanel, 300);
+    AttachmentManagerProvider.init(AttachmentManagerImpl.getInstance());
 
     if (LogLevel.showDebug()) {
       logPanel.enable();

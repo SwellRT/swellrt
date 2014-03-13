@@ -33,7 +33,7 @@
 <inherits name="org.waveprotocol.wave.client.editor.content.paragraph.constants.Constants" />
 <inherits name="org.waveprotocol.wave.client.editor.selection.html.Html" />
 <inherits name="org.waveprotocol.wave.client.scheduler.Scheduler" />
-<inherits name="org.waveprotocol.wave.model.richtext.RichText" /> 
+<inherits name="org.waveprotocol.wave.model.richtext.RichText" />
 
  <source path="" includes="*"/>
  <source path="content" includes="*"/>
@@ -51,4 +51,17 @@
  <source path="sugg"/>
  <source path="util"/>
  <source path="webdriver"/>
+
+   <!-- Uncomment this when socket-io-java is replaced or patched with
+  https://github.com/vjrj/Socket.IO-Java/commit/f7010aee1f5cc5adea0aab3f27e48c37d1b10b5e
+  -->
+  <!-- This linker is required for superdev mode -->
+  <!-- <add-linker name="xsiframe" /> -->
+  <!-- <set-configuration-property name="devModeRedirectEnabled" value="true"/> -->
+  <!-- enable source maps -->
+  <!-- <set-property name="compiler.useSourceMaps" value="true" /> -->
+
+  <!-- collapse all properties to decrease the amount of time spend compiling -->
+  <collapse-all-properties />
+
 </module>

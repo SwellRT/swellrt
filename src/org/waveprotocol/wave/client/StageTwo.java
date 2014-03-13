@@ -34,6 +34,9 @@ import org.waveprotocol.wave.client.concurrencycontrol.LiveChannelBinder;
 import org.waveprotocol.wave.client.concurrencycontrol.MuxConnector;
 import org.waveprotocol.wave.client.concurrencycontrol.WaveletOperationalizer;
 import org.waveprotocol.wave.client.doodad.DoodadInstallers;
+import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerProvider;
+import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
+import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
@@ -84,9 +87,6 @@ import org.waveprotocol.wave.client.wavepanel.view.dom.full.DomRenderer;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactories;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactory;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.WavePanelResourceLoader;
-import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerImpl;
-import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
-import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
 import org.waveprotocol.wave.common.logging.LoggerBundle;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiplexer;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiplexerImpl;
@@ -687,7 +687,7 @@ public interface StageTwo {
           TitleAnnotationHandler.register(r);
           LinkAnnotationHandler.register(r, createLinkAttributeAugmenter());
           SelectionAnnotationHandler.register(r, getSessionId(), getProfileManager());
-          ImageThumbnail.register(r.getElementHandlerRegistry(), AttachmentManagerImpl.getInstance(),
+          ImageThumbnail.register(r.getElementHandlerRegistry(), AttachmentManagerProvider.get(),
               new ImageThumbnail.ThumbnailActionHandler() {
 
                 @Override

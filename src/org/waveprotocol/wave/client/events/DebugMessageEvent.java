@@ -17,27 +17,46 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.waveprotocol.wave.model.waveref.WaveRef;
+public class DebugMessageEvent extends GwtEvent<DebugMessageEventHandler> {
+  public enum Severity {
+    INFO, SEVERE;
+  }
 
-public class WaveOpenEvent extends GwtEvent<WaveOpenEventHandler> {
-  public static final GwtEvent.Type<WaveOpenEventHandler> TYPE = new GwtEvent.Type<WaveOpenEventHandler>();
-  private final WaveRef id;
+  public static final Type<DebugMessageEventHandler> TYPE = new Type<DebugMessageEventHandler>();
 
-  public WaveOpenEvent(WaveRef waveRef) {
-    this.id = waveRef;
+  public final Severity severity;
+  public final String message;
+  public final Throwable error;
+
+  public DebugMessageEvent(Severity severity, String message, Throwable error) {
+    this.severity = severity;
+    this.message = message;
+    this.error = error;
   }
 
   @Override
-  public Type<WaveOpenEventHandler> getAssociatedType() {
+  public com.google.gwt.event.shared.GwtEvent.Type<DebugMessageEventHandler> getAssociatedType() {
     return TYPE;
   }
 
+  public Throwable getError() {
+    return error;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public Severity getSeverity() {
+    return severity;
+  }
+
   @Override
-  protected void dispatch(WaveOpenEventHandler handler) {
-    handler.onOpen(id);
-  }  
+  protected void dispatch(DebugMessageEventHandler handler) {
+    handler.onDebugMessage(this);
+  }
 }

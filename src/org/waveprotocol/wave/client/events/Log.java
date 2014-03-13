@@ -17,10 +17,9 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
 
-import org.waveprotocol.box.webclient.client.ClientEvents;
-import org.waveprotocol.box.webclient.client.events.DebugMessageEvent.Severity;
+import org.waveprotocol.wave.client.events.DebugMessageEvent.Severity;
 
 /**
  * Created by IntelliJ IDEA. User: arb Date: May 13, 2010 Time: 9:35:04 PM To

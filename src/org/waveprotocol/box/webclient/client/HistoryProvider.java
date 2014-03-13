@@ -19,6 +19,8 @@
 
 package org.waveprotocol.box.webclient.client;
 
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+
 /**
  * The Interface HistoryProvider gives access to the browser history stack in
  * order to access to the wave tokens.

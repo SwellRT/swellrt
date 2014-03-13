@@ -17,12 +17,10 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.events;
+package org.waveprotocol.wave.client.events;
 
 import com.google.gwt.event.shared.EventHandler;
 
-import org.waveprotocol.wave.model.waveref.WaveRef;
-
-public abstract class WaveOpenEventHandler implements EventHandler {
-  public abstract void onOpen(WaveRef id);
+public abstract class NetworkStatusEventHandler implements EventHandler {
+  public abstract void onNetworkStatus(NetworkStatusEvent event);
 }

@@ -19,11 +19,10 @@
 
 package org.waveprotocol.wave.model.conversation;
 
-//TODO (alown): should the WaveContext live under model instead?
-import org.waveprotocol.box.webclient.search.WaveContext;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.MutableDocument;
 import org.waveprotocol.wave.model.document.ReadableWDocument;
+import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.document.operation.Attributes;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.impl.AnnotationBoundaryMapImpl;

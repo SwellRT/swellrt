@@ -23,11 +23,12 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 
-import org.waveprotocol.box.webclient.client.events.WaveSelectionEvent;
+import org.waveprotocol.wave.client.events.ClientEvents;
+import org.waveprotocol.wave.client.events.Log;
+import org.waveprotocol.wave.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
-import org.waveprotocol.box.webclient.client.events.Log;
 
 /**
  * The listener interface for receiving historyChange events from browser history.

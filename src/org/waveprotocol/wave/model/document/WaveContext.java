@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.search;
+package org.waveprotocol.wave.model.document;
 
 import org.waveprotocol.wave.client.state.BlipReadStateMonitor;
 import org.waveprotocol.wave.model.conversation.ObservableConversationView;

@@ -38,6 +38,9 @@ import org.waveprotocol.wave.client.Stages;
 import org.waveprotocol.wave.client.common.safehtml.SafeHtmlBuilder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.concurrencycontrol.MuxConnector;
+import org.waveprotocol.wave.client.doodad.DoodadInstallers;
+import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerProvider;
+import org.waveprotocol.wave.client.doodad.attachment.testing.FakeAttachmentsManager;
 import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.util.NullTypedSource;
 import org.waveprotocol.wave.client.util.OverridingTypedSource;
@@ -87,6 +90,7 @@ public class UndercurrentHarness implements EntryPoint {
    */
   @Override
   public void onModuleLoad() {
+    AttachmentManagerProvider.init(new FakeAttachmentsManager());
     if (loaded) {
       return;
     }
