@@ -1035,6 +1035,9 @@
       <url url="http://central.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
       <url url="http://central.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" />
       <url url="http://repo1.maven.org/maven2/org/gnu/inet/libidn/1.15/libidn-1.15.jar" />
+      <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar" />
+      <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar" />
+      <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-server/1.0-SNAPSHOT/gwt-initials-avatars-server-1.0-20140324.102825-10.jar" />
     </get>
   </target>
 

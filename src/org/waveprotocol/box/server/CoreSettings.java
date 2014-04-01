@@ -72,6 +72,7 @@ public class CoreSettings {
   public static final String INDEX_DIRECTORY = "index_directory";
   public static final String ANALYTICS_ACCOUNT = "analytics_account";
   public static final String THUMBNAIL_PATTERNS_DIRECTORY = "thumbnail_patterns_directory";
+  public static final String PROFILE_FETCHER_TYPE = "profile_fetcher_type";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -259,4 +260,8 @@ public class CoreSettings {
       description = "Thumbnail patterns directory",
       defaultValue = "")
   private static String thumbnailPatternsDirectory;
+
+  @Setting(name = PROFILE_FETCHER_TYPE,
+      description = "The wave profile fetcher used", defaultValue = "gravatar")
+  private static String profileFetcherType;
 }

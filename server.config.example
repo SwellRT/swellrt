@@ -199,3 +199,7 @@ analytics_account = @ANALYTICS_ACCOUNT@
 # Icon must be in PNG format, and named as MIME type with replacing '/' to '_'.
 # For example thumbnail file for ZIP format (MIME type application/zip) must be named application_zip.
 thumbnail_patterns_directory = @THUMBNAIL_PATTERNS_DIRECTORY@
+
+# Currently supported profile fetcher types: gravatar, initials.
+# Default value: gravatar.
+profile_fetcher_type = @PROFILE_FETCHER_TYPE@

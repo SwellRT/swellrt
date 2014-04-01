@@ -42,8 +42,6 @@ import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.robots.active.ActiveApiOperationServiceRegistry;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOperationServiceRegistry;
-import org.waveprotocol.box.server.robots.operations.FetchProfilesService.ProfilesFetcher;
-import org.waveprotocol.box.server.robots.operations.GravatarProfilesFetcher;
 import org.waveprotocol.box.server.robots.passive.RobotConnector;
 
 import java.util.concurrent.Executor;
@@ -77,7 +75,6 @@ public class RobotApiModule extends AbstractModule {
         ACCESS_TOKEN_PATH);
     bind(String.class).annotatedWith(Names.named("all_tokens_path")).toInstance(
         ALL_TOKENS_PATH);
-    bind(ProfilesFetcher.class).to(GravatarProfilesFetcher.class).in(Singleton.class);
   }
 
   @Provides

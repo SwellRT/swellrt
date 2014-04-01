@@ -83,5 +83,8 @@
 	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.5.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/validation-api-1.1.0.Final-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/validation-api-1.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-server-1.0-20140324.102825-10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

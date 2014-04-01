@@ -56,6 +56,7 @@
   <property name="index_directory" value="_indexes" />
   <property name="thumbnail_patterns_directory" value="thumbnail_patterns" />
   <property name="analytics_account" value="" />
+  <property name="profile_fetcher_type" value="gravatar" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -136,6 +137,7 @@
           <token key="INDEX_DIRECTORY" value="${index_directory}" />
           <token key="ANALYTICS_ACCOUNT" value="${analytics_account}" />
           <token key="THUMBNAIL_PATTERNS_DIRECTORY" value="${thumbnail_patterns_directory}" />
+          <token key="PROFILE_FETCHER_TYPE" value="${profile_fetcher_type}" />
         </replacetokens>
       </filterchain>
     </copy>
