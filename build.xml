@@ -712,6 +712,7 @@
         <include name="org/waveprotocol/**/*" />
         <include name="org/xmlpull/**/*" />
         <include name="org/xmpp/**/*" />
+        <include name="cc/kune/initials/**/*" />
         <exclude name="org/waveprotocol/box/webclient/**/*"/>
         <exclude name="org/waveprotocol/box/consoleclient/**/*"/>
         <exclude name="org/waveprotocol/box/expimp/**/*"/>
