@@ -265,7 +265,7 @@ public class ServerMain {
     int port =
         injector.getInstance(Key.get(Integer.class, Names.named(CoreSettings.GADGET_SERVER_PORT)));
     Map<String, String> initParams =
-        Collections.singletonMap("HostHeader", gadgetHostName + ":" + port);
+        Collections.singletonMap("hostHeader", gadgetHostName + ":" + port);
     server.addServlet("/gadgets/*", GadgetProxyServlet.class, initParams);
 
     server.addServlet("/", WaveClientServlet.class);
