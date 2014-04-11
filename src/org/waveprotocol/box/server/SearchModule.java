@@ -37,6 +37,8 @@ import org.waveprotocol.box.server.waveserver.PerUserWaveViewHandler;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewProvider;
 import org.waveprotocol.box.server.waveserver.SearchProvider;
 import org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl;
+import org.waveprotocol.box.server.waveserver.SolrSearchProviderImpl;
+import org.waveprotocol.box.server.waveserver.SolrWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.WaveIndexer;
 
 /**
@@ -56,8 +58,8 @@ public class SearchModule extends AbstractModule {
 
   @Override
   public void configure() {
-    bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
     if ("lucene".equals(searchType)) {
+      bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
       bind(PerUserWaveViewProvider.class).to(LucenePerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(LucenePerUserWaveViewHandlerImpl.class).in(
@@ -70,7 +72,16 @@ public class SearchModule extends AbstractModule {
       } else {
         bind(WaveIndexer.class).to(NoOpWaveIndexerImpl.class);
       }
+    } else if ("solr".equals(searchType)) {
+      bind(SearchProvider.class).to(SolrSearchProviderImpl.class).in(Singleton.class);
+      /*-
+       * (Frank R.) binds to class with dummy methods just because it's required by
+       * org.waveprotocol.box.server.ServerMain.initializeSearch(Injector, WaveBus)
+       */
+      bind(PerUserWaveViewBus.Listener.class).to(SolrWaveIndexerImpl.class).in(Singleton.class);
+      bind(WaveIndexer.class).to(SolrWaveIndexerImpl.class).in(Singleton.class);
     } else if ("memory".equals(searchType)) {
+      bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
       bind(PerUserWaveViewProvider.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(

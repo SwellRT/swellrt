@@ -64,8 +64,7 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
   }
 
   @Override
-  public SearchResult search(final ParticipantId user, String query, int startAt,
-      int numResults) {
+  public SearchResult search(final ParticipantId user, String query, int startAt, int numResults) {
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
         + (startAt + numResults - 1) + "]");
     Map<TokenQueryType, Set<String>> queryParams = null;
@@ -133,9 +132,9 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
     return currentUserWavesView;
   }
 
-  private Function<ReadableWaveletData, Boolean> createFilterWaveletsFunction(final ParticipantId user,
-      final boolean isAllQuery, final List<ParticipantId> withParticipantIds,
-      final List<ParticipantId> creatorParticipantIds) {
+  private Function<ReadableWaveletData, Boolean> createFilterWaveletsFunction(
+      final ParticipantId user, final boolean isAllQuery,
+      final List<ParticipantId> withParticipantIds, final List<ParticipantId> creatorParticipantIds) {
     // A function to be applied by the WaveletContainer.
     Function<ReadableWaveletData, Boolean> matchesFunction =
         new Function<ReadableWaveletData, Boolean>() {
@@ -143,8 +142,8 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
           @Override
           public Boolean apply(ReadableWaveletData wavelet) {
             try {
-              return isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId, withParticipantIds,
-                  creatorParticipantIds, isAllQuery);
+              return isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId,
+                  withParticipantIds, creatorParticipantIds, isAllQuery);
             } catch (WaveletStateException e) {
               LOG.warning(
                   "Failed to access wavelet "

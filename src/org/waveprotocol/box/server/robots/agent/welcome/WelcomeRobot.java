@@ -56,7 +56,7 @@ import java.util.logging.Logger;
 public class WelcomeRobot extends AbstractBaseRobotAgent {
 
 
-  private static final Logger LOG = Logger.getLogger(PasswordRobot.class.getName());
+  private static final Logger LOG = Logger.getLogger(WelcomeRobot.class.getName());
   public static final String ROBOT_URI = AGENT_PREFIX_URI + "/welcome";
 
   /** The id of the wave that serves as a template for the welcome wave. */
