@@ -201,25 +201,7 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
             WaveletId waveletId =
                 WaveletId.deserialise(docJson.getAsJsonPrimitive(WAVELET_ID).getAsString());
             currentUserWavesView.put(waveId, waveletId);
-
-            /*-
-             * XXX (Frank R.) (experimental and disabled) reduce round trips to solr
-             *
-             * the result list will be filtered. so we need all results
-             */
-            // if (currentUserWavesView.size() >= numResults) {
-            // break;
-            // }
           }
-
-          /*-
-           * XXX (Frank R.) (experimental and disabled) reduce round trips to solr
-           *
-           * the result list will be filtered. so we need all results
-           */
-          // if (currentUserWavesView.size() >= numResults) {
-          // break;
-          // }
 
           /*
            * there won't be any more results - stop querying next page of

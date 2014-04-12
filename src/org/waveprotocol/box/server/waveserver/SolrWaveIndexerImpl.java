@@ -232,8 +232,8 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
   private void updateIndex(ReadableWaveletData wavelet) throws IndexException {
 
     Preconditions.checkNotNull(wavelet);
-
-    if (!IdUtil.isConversationRootWaveletId(wavelet.getWaveletId())) {
+    boolean isUserDataWavelet = IdUtil.isUserDataWavelet(wavelet.getWaveletId());
+    if (!(IdUtil.isConversationRootWaveletId(wavelet.getWaveletId()) || isUserDataWavelet)) {
       return;
     }
 
@@ -247,53 +247,14 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
       String modified = Long.toString(wavelet.getLastModifiedTime());
       String creator = wavelet.getCreator().getAddress();
 
-      /*
-       * (regression alert) gets wave title - too much overhead for updating
-       * index. on rendering search results, solr-bot builds link texts with
-       * WaveDigester
-       */
-      // String title =
-      // getTitle(wavelet.getWaveId(), wavelet.getWaveletId(), waveMap,
-      // conversationUtil);
-
       for (String docName : wavelet.getDocumentIds()) {
         ReadableBlipData document = wavelet.getDocument(docName);
 
-        /*
-         * skips non-blip documents
-         */
-        if (!IdUtil.isBlipId(docName)) {
+        if (!(IdUtil.isBlipId(docName) || isUserDataWavelet)) {
           continue;
         }
 
         String text = readText(document);
-
-
-        /*
-         * (regression alert) it hangs at
-         * com.google.common.collect.Iterables.cycle(T...)
-         */
-        // String text =
-        // Snippets
-        // .collateTextForOps(Iterables.cycle((DocOp)
-        // document.getContent().asOperation()));
-
-        /*
-         * (regression alert) cannot reuse Snippets because it trims the
-         * content.
-         */
-        // Iterable<DocOp> docs = Arrays.asList((DocOp)
-        // document.getContent().asOperation());
-        // String text = Snippets.collateTextForOps(docs);
-
-        /*-
-         * XXX (Frank R.) (experimental) skips invisible blips
-         * a newly created blip starts with (and contains only)
-         * a new line character, and is not treated as invisible
-         */
-        if (text.length() == 0) {
-          continue;
-        }
 
         JsonArray participantsJson = new JsonArray();
         for (ParticipantId participant : wavelet.getParticipants()) {
@@ -301,9 +262,6 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
           participantsJson.add(new JsonPrimitive(participantAddress));
         }
 
-        /*
-         * id will be something like waveId + "/~/conv+root/" + docName
-         */
         String id =
             JavaWaverefEncoder.encodeToUriPathSegment(WaveRef.of(wavelet.getWaveId(),
                 wavelet.getWaveletId(), docName));
