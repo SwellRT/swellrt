@@ -107,8 +107,8 @@ public class WaveDigester {
         root = waveletData;
       } else if (IdUtil.isConversationalId(waveletId)) {
         other = waveletData;
-      } else if (IdUtil.isUserDataWavelet(waveletId)) {
-        // assume this is the user data wavelet for the right user.
+      } else if (IdUtil.isUserDataWavelet(waveletId)
+          && waveletData.getCreator().equals(participant)) {
         udw = waveletData;
       }
     }
@@ -148,8 +148,8 @@ public class WaveDigester {
       WaveletData rawWaveletData) {
     ObservableConversation rootConversation = conversations.getRoot();
     ObservableConversationBlip firstBlip = null;
-    if (rootConversation != null && rootConversation.getRootThread() != null
-        && rootConversation.getRootThread().getFirstBlip() != null) {
+    if ((rootConversation != null) && (rootConversation.getRootThread() != null)
+        && (rootConversation.getRootThread().getFirstBlip() != null)) {
       firstBlip = rootConversation.getRootThread().getFirstBlip();
     }
     String title;
@@ -176,13 +176,15 @@ public class WaveDigester {
     }
     int unreadCount = 0;
     int blipCount = 0;
+    long lastModified = -1;
     for (ConversationBlip blip : BlipIterators.breadthFirst(rootConversation)) {
       if (supplement.isUnread(blip)) {
         unreadCount++;
       }
+      lastModified = Math.max(blip.getLastModifiedTime(), lastModified);
       blipCount++;
     }
-    return new Digest(title, snippet, waveId, participants, rawWaveletData.getLastModifiedTime(),
+    return new Digest(title, snippet, waveId, participants, lastModified,
         rawWaveletData.getCreationTime(), unreadCount, blipCount);
   }
 
@@ -245,6 +247,6 @@ public class WaveDigester {
     PrimitiveSupplement udwState =
         udw != null ? WaveletBasedSupplement.create(OpBasedWavelet.createReadOnly(udw))
             : new PrimitiveSupplementImpl();
-    return SupplementedWaveImpl.create(udwState, conversations, viewer, DefaultFollow.ALWAYS);
+        return SupplementedWaveImpl.create(udwState, conversations, viewer, DefaultFollow.ALWAYS);
   }
 }

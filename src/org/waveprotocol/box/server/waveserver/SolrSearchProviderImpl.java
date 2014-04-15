@@ -20,7 +20,8 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -37,6 +38,7 @@ import org.apache.http.HttpStatus;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.model.wave.data.WaveViewData;
@@ -44,11 +46,9 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -57,7 +57,7 @@ import java.util.regex.Pattern;
  *
  * @author Frank R. <renfeng.cn@gmail.com>
  */
-public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements SearchProvider {
+public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
 
   private static final Log LOG = Log.get(SolrSearchProviderImpl.class);
 
@@ -93,7 +93,7 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
       + " AND " + LMT + ":[* TO *]" //
       + " AND " + WITH + ":[* TO *]" //
       + " AND " + WITH_FUZZY + ":[* TO *]" //
-      + " AND " + CREATOR + ":[* TO *]" //
+      + " AND " + CREATOR + ":[* TO *]"
       /* + " AND " + TEXT + ":[* TO *]" */;
 
   /*-
@@ -116,16 +116,6 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
   private static final String FILTER_QUERY_PREFIX = "{!lucene q.op=AND df=" + TEXT + "}" //
       + WITH + ":";
 
-
-  public static Function<ReadableWaveletData, Boolean> matchesFunction =
-      new Function<ReadableWaveletData, Boolean>() {
-
-        @Override
-        public Boolean apply(ReadableWaveletData wavelet) {
-          return true;
-        }
-      };
-
   public static String buildUserQuery(String query) {
     return query.replaceAll(WORD_START + TokenQueryType.IN.getToken() + ":", IN + ":")
         .replaceAll(WORD_START + TokenQueryType.WITH.getToken() + ":", WITH_FUZZY + ":")
@@ -135,13 +125,13 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
   @Inject
   public SolrSearchProviderImpl(WaveDigester digester, WaveMap waveMap,
       @Named(CoreSettings.WAVE_SERVER_DOMAIN) String waveDomain) {
-    super(waveDomain, digester, waveMap, null);
+    super(waveDomain, digester, waveMap);
   }
 
   @Override
   public SearchResult search(final ParticipantId user, String query, int startAt, int numResults) {
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
-        + (startAt + numResults - 1) + "]");
+        + ((startAt + numResults) - 1) + "]");
 
     /*-
      * see
@@ -151,7 +141,7 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
     // added.
     final boolean isAllQuery = isAllQuery(query);
 
-    Multimap<WaveId, WaveletId> currentUserWavesView = HashMultimap.create();
+    Multimap<WaveId, WaveletId> currentUserWavesView = LinkedHashMultimap.create();
 
     if (numResults > 0) {
 
@@ -168,7 +158,7 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
       try {
         while (true) {
           getMethod.setURI(new URI(SOLR_BASE_URL + "/select?wt=json" + "&start=" + start + "&rows="
-              + rows + "&q=" + Q + "&fq=" + fq, false));
+              + rows + "&sort=" + LMT + "+desc" + "&q=" + Q + "&fq=" + fq, false));
 
           HttpClient httpClient = new HttpClient();
           int statusCode = httpClient.executeMethod(getMethod);
@@ -179,7 +169,7 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
 
           JsonObject json =
               new JsonParser().parse(new InputStreamReader(getMethod.getResponseBodyAsStream()))
-                  .getAsJsonObject();
+              .getAsJsonObject();
           JsonObject responseJson = json.getAsJsonObject("response");
           JsonArray docsJson = responseJson.getAsJsonArray("docs");
           if (docsJson.size() == 0) {
@@ -190,23 +180,12 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
           while (docJsonIterator.hasNext()) {
             JsonObject docJson = docJsonIterator.next().getAsJsonObject();
 
-            /*
-             * TODO (Frank R.) c.f.
-             * org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl
-             * .isWaveletMatchesCriteria(ReadableWaveletData, ParticipantId,
-             * ParticipantId, List<ParticipantId>, List<ParticipantId>, boolean)
-             */
-
             WaveId waveId = WaveId.deserialise(docJson.getAsJsonPrimitive(WAVE_ID).getAsString());
             WaveletId waveletId =
                 WaveletId.deserialise(docJson.getAsJsonPrimitive(WAVELET_ID).getAsString());
             currentUserWavesView.put(waveId, waveletId);
           }
 
-          /*
-           * there won't be any more results - stop querying next page of
-           * results
-           */
           if (docsJson.size() < rows) {
             break;
           }
@@ -222,7 +201,23 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
       }
     }
 
-    Map<WaveId, WaveViewData> results =
+    Function<ReadableWaveletData, Boolean> matchesFunction =
+        new Function<ReadableWaveletData, Boolean>() {
+
+      @Override
+      public Boolean apply(ReadableWaveletData wavelet) {
+        try {
+          return isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId, isAllQuery);
+        } catch (WaveletStateException e) {
+          LOG.warning(
+              "Failed to access wavelet "
+                  + WaveletName.of(wavelet.getWaveId(), wavelet.getWaveletId()), e);
+          return false;
+        }
+      }
+    };
+
+    LinkedHashMap<WaveId, WaveViewData> results =
         filterWavesViewBySearchCriteria(matchesFunction, currentUserWavesView);
     if (LOG.isFineLoggable()) {
       for (Map.Entry<WaveId, WaveViewData> e : results.entrySet()) {
@@ -230,7 +225,8 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
       }
     }
 
-    Collection<WaveViewData> searchResult = computeSearchResult(user, startAt, numResults, results);
+    Collection<WaveViewData> searchResult =
+        computeSearchResult(user, startAt, numResults, Lists.newArrayList(results.values()));
     LOG.info("Search response to '" + query + "': " + searchResult.size() + " results, user: "
         + user);
     return digester.generateSearchResult(user, query, searchResult);
@@ -256,25 +252,5 @@ public class SolrSearchProviderImpl extends SimpleSearchProviderImpl implements 
     }
 
     return fq;
-  }
-
-  /*-
-   * copied with modification from
-   * org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl.computeSearchResult(ParticipantId, int, int, Map<TokenQueryType, Set<String>>, Map<WaveId, WaveViewData>)
-   *
-   * removed queryParams
-   */
-  private Collection<WaveViewData> computeSearchResult(final ParticipantId user, int startAt,
-      int numResults, Map<WaveId, WaveViewData> results) {
-    List<WaveViewData> searchResultslist = null;
-    int searchResultSize = results.values().size();
-    // Check if we have enough results to return.
-    if (searchResultSize < startAt) {
-      searchResultslist = Collections.emptyList();
-    } else {
-      int endAt = Math.min(startAt + numResults, searchResultSize);
-      searchResultslist = new ArrayList<WaveViewData>(results.values()).subList(startAt, endAt);
-    }
-    return searchResultslist;
   }
 }

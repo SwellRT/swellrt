@@ -24,11 +24,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
+import org.waveprotocol.box.server.util.WaveletDataUtil;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
+import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.model.wave.data.WaveViewData;
 import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
@@ -36,8 +39,8 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Base implementation of search provider.
@@ -57,7 +60,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     this.waveMap = waveMap;
   }
 
-  protected Collection<WaveViewData> computeSearchResult(final ParticipantId user, int startAt,
+  protected List<WaveViewData> computeSearchResult(final ParticipantId user, int startAt,
       int numResults, List<WaveViewData> results) {
     int searchResultSize = results.size();
     // Check if we have enough results to return.
@@ -69,17 +72,25 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     }
   }
 
-  protected Map<WaveId, WaveViewData> filterWavesViewBySearchCriteria(
+  protected LinkedHashMap<WaveId, WaveViewData> filterWavesViewBySearchCriteria(
       Function<ReadableWaveletData, Boolean> matchesFunction,
       Multimap<WaveId, WaveletId> currentUserWavesView) {
     // Must use a map with stable ordering, since indices are meaningful.
-    Map<WaveId, WaveViewData> results = Maps.newLinkedHashMap();
+    LinkedHashMap<WaveId, WaveViewData> results = Maps.newLinkedHashMap();
 
     // Loop over the user waves view.
     for (WaveId waveId : currentUserWavesView.keySet()) {
       Collection<WaveletId> waveletIds = currentUserWavesView.get(waveId);
       WaveViewData view = buildWaveViewData(waveId, waveletIds, matchesFunction, waveMap);
-      if (view != null) {
+      Iterable<? extends ObservableWaveletData> wavelets = view.getWavelets();
+      boolean hasConversation = false;
+      for (ObservableWaveletData waveletData : wavelets) {
+        if (IdUtil.isConversationalId(waveletData.getWaveletId())) {
+          hasConversation = true;
+          break;
+        }
+      }
+      if ((view != null) && hasConversation) {
         results.put(waveId, view);
       }
     }
@@ -127,7 +138,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
       // look at the user's wave view and determine if the view matches the
       // query.
       try {
-        if (waveletContainer == null || !waveletContainer.applyFunction(matchesFunction)) {
+        if ((waveletContainer == null) || !waveletContainer.applyFunction(matchesFunction)) {
           LOG.fine("----doesn't match: " + waveletContainer);
           continue;
         }
@@ -141,5 +152,37 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
       }
     }
     return view;
+  }
+
+  /**
+   * Verifies whether the wavelet matches the filter criteria.
+   *
+   * @param wavelet the wavelet.
+   * @param user the logged in user.
+   * @param sharedDomainParticipantId the shared domain participant id.
+   * @param isAllQuery true if the search results should include shared for this
+   *        domain waves.
+   */
+  protected boolean isWaveletMatchesCriteria(ReadableWaveletData wavelet, ParticipantId user,
+      ParticipantId sharedDomainParticipantId, boolean isAllQuery)
+          throws WaveletStateException {
+    // If it is user data wavelet for the user - return true.
+    if (IdUtil.isUserDataWavelet(wavelet.getWaveletId()) && wavelet.getCreator().equals(user)) {
+      return true;
+    }
+    // The wavelet should have logged in user as participant for 'in:inbox'
+    // query.
+    if (!isAllQuery && !wavelet.getParticipants().contains(user)) {
+      return false;
+    }
+    // Or if it is an 'all' query - then either logged in user or shared domain
+    // participant should be present in the wave.
+    if (isAllQuery
+        && !WaveletDataUtil.checkAccessPermission(wavelet, user, sharedDomainParticipantId)) {
+      return false;
+    }
+    // If not returned 'false' above - then logged in user is either
+    // explicit or implicit participant and therefore has access permission.
+    return true;
   }
 }
