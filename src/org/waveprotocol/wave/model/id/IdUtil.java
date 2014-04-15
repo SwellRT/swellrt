@@ -19,6 +19,8 @@
 
 package org.waveprotocol.wave.model.id;
 
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
 
 /**
  * This class holds useful utilities for ids.
@@ -124,6 +126,16 @@ public class IdUtil implements IdConstants {
   }
 
   /**
+   * Builds user data wavelet id.
+   */
+  public static WaveletId buildUserDataWaveletId(ParticipantId participant) {
+    WaveletId udwId =
+        WaveletId.of(participant.getDomain(),
+            IdUtil.join(IdConstants.USER_DATA_WAVELET_PREFIX, participant.getAddress()));
+    return udwId;
+  }
+
+  /**
    * Gets the address that a user data wavelet ID is for.
    *
    * @return UDW address, or {@code null} if the ID is not a user data wavelet
@@ -131,7 +143,7 @@ public class IdUtil implements IdConstants {
    */
   public static final String getUserDataWaveletAddress(WaveletId waveletId) {
     String[] parts = split(waveletId.getId());
-    if (parts.length != 2 || !parts[0].equals(USER_DATA_WAVELET_PREFIX)) {
+    if ((parts.length != 2) || !parts[0].equals(USER_DATA_WAVELET_PREFIX)) {
       return null;
     }
     return parts[1];

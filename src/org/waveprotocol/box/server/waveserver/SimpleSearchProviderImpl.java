@@ -20,9 +20,8 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.wave.api.SearchResult;
@@ -94,7 +93,8 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
       return digester.generateSearchResult(user, query, null);
     }
 
-    Multimap<WaveId, WaveletId> currentUserWavesView =  createWavesViewToFilter(user, isAllQuery);
+    LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView =
+        createWavesViewToFilter(user, isAllQuery);
     Function<ReadableWaveletData, Boolean> filterWaveletsFunction =
         createFilterWaveletsFunction(user, isAllQuery, withParticipantIds, creatorParticipantIds);
 
@@ -110,10 +110,10 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
     return digester.generateSearchResult(user, query, searchResult);
   }
 
-  private Multimap<WaveId, WaveletId> createWavesViewToFilter(final ParticipantId user,
+  private LinkedHashMultimap<WaveId, WaveletId> createWavesViewToFilter(final ParticipantId user,
       final boolean isAllQuery) {
-    Multimap<WaveId, WaveletId> currentUserWavesView;
-    currentUserWavesView = HashMultimap.create();
+    LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView;
+    currentUserWavesView = LinkedHashMultimap.create();
     currentUserWavesView.putAll(waveViewProvider.retrievePerUserWaveView(user));
     if (isAllQuery) {
       // If it is the "all" query - we need to include also waves view of the

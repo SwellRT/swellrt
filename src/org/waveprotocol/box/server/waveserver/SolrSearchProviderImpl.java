@@ -22,7 +22,6 @@ package org.waveprotocol.box.server.waveserver;
 import com.google.common.base.Function;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,6 +35,8 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.HttpStatus;
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.wave.model.id.IdConstants;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -50,6 +51,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -141,7 +143,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     // added.
     final boolean isAllQuery = isAllQuery(query);
 
-    Multimap<WaveId, WaveletId> currentUserWavesView = LinkedHashMultimap.create();
+    LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView = LinkedHashMultimap.create();
 
     if (numResults > 0) {
 
@@ -201,6 +203,8 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
       }
     }
 
+    ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
+
     Function<ReadableWaveletData, Boolean> matchesFunction =
         new Function<ReadableWaveletData, Boolean>() {
 
@@ -230,6 +234,18 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     LOG.info("Search response to '" + query + "': " + searchResult.size() + " results, user: "
         + user);
     return digester.generateSearchResult(user, query, searchResult);
+  }
+
+  private void ensureWavesHaveUserDataWavelet(
+      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView, ParticipantId user) {
+    WaveletId udw =
+        WaveletId.of(user.getDomain(),
+            IdUtil.join(IdConstants.USER_DATA_WAVELET_PREFIX, user.getAddress()));
+    Set<WaveId> waveIds = currentUserWavesView.keySet();
+    for (WaveId waveId : waveIds) {
+      Set<WaveletId> waveletIds = currentUserWavesView.get(waveId);
+      waveletIds.add(udw);
+    }
   }
 
   public static boolean isAllQuery(String query) {

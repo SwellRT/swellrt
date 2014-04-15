@@ -20,9 +20,9 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 import org.waveprotocol.box.server.util.WaveletDataUtil;
 import org.waveprotocol.wave.model.id.IdUtil;
@@ -37,10 +37,10 @@ import org.waveprotocol.wave.model.wave.data.WaveViewData;
 import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Base implementation of search provider.
@@ -72,15 +72,17 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     }
   }
 
+  // TODO (yurize) : Refactor this method. It does two things: filtering and
+  // building waves.
   protected LinkedHashMap<WaveId, WaveViewData> filterWavesViewBySearchCriteria(
       Function<ReadableWaveletData, Boolean> matchesFunction,
-      Multimap<WaveId, WaveletId> currentUserWavesView) {
+      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView) {
     // Must use a map with stable ordering, since indices are meaningful.
     LinkedHashMap<WaveId, WaveViewData> results = Maps.newLinkedHashMap();
 
     // Loop over the user waves view.
     for (WaveId waveId : currentUserWavesView.keySet()) {
-      Collection<WaveletId> waveletIds = currentUserWavesView.get(waveId);
+      Set<WaveletId> waveletIds = currentUserWavesView.get(waveId);
       WaveViewData view = buildWaveViewData(waveId, waveletIds, matchesFunction, waveMap);
       Iterable<? extends ObservableWaveletData> wavelets = view.getWavelets();
       boolean hasConversation = false;
@@ -97,7 +99,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     return results;
   }
 
-  public static WaveViewData buildWaveViewData(WaveId waveId, Collection<WaveletId> waveletIds,
+  public static WaveViewData buildWaveViewData(WaveId waveId, Set<WaveletId> waveletIds,
       Function<ReadableWaveletData, Boolean> matchesFunction, WaveMap waveMap) {
 
     WaveViewData view = null; // Copy of the wave built up for search hits.

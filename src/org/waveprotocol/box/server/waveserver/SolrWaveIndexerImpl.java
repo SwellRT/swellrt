@@ -76,7 +76,7 @@ import java.util.logging.Level;
  */
 @Singleton
 public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.Subscriber,
-    PerUserWaveViewBus.Listener {
+PerUserWaveViewBus.Listener {
 
   private static final Log LOG = Log.get(SolrWaveIndexerImpl.class);
 
@@ -232,8 +232,7 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
   private void updateIndex(ReadableWaveletData wavelet) throws IndexException {
 
     Preconditions.checkNotNull(wavelet);
-    boolean isUserDataWavelet = IdUtil.isUserDataWavelet(wavelet.getWaveletId());
-    if (!(IdUtil.isConversationRootWaveletId(wavelet.getWaveletId()) || isUserDataWavelet)) {
+    if (!IdUtil.isConversationalId(wavelet.getWaveletId())) {
       return;
     }
 
@@ -250,7 +249,7 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
       for (String docName : wavelet.getDocumentIds()) {
         ReadableBlipData document = wavelet.getDocument(docName);
 
-        if (!(IdUtil.isBlipId(docName) || isUserDataWavelet)) {
+        if (!IdUtil.isBlipId(docName)) {
           continue;
         }
 
@@ -425,9 +424,9 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
     GetMethod getMethod = new GetMethod();
     try {
       getMethod
-          .setURI(new URI(SolrSearchProviderImpl.SOLR_BASE_URL + "/update?wt=json"
-              + "&stream.body=<delete><query>" + SolrSearchProviderImpl.Q + "</query></delete>",
-              false));
+      .setURI(new URI(SolrSearchProviderImpl.SOLR_BASE_URL + "/update?wt=json"
+          + "&stream.body=<delete><query>" + SolrSearchProviderImpl.Q + "</query></delete>",
+          false));
 
       HttpClient httpClient = new HttpClient();
       int statusCode = httpClient.executeMethod(getMethod);
