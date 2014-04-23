@@ -86,5 +86,9 @@
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-server-1.0-20140324.102825-10.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/atmosphere-guice-0.8.3.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/atmosphere-runtime-2.1.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/slf4j-simple-1.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
