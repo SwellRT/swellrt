@@ -46,19 +46,49 @@ import com.glines.socketio.server.transport.XHRPollingTransport;
 import com.glines.socketio.server.transport.jetty.JettyWebSocketTransport;
 
 import org.apache.commons.lang.StringUtils;
+import org.atmosphere.cache.UUIDBroadcasterCache;
+import org.atmosphere.config.service.AtmosphereHandlerService;
+import org.atmosphere.cpr.AtmosphereHandler;
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceSession;
+import org.atmosphere.cpr.AtmosphereResourceSessionFactory;
+import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.guice.AtmosphereGuiceServlet;
+import org.atmosphere.util.IOUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.mortbay.jetty.nio.SelectChannelConnector;
+import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
+import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
+import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.file.FileUtils;
+import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereChannel;
+import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereClientInterceptor;
+import org.waveprotocol.box.server.util.NetUtils;
+import org.waveprotocol.wave.model.util.Pair;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -78,24 +108,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.file.FileUtils;
-import org.waveprotocol.box.server.util.NetUtils;
-import org.waveprotocol.wave.model.util.Pair;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
 
 /**
  * ServerRpcProvider can provide instances of type Service over an incoming
@@ -184,6 +196,32 @@ public class ServerRpcProvider {
       return socketChannel;
     }
   }
+
+  static class AtmosphereConnection extends Connection {
+
+    private final AtmosphereChannel atmosphereChannel;
+
+    public AtmosphereConnection(ParticipantId loggedInUser, ServerRpcProvider provider) {
+      super(loggedInUser, provider);
+
+      atmosphereChannel = new AtmosphereChannel(this);
+      expectMessages(atmosphereChannel);
+
+    }
+
+    @Override
+    protected void sendMessage(int sequenceNo, Message message) {
+      atmosphereChannel.sendMessage(sequenceNo, message);;
+    }
+
+    public AtmosphereChannel getAtmosphereChannel() {
+      return atmosphereChannel;
+    }
+
+
+  }
+
+
 
   static abstract class Connection implements ProtoCallback {
     private final Map<Integer, ServerRpcController> activeRpcs =
@@ -428,9 +466,16 @@ public class ServerRpcProvider {
     String flashPolicyServerHost = "localhost";
     StringBuilder flashPolicyAllowedPorts = new StringBuilder();
 
-    // Servlet where the socketio connection is served from.
-    // TODO(akaplanov): add servlet when https://github.com/vjrj/Socket.IO-Java will updated to Jetty v9.
-    // https://issues.apache.org/jira/browse/WAVE-405
+
+    // Atmosphere framework. Replacement of Socket.IO
+    // See https://issues.apache.org/jira/browse/WAVE-405
+    ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
+    // Enable guice. See
+    // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
+    atholder.setInitParameter("org.atmosphere.cpr.objectFactory",
+        "org.waveprotocol.box.server.rpc.atmosphere.GuiceAtmosphereFactory");
+    atholder.setAsyncSupported(true);
+    atholder.setInitOrder(0);
 
     /*
      * Loop through addresses, collect list of ports, and determine if we are to use "localhost"
@@ -633,6 +678,178 @@ public class ServerRpcProvider {
         throws ServletException, IOException {
       socketIOServlet.service(req, res);
     }
+  }
+
+  /**
+   * Manange atmosphere connections and dispatch messages to
+   * wave channels.
+   *
+   * @author pablojan@gmail.com <Pablo Ojanguren>
+   *
+   */
+  @Singleton
+  @AtmosphereHandlerService(path = "/atmosphere",
+      interceptors = {AtmosphereClientInterceptor.class},
+      broadcasterCache = UUIDBroadcasterCache.class)
+  public static class WaveAtmosphereService implements AtmosphereHandler {
+
+
+    private static final Log LOG = Log.get(WaveAtmosphereService.class);
+
+    private static final String WAVE_CHANNEL_ATTRIBUTE = "WAVE_CHANNEL_ATTRIBUTE";
+    private static final String MSG_SEPARATOR = "|";
+    private static final String MSG_CHARSET = "UTF-8";
+
+    @Inject
+    public ServerRpcProvider provider;
+
+
+    @Override
+    public void onRequest(AtmosphereResource resource) throws IOException {
+
+      AtmosphereResourceSession resourceSession =
+          AtmosphereResourceSessionFactory.getDefault().getSession(resource);
+
+      AtmosphereChannel resourceChannel =
+          resourceSession.getAttribute(WAVE_CHANNEL_ATTRIBUTE, AtmosphereChannel.class);
+
+      if (resourceChannel == null) {
+
+        ParticipantId loggedInUser =
+            provider.sessionManager.getLoggedInUser(resource.getRequest().getSession(false));
+
+        AtmosphereConnection connection = new AtmosphereConnection(loggedInUser, provider);
+        resourceChannel = connection.getAtmosphereChannel();
+        resourceSession.setAttribute(WAVE_CHANNEL_ATTRIBUTE, resourceChannel);
+        resourceChannel.onConnect(resource);
+      }
+
+      resource.setBroadcaster(resourceChannel.getBroadcaster()); // on every
+                                                                 // request
+
+      if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
+
+        resource.suspend();
+
+      }
+
+
+      if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
+
+        StringBuilder b = IOUtils.readEntirely(resource);
+        resourceChannel.onMessage(b.toString());
+
+      }
+
+    }
+
+
+    @Override
+    public void onStateChange(AtmosphereResourceEvent event) throws IOException {
+
+
+      AtmosphereResponse response = event.getResource().getResponse();
+      AtmosphereResource resource = event.getResource();
+
+      if (event.isSuspended()) {
+
+        // Set content type before do response.getWriter()
+        // http://docs.oracle.com/javaee/5/api/javax/servlet/ServletResponse.html#setContentType(java.lang.String)
+        response.setContentType("text/plain; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
+
+        if (event.getMessage().getClass().isArray()) {
+
+          LOG.fine("SEND MESSAGE ARRAY " + event.getMessage().toString());
+
+          List<Object> list = Arrays.asList(event.getMessage());
+
+          response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
+          for (Object object : list) {
+            String message = (String) object;
+            message += MSG_SEPARATOR;
+            response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+          }
+
+        } else if (event.getMessage() instanceof List) {
+
+          LOG.fine("SEND MESSAGE LIST " + event.getMessage().toString());
+
+          @SuppressWarnings("unchecked")
+          List<Object> list = List.class.cast(event.getMessage());
+
+          response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
+          for (Object object : list) {
+            String message = (String) object;
+            message += MSG_SEPARATOR;
+            response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+          }
+
+        } else if (event.getMessage() instanceof String) {
+
+          LOG.fine("SEND MESSAGE " + event.getMessage().toString());
+
+          String message = (String) event.getMessage();
+          response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+        }
+
+
+
+        try {
+
+          response.flushBuffer();
+
+          switch (resource.transport()) {
+            case JSONP:
+            case LONG_POLLING:
+              event.getResource().resume();
+              break;
+            case WEBSOCKET:
+            case STREAMING:
+            case SSE:
+              response.getOutputStream().flush();
+              break;
+            default:
+              LOG.info("Unknown transport");
+              break;
+          }
+        } catch (IOException e) {
+          LOG.info("Error resuming resource response", e);
+        }
+
+
+      } else if (event.isResuming()) {
+
+        LOG.fine("RESUMING");
+
+      } else if (event.isResumedOnTimeout()) {
+
+        LOG.fine("RESUMED ON TIMEOUT");
+
+      } else if (event.isClosedByApplication() || event.isClosedByClient()) {
+
+        LOG.fine("CONNECTION CLOSED");
+
+        AtmosphereResourceSession resourceSession =
+            AtmosphereResourceSessionFactory.getDefault().getSession(resource);
+
+        AtmosphereChannel resourceChannel =
+            resourceSession.getAttribute(WAVE_CHANNEL_ATTRIBUTE, AtmosphereChannel.class);
+
+        if (resourceChannel != null) {
+          resourceChannel.onDisconnect();
+        }
+      }
+    }
+
+    @Override
+    public void destroy() {
+      // Nothing to do
+
+    }
+
+
   }
 
   /**

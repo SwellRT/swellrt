@@ -113,7 +113,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     @Override
     public boolean execute() {
       if (!connectedAtLeastOnce && !websocketNotAvailable && connectTry > MAX_INITIAL_FAILURES) {
-        // Let's try to use socketio, seems that websocket it's not working
+        // Let's try to use websocket alternative, seems that websocket it's not working
         // (we are under a proxy or similar)
         socket = WaveSocketFactory.create(true, urlBase, WaveWebSocketClient.this);
       }

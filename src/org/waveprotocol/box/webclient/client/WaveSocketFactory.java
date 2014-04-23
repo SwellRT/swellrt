@@ -22,73 +22,66 @@ package org.waveprotocol.box.webclient.client;
 import com.google.gwt.websockets.client.WebSocket;
 import com.google.gwt.websockets.client.WebSocketCallback;
 
-import com.glines.socketio.client.common.SocketIOConnection;
-import com.glines.socketio.client.common.SocketIOConnectionListener;
-import com.glines.socketio.client.gwt.GWTSocketIOConnectionFactory;
-import com.glines.socketio.common.DisconnectReason;
-import com.glines.socketio.common.SocketIOException;
+import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection;
+import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl;
+import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionListener;
+
 
 /**
  * Factory to create proxy wrappers around either {@link com.google.gwt.websockets.client.WebSocket}
- * or {@link com.glines.socketio.client.SocketIOConnection}.
- * 
+ * or {@link org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection}.
+ *
  * @author tad.glines@gmail.com (Tad Glines)
  */
 public class WaveSocketFactory {
-  
+
   /**
    * Create a WaveSocket instance that wraps a concrete socket implementation.
-   * If useSocketIO is true an instance of {@link com.glines.socketio.client.SocketIOConnection}
+   * If useWebSocketAlt is true an instance of {@link org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection}
    * is wrapped, otherwise an instance of {@link com.google.gwt.websockets.client.WebSocket} is
    * wrapped.
    */
-  public static WaveSocket create(boolean useSocketIO, final String urlBase,
+  public static WaveSocket create(boolean useWebSocketAlt, final String urlBase,
       final WaveSocket.WaveSocketCallback callback) {
-    if (useSocketIO) {
+    if (useWebSocketAlt) {
       return new WaveSocket() {
-        /*
-         *  TODO: The urlBase is ignored for now. The default is identical to what is currently
-         *  provided in urlBase. When the GWTSocketIOConnectionFactory.create() is updated,
-         *  parse the urlBAse and pass the host and port.
-         */
-        private final SocketIOConnection socket = GWTSocketIOConnectionFactory.INSTANCE.create(
-            new SocketIOConnectionListener() {
+
+        private final AtmosphereConnection socket
+        = new AtmosphereConnectionImpl(new AtmosphereConnectionListener() {
+
           @Override
           public void onConnect() {
             callback.onConnect();
           }
 
           @Override
-          public void onDisconnect(DisconnectReason reason, String errorMEssage) {
+          public void onDisconnect() {
             callback.onDisconnect();
           }
 
           @Override
-          public void onMessage(int messageType, String message) {
+          public void onMessage(String message) {
             callback.onMessage(message);
-          }
-        }, null, (short)0);
+          }}, urlBase);
 
         @Override
         public void connect() {
           socket.connect();
+
         }
 
         @Override
         public void disconnect() {
-          socket.disconnect();
+          socket.close();
         }
 
         @Override
         public void sendMessage(String message) {
-          try {
-            socket.sendMessage(message);
-          } catch (SocketIOException e) {
-            // Ignore because the GWT implementation doesn't throw this Exception.
-          }
+              socket.sendMessage(message);
         }
-        
-      };
+
+        };
+
     } else {
       return new WaveSocket() {
         final WebSocket socket = new WebSocket(new WebSocketCallback() {

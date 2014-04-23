@@ -56,7 +56,7 @@
     <delete dir="war/waveharness"/>
     <delete dir="war/webclient"/>
   </target>
-  
+
   <target name="clean-lib" description="Cleans up the third party libraries">
     <delete dir="${lib.test}"/>
     <delete dir="${lib.codegen}"/>
@@ -255,6 +255,7 @@
     <!-- copy non binary resources in src tree to output classpath. Why? -->
     <copy todir="${build.src.dir}">
       <fileset dir="${src.dir}">
+        <include name="**/*.js"/>
         <include name="**/*.xml"/>
         <include name="**/*.html"/>
         <include name="**/*.properties"/>
@@ -675,7 +676,9 @@
       <fileset dir="${staging.dir}">
         <include name="META-INF/services/*" />
         <include name="com/mongodb/**/*" />
-        <include name="com/glines/socketio/**/*" />
+        <include name="org/slf4j/**/*" />
+	<include name="org/atmosphere/**/*" />
+	<include name="com/glines/socketio/**/*" />
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
@@ -987,7 +990,27 @@
     </unzip>
   </target>
 
-  <target name="get-third-party-runtime" depends="get-jetty-dep" description="Download run time third party dependencies">
+  <target name="get-atmosphere-dep" description="Download atmosphere framework runtime, java and javascript dependencies">
+    <get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
+      <url url="https://oss.sonatype.org/service/local/repositories/releases/content/org/atmosphere/atmosphere-runtime/2.1.0/atmosphere-runtime-2.1.0.jar" />
+      <url url="https://oss.sonatype.org/service/local/repositories/releases/content/org/atmosphere/atmosphere-guice/0.8.3/atmosphere-guice-0.8.3.jar" />
+      <url url="https://oss.sonatype.org/service/local/repositories/releases/content/eu/infomas/annotation-detector/3.0.0/annotation-detector-3.0.0.jar" />
+      <url url="https://oss.sonatype.org/service/local/repositories/releases/content/org/slf4j/slf4j-simple/1.6.1/slf4j-simple-1.6.1.jar" />
+      <url url="https://oss.sonatype.org/service/local/repositories/releases/content/org/slf4j/slf4j-api/1.6.1/slf4j-api-1.6.1.jar" />
+      <url url="https://oss.sonatype.org/service/local/repositories/releases/content/org/atmosphere/client/javascript/2.1.5/javascript-2.1.5.war"  />
+    </get>
+    <!-- Add Atmosphere Framework javascript client to the server classpath  -->
+    <unzip src="${lib.runtime}/javascript-2.1.5.war" dest="${lib.runtime}/javascript-2.1.5" >
+     <patternset>
+         <include name="javascript/atmosphere-min.js"/>
+         <include name="javascript/atmosphere.js"/>
+     </patternset>
+    </unzip>
+    <copy file="${lib.runtime}/javascript-2.1.5/javascript/atmosphere.js" todir="${src.dir}/org/waveprotocol/box/server/rpc/atmosphere" />
+    <copy file="${lib.runtime}/javascript-2.1.5/javascript/atmosphere-min.js" todir="${src.dir}/org/waveprotocol/box/server/rpc/atmosphere" />
+  </target>
+
+  <target name="get-third-party-runtime" depends="get-jetty-dep, get-atmosphere-dep" description="Download run time third party dependencies">
     <get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
       <url url="http://central.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" />
       <url url="http://central.maven.org/maven2/org/bouncycastle/bcprov-jdk16/1.45/bcprov-jdk16-1.45.jar" />
@@ -1015,7 +1038,7 @@
       <url url="http://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" />
       <url url="http://central.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar" />
       <url url="http://central.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
-      
+
       <url url="http://central.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" />
       <url url="http://central.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" />
       <url url="http://central.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" />
