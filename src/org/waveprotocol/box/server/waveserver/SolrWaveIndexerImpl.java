@@ -141,66 +141,17 @@ PerUserWaveViewBus.Listener {
   }
 
   private void updateIndex(ReadableWaveletData wavelet) throws IndexException {
-
     Preconditions.checkNotNull(wavelet);
     if (!IdUtil.isConversationalId(wavelet.getWaveletId())) {
-      return;
+      JsonArray docsJson = buildJsonDoc(wavelet);
+      postUpdateToSolr(wavelet, docsJson);
     }
+  }
 
+  private void postUpdateToSolr(ReadableWaveletData wavelet, JsonArray docsJson) {
     PostMethod postMethod =
         new PostMethod(SolrSearchProviderImpl.SOLR_BASE_URL + "/update/json?commit=true");
     try {
-      JsonArray docsJson = new JsonArray();
-
-      String waveId = wavelet.getWaveId().serialise();
-      String waveletId = wavelet.getWaveletId().serialise();
-      String modified = Long.toString(wavelet.getLastModifiedTime());
-      String creator = wavelet.getCreator().getAddress();
-
-      for (String docName : wavelet.getDocumentIds()) {
-        ReadableBlipData document = wavelet.getDocument(docName);
-
-        if (!IdUtil.isBlipId(docName)) {
-          continue;
-        }
-
-        Iterable<DocInitialization> ops = Lists.newArrayList(
-            document.getContent().asOperation());
-        String text = Snippets.collateTextForOps(ops, new Function<StringBuilder, Void>() {
-
-          @Override
-          public Void apply(StringBuilder resultBuilder) {
-            resultBuilder.append("\n");
-            return null;
-          }
-
-        });
-
-        JsonArray participantsJson = new JsonArray();
-        for (ParticipantId participant : wavelet.getParticipants()) {
-          String participantAddress = participant.toString();
-          participantsJson.add(new JsonPrimitive(participantAddress));
-        }
-
-        String id =
-            JavaWaverefEncoder.encodeToUriPathSegment(WaveRef.of(wavelet.getWaveId(),
-                wavelet.getWaveletId(), docName));
-
-        JsonObject docJson = new JsonObject();
-        docJson.addProperty(SolrSearchProviderImpl.ID, id);
-        docJson.addProperty(SolrSearchProviderImpl.WAVE_ID, waveId);
-        docJson.addProperty(SolrSearchProviderImpl.WAVELET_ID, waveletId);
-        docJson.addProperty(SolrSearchProviderImpl.DOC_NAME, docName);
-        docJson.addProperty(SolrSearchProviderImpl.LMT, modified);
-        docJson.add(SolrSearchProviderImpl.WITH, participantsJson);
-        docJson.add(SolrSearchProviderImpl.WITH_FUZZY, participantsJson);
-        docJson.addProperty(SolrSearchProviderImpl.CREATOR, creator);
-        docJson.addProperty(SolrSearchProviderImpl.TEXT, text);
-        docJson.addProperty(SolrSearchProviderImpl.IN, "inbox");
-
-        docsJson.add(docJson);
-      }
-
       RequestEntity requestEntity =
           new StringRequestEntity(docsJson.toString(), "application/json", "UTF-8");
       postMethod.setRequestEntity(requestEntity);
@@ -208,16 +159,65 @@ PerUserWaveViewBus.Listener {
       HttpClient httpClient = new HttpClient();
       int statusCode = httpClient.executeMethod(postMethod);
       if (statusCode != HttpStatus.SC_OK) {
-        throw new IndexException(waveId);
+        throw new IndexException(wavelet.getWaveId().serialise());
       }
-
     } catch (IOException e) {
       throw new IndexException(String.valueOf(wavelet.getWaveletId()), e);
     } finally {
       postMethod.releaseConnection();
     }
+  }
 
-    return;
+  JsonArray buildJsonDoc(ReadableWaveletData wavelet) {
+    JsonArray docsJson = new JsonArray();
+
+    String waveletId = wavelet.getWaveletId().serialise();
+    String modified = Long.toString(wavelet.getLastModifiedTime());
+    String creator = wavelet.getCreator().getAddress();
+
+    for (String docName : wavelet.getDocumentIds()) {
+      ReadableBlipData document = wavelet.getDocument(docName);
+
+      if (!IdUtil.isBlipId(docName)) {
+        continue;
+      }
+
+      Iterable<DocInitialization> ops = Lists.newArrayList(document.getContent().asOperation());
+      String text = Snippets.collateTextForOps(ops, new Function<StringBuilder, Void>() {
+
+        @Override
+        public Void apply(StringBuilder resultBuilder) {
+          resultBuilder.append("\n");
+          return null;
+        }
+
+      });
+
+      JsonArray participantsJson = new JsonArray();
+      for (ParticipantId participant : wavelet.getParticipants()) {
+        String participantAddress = participant.toString();
+        participantsJson.add(new JsonPrimitive(participantAddress));
+      }
+
+      String id =
+          JavaWaverefEncoder.encodeToUriPathSegment(WaveRef.of(wavelet.getWaveId(),
+              wavelet.getWaveletId(), docName));
+
+      JsonObject docJson = new JsonObject();
+      docJson.addProperty(SolrSearchProviderImpl.ID, id);
+      docJson.addProperty(SolrSearchProviderImpl.WAVE_ID, wavelet.getWaveId().serialise());
+      docJson.addProperty(SolrSearchProviderImpl.WAVELET_ID, waveletId);
+      docJson.addProperty(SolrSearchProviderImpl.DOC_NAME, docName);
+      docJson.addProperty(SolrSearchProviderImpl.LMT, modified);
+      docJson.add(SolrSearchProviderImpl.WITH, participantsJson);
+      docJson.add(SolrSearchProviderImpl.WITH_FUZZY, participantsJson);
+      docJson.addProperty(SolrSearchProviderImpl.CREATOR, creator);
+      docJson.addProperty(SolrSearchProviderImpl.TEXT, text);
+      docJson.addProperty(SolrSearchProviderImpl.IN, "inbox");
+
+      docsJson.add(docJson);
+    }
+    return docsJson;
   }
 
   @Override
@@ -252,15 +252,13 @@ PerUserWaveViewBus.Listener {
       }
     });
     executor.execute(task);
-
-    return;
   }
 
   @Override
   public synchronized void remakeIndex() throws WaveletStateException, WaveServerException {
 
     /*-
-     * to fully rebuild the index, need to delete everything first
+     * To fully rebuild the index, need to delete everything first
      * the <query> tag should contain the value of
      * org.waveprotocol.box.server.waveserver.SolrSearchProviderImpl.Q
      *
@@ -271,6 +269,11 @@ PerUserWaveViewBus.Listener {
      * http://wiki.apache.org/solr/FAQ#How_can_I_delete_all_documents_from_my_index.3F
      */
 
+    sendRequestToDeleteSolrIndex();
+    super.remakeIndex();
+  }
+
+  private void sendRequestToDeleteSolrIndex() {
     GetMethod getMethod = new GetMethod();
     try {
       getMethod
@@ -297,9 +300,5 @@ PerUserWaveViewBus.Listener {
     } finally {
       getMethod.releaseConnection();
     }
-
-    super.remakeIndex();
-
-    return;
   }
 }

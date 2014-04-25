@@ -145,6 +145,14 @@ public class WaveMap {
     }
   }
 
+  /**
+   * Tries to fetch the wavelet as remote, if not found - fetches as local
+   * wavelet.
+   *
+   * @param waveletName the wavelet name
+   * @return the local or remote wavelet.
+   * @throws WaveletStateException if something goes wrong
+   */
   public WaveletContainer getWavelet(WaveletName waveletName) throws WaveletStateException {
     WaveletContainer waveletContainer = null;
     try {

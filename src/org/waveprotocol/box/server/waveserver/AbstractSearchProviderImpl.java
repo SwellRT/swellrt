@@ -113,8 +113,8 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
       // look at the user's wave view and determine if the view matches the
       // query.
       try {
+        waveletContainer = waveMap.getWavelet(waveletname);
         if ((waveletContainer == null) || !waveletContainer.applyFunction(matchesFunction)) {
-          LOG.fine("----doesn't match: " + waveletContainer);
           continue;
         }
         if (view == null) {
