@@ -107,33 +107,6 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
       WaveletContainer waveletContainer = null;
       WaveletName waveletname = WaveletName.of(waveId, waveletId);
 
-      // TODO (alown): Find some way to use isLocalWavelet to do this properly!
-      try {
-        if (LOG.isFineLoggable()) {
-          LOG.fine("Trying as a remote wavelet");
-        }
-        waveletContainer = waveMap.getRemoteWavelet(waveletname);
-      } catch (WaveletStateException e) {
-        LOG.severe(String.format("Failed to get remote wavelet %s", waveletname.toString()), e);
-      } catch (NullPointerException e) {
-        // This is a fairly normal case of it being a local-only wave.
-        // Yet this only seems to appear in the test suite.
-        // Continuing is completely harmless here.
-        LOG.info(
-            String.format("%s is definitely not a remote wavelet. (Null key)",
-                waveletname.toString()), e);
-      }
-
-      if (waveletContainer == null) {
-        try {
-          if (LOG.isFineLoggable()) {
-            LOG.fine("Trying as a local wavelet");
-          }
-          waveletContainer = waveMap.getLocalWavelet(waveletname);
-        } catch (WaveletStateException e) {
-          LOG.severe(String.format("Failed to get local wavelet %s", waveletname.toString()), e);
-        }
-      }
 
       // TODO (Yuri Z.) This loop collects all the wavelets that match the
       // query, so the view is determined by the query. Instead we should

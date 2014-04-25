@@ -145,6 +145,24 @@ public class WaveMap {
     }
   }
 
+  public WaveletContainer getWavelet(WaveletName waveletName) throws WaveletStateException {
+    WaveletContainer waveletContainer = null;
+    try {
+      waveletContainer = getRemoteWavelet(waveletName);
+    } catch (WaveletStateException e) {
+      // Ignored.
+    } catch (NullPointerException e) {
+      // This is a fairly normal case of it being a local-only wave.
+      // Yet this only seems to appear in the test suite.
+      // Continuing is completely harmless here.
+    }
+
+    if (waveletContainer == null) {
+      waveletContainer = getLocalWavelet(waveletName);
+    }
+    return waveletContainer;
+  }
+
   public LocalWaveletContainer getLocalWavelet(WaveletName waveletName)
       throws WaveletStateException {
     try {

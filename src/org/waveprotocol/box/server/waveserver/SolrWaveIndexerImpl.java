@@ -40,24 +40,13 @@ import org.apache.http.HttpStatus;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.Snippets;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
-import org.waveprotocol.wave.model.conversation.ObservableConversation;
-import org.waveprotocol.wave.model.conversation.ObservableConversationBlip;
-import org.waveprotocol.wave.model.conversation.ObservableConversationView;
-import org.waveprotocol.wave.model.conversation.TitleHelper;
-import org.waveprotocol.wave.model.conversation.WaveletBasedConversation;
-import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.id.IdUtil;
-import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
-import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
-import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
 import org.waveprotocol.wave.util.logging.Log;
@@ -80,11 +69,6 @@ PerUserWaveViewBus.Listener {
   // TODO (Yuri Z.): Inject executor.
   private static final Executor executor = Executors.newSingleThreadExecutor();
 
-  /*
-   * (regression alert) for getting the title of a wave
-   */
-  // private final ConversationUtil conversationUtil;
-
   private final ReadableWaveletDataProvider waveletDataProvider;
 
 
@@ -96,11 +80,6 @@ PerUserWaveViewBus.Listener {
     super(waveMap, waveletProvider);
 
     this.waveletDataProvider = waveletDataProvider;
-
-    /*
-     * (regression alert) for getting the title of a wave
-     */
-    // this.conversationUtil = conversationUtil;
 
     notificationDispatcher.subscribe(this);
 
@@ -241,80 +220,12 @@ PerUserWaveViewBus.Listener {
     return;
   }
 
-  /*
-   * TODO (Frank R.) move to TitleHelper. Currently, WaveletContainer is of
-   * default visibility, which prevents the refactoring.
-   */
-  public static String getTitle(WaveId waveId, WaveletId waveletId, WaveMap waveMap,
-      ConversationUtil conversationUtil) {
-
-    String title = null;
-
-    WaveViewDataImpl wave = WaveViewDataImpl.create(waveId);
-
-    WaveletContainer waveletContainer = null;
-    WaveletName waveletname = WaveletName.of(waveId, waveletId);
-
-    /*-
-     * copied from
-     *
-    org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl.filterWavesViewBySearchCriteria(Function<ReadableWaveletData,
-    Boolean>, Multimap<WaveId, WaveletId>)
-     */
-    // TODO (alown): Find some way to use isLocalWavelet to do this properly!
-    try {
-      if (LOG.isFineLoggable()) {
-        LOG.fine("Trying as a remote wavelet");
-      }
-      waveletContainer = waveMap.getRemoteWavelet(waveletname);
-    } catch (WaveletStateException e) {
-      LOG.severe(String.format("Failed to get remote wavelet %s", waveletname.toString()), e);
-    } catch (NullPointerException e) {
-      // This is a fairly normal case of it being a local-only wave.
-      // Yet this only seems to appear in the test suite.
-      // Continuing is completely harmless here.
-      LOG.info(String.format("%s is definitely not a remote wavelet. (Null key)",
-          waveletname.toString()), e);
-    }
-
-    if (waveletContainer == null) {
-      try {
-        if (LOG.isFineLoggable()) {
-          LOG.fine("Trying as a local wavelet");
-        }
-        waveletContainer = waveMap.getLocalWavelet(waveletname);
-      } catch (WaveletStateException e) {
-        LOG.severe(String.format("Failed to get local wavelet %s", waveletname.toString()), e);
-      }
-    }
-
-    try {
-      wave.addWavelet(waveletContainer.copyWaveletData());
-      for (ObservableWaveletData waveletData : wave.getWavelets()) {
-        OpBasedWavelet wavelet = OpBasedWavelet.createReadOnly(waveletData);
-        if (WaveletBasedConversation.waveletHasConversation(wavelet)) {
-          ObservableConversationView conversations = conversationUtil.buildConversation(wavelet);
-          ObservableConversation root = conversations.getRoot();
-          ObservableConversationBlip firstBlip = root.getRootThread().getFirstBlip();
-          Document firstBlipContents = firstBlip.getContent();
-          title = TitleHelper.extractTitle(firstBlipContents).trim();
-          break;
-        }
-      }
-    } catch (WaveletStateException e) {
-      LOG.warning("Failed to access wavelet " + waveletContainer.getWaveletName(), e);
-    }
-
-    return title;
-  }
-
   @Override
   public void waveletUpdate(final ReadableWaveletData wavelet, DeltaSequence deltas) {
     /*
-     * (regression alert) commented out for optimization, see
-     * waveletCommitted(WaveletName, HashedVersion)
+     * Overridden out for optimization, see waveletCommitted(WaveletName,
+     * HashedVersion)
      */
-    // updateIndex(wavelet);
   }
 
   @Override
@@ -322,9 +233,6 @@ PerUserWaveViewBus.Listener {
 
     Preconditions.checkNotNull(waveletName);
 
-    /*
-     * (regression alert) don't update on current thread to prevent lock error
-     */
     ListenableFutureTask<Void> task = ListenableFutureTask.create(new Callable<Void>() {
 
       @Override
