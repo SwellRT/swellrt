@@ -26,7 +26,6 @@ import java.util.List;
 /**
  * Core Wave in a Box settings
  */
-@SuppressWarnings("unused") // We inject them by the name of their flag
 public class CoreSettings {
   public static final String WAVE_SERVER_DOMAIN = "wave_server_domain";
   public static final String HTTP_FRONTEND_PUBLIC_ADDRESS = "http_frontend_public_address";
@@ -48,7 +47,6 @@ public class CoreSettings {
   public static final String DELTA_STORE_DIRECTORY = "delta_store_directory";
   public static final String SESSIONS_STORE_DIRECTORY = "sessions_store_directory";
   public static final String SESSION_COOKIE_MAX_AGE = "session_cookie_max_age";
-  public static final String FLASHSOCKET_POLICY_PORT = "flashsocket_policy_port";
   public static final String WEBSOCKET_MAX_MESSAGE_SIZE = "websocket_max_message_size";
   public static final String WEBSOCKET_MAX_IDLE_TIME = "websocket_max_idle_time";
   public static final String GADGET_SERVER_HOSTNAME = "gadget_server_hostname";
@@ -158,11 +156,6 @@ public class CoreSettings {
       description = "Max age of session cookie in seconds. "
           + "-1 means cookie lives in the browser current session only", defaultValue = "-1")
   private static int sessionCookieMaxAge;
-
-  @Setting(name = FLASHSOCKET_POLICY_PORT,
-      description = "Port on which to listen for Flashsocket policy requests.",
-      defaultValue = "843")
-  private static int flashsocketPolicyPort;
 
   @Setting(name = WEBSOCKET_MAX_IDLE_TIME,
       description = "The time in ms that the websocket connection can be idle before closing", defaultValue = "0")

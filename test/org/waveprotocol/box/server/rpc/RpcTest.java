@@ -73,7 +73,7 @@ public class RpcTest extends TestCase {
      * This allows the test to run without clashing with any potentially in-use port.
      */
     server =
-        new ServerRpcProvider(new InetSocketAddress[] {new InetSocketAddress("localhost", 0)}, 0,
+        new ServerRpcProvider(new InetSocketAddress[] {new InetSocketAddress("localhost", 0)},
             new String[] {"./war"}, sessionManager, null, null, false, null, null);
     Injector injector = Guice.createInjector(new AbstractModule() {
       @Override

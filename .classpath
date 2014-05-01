@@ -55,8 +55,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/protobuf-format-java-1.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/protobuf-java-2.5.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/servlet-api-3.1.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/socketio-core-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/socketio-jetty-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-client-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-common-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-server-9.1.1.v20140108.jar"/>
@@ -78,7 +76,6 @@
 	<classpathentry kind="lib" path="third_party/test/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-api-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/mongo-java-driver-2.11.2.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/socketio-gwt-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.5.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.5.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/validation-api-1.1.0.Final-sources.jar"/>

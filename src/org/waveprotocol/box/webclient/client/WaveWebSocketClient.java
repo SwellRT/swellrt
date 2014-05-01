@@ -49,7 +49,7 @@ import java.util.Queue;
 
 
 /**
- * Wrapper around SocketIO that handles the FedOne client-server protocol.
+ * Wrapper around WebSocket that handles the Wave client-server protocol.
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final int MAX_INITIAL_FAILURES = 2;

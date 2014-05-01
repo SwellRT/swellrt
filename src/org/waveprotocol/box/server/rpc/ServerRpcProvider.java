@@ -36,15 +36,6 @@ import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.Service;
 
-import com.glines.socketio.server.SocketIOInbound;
-import com.glines.socketio.server.Transport;
-import com.glines.socketio.server.transport.FlashSocketTransport;
-import com.glines.socketio.server.transport.HTMLFileTransport;
-import com.glines.socketio.server.transport.JSONPPollingTransport;
-import com.glines.socketio.server.transport.XHRMultipartTransport;
-import com.glines.socketio.server.transport.XHRPollingTransport;
-import com.glines.socketio.server.transport.jetty.JettyWebSocketTransport;
-
 import org.apache.commons.lang.StringUtils;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.config.service.AtmosphereHandlerService;
@@ -99,14 +90,8 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -119,13 +104,12 @@ public class ServerRpcProvider {
   private static final Log LOG = Log.get(ServerRpcProvider.class);
 
   /**
-   * The buffer size is passed to implementations of {@link AbstractWaveSocketIOServlet} as init
+   * The buffer size is passed to implementations of {@link WaveWebSocketServlet} as init
    * param. It defines the response buffer size.
    */
   private static final int BUFFER_SIZE = 1024 * 1024;
 
   private final InetSocketAddress[] httpAddresses;
-  private final Integer flashsocketPolicyPort;
   private final ExecutorService threadPool;
   private final SessionManager sessionManager;
   private final org.eclipse.jetty.server.SessionManager jettySessionManager;
@@ -173,26 +157,6 @@ public class ServerRpcProvider {
     }
 
     public WebSocketChannel getWebSocketServerChannel() {
-      return socketChannel;
-    }
-  }
-
-  static class SocketIOConnection extends Connection {
-    private final SocketIOServerChannel socketChannel;
-
-    SocketIOConnection(ParticipantId loggedInUser, ServerRpcProvider provider) {
-      super(loggedInUser, provider);
-      socketChannel = new SocketIOServerChannel(this);
-      LOG.info("New websocket connection set up for user " + loggedInUser);
-      expectMessages(socketChannel);
-    }
-
-    @Override
-    protected void sendMessage(int sequenceNo, Message message) {
-      socketChannel.sendMessage(sequenceNo, message);
-    }
-
-    public SocketIOServerChannel getWebSocketServerChannel() {
       return socketChannel;
     }
   }
@@ -340,12 +304,11 @@ public class ServerRpcProvider {
    *
    * Also accepts an ExecutorService for spawning managing threads.
    */
-  public ServerRpcProvider(InetSocketAddress[] httpAddresses, Integer flashsocketPolicyPort,
+  public ServerRpcProvider(InetSocketAddress[] httpAddresses,
       String[] resourceBases, ExecutorService threadPool, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword) {
     this.httpAddresses = httpAddresses;
-    this.flashsocketPolicyPort = flashsocketPolicyPort;
     this.resourceBases = resourceBases;
     this.threadPool = threadPool;
     this.sessionManager = sessionManager;
@@ -359,11 +322,11 @@ public class ServerRpcProvider {
   /**
    * Constructs a new ServerRpcProvider with a default ExecutorService.
    */
-  public ServerRpcProvider(InetSocketAddress[] httpAddresses, Integer flashsocketPolicyPort,
+  public ServerRpcProvider(InetSocketAddress[] httpAddresses,
       String[] resourceBases, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword) {
-    this(httpAddresses, flashsocketPolicyPort, resourceBases, Executors.newCachedThreadPool(),
+    this(httpAddresses, resourceBases, Executors.newCachedThreadPool(),
         sessionManager, jettySessionManager, sessionStoreDir, sslEnabled, sslKeystorePath,
         sslKeystorePassword);
   }
@@ -371,14 +334,13 @@ public class ServerRpcProvider {
   @Inject
   public ServerRpcProvider(@Named(CoreSettings.HTTP_FRONTEND_ADDRESSES) List<String> httpAddresses,
       @Named(CoreSettings.HTTP_WEBSOCKET_PUBLIC_ADDRESS) String websocketAddress,
-      @Named(CoreSettings.FLASHSOCKET_POLICY_PORT) Integer flashsocketPolicyPort,
       @Named(CoreSettings.RESOURCE_BASES) List<String> resourceBases,
       SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
       @Named(CoreSettings.SESSIONS_STORE_DIRECTORY) String sessionStoreDir,
       @Named(CoreSettings.ENABLE_SSL) boolean sslEnabled,
       @Named(CoreSettings.SSL_KEYSTORE_PATH) String sslKeystorePath,
       @Named(CoreSettings.SSL_KEYSTORE_PASSWORD) String sslKeystorePassword) {
-    this(parseAddressList(httpAddresses, websocketAddress), flashsocketPolicyPort, resourceBases
+    this(parseAddressList(httpAddresses, websocketAddress), resourceBases
         .toArray(new String[0]), sessionManager, jettySessionManager, sessionStoreDir,
         sslEnabled, sslKeystorePath, sslKeystorePassword);
   }
@@ -462,11 +424,6 @@ public class ServerRpcProvider {
     // TODO(zamfi): fix to let messages span frames.
     wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
-    // Set flash policy server parameters
-    String flashPolicyServerHost = "localhost";
-    StringBuilder flashPolicyAllowedPorts = new StringBuilder();
-
-
     // Atmosphere framework. Replacement of Socket.IO
     // See https://issues.apache.org/jira/browse/WAVE-405
     ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
@@ -476,21 +433,6 @@ public class ServerRpcProvider {
         "org.waveprotocol.box.server.rpc.atmosphere.GuiceAtmosphereFactory");
     atholder.setAsyncSupported(true);
     atholder.setInitOrder(0);
-
-    /*
-     * Loop through addresses, collect list of ports, and determine if we are to use "localhost"
-     * of the AnyHost wildcard.
-     */
-    for (InetSocketAddress addr: httpAddresses) {
-      if (flashPolicyAllowedPorts.length() > 0) {
-        flashPolicyAllowedPorts.append(",");
-      }
-      flashPolicyAllowedPorts.append(addr.getPort());
-      if (!addr.getAddress().isLoopbackAddress()) {
-        // Until it's possible to pass a list of address, this is the only valid alternative.
-        flashPolicyServerHost = "0.0.0.0";
-      }
-    }
 
     // Serve the static content and GWT web client with the default servlet
     // (acts like a standard file-based web server).
@@ -634,49 +576,6 @@ public class ServerRpcProvider {
           return new WebSocketConnection(loggedInUser, provider).getWebSocketServerChannel();
         }
       });
-    }
-  }
-
-  @SuppressWarnings("serial")
-  @Singleton
-  public static class WaveSocketIOServlet extends HttpServlet {
-
-    ServerRpcProvider provider;
-
-    @Inject
-    public WaveSocketIOServlet(ServerRpcProvider provider) {
-      super();
-      this.provider = provider;
-    }
-
-    AbstractWaveSocketIOServlet socketIOServlet = new AbstractWaveSocketIOServlet( new Transport[] {
-        new XHRMultipartTransport(), new XHRPollingTransport(), new FlashSocketTransport(),
-        new JettyWebSocketTransport(), new JSONPPollingTransport(), new HTMLFileTransport()}) {
-      @Override
-      protected SocketIOInbound doSocketIOConnect(HttpServletRequest request) {
-        ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(
-            request.getSession(false));
-
-        SocketIOConnection connection = new SocketIOConnection(loggedInUser, provider);
-        return connection.getWebSocketServerChannel();
-      }
-    };
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-      socketIOServlet.init(config);
-    }
-
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-      socketIOServlet.service(req, resp);
-    }
-
-    @Override
-    public void service(ServletRequest req, ServletResponse res)
-        throws ServletException, IOException {
-      socketIOServlet.service(req, res);
     }
   }
 

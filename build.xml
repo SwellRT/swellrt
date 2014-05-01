@@ -678,7 +678,6 @@
         <include name="com/mongodb/**/*" />
         <include name="org/slf4j/**/*" />
 	<include name="org/atmosphere/**/*" />
-	<include name="com/glines/socketio/**/*" />
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
@@ -951,8 +950,6 @@
       <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.5.1/gwt-dev-2.5.1.jar" />
       <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.5.1/gwt-user-2.5.1.jar" />
       <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.5.1/gwt-codeserver-2.5.1.jar" />
-      <url url="http://wave.alown.co.uk/third_party/socketio-gwt-0.1-SNAPSHOT.jar" />
-      <url url="http://wave.alown.co.uk/third_party/socketio-gwt-0.1-SNAPSHOT-sources.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final-sources.jar" />
       <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" />
@@ -1049,10 +1046,6 @@
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527.jar" />
       <url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" />
       <url url="https://protobuf-java-format.googlecode.com/files/protobuf-format-java-1.1.jar" />
-      <url url="http://wave.alown.co.uk/third_party/socketio-core-0.1-SNAPSHOT.jar" />
-      <url url="http://wave.alown.co.uk/third_party/socketio-core-0.1-SNAPSHOT-sources.jar" />
-      <url url="http://wave.alown.co.uk/third_party/socketio-jetty-0.1-SNAPSHOT.jar" />
-      <url url="http://wave.alown.co.uk/third_party/socketio-jetty-0.1-SNAPSHOT-sources.jar" />
       <url url="http://wave.alown.co.uk/third_party/websocket.jar" />
       <url url="http://wave.alown.co.uk/third_party/whack.jar" />
       <url url="http://wave.alown.co.uk/third_party/xmpp.jar" />
