@@ -870,7 +870,7 @@
   <target name="release-bin" depends="compile-gwt, dist-server, dist-export-import" description="Creates unsigned tar+zip for server binary release">
     <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
     <delete file="${dist.dir}/${release.bin.path}.zip"/>
-    <ant antfile="server-config.xml" />
+    <antcall target="gen-server-config"/> 
     <copy file="LICENSE.bin" tofile="LICENSE" />
     <copy file="NOTICE.bin" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
@@ -921,6 +921,10 @@
     <delete file="${dist.dir}/${release.bin.path}.tar"/>
     <delete file="LICENSE" />
     <delete file="NOTICE" />
+  </target>
+
+  <target name="gen-server-config">
+    <ant antfile="server-config.xml" />
   </target>
 
   <!-- TODO: re-use these when the api code is useful again -->
