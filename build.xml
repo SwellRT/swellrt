@@ -870,6 +870,7 @@
   <target name="release-bin" depends="compile-gwt, dist-server, dist-export-import" description="Creates unsigned tar+zip for server binary release">
     <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
     <delete file="${dist.dir}/${release.bin.path}.zip"/>
+    <ant antfile="server-config.xml" />
     <copy file="LICENSE.bin" tofile="LICENSE" />
     <copy file="NOTICE.bin" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
@@ -893,6 +894,7 @@
         <include name="jaas.config" />
         <include name="jsongadgets.json" />
         <include name="server.config.example" />
+        <include name="server.config" />
         <include name="server-config.xml" />
         <include name="server.federation.config" />
         <include name="server.federation.config.example" />
@@ -903,6 +905,7 @@
         <include name="check-certificates.sh" />
         <include name="make_cert.sh" />
         <include name="run-server.sh" />
+        <include name="run-server.bat" />
         <include name="run-export.sh" />
         <include name="run-import.sh" />
       </tarfileset>
