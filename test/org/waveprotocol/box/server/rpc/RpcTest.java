@@ -20,6 +20,7 @@
 package org.waveprotocol.box.server.rpc;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -39,6 +40,7 @@ import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolOpenRequest;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolSubmitRequest;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolSubmitResponse;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveletUpdate;
+import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.SessionManager;
 
 import java.io.IOException;
@@ -46,10 +48,8 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.waveprotocol.box.server.CoreSettings;
 
 /**
  * Test case for ClientRpcChannelImpl and ServerRpcProvider.
@@ -62,7 +62,7 @@ public class RpcTest extends TestCase {
   private ClientRpcChannel client = null;
 
   private ClientRpcChannel newClient() throws IOException {
-     return new WebSocketClientRpcChannel(server.getWebSocketAddress());
+    return new WebSocketClientRpcChannel(server.getWebSocketAddress());
   }
 
   @Override
@@ -76,7 +76,7 @@ public class RpcTest extends TestCase {
     server =
         new ServerRpcProvider(new InetSocketAddress[] {new InetSocketAddress("localhost", 0)},
             new String[] {"./war"}, sessionManager, null, null, false, null, null,
-            Executors.newCachedThreadPool());
+            MoreExecutors.sameThreadExecutor());
     Injector injector = Guice.createInjector(new AbstractModule() {
       @Override
       protected void configure() {
@@ -124,33 +124,33 @@ public class RpcTest extends TestCase {
     // Generate fairly dummy RPC implementation.
     WaveClientRpc.ProtocolWaveClientRpc.Interface rpcImpl =
         new WaveClientRpc.ProtocolWaveClientRpc.Interface() {
-          @Override
-          public void open(RpcController controller, ProtocolOpenRequest request,
-              RpcCallback<ProtocolWaveletUpdate> callback) {
-            assertTrue(receivedOpenRequest.compareAndSet(false, true));
-            assertEquals(USER, request.getParticipantId());
-            assertEquals(WAVE, request.getWaveId());
+      @Override
+      public void open(RpcController controller, ProtocolOpenRequest request,
+          RpcCallback<ProtocolWaveletUpdate> callback) {
+        assertTrue(receivedOpenRequest.compareAndSet(false, true));
+        assertEquals(USER, request.getParticipantId());
+        assertEquals(WAVE, request.getWaveId());
 
-            // Return a valid response.
-            callback.run(cannedResponse);
+        // Return a valid response.
+        callback.run(cannedResponse);
 
-            // Falling out of this method will automatically finish this RPC.
-            callback.run(null);
-            // TODO: terrible idea?
-          }
+        // Falling out of this method will automatically finish this RPC.
+        callback.run(null);
+        // TODO: terrible idea?
+      }
 
-          @Override
-          public void submit(RpcController controller, ProtocolSubmitRequest request,
-              RpcCallback<ProtocolSubmitResponse> callback) {
-            throw new UnsupportedOperationException();
-          }
+      @Override
+      public void submit(RpcController controller, ProtocolSubmitRequest request,
+          RpcCallback<ProtocolSubmitResponse> callback) {
+        throw new UnsupportedOperationException();
+      }
 
-          @Override
-          public void authenticate(RpcController controller, ProtocolAuthenticate request,
-              RpcCallback<ProtocolAuthenticationResult> done) {
-            throw new UnsupportedOperationException();
-          }
-        };
+      @Override
+      public void authenticate(RpcController controller, ProtocolAuthenticate request,
+          RpcCallback<ProtocolAuthenticationResult> done) {
+        throw new UnsupportedOperationException();
+      }
+    };
 
     // Register the RPC implementation with the ServerRpcProvider.
     server.registerService(WaveClientRpc.ProtocolWaveClientRpc.newReflectiveService(rpcImpl));
@@ -192,24 +192,24 @@ public class RpcTest extends TestCase {
     // Generate fairly dummy RPC implementation.
     WaveClientRpc.ProtocolWaveClientRpc.Interface rpcImpl =
         new WaveClientRpc.ProtocolWaveClientRpc.Interface() {
-          @Override
-          public void open(RpcController controller, ProtocolOpenRequest request,
-              RpcCallback<ProtocolWaveletUpdate> callback) {
-            controller.setFailed(ERROR_TEXT);
-          }
+      @Override
+      public void open(RpcController controller, ProtocolOpenRequest request,
+          RpcCallback<ProtocolWaveletUpdate> callback) {
+        controller.setFailed(ERROR_TEXT);
+      }
 
-          @Override
-          public void submit(RpcController controller, ProtocolSubmitRequest request,
-              RpcCallback<ProtocolSubmitResponse> callback) {
-            throw new UnsupportedOperationException();
-          }
+      @Override
+      public void submit(RpcController controller, ProtocolSubmitRequest request,
+          RpcCallback<ProtocolSubmitResponse> callback) {
+        throw new UnsupportedOperationException();
+      }
 
-          @Override
-          public void authenticate(RpcController controller, ProtocolAuthenticate request,
-              RpcCallback<ProtocolAuthenticationResult> done) {
-            throw new UnsupportedOperationException();
-          }
-        };
+      @Override
+      public void authenticate(RpcController controller, ProtocolAuthenticate request,
+          RpcCallback<ProtocolAuthenticationResult> done) {
+        throw new UnsupportedOperationException();
+      }
+    };
 
     // Register the RPC implementation with the ServerRpcProvider.
     server.registerService(WaveClientRpc.ProtocolWaveClientRpc.newReflectiveService(rpcImpl));
@@ -248,46 +248,46 @@ public class RpcTest extends TestCase {
     final int TIMEOUT_SECONDS = 5;
     final int MESSAGES_BEFORE_CANCEL = 5;
     final ProtocolWaveletUpdate cannedResponse =
-      ProtocolWaveletUpdate.newBuilder().setWaveletName("").build();
+        ProtocolWaveletUpdate.newBuilder().setWaveletName("").build();
     final CountDownLatch responseLatch = new CountDownLatch(MESSAGES_BEFORE_CANCEL);
     final CountDownLatch finishedLatch = new CountDownLatch(1);
 
     // Generate fairly dummy RPC implementation.
     WaveClientRpc.ProtocolWaveClientRpc.Interface rpcImpl =
         new WaveClientRpc.ProtocolWaveClientRpc.Interface() {
+      @Override
+      public void open(RpcController controller, ProtocolOpenRequest request,
+          final RpcCallback<ProtocolWaveletUpdate> callback) {
+        // Initially return many responses.
+        for (int m = 0; m < MESSAGES_BEFORE_CANCEL; ++m) {
+          callback.run(cannedResponse);
+        }
+
+        // Register a callback to handle cancellation. There is no race
+        // condition here with sending responses, since there are no
+        // contracts on the timing/response to cancellation requests.
+        controller.notifyOnCancel(new RpcCallback<Object>() {
           @Override
-          public void open(RpcController controller, ProtocolOpenRequest request,
-              final RpcCallback<ProtocolWaveletUpdate> callback) {
-            // Initially return many responses.
-            for (int m = 0; m < MESSAGES_BEFORE_CANCEL; ++m) {
-              callback.run(cannedResponse);
-            }
-
-            // Register a callback to handle cancellation. There is no race
-            // condition here with sending responses, since there are no
-            // contracts on the timing/response to cancellation requests.
-            controller.notifyOnCancel(new RpcCallback<Object>() {
-              @Override
-              public void run(Object object) {
-                // Happily shut down this RPC.
-                callback.run(null);
-              }
-            });
-
+          public void run(Object object) {
+            // Happily shut down this RPC.
+            callback.run(null);
           }
+        });
 
-          @Override
-          public void submit(RpcController controller, ProtocolSubmitRequest request,
-              RpcCallback<ProtocolSubmitResponse> callback) {
-            throw new UnsupportedOperationException();
-          }
+      }
 
-          @Override
-          public void authenticate(RpcController controller, ProtocolAuthenticate request,
-              RpcCallback<ProtocolAuthenticationResult> done) {
-            throw new UnsupportedOperationException();
-          }
-        };
+      @Override
+      public void submit(RpcController controller, ProtocolSubmitRequest request,
+          RpcCallback<ProtocolSubmitResponse> callback) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void authenticate(RpcController controller, ProtocolAuthenticate request,
+          RpcCallback<ProtocolAuthenticationResult> done) {
+        throw new UnsupportedOperationException();
+      }
+    };
 
     // Register the RPC implementation with the ServerRpcProvider.
     server.registerService(WaveClientRpc.ProtocolWaveClientRpc.newReflectiveService(rpcImpl));
