@@ -69,9 +69,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
 
 /**
  * Lucene based implementation of {@link PerUserWaveViewHandler}.
@@ -105,9 +107,6 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
   private static final Logger LOG = Logger.getLogger(LucenePerUserWaveViewHandlerImpl.class
       .getName());
 
-  // TODO (Yuri Z.): Inject executor.
-  private static final Executor executor = Executors.newSingleThreadExecutor();
-
   private static final Version LUCENE_VERSION = Version.LUCENE_35;
 
   /** The results will be returned in the ascending order according to last modified time. */
@@ -128,14 +127,17 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
   private final NRTManager nrtManager;
   private final NRTManagerReopenThread nrtManagerReopenThread;
   private final ReadableWaveletDataProvider waveletProvider;
+  private final Executor executor;
   private boolean isClosed = false;
 
   @Inject
   public LucenePerUserWaveViewHandlerImpl(IndexDirectory directory,
       ReadableWaveletDataProvider waveletProvider, TextCollator textCollator,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain) {
+      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
+      @IndexExecutor Executor executor) {
     this.textCollator = textCollator;
     this.waveletProvider = waveletProvider;
+    this.executor = executor;
     analyzer = new StandardAnalyzer(LUCENE_VERSION);
     try {
       IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, analyzer);

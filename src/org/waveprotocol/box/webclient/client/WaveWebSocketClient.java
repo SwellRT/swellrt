@@ -46,6 +46,8 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
 import java.util.Queue;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 
 /**
@@ -188,12 +190,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onMessage(final String message) {
     LOG.info("received JSON message " + message);
+    Timer timer = Timing.start("deserialize message");
     MessageWrapper wrapper;
     try {
       wrapper = MessageWrapper.parse(message);
     } catch (JsonException e) {
       LOG.severe("invalid JSON message " + message, e);
       return;
+    } finally {
+      Timing.stop(timer);
     }
     String messageType = wrapper.getType();
     if ("ProtocolWaveletUpdate".equals(messageType)) {
@@ -223,7 +228,13 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private void send(JsonMessage message) {
     switch (connected) {
       case CONNECTED:
-        String json = message.toJson();
+        Timer timing = Timing.start("serialize message");
+        String json;
+        try {
+          json = message.toJson();
+        } finally {
+          Timing.stop(timing);
+        }
         LOG.info("Sending JSON data " + json);
         socket.sendMessage(json);
         break;

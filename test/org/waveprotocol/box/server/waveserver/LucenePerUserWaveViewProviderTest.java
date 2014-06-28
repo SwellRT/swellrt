@@ -29,6 +29,7 @@ import org.waveprotocol.box.server.persistence.lucene.RAMIndexDirectory;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
 
 /**
  * @author yurize@apache.org (Yuri Zelikov)
@@ -57,7 +58,8 @@ public class LucenePerUserWaveViewProviderTest extends PerUserWaveViewProviderTe
   @Override
   protected PerUserWaveViewHandler createPerUserWaveViewHandler() {
     handler =
-        new LucenePerUserWaveViewHandlerImpl(directory, waveletProvider, textCollator, DOMAIN);
+        new LucenePerUserWaveViewHandlerImpl(directory, waveletProvider, textCollator, DOMAIN,
+          Executors.newCachedThreadPool());
     return handler;
   }
 

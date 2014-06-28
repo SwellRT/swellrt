@@ -53,6 +53,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -62,7 +63,6 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.CoreSettings;
@@ -70,10 +70,13 @@ import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereChannel;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereClientInterceptor;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.util.NetUtils;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -85,11 +88,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
@@ -102,7 +105,6 @@ import javax.servlet.http.HttpSession;
  */
 public class ServerRpcProvider {
   private static final Log LOG = Log.get(ServerRpcProvider.class);
-
   /**
    * The buffer size is passed to implementations of {@link WaveWebSocketServlet} as init
    * param. It defines the response buffer size.
@@ -110,7 +112,7 @@ public class ServerRpcProvider {
   private static final int BUFFER_SIZE = 1024 * 1024;
 
   private final InetSocketAddress[] httpAddresses;
-  private final ExecutorService threadPool;
+  private final Executor threadPool;
   private final SessionManager sessionManager;
   private final org.eclipse.jetty.server.SessionManager jettySessionManager;
   private Server httpServer = null;
@@ -229,6 +231,8 @@ public class ServerRpcProvider {
 
     @Override
     public void message(final int sequenceNo, Message message) {
+      final String messageName = "/" + message.getClass().getSimpleName();
+      final Timer profilingTimer = Timing.startRequest(messageName);
       if (message instanceof Rpc.CancelRpc) {
         final ServerRpcController controller = activeRpcs.get(sequenceNo);
         if (controller == null) {
@@ -283,6 +287,9 @@ public class ServerRpcProvider {
                         activeRpcs.remove(sequenceNo);
                       }
                       sendMessage(sequenceNo, message);
+                      if (profilingTimer != null) {
+                        Timing.stop(profilingTimer);
+                      }
                     }
                   });
 
@@ -305,7 +312,7 @@ public class ServerRpcProvider {
    * Also accepts an ExecutorService for spawning managing threads.
    */
   public ServerRpcProvider(InetSocketAddress[] httpAddresses,
-      String[] resourceBases, ExecutorService threadPool, SessionManager sessionManager,
+      String[] resourceBases, Executor threadPool, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword) {
     this.httpAddresses = httpAddresses;
@@ -325,8 +332,9 @@ public class ServerRpcProvider {
   public ServerRpcProvider(InetSocketAddress[] httpAddresses,
       String[] resourceBases, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
-      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword) {
-    this(httpAddresses, resourceBases, Executors.newCachedThreadPool(),
+      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
+      Executor executor) {
+    this(httpAddresses, resourceBases, executor,
         sessionManager, jettySessionManager, sessionStoreDir, sslEnabled, sslKeystorePath,
         sslKeystorePassword);
   }
@@ -339,10 +347,11 @@ public class ServerRpcProvider {
       @Named(CoreSettings.SESSIONS_STORE_DIRECTORY) String sessionStoreDir,
       @Named(CoreSettings.ENABLE_SSL) boolean sslEnabled,
       @Named(CoreSettings.SSL_KEYSTORE_PATH) String sslKeystorePath,
-      @Named(CoreSettings.SSL_KEYSTORE_PASSWORD) String sslKeystorePassword) {
+      @Named(CoreSettings.SSL_KEYSTORE_PASSWORD) String sslKeystorePassword,
+      @ClientServerExecutor Executor executorService) {
     this(parseAddressList(httpAddresses, websocketAddress), resourceBases
         .toArray(new String[0]), sessionManager, jettySessionManager, sessionStoreDir,
-        sslEnabled, sslKeystorePath, sslKeystorePassword);
+        sslEnabled, sslKeystorePath, sslKeystorePassword, executorService);
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -456,6 +465,9 @@ public class ServerRpcProvider {
           Map<String,String> params = servlet.getSecond().getInitParameters();
           serve(url).with(clazz,params);
           bind(clazz).in(Singleton.class);
+        }
+        for (Pair<String, Class<? extends Filter>> filter : filterRegistry) {
+          filter(filter.first).through(filter.second);
         }
       }
     };
@@ -788,9 +800,14 @@ public class ServerRpcProvider {
   }
 
   /**
-   * Set of servlets
+   * List of servlets
    */
   List<Pair<String, ServletHolder>> servletRegistry = Lists.newArrayList();
+
+  /**
+   * List of filters
+   */
+  List<Pair<String, Class<? extends Filter>>> filterRegistry = Lists.newArrayList();
 
   /**
    * Add a servlet to the servlet registry. This servlet will be attached to the
@@ -820,5 +837,16 @@ public class ServerRpcProvider {
    */
   public ServletHolder addServlet(String urlPattern, Class<? extends HttpServlet> servlet) {
     return addServlet(urlPattern, servlet, null);
+  }
+
+  /**
+   * Add a filter to the filter registry. This filter will be attached to the
+   * specified URL pattern when the server is started up.
+   *
+   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   *
+   */
+  public void addFilter(String urlPattern, Class<? extends Filter> filter) {
+    filterRegistry.add(new Pair<String, Class<? extends Filter>>(urlPattern, filter));
   }
 }

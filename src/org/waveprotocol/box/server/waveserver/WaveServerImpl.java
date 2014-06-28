@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.ListenerExecutor;
 
 /**
  * The main class that services the FederationHost, FederationRemote and ClientFrontend.
@@ -398,7 +400,7 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
    * @param waveMap records the waves and wavelets in memory
    */
   @Inject
-  WaveServerImpl(@Named("listener_executor") Executor listenerExecutor,
+  WaveServerImpl(@ListenerExecutor Executor listenerExecutor,
       CertificateManager certificateManager,
       @FederationRemoteBridge WaveletFederationProvider federationRemote, WaveMap waveMap) {
     this.listenerExecutor = listenerExecutor;

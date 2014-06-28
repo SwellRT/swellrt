@@ -42,6 +42,8 @@
   <inherits name='org.waveprotocol.box.attachment.Attachment'/>
   <inherits name='org.waveprotocol.box.profile.Profile'/>
   <inherits name='org.waveprotocol.box.webclient.common.communication.Communication'/>
+  <inherits name='org.waveprotocol.box.stat.Stat'/>
+
   <!-- TODO(hearnden): delete webclient.common.  It's not common to anything. -->
   <inherits name='org.waveprotocol.box.webclient.common.Common'/>
   <inherits name='org.waveprotocol.box.webclient.search.Search'/>
@@ -49,6 +51,7 @@
   <inherits name='org.waveprotocol.box.webclient.widget.error.Error'/>
   <inherits name='org.waveprotocol.box.webclient.widget.frame.Frame'/>
   <inherits name='org.waveprotocol.box.webclient.widget.loading.Loading'/>
+  <inherits name='org.waveprotocol.box.webclient.stat.Stat'/>
 
   <set-configuration-property name="CssResource.obfuscationPrefix" value="SWC" />
 

@@ -59,6 +59,8 @@ public class CoreSettings {
   public static final String DELTA_PERSIST_EXECUTOR_THREAD_COUNT = "delta_persist_executor_thread_count";
   public static final String STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT = "storage_continuation_executor_thread_count";
   public static final String LOOKUP_EXECUTOR_THREAD_COUNT = "lookup_executor_thread_count";
+  public static final String ROBOT_CONNECTION_THREAD_COUNT = "robot_connection_thread_count";
+  public static final String ROBOT_GATEWAY_THREAD_COUNT = "robot_gateway_thread_count";
   public static final String DISABLE_REGISTRATION = "disable_registration";
   public static final String ENABLE_SSL = "enable_ssl";
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
@@ -71,6 +73,7 @@ public class CoreSettings {
   public static final String ANALYTICS_ACCOUNT = "analytics_account";
   public static final String THUMBNAIL_PATTERNS_DIRECTORY = "thumbnail_patterns_directory";
   public static final String PROFILE_FETCHER_TYPE = "profile_fetcher_type";
+  public static final String ENABLE_PROFILING  = "enable_profiling";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -210,6 +213,16 @@ public class CoreSettings {
       defaultValue = "1")
   private static int lookupExecutorThreadCount;
 
+  @Setting(name = ROBOT_CONNECTION_THREAD_COUNT,
+      description = "The number of threads to perform robot client requests.",
+      defaultValue = "10")
+  private static int robotConnectionThreadCount;
+
+  @Setting(name = ROBOT_GATEWAY_THREAD_COUNT,
+      description = "The number of threads to handle any updates for robots.",
+      defaultValue = "10")
+  private static int robotGatewayThreadCount;
+
   @Setting(name = DISABLE_REGISTRATION,
       description = "Prevents the register page from being available to anyone", defaultValue = "false")
   private static boolean disableRegistration;
@@ -257,4 +270,9 @@ public class CoreSettings {
   @Setting(name = PROFILE_FETCHER_TYPE,
       description = "The wave profile fetcher used", defaultValue = "gravatar")
   private static String profileFetcherType;
+
+  @Setting(name = ENABLE_PROFILING,
+      description = "Enable profiling statistic",
+      defaultValue = "false")
+  private static boolean enableProfiling;
 }

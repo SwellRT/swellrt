@@ -22,6 +22,8 @@
 package org.waveprotocol.wave.client.scheduler;
 
 import com.google.gwt.user.client.ui.Widget;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
@@ -272,30 +274,43 @@ public class BrowserBackedScheduler implements Scheduler {
 
     double start = timer.getTime();
 
-    if (job instanceof IncrementalTask) {
-      boolean isFinished = !jobs.getRemovedJobAsProcess().execute();
+    TaskInfo taskInfo = taskInfos.get(job);
+    Timer profilingTimer = null;
+    if (taskInfo != null && Timing.isEnabled()) {
+      Timing.enterScope(taskInfo.scopeValues);
+      profilingTimer = Timing.start("schedule " + job.getClass().getSimpleName());
+    }
+    try {
+      if (job instanceof IncrementalTask) {
+        boolean isFinished = !jobs.getRemovedJobAsProcess().execute();
 
-      if (isFinished) {
-        // Remove all trace
-        cancel(job);
-      } else {
-        TaskInfo task = taskInfos.get(job);
-        // If the job has more work to do, we add it back into the job queue, unless it has has
-        // already been cancelled during execution (which would imply !hasJob)
-        if (task != null && hasJob(job)) {
-          // if it is a repeating job, add it to a delay before we contiune
-          if (task.calculateNextExecuteTime(start)) {
-            delayedJobs.addDelayedJob(task);
-          } else if (!delayedJobs.has(task.id)) {
-            jobs.add(priority, job);
+        if (isFinished) {
+          // Remove all trace
+          cancel(job);
+        } else {
+          TaskInfo task = taskInfos.get(job);
+          // If the job has more work to do, we add it back into the job queue, unless it has has
+          // already been cancelled during execution (which would imply !hasJob)
+          if (task != null && hasJob(job)) {
+            // if it is a repeating job, add it to a delay before we contiune
+            if (task.calculateNextExecuteTime(start)) {
+              delayedJobs.addDelayedJob(task);
+            } else if (!delayedJobs.has(task.id)) {
+              jobs.add(priority, job);
+            }
           }
         }
+      } else {
+        Task task = jobs.getRemovedJobAsTask();
+        // Remove all trace.
+        cancel(job);
+        task.execute();
       }
-    } else {
-      Task task = jobs.getRemovedJobAsTask();
-      // Remove all trace.
-      cancel(job);
-      task.execute();
+    } finally {
+      if (profilingTimer != null) {
+        Timing.stop(profilingTimer);
+        Timing.exitScope();
+      }
     }
 
     int timeSpent = (int) ( timer.getTime() - start);

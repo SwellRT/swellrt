@@ -16,23 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.waveprotocol.box.webclient.stat.gwtevent;
 
-package org.waveprotocol.box.server.waveserver;
-
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import com.google.inject.BindingAnnotation;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 
 /**
- * Used to mark the lookup executor class.
- *
- * @author yurize@apache.org (Yuri Zelikov)
+ * Receiver of {@link StatisticsEvent} events.
  */
-@BindingAnnotation @Target({ FIELD, PARAMETER, METHOD }) @Retention(RUNTIME)
-public @interface LookupExecutor {}
+public interface StatisticsEventListener {
+  public void onStatisticsEvent(StatisticsEvent event);
+}

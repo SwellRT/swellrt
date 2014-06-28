@@ -123,6 +123,15 @@
 
       </style>
       <!-- GWT-compiled JS. -->
+      <script type="text/javascript" language="javascript">
+      var stats = window.__stats = [];
+      window.__gwtStatsEvent = function(evt) {
+        stats[stats.length] = evt;
+        var listener = window.__stats_listener;
+        listener &amp;&amp; listener(evt);
+        return true;
+      }
+      </script>
       <script type="text/javascript" language="javascript" src="webclient/webclient.nocache.js" />
       <call:AnalyticsFragment expr:account='analyticsAccount'/>
     </head>

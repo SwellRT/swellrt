@@ -26,6 +26,7 @@ import org.waveprotocol.wave.client.editor.EditorImpl;
 import org.waveprotocol.wave.client.wavepanel.view.dom.CssProvider;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.BlipMessages;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.i18n.ReplyBoxMessages;
+import org.waveprotocol.wave.client.widget.dialog.Dialog;
 
 /**
  * This class is responsible for loading all the Css resources needed by the
@@ -48,6 +49,8 @@ public final class WavePanelResourceLoader {
       GWT.create(TopConversationViewBuilder.Resources.class);
   private final static ParticipantsViewBuilder.Resources participants =
       GWT.create(ParticipantsViewBuilder.Resources.class);
+  private final static Dialog.Resources dialog =
+      GWT.create(Dialog.Resources.class);
 
   private final static BlipMessages blipMessages =
       GWT.create(BlipMessages.class);
@@ -70,6 +73,7 @@ public final class WavePanelResourceLoader {
     StyleInjector.inject(inlineContinuation.css().getText(), isSynchronous);
     StyleInjector.inject(conversation.css().getText(), isSynchronous);
     StyleInjector.inject(participants.css().getText(), isSynchronous);
+    StyleInjector.inject(dialog.css().getText(), isSynchronous);
   }
 
   private WavePanelResourceLoader() {
@@ -101,6 +105,10 @@ public final class WavePanelResourceLoader {
 
   public static ParticipantsViewBuilder.Resources getParticipants() {
     return participants;
+  }
+
+  public static Dialog.Resources getDialog() {
+    return dialog;
   }
 
   public static BlipMessages getBlipMessages() {

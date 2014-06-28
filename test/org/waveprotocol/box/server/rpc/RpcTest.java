@@ -46,6 +46,7 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.waveprotocol.box.server.CoreSettings;
@@ -74,7 +75,8 @@ public class RpcTest extends TestCase {
      */
     server =
         new ServerRpcProvider(new InetSocketAddress[] {new InetSocketAddress("localhost", 0)},
-            new String[] {"./war"}, sessionManager, null, null, false, null, null);
+            new String[] {"./war"}, sessionManager, null, null, false, null, null,
+            Executors.newCachedThreadPool());
     Injector injector = Guice.createInjector(new AbstractModule() {
       @Override
       protected void configure() {

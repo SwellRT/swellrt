@@ -35,7 +35,7 @@
   <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/>
 
   <!-- Only build supported clients. -->
-  <set-property name="user.agent" value="safari,gecko1_8,ie6,ie8"/>
+  <set-property name="user.agent" value="safari,gecko1_8,ie8"/>
   <set-property name="mobile.user.agent" value="not_mobile" />
 
   <!-- Turn off logging, because it's really slow. -->

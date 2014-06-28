@@ -1,0 +1,4 @@
+<module>
+    <source path=""/>
+    <source path="org.waveprotocol.box.stat"/>
+</module>

@@ -20,9 +20,11 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -50,6 +52,8 @@ import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
 
 /**
  * Guice Module for the prototype Server.
@@ -60,19 +64,18 @@ public class WaveServerModule extends AbstractModule {
       new IdURIEncoderDecoder(new JavaUrlCodec());
   private static final HashedVersionFactory HASH_FACTORY = new HashedVersionFactoryImpl(URI_CODEC);
 
-  private final int listenerExecutorThreadCount;
   private final Executor waveletLoadExecutor;
-  private final Executor persistExecutor;
   private final Executor storageContinuationExecutor;
   private final boolean enableFederation;
 
-  public WaveServerModule(boolean enableFederation, int listenerCount, int waveletLoadCount,
-      int deltaPersistCount, int storageContinuationCount) {
+
+  @Inject
+  WaveServerModule(@Named(CoreSettings.ENABLE_FEDERATION) boolean enableFederation,
+      @WaveletLoadExecutor Executor waveletLoadExecutor,
+      @StorageContinuationExecutor Executor storageContinuationExecutor) {
     this.enableFederation = enableFederation;
-    this.listenerExecutorThreadCount = listenerCount;
-    waveletLoadExecutor = Executors.newFixedThreadPool(waveletLoadCount);
-    persistExecutor = Executors.newFixedThreadPool(deltaPersistCount);
-    storageContinuationExecutor = Executors.newFixedThreadPool(storageContinuationCount);
+    this.waveletLoadExecutor = waveletLoadExecutor;
+    this.storageContinuationExecutor = storageContinuationExecutor;
   }
 
   @Override
@@ -107,8 +110,6 @@ public class WaveServerModule extends AbstractModule {
     bind(WaveletProvider.class).to(WaveServerImpl.class).asEagerSingleton();
     bind(ReadableWaveletDataProvider.class).to(WaveServerImpl.class).in(Singleton.class);
     bind(HashedVersionFactory.class).toInstance(HASH_FACTORY);
-    bind(Executor.class).annotatedWith(Names.named("listener_executor")).toInstance(
-        Executors.newFixedThreadPool(listenerExecutorThreadCount));
   }
 
   @Provides
@@ -120,7 +121,7 @@ public class WaveServerModule extends AbstractModule {
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, persistExecutor), waveDomain,
+            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor), waveDomain,
             storageContinuationExecutor);
       }
     };
@@ -135,7 +136,7 @@ public class WaveServerModule extends AbstractModule {
       public RemoteWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new RemoteWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, persistExecutor),
+            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor),
             storageContinuationExecutor);
       }
     };

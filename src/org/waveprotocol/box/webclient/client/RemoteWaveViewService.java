@@ -62,6 +62,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.waveprotocol.box.stat.AsyncCallContext;
 
 /**
  * Implements the {@link WaveViewService} using RPCs.
@@ -211,6 +212,8 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
   /** Callback once opened. */
   private OpenCallback callback;
 
+  private AsyncCallContext openContext;
+
   /**
    * Creates a service.
    *
@@ -242,6 +245,7 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
     this.filter = IdFilter.of(filter.getIds(), newPrefixes);
     this.callback = callback;
 
+    openContext = AsyncCallContext.start("ProtocolOpenRequest");
     mux.open(waveId, filter, this);
   }
 
@@ -253,9 +257,11 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
     submitRequest.setDelta(serialize(wavelet, delta));
     submitRequest.setChannelId(channelId);
 
+    final AsyncCallContext callContext = AsyncCallContext.start("SubmitRequest");
     mux.submit(submitRequest, new SubmitResponseCallback() {
       @Override
       public void run(ProtocolSubmitResponse response) {
+        callContext.stop();
         HashedVersion resultVersion = HashedVersion.unsigned(0);
         if (response.hasHashedVersionAfterApplication()) {
           resultVersion =
@@ -309,6 +315,9 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
         callback.onUpdate(deserialize(fake));
         callback.onUpdate(deserialize(update));
       } else {
+        if (update.hasMarker()) {
+          openContext.stop();
+        }
         callback.onUpdate(deserialize(update));
       }
     }

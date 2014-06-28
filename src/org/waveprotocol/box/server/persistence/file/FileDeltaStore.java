@@ -39,6 +39,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.waveprotocol.box.stat.Timed;
 
 /**
  * A flat file based implementation of DeltaStore.
@@ -66,6 +67,7 @@ public class FileDeltaStore implements DeltaStore {
     this.basePath = basePath;
   }
 
+  @Timed
   @Override
   public FileDeltaCollection open(WaveletName waveletName) throws PersistenceException {
     try {
@@ -80,6 +82,7 @@ public class FileDeltaStore implements DeltaStore {
     FileDeltaCollection.delete(waveletName, basePath);
   }
 
+  @Timed
   @Override
   public ImmutableSet<WaveletId> lookup(WaveId waveId) throws PersistenceException {
     String waveDirectory = FileUtils.waveIdToPathSegment(waveId);
@@ -116,6 +119,7 @@ public class FileDeltaStore implements DeltaStore {
     return results.build();
   }
 
+  @Timed
   @Override
   public ExceptionalIterator<WaveId, PersistenceException> getWaveIdIterator() {
     File baseDir = new File(basePath);

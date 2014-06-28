@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server;
 
+import org.waveprotocol.box.server.executor.ExecutorsModule;
 import cc.kune.initials.InitialsAvatarsServlet;
 
 import com.google.gwt.logging.server.RemoteLoggingServiceImpl;
@@ -97,6 +98,10 @@ import javax.servlet.http.HttpServlet;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
 import org.waveprotocol.box.server.rpc.LocaleServlet;
+import org.waveprotocol.box.server.stat.RequestScopeFilter;
+import org.waveprotocol.box.server.stat.StatuszServlet;
+import org.waveprotocol.box.server.stat.TimingFilter;
+import org.waveprotocol.box.stat.StatService;
 
 /**
  * Wave Server entrypoint.
@@ -153,36 +158,28 @@ public class ServerMain {
 
   public static void run(Module coreSettings) throws PersistenceException,
       ConfigurationException, WaveServerException {
-    Injector settingsInjector = Guice.createInjector(coreSettings);
-    boolean enableFederation = settingsInjector.getInstance(Key.get(Boolean.class,
+    Injector injector = Guice.createInjector(coreSettings);
+    Module profilingModule = injector.getInstance(StatModule.class);
+    ExecutorsModule executorsModule = injector.getInstance(ExecutorsModule.class);
+    injector = injector.createChildInjector(profilingModule, executorsModule);
+
+    boolean enableFederation = injector.getInstance(Key.get(Boolean.class,
         Names.named(CoreSettings.ENABLE_FEDERATION)));
-
-    int listenerCount = settingsInjector.getInstance(Key.get(Integer.class,
-        Names.named(CoreSettings.LISTENER_EXECUTOR_THREAD_COUNT)));
-    int waveletLoadCount = settingsInjector.getInstance(Key.get(Integer.class,
-        Names.named(CoreSettings.WAVELET_LOAD_EXECUTOR_THREAD_COUNT)));
-    int deltaPersistCount = settingsInjector.getInstance(Key.get(Integer.class,
-        Names.named(CoreSettings.DELTA_PERSIST_EXECUTOR_THREAD_COUNT)));
-    int storageContinuationCount = settingsInjector.getInstance(Key.get(Integer.class,
-        Names.named(CoreSettings.STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT)));
-    int lookupCount = settingsInjector.getInstance(Key.get(Integer.class,
-        Names.named(CoreSettings.LOOKUP_EXECUTOR_THREAD_COUNT)));
-
     if (enableFederation) {
       Module federationSettings =
           SettingsBinder.bindSettings(PROPERTIES_FILE_KEY, FederationSettings.class);
       // This MUST happen first, or bindings will fail if federation is enabled.
-      settingsInjector = settingsInjector.createChildInjector(federationSettings);
+      injector = injector.createChildInjector(federationSettings);
     }
 
-    Module federationModule = buildFederationModule(settingsInjector, enableFederation);
-    PersistenceModule persistenceModule = settingsInjector.getInstance(PersistenceModule.class);
-    Module searchModule = settingsInjector.getInstance(SearchModule.class);
-    Module profileFetcherModule = settingsInjector.getInstance(ProfileFetcherModule.class);
-    Injector injector =
-        settingsInjector.createChildInjector(new ServerModule(enableFederation, listenerCount,
-            waveletLoadCount, deltaPersistCount, storageContinuationCount, lookupCount), profileFetcherModule,
-            new RobotApiModule(), federationModule, persistenceModule, searchModule);
+    Module serverModule = injector.getInstance(ServerModule.class);
+    Module federationModule = buildFederationModule(injector, enableFederation);
+    Module robotApiModule = new RobotApiModule();
+    PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
+    Module searchModule = injector.getInstance(SearchModule.class);
+    Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
+    injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
+        federationModule, searchModule, profileFetcherModule);
 
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
@@ -269,6 +266,15 @@ public class ServerMain {
     server.addServlet("/gadgets/*", GadgetProxyServlet.class, initParams);
 
     server.addServlet("/", WaveClientServlet.class);
+
+    // Profiling
+    server.addFilter("/*", RequestScopeFilter.class);
+    boolean enableProfiling =
+        injector.getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_PROFILING)));
+    if (enableProfiling) {
+      server.addFilter("/*", TimingFilter.class);
+      server.addServlet(StatService.STAT_URL, StatuszServlet.class);
+    }
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {

@@ -20,12 +20,15 @@
 
 package org.waveprotocol.wave.client;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.Command;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
+import org.waveprotocol.wave.client.scheduler.Scheduler;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 
 /**
  * Loads Undercurrent's stages in order.
@@ -71,18 +74,22 @@ public abstract class Stages {
   }
 
   private void loadStageZero() {
+    final Timer timer = Timing.start("Stage Zero");
     createStageZeroLoader().call(new Accessor<StageZero>() {
       @Override
       public void use(StageZero x) {
+        Timing.stop(timer);
         loadStageOne(x);
       }
     });
   }
 
   private void loadStageOne(final StageZero zero) {
+    final Timer timer = Timing.start("Stage One");
     createStageOneLoader(zero).call(new Accessor<StageOne>() {
       @Override
       public void use(StageOne x) {
+        Timing.stop(timer);
         loadStageTwo(x);
       }
     });
@@ -90,12 +97,15 @@ public abstract class Stages {
 
 
   private void loadStageTwo(final StageOne one) {
-    GWT.runAsync(new SimpleAsyncCallback() {
+    final Timer timer = Timing.start("Stage Two");
+    SchedulerInstance.getHighPriorityTimer().schedule(new Scheduler.Task() {
+
       @Override
-      public void onSuccess() {
+      public void execute() {
         createStageTwoLoader(one).call(new Accessor<StageTwo>() {
           @Override
           public void use(StageTwo x) {
+            Timing.stop(timer);
             loadStageThree(x);
           }
         });
@@ -104,12 +114,15 @@ public abstract class Stages {
   }
 
   private void loadStageThree(final StageTwo two) {
-    GWT.runAsync(new SimpleAsyncCallback() {
+    final Timer timer = Timing.start("Stage Tree");
+    SchedulerInstance.getHighPriorityTimer().schedule(new Scheduler.Task() {
+
       @Override
-      public void onSuccess() {
+      public void execute() {
         createStageThreeLoader(two).call(new Accessor<StageThree>() {
           @Override
           public void use(StageThree x) {
+            Timing.stop(timer);
             finish();
           }
         });

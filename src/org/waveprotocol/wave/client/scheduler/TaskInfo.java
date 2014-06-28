@@ -20,8 +20,12 @@
 
 package org.waveprotocol.wave.client.scheduler;
 
+import org.waveprotocol.box.stat.RequestScope;
+import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Priority;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Schedulable;
+
+import java.util.Map;
 
 /**
  * Some information about a scheduled task.
@@ -29,6 +33,7 @@ import org.waveprotocol.wave.client.scheduler.Scheduler.Schedulable;
  *
  * @author danilatos@google.com (Daniel Danilatos)
  */
+@SuppressWarnings("rawtypes")
 final class TaskInfo {
   private static int nextId;
   final String id = Integer.toString(++nextId);
@@ -36,6 +41,7 @@ final class TaskInfo {
   final double startTime;
   final double interval;
   final Schedulable job;
+  final Map<Class, RequestScope.Value> scopeValues;
   private double nextExecuteTime;
 
   public TaskInfo(Priority p, Schedulable job) {
@@ -48,6 +54,7 @@ final class TaskInfo {
     this.interval = interval;
     this.nextExecuteTime = startTime;
     this.job = job;
+    this.scopeValues = Timing.getScope().cloneValues();
   }
 
   @Override

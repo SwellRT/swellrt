@@ -72,6 +72,7 @@ import org.waveprotocol.wave.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
 import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
 import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
+import org.waveprotocol.wave.client.wavepanel.event.FocusManager;
 import org.waveprotocol.wave.client.widget.common.ImplPanel;
 import org.waveprotocol.wave.client.widget.popup.CenterPopupPositioner;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
@@ -88,6 +89,9 @@ import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.waveprotocol.box.stat.Timing;
+import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsEventSystem;
+import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -199,6 +203,7 @@ public class WebClient implements EntryPoint {
     }
 
     setupUi();
+    setupGwtStatistics();
 
     History.fireCurrentHistoryState();
     LOG.info("SimpleWebClient.onModuleLoad() done");
@@ -223,6 +228,8 @@ public class WebClient implements EntryPoint {
 
     setupSearchPanel();
     setupWavePanel();
+
+    FocusManager.init();
   }
 
   private void setupSearchPanel() {
@@ -322,6 +329,12 @@ public class WebClient implements EntryPoint {
     });
   }
 
+  private void setupGwtStatistics() {
+    GwtStatisticsEventSystem eventSystem = new GwtStatisticsEventSystem();
+    eventSystem.addListener(new GwtStatisticsHandler(), true);
+    eventSystem.enable(true);
+  }
+
   /**
    * Returns <code>ws(s)://yourhost[:port]/</code>.
    */
@@ -346,6 +359,7 @@ public class WebClient implements EntryPoint {
    *        {@code null} if only the creator should be added
    */
   private void openWave(WaveRef waveRef, boolean isNewWave, Set<ParticipantId> participants) {
+    final org.waveprotocol.box.stat.Timer timer = Timing.startRequest("Open Wave");
     LOG.info("WebClient.openWave()");
 
     if (wave != null) {
@@ -366,6 +380,7 @@ public class WebClient implements EntryPoint {
       @Override
       public void execute() {
         loading.removeFromParent();
+        Timing.stop(timer);
       }
     });
     String encodedToken = History.getToken();

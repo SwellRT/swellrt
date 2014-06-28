@@ -36,6 +36,7 @@ import org.waveprotocol.box.server.robots.OperationServiceRegistry;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.rpc.ProtoSerializer.SerializationException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
+import org.waveprotocol.box.stat.Timed;
 import org.waveprotocol.box.webclient.search.SearchService;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
@@ -58,7 +59,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @SuppressWarnings("serial")
 @Singleton
-public final class SearchServlet extends AbstractSearchServlet {
+public class SearchServlet extends AbstractSearchServlet {
 
   private static final Log LOG = Log.get(SearchServlet.class);
 
@@ -119,6 +120,7 @@ public final class SearchServlet extends AbstractSearchServlet {
   /**
    * Creates HTTP response to the search query. Main entrypoint for this class.
    */
+  @Timed
   @Override
   @VisibleForTesting
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {

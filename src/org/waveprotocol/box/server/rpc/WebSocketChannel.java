@@ -32,6 +32,9 @@ import org.waveprotocol.wave.communication.gson.GsonSerializable;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
+import org.waveprotocol.box.stat.SessionContext;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 /**
  * A channel abstraction for websocket, for sending and receiving strings.
@@ -78,6 +81,7 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
   }
 
   private final ProtoCallback callback;
+  private final SessionContext sessionContext;
   private final Gson gson = new Gson();
   private final ProtoSerializer serializer;
 
@@ -90,6 +94,8 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
    */
   public WebSocketChannel(ProtoCallback callback) {
     this.callback = callback;
+    this.sessionContext =
+        Timing.isEnabled() ? Timing.getScope().get(SessionContext.class) : null;
     // The ProtoSerializer could really be singleton.
     // TODO: Figure out a way to inject a singleton instance using Guice
     this.serializer = new ProtoSerializer();
@@ -97,18 +103,26 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
 
   public void handleMessageString(String data) {
     LOG.fine("received JSON message " + data);
-    Message message;
-
-    MessageWrapper wrapper = MessageWrapper.deserialize(gson, data);
-    
-    try {
-      message = serializer.fromJson(wrapper.message, wrapper.messageType);
-    } catch (SerializationException e) {
-      LOG.warning("message handling error", e);
-      e.printStackTrace();
-      return;
+    if (Timing.isEnabled()) {
+      Timing.enterScope();
+      Timing.getScope().set(SessionContext.class, sessionContext);
     }
-    callback.message(wrapper.sequenceNumber, message);
+    try {
+      Message message;
+
+      MessageWrapper wrapper = MessageWrapper.deserialize(gson, data);
+
+      try {
+        message = serializer.fromJson(wrapper.message, wrapper.messageType);
+      } catch (SerializationException e) {
+        LOG.warning("message handling error", e);
+        e.printStackTrace();
+        return;
+      }
+      callback.message(wrapper.sequenceNumber, message);
+    } finally {
+      Timing.exitScope();
+    }
   }
 
   static <T extends GsonSerializable> T load(JsonElement payload, T x, Gson gson) {
@@ -133,14 +147,19 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
   @Override
   public void sendMessage(int sequenceNo, Message message) {
     JsonElement json;
+    String str;
+
+    Timer timer = Timing.start("serializeMessage");
     try {
       json = serializer.toJson(message);
+      String type = message.getDescriptorForType().getName();
+      str = MessageWrapper.serialize(type, sequenceNo, json);
     } catch (SerializationException e) {
       LOG.warning("Failed to JSONify proto message", e);
       return;
+    } finally {
+      Timing.stop(timer);
     }
-    String type = message.getDescriptorForType().getName();
-    String str = MessageWrapper.serialize(type, sequenceNo, json);
     try {
       sendMessageString(str);
       LOG.fine("sent JSON message over websocket, sequence number " + sequenceNo

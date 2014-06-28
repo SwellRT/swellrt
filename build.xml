@@ -365,7 +365,7 @@
         <path refid="libpath"/>
         <path refid="test.libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <!-- Small Javascript size. -->
       <arg line="-style OBFUSCATED"/>
       <!-- Do not include class and package names in compiled JS. -->
@@ -421,7 +421,7 @@
         <path refid="libpath"/>
         <path refid="test.libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <!-- Human-readable JS. -->
       <arg line="-style PRETTY"/>
       <!-- Less optimal JS, but faster compile. -->
@@ -445,16 +445,19 @@
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
         <pathelement location="${src.dir}"/>
+        <pathelement location="${build.src.dir}"/>
         <pathelement location="${gen.dir}/messages"/>
         <path refid="libpath"/>
       </classpath>
-      <jvmarg value="-Xmx512M"/>
+      <jvmarg value="-Xmx1024M"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
       <arg value="-noserver" />
-      <arg line="-bindAddress 0.0.0.0" />
+      <arg line="-bindAddress 127.0.0.1" />
       <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.box.webclient.WebClientProd"/>
+      <arg line="-startupUrl http://localhost:9898"/>
+      <arg line="-logLevel DEBUG"/>
+      <arg value="org.waveprotocol.box.webclient.WebClientDev"/>
     </java>
   </target>
 
@@ -593,6 +596,7 @@
       </fileset>
       <patternset>
         <exclude name="javax/servlet/**/*"/>
+        <exclude name="org/eclipse/**/*"/>
       </patternset>
     </unzip>
     <copy todir="${staging.dir}" preservelastmodified="true">
@@ -681,7 +685,8 @@
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
-        <include name="com/google/gwt/core/client/**/*" />
+        <include name="com/google/gwt/core/server/**/*" />
+        <include name="com/google/gwt/core/shared/**/*" />
         <include name="com/google/gwt/logging/**/*" />
         <include name="com/google/gwt/user/server/**/*" />
         <include name="com/google/gwt/user/client/rpc/**/*" />
@@ -704,6 +709,7 @@
         <include name="org/apache/commons/logging/**/*" />
         <include name="org/apache/lucene/**/*" />
         <include name="org/apache/commons/io/**/*" />
+        <include name="org/apache/xerces/**/*" />
         <include name="org/bson/**/*" />
         <include name="org/dom4j/**/*" />
         <include name="org/eclipse/**/*" />
@@ -947,9 +953,9 @@
   <target name="get-third-party-codegen" description="Download code generating third party dependencies">
     <get dest="${lib.codegen}" usetimestamp="true" skipexisting="true">
       <url url="http://www.antlr3.org/download/antlr-3.2.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.5.1/gwt-dev-2.5.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.5.1/gwt-user-2.5.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.5.1/gwt-codeserver-2.5.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.6.1/gwt-dev-2.6.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.6.1/gwt-codeserver-2.6.1.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final-sources.jar" />
       <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" />

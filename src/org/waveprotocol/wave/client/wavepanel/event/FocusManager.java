@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyEvent;
@@ -34,6 +35,10 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import org.waveprotocol.box.stat.ExecutionTree;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
+import org.waveprotocol.box.webclient.stat.dialog.StatDialog;
 
 import org.waveprotocol.wave.client.common.util.EventWrapper;
 import org.waveprotocol.wave.client.common.util.KeyCombo;
@@ -82,7 +87,7 @@ public final class FocusManager implements Focusable, KeySignalHandler {
   /** Unique top-level focus manager. */
   private final static FocusManager ROOT = new FocusManager(null, true);
 
-  static {
+  public static void init() {
     DocumentPanel.install(ROOT);
   }
 
@@ -228,6 +233,8 @@ public final class FocusManager implements Focusable, KeySignalHandler {
 
     private final KeySignalHandler globalHandler;
 
+    private int statDialogCondition = 0;
+
     private DocumentPanel(KeySignalHandler handler) {
       this.globalHandler = handler;
     }
@@ -256,7 +263,11 @@ public final class FocusManager implements Focusable, KeySignalHandler {
 
     @Override
     public void onKeyDown(KeyDownEvent event) {
-      dispatch(event);
+      if (checkStatDialogCondition(event)) {
+        StatDialog.show();
+      } else {
+        dispatch(event);
+      }
     }
 
     @Override
@@ -270,22 +281,54 @@ public final class FocusManager implements Focusable, KeySignalHandler {
     }
 
     private void dispatch(KeyEvent<?> event) {
-      // Only respond to key events on the body element. Otherwise, the key
-      // event was probably targeted to some editable input element, and that
-      // should own the events.
-      NativeEvent realEvent = event.getNativeEvent();
-      Element target = realEvent.getEventTarget().cast();
-      if (!"body".equals(target.getTagName().toLowerCase())) {
-        return;
+      Timer timer = null;
+      if (Timing.isEnabled()) {
+        Timing.enterScope();
+        Timing.getScope().set(ExecutionTree.class, new ExecutionTree());
+        timer = Timing.start("Key event dispatch");
       }
-      // Test that the event is meaningful (and stop bubbling if it is not).
-      SignalEvent signal = SignalEventImpl.create(realEvent.<Event>cast(), true);
-      if (signal != null) {
-        KeyCombo key = EventWrapper.getKeyCombo(signal);
-        if (globalHandler.onKeySignal(key)) {
-          event.preventDefault();
+      try {
+        // Only respond to key events on the body element. Otherwise, the key
+        // event was probably targeted to some editable input element, and that
+        // should own the events.
+        NativeEvent realEvent = event.getNativeEvent();
+        Element target = realEvent.getEventTarget().cast();
+        if (!"body".equals(target.getTagName().toLowerCase())) {
+          return;
         }
+        // Test that the event is meaningful (and stop bubbling if it is not).
+        SignalEvent signal = SignalEventImpl.create(realEvent.<Event>cast(), true);
+        if (signal != null) {
+          KeyCombo key = EventWrapper.getKeyCombo(signal);
+          if (globalHandler.onKeySignal(key)) {
+            event.preventDefault();
+          }
+        }
+      } finally {
+        Timing.stop(timer);
+        Timing.exitScope();
       }
+    }
+
+    private boolean checkStatDialogCondition(KeyDownEvent event) {
+      int code = event.getNativeEvent().getKeyCode();
+      switch (statDialogCondition) {
+        case 0:
+          if (code == KeyCodes.KEY_CTRL) {
+            statDialogCondition = 1;
+          }
+          break;
+        case 1:
+          statDialogCondition = (code == KeyCodes.KEY_ALT)?2:0;
+          break;
+        case 2:
+          statDialogCondition = 0;
+          if (code == KeyCodes.KEY_CTRL) {
+            return true;
+          }
+          break;
+      }
+      return false;
     }
   }
 }

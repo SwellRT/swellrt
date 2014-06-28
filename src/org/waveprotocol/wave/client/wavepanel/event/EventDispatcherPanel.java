@@ -37,6 +37,8 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -302,7 +304,19 @@ public final class EventDispatcherPanel extends ComplexPanel
 
     @Override
     boolean dispatch(ChangeEvent event, Element context, WaveChangeHandler handler) {
-      return handler.onChange(event, context);
+      Timer timer = null;
+      if (Timing.isEnabled()) {
+        Timing.enterScope();
+        timer = Timing.start("Mouse event dispatch");
+      }
+      try {
+        return handler.onChange(event, context);
+      } finally {
+        if (timer != null) {
+          Timing.stop(timer);
+          Timing.exitScope();
+        }
+      }
     }
 
     @Override
