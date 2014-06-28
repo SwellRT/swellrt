@@ -76,8 +76,6 @@
 	<classpathentry kind="lib" path="third_party/test/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-api-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/mongo-java-driver-2.11.2.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.5.1.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.5.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/validation-api-1.1.0.Final-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/validation-api-1.1.0.Final.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar"/>
@@ -87,5 +85,8 @@
 	<classpathentry kind="lib" path="third_party/runtime/atmosphere-runtime-2.1.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/slf4j-simple-1.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
