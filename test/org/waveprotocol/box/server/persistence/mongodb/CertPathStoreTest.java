@@ -42,7 +42,7 @@ public class CertPathStoreTest extends CertPathStoreTestBase {
    * Initializes the MongoDB version of a {@link CertPathStoreTestBase}.
    */
   public CertPathStoreTest() throws Exception {
-    MongoDbProvider mongoDbProvider = new MongoDbProvider();
+    MongoDbProvider mongoDbProvider = new MongoDbProvider("127.0.0.1", "27017", "wiab_test");
     this.database = mongoDbProvider.getDatabaseForName(TEST_DATABASE);
     certPathStore = new MongoDbStore(database);
   }

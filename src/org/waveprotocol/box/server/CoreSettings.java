@@ -74,6 +74,9 @@ public class CoreSettings {
   public static final String THUMBNAIL_PATTERNS_DIRECTORY = "thumbnail_patterns_directory";
   public static final String PROFILE_FETCHER_TYPE = "profile_fetcher_type";
   public static final String ENABLE_PROFILING  = "enable_profiling";
+  public static final String MONGODB_HOST = "mongodb_host";
+  public static final String MONGODB_PORT = "mongodb_port";
+  public static final String MONGODB_DATABASE = "mongodb_database";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -152,7 +155,7 @@ public class CoreSettings {
   @Setting(name = SESSIONS_STORE_DIRECTORY,
       description = "Location on disk where the user sessions are persisted. Must be writeable by the "
           + "wave-in-a-box process.",
-      defaultValue = "_sessions")
+ defaultValue = "_sessions")
   private static String sessionsStoreDirectory;
 
   @Setting(name = SESSION_COOKIE_MAX_AGE,
@@ -275,4 +278,16 @@ public class CoreSettings {
       description = "Enable profiling statistic",
       defaultValue = "false")
   private static boolean enableProfiling;
+
+  @Setting(name = MONGODB_HOST, description = "The host address for the MongoDB server",
+      defaultValue = "127.0.0.1")
+  private static String mongoDBhost;
+
+  @Setting(name = MONGODB_PORT, description = "The port number of the MongoDB server",
+      defaultValue = "27017")
+  private static String mongoDBport;
+
+  @Setting(name = MONGODB_DATABASE, description = "The database name used in the MongoDB server",
+      defaultValue = "wiab")
+  private static String mongoDBdatabase;
 }

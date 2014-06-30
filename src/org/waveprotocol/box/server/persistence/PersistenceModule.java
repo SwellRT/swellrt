@@ -61,15 +61,28 @@ public class PersistenceModule extends AbstractModule {
 
   private MongoDbProvider mongoDbProvider;
 
+  private final String mongoDBHost;
+
+  private final String mongoDBPort;
+
+  private final String mongoDBdatabase;
+
+
   @Inject
   public PersistenceModule(@Named(CoreSettings.SIGNER_INFO_STORE_TYPE) String signerInfoStoreType,
       @Named(CoreSettings.ATTACHMENT_STORE_TYPE) String attachmentStoreType,
       @Named(CoreSettings.ACCOUNT_STORE_TYPE) String accountStoreType,
-      @Named(CoreSettings.DELTA_STORE_TYPE) String deltaStoreType) {
+      @Named(CoreSettings.DELTA_STORE_TYPE) String deltaStoreType,
+      @Named(CoreSettings.MONGODB_HOST) String mongoDBHost,
+      @Named(CoreSettings.MONGODB_PORT) String mongoDBPort,
+      @Named(CoreSettings.MONGODB_DATABASE) String mongoDBdatabase) {
     this.signerInfoStoreType = signerInfoStoreType;
     this.attachmentStoreType = attachmentStoreType;
     this.accountStoreType = accountStoreType;
     this.deltaStoreType = deltaStoreType;
+    this.mongoDBHost = mongoDBHost;
+    this.mongoDBPort = mongoDBPort;
+    this.mongoDBdatabase = mongoDBdatabase;
   }
 
   /**
@@ -77,7 +90,7 @@ public class PersistenceModule extends AbstractModule {
    */
   public MongoDbProvider getMongoDbProvider() {
     if (mongoDbProvider == null) {
-      mongoDbProvider = new MongoDbProvider();
+      mongoDbProvider = new MongoDbProvider(mongoDBHost, mongoDBPort, mongoDBdatabase);
     }
     return mongoDbProvider;
   }

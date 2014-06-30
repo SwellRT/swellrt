@@ -38,7 +38,7 @@ public class AttachmentStoreTest extends AttachmentStoreTestBase {
    * Initializes the MongoDB version of a {@link AttachmentStoreTestBase}.
    */
   public AttachmentStoreTest() throws Exception {
-    MongoDbProvider mongoDbProvider = new MongoDbProvider();
+    MongoDbProvider mongoDbProvider = new MongoDbProvider("127.0.0.1", "27017", "wiab_test");
     this.database = mongoDbProvider.getDatabaseForName(TEST_DATABASE);
     store = new MongoDbStore(database);
   }
@@ -48,7 +48,7 @@ public class AttachmentStoreTest extends AttachmentStoreTestBase {
     super.tearDown();
     database.dropDatabase();
   }
-  
+
   @Override
   protected AttachmentStore newAttachmentStore() {
     database.dropDatabase();

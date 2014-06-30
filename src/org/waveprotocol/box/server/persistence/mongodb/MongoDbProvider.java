@@ -30,9 +30,7 @@ import com.mongodb.MongoException;
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Properties;
 
 /**
  * Class to lazily setup and manage the MongoDb connection.
@@ -43,29 +41,17 @@ import java.util.Properties;
 public class MongoDbProvider {
   private static final Log LOG = Log.get(MongoDbProvider.class);
 
-  /** Location of the MongoDB properties file in the classpath. */
-  private static final String PROPERTIES_LOC =
-      "org/waveprotocol/box/server/persistence/mongodb/mongodb.properties";
+  private String dbHost;
 
-  /** Name of the property that stores the host. */
-  private static final String HOST_PROPERTY = "mongoDbHost";
+  private String dbPort;
 
-  /** Name of the property that stores the port. */
-  private static final String PORT_PROPERTY = "mongoDbPort";
-
-  /** Name of the property that stores the name of the database. */
-  private static final String DATABASE_NAME_PROPERTY = "mongoDbDatabase";
+  private String dbName;
 
   /**
    * Our {@link MongoClient} instance, should be accessed by getMongo unless during
    * start().
    */
   private Mongo mongo;
-
-  /**
-   * Our lazily loaded {@link Properties} instance.
-   */
-  private Properties properties;
 
   /**
    * Lazily instantiated {@link MongoDbStore}.
@@ -83,7 +69,10 @@ public class MongoDbProvider {
   /**
    * Constructs a new empty {@link MongoDbProvider}.
    */
-  public MongoDbProvider() {
+  public MongoDbProvider(String dbHost, String dbPort, String dbName) {
+    this.dbHost = dbHost;
+    this.dbPort = dbPort;
+    this.dbName = dbName;
   }
 
   /**
@@ -95,10 +84,8 @@ public class MongoDbProvider {
   private void start() {
     Preconditions.checkState(!isRunning(), "Can't start after a connection has been established");
 
-    ensurePropertiesLoaded();
-
-    String host = properties.getProperty(HOST_PROPERTY);
-    int port = Integer.parseInt(properties.getProperty(PORT_PROPERTY));
+    String host = dbHost;
+    int port = Integer.parseInt(dbPort);
     try {
       // New MongoDB Client, see http://docs.mongodb.org/manual/release-notes/drivers-write-concern/
       mongo = new MongoClient(host, port);
@@ -108,7 +95,7 @@ public class MongoDbProvider {
 
     try {
       // Check to see if we are alive
-      mongo.getDB(getDatabaseName()).command("ping");
+      mongo.getDB(dbName).command("ping");
     } catch (MongoException e) {
       throw new PersistenceStartException("Can't ping MongoDb", e);
     }
@@ -117,39 +104,13 @@ public class MongoDbProvider {
     LOG.info("Started MongoDb persistence");
   }
 
-  /**
-   * Ensures that the properties for MongoDb are loaded.
-   *
-   * @throws PersistenceStartException if the properties can not be loaded.
-   */
-  private void ensurePropertiesLoaded() {
-    if (properties != null) {
-      // Already loaded
-      return;
-    }
-    Properties properties = new Properties();
-    try {
-      properties.load(ClassLoader.getSystemResourceAsStream(PROPERTIES_LOC));
-    } catch (IOException e) {
-      throw new PersistenceStartException("Unable to load Properties for MongoDb", e);
-    }
-    this.properties = properties;
-  }
 
   /**
    * Returns the {@link DB} with the name that is specified in the properties
    * file.
    */
   private DB getDatabase() {
-    return getDatabaseForName(getDatabaseName());
-  }
-
-  /**
-   * Returns the name of the database as specified in the properties file.
-   */
-  private String getDatabaseName() {
-    ensurePropertiesLoaded();
-    return properties.getProperty(DATABASE_NAME_PROPERTY);
+    return getDatabaseForName(dbName);
   }
 
   /**

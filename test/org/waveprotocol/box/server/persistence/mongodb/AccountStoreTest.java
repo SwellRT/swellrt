@@ -40,7 +40,7 @@ public class AccountStoreTest extends AccountStoreTestBase {
    * Initializes the MongoDB version of a {@link AccountStoreTestBase}.
    */
   public AccountStoreTest() throws Exception {
-    MongoDbProvider mongoDbProvider = new MongoDbProvider();
+    MongoDbProvider mongoDbProvider = new MongoDbProvider("127.0.0.1", "27017", "wiab_test");
     this.database = mongoDbProvider.getDatabaseForName(TEST_DATABASE);
     store = new MongoDbStore(database);
   }
@@ -50,7 +50,7 @@ public class AccountStoreTest extends AccountStoreTestBase {
     super.tearDown();
     database.dropDatabase();
   }
-  
+
   @Override
   protected AccountStore newAccountStore() {
     database.dropDatabase();
