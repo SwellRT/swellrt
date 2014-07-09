@@ -30,9 +30,9 @@ import java.util.Map;
 public class Timing {
   static private final StatRecorder statsRecorder = new StatRecorder();
   static private final StatRenderer renderer = new StatRenderer();
-  static private RequestScope scope = new SingleThreadedRequestScope();
+  static private RequestScope scope;
 
-  static private boolean enabled = true;
+  static private boolean enabled = false;
 
   /**
    * Gets recorder of statistic.
@@ -59,7 +59,7 @@ public class Timing {
    * Initializes scope.
    */
   static public void enterScope() {
-    if (enabled) {
+    if (enabled && scope != null) {
       scope.enter();
     }
   }
@@ -67,9 +67,9 @@ public class Timing {
   /**
    * Initializes scope with specified data.
    */
-  static public void enterScope(Map<Class, RequestScope.Value> scopeData) {
-    if (enabled) {
-      scope.enter(scopeData);
+  static public void enterScope(Map<Class, RequestScope.Value> scopeValues) {
+    if (enabled && scope != null && scopeValues != null) {
+      scope.enter(scopeValues);
     }
   }
 
@@ -77,7 +77,9 @@ public class Timing {
    * Clears scope.
    */
   static public void exitScope() {
-    scope.exit();
+    if (scope != null) {
+      scope.exit();
+    }
   }
 
   /**
@@ -88,10 +90,35 @@ public class Timing {
   }
 
   /**
-   * Gets scope.
+   * Gets scope value.
    */
-  static public RequestScope getScope() {
-    return scope;
+  static public <T extends RequestScope.Value> T getScopeValue(Class<T> clazz) {
+    if (scope != null) {
+      enterIfOutOfScope();
+      return scope.get(clazz);
+    }
+    return null;
+  }
+
+  /**
+   * Sets scope value.
+   */
+  static public <T extends RequestScope.Value> void setScopeValue(Class<T> clazz, T value) {
+    if (scope != null) {
+      enterIfOutOfScope();
+      scope.set(clazz, value);
+    }
+  }
+
+  /**
+   * Clones scope values.
+   */
+  static public Map<Class, RequestScope.Value> cloneScopeValues() {
+    if (scope != null) {
+      enterIfOutOfScope();
+      return scope.cloneValues();
+    }
+    return null;
   }
 
   /**
@@ -235,6 +262,16 @@ public class Timing {
    * Gets execution tree.
    */
   static private ExecutionTree getExecutionTree() {
-    return scope.get(ExecutionTree.class);
+     if (scope != null) {
+      enterIfOutOfScope();
+      return scope.get(ExecutionTree.class);
+     }
+     return null;
+  }
+
+  static private void enterIfOutOfScope() {
+    if (!scope.isEntered()) {
+      scope.enter();
+    }
   }
 }

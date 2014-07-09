@@ -95,7 +95,7 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
   public WebSocketChannel(ProtoCallback callback) {
     this.callback = callback;
     this.sessionContext =
-        Timing.isEnabled() ? Timing.getScope().get(SessionContext.class) : null;
+        Timing.isEnabled() ? Timing.getScopeValue(SessionContext.class) : null;
     // The ProtoSerializer could really be singleton.
     // TODO: Figure out a way to inject a singleton instance using Guice
     this.serializer = new ProtoSerializer();
@@ -105,7 +105,7 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
     LOG.fine("received JSON message " + data);
     if (Timing.isEnabled()) {
       Timing.enterScope();
-      Timing.getScope().set(SessionContext.class, sessionContext);
+      Timing.setScopeValue(SessionContext.class, sessionContext);
     }
     try {
       Message message;

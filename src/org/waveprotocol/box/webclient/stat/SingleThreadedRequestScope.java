@@ -16,9 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.waveprotocol.box.stat;
+package org.waveprotocol.box.webclient.stat;
 
 import com.google.common.collect.Maps;
+
+import org.waveprotocol.box.stat.ExecutionTree;
+import org.waveprotocol.box.stat.RequestScope;
+
 import java.util.Map;
 
 /**
@@ -27,11 +31,11 @@ import java.util.Map;
  * @author akaplanov@gmail.com (A. Kaplanov)
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-class SingleThreadedRequestScope implements RequestScope {
+public class SingleThreadedRequestScope implements RequestScope {
 
   private Map<Class, Value> values;
 
-  SingleThreadedRequestScope() {
+  public SingleThreadedRequestScope() {
   }
 
   @Override

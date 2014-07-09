@@ -57,7 +57,7 @@ public class RequestScopeExecutor implements Executor {
     Preconditions.checkNotNull(executor, "Executor is not defined.");
 
     final Map<Class, RequestScope.Value> values =
-            Timing.isEnabled() ? Timing.getScope().cloneValues() : null;
+            Timing.isEnabled() ? Timing.cloneScopeValues() : null;
 
     executor.submit(new Runnable() {
       @Override

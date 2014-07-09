@@ -30,7 +30,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.waveprotocol.box.stat.RequestScope;
@@ -150,16 +149,16 @@ public class ScheduledRequestScopeExecutor implements ScheduledExecutorService {
   public void execute(Runnable r) {
     throw new UnsupportedOperationException();
   }
-  
+
   private Runnable makeScopedRunnable(final Runnable runnable) {
     final Map<Class, RequestScope.Value> scopeValues
-      = (Timing.isEnabled()) ? Timing.getScope().cloneValues() : null;
+      = (Timing.isEnabled()) ? Timing.cloneScopeValues() : null;
 
     return new Runnable() {
       @Override
       public void run() {
         if (scopeValues != null) {
-          Timing.getScope().enter(scopeValues);
+          Timing.enterScope(scopeValues);
         }
         try {
           runnable.run();
@@ -169,16 +168,16 @@ public class ScheduledRequestScopeExecutor implements ScheduledExecutorService {
       }
     };
   }
-  
+
   private <T> Callable<T> makeScopedCallable(final Callable<T> callable) {
     final Map<Class, RequestScope.Value> scopeValues
-      = (Timing.isEnabled()) ? Timing.getScope().cloneValues() : null;
+      = (Timing.isEnabled()) ? Timing.cloneScopeValues() : null;
 
     return new Callable<T> () {
       @Override
       public T call() throws Exception {
         if (scopeValues != null) {
-          Timing.getScope().enter(scopeValues);
+          Timing.enterScope(scopeValues);
         }
         try {
           return callable.call();

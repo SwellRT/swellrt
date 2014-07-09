@@ -54,7 +54,7 @@ final class TaskInfo {
     this.interval = interval;
     this.nextExecuteTime = startTime;
     this.job = job;
-    this.scopeValues = Timing.getScope().cloneValues();
+    this.scopeValues = Timing.cloneScopeValues();
   }
 
   @Override

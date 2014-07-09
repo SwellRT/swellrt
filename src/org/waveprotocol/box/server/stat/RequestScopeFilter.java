@@ -54,7 +54,7 @@ public class RequestScopeFilter implements Filter {
       Timing.enterScope();
       final HttpSession session = ((HttpServletRequest)request).getSession();
       final ParticipantId loggedInUser = (ParticipantId)session.getAttribute(SessionManager.USER_FIELD);
-      Timing.getScope().set(SessionContext.class, new SessionContext() {
+      Timing.setScopeValue(SessionContext.class, new SessionContext() {
         @Override
         public boolean isAuthenticated() {
           return session != null;

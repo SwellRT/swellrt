@@ -284,7 +284,7 @@ public final class FocusManager implements Focusable, KeySignalHandler {
       Timer timer = null;
       if (Timing.isEnabled()) {
         Timing.enterScope();
-        Timing.getScope().set(ExecutionTree.class, new ExecutionTree());
+        Timing.setScopeValue(ExecutionTree.class, new ExecutionTree());
         timer = Timing.start("Key event dispatch");
       }
       try {

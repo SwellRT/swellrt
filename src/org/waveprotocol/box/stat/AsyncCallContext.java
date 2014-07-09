@@ -45,7 +45,7 @@ public class AsyncCallContext {
     Map<Class, RequestScope.Value> values = null;
     Timer timer = null;
     if (Timing.isEnabled()) {
-      values = Timing.getScope().cloneValues();
+      values = Timing.cloneScopeValues();
       ExecutionTree tree = (ExecutionTree)values.get(ExecutionTree.class);
       if (tree != null) {
         timer = tree.start(name);

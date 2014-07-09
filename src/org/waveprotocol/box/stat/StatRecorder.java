@@ -75,6 +75,6 @@ class StatRecorder {
   }
 
   private SessionContext getSessionContext() {
-    return Timing.getScope().get(SessionContext.class);
+    return Timing.getScopeValue(SessionContext.class);
   }
 }

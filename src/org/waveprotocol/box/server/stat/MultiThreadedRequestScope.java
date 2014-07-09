@@ -61,29 +61,20 @@ public class MultiThreadedRequestScope implements RequestScope {
 
   @Override
   public <T extends RequestScope.Value> void set(Class<T> clazz, T value) {
-    enterIfOutOfScope();
     values.get().put(clazz, value);
   }
 
   @Override
   public <T extends RequestScope.Value> T get(Class<T> clazz) {
-    enterIfOutOfScope();
     return (T)values.get().get(clazz);
   }
 
   @Override
   public Map<Class, RequestScope.Value> cloneValues() {
-    enterIfOutOfScope();
     Map<Class, Value> map = Maps.<Class, Value>newHashMap();
     for (Map.Entry<Class, Value> entry : values.get().entrySet()) {
       map.put(entry.getKey(), entry.getValue().clone());
     }
     return map;
-  }
-
-  private void enterIfOutOfScope() {
-    if (values.get() == null) {
-      enter();
-    }
   }
 }

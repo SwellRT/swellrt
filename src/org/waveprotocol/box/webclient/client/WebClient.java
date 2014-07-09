@@ -90,6 +90,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.waveprotocol.box.stat.Timing;
+import org.waveprotocol.box.webclient.stat.SingleThreadedRequestScope;
 import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsEventSystem;
 import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 
@@ -203,7 +204,7 @@ public class WebClient implements EntryPoint {
     }
 
     setupUi();
-    setupGwtStatistics();
+    setupStatistics();
 
     History.fireCurrentHistoryState();
     LOG.info("SimpleWebClient.onModuleLoad() done");
@@ -329,7 +330,9 @@ public class WebClient implements EntryPoint {
     });
   }
 
-  private void setupGwtStatistics() {
+  private void setupStatistics() {
+    Timing.setScope(new SingleThreadedRequestScope());
+    Timing.setEnabled(true);
     GwtStatisticsEventSystem eventSystem = new GwtStatisticsEventSystem();
     eventSystem.addListener(new GwtStatisticsHandler(), true);
     eventSystem.enable(true);
