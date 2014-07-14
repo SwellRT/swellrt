@@ -22,7 +22,7 @@
 # to override wave_server_domain run: ant -f server-config.xml -Dwave_server_domain=example.com
 
 
-# Domain name of the wave server 
+# Domain name of the wave server
 # Default value: local.net
 wave_server_domain = @WAVE_SERVER_DOMAIN@
 
@@ -203,3 +203,15 @@ thumbnail_patterns_directory = @THUMBNAIL_PATTERNS_DIRECTORY@
 # Currently supported profile fetcher types: gravatar, initials.
 # Default value: gravatar.
 profile_fetcher_type = @PROFILE_FETCHER_TYPE@
+
+# Mongodb connection options
+# Only used if some of the *_store_type properties are set to 'mongodb'
+
+# Server's host name or IP address. Default value: 127.0.0.1
+mongodb_host = @MONGODB_HOST@
+
+# Server's port. Default value: 27017
+mongodb_port = @MONGODB_PORT@
+
+# Database's name. Default name: wiab
+mongodb_database = @MONGODB_DATABASE@

@@ -45,8 +45,6 @@
   <property name="delta_persist_executor_thread_count" value="1" />
   <property name="storage_continuation_executor_thread_count" value="1" />
   <property name="lookup_executor_thread_count" value="1" />
-  <property name="robot_connection_thread_count" value="10" />
-  <property name="robot_gateway_thread_count" value="10" />
   <property name="disable_registration" value="false" />
   <property name="enable_ssl" value="false" />
   <property name="ssl_keystore_path" value="wiab.ks" />
@@ -59,7 +57,9 @@
   <property name="thumbnail_patterns_directory" value="thumbnail_patterns" />
   <property name="analytics_account" value="" />
   <property name="profile_fetcher_type" value="gravatar" />
-  <property name="enable_profiling" value="false" />
+  <property name="mongodb_host" value="127.0.0.1" />
+  <property name="mongodb_port" value="27017" />
+  <property name="mongodb_database" value="wiab" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -87,7 +87,7 @@
 
   <target name="server-config" depends="create-folders"
       description="Run to create the server configuration file.
-	  You can pass custom values, for example:
+    You can pass custom values, for example:
       ant -f server-config.xml -Dwave_server_domain=example.com">
     <echo>Generating server.config</echo>
     <copy file="server.config"
@@ -129,8 +129,6 @@
           <token key="DELTA_PERSIST_EXECUTOR_THREAD_COUNT" value="${delta_persist_executor_thread_count}" />
           <token key="STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT" value="${storage_continuation_executor_thread_count}" />
           <token key="LOOKUP_EXECUTOR_THREAD_COUNT" value="${lookup_executor_thread_count}" />
-          <token key="ROBOT_CONNECTION_THREAD_COUNT" value="${robot_connection_thread_count}" />
-          <token key="ROBOT_GATEWAY_THREAD_COUNT" value="${robot_gateway_thread_count}" />
           <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
@@ -143,7 +141,9 @@
           <token key="ANALYTICS_ACCOUNT" value="${analytics_account}" />
           <token key="THUMBNAIL_PATTERNS_DIRECTORY" value="${thumbnail_patterns_directory}" />
           <token key="PROFILE_FETCHER_TYPE" value="${profile_fetcher_type}" />
-          <token key="ENABLE_PROFILING" value="${enable_profiling}" />
+          <token key="MONGODB_HOST" value="${mongodb_host}" />
+          <token key="MONGODB_PORT" value="${mongodb_port}" />
+          <token key="MONGODB_DATABASE" value="${mongodb_database}" />
         </replacetokens>
       </filterchain>
     </copy>
