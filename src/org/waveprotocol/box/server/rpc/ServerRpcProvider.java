@@ -50,10 +50,10 @@ import org.atmosphere.util.IOUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -67,16 +67,16 @@ import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereChannel;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereClientInterceptor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.util.NetUtils;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -378,6 +378,9 @@ public class ServerRpcProvider {
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
+
+    // Sets an specific session cookie name
+    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", "WSESSIONID");
 
     addWebSocketServlets();
 

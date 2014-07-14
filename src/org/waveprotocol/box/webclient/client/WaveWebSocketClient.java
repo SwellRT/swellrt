@@ -36,6 +36,8 @@ import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitResponseJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolWaveletUpdateJsoImpl;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.client.events.ClientEvents;
 import org.waveprotocol.wave.client.events.Log;
 import org.waveprotocol.wave.client.events.NetworkStatusEvent;
@@ -46,8 +48,6 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
 import java.util.Queue;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
 
 
 /**
@@ -57,7 +57,10 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final int MAX_INITIAL_FAILURES = 2;
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
   private static final int RECONNECT_TIME_MS = 5000;
-  private static final String JETTY_SESSION_TOKEN_NAME = "JSESSIONID";
+
+  // Sets an specific session cookie name
+  // private static final String JETTY_SESSION_TOKEN_NAME = "JSESSIONID";
+  private static final String JETTY_SESSION_TOKEN_NAME = "WSESSIONID";
 
   /**
    * Envelope for delivering arbitrary messages. Each envelope has a sequence
