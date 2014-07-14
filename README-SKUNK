@@ -1,0 +1,45 @@
+
+
+Generating Maven artifacts for integration with third apps
+----------------------------------------------------------
+
+Run install-mvn-artifacts.sh to generate and install the maven artifacts in the local repo.
+
+These are the mvn dependencies:
+
+
+    <!-- GWT modules for building a Wave based app -->
+    <dependency>
+        <groupId>org.waveprotocol</groupId>
+        <artifactId>compact-client</artifactId>
+        <version>0.4-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.waveprotocol</groupId>
+        <artifactId>compact-client-src</artifactId>
+        <version>0.4-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.waveprotocol</groupId>
+        <artifactId>proto</artifactId>
+        <version>0.4-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.waveprotocol</groupId>
+        <artifactId>proto-src</artifactId>
+        <version>0.4-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.waveprotocol</groupId>
+        <artifactId>proto-msg</artifactId>
+        <version>0.4-SNAPSHOT</version>
+        <scope>compile</scope>
+    </dependency>
