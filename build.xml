@@ -61,6 +61,7 @@
     <delete dir="${lib.test}"/>
     <delete dir="${lib.codegen}"/>
     <delete dir="${lib.runtime}"/>
+    <delete dir="${lib.release}"/>
   </target>
 
   <target name="init-logging" description="Enable logging to file">
@@ -83,6 +84,7 @@
     <mkdir dir="${lib.test}"/>
     <mkdir dir="${lib.codegen}"/>
     <mkdir dir="${lib.runtime}"/>
+    <mkdir dir="${lib.release}"/>
     <mkdir dir="${gen.dir}/gxp"/>
     <mkdir dir="${gen.dir}/messages"/>
   </target>
@@ -1085,6 +1087,29 @@
       <url url="http://central.maven.org/maven2/junit/junit/4.10/junit-4.10.jar" />
       <url url="http://central.maven.org/maven2/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar" />
     </get>
+  </target>
+
+  <target name="get-third-party-release-dep" description="Download release tool third party dependencies">
+	<get dest="${lib.release}" usetimestamp="true" skipexisting="true">
+	  <url url="http://apache.spd.co.il/creadur/apache-rat-0.10/apache-rat-0.10-bin.zip" />
+	</get>
+	<unzip src="${lib.release}/apache-rat-0.10-bin.zip" dest="${lib.release}">
+	  <patternset>
+        <include name="apache-rat-0.10/apache-rat-0.10.jar"/>
+      </patternset>
+	  <mapper type="flatten"/>
+    </unzip>
+  </target>
+
+  <target name="rat" depends="get-third-party-release-dep" description="Run the Apache Rat release audit tool.">
+    <taskdef resource="org/apache/rat/anttasks/antlib.xml">
+        <classpath>
+          <pathelement location="${lib.release}/apache-rat-0.10.jar"/>
+        </classpath>
+    </taskdef>
+    <report>
+      <fileset dir="src"/>
+     </report>
   </target>
 
   <target name="doc" depends="stage" description="Builds the Java documentation for the mode, protocol, and Wave in a Box">
