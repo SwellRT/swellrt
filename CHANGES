@@ -1,6 +1,15 @@
+Summary since 0.4-RC4
+=====================
+- Added MongoDB based deltas store and migration tool for deltas migration from file to mongo based store. 
+- Added client/server profiling.
+- Added Atmosphere framework as replacement of Socket.IO.
+- Added Gmail style initials avatars and made it the default.
+- Decreased number of permutations in dev compilation and added GWT superdev mode.
+- Upgraded the server to Jetty 9.1.1.
+- Added JDK 7 compatibility.
+
 Summary since 0.4-RC3
 =====================
-
 - Federation between multiple wave servers should now work again without
   causing shiny's.
 - Translations to German and Chinese have been added to further expand our
@@ -10,9 +19,553 @@ Summary since 0.4-RC3
   been removed to give the codebase a nice clean feel.
 - Many changes to the code licensing have been made, and all third-party
   dependencies are now downloaded.
+  
+--------------------------------------------------------------------------
+commit 0858e0c60b42e2cac38aed44d8b16f9e8bcb377a
+Author: Pablo Ojanguren <pablojan@gmail.com>
+Date:   Mon Jun 30 19:34:27 2014 +0300
 
-Full log:
-=========
+    Deltas migration tool from file to mongodb store https://reviews.apache.org/r/20371
+
+commit 5abfce6c7059e7abdb17c847687e9c1f6a93b689
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Wed Jul 9 21:08:19 2014 +0300
+
+    Improves/refactors profiling code. https://reviews.apache.org/r/23166/
+
+commit b77f7f5e06cba954b85f3deffbdb11885b9aa538
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Jun 28 20:21:17 2014 +0300
+
+    Fixes server.config generation for release-bin.
+
+commit 51e06f2965f73f6e6a245e29996649fe67e49491
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Jun 28 16:36:53 2014 +0300
+
+    Updates release-bin so it will auto generate default server.config and add to distribution.
+
+commit 08c31e3b6b45da071f4e1773e1096e5e88a795f4
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Jun 28 16:24:13 2014 +0300
+
+    Updates release-bin to run without tests and to include server-config.xml.
+
+commit 290fa7ea5ab8a32124325204695f2d57b31f7d5a
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Jun 28 16:23:16 2014 +0300
+
+    Adds .DS_Stire ti .gitignore.
+
+commit 9ea3be1d98595564fd96d43cad52a6fd023089e0
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Jun 28 15:33:24 2014 +0300
+
+    Fixes unstable test in RpcTest.
+
+commit 86fe1bd4eb76f4da64a6d6fe60efc12bb851c3e1
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Jun 28 15:32:31 2014 +0300
+
+    Fixes Eclipse classpath to use GWT 2.6.1 libraries.
+
+commit d8896276557c9387df97f76b2fab4331207017d6
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Sat Jun 28 13:27:30 2014 +0300
+
+    Adds Profiling. https://reviews.apache.org/r/22776
+
+commit 47cd2e99fd65c7278622d659b410b4941a8df91a
+Author: vjrj <vjrj@ourproject.org>
+Date:   Thu May 1 13:01:33 2014 +0200
+
+    Removing old dependency with socketio-java
+    
+    https://reviews.apache.org/r/20610/
+
+commit 2f2ec5ca8c203489364f949b7a129bb96adb2bdb
+Author: Vicente J. Ruiz Jurado <vjrj@ourproject.org>
+Date:   Wed Apr 23 16:57:41 2014 +0200
+
+    Added atmosphere to classpath
+
+commit 4c0d78ee8afdf92fc3a8ef6f7454726b790cc445
+Author: Vicente J. Ruiz Jurado <vjrj@ourproject.org>
+Date:   Wed Apr 23 16:14:02 2014 +0200
+
+    Added Atmosphere framework as replacement of Socket.IO by Pablo Ojanguren. Fix for #WAVE-405.
+    
+    https://reviews.apache.org/r/19355/
+
+commit ee6f996ebb5c5b64f019b9cfea93789f09e8cfb2
+Author: vjrj <vjrj@ourproject.org>
+Date:   Thu Apr 10 20:35:32 2014 +0200
+
+    Fix for gadget proxy request URI
+    
+    https://reviews.apache.org/r/20207/
+
+commit 43187a96d6d77e2d4e39e35ccd0bfcad828ae117
+Author: vjrj <vjrj@ourproject.org>
+Date:   Thu Apr 10 20:34:57 2014 +0200
+
+    Fix for missing dependency in dist-server
+    
+    https://reviews.apache.org/r/20209/
+
+commit 5e949d0a1f31b81b22e769f17cf8eb6cde317eb0
+Author: Vicente J. Ruiz Jurado <vjrj@ourproject.org>
+Date:   Tue Apr 1 17:45:40 2014 +0200
+
+    Profile fetcher selection and new initials avatars
+    
+    Review: https://reviews.apache.org/r/19116/
+
+commit 3682cf9146cfc975eeabc77757aeccde5389edcb
+Author: vjrj <vjrj@ourproject.org>
+Date:   Fri Mar 14 00:22:13 2014 +0100
+
+    Add GWT superdev mode for waveharness and editor
+    
+    Review: https://reviews.apache.org/r/18941/
+
+commit 285bee3be5132e946d36ebc11be175165014db95
+Author: vjrj <vjrj@ourproject.org>
+Date:   Tue Mar 11 22:38:16 2014 +0100
+
+    Decrease number of permutations in dev compilation
+    
+    https://reviews.apache.org/r/18908/
+
+commit d1dcdc7dd423f25383d280bc4bfba4aed47821c5
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Fri Feb 21 21:30:33 2014 +0200
+
+    Fixes unit tests - adds back libdn.jar + fixes xml schema for test.
+
+commit d5e607397ce21f8740963d32e5967455600d0928
+Author: Pablo Ojanguren <pablojan@gmail.com>
+Date:   Tue Feb 18 22:07:50 2014 +0200
+
+    Added Journaled Write Concern for delta storage operations with MongoDB
+    https://reviews.apache.org/r/17942
+
+commit eced2256e3ec2843c67527e2d8ad7e57c90300e2
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Fri Jan 24 21:37:48 2014 +0200
+
+    Removes back the Apache license from .project as it messes up the file.
+
+commit 23230d93965e9ef04d50104cc27bb4342f2301a8
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Tue Jan 21 23:59:23 2014 +0200
+
+    Improves settings of Jetty
+    https://reviews.apache.org/r/17143
+
+commit f2493f4352b12e767afba198b916509331148238
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Mon Jan 20 20:37:59 2014 +0200
+
+    Removes the non licensed images.
+    https://reviews.apache.org/r/17105/
+
+commit ecf3e5cac03a899d8a881f9941f5e49e5ee33ca5
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sun Jan 19 22:27:16 2014 +0200
+
+    Updates README
+
+commit 0779067fef17f5bd033ad4ceed913e46f8060b9e
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Jan 18 23:38:49 2014 +0200
+
+    Updates the get-third-party script to download new jars.
+
+commit 284396a255d252ea3585ee90c1ccb7528e7bf538
+Merge: 0b55067 999be5e
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Jan 18 16:06:56 2014 +0200
+
+    Merge branch 'wave-0.4-release' into master
+    
+    Conflicts:
+    	.classpath
+    	.gitignore
+    	.project_template
+    	CHANGES
+    	NOTICE
+    	README
+    	build.properties
+    	build.xml
+    	jaas.config
+    	prosody.cfg.lua.example
+    	proto_src/org/waveprotocol/box/attachment/AttachmentProto.java
+    	proto_src/org/waveprotocol/box/server/persistence/protos/ProtoAccountStoreData.java
+    	run-server.bat
+    	server-config.xml
+    	server.federation.config
+    	src/com/google/gwt/build.xml
+    	src/com/google/gwt/websockets/WebSockets.gwt.xml
+    	src/com/google/wave/api/data/Data.gwt.xml
+    	src/com/google/wave/api/robot/Robot.gwt.xml
+    	src/org/waveprotocol/box/server/frontend/WaveletInfo.java
+    	src/org/waveprotocol/box/server/persistence/protos/delta-store.proto
+    	src/org/waveprotocol/box/server/waveserver/SimpleSearchProviderImpl.java
+    	src/org/waveprotocol/box/server/waveserver/Wave.java
+    	src/org/waveprotocol/box/webclient/search/i18n/SearchPresenterMessages_sl.properties
+    	src/org/waveprotocol/box/webclient/search/i18n/SearchWidgetMessages_sl.properties
+    	src/org/waveprotocol/box/webclient/search/mock/search.html
+    	src/org/waveprotocol/protobuf/build.xml
+    	src/org/waveprotocol/pst/templates/api/properties
+    	src/org/waveprotocol/pst/templates/builder/properties
+    	src/org/waveprotocol/pst/templates/gson/properties
+    	src/org/waveprotocol/pst/templates/jso/properties
+    	src/org/waveprotocol/pst/templates/pojo/properties
+    	src/org/waveprotocol/pst/templates/proto/properties
+    	src/org/waveprotocol/pst/templates/util/properties
+    	src/org/waveprotocol/wave/client/build.xml
+    	src/org/waveprotocol/wave/client/common/build.xml
+    	src/org/waveprotocol/wave/client/scheduler/build.xml
+    	src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/color/ComplexColorPicker.css
+    	src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/color/SimpleColorPicker.css
+    	src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/color/i18n/ColorPickerMessages_en.properties
+    	src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/color/i18n/ColorPickerMessages_es.properties
+    	src/org/waveprotocol/wave/client/wavepanel/impl/toolbar/i18n/LinkerMessages_fr.properties
+    	src/org/waveprotocol/wave/common/build.xml
+    	src/org/waveprotocol/wave/communication/build.xml
+    	src/org/waveprotocol/wave/concurrencycontrol/build.xml
+    	src/org/waveprotocol/wave/crypto/build.xml
+    	src/org/waveprotocol/wave/diff/build.xml
+    	src/org/waveprotocol/wave/federation/build.xml
+    	src/org/waveprotocol/wave/media/build.xml
+    	src/org/waveprotocol/wave/model/build.xml
+    	src/org/waveprotocol/wave/testing/build.xml
+    	src/org/waveprotocol/wave/util/build.xml
+    	src/python/api/__init__.py
+    	src/python/api/appengine_robot_runner.py
+    	src/python/api/blip.py
+    	src/python/api/blip_test.py
+    	src/python/api/commandline_robot_runner.py
+    	src/python/api/commandline_robot_runner_test.py
+    	src/python/api/django_oauth.py
+    	src/python/api/element.py
+    	src/python/api/element_test.py
+    	src/python/api/errors.py
+    	src/python/api/events.py
+    	src/python/api/module_test_runner.py
+    	src/python/api/ops.py
+    	src/python/api/ops_test.py
+    	src/python/api/robot.py
+    	src/python/api/robot_test.py
+    	src/python/api/run_unit_tests.py
+    	src/python/api/search.py
+    	src/python/api/search_test.py
+    	src/python/api/testdata.py
+    	src/python/api/util.py
+    	src/python/api/util_test.py
+    	src/python/api/wavelet.py
+    	src/python/api/wavelet_test.py
+    	src/python/api/waveservice.py
+    	src/python/api/waveservice_test.py
+    	test/org/waveprotocol/wave/concurrencycontrol/Tests.gwt.xml
+    	test/org/waveprotocol/wave/model/experimental/schema/bad1.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad10.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad11.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad12.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad13.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad14.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad15.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad16.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad17.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad18.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad19.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad2.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad20.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad21.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad22.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad23.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad24.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad3.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad4.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad5.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad6.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad7.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad8.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/bad9.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good1.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good10.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good11.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good12.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good13.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good14.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good15.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good16.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good2.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good3.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good4.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good5.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good6.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good7.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good8.schema
+    	test/org/waveprotocol/wave/model/experimental/schema/good9.schema
+    	test/org/waveprotocol/wave/model/supplement/tests.gwt.xml
+    	test/org/waveprotocol/wave/model/tests.gwt.xml
+    	third_party/codegen/gwt/README.google
+    	third_party/codegen/gwt/gwt-dev.jar
+    	third_party/codegen/gwt/gwt-user.jar
+    	third_party/runtime/bouncycastle/LICENSE.html
+    	third_party/runtime/gson/LICENSE
+    	third_party/runtime/guava/README.google
+    	third_party/runtime/jetty/README.google
+    	third_party/runtime/libidn/LICENSE
+    	third_party/runtime/libidn/README.google
+    	third_party/runtime/libidn/libidn-1.26.jar
+    	third_party/runtime/mongo-driver/README.google
+    	third_party/runtime/protobuf/README.google
+    	third_party/test/jmock/README.google
+    	third_party/test/mockito/README.google
+    	third_party/test/mockito/mockito-all-1.9.5.jar
+    	tools/eclipse-launch/src.org.waveprotocol.wave.client.editor.examples.img.Img_Example-launch
+    	tools/eclipse-launch/src.org.waveprotocol.wave.client.editor.harness.EditorTest-launch
+    	war/.gitignore
+
+commit 0b550672da3c923fbc6be0a963d2bf54c735b783
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Jan 18 12:27:41 2014 +0200
+
+    Cleans up store related classes
+
+commit d9a968691912df974d16d438468fc2e5b12d0da3
+Merge: 0a315ef 053b041
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Jan 18 00:15:13 2014 +0200
+
+    Merges pull request https://github.com/apache/incubator-wave/pull/2
+
+commit 053b04130f5cc013e475059ce9220aa034367cdd
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Jan 18 00:14:35 2014 +0200
+
+    Updates README for Mongo driver.
+
+commit 0a315ef893d87e2fb9f79b0448680249f504d123
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Fri Jan 17 21:59:40 2014 +0200
+
+    Formats/cleans up the mongo related files
+
+commit 98a4e1e921b77da5c481b5f42e28cca4b4bb2257
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Fri Jan 17 21:34:53 2014 +0200
+
+    Updates Eclipse classpathx
+
+commit cf5a4e5016f48b07fd18a179dbbea99c9fb04958
+Author: pablojan <pablojan@pablojan@gmail.com>
+Date:   Wed Jan 15 17:33:29 2014 +0100
+
+    Fix WAVE-399 with Diff r2
+
+commit 56a9ccbed2512c597076a3100481dfd2b39de3ce
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Fri Jan 17 22:35:38 2014 +0200
+
+    Adds log files to .gitignore
+
+commit 313618a0b1162fdd44d83f1384b966f006fa0158
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Fri Jan 17 12:49:28 2014 +0200
+
+    WebSocketChannelImpl sendMessageString() fix
+
+commit 19dcb9630a93317b12e8d41659f728ac3570a223
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Thu Jan 16 21:48:38 2014 +0200
+
+    Updates Eclipse classpath to use new jars
+
+commit 011bdc31c794d5cf43b1fd9dd303295654e1d107
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Fri Jan 17 00:11:16 2014 +0600
+
+    Minor changes
+
+commit 2e979b6390ca52174e3328b1856050fd48421e2b
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Tue Jan 14 00:16:20 2014 +0600
+
+    Jetty 9.1.0 -> 9.1.1
+
+commit d8f460ce3ec865e822bcbfcf49b3aea9fced0293
+Merge: 4d5919e 63bc8ff
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Mon Jan 13 00:03:47 2014 +0600
+
+    Merge branch 'master' of https://github.com/jorkey/incubator-wave
+
+commit 63bc8ff5fd5cb34a56c10ad48ea389b421620dbc
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sun Jan 12 17:08:05 2014 +0200
+
+    Refactors SimpleSearchProvider
+    https://reviews.apache.org/r/16694/
+
+commit 4d5919e5fd2f44f611a851a9258d881e6a6b7d13
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Thu Jan 9 21:17:21 2014 +0600
+
+    Update of third party libraries
+
+commit 380f36a53613aa9365ff282feb08ed92271c3a04
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Wed Jan 8 23:58:52 2014 +0600
+
+    Update of third party libraries
+
+commit 7cf0676208f9bc4bfacbb7d488e014e8a3e26fed
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Mon Jan 6 17:34:26 2014 +0600
+
+    Update of third party libraries
+
+commit 848e8a8a8c9a02ee7eec74b3b0bdae1913edf808
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Mon Jan 6 17:31:18 2014 +0600
+
+    Update of third party libraries
+
+commit 41841fc385fa4c1e4381af167147ff01e56ab38e
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Mon Jan 6 16:36:10 2014 +0600
+
+    Update of third party libraries
+
+commit af10e491ed930bb6401314a9997240777e12c5a9
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Mon Jan 6 16:20:35 2014 +0600
+
+    Update of third party libraries
+
+commit 29667c95ca1145084fb34a302c27b4a3af384858
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Sun Jan 5 03:30:16 2014 +0600
+
+    Update of third party libraries
+
+commit 9d02cde0d05887944814954df1a2da77ba9c7241
+Merge: 36142ba 8e69335
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Wed Jan 1 04:22:40 2014 +0600
+
+    Merge branch 'master' of https://git-wip-us.apache.org/repos/asf/incubator-wave
+
+commit 8e693353eaf0e9880dc6c5713c28429ca1011b44
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Tue Dec 31 23:51:38 2013 +0200
+
+    Improves support of Java 7. By Andrew Kaplanov.
+    https://reviews.apache.org/r/16548
+
+commit 36142bacf44c2473ebbee2bdda4344248571dccc
+Author: Андрей <ak@mac-mini-andrej.dlink>
+Date:   Wed Jan 1 03:19:33 2014 +0600
+
+    Suppress Java 7 warnings in sources
+
+commit dc6ecc78c2a0bf5fa96501de55f0f6771f58477b
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Tue Dec 31 18:16:39 2013 +0200
+
+    Adds JDK 7 compatability. By Andrew Kaplanov
+    https://reviews.apache.org/r/16538
+    Adds updated test related jars + updates Eclipse classpath
+    Removes -Werror flag from build
+
+commit 4490c700d52cb1cc2335e19a3a40edfd3a1ed45c
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Dec 21 19:41:57 2013 +0200
+
+    Adds formatter style for Eclipse
+    https://reviews.apache.org/r/16434/
+
+commit 7df7f380f0d9e15d622c9c47e845fda2ed3671b5
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Dec 21 19:22:00 2013 +0200
+
+    Adds *.old files to .gitignore
+
+commit 13f4cb2a9ddcd8ff11adccce94a0c1e38bd8755f
+Author: Ali Lown <al@apache.org>
+Date:   Sat Dec 21 15:44:38 2013 +0000
+
+    Move all annotation constants to their own class>
+    
+    https://reviews.apache.org/r/16435/
+
+commit 529f75e8ac0d289cea8882d322748b8373eba413
+Author: Yuri Zelikov <vega113@gmail.com>
+Date:   Sat Dec 21 08:57:03 2013 +0200
+
+    Adds gwt-unitCache and war/WEB-INF to .gitignore.
+
+commit 999be5e21a09b9d36fd399e8e4b6af71f08af58e
+Author: vjrj <vjrj@ourproject.org>
+Date:   Wed Dec 18 13:50:02 2013 +0100
+
+    Thumbnails updated (removed unused, resized, and create new ones for pdf & default)
+
+commit 48c3bc9086ca47716bfcf40bc5dfb178d5ea27a7
+Author: vjrj <vjrj@ourproject.org>
+Date:   Tue Dec 17 19:57:44 2013 +0100
+
+    Added Tango Desktop Project icons (Public Domain) as attachment thumbnails
+
+commit c2f96cf833fb925a9a01b163f53720f7af92c44e
+Author: vjrj <vjrj@ourproject.org>
+Date:   Tue Dec 17 18:53:17 2013 +0100
+
+    Revert "Added icons from the Humanity Icon Theme as thumbnails" because are GPL
+    
+    This reverts commit ed123859b0e5d4f27c0fafde5b4683f2126848f2.
+
+commit ed123859b0e5d4f27c0fafde5b4683f2126848f2
+Author: Vicente J. Ruiz Jurado <vjrj@apache.org>
+Date:   Sun Dec 15 18:58:26 2013 +0000
+
+    Added icons from the Humanity Icon Theme as thumbnails
+    
+    git-svn-id: https://svn.apache.org/repos/asf/incubator/wave/branches/wave-0.4-release@1551037 13f79535-47bb-0310-9956-ffa450edef68
+
+commit de116fe1668f381507d0e39d993c3b77f67666be
+Author: Ali Lown <al@apache.org>
+Date:   Tue Dec 3 14:51:43 2013 +0000
+
+    RC4's license changes
+    
+    These are now fairly minimal.
+    
+    git-svn-id: https://svn.apache.org/repos/asf/incubator/wave/branches/wave-0.4-release@1547413 13f79535-47bb-0310-9956-ffa450edef68
+
+commit a9c1b7370eb3d7662cea3ef5a350052602ff60c2
+Author: Ali Lown <al@apache.org>
+Date:   Fri Aug 30 20:29:15 2013 +0000
+
+    Some minor changes after previewing release
+    
+    - Include THANKS in binary release
+    - Fold DISCLAIMER at 80
+    - Use Maven central rather than repo1/repo2
+    
+    git-svn-id: https://svn.apache.org/repos/asf/incubator/wave/branches/wave-0.4-release@1519074 13f79535-47bb-0310-9956-ffa450edef68
+
+commit 1af5585417837f08d531152223ab4362dd346d98
+Author: Ali Lown <al@apache.org>
+Date:   Fri Aug 30 19:22:49 2013 +0000
+
+    Introduce a new CHANGES format
+    
+    git-svn-id: https://svn.apache.org/repos/asf/incubator/wave/branches/wave-0.4-release@1519051 13f79535-47bb-0310-9956-ffa450edef68
 
 commit 7e9b6bd5fadbd469481200f301b7537a1f33d6b4
 Author: Ali Lown <al@apache.org>

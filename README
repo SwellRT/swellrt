@@ -37,7 +37,7 @@ software:
 Build
 ------
 
-Wave in a Box uses Ant to build.
+Wave in a Box requires Java 7 & and uses Ant 1.9.3 (or higher) to build.
 
 To run the tests (optional), run:
 
