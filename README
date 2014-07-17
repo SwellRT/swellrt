@@ -34,6 +34,11 @@ software:
   Wave requires the BouncyCastle Java cryptography APIs:
     http://www.bouncycastle.org/java.html
 
+Run Binary
+----------
+
+Extract the archive and execute run-server.sh for Linux/Mac or run-server.bat for Windows.
+
 Build
 ------
 

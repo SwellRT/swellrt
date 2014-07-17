@@ -3,7 +3,7 @@ Summary since 0.4-RC4
 - Added MongoDB based deltas store and migration tool for deltas migration from file to mongo based store. 
 - Added client/server profiling.
 - Added Atmosphere framework as replacement of Socket.IO.
-- Added Gmail style initials avatars and made it the default.
+- Added alternative - Gmail style initials avatars.
 - Decreased number of permutations in dev compilation and added GWT superdev mode.
 - Upgraded the server to Jetty 9.1.1.
 - Added JDK 7 compatibility.

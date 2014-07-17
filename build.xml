@@ -844,10 +844,13 @@
       <tarfileset dir="." prefix="${release.src.path}">
         <exclude name="build/" />
         <exclude name="dist/" />
+        <exclude name="_*/" />
+        <exclude name="bin/" />
         <exclude name="gen/" />
         <exclude name="test_out/" />
         <exclude name="third_party/" />
         <exclude name="war/webclient/" />
+        <exclude name="gwt-unitCache/" />
         <exclude name="LICENSE.*" />
         <exclude name="NOTICE.*" />
       </tarfileset>
