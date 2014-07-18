@@ -1092,7 +1092,7 @@
     </get>
   </target>
 
-  <target name="get-third-party-release-dep" description="Download release tool third party dependencies">
+  <target name="get-third-party-release-dep" depends="init" description="Download release tool third party dependencies">
 	<get dest="${lib.release}" usetimestamp="true" skipexisting="true">
 	  <url url="http://apache.spd.co.il/creadur/apache-rat-0.10/apache-rat-0.10-bin.zip" />
 	</get>
@@ -1104,7 +1104,7 @@
     </unzip>
   </target>
 
-  <target name="rat" depends="get-third-party-release-dep" description="Run the Apache Rat release audit tool.">
+  <target name="audit-licenses" depends="get-third-party-release-dep" description="Run the Apache Rat - release audit tool.">
     <taskdef resource="org/apache/rat/anttasks/antlib.xml">
         <classpath>
           <pathelement location="${lib.release}/apache-rat-0.10.jar"/>
