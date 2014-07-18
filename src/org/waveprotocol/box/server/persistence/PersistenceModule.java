@@ -21,6 +21,7 @@ package org.waveprotocol.box.server.persistence;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
@@ -31,9 +32,11 @@ import org.waveprotocol.box.server.persistence.file.FileDeltaStore;
 import org.waveprotocol.box.server.persistence.file.FileSignerInfoStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryStore;
+import org.waveprotocol.box.server.persistence.mongodb.MongoDbIndexStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.wave.crypto.CertPathStore;
+import org.waveprotocol.wave.model.extended.WaveConversationUtils;
 
 /**
  * Module for setting up the different persistence stores.
@@ -158,5 +161,10 @@ public class PersistenceModule extends AbstractModule {
     } else {
       throw new RuntimeException("Invalid delta store type: '" + deltaStoreType + "'");
     }
+  }
+
+  @Provides
+  public MongoDbIndexStore provideMongoDbIndexStore(WaveConversationUtils conversationUtils) {
+    return getMongoDbProvider().provideMongoDbIndexStore(conversationUtils);
   }
 }

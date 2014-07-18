@@ -29,6 +29,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -57,6 +58,7 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.Version;
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
 import org.waveprotocol.box.server.persistence.lucene.IndexDirectory;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -69,11 +71,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
 
 /**
  * Lucene based implementation of {@link PerUserWaveViewHandler}.
@@ -263,6 +262,14 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
       }
     });
     executor.execute(task);
+    return task;
+  }
+
+  @Override
+  public ListenableFuture<Void> onWaveUpdated(final ReadableWaveletData waveletData) {
+    // No op.
+    SettableFuture<Void> task = SettableFuture.create();
+    task.set(null);
     return task;
   }
 

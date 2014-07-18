@@ -31,6 +31,7 @@ import org.waveprotocol.box.server.waveserver.LucenePerUserWaveViewHandlerImpl;
 import org.waveprotocol.box.server.waveserver.LuceneWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.MemoryPerUserWaveViewHandlerImpl;
 import org.waveprotocol.box.server.waveserver.MemoryWaveIndexerImpl;
+import org.waveprotocol.box.server.waveserver.MongoDbPerUserWaveViewHandlerImpl;
 import org.waveprotocol.box.server.waveserver.NoOpWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewHandler;
@@ -76,6 +77,14 @@ public class SearchModule extends AbstractModule {
       bind(PerUserWaveViewBus.Listener.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewHandler.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(
+          Singleton.class);
+      bind(WaveIndexer.class).to(MemoryWaveIndexerImpl.class).in(Singleton.class);
+    } else if ("mongodb".equals(searchType)) {
+      bind(PerUserWaveViewProvider.class).to(MongoDbPerUserWaveViewHandlerImpl.class).in(
+          Singleton.class);
+      bind(PerUserWaveViewBus.Listener.class).to(MongoDbPerUserWaveViewHandlerImpl.class).in(
+          Singleton.class);
+      bind(PerUserWaveViewHandler.class).to(MongoDbPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(WaveIndexer.class).to(MemoryWaveIndexerImpl.class).in(Singleton.class);
     } else {

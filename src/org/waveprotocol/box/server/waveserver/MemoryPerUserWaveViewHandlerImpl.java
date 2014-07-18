@@ -33,6 +33,7 @@ import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Map;
@@ -132,9 +133,17 @@ public class MemoryPerUserWaveViewHandlerImpl implements PerUserWaveViewHandler 
       throw new RuntimeException(ex);
     }
   }
-
+  
   @Override
   public ListenableFuture<Void> onWaveInit(WaveletName waveletName) {
+    // No op.
+    SettableFuture<Void> task = SettableFuture.create();
+    task.set(null);
+    return task;
+  }
+
+  @Override
+  public ListenableFuture<Void> onWaveUpdated(ReadableWaveletData waveletData) {
     // No op.
     SettableFuture<Void> task = SettableFuture.create();
     task.set(null);

@@ -28,6 +28,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
+import org.waveprotocol.wave.model.extended.WaveConversationUtils;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.net.UnknownHostException;
@@ -36,6 +37,7 @@ import java.net.UnknownHostException;
  * Class to lazily setup and manage the MongoDb connection.
  *
  * @author ljvderijk@google.com (Lennard de Rijk)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
 public class MongoDbProvider {
@@ -62,6 +64,11 @@ public class MongoDbProvider {
    * Separated store for Deltas {@link MongoDbDeltaStore}
    */
   private MongoDbDeltaStore mongoDbDeltaStore;
+
+  /**
+   * A store for wavelet search index data {@link MongoDbIndexStore}
+   */
+  private MongoDbIndexStore mongoDbIndexStore;
 
   /** Stores whether we have successfully setup a live {@link Mongo} instance. */
   private boolean isRunning;
@@ -163,5 +170,13 @@ public class MongoDbProvider {
     return mongoDbDeltaStore;
 
   }
+
+  public MongoDbIndexStore provideMongoDbIndexStore(WaveConversationUtils conversationUtils) {
+    if (mongoDbIndexStore == null) {
+      mongoDbIndexStore = new MongoDbIndexStore(getDatabase(), conversationUtils);
+    }
+    return mongoDbIndexStore;
+  }
+
 
 }
