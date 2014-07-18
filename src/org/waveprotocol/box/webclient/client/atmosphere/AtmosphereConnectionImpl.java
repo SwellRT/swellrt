@@ -133,17 +133,17 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
 
     public native void close() /*-{
-			this.socket.unsubscribe();
-    }-*/;
+                               this.socket.unsubscribe();
+                               }-*/;
 
     public native AtmosphereSocket connect() /*-{
-			this.socket = $wnd.atmosphere.subscribe(this.request);
+                                             this.socket = $wnd.atmosphere.subscribe(this.request);
 
-    }-*/;
+                                             }-*/;
 
     public native void send(String data) /*-{
-			this.socket.push(data);
-    }-*/;
+                                         this.socket.push(data);
+                                         }-*/;
     }
 
 

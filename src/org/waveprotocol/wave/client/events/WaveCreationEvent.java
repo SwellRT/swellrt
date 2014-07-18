@@ -20,20 +20,30 @@
 package org.waveprotocol.wave.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
+
+import org.waveprotocol.wave.model.extended.WaveType;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+
 import java.util.Set;
 
 public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
   public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
 
   private final Set<ParticipantId> participants;
+  private final WaveType type;
 
-  public WaveCreationEvent() {
+  public WaveCreationEvent(WaveType type) {
     this.participants = null;
+    this.type = type;
   }
 
   public WaveCreationEvent(Set<ParticipantId> participants) {
     this.participants = participants;
+    this.type = null;
+  }
+
+  public WaveType getType() {
+    return this.type;
   }
 
   @Override
@@ -45,4 +55,5 @@ public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
   public com.google.gwt.event.shared.GwtEvent.Type<WaveCreationEventHandler> getAssociatedType() {
     return TYPE;
   }
+
 }

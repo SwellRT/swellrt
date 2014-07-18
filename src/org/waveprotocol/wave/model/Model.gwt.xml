@@ -84,4 +84,13 @@
 
   <source path="undo"/>
 
+  <!-- extended model -->
+
+  <source path="extended" />
+
+  <source path="extended/id" />
+
+  <source path="extended/type" />
+
+
 </module>

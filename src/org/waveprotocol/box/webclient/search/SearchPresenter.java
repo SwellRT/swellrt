@@ -20,6 +20,7 @@
 package org.waveprotocol.box.webclient.search;
 
 import com.google.gwt.core.client.GWT;
+
 import org.waveprotocol.box.webclient.search.Search.State;
 import org.waveprotocol.box.webclient.search.i18n.SearchPresenterMessages;
 import org.waveprotocol.wave.client.account.Profile;
@@ -32,6 +33,7 @@ import org.waveprotocol.wave.client.widget.toolbar.GroupingToolbar;
 import org.waveprotocol.wave.client.widget.toolbar.ToolbarButtonViewBuilder;
 import org.waveprotocol.wave.client.widget.toolbar.ToolbarView;
 import org.waveprotocol.wave.client.widget.toolbar.buttons.ToolbarClickButton;
+import org.waveprotocol.wave.model.extended.WaveType;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IdentityMap;
@@ -53,7 +55,7 @@ public final class SearchPresenter
    */
   public interface WaveActionHandler {
     /** Handles the wave creation action. */
-    void onCreateWave();
+    void onCreateWave(WaveType type);
 
     /** Handles a wave selection action. */
     void onWaveSelected(WaveId id);
@@ -170,7 +172,7 @@ public final class SearchPresenter
         group.addClickButton(), new ToolbarClickButton.Listener() {
           @Override
           public void onClicked() {
-            actionHandler.onCreateWave();
+            actionHandler.onCreateWave(WaveType.CONVERSATION);
 
             // HACK(hearnden): To mimic live search, fire a search poll
             // reasonably soon (500ms) after creating a wave. This will be unnecessary
@@ -180,6 +182,23 @@ public final class SearchPresenter
             scheduler.scheduleRepeating(searchUpdater, delay, POLLING_INTERVAL_MS);
           }
         });
+
+    new ToolbarButtonViewBuilder().setText("New chat").applyTo(group.addClickButton(),
+        new ToolbarClickButton.Listener() {
+          @Override
+          public void onClicked() {
+            actionHandler.onCreateWave(WaveType.CHAT);
+
+            // HACK(hearnden): To mimic live search, fire a search poll
+            // reasonably soon (500ms) after creating a wave. This will be
+            // unnecessary
+            // with a real live search implementation. The delay is to give
+            // enough time for the wave state to propagate to the server.
+            int delay = 500;
+            scheduler.scheduleRepeating(searchUpdater, delay, POLLING_INTERVAL_MS);
+          }
+        });
+
     // Fake group with empty button - to force the separator be displayed.
     group = toolbarUi.addGroup();
     new ToolbarButtonViewBuilder().setText("").applyTo(group.addClickButton(), null);

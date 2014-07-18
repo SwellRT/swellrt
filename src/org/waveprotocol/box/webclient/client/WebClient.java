@@ -43,6 +43,11 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
+import org.waveprotocol.box.stat.Timing;
+import org.waveprotocol.box.webclient.client.extended.WaveBackend;
+import org.waveprotocol.box.webclient.client.extended.ui.SimpleChatPresenter;
+import org.waveprotocol.box.webclient.client.extended.ui.SimpleChatView;
+import org.waveprotocol.box.webclient.client.extended.ui.SimpleChatViewImpl;
 import org.waveprotocol.box.webclient.client.i18n.WebClientMessages;
 import org.waveprotocol.box.webclient.profile.RemoteProfileManagerImpl;
 import org.waveprotocol.box.webclient.search.RemoteSearchService;
@@ -52,6 +57,9 @@ import org.waveprotocol.box.webclient.search.SearchPanelWidget;
 import org.waveprotocol.box.webclient.search.SearchPresenter;
 import org.waveprotocol.box.webclient.search.SimpleSearch;
 import org.waveprotocol.box.webclient.search.WaveStore;
+import org.waveprotocol.box.webclient.stat.SingleThreadedRequestScope;
+import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsEventSystem;
+import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 import org.waveprotocol.box.webclient.widget.error.ErrorIndicatorPresenter;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;
 import org.waveprotocol.box.webclient.widget.loading.LoadingIndicator;
@@ -70,16 +78,20 @@ import org.waveprotocol.wave.client.events.WaveCreationEvent;
 import org.waveprotocol.wave.client.events.WaveCreationEventHandler;
 import org.waveprotocol.wave.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
+import org.waveprotocol.wave.client.extended.ContentWave;
 import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
-import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
 import org.waveprotocol.wave.client.wavepanel.event.FocusManager;
+import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
 import org.waveprotocol.wave.client.widget.common.ImplPanel;
 import org.waveprotocol.wave.client.widget.popup.CenterPopupPositioner;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeFactory;
 import org.waveprotocol.wave.client.widget.popup.PopupFactory;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
-import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.extended.WaveType;
+import org.waveprotocol.wave.model.extended.id.IdGeneratorExtended;
+import org.waveprotocol.wave.model.extended.id.IdGeneratorExtendedImpl;
+import org.waveprotocol.wave.model.extended.type.ChatContent;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
@@ -89,10 +101,6 @@ import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.waveprotocol.box.stat.Timing;
-import org.waveprotocol.box.webclient.stat.SingleThreadedRequestScope;
-import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsEventSystem;
-import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -161,11 +169,19 @@ public class WebClient implements EntryPoint {
 
   private ParticipantId loggedInUser;
 
-  private IdGenerator idGenerator;
+  private IdGeneratorExtended idGenerator;
 
   private RemoteViewServiceMultiplexer channel;
 
   private LocaleService localeService = new RemoteLocaleService();
+
+
+  /**
+   * A central point for new wave models instances
+   */
+  private WaveBackend waveBackend;
+
+  private ContentWave contentWave;
 
   /**
    * This is the entry point method.
@@ -175,18 +191,25 @@ public class WebClient implements EntryPoint {
 
     ErrorHandler.install();
 
-    ClientEvents.get().addWaveCreationEventHandler(
-        new WaveCreationEventHandler() {
+    ClientEvents.get().addWaveCreationEventHandler(new WaveCreationEventHandler() {
 
-          @Override
-          public void onCreateRequest(WaveCreationEvent event, Set<ParticipantId> participantSet) {
-            LOG.info("WaveCreationEvent received");
-            if (channel == null) {
-              throw new RuntimeException("Spaghetti attack.  Create occured before login");
-            }
-            openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
-          }
-        });
+      @Override
+      public void onCreateRequest(WaveCreationEvent event, Set<ParticipantId> participantSet) {
+
+        LOG.info("WaveCreationEvent received");
+
+        if (channel == null) {
+          throw new RuntimeException("Spaghetti attack.  Create occured before login");
+        }
+
+        if (event.getType().equals(WaveType.CONVERSATION)) {
+          openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
+
+        } else if (event.getType().equals(WaveType.CHAT)) {
+          openNewChat(WaveRef.of(idGenerator.newWaveId(WaveType.CHAT)));
+        }
+      }
+    });
 
     setupLocaleSelect();
     setupConnectionIndicator();
@@ -199,12 +222,16 @@ public class WebClient implements EntryPoint {
 
     if (Session.get().isLoggedIn()) {
       loggedInUser = new ParticipantId(Session.get().getAddress());
-      idGenerator = ClientIdGenerator.create();
+      idGenerator = new IdGeneratorExtendedImpl(ClientIdGenerator.create());
       loginToServer();
     }
 
+    waveBackend = WaveBackend.create(this.waveStore, this.idGenerator, this.channel);
+
     setupUi();
     setupStatistics();
+
+
 
     History.fireCurrentHistoryState();
     LOG.info("SimpleWebClient.onModuleLoad() done");
@@ -235,18 +262,18 @@ public class WebClient implements EntryPoint {
 
   private void setupSearchPanel() {
     // On wave action fire an event.
-    SearchPresenter.WaveActionHandler actionHandler =
-        new SearchPresenter.WaveActionHandler() {
-          @Override
-          public void onCreateWave() {
-            ClientEvents.get().fireEvent(new WaveCreationEvent());
-          }
+    SearchPresenter.WaveActionHandler actionHandler = new SearchPresenter.WaveActionHandler() {
 
-          @Override
-          public void onWaveSelected(WaveId id) {
-            ClientEvents.get().fireEvent(new WaveSelectionEvent(WaveRef.of(id)));
-          }
-        };
+      @Override
+      public void onCreateWave(WaveType type) {
+        ClientEvents.get().fireEvent(new WaveCreationEvent(type));
+      }
+
+      @Override
+      public void onWaveSelected(WaveId id) {
+        ClientEvents.get().fireEvent(new WaveSelectionEvent(WaveRef.of(id)));
+      }
+    };
     Search search = SimpleSearch.create(RemoteSearchService.create(), waveStore);
     SearchPresenter.create(search, searchPanel, actionHandler, profiles);
   }
@@ -261,7 +288,13 @@ public class WebClient implements EntryPoint {
     ClientEvents.get().addWaveSelectionEventHandler(new WaveSelectionEventHandler() {
       @Override
       public void onSelection(WaveRef waveRef) {
-        openWave(waveRef, false, null);
+
+        WaveType type = WaveType.fromWaveId(waveRef.getWaveId());
+
+        if (type.equals(WaveType.CHAT))
+          openExistingChat(waveRef);
+        else
+          openWave(waveRef, false, null);
       }
     });
   }
@@ -365,9 +398,19 @@ public class WebClient implements EntryPoint {
     final org.waveprotocol.box.stat.Timer timer = Timing.startRequest("Open Wave");
     LOG.info("WebClient.openWave()");
 
+    if (contentWave != null) {
+      contentWave.destroy();
+      contentWave = null;
+    }
+
     if (wave != null) {
       wave.destroy();
       wave = null;
+    }
+
+    if (!waveHolder.isAttached()) {
+      waveFrame.clear();
+      waveFrame.add(waveHolder);
     }
 
     // Release the display:none.
@@ -492,5 +535,82 @@ public class WebClient implements EntryPoint {
     private static String maybe(int value, String otherwise) {
       return value != -1 ? String.valueOf(value) : otherwise;
     }
+  }
+
+  /*
+   * New wave models
+   */
+
+  private void openExistingChat(WaveRef waveRef) {
+
+    if (wave != null) {
+      wave.destroy();
+      wave = null;
+    }
+
+    if (contentWave != null) {
+      contentWave.destroy();
+      contentWave = null;
+    }
+
+
+    final ContentWave waveWrapper = waveBackend.getWaveWrapper(waveRef, false);
+
+    this.contentWave = waveWrapper;
+
+    final SimpleChatView view = new SimpleChatViewImpl();
+    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view);
+
+    waveWrapper.load(new Command() {
+      @Override
+      public void execute() {
+
+        final ChatContent chatDocument = ChatContent.create(waveWrapper, loggedInUser);
+        presenter.bind(chatDocument);
+
+        waveFrame.clear();
+        UIObject.setVisible(waveFrame.getElement(), true);
+        waveFrame.add(view.asWidget());
+      }
+    });
+
+  }
+
+
+  private void openNewChat(WaveRef waveRef) {
+
+    if (wave != null) {
+      wave.destroy();
+      wave = null;
+    }
+
+    if (contentWave != null) {
+      contentWave.destroy();
+      contentWave = null;
+    }
+
+    final ContentWave waveWrapper = waveBackend.getWaveWrapper(waveRef, true);
+
+    this.contentWave = waveWrapper;
+
+    final SimpleChatView view = new SimpleChatViewImpl();
+    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view);
+
+    waveWrapper.load(new Command() {
+
+      @Override
+      public void execute() {
+
+        final ChatContent chatDocument = ChatContent.create(waveWrapper, loggedInUser);
+        presenter.bind(chatDocument);
+
+        waveFrame.clear();
+        UIObject.setVisible(waveFrame.getElement(), true);
+        waveFrame.add(view.asWidget());
+
+      }
+    });
+
+
   }
 }
