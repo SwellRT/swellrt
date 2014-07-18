@@ -23,7 +23,7 @@
 	<classpathentry kind="lib" path="third_party/runtime/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/google-gxp-0.2.4-beta.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gson-2.2.4.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/guava-15.0.jar" sourcepath="/home/pablojan/.m2/repository/com/google/guava/guava/15.0/guava-15.0-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guava-gwt-15.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice-3.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/guice-assistedinject-3.0.jar"/>
@@ -87,6 +87,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/slf4j-simple-1.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar" sourcepath="/home/pablojan/.m2/repository/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

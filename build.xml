@@ -624,13 +624,13 @@
   </target>
 
   <target name="dist-robot-client-api" depends="compile">
-  	<jar destfile="${robotclient.jar.out}">
+    <jar destfile="${robotclient.jar.out}">
       <fileset dir="${staging.dir}">
-      	<include name="com/google/wave/api/*" />
-      	<include name="com/google/wave/api/event/**/*" />
-      	<include name="com/google/wave/api/impl/**/*" />
-      	<include name="com/google/wave/api/oauth/**/*" />
-      	<include name="com/google/wave/api/v2/**/*" />
+        <include name="com/google/wave/api/*" />
+        <include name="com/google/wave/api/event/**/*" />
+        <include name="com/google/wave/api/impl/**/*" />
+        <include name="com/google/wave/api/oauth/**/*" />
+        <include name="com/google/wave/api/v2/**/*" />
       </fileset>
       <manifest>
         <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
@@ -681,7 +681,7 @@
         <include name="META-INF/services/*" />
         <include name="com/mongodb/**/*" />
         <include name="org/slf4j/**/*" />
-	<include name="org/atmosphere/**/*" />
+  <include name="org/atmosphere/**/*" />
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
@@ -772,7 +772,7 @@
   <target name="dist-export-import" depends="stage, dist-export-import-dep" description="Assembles the Wave Export/Import utilities" unless="skip.dist-export-import">
     <jar destfile="${export-import.jar.out}">
       <fileset dir="${staging.dir}">
-	<include name="org/waveprotocol/box/server/common/**/*"/>
+  <include name="org/waveprotocol/box/server/common/**/*"/>
         <include name="org/waveprotocol/box/expimp/**/*"/>
         <include name="org/waveprotocol/box/server/persistence/**/*"/>
         <include name="org/waveprotocol/box/server/rpc/**/*"/>
@@ -870,7 +870,7 @@
   <target name="release-bin" depends="compile-gwt, dist-server, dist-export-import" description="Creates unsigned tar+zip for server binary release">
     <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
     <delete file="${dist.dir}/${release.bin.path}.zip"/>
-    <antcall target="gen-server-config"/> 
+    <antcall target="gen-server-config"/>
     <copy file="LICENSE.bin" tofile="LICENSE" />
     <copy file="NOTICE.bin" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
@@ -972,11 +972,11 @@
   </target>
 
   <target name="get-jetty-dep" description="Download run time third party dependencies">
-	<get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
-	  <url url="https://olex-secure.openlogic.com/content/openlogic/jetty/9.1.1/jetty-distribution-9.1.1.v20140108.zip" />
-	</get>
-	<unzip src="${lib.runtime}/jetty-distribution-9.1.1.v20140108.zip" dest="${lib.runtime}">
-	  <patternset>
+  <get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
+    <url url="https://olex-secure.openlogic.com/content/openlogic/jetty/9.1.1/jetty-distribution-9.1.1.v20140108.zip" />
+  </get>
+  <unzip src="${lib.runtime}/jetty-distribution-9.1.1.v20140108.zip" dest="${lib.runtime}">
+    <patternset>
         <include name="jetty-distribution-9.1.1.v20140108/lib/jetty-client-9.1.1.v20140108.jar"/>
         <include name="jetty-distribution-9.1.1.v20140108/lib/jetty-annotations-9.1.1.v20140108.jar"/>
         <include name="jetty-distribution-9.1.1.v20140108/lib/jetty-continuation-9.1.1.v20140108.jar"/>
@@ -997,7 +997,7 @@
         <include name="jetty-distribution-9.1.1.v20140108/lib/websocket/websocket-server-9.1.1.v20140108.jar"/>
         <include name="jetty-distribution-9.1.1.v20140108/lib/websocket/websocket-servlet-9.1.1.v20140108.jar"/>
       </patternset>
-	  <mapper type="flatten"/>
+    <mapper type="flatten"/>
     </unzip>
   </target>
 
@@ -1099,4 +1099,52 @@
       <footer>&lt;a href="http://www.waveprotocol.org/"&gt;Wave Project&lt;a/&gt;</footer>
     </javadoc>
   </target>
+
+
+  <!--
+    Compact artifacts for separated GWT client development
+   -->
+  <target name="dist-compact-client" depends="stage" description="Assembles a compact artifact with all client stuff">
+      <jar destfile="${dist.dir}/compact-client.jar">
+        <fileset dir="${staging.dir}" includes="org/waveprotocol/wave/**/*">
+        </fileset>
+        <fileset dir="${staging.dir}" includes="org/waveprotocol/box/**/*">
+         <exclude name="org/waveprotocol/box/server/**/*" />
+        </fileset>
+        <fileset dir="${staging.dir}" includes="com/google/gwt/websockets/**/*">
+        </fileset>
+        <manifest>
+          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set (Source)"/>
+          <attribute name="Specification-Version" value="${waveinabox.version}"/>
+          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set (Source)"/>
+          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+          <attribute name="Built-By" value="${user.name}"/>
+        </manifest>
+        <metainf dir="." includes="LICENSE, NOTICE" />
+      </jar>
+    </target>
+
+    <target name="dist-compact-client-src" description="Assembles a compact artifact with all client stuff">
+      <jar destfile="${dist.dir}/compact-client-src.jar">
+        <fileset dir="${src.dir}" includes="org/waveprotocol/wave/**/*">
+        </fileset>
+        <fileset dir="${src.dir}" includes="org/waveprotocol/box/**/*">
+         <exclude name="org/waveprotocol/box/server/**/*" />
+        </fileset>
+        <fileset dir="${src.dir}" includes="com/google/gwt/websockets/**/*">
+        </fileset>
+        <manifest>
+          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set"/>
+          <attribute name="Specification-Version" value="${waveinabox.version}"/>
+          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set"/>
+          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+          <attribute name="Built-By" value="${user.name}"/>
+        </manifest>
+        <metainf dir="." includes="LICENSE, NOTICE" />
+      </jar>
+    </target>
 </project>
