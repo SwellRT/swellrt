@@ -34,7 +34,7 @@ public enum WaveType {
     else if (s.equals("chat"))
       return CHAT;
 
-    else if (s.equals("CONVERSATION")) return CONVERSATION;
+    else if (s.equals("conversation")) return CONVERSATION;
 
     return UNKNOWN;
   }

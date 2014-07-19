@@ -4,8 +4,11 @@ import com.google.inject.Inject;
 
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbIndexStore;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.util.logging.Log;
 
 public class MongoDbWaveIndexerImpl extends AbstractWaveIndexer {
+
+  private static final Log LOG = Log.get(MongoDbWaveIndexerImpl.class);
 
   private final MongoDbIndexStore indexStore;
   private final ReadableWaveletDataProvider waveletReaderProvider;

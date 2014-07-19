@@ -32,6 +32,8 @@ import org.waveprotocol.box.server.waveserver.LuceneWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.MemoryPerUserWaveViewHandlerImpl;
 import org.waveprotocol.box.server.waveserver.MemoryWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.MongoDbPerUserWaveViewHandlerImpl;
+import org.waveprotocol.box.server.waveserver.MongoDbSearchProviderImpl;
+import org.waveprotocol.box.server.waveserver.MongoDbWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.NoOpWaveIndexerImpl;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewHandler;
@@ -57,8 +59,10 @@ public class SearchModule extends AbstractModule {
 
   @Override
   public void configure() {
-    bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
+
     if ("lucene".equals(searchType)) {
+      bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
+
       bind(PerUserWaveViewProvider.class).to(LucenePerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(LucenePerUserWaveViewHandlerImpl.class).in(
@@ -72,6 +76,8 @@ public class SearchModule extends AbstractModule {
         bind(WaveIndexer.class).to(NoOpWaveIndexerImpl.class);
       }
     } else if ("memory".equals(searchType)) {
+      bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
+
       bind(PerUserWaveViewProvider.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(
@@ -80,13 +86,15 @@ public class SearchModule extends AbstractModule {
           Singleton.class);
       bind(WaveIndexer.class).to(MemoryWaveIndexerImpl.class).in(Singleton.class);
     } else if ("mongodb".equals(searchType)) {
+      bind(SearchProvider.class).to(MongoDbSearchProviderImpl.class).in(Singleton.class);
+
       bind(PerUserWaveViewProvider.class).to(MongoDbPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(MongoDbPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewHandler.class).to(MongoDbPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
-      bind(WaveIndexer.class).to(MemoryWaveIndexerImpl.class).in(Singleton.class);
+      bind(WaveIndexer.class).to(MongoDbWaveIndexerImpl.class).in(Singleton.class);
     } else {
       throw new RuntimeException("Unknown search type: " + searchType);
     }

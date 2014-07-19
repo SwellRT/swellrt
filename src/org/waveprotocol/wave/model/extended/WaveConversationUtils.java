@@ -23,7 +23,6 @@ import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ReadOnlyWaveView;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
-import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -39,6 +38,7 @@ public class WaveConversationUtils {
   private static final Log LOG = Log.get(WaveConversationUtils.class);
 
   private static final int CONVERSATION_SNIPPET_LENGTH = 140;
+  private static final String TITLE_NOT_AVAILABLE_MSG = "(No title)";
 
   private final IdGenerator idGenerator;
   private final ConversationUtil conversationUtil;
@@ -97,7 +97,7 @@ public class WaveConversationUtils {
     return title;
   }
 
-  public String getWaveletConversationSnippet(WaveletData rawWaveletData) {
+  public String getWaveletConversationSnippet(ReadableWaveletData rawWaveletData) {
     String snippet = Snippets.renderSnippet(rawWaveletData, CONVERSATION_SNIPPET_LENGTH).trim();
     return snippet;
   }
@@ -113,7 +113,7 @@ public class WaveConversationUtils {
   }
 
 
-  public String getConversationTitle(ReadableWaveletData conversationWavelet) {
+  public String getConversationFirstLineText(ReadableWaveletData conversationWavelet) {
 
     Preconditions.checkArgument(
         conversationWavelet.getDocumentIds().contains(IdConstants.MANIFEST_DOCUMENT_ID),
@@ -146,6 +146,43 @@ public class WaveConversationUtils {
       LOG.severe("Error extracting conversation title from wavelet "
           + conversationWavelet.getWaveletId());
     }
+
+    return title;
+  }
+
+  public String getConversationTitle(ReadableWaveletData conversationWavelet) {
+
+    Document conversationDoc =
+        conversationWavelet.getDocument(IdConstants.MANIFEST_DOCUMENT_ID).getContent()
+            .getMutableDocument();
+
+    if (conversationDoc == null) return TITLE_NOT_AVAILABLE_MSG;
+
+    N conversationNode = conversationDoc.getFirstChild(conversationDoc.getDocumentElement());
+
+    if (conversationNode == null) return TITLE_NOT_AVAILABLE_MSG;
+
+    N firstBlipNode = conversationDoc.getFirstChild(conversationNode);
+
+    if (firstBlipNode == null) return TITLE_NOT_AVAILABLE_MSG;
+
+    String firstBlipId =
+        conversationDoc.getAttribute(conversationDoc.asElement(firstBlipNode), "id");
+
+    if (firstBlipId == null || firstBlipId.isEmpty()) return TITLE_NOT_AVAILABLE_MSG;
+
+    Document firstBlipDoc =
+        conversationWavelet.getDocument(firstBlipId).getContent().getMutableDocument();
+
+    if (firstBlipDoc == null) return TITLE_NOT_AVAILABLE_MSG;
+
+
+   String title = TitleHelper.extractTitle(firstBlipDoc);
+
+   if (title.isEmpty())
+ title = getConversationFirstLineText(conversationWavelet);
+
+    if (title.isEmpty()) title = TITLE_NOT_AVAILABLE_MSG;
 
     return title;
   }
