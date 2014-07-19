@@ -152,6 +152,8 @@ public class MongoDbPerUserWaveViewHandlerImpl implements PerUserWaveViewHandler
           return null;
         }
       });
+      executor.execute(task);
+      return task;
 
       /*
        * waveletDelayCache.put(WaveletName.of(waveletData.getWaveId(),
