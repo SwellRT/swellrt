@@ -5,12 +5,11 @@ import com.google.inject.Inject;
 
 import org.waveprotocol.box.common.Snippets;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
-import org.waveprotocol.wave.model.conversation.ObservableConversation;
-import org.waveprotocol.wave.model.conversation.ObservableConversationBlip;
 import org.waveprotocol.wave.model.conversation.ObservableConversationView;
 import org.waveprotocol.wave.model.conversation.TitleHelper;
 import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.conversation.WaveletBasedConversation;
+import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Document;
@@ -19,12 +18,20 @@ import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdUtil;
+import org.waveprotocol.wave.model.supplement.SupplementImpl;
+import org.waveprotocol.wave.model.supplement.WaveletBasedSupplement;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ReadOnlyWaveView;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
+import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 import org.waveprotocol.wave.util.logging.Log;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A utility class to manage Waves in our own way. Some of the code here is
@@ -76,26 +83,6 @@ public class WaveConversationUtils {
 
 
 
-  public String getWaveletConversationTitle(ObservableConversationView conversationWaveletWiew) {
-
-    ObservableConversation rootConversation = conversationWaveletWiew.getRoot();
-
-    ObservableConversationBlip firstBlip = null;
-    if (rootConversation != null && rootConversation.getRootThread() != null
-        && rootConversation.getRootThread().getFirstBlip() != null) {
-      firstBlip = rootConversation.getRootThread().getFirstBlip();
-    }
-    String title;
-
-    if (firstBlip != null) {
-      Document firstBlipContents = firstBlip.getContent();
-      title = TitleHelper.extractTitle(firstBlipContents).trim();
-    } else {
-      title = "";
-    }
-
-    return title;
-  }
 
   public String getWaveletConversationSnippet(ReadableWaveletData rawWaveletData) {
     String snippet = Snippets.renderSnippet(rawWaveletData, CONVERSATION_SNIPPET_LENGTH).trim();
@@ -150,7 +137,7 @@ public class WaveConversationUtils {
     return title;
   }
 
-  public String getConversationTitle(ReadableWaveletData conversationWavelet) {
+  public String getWaveletConversationTitle(ReadableWaveletData conversationWavelet) {
 
     Document conversationDoc =
         conversationWavelet.getDocument(IdConstants.MANIFEST_DOCUMENT_ID).getContent()
@@ -187,5 +174,93 @@ public class WaveConversationUtils {
     return title;
   }
 
+  public Map<String, Long> getConversationBlips(ReadableWaveletData conversationWavelet) {
+
+    Preconditions.checkNotNull(conversationWavelet);
+    Preconditions.checkArgument(IdUtil.isConversationalId(conversationWavelet.getWaveletId()));
+
+    HashMap<String, Long> blipsMap = new HashMap<String, Long>();
+
+    if (!conversationWavelet.getDocumentIds().contains(
+        IdUtil.MANIFEST_DOCUMENT_ID))
+      return blipsMap;
+
+
+    ReadableBlipData manifestBlip = conversationWavelet.getDocument(IdUtil.MANIFEST_DOCUMENT_ID);
+    Document manifestDoc = manifestBlip.getContent().getMutableDocument();
+    List<Doc.E> blipElements = ExtendedDocHelper.getAllElementsByTagName("blip", manifestDoc);
+
+    for (Doc.E element : blipElements) {
+      String blipId = manifestDoc.getAttribute(element, "id");
+      Long blipVersion = null;
+      if (conversationWavelet.getDocumentIds().contains(blipId)) {
+        blipVersion = conversationWavelet.getDocument(blipId).getLastModifiedVersion();
+        blipsMap.put(blipId, blipVersion);
+      }
+    }
+
+    return blipsMap;
+  }
+
+  public Map<String, Long> getUserDataBlips(ReadableWaveletData userDataWavelet) {
+
+    Preconditions.checkNotNull(userDataWavelet);
+    Preconditions.checkArgument(IdUtil.isUserDataWavelet(userDataWavelet.getWaveletId()));
+
+
+    /**
+     * We suppose to have only one conversation (conv+root), so we are counting
+     * all the blip tags in the documento.
+     */
+
+    HashMap<String, Long> blipsMap = new HashMap<String, Long>();
+
+    if (!userDataWavelet.getDocumentIds().contains(WaveletBasedSupplement.READSTATE_DOCUMENT))
+      return blipsMap;
+
+
+    ReadableBlipData manifestBlip =
+        userDataWavelet.getDocument(WaveletBasedSupplement.READSTATE_DOCUMENT);
+    Document manifestDoc = manifestBlip.getContent().getMutableDocument();
+    List<Doc.E> blipElements = ExtendedDocHelper.getAllElementsByTagName("blip", manifestDoc);
+
+    for (Doc.E element : blipElements) {
+      String blipId = manifestDoc.getAttribute(element, "i");
+      String blipVersion = manifestDoc.getAttribute(element, "v");
+      try {
+        blipsMap.put(blipId, Long.valueOf(blipVersion));
+      } catch (NumberFormatException e) {
+
+      }
+
+    }
+
+    return blipsMap;
+  }
+
+
+  /**
+   * Calculates the number of blips not read yet by an user. It's a simplistic
+   * implementation based on {@link SupplementImpl.isBlipUnread}. It doesn't
+   * take care of wavelet-override version.
+   *
+   * @param contentBlips
+   * @param userBlips
+   * @return
+   */
+  public int getNotReadBlips(Map<String, Long> contentBlips, Map<String, Long> userBlips) {
+
+    int nonReadCount = contentBlips.size();
+    for (Entry<String, Long> docBlip : contentBlips.entrySet()) {
+
+      if (userBlips.containsKey(docBlip.getKey())) {
+        Long blipUserVersion = userBlips.get(docBlip.getKey());
+        if (blipUserVersion != null && blipUserVersion >= docBlip.getValue()) nonReadCount--;
+      }
+
+    }
+
+    return nonReadCount;
+  }
 
 }

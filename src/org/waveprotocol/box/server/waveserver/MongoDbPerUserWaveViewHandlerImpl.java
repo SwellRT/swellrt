@@ -91,22 +91,34 @@ public class MongoDbPerUserWaveViewHandlerImpl implements PerUserWaveViewHandler
   }
 
   @Override
-  public ListenableFuture<Void> onParticipantAdded(WaveletName waveletName,
-      ParticipantId participant) {
+  public ListenableFuture<Void> onParticipantAdded(final WaveletName waveletName,
+      final ParticipantId participant) {
 
-    // No op.
-    SettableFuture<Void> task = SettableFuture.create();
-    task.set(null);
+    ListenableFutureTask<Void> task = ListenableFutureTask.<Void> create(new Callable<Void>() {
+
+      @Override
+      public Void call() throws Exception {
+        indexStore.addParticipantIndexUpdate(waveletName, participant);
+        return null;
+      }
+    });
+    executor.execute(task);
     return task;
   }
 
   @Override
-  public ListenableFuture<Void> onParticipantRemoved(WaveletName waveletName,
-      ParticipantId participant) {
+  public ListenableFuture<Void> onParticipantRemoved(final WaveletName waveletName,
+      final ParticipantId participant) {
 
-    // No op.
-    SettableFuture<Void> task = SettableFuture.create();
-    task.set(null);
+    ListenableFutureTask<Void> task = ListenableFutureTask.<Void> create(new Callable<Void>() {
+
+      @Override
+      public Void call() throws Exception {
+        indexStore.removeParticipantIndexUpdate(waveletName, participant);
+        return null;
+      }
+    });
+    executor.execute(task);
     return task;
   }
 
@@ -139,7 +151,7 @@ public class MongoDbPerUserWaveViewHandlerImpl implements PerUserWaveViewHandler
 
     } else if (IdUtil.isConversationRootWaveletId(waveletData.getWaveletId())) {
       // Changes in conversation wavelets are not processed directly
-      // to avoid fire a index process for each delta change. We wait until the
+      // to avoid fire an index process for each delta change. We wait until the
       // wavelet hasn't changed for a time.
       LOG.info("Wavelet  " + wname + " for delayed indexing");
 
