@@ -2,7 +2,7 @@ package org.waveprotocol.wave.model.extended.type;
 
 import com.google.gwt.core.client.Duration;
 
-import org.waveprotocol.wave.client.extended.ContentWave;
+import org.waveprotocol.wave.client.extended.WaveContentWrapper;
 import org.waveprotocol.wave.model.conversation.ObservableConversation;
 import org.waveprotocol.wave.model.conversation.ObservableConversationBlip;
 import org.waveprotocol.wave.model.conversation.ObservableConversationThread;
@@ -29,6 +29,7 @@ import java.util.List;
  * @param <E>
  * @param <T>
  */
+@Deprecated
 public class ChatContent implements DocHandler, ObservableConversation.Listener {
 
 
@@ -51,7 +52,7 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
   private final ObservableDocument doc;
 
   /** We still need the wave for participant mgmt */
-  private final ContentWave waveWrapper;
+  private final WaveContentWrapper waveWrapper;
 
   /** List of listeners of this doc */
   private final List<Listener> listeners;
@@ -61,7 +62,7 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
 
 
 
-  private ChatContent(ContentWave waveWrapper, ObservableDocument document,
+  private ChatContent(WaveContentWrapper waveWrapper, ObservableDocument document,
       ParticipantId contributor) {
     this.doc = document;
     this.waveWrapper = waveWrapper;
@@ -70,17 +71,20 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
 
   }
 
-  public static ChatContent create(ContentWave waveWrapper, ParticipantId contributor) {
+  public static ChatContent create(WaveContentWrapper waveWrapper, ParticipantId contributor) {
 
 
-    ObservableDocument rawDocument = waveWrapper.createDocumentInRoot(DOC_ID);
-    ChatContent chatBackend =
-        new ChatContent(waveWrapper, rawDocument, contributor);
+    // ObservableDocument rawDocument =
+    // waveWrapper.createDocumentInRoot(DOC_ID);
+    // ChatContent chatBackend =
+    // new ChatContent(waveWrapper, rawDocument, contributor);
+    //
+    // rawDocument.addListener(chatBackend);
+    // waveWrapper.addConversationListener(chatBackend);
+    //
+    // return chatBackend;
 
-    rawDocument.addListener(chatBackend);
-    waveWrapper.addConversationListener(chatBackend);
-
-    return chatBackend;
+    return null;
   }
 
   /**
@@ -118,7 +122,7 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
   public void addParticipant(ParticipantId participantId) {
 
     // Participant mgmt delegated to the Wave Wrapper
-    this.waveWrapper.addParticipant(participantId);
+    // this.waveWrapper.addParticipant(participantId);
   }
 
   //

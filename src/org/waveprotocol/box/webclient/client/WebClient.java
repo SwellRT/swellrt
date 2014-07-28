@@ -44,7 +44,6 @@ import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
 import org.waveprotocol.box.stat.Timing;
-import org.waveprotocol.box.webclient.client.extended.WaveBackend;
 import org.waveprotocol.box.webclient.client.extended.ui.SimpleChatPresenter;
 import org.waveprotocol.box.webclient.client.extended.ui.SimpleChatView;
 import org.waveprotocol.box.webclient.client.extended.ui.SimpleChatViewImpl;
@@ -78,7 +77,9 @@ import org.waveprotocol.wave.client.events.WaveCreationEvent;
 import org.waveprotocol.wave.client.events.WaveCreationEventHandler;
 import org.waveprotocol.wave.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
-import org.waveprotocol.wave.client.extended.ContentWave;
+import org.waveprotocol.wave.client.extended.WaveContentChat;
+import org.waveprotocol.wave.client.extended.WaveContentManager;
+import org.waveprotocol.wave.client.extended.WaveContentWrapper;
 import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
 import org.waveprotocol.wave.client.wavepanel.event.FocusManager;
 import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
@@ -91,7 +92,6 @@ import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
 import org.waveprotocol.wave.model.extended.WaveType;
 import org.waveprotocol.wave.model.extended.id.IdGeneratorExtended;
 import org.waveprotocol.wave.model.extended.id.IdGeneratorExtendedImpl;
-import org.waveprotocol.wave.model.extended.type.ChatContent;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
@@ -179,9 +179,9 @@ public class WebClient implements EntryPoint {
   /**
    * A central point for new wave models instances
    */
-  private WaveBackend waveBackend;
+  private WaveContentManager waveContentManager;
 
-  private ContentWave contentWave;
+  private WaveContentWrapper currentContentWave;
 
   /**
    * This is the entry point method.
@@ -226,7 +226,7 @@ public class WebClient implements EntryPoint {
       loginToServer();
     }
 
-    waveBackend = WaveBackend.create(this.waveStore, this.idGenerator, this.channel);
+    waveContentManager = WaveContentManager.create(this.waveStore, this.idGenerator, this.channel);
 
     setupUi();
     setupStatistics();
@@ -398,9 +398,9 @@ public class WebClient implements EntryPoint {
     final org.waveprotocol.box.stat.Timer timer = Timing.startRequest("Open Wave");
     LOG.info("WebClient.openWave()");
 
-    if (contentWave != null) {
-      contentWave.destroy();
-      contentWave = null;
+    if (currentContentWave != null) {
+      currentContentWave.destroy();
+      currentContentWave = null;
     }
 
     if (wave != null) {
@@ -548,25 +548,22 @@ public class WebClient implements EntryPoint {
       wave = null;
     }
 
-    if (contentWave != null) {
-      contentWave.destroy();
-      contentWave = null;
+    if (currentContentWave != null) {
+      currentContentWave.destroy();
+      currentContentWave = null;
     }
 
-
-    final ContentWave waveWrapper = waveBackend.getWaveWrapper(waveRef, false);
-
-    this.contentWave = waveWrapper;
+    this.currentContentWave = waveContentManager.getWaveContentWrapper(waveRef, false);
+    final WaveContentWrapper contentWrapper = this.currentContentWave;
 
     final SimpleChatView view = new SimpleChatViewImpl();
-    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view);
+    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view, loggedInUser);
 
-    waveWrapper.load(new Command() {
+    currentContentWave.load(new Command() {
       @Override
       public void execute() {
 
-        final ChatContent chatDocument = ChatContent.create(waveWrapper, loggedInUser);
-        presenter.bind(chatDocument);
+        presenter.bind(WaveContentChat.create(contentWrapper));
 
         waveFrame.clear();
         UIObject.setVisible(waveFrame.getElement(), true);
@@ -584,25 +581,23 @@ public class WebClient implements EntryPoint {
       wave = null;
     }
 
-    if (contentWave != null) {
-      contentWave.destroy();
-      contentWave = null;
+    if (currentContentWave != null) {
+      currentContentWave.destroy();
+      currentContentWave = null;
     }
 
-    final ContentWave waveWrapper = waveBackend.getWaveWrapper(waveRef, true);
-
-    this.contentWave = waveWrapper;
+    this.currentContentWave = waveContentManager.getWaveContentWrapper(waveRef, true);
+    final WaveContentWrapper contentWrapper = this.currentContentWave;
 
     final SimpleChatView view = new SimpleChatViewImpl();
-    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view);
+    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view, loggedInUser);
 
-    waveWrapper.load(new Command() {
+    currentContentWave.load(new Command() {
 
       @Override
       public void execute() {
 
-        final ChatContent chatDocument = ChatContent.create(waveWrapper, loggedInUser);
-        presenter.bind(chatDocument);
+        presenter.bind(WaveContentChat.create(contentWrapper));
 
         waveFrame.clear();
         UIObject.setVisible(waveFrame.getElement(), true);

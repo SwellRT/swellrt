@@ -1,24 +1,19 @@
 package org.waveprotocol.wave.client.extended;
 
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
-import org.waveprotocol.box.webclient.client.extended.WaveBackend;
 import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.model.conversation.ConversationView;
-import org.waveprotocol.wave.model.conversation.ObservableConversation;
-import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
-import org.waveprotocol.wave.model.id.IdUtil;
-import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
 import java.util.Set;
 
-public class ContentWave extends Stages {
+public class WaveContentWrapper extends Stages {
 
 
   private final static AsyncHolder<Object> HALT = new AsyncHolder<Object>() {
@@ -28,27 +23,27 @@ public class ContentWave extends Stages {
     }
   };
 
-  private boolean closed;
+  protected boolean closed;
   private StageOne one;
   private StageTwo two;
   private StageThree three;
-  private WaveContext wave;
-  private WaveRef waveRef;
+  protected WaveContext wave;
+  protected WaveRef waveRef;
   private RemoteViewServiceMultiplexer channel;
-  private IdGenerator idGenerator;
+  protected IdGenerator idGenerator;
   private ProfileManager profileManager;
-  private WaveStore waveStore;
-  private String localDomain;
-  private Set<ParticipantId> participants;
-  private boolean isNewWave;
-  private WaveBackend.UnsavedDataListenerProxy dataListenerProxy;
+  protected WaveStore waveStore;
+  protected String localDomain;
+  protected Set<ParticipantId> participants;
+  protected boolean isNewWave;
+  private WaveContentManager.UnsavedDataListenerProxy dataListenerProxy;
+  protected ParticipantId loggedInUser;
 
 
 
-  public ContentWave(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
-      IdGenerator idGenerator, WaveStore waveStore,
- String localDomain,
-      Set<ParticipantId> participants, boolean isNewWave) {
+  protected WaveContentWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+      IdGenerator idGenerator, WaveStore waveStore, String localDomain,
+      Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave) {
     super();
     this.waveRef = waveRef;
     this.channel = channel;
@@ -57,62 +52,8 @@ public class ContentWave extends Stages {
     this.localDomain = localDomain;
     this.participants = participants;
     this.isNewWave = isNewWave;
+    this.loggedInUser = loggedInUser;
 
-  }
-
-
-  // public WaveRef getWaveRef() {
-  // return WaveRef.of(this.waveData.getWaveId());
-  // }
-  //
-  // public void connect(Command onOpened) {
-  // this.connector.connect(onOpened);
-  // }
-  //
-  // public void close() {
-  // this.connector.close();
-  // }
-  //
-  // public void setUnsavedDataListener(UnsavedDataListener unsavedDataListener)
-  // {
-  // this.unsavedDataListenerProxy.setActualUnsavedDataListener(unsavedDataListener);
-  // }
-
-
-  /**
-   * Creates a new data document in the Root conversation wavelet. This method
-   * ensure that the document is observable and mutable.
-   * 
-   * @param docId
-   * @return
-   */
-  public ObservableDocument createDocumentInRoot(String docId) {
-
-    return this.wave.getWave()
-        .getWavelet(WaveletId.of(this.localDomain, IdUtil.CONVERSATION_ROOT_WAVELET))
-        .getDocument(docId);
-
-
-    // Document newDoc =
-    // this.documentRegistry.create(
-    // WaveletId.of(this.localDomain, IdUtil.CONVERSATION_ROOT_WAVELET), docId,
-    // DocOpUtil.asInitialization(new
-    // DocOpBuffer().finish())).getMutableDocument();
-    //
-    // Preconditions.checkState(newDoc instanceof ObservableDocument,
-    // "DocumentRegistry's factory have to create Observable Documents");
-    // ObservableDocument newObservableDoc = (ObservableDocument) newDoc;
-    //
-    // return newObservableDoc;
-  }
-
-
-  public void addParticipant(ParticipantId participant) {
-    this.wave.getConversations().getRoot().addParticipant(participant);
-  }
-
-  public void addConversationListener(ObservableConversation.Listener listener) {
-    this.wave.getConversations().getRoot().addListener(listener);
   }
 
 
@@ -153,7 +94,7 @@ public class ContentWave extends Stages {
 
       @Override
       protected String getLocalDomain() {
-        return ContentWave.this.localDomain;
+        return WaveContentWrapper.this.localDomain;
       }
     });
   }
@@ -227,6 +168,5 @@ public class ContentWave extends Stages {
   private <T> AsyncHolder<T> haltIfClosed(AsyncHolder<T> provider) {
     return closed ? (AsyncHolder<T>) HALT : provider;
   }
-
 
 }

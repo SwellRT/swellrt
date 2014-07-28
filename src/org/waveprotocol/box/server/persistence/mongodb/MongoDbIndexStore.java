@@ -291,10 +291,10 @@ public class MongoDbIndexStore {
       } else if (waveType.equals(WaveType.CHAT)) {
 
         // title and snippet
-        // TODO specific title of chat
+        waveView.put(FIELD_TITLE, "Chat");
 
         // rest of chat specific data
-        // TODO specific content of chat
+        waveView.put(FIELD_TITLE, "");
       }
 
       // if it is a personal wavelet

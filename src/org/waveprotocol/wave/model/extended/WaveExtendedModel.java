@@ -21,7 +21,8 @@ import org.waveprotocol.wave.model.id.WaveletId;
 public class WaveExtendedModel {
 
 
-  public static final String CHAT_DOC_ID = "chatdoc";
+  // TODO(pablojan) duplicated in DocumentBasedChat, resolve conflict
+  public static final String CHAT_DOC_ID = "c/chat";
 
   public static final String CONTENT_WAVELET_CONVERSATION_PREFIX =
       IdUtil.CONVERSATION_WAVELET_PREFIX;
@@ -29,6 +30,7 @@ public class WaveExtendedModel {
   public static final String CONTENT_WAVELET_CHAT_PREFIX = "chat";
   public static final String CONTENT_WAVELET_APP_PREFIX = "app";
 
+  public static final String CONTENT_WAVELET_ROOT = "root";
 
 
   public static boolean isContentWavelet(WaveletId waveletId) {

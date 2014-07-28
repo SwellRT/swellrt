@@ -2,35 +2,46 @@ package org.waveprotocol.box.webclient.client.extended.ui;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import org.waveprotocol.wave.model.extended.type.chat.ChatMessage;
+import org.waveprotocol.wave.model.extended.type.chat.ChatPresenceStatus;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.List;
+import java.util.Set;
 
 public interface SimpleChatView {
 
   public interface Listener {
 
-    void onNewMessage(String msg);
+    void onNewMessage(String text);
 
     void onAddParticipant(String address);
 
+    void startWriting();
+
+    void stopWriting();
+
   }
 
-  // Binding with presenter and
+  // Binding with presenter
   void setListener(Listener listener);
 
-  // Update the View
-  void addChatLines(List<String> lines);
+  void unsetListener();
 
   // Update the View
-  void addChatLine(String line);
+  void addChatLines(List<ChatMessage> lines);
 
-  // Upadte the View
+  void addChatLine(ChatMessage line);
+
   void clearChatLines();
 
   void addParticipant(ParticipantId participantId);
 
   void removeParticipant(ParticipantId participantId);
+
+  void setParticipants(Set<ParticipantId> participants);
+
+  void setParticipantStatus(ParticipantId participant, ChatPresenceStatus status);
 
   Widget asWidget();
 

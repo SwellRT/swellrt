@@ -1,27 +1,32 @@
 package org.waveprotocol.box.webclient.client.extended.ui;
 
 
-import org.waveprotocol.wave.model.extended.type.ChatContent;
+import org.waveprotocol.wave.client.extended.WaveContentChat;
+import org.waveprotocol.wave.model.extended.type.chat.ChatMessage;
+import org.waveprotocol.wave.model.extended.type.chat.ChatPresenceStatus;
+import org.waveprotocol.wave.model.extended.type.chat.ObservableChat;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.util.Set;
 
-public class SimpleChatPresenter implements SimpleChatView.Listener,
-    ChatContent.Listener {
+
+public class SimpleChatPresenter implements ObservableChat.Listener, SimpleChatView.Listener {
 
 
   private final SimpleChatView view;
-  private ChatContent chatBackend;
+  private final ParticipantId participant;
+  private WaveContentChat waveContent;
 
-
-  public static SimpleChatPresenter create(SimpleChatView view) {
-    SimpleChatPresenter listPresenter = new SimpleChatPresenter(view);
+  public static SimpleChatPresenter create(SimpleChatView view, ParticipantId participant) {
+    SimpleChatPresenter listPresenter = new SimpleChatPresenter(view, participant);
     listPresenter.init();
     return listPresenter;
   }
 
-  protected SimpleChatPresenter(SimpleChatView view) {
+  protected SimpleChatPresenter(SimpleChatView view, ParticipantId participant) {
     this.view = view;
+    this.participant = participant;
   }
 
 
@@ -29,9 +34,33 @@ public class SimpleChatPresenter implements SimpleChatView.Listener,
     this.view.setListener(this);
   }
 
-  public void bind(ChatContent chatDocument) {
-    this.chatBackend = chatDocument;
-    this.chatBackend.addListener(this);
+  public void bind(WaveContentChat chatContent) {
+    this.waveContent = chatContent;
+    this.waveContent.getChat().addListener(this);
+
+    Set<ParticipantId> participants = this.waveContent.getParticipants();
+
+    // Show participants
+    this.view.setParticipants(participants);
+
+    // Update participant status
+    for (ParticipantId participant : participants)
+      this.view.setParticipantStatus(participant,
+          this.waveContent.getChat().getParticipantStatus(participant));
+
+
+    // Show some previous messages
+    int totalMessages = waveContent.getChat().numMessages();
+    int numShowMessages = totalMessages > 10 ? 10 : totalMessages;
+    /*
+     * for (int i = totalMessages - numShowMessages; i < totalMessages; i++)
+     * this.view.addChatLine(waveContent.getChat().getMessage(i));
+     */
+
+    // Show all messages
+    for (int i = 0; i < totalMessages; i++)
+      this.view.addChatLine(waveContent.getChat().getMessage(i));
+
   }
 
   //
@@ -40,9 +69,9 @@ public class SimpleChatPresenter implements SimpleChatView.Listener,
 
   @Override
   public void onNewMessage(String msg) {
-    chatBackend.addChatLine(msg);
-
+    waveContent.getChat().addMessage(new ChatMessage("", msg, System.currentTimeMillis(), participant));
   }
+
 
   @Override
   public void onAddParticipant(String address) {
@@ -51,33 +80,51 @@ public class SimpleChatPresenter implements SimpleChatView.Listener,
 
     try {
       newParticipantId = ParticipantId.of(address);
-      chatBackend.addParticipant(newParticipantId);
+      waveContent.addParticipant(newParticipantId);
+      waveContent.getChat().addMessage(
+          new ChatMessage("", address + " has joined to this conversation.", System
+              .currentTimeMillis(), participant));
     } catch (InvalidParticipantAddress e) {
       // TODO - bad participant address
     }
   }
 
   //
-  // Listen to the Wave's data back-end
+  // Chat's remote events Listener
   //
 
-
   @Override
-  public void onAdd(String chatLine) {
-    this.view.addChatLine(chatLine);
-  }
-
-
-  @Override
-  public void onAddParticipant(ParticipantId participantId) {
-    this.view.addParticipant(participantId);
-
+  public void onMessageAdded(ChatMessage message) {
+    this.view.addChatLine(message);
   }
 
   @Override
-  public void onRemoveParticipant(ParticipantId participantId) {
-    this.view.removeParticipant(participantId);
+  public void onParticipantAdded(ParticipantId participant) {
+    this.view.setParticipants(waveContent.getParticipants());
   }
+
+  @Override
+  public void onParticipantRemoved(ParticipantId participant) {
+    this.view.setParticipants(waveContent.getParticipants());
+  }
+
+  @Override
+  public void startWriting() {
+    this.waveContent.getChat().setParticipantStatus(participant,
+        ChatPresenceStatus.createWritingStatus());
+  }
+
+  @Override
+  public void stopWriting() {
+    this.waveContent.getChat().setParticipantStatus(participant,
+        ChatPresenceStatus.createOnlineStatus());
+  }
+
+  @Override
+  public void onParticipantStatusChanged(ParticipantId participant, ChatPresenceStatus status) {
+    this.view.setParticipantStatus(participant, status);
+  }
+
 
 
 
