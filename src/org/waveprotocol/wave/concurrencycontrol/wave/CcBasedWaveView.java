@@ -88,5 +88,8 @@ public interface CcBasedWaveView extends ObservableWaveView {
   CcBasedWavelet getUserData();
 
   @Override
+  CcBasedWavelet createWavelet(WaveletId waveletId);
+
+  @Override
   Iterable<? extends CcBasedWavelet> getWavelets();
 }

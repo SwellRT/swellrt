@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.model.wave;
 
+import org.waveprotocol.wave.model.extended.model.ExtendedWaveView;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 
@@ -26,7 +27,7 @@ import org.waveprotocol.wave.model.id.WaveletId;
  * A Wave View is a collection of wavelets within a wave.
  *
  */
-public interface WaveView {
+public interface WaveView extends ExtendedWaveView {
   /**
    * Gets the unique identifier of the wave in view.
    *
