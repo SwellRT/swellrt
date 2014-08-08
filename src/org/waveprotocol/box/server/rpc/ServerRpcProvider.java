@@ -53,7 +53,9 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -382,6 +384,9 @@ public class ServerRpcProvider {
     // Sets an specific session cookie name
     context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", "WSESSIONID");
 
+    FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
+    context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
+
     addWebSocketServlets();
 
     try {
@@ -603,7 +608,8 @@ public class ServerRpcProvider {
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
-      interceptors = {AtmosphereClientInterceptor.class},
+ interceptors = {
+AtmosphereClientInterceptor.class},
       broadcasterCache = UUIDBroadcasterCache.class)
   public static class WaveAtmosphereService implements AtmosphereHandler {
 
