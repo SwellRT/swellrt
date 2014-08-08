@@ -102,7 +102,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
   public static WaveViewData buildWaveViewData(WaveId waveId, Set<WaveletId> waveletIds,
       Function<ReadableWaveletData, Boolean> matchesFunction, WaveMap waveMap) {
 
-    WaveViewData view = null; // Copy of the wave built up for search hits.
+    WaveViewData view = WaveViewDataImpl.create(waveId); // Copy of the wave built up for search hits.
     for (WaveletId waveletId : waveletIds) {
       WaveletContainer waveletContainer = null;
       WaveletName waveletname = WaveletName.of(waveId, waveletId);
@@ -116,9 +116,6 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
         waveletContainer = waveMap.getWavelet(waveletname);
         if ((waveletContainer == null) || !waveletContainer.applyFunction(matchesFunction)) {
           continue;
-        }
-        if (view == null) {
-          view = WaveViewDataImpl.create(waveId);
         }
         // Just keep adding all the relevant wavelets in this wave.
         view.addWavelet(waveletContainer.copyWaveletData());
