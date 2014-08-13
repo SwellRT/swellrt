@@ -58,7 +58,7 @@ public class AsyncCallContext {
    * Enters to cloned scope and stop timer.
    */
   public void stop() {
-    if (timer.isActive()) {
+    if (timer != null && timer.isActive()) {
       Timing.enterScope(values);
       Timing.stop(timer);
     }
