@@ -61,6 +61,7 @@ public class CoreSettings {
   public static final String LOOKUP_EXECUTOR_THREAD_COUNT = "lookup_executor_thread_count";
   public static final String ROBOT_CONNECTION_THREAD_COUNT = "robot_connection_thread_count";
   public static final String ROBOT_GATEWAY_THREAD_COUNT = "robot_gateway_thread_count";
+  public static final String SOLR_THREAD_COUNT = "solr_thread_count";
   public static final String DISABLE_REGISTRATION = "disable_registration";
   public static final String ENABLE_SSL = "enable_ssl";
   public static final String SSL_KEYSTORE_PATH = "ssl_keystore_path";
@@ -77,6 +78,7 @@ public class CoreSettings {
   public static final String MONGODB_HOST = "mongodb_host";
   public static final String MONGODB_PORT = "mongodb_port";
   public static final String MONGODB_DATABASE = "mongodb_database";
+  public static final String SOLR_BASE_URL = "solr_base_url";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -226,6 +228,11 @@ public class CoreSettings {
       defaultValue = "10")
   private static int robotGatewayThreadCount;
 
+  @Setting(name = SOLR_THREAD_COUNT,
+      description = "The number of threads to make search/update requests to Solr.",
+      defaultValue = "1")
+  private static int solrThreadCount;
+
   @Setting(name = DISABLE_REGISTRATION,
       description = "Prevents the register page from being available to anyone", defaultValue = "false")
   private static boolean disableRegistration;
@@ -290,4 +297,8 @@ public class CoreSettings {
   @Setting(name = MONGODB_DATABASE, description = "The database name used in the MongoDB server",
       defaultValue = "wiab")
   private static String mongoDBdatabase;
+
+  @Setting(name = SOLR_BASE_URL, description = "The Solr base url",
+      defaultValue = "http://localhost:8983/solr")
+  private static String solrBaseUrl;
 }

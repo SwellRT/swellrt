@@ -140,6 +140,9 @@ storage_continuation_executor_thread_count = @STORAGE_CONTINUATION_EXECUTOR_THRE
 # while creating a list of all wavelets in the persistent storage. Default value: 1
 lookup_executor_thread_count = @LOOKUP_EXECUTOR_THREAD_COUNT@
 
+# The number of threads for making search/update requests to Solr. Default value: 1
+solr_thread_count = @SOLR_THREAD_COUNT@
+
 # To enable federation, edit the server.federation.config file and include it here.
 # Or run ant -f server-config.xml server-federation-config
 # If not using the server-config.xml ant script - it is possible just to comment the line.
@@ -203,6 +206,10 @@ thumbnail_patterns_directory = @THUMBNAIL_PATTERNS_DIRECTORY@
 # Currently supported profile fetcher types: gravatar, initials.
 # Default value: gravatar.
 profile_fetcher_type = @PROFILE_FETCHER_TYPE@
+
+# The Solr endpoint url.
+# Default value: http://localhost:8983/solr
+solr_base_url = @SOLR_BASE_URL@
 
 # Mongodb connection options
 # Only used if some of the *_store_type properties are set to 'mongodb'

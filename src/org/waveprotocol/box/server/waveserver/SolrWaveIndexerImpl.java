@@ -29,6 +29,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.URI;
@@ -39,6 +40,9 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.http.HttpStatus;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.Snippets;
+import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.SolrExecutor;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.id.IdUtil;
@@ -62,28 +66,27 @@ import java.util.logging.Level;
  */
 @Singleton
 public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.Subscriber,
-PerUserWaveViewBus.Listener {
+  PerUserWaveViewBus.Listener {
 
   private static final Log LOG = Log.get(SolrWaveIndexerImpl.class);
 
-  // TODO (Yuri Z.): Inject executor.
-  private static final Executor executor = Executors.newSingleThreadExecutor();
-
+  private final Executor executor;
   private final ReadableWaveletDataProvider waveletDataProvider;
+  private final String solrBaseUrl;
 
 
   @Inject
   public SolrWaveIndexerImpl(WaveMap waveMap, WaveletProvider waveletProvider,
       ReadableWaveletDataProvider waveletDataProvider, ConversationUtil conversationUtil,
-      WaveletNotificationDispatcher notificationDispatcher) {
-
+      WaveletNotificationDispatcher notificationDispatcher,
+      @Named(CoreSettings.SOLR_BASE_URL) String solrUrl,
+      @SolrExecutor Executor solrExecutor) {
     super(waveMap, waveletProvider);
-
+    
+    executor = solrExecutor;
+    solrBaseUrl = solrUrl;
     this.waveletDataProvider = waveletDataProvider;
-
     notificationDispatcher.subscribe(this);
-
-    return;
   }
 
   @Override
@@ -142,7 +145,7 @@ PerUserWaveViewBus.Listener {
 
   private void updateIndex(ReadableWaveletData wavelet) throws IndexException {
     Preconditions.checkNotNull(wavelet);
-    if (!IdUtil.isConversationalId(wavelet.getWaveletId())) {
+    if (IdUtil.isConversationalId(wavelet.getWaveletId())) {
       JsonArray docsJson = buildJsonDoc(wavelet);
       postUpdateToSolr(wavelet, docsJson);
     }
@@ -150,7 +153,7 @@ PerUserWaveViewBus.Listener {
 
   private void postUpdateToSolr(ReadableWaveletData wavelet, JsonArray docsJson) {
     PostMethod postMethod =
-        new PostMethod(SolrSearchProviderImpl.SOLR_BASE_URL + "/update/json?commit=true");
+        new PostMethod(solrBaseUrl + "/update/json?commit=true");
     try {
       RequestEntity requestEntity =
           new StringRequestEntity(docsJson.toString(), "application/json", "UTF-8");
@@ -277,14 +280,14 @@ PerUserWaveViewBus.Listener {
     GetMethod getMethod = new GetMethod();
     try {
       getMethod
-      .setURI(new URI(SolrSearchProviderImpl.SOLR_BASE_URL + "/update?wt=json"
+      .setURI(new URI(solrBaseUrl + "/update?wt=json"
           + "&stream.body=<delete><query>" + SolrSearchProviderImpl.Q + "</query></delete>",
           false));
 
       HttpClient httpClient = new HttpClient();
       int statusCode = httpClient.executeMethod(getMethod);
       if (statusCode == HttpStatus.SC_OK) {
-        getMethod.setURI(new URI(SolrSearchProviderImpl.SOLR_BASE_URL + "/update?wt=json"
+        getMethod.setURI(new URI(solrBaseUrl + "/update?wt=json"
             + "&stream.body=<commit/>", false));
 
         httpClient = new HttpClient();

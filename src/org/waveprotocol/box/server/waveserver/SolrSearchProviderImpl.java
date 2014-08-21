@@ -78,11 +78,8 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
   public static final String CREATOR = "creator_t";
   public static final String TEXT = "text_t";
   public static final String IN = "in_ss";
-
-  /*
-   * TODO (Frank R.) make it configurable
-   */
-  public static final String SOLR_BASE_URL = "http://localhost:8983/solr";
+  
+  private final String solrBaseUrl;
 
   /*-
    * http://wiki.apache.org/solr/CommonQueryParameters#q
@@ -126,8 +123,10 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
 
   @Inject
   public SolrSearchProviderImpl(WaveDigester digester, WaveMap waveMap,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String waveDomain) {
+      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String waveDomain,
+      @Named(CoreSettings.SOLR_BASE_URL) String solrUrl) {
     super(waveDomain, digester, waveMap);
+    solrBaseUrl = solrUrl;
   }
 
   @Override
@@ -135,10 +134,6 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
         + ((startAt + numResults) - 1) + "]");
 
-    /*-
-     * see
-     * org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl.search(ParticipantId, String, int, int).isAllQuery
-     */
     // Maybe should be changed in case other folders in addition to 'inbox' are
     // added.
     final boolean isAllQuery = isAllQuery(query);
@@ -159,7 +154,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
       GetMethod getMethod = new GetMethod();
       try {
         while (true) {
-          getMethod.setURI(new URI(SOLR_BASE_URL + "/select?wt=json" + "&start=" + start + "&rows="
+          getMethod.setURI(new URI(solrBaseUrl + "/select?wt=json" + "&start=" + start + "&rows="
               + rows + "&sort=" + LMT + "+desc" + "&q=" + Q + "&fq=" + fq, false));
 
           HttpClient httpClient = new HttpClient();
@@ -203,8 +198,6 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
       }
     }
 
-    ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
-
     Function<ReadableWaveletData, Boolean> matchesFunction =
         new Function<ReadableWaveletData, Boolean>() {
 
@@ -234,18 +227,6 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     LOG.info("Search response to '" + query + "': " + searchResult.size() + " results, user: "
         + user);
     return digester.generateSearchResult(user, query, searchResult);
-  }
-
-  private void ensureWavesHaveUserDataWavelet(
-      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView, ParticipantId user) {
-    WaveletId udw =
-        WaveletId.of(user.getDomain(),
-            IdUtil.join(IdConstants.USER_DATA_WAVELET_PREFIX, user.getAddress()));
-    Set<WaveId> waveIds = currentUserWavesView.keySet();
-    for (WaveId waveId : waveIds) {
-      Set<WaveletId> waveletIds = currentUserWavesView.get(waveId);
-      waveletIds.add(udw);
-    }
   }
 
   public static boolean isAllQuery(String query) {

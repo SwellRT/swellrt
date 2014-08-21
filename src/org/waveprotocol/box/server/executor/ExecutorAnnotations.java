@@ -84,4 +84,8 @@ public interface ExecutorAnnotations {
   @BindingAnnotation
   public @interface XmppExecutor {
   }
+
+  @BindingAnnotation
+  public @interface SolrExecutor {
+  }
 }

@@ -27,15 +27,18 @@ import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.ContactExecutor;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.DeltaPersistExecutor;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.SolrExecutor;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.XmppExecutor;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.ListenerExecutor;
@@ -145,7 +148,15 @@ public class ExecutorsModule extends AbstractModule {
   protected ScheduledExecutorService provideXmppExecutor(Provider<ScheduledRequestScopeExecutor> executorProvider) {
     return provideScheduledThreadPoolExecutor(executorProvider, 1, XmppExecutor.class.getSimpleName());
   }
-
+  
+  @Provides
+  @Singleton
+  @SolrExecutor
+  protected Executor provideSolrxecutor(Provider<RequestScopeExecutor> executorProvider,
+      @Named(CoreSettings.SOLR_THREAD_COUNT) int threadCount) {
+    return provideThreadPoolExecutor(executorProvider, threadCount, SolrExecutor.class.getSimpleName());
+  }
+  
   private Executor provideThreadPoolExecutor(Provider<RequestScopeExecutor> executorProvider,
       int threadCount, String name) {
     if (threadCount == 0) {

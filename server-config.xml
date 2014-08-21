@@ -47,6 +47,7 @@
   <property name="lookup_executor_thread_count" value="1" />
   <property name="robot_connection_thread_count" value="10" />
   <property name="robot_gateway_thread_count" value="10" />
+  <property name="solr_thread_count" value="1" />
   <property name="disable_registration" value="false" />
   <property name="enable_ssl" value="false" />
   <property name="ssl_keystore_path" value="wiab.ks" />
@@ -60,9 +61,7 @@
   <property name="analytics_account" value="" />
   <property name="profile_fetcher_type" value="gravatar" />
   <property name="enable_profiling" value="false" />
-  <property name="mongodb_host" value="127.0.0.1" />
-  <property name="mongodb_port" value="27017" />
-  <property name="mongodb_database" value="wiab" />
+  <property name="solr_base_url" value="http://localhost:8983/solr" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -134,6 +133,7 @@
           <token key="LOOKUP_EXECUTOR_THREAD_COUNT" value="${lookup_executor_thread_count}" />
           <token key="ROBOT_CONNECTION_THREAD_COUNT" value="${robot_connection_thread_count}" />
           <token key="ROBOT_GATEWAY_THREAD_COUNT" value="${robot_gateway_thread_count}" />
+          <token key="SOLR_THREAD_COUNT" value="${solr_thread_count}" />
           <token key="DISABLE_REGISTRATION" value="${disable_registration}" />
           <token key="ENABLE_SSL" value="${enable_ssl}" />
           <token key="SSL_KEYSTORE_PATH" value="${ssl_keystore_path}" />
@@ -147,6 +147,7 @@
           <token key="THUMBNAIL_PATTERNS_DIRECTORY" value="${thumbnail_patterns_directory}" />
           <token key="PROFILE_FETCHER_TYPE" value="${profile_fetcher_type}" />
           <token key="ENABLE_PROFILING" value="${enable_profiling}" />
+          <token key="SOLR_BASE_URL" value="${solr_base_url}" />
           <token key="MONGODB_HOST" value="${mongodb_host}" />
           <token key="MONGODB_PORT" value="${mongodb_port}" />
           <token key="MONGODB_DATABASE" value="${mongodb_database}" />
