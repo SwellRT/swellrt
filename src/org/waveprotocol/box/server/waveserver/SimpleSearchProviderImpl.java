@@ -97,6 +97,8 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
         createWavesViewToFilter(user, isAllQuery);
     Function<ReadableWaveletData, Boolean> filterWaveletsFunction =
         createFilterWaveletsFunction(user, isAllQuery, withParticipantIds, creatorParticipantIds);
+    
+    ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
 
     List<WaveViewData> results =
         Lists.newArrayList(filterWavesViewBySearchCriteria(filterWaveletsFunction,

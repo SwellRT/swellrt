@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import org.waveprotocol.box.server.util.WaveletDataUtil;
+import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -156,5 +157,21 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     // If not returned 'false' above - then logged in user is either
     // explicit or implicit participant and therefore has access permission.
     return true;
+  }
+  
+  /**
+   * Ensures that each wave in the current waves view has the user data wavelet by always adding
+   *  it to the view.
+   */
+  protected void ensureWavesHaveUserDataWavelet(
+      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView, ParticipantId user) {
+    WaveletId udw =
+        WaveletId.of(user.getDomain(),
+            IdUtil.join(IdConstants.USER_DATA_WAVELET_PREFIX, user.getAddress()));
+    Set<WaveId> waveIds = currentUserWavesView.keySet();
+    for (WaveId waveId : waveIds) {
+      Set<WaveletId> waveletIds = currentUserWavesView.get(waveId);
+      waveletIds.add(udw);
+    }
   }
 }

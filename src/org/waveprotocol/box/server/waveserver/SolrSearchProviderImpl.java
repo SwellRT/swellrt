@@ -134,6 +134,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
         + ((startAt + numResults) - 1) + "]");
 
+    
     // Maybe should be changed in case other folders in addition to 'inbox' are
     // added.
     final boolean isAllQuery = isAllQuery(query);
@@ -197,6 +198,8 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
         getMethod.releaseConnection();
       }
     }
+
+    ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
 
     Function<ReadableWaveletData, Boolean> matchesFunction =
         new Function<ReadableWaveletData, Boolean>() {
