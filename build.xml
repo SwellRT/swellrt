@@ -62,6 +62,7 @@
     <delete dir="${lib.codegen}"/>
     <delete dir="${lib.runtime}"/>
     <delete dir="${lib.release}"/>
+    <delete dir="${lib.solr}"/>
   </target>
 
   <target name="init-logging" description="Enable logging to file">
@@ -85,6 +86,7 @@
     <mkdir dir="${lib.codegen}"/>
     <mkdir dir="${lib.runtime}"/>
     <mkdir dir="${lib.release}"/>
+    <mkdir dir="${lib.solr}"/>
     <mkdir dir="${gen.dir}/gxp"/>
     <mkdir dir="${gen.dir}/messages"/>
   </target>
@@ -1100,14 +1102,25 @@
   </target>
 
   <target name="get-third-party-release-dep" depends="init" description="Download release tool third party dependencies">
-	<get dest="${lib.release}" usetimestamp="true" skipexisting="true">
-	  <url url="http://apache.spd.co.il/creadur/apache-rat-0.10/apache-rat-0.10-bin.zip" />
-	</get>
-	<unzip src="${lib.release}/apache-rat-0.10-bin.zip" dest="${lib.release}">
-	  <patternset>
+    <get dest="${lib.release}" usetimestamp="true" skipexisting="true">
+      <url url="http://apache.spd.co.il/creadur/apache-rat-0.10/apache-rat-0.10-bin.zip" />
+    </get>
+    <unzip src="${lib.release}/apache-rat-0.10-bin.zip" dest="${lib.release}">
+      <patternset>
         <include name="apache-rat-0.10/apache-rat-0.10.jar"/>
       </patternset>
-	  <mapper type="flatten"/>
+      <mapper type="flatten"/>
+    </unzip>
+  </target>
+
+  <target name="get-third-party-solr-dep" depends="init" description="Download Solr third party dependencies.">
+    <get dest="${lib.solr}" usetimestamp="true" skipexisting="true">
+      <url url="http://apache.spd.co.il/lucene/solr/4.9.0/solr-4.9.0.zip" />
+    </get>
+    <unzip src="${lib.solr}/solr-4.9.0.zip" dest="${lib.solr}">
+      <patternset>
+        <include name="solr-4.9.0/example/"/>
+      </patternset>
     </unzip>
   </target>
 
