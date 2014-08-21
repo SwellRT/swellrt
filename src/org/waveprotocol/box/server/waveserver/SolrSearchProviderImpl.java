@@ -31,12 +31,12 @@ import com.google.inject.name.Named;
 import com.google.wave.api.SearchResult;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.HttpStatus;
 import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.wave.model.id.IdConstants;
-import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -51,13 +51,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
  * Search provider that offers full text search
  *
  * @author Frank R. <renfeng.cn@gmail.com>
+ * @author Yuri Zelikov <yurize@apache.com>
  */
 public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
 
@@ -65,6 +65,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
 
   private static final String WORD_START = "(\\b|^)";
   private static final Pattern IN_PATTERN = Pattern.compile("\\bin:\\S*");
+  private static final Pattern WITH_PATTERN = Pattern.compile("\\bwith:\\S*");
 
   public static final int ROWS = 10;
 
@@ -78,48 +79,30 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
   public static final String CREATOR = "creator_t";
   public static final String TEXT = "text_t";
   public static final String IN = "in_ss";
-  
+
   private final String solrBaseUrl;
 
   /*-
    * http://wiki.apache.org/solr/CommonQueryParameters#q
-   *
-   * (regression alert) the commented enables empty wave to be listed in search results
    */
-  public static final String Q = WAVE_ID + ":[* TO *]" //
-      + " AND " + WAVELET_ID + ":[* TO *]" //
-      + " AND " + DOC_NAME + ":[* TO *]" //
-      + " AND " + LMT + ":[* TO *]" //
-      + " AND " + WITH + ":[* TO *]" //
-      + " AND " + WITH_FUZZY + ":[* TO *]" //
-      + " AND " + CREATOR + ":[* TO *]"
-      /* + " AND " + TEXT + ":[* TO *]" */;
+  public static final String Q = WAVE_ID + ":[* TO *]"
+      + " AND " + WAVELET_ID + ":[* TO *]"
+      + " AND " + DOC_NAME + ":[* TO *]"
+      + " AND " + LMT + ":[* TO *]"
+      + " AND " + WITH + ":[* TO *]"
+      + " AND " + WITH_FUZZY + ":[* TO *]"
+      + " AND " + CREATOR + ":[* TO *]";
 
-  /*-
-   * XXX (Frank R.) (experimental and disabled) edismax query parser
-   *
-   * mm (Minimum 'Should' Match)
-   * http://wiki.apache.org/solr/ExtendedDisMax#mm_.28Minimum_.27Should.27_Match.29
-   *
-   * !edismax ignores "q.op=AND", see
-   *
-   * ExtendedDismaxQParser (edismax) does not obey q.op for queries with operators
-   * https://issues.apache.org/jira/browse/SOLR-3741
-   *
-   * ExtendedDismaxQParser (edismax) does not obey q.op for parenthesized sub-queries
-   * https://issues.apache.org/jira/browse/SOLR-3740
-   */
-  // public static final String FILTER_QUERY_PREFIX = "{!edismax q.op=AND df=" +
-  // TEXT + "}" //
-  // + WITH + ":";
   private static final String FILTER_QUERY_PREFIX = "{!lucene q.op=AND df=" + TEXT + "}" //
       + WITH + ":";
 
-  public static String buildUserQuery(String query) {
-    return query.replaceAll(WORD_START + TokenQueryType.IN.getToken() + ":", IN + ":")
-        .replaceAll(WORD_START + TokenQueryType.WITH.getToken() + ":", WITH_FUZZY + ":")
-        .replaceAll(WORD_START + TokenQueryType.CREATOR.getToken() + ":", CREATOR + ":");
-  }
+  private final static Function<InputStreamReader, JsonArray> extractDocsJsonFunction =
+      new Function<InputStreamReader, JsonArray>() {
+
+    @Override
+    public JsonArray apply(InputStreamReader inputStreamResponse) {
+      return extractDocsJson(inputStreamResponse);
+    }};
 
   @Inject
   public SolrSearchProviderImpl(WaveDigester digester, WaveMap waveMap,
@@ -131,10 +114,10 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
 
   @Override
   public SearchResult search(final ParticipantId user, String query, int startAt, int numResults) {
+
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
         + ((startAt + numResults) - 1) + "]");
 
-    
     // Maybe should be changed in case other folders in addition to 'inbox' are
     // added.
     final boolean isAllQuery = isAllQuery(query);
@@ -152,55 +135,40 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
        */
       String fq = buildFilterQuery(query, isAllQuery, user.getAddress(), sharedDomainParticipantId);
 
-      GetMethod getMethod = new GetMethod();
       try {
         while (true) {
-          getMethod.setURI(new URI(solrBaseUrl + "/select?wt=json" + "&start=" + start + "&rows="
-              + rows + "&sort=" + LMT + "+desc" + "&q=" + Q + "&fq=" + fq, false));
+          String solrQuery = buildCurrentSolrQuery(start, rows, fq);
 
-          HttpClient httpClient = new HttpClient();
-          int statusCode = httpClient.executeMethod(getMethod);
-          if (statusCode != HttpStatus.SC_OK) {
-            LOG.warning("Failed to execute query: " + query);
-            return digester.generateSearchResult(user, query, null);
-          }
+          JsonArray docsJson = sendSearchRequest(solrQuery, extractDocsJsonFunction);
 
-          JsonObject json =
-              new JsonParser().parse(new InputStreamReader(getMethod.getResponseBodyAsStream()))
-              .getAsJsonObject();
-          JsonObject responseJson = json.getAsJsonObject("response");
-          JsonArray docsJson = responseJson.getAsJsonArray("docs");
-          if (docsJson.size() == 0) {
-            break;
-          }
-
-          Iterator<JsonElement> docJsonIterator = docsJson.iterator();
-          while (docJsonIterator.hasNext()) {
-            JsonObject docJson = docJsonIterator.next().getAsJsonObject();
-
-            WaveId waveId = WaveId.deserialise(docJson.getAsJsonPrimitive(WAVE_ID).getAsString());
-            WaveletId waveletId =
-                WaveletId.deserialise(docJson.getAsJsonPrimitive(WAVELET_ID).getAsString());
-            currentUserWavesView.put(waveId, waveletId);
-          }
-
+          addSearchResultsToCurrentWaveView(currentUserWavesView, docsJson);
           if (docsJson.size() < rows) {
             break;
           }
-
           start += rows;
         }
-
-      } catch (IOException e) {
+      } catch (Exception e) {
         LOG.warning("Failed to execute query: " + query);
+        LOG.warning(e.getMessage());
         return digester.generateSearchResult(user, query, null);
-      } finally {
-        getMethod.releaseConnection();
       }
     }
 
     ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
 
+    LinkedHashMap<WaveId, WaveViewData> results =
+        createResults(user, isAllQuery, currentUserWavesView);
+
+    Collection<WaveViewData> searchResult =
+        computeSearchResult(user, startAt, numResults, Lists.newArrayList(results.values()));
+    LOG.info("Search response to '" + query + "': " + searchResult.size() + " results, user: "
+        + user);
+
+    return digester.generateSearchResult(user, query, searchResult);
+  }
+
+  private LinkedHashMap<WaveId, WaveViewData> createResults(final ParticipantId user,
+      final boolean isAllQuery, LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView) {
     Function<ReadableWaveletData, Boolean> matchesFunction =
         new Function<ReadableWaveletData, Boolean>() {
 
@@ -224,19 +192,67 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
         LOG.fine("filtered results contains: " + e.getKey());
       }
     }
-
-    Collection<WaveViewData> searchResult =
-        computeSearchResult(user, startAt, numResults, Lists.newArrayList(results.values()));
-    LOG.info("Search response to '" + query + "': " + searchResult.size() + " results, user: "
-        + user);
-    return digester.generateSearchResult(user, query, searchResult);
+    return results;
   }
 
-  public static boolean isAllQuery(String query) {
+  private void addSearchResultsToCurrentWaveView(
+      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView, JsonArray docsJson) {
+    Iterator<JsonElement> docJsonIterator = docsJson.iterator();
+    while (docJsonIterator.hasNext()) {
+      JsonObject docJson = docJsonIterator.next().getAsJsonObject();
+
+      WaveId waveId = WaveId.deserialise(docJson.getAsJsonPrimitive(WAVE_ID).getAsString());
+      WaveletId waveletId =
+          WaveletId.deserialise(docJson.getAsJsonPrimitive(WAVELET_ID).getAsString());
+      currentUserWavesView.put(waveId, waveletId);
+    }
+  }
+
+  private static JsonArray extractDocsJson(InputStreamReader isr) {
+    JsonObject json = new JsonParser().parse(isr).getAsJsonObject();
+    JsonObject responseJson = json.getAsJsonObject("response");
+    JsonArray docsJson = responseJson.getAsJsonArray("docs");
+    return docsJson;
+  }
+
+  private String buildCurrentSolrQuery(int start, int rows, String fq) {
+    return solrBaseUrl + "/select?wt=json" + "&start=" + start + "&rows="
+        + rows + "&sort=" + LMT + "+desc" + "&q=" + Q + "&fq=" + fq;
+  }
+
+  private JsonArray sendSearchRequest(String solrQuery,
+      Function<InputStreamReader, JsonArray> function) throws URIException, IOException,
+      HttpException {
+    JsonArray docsJson;
+    GetMethod getMethod = new GetMethod();
+    HttpClient httpClient = new HttpClient();
+    try {
+      getMethod.setURI(new URI(solrQuery, false));
+      int statusCode = httpClient.executeMethod(getMethod);
+      docsJson = function.apply(new InputStreamReader(getMethod.getResponseBodyAsStream()));
+      if (statusCode != HttpStatus.SC_OK) {
+        LOG.warning("Failed to execute query: " + solrQuery);
+        throw new IOException("Search request status is not OK: " + statusCode);
+      }
+    } finally {
+      getMethod.releaseConnection();
+    }
+    return docsJson;
+  }
+
+  private static boolean isAllQuery(String query) {
     return !IN_PATTERN.matcher(query).find();
   }
 
-  public static String buildFilterQuery(String query, final boolean isAllQuery,
+  private static String buildUserQuery(String query, ParticipantId sharedDomainParticipantId) {
+    return query.replaceAll(WORD_START + TokenQueryType.IN.getToken() + ":", IN + ":")
+        .replaceAll(WORD_START + TokenQueryType.WITH.getToken() + ":@",
+            WITH + ":" + sharedDomainParticipantId.getAddress())
+        .replaceAll(WORD_START + TokenQueryType.WITH.getToken() + ":", WITH_FUZZY + ":")
+        .replaceAll(WORD_START + TokenQueryType.CREATOR.getToken() + ":", CREATOR + ":");
+  }
+
+  private static String buildFilterQuery(String query, final boolean isAllQuery,
       String addressOfRequiredParticipant, ParticipantId sharedDomainParticipantId) {
 
     String fq;
@@ -248,9 +264,9 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
       fq = FILTER_QUERY_PREFIX + addressOfRequiredParticipant;
     }
     if (query.length() > 0) {
-      fq += " AND (" + buildUserQuery(query) + ")";
-    }
 
+      fq += " AND (" + buildUserQuery(query, sharedDomainParticipantId) + ")";
+    }
     return fq;
   }
 }

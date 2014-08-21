@@ -42,7 +42,6 @@ import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.Snippets;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.SolrExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.id.IdUtil;
@@ -58,7 +57,6 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 /**
@@ -82,7 +80,7 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
       @Named(CoreSettings.SOLR_BASE_URL) String solrUrl,
       @SolrExecutor Executor solrExecutor) {
     super(waveMap, waveletProvider);
-    
+
     executor = solrExecutor;
     solrBaseUrl = solrUrl;
     this.waveletDataProvider = waveletDataProvider;
