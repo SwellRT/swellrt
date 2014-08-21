@@ -237,7 +237,7 @@ public class WaveSignatureVerifier {
 
 
     // trim authority name
-    String sndLevelAuth = authority.substring(authority.indexOf("."), authority.length());
+    String sndLevelAuth = authority.substring(authority.indexOf(".") + 1, authority.length());
 
     return sndLevelAuth.equals(sndLevelName);
 
