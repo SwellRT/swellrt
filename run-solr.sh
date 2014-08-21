@@ -21,13 +21,10 @@
 
 # Make sure the third_party/solr/solr-4.9.0/example folder exists.
 if [ ! -d third_party/solr/solr-4.9.0/example ]; then
-  echo "You need to download the solr third party dependency into third_party/solr/ and unzip it by running: ant get-third-party-solr-dep. "
+  echo "Please download Solr by running: ant get-third-party-solr-dep "
   echo "Or download it manually from http://apache.spd.co.il/lucene/solr/4.9.0/ into third_party/solr and unzip there."
   exit 1
 fi
 
-
-exec java \
-  -Dsolr.solr.home=third_party/solr/solr-4.9.0/example/solr\
-  -Djetty.home=third_party/solr/solr-4.9.0/example\
-  -jar third_party/solr/solr-4.9.0/example/start.jar
+cd third_party/solr/solr-4.9.0/example
+exec java -jar start.jar
