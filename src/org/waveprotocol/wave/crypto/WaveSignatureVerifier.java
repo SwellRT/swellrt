@@ -158,6 +158,10 @@ public class WaveSignatureVerifier {
       return;
     }
 
+    if (authorityMatchesWildcardCN(authority, cn)) {
+      return;
+    }
+
     throw new SignatureException("expected " + authority +
         " as CN or alternative name in cert, but didn't find it");
 
@@ -209,5 +213,33 @@ public class WaveSignatureVerifier {
     } else {
       return null;
     }
+  }
+
+  /**
+   * Returns true if the authority given matches a CN with a wildcard
+   * expression.
+   * 
+   * @author pablojan (pablojan@gmail.com)
+   * 
+   * @param authority
+   * @param certificate
+   * @return
+   */
+  private boolean authorityMatchesWildcardCN(String authority, String commonName) {
+
+    // check for a wildcard expression
+    if (!commonName.startsWith("*.")) {
+      return false;
+    }
+
+    // second-level domain
+    String sndLevelName = commonName.substring(2, commonName.length());
+
+
+    // trim authority name
+    String sndLevelAuth = authority.substring(authority.indexOf("."), authority.length());
+
+    return sndLevelAuth.equals(sndLevelName);
+
   }
 }
