@@ -7,6 +7,7 @@ Client, Lang, Logging libraries included in the generated jar files
 - Apache JDO2 included in the generated jar files
 - Jetty Client, Continuation, HTTP, IO, Security, Server, Servlet, Servlets,
 Util, Webapp, Websocket, XML are included in the generated jar files
+- Atmosphere library included in the generated jar files
 - Joda Time library included in the generated jar files
 - LibIDN Java library included in the generated jar files
 - Apache Lucene Core included in the generated jar files
