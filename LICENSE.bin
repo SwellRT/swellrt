@@ -1,4 +1,21 @@
-                                 Apache License
+ ***THE FOLLOWING LICENSE APPLIES TO***
+- Apache Wave
+- Apache Commons CLI, Codec, Collection, Configuration, File Upload, HTTP
+Client, Lang, Logging libraries included in the generated jar files
+- Google GXP, GSON, Guava, Guice included in the generated jar files
+- Javax.inject included in the generated jar files
+- Apache JDO2 included in the generated jar files
+- Jetty Client, Continuation, HTTP, IO, Security, Server, Servlet, Servlets,
+Util, Webapp, Websocket, XML are included in the generated jar files
+- Joda Time library included in the generated jar files
+- LibIDN Java library included in the generated jar files
+- Apache Lucene Core included in the generated jar files
+- Mongo Java Driver included in the generated jar files
+- OAuth Java libraries included in the generated jar files
+- Servlet API Specification library included in the generated jar files
+- Whack XMPP Java library included in the generated jar files
+
+                                Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -234,9 +251,6 @@ conceived.
 - Bouncy Castle library included in the generated jar files
   Copyright (c) 2000 - 2013 The Legion Of The Bouncy Castle
 (http://www.bouncycastle.org)
-- Socket.IO libraries included in the generated jar files
-  Copyright (c) 2011 Guillermo Rauch <guillermo@learnboost.com>
-  Copyright (c) 2010 Tad Glines
 - Java Websocket Client library included in the generated jar files
   Copyright (c) 2009 Adam MacBeth
 
