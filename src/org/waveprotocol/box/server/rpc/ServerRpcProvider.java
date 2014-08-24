@@ -399,11 +399,6 @@ public class ServerRpcProvider {
       context.addEventListener(contextListener);
       context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
       context.addFilter(GzipFilter.class, "/webclient/*", EnumSet.allOf(DispatcherType.class));
-      String[] hosts = new String[httpAddresses.length];
-      for (int i=0; i < httpAddresses.length; i++) {
-        hosts[i] = httpAddresses[i].getHostName();
-      }
-      context.addVirtualHosts(hosts);
       httpServer.setHandler(context);
 
       httpServer.start();
@@ -542,7 +537,7 @@ public class ServerRpcProvider {
       } else {
         connector = new ServerConnector(httpServer);
       }
-      connector.setHost(address.getHostName());
+      connector.setHost(address.getAddress().getHostAddress());
       connector.setPort(address.getPort());
       connector.setIdleTimeout(0);
       list.add(connector);
@@ -583,7 +578,7 @@ public class ServerRpcProvider {
         @Override
         public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
           ParticipantId loggedInUser =
-              provider.sessionManager.getLoggedInUser((HttpSession)req.getSession());
+              provider.sessionManager.getLoggedInUser(req.getSession());
 
           return new WebSocketConnection(loggedInUser, provider).getWebSocketServerChannel();
         }
