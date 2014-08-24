@@ -2,10 +2,10 @@ Apache Wave
 ------------
 The Apache Wave project is a stand alone wave server and rich web client
 that serves as a Wave reference implementation.
-Apache Wave site: http://incubator.apache.org/wave/
+Apache Wave site: http://incubator.apache.org/wave/.  
 This project lets developers and enterprise users run wave servers and
 host waves on their own hardware. And then share those waves with other
-wave servers.
+wave servers.  
 
 Cryptographic Software Notice
 -----------------------------
@@ -36,9 +36,9 @@ software:
 
 Run Binary
 ----------
-The nigtly binaries can be downloaded from https://builds.apache.org/view/S-Z/view/Wave/job/wave-artifacts/lastSuccessfulBuild/artifact/.  
-The lastest "dev" releases can be downloaded from: https://dist.apache.org/repos/dist/dev/incubator/wave/.  
-The lastest offically released binaries can be downloaded from: https://dist.apache.org/repos/dist/release/incubator/wave/.  
+The nightly binaries can be downloaded from https://builds.apache.org/view/S-Z/view/Wave/job/wave-artifacts/lastSuccessfulBuild/artifact/.  
+The latest "dev" releases can be downloaded from: https://dist.apache.org/repos/dist/dev/incubator/wave/.  
+The latest officially released binaries can be downloaded from: https://dist.apache.org/repos/dist/release/incubator/wave/.  
 Extract the archive and execute run-server.sh for Linux/Mac or run-server.bat for Windows.   
 The web client will be accessible by default at http://localhost:9898/.
 
