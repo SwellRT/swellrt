@@ -915,6 +915,8 @@
         <include name="run-server.bat" />
         <include name="run-export.sh" />
         <include name="run-import.sh" />
+        <include name="run-solr.sh" />
+        <include name="run-solr.bat" />
       </tarfileset>
       <!-- WAR static content -->
       <tarfileset dir="." includes="war/" prefix="${release.bin.path}" />
