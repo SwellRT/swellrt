@@ -37,6 +37,7 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.HttpStatus;
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.stat.Timed;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -112,6 +113,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     solrBaseUrl = solrUrl;
   }
 
+  @Timed
   @Override
   public SearchResult search(final ParticipantId user, String query, int startAt, int numResults) {
 

@@ -152,7 +152,7 @@ public class ExecutorsModule extends AbstractModule {
   @Provides
   @Singleton
   @SolrExecutor
-  protected Executor provideSolrxecutor(Provider<RequestScopeExecutor> executorProvider,
+  protected Executor provideSolrExecutor(Provider<RequestScopeExecutor> executorProvider,
       @Named(CoreSettings.SOLR_THREAD_COUNT) int threadCount) {
     return provideThreadPoolExecutor(executorProvider, threadCount, SolrExecutor.class.getSimpleName());
   }

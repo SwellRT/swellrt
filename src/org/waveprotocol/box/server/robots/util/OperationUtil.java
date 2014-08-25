@@ -84,7 +84,7 @@ public class OperationUtil {
       throws InvalidRequestException {
     Object parameter = operation.getParameter(property);
     Class<T> clazz = (Class<T>) property.clazz();
-    if ((parameter == null) || !clazz.isInstance(parameter)) {
+    if (parameter == null || !clazz.isInstance(parameter)) {
       throw new InvalidRequestException("property " + property + " not found", operation);
     }
     return clazz.cast(parameter);
@@ -119,7 +119,7 @@ public class OperationUtil {
       OperationRequest operation, ParamsProperty property, T defaultValue) {
     Object parameter = operation.getParameter(property);
     Class<T> clazz = (Class<T>) property.clazz();
-    if ((parameter != null) && clazz.isInstance(parameter)) {
+    if (parameter != null && clazz.isInstance(parameter)) {
       return clazz.cast(parameter);
     }
     return defaultValue;

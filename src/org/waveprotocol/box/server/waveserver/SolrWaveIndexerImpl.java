@@ -43,6 +43,7 @@ import org.waveprotocol.box.common.Snippets;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.SolrExecutor;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
+import org.waveprotocol.box.stat.Timed;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -141,6 +142,7 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
     }
   }
 
+  @Timed
   private void updateIndex(ReadableWaveletData wavelet) throws IndexException {
     Preconditions.checkNotNull(wavelet);
     if (IdUtil.isConversationalId(wavelet.getWaveletId())) {
