@@ -60,6 +60,9 @@
   <property name="analytics_account" value="" />
   <property name="profile_fetcher_type" value="gravatar" />
   <property name="enable_profiling" value="false" />
+  <property name="mongodb_host" value="127.0.0.1" />
+  <property name="mongodb_port" value="27017" />
+  <property name="mongodb_database" value="wiab" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -144,6 +147,9 @@
           <token key="THUMBNAIL_PATTERNS_DIRECTORY" value="${thumbnail_patterns_directory}" />
           <token key="PROFILE_FETCHER_TYPE" value="${profile_fetcher_type}" />
           <token key="ENABLE_PROFILING" value="${enable_profiling}" />
+          <token key="MONGODB_HOST" value="${mongodb_host}" />
+          <token key="MONGODB_PORT" value="${mongodb_port}" />
+          <token key="MONGODB_DATABASE" value="${mongodb_database}" />
         </replacetokens>
       </filterchain>
     </copy>
