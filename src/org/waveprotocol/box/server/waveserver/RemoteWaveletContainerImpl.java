@@ -29,7 +29,8 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.jivesoftware.util.Base64;
+import org.apache.commons.codec.binary.Base64;
+
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.waveserver.CertificateManager.SignerInfoPrefetchResultListener;
 import org.waveprotocol.wave.crypto.SignatureException;
@@ -206,7 +207,7 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
       }
       for (ProtocolSignature sig : toVerify.getSignatureList()) {
         if (certificateManager.retrieveSignerInfo(sig.getSignerId()) == null) {
-          LOG.info("Fetching signer info " + Base64.encodeBytes(sig.getSignerId().toByteArray()));
+          LOG.info("Fetching signer info " + Base64.encodeBase64(sig.getSignerId().toByteArray()));
           numSignerInfoPrefetched.incrementAndGet();
           certificateManager.prefetchDeltaSignerInfo(federationProvider, sig.getSignerId(),
               getWaveletName(), deltaEndVersion, prefetchListener);

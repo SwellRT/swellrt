@@ -1065,8 +1065,7 @@
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527.jar" />
       <url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" />
       <url url="https://protobuf-java-format.googlecode.com/files/protobuf-format-java-1.1.jar" />
-      <url url="http://wave.alown.co.uk/third_party/whack.jar" />
-      <url url="http://wave.alown.co.uk/third_party/xmpp.jar" />
+      <url url="http://central.maven.org/maven2/org/igniterealtime/tinder/1.0.0/tinder-1.0.0.jar" />
       <url url="http://central.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
       <url url="http://central.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" />
       <url url="http://repo1.maven.org/maven2/org/gnu/inet/libidn/1.15/libidn-1.15.jar" />
@@ -1074,6 +1073,15 @@
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar" />
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-server/1.0-SNAPSHOT/gwt-initials-avatars-server-1.0-20140324.102825-10.jar" />
     </get>
+    <get dest="${lib.runtime}/whack_1_0_0.zip" usetimestamp="true" skipexisting="true">
+      <url url="http://www.igniterealtime.org/downloadServlet?filename=whack/whack_1_0_0.zip" />
+    </get>
+    <unzip src="${lib.runtime}/whack_1_0_0.zip" dest="${lib.runtime}">
+      <patternset>
+        <include name="whack_1_0_0/whack.jar" />
+      </patternset>
+      <mapper type="flatten"/>
+    </unzip>
   </target>
 
   <target name="get-third-party-test" description="Download testing third party dependencies">
