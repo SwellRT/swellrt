@@ -60,7 +60,7 @@
 	<classpathentry kind="lib" path="third_party/runtime/websocket-server-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-servlet-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/whack.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/tinder-1.0.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/tinder-1.2.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/xpp3_xpath-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="third_party/test/ant-junit-1.7.0.jar"/>
