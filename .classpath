@@ -59,7 +59,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/websocket-common-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-server-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-servlet-9.1.1.v20140108.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/websocket.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/whack.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/xmpp.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/xpp3_xpath-1.1.4c.jar"/>

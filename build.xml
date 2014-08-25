@@ -1065,7 +1065,6 @@
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527.jar" />
       <url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" />
       <url url="https://protobuf-java-format.googlecode.com/files/protobuf-format-java-1.1.jar" />
-      <url url="http://wave.alown.co.uk/third_party/websocket.jar" />
       <url url="http://wave.alown.co.uk/third_party/whack.jar" />
       <url url="http://wave.alown.co.uk/third_party/xmpp.jar" />
       <url url="http://central.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
