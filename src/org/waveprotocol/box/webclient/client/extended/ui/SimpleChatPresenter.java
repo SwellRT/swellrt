@@ -110,14 +110,18 @@ public class SimpleChatPresenter implements ObservableChat.Listener, SimpleChatV
 
   @Override
   public void startWriting() {
-    this.waveContent.getChat().setParticipantStatus(participant,
-        ChatPresenceStatus.createWritingStatus());
+    /*
+     * this.waveContent.getChat().setParticipantStatus(participant,
+     * ChatPresenceStatus.createWritingStatus());
+     */
   }
 
   @Override
   public void stopWriting() {
-    this.waveContent.getChat().setParticipantStatus(participant,
-        ChatPresenceStatus.createOnlineStatus());
+    /*
+     * this.waveContent.getChat().setParticipantStatus(participant,
+     * ChatPresenceStatus.createOnlineStatus());
+     */
   }
 
   @Override
