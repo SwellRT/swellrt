@@ -1,7 +1,10 @@
 package org.waveprotocol.wave.client.extended;
 
+import org.waveprotocol.wave.model.extended.WaveExtendedModel;
 import org.waveprotocol.wave.model.extended.type.chat.DocumentBasedChat;
 import org.waveprotocol.wave.model.extended.type.chat.ObservableChat;
+import org.waveprotocol.wave.model.id.IdUtil;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -37,23 +40,24 @@ public class WaveContentChat {
 
   public static WaveContentChat create(WaveContentWrapper wcWrapper) {
 
-    // String chatRootWaveletId =
-    // WaveExtendedModel.CONTENT_WAVELET_CHAT_PREFIX + IdUtil.TOKEN_SEPARATOR
-    // + WaveExtendedModel.CONTENT_WAVELET_ROOT;
-    //
-    // ObservableWavelet wavelet =
-    // wcWrapper.wave.getWave().getWavelet(WaveletId.of(wcWrapper.localDomain,
-    // chatRootWaveletId));
-    //
-    // if (wavelet == null) {
-    // wavelet =
-    // wcWrapper.wave.getWave().createWavelet(
-    // WaveletId.of(wcWrapper.localDomain, chatRootWaveletId));
-    //
-    // wavelet.addParticipant(wcWrapper.loggedInUser);
-    // }
+    // Use this to use wavelet chat+root
+    String chatRootWaveletId =
+        WaveExtendedModel.CONTENT_WAVELET_CHAT_PREFIX + IdUtil.TOKEN_SEPARATOR
+            + WaveExtendedModel.CONTENT_WAVELET_ROOT;
 
-    ObservableWavelet wavelet = wcWrapper.wave.getWave().getRoot();
+    ObservableWavelet wavelet =
+        wcWrapper.wave.getWave().getWavelet(WaveletId.of(wcWrapper.localDomain, chatRootWaveletId));
+
+    if (wavelet == null) {
+      wavelet =
+          wcWrapper.wave.getWave().createWavelet(
+              WaveletId.of(wcWrapper.localDomain, chatRootWaveletId));
+
+      wavelet.addParticipant(wcWrapper.loggedInUser);
+    }
+
+    // Use this to use the wavelet conv+root
+    // ObservableWavelet wavelet = wcWrapper.wave.getWave().getRoot();
 
     WaveContentChat wcChat = new WaveContentChat(wavelet);
     if (wcWrapper.isNewWave) {

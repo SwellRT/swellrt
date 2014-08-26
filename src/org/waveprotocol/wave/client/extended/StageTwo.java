@@ -63,6 +63,7 @@ import org.waveprotocol.wave.model.conversation.ObservableConversationView;
 import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.extended.WaveExtendedModel;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
@@ -96,6 +97,7 @@ import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletConfigurator;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
@@ -433,9 +435,12 @@ public interface StageTwo {
         }
       };
 
+
       WaveletId udwId = getIdGenerator().newUserDataWaveletId(getSignedInUser().getAddress());
-      final IdFilter filter = IdFilter.of(Collections.singleton(udwId),
-          Collections.singleton(IdConstants.CONVERSATION_WAVELET_PREFIX));
+      ArrayList<String> prefixes = new ArrayList<String>();
+      prefixes.add(IdConstants.CONVERSATION_WAVELET_PREFIX);
+      prefixes.add(WaveExtendedModel.CONTENT_WAVELET_CHAT_PREFIX);
+      final IdFilter filter = IdFilter.of(Collections.singleton(udwId), prefixes);
 
       WaveletDataImpl.Factory snapshotFactory =
           WaveletDataImpl.Factory.create(getDocumentRegistry());

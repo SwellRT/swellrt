@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class DocumentBasedChat implements ObservableChat {
 
-  public static final String DOC_ID = "conv+root";
+  public static final String DOC_ID = "chat+main";
 
   private static final String CHAT_TAG = "chat";
   private static final String MESSAGE_TAG = "message";
@@ -216,8 +216,15 @@ public class DocumentBasedChat implements ObservableChat {
   }
 
 
+  /**
+   * Creates a new DocumentBasedChat from an existing wavelet.
+   * 
+   * @param wavelet
+   * @return
+   */
   public static <E> DocumentBasedChat create(ObservableWavelet wavelet) {
 
+    // Retrieve or create
     ObservableDocument doc = wavelet.getDocument(DOC_ID);
 
     Doc.E chatElement = DocHelper.getElementWithTagName(doc, CHAT_TAG);
