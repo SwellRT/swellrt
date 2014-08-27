@@ -108,14 +108,14 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
       WaveletContainer waveletContainer = null;
       WaveletName waveletname = WaveletName.of(waveId, waveletId);
 
-
       // TODO (Yuri Z.) This loop collects all the wavelets that match the
       // query, so the view is determined by the query. Instead we should
       // look at the user's wave view and determine if the view matches the
       // query.
       try {
         waveletContainer = waveMap.getWavelet(waveletname);
-        if ((waveletContainer == null) || !waveletContainer.applyFunction(matchesFunction)) {
+        if ((waveletContainer == null) || IdUtil.isUserDataWavelet(waveletId)
+            || !waveletContainer.applyFunction(matchesFunction)) {
           continue;
         }
         // Just keep adding all the relevant wavelets in this wave.
