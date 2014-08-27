@@ -67,17 +67,37 @@ public class WaveContentManager {
 
   private final Map<WaveRef, WaveContentWrapper> waveWrappers;
 
+  /**
+   * It needs a proper Session object
+   * 
+   * @param waveStore
+   * @param idGenerator
+   * @param channel
+   * @return
+   */
   public static WaveContentManager create(WaveStore waveStore, IdGenerator idGenerator,
       RemoteViewServiceMultiplexer channel) {
-    return new WaveContentManager(waveStore, ParticipantId.ofUnsafe(Session.get().getAddress()), Session
-        .get()
-        .getIdSeed(), new ConversationSchemas(), channel, idGenerator);
+    return new WaveContentManager(waveStore, Session.get().getDomain(),
+        ParticipantId.ofUnsafe(Session.get().getAddress()), Session.get().getIdSeed(),
+        new ConversationSchemas(), channel, idGenerator);
+  }
+
+
+  public static WaveContentManager create(WaveStore waveStore, String localDomain,
+      IdGenerator idGenerator, ParticipantId loggedInUser, String idSeed,
+      RemoteViewServiceMultiplexer channel) {
+
+    return new WaveContentManager(waveStore, localDomain, loggedInUser, idSeed,
+        new ConversationSchemas(),
+        channel, idGenerator);
   }
 
 
 
 
-  protected WaveContentManager(WaveStore waveStore, ParticipantId signedUserId, String seed,
+
+  protected WaveContentManager(WaveStore waveStore, String localDomain, ParticipantId signedUserId,
+      String seed,
       SchemaProvider schemaProvider,
       RemoteViewServiceMultiplexer channel, IdGenerator idGenerator) {
 
@@ -88,7 +108,7 @@ public class WaveContentManager {
     this.schemaProvider = schemaProvider;
     this.channel = channel;
     this.idGenerator = idGenerator;
-    this.localDomain = Session.get().getDomain();
+    this.localDomain = localDomain;
   }
 
 

@@ -70,5 +70,8 @@ public class ChatMessage {
     return creator;
   }
 
+  public String getType() {
+    return type;
+  }
 
 }
