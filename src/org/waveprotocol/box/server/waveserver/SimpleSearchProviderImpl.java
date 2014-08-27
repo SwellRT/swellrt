@@ -20,6 +20,7 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -97,7 +98,7 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
         createWavesViewToFilter(user, isAllQuery);
     Function<ReadableWaveletData, Boolean> filterWaveletsFunction =
         createFilterWaveletsFunction(user, isAllQuery, withParticipantIds, creatorParticipantIds);
-    
+
     ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
 
     List<WaveViewData> results =
@@ -142,7 +143,8 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
       @Override
       public Boolean apply(ReadableWaveletData wavelet) {
         try {
-          return isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId,
+          return wavelet != null
+              && isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId,
               withParticipantIds, creatorParticipantIds, isAllQuery);
         } catch (WaveletStateException e) {
           LOG.warning(
@@ -169,6 +171,7 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
   protected boolean isWaveletMatchesCriteria(ReadableWaveletData wavelet, ParticipantId user,
       ParticipantId sharedDomainParticipantId, List<ParticipantId> withList,
       List<ParticipantId> creatorList, boolean isAllQuery) throws WaveletStateException {
+    Preconditions.checkNotNull(wavelet);
     // Filter by creator. This is the fastest check so we perform it first.
     for (ParticipantId creator : creatorList) {
       if (!creator.equals(wavelet.getCreator())) {

@@ -20,6 +20,7 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -139,6 +140,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
   protected boolean isWaveletMatchesCriteria(ReadableWaveletData wavelet, ParticipantId user,
       ParticipantId sharedDomainParticipantId, boolean isAllQuery)
           throws WaveletStateException {
+    Preconditions.checkNotNull(wavelet);
     // If it is user data wavelet for the user - return true.
     if (IdUtil.isUserDataWavelet(wavelet.getWaveletId()) && wavelet.getCreator().equals(user)) {
       return true;
@@ -158,7 +160,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     // explicit or implicit participant and therefore has access permission.
     return true;
   }
-  
+
   /**
    * Ensures that each wave in the current waves view has the user data wavelet by always adding
    *  it to the view.
