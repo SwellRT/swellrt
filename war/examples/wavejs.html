@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+    <title>Wave JavaScript client example</title>
+
+    <!--                                           -->
+    <!-- This script loads your compiled module.   -->
+    <!-- If you add any GWT meta tags, they must   -->
+    <!-- be added before this line.                -->
+    <!--                                           -->
+<script type="text/javascript" src="wavejsclient/wavejsclient.nocache.js"></script>
+ <script type="text/javascript">
+
+   function onWaveJSClientReady() {
+
+     wavejs.startSession("http://localhost:9898", "tim", "tim",
+            function() {
+              alert("Login succesfull!");
+
+
+              wavejs.openWave("local.net/c+YLvAtVjZjAA",
+                       function() {
+                            alert("Wave opened succesfully!");
+                        },
+                         function() {
+                          alert("Wave open failure!");
+                        });
+
+
+            },function() {
+              alert("Login failed!");
+            });
+
+
+
+
+
+   };
+
+ </script>
+</head>
+<body>
+
+ <h2>Wave JavaScript client example</h2>
+
+
+
+
+
+
+</body>
+</html>

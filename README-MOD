@@ -1,7 +1,64 @@
 
+-----------------
+JavaScript Client
+-----------------
 
-Generating Maven artifacts for integration with third apps
-----------------------------------------------------------
+* Compile & Run the JavaScript client
+
+    As usual, with a new compilation task
+
+    ant compile
+
+    ant compile-gwt
+
+    ant compile-wavejsclient-dev
+
+    ant run-server (or ./run-server.sh)
+
+
+* Usage example
+
+    See war/examples/wavejs.html
+
+    or
+
+    Add following <scripts> sections into the head section of your html file (use the right host in the src attribute):
+
+    <script type="text/javascript" src="wavejsclient/wavejsclient.nocache.js"></script>
+    <script type="text/javascript">
+
+           // start up Wave infrastructure an open a wave
+           function onWaveJSClientReady() {
+
+             wavejs.startSession("http://localhost:9898", "tim", "tim",
+                    function() {
+                      alert("Login succesfull!");
+
+
+                      wavejs.openWave("local.net/c+YLvAtVjZjAA",
+                               function() {
+                                    alert("Wave opened succesfully!");
+                                },
+                                 function() {
+                                  alert("Wave open failure!");
+                                });
+
+
+                    },function() {
+                      alert("Login failed!");
+                    });
+           };
+
+    </script>
+
+
+
+----------
+GWT Client
+----------
+
+* Generating Maven artifacts for integration with third apps
+
 
 Run install-mvn-artifacts.sh to generate and install the maven artifacts in the local repo.
 

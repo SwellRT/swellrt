@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+    A custom GWT module to expose WiAB client features via GWT or JavaScript API.
+    It provides a collection of JSNI classes wrapping the GWT implementation.
+
+ -->
+<module rename-to="wavejsclient">
+  <inherits name="com.google.gwt.http.HTTP"/>
+  <inherits name="org.waveprotocol.box.webclient.WebClient" />
+
+   <!-- Specify the app entry point class.                         -->
+  <entry-point class='org.waveprotocol.jsclient.WaveJSClient'/>
+
+
+  <add-linker name="xsiframe"/>
+
+  <source path="" />
+  <source path="js/"/>
+</module>
