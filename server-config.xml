@@ -62,6 +62,9 @@
   <property name="profile_fetcher_type" value="gravatar" />
   <property name="enable_profiling" value="false" />
   <property name="solr_base_url" value="http://localhost:8983/solr" />
+  <property name="mongodb_host" value="127.0.0.1" />
+  <property name="mongodb_port" value="27017" />
+  <property name="mongodb_database" value="wiab" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
