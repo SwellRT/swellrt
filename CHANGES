@@ -1,6 +1,11 @@
-Summary since 0.4-RC4
+Summary since 0.4.0-RC5
+======================
+- Added option to use Solr as a search provider - this enables filtering waves by keywords.
+- Bug Fixes.
+
+Summary since 0.4.0-RC4
 =====================
-- Added MongoDB based deltas store and migration tool for deltas migration from file to mongo based store. 
+- Added MongoDB based deltas store and migration tool for deltas migration from file to mongob based store. 
 - Added client/server profiling.
 - Added Atmosphere framework as replacement of Socket.IO.
 - Added alternative - Gmail style initials avatars.
@@ -8,7 +13,7 @@ Summary since 0.4-RC4
 - Upgraded the server to Jetty 9.1.1.
 - Added JDK 7 compatibility.
 
-Summary since 0.4-RC3
+Summary since 0.4.0-RC3
 =====================
 - Federation between multiple wave servers should now work again without
   causing shiny's.
@@ -19,8 +24,252 @@ Summary since 0.4-RC3
   been removed to give the codebase a nice clean feel.
 - Many changes to the code licensing have been made, and all third-party
   dependencies are now downloaded.
-  
---------------------------------------------------------------------------
+
+commit 7d017eefca414d91d9aff987bd1dbff95aed3a9e
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Wed Aug 27 21:23:56 2014 +0300
+
+    Sets project version to 0.4.0.
+
+commit c0b8ad1313fa5e4671da2e99bdea5b68fc98d6da
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Aug 22 10:37:10 2014 +0300
+
+    Adds reference for Atmosphere in LICENSE.bin.
+
+commit eb5821999f6560dd09a5ce1efa4f915077707d93
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Aug 22 10:25:50 2014 +0300
+
+    Removes reference to Socket.IO from LICENSE as we replaced SOCKET.IO with Atmosphere.
+
+commit 9bec8ca08eabf54e07fdf4158de2b2d4a078089e
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Aug 8 11:53:17 2014 +0300
+
+    Adds license missing license header and updates NOTICE/LICENSE files.
+
+commit 7e3895da37d8911e7a833bbb6ac3c3adc4e7c74d
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Aug 28 01:37:47 2014 +0300
+
+    Fixes tests - adds adds null pointer check.
+
+commit ed27695d102e55c924c6c90761fd9e3484905742
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Aug 28 00:40:08 2014 +0300
+
+    Revert "Fixes tests"
+    
+    This reverts commit 45a07689423a32daafa25cd92ecba304f852c38f.
+
+commit 45a07689423a32daafa25cd92ecba304f852c38f
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Aug 28 00:15:29 2014 +0300
+
+    Fixes tests
+
+commit 65653a59e4884f5f8d6d2cbffa07fbb6fdbbc2c6
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Wed Aug 27 20:54:22 2014 +0300
+
+    Re-adds mongodb default values.
+
+commit 3f4a57d3faf36cd44a348941d84be109cf5e7ce7
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Tue Aug 26 00:08:49 2014 +0300
+
+    WAVE-311 Adds profiling to Solr search/update methods.
+
+commit 1f15189683ab26148ec8e89842a27a52af930149
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sun Aug 24 21:54:11 2014 +0300
+
+    Fixes some typos in README.
+
+commit 4374cca22ad57902317ea33be5a7b788f09fb1f4
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sun Aug 24 21:49:44 2014 +0300
+
+    Renames README into README.md
+
+commit 2e86453b8228dbd04a9bd86758ddca2b81e23abc
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sun Aug 24 21:47:35 2014 +0300
+
+    WAVE-311 Updates README with instrctions on installing MongoDB and Solr.
+
+commit d8cc013529a6df858946018b6612b7b0613f293a
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sun Aug 24 21:44:04 2014 +0300
+
+    DEV-311 Adds Solr scripts to the  binary distribution.
+
+commit 17d5a64e48c4c5bce4e225cff8275fda23de1c70
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Aug 22 01:16:10 2014 +0300
+
+    Refactors some Solr related code.
+
+commit 00a98a327f54ecfded31c95dc11179afa9652783
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Aug 22 01:09:33 2014 +0300
+
+    WAVE-311 Updates solr scripts.
+
+commit 731f434e86099dd20957b7c8a85399284e3a9a57
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Aug 21 22:07:44 2014 +0300
+
+    WAVE-311 WAVE-371 Ensures that search providers always include the user data wavelet for genenerating the digest.
+
+commit c180e4fed18c9b5b73e464e010551afc4b020161
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Aug 21 21:34:38 2014 +0300
+
+    WAVE-311 Makes Solr base url and executor configurable.
+
+commit ef9a9a93e6de8c169e0510f454c10ad5828eee1b
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Aug 21 21:29:44 2014 +0300
+
+    WAVE-311 Allows to download the Solr dependency via ant and run with run-solr.sh script.
+
+commit ca645a72322e4aae33c5aae909c956f814d38640
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Aug 8 16:41:44 2014 +0300
+
+    Fixes NPE.
+
+commit 571c30663e802a9b34a66d79abdcb5724bdb19c3
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Apr 26 00:30:32 2014 +0300
+
+    WAVE-311 Refactors the Solr search related classes some more.
+
+commit 2c4a3504d002742ae91b6c5f4794c60aa2dac58f
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Apr 25 23:59:59 2014 +0300
+
+    WAVE-311 Refactored title construction by adding getWavelet method to WaveMap and moving the code into base class.
+
+commit 6c7bc7a0564b01d2dded92ce9ed5d6db40c4515a
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Apr 25 23:27:21 2014 +0300
+
+    WAVE-311 Updates Snippets.collatetextForOps to accept custom function to modify the result on new lines.
+
+commit deb185440a815fe6149a7083cac924d499d46e93
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Tue Apr 15 21:59:14 2014 +0300
+
+    WAVE-311 Refactors some more, ensures Solr search result include user data wavelet.
+
+commit d566b91dffd3554af7295b373458a097ad3555cb
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Tue Apr 15 12:32:08 2014 +0300
+
+    WAVE-311 Refactors some search related code.
+
+commit b45dc71ce2d38a2e542e7294d0ad151107aa9196
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Sat Apr 12 11:58:13 2014 +0300
+
+    WAVE-311 Updates to allow user data wavelets into the Solr index.
+
+commit da20b429ad3356b9b4b610173dca3cc38de03aed
+Author: Frank R <renfeng.cn@gmail.com>
+Date:   Fri Apr 11 19:55:00 2014 +0300
+
+    WAVE-311 Applies full text search with Solr patch by Frank Ren https://reviews.apache.org/r/16322 but without SolrRobot.
+
+commit 20ae1d86c5e61b9cae11ed2340fefb41f732c45b
+Author: Ali Lown <al@apache.org>
+Date:   Mon Aug 25 21:43:49 2014 +0100
+
+    Revert to tinder 1.2.1, as 1.2.2 causes build failures
+
+commit 10db75ac7656fc26135ed8b3323fa55f51b219aa
+Author: Ali Lown <al@apache.org>
+Date:   Mon Aug 25 14:47:08 2014 +0100
+
+    Source Tinder and Whack from maven repositories.
+    
+    These were causing build failures as they could no longer be fetched
+    from my server.
+
+commit 0328b9a8ad5199a316d9d979ba3ddc33927be7c2
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Mon Aug 25 20:53:10 2014 +0300
+
+    Removes obsolete dependency on websocket.jar
+
+commit 0f16803731322f788621715c2bbe8089cff7e6a2
+Author: Antonio Tenorio-Fornés <antoniotenorio@ucm.es>
+Date:   Mon Aug 25 20:30:06 2014 +0300
+
+    Fixes WAVE-269  Gadgets are now inserted in the position of the cursor.
+
+commit 9161196008317a67b71a64ca8286095b38633a69
+Author: Pablo Ojanguren <pablojan@gmail.com>
+Date:   Mon Aug 25 19:40:18 2014 +0300
+
+    Fixes WAVE-416 - Delta signature verification fail with wildcard certificates.
+
+commit 3513be76adf05cde10046c4171c52fceba7a101d
+Author: Pablo Ojanguren <pablojan@gmail.com>
+Date:   Mon Aug 25 19:35:31 2014 +0300
+
+    Adds configuration for MongoDB store types
+
+commit 543c3cbfc6501a0536202d3b15e88f83fcec17f2
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Mon Aug 25 01:23:12 2014 +0300
+
+    Fixes WAVE-413 - Windows Server can only offer connections to localhost.
+
+commit 5b19ee5ea45baf41a1a2cb9cfdcd5b6277dc5b49
+Author: Andrew Kaplanov <akaplanov@gmail.com>
+Date:   Thu Aug 14 00:15:35 2014 +0600
+
+    Fix to https://issues.apache.org/jira/browse/WAVE-415
+
+commit bf6b20092ab98fa1e1c03e674dd8af4a03b41ca8
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Jul 18 09:51:01 2014 +0300
+
+    Renames "rat" ant target into more descriptive "audit-licenses".
+
+commit b091fd479c96159fbd50ae8fadb078946234d5a3
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Fri Jul 18 09:49:43 2014 +0300
+
+    Moves artifact-sign.sh script under "release" folder.
+
+commit 18823c9715e4de99d37fc67f72743f4699746a06
+Author: Ali Lown <ali@lown.me.uk>
+Date:   Fri Jul 18 09:26:46 2014 +0300
+
+    Adds script to sign artifacts.
+
+commit 9433219ff20f4c872402ce3953b65c004a934b03
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Jul 17 23:53:36 2014 +0300
+
+    Adds my gpg public key to KEYS.
+
+commit 117cd487dabdd510a7b45a59471afa5a2d663496
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Jul 17 22:38:35 2014 +0300
+
+    Adds missing licenses accrording to Rat audit tool.
+
+commit a7bb1c782b934612f302680fff623503bbb96aad
+Author: Yuri Zelikov <yurize@apache.org>
+Date:   Thu Jul 17 20:31:20 2014 +0300
+
+    Makes changes for rc5.
+
 commit 0858e0c60b42e2cac38aed44d8b16f9e8bcb377a
 Author: Pablo Ojanguren <pablojan@gmail.com>
 Date:   Mon Jun 30 19:34:27 2014 +0300
