@@ -203,6 +203,10 @@ analytics_account = @ANALYTICS_ACCOUNT@
 # For example thumbnail file for ZIP format (MIME type application/zip) must be named application_zip.
 thumbnail_patterns_directory = @THUMBNAIL_PATTERNS_DIRECTORY@
 
+# Enables server side profiling. To display the stats press ctrl+alt+ctrl in the web client.
+# Default value: true
+enable_profiling = @ENABLE_PROFILING@
+
 # Currently supported profile fetcher types: gravatar, initials.
 # Default value: gravatar.
 profile_fetcher_type = @PROFILE_FETCHER_TYPE@

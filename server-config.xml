@@ -60,7 +60,7 @@
   <property name="thumbnail_patterns_directory" value="thumbnail_patterns" />
   <property name="analytics_account" value="" />
   <property name="profile_fetcher_type" value="gravatar" />
-  <property name="enable_profiling" value="false" />
+  <property name="enable_profiling" value="true" />
   <property name="solr_base_url" value="http://localhost:8983/solr" />
   <property name="mongodb_host" value="127.0.0.1" />
   <property name="mongodb_port" value="27017" />
