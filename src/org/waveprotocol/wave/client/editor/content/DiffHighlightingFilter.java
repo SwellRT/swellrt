@@ -22,17 +22,21 @@ package org.waveprotocol.wave.client.editor.content;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Style;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
+import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
+
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
+import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
 import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
 import org.waveprotocol.wave.model.document.operation.Attributes;
 import org.waveprotocol.wave.model.document.operation.AttributesUpdate;
 import org.waveprotocol.wave.model.document.operation.DocOp;
-import org.waveprotocol.wave.model.document.operation.DocOpComponentType;
 import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.operation.ModifiableDocument;
 import org.waveprotocol.wave.model.document.util.Annotations;
@@ -40,9 +44,13 @@ import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.ReadableIntMap.ProcV;
+import org.waveprotocol.wave.model.util.ReadableIntMap;
+import org.waveprotocol.wave.model.util.ReadableStringMap;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -51,6 +59,7 @@ import java.util.List;
  * Operations applied will be rendered as diffs.
  *
  * @author danilatos@google.com (Daniel Danilatos)
+ * @author dyukon@gmail.com (Denis Konovalchik)
  */
 public class DiffHighlightingFilter implements ModifiableDocument {
 
@@ -151,7 +160,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     final int size = inner.size();
 
-    deleteInfos.each(new ProcV<Object>() {
+    deleteInfos.each(new ReadableIntMap.ProcV<Object>() {
       public void apply(int location, Object _item) {
         assert location <= size;
 
@@ -255,6 +264,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       currentDeleteLocation = currentLocation;
     }
 
+    @Override
     public void deleteElementStart(String type, Attributes attrs) {
       if (diffDepth == 0 && isOutsideInsertionAnnotation()) {
         ContentElement currentElement = (ContentElement) inner.getCurrentNode();
@@ -314,18 +324,17 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       }
     }
 
+    @Override
     public void deleteCharacters(String text) {
       if (diffDepth == 0 && isOutsideInsertionAnnotation()) {
-        int location = currentLocation;
-        int endLocation = location + text.length();
+        int endLocation = currentLocation + text.length();
 
         updateDeleteInfo();
 
-        int scanLocation = location;
+        int scanLocation = currentLocation;
         int nextScanLocation;
 
         do {
-
           DeleteInfo surroundedInfo = (DeleteInfo) inner.getAnnotation(scanLocation,
               DIFF_DELETE_KEY);
           nextScanLocation = inner.firstAnnotationChange(scanLocation, endLocation,
@@ -334,14 +343,8 @@ public class DiffHighlightingFilter implements ModifiableDocument {
             nextScanLocation = endLocation;
           }
 
-          int index = scanLocation - location;
-          int nextIndex = nextScanLocation - location;
+          saveDeletedText(text, currentLocation, scanLocation, nextScanLocation);
 
-          Element e = Document.get().createSpanElement();
-          DiffManager.styleElement(e, DiffType.DELETE);
-          e.setInnerText(text.substring(index, nextIndex));
-
-          currentDeleteInfo.htmlElements.add(e);
           if (surroundedInfo != null) {
             currentDeleteInfo.htmlElements.addAll(surroundedInfo.htmlElements);
           }
@@ -354,25 +357,89 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       target.deleteCharacters(text);
     }
 
+    @Override
     public void annotationBoundary(AnnotationBoundaryMap map) {
       target.annotationBoundary(map);
     }
 
+    @Override
     public void replaceAttributes(Attributes oldAttrs, Attributes newAttrs) {
       currentLocation++;
       target.replaceAttributes(oldAttrs, newAttrs);
     }
 
+    @Override
     public void retain(int itemCount) {
       currentLocation += itemCount;
       target.retain(itemCount);
     }
 
+    @Override
     public void updateAttributes(AttributesUpdate attrUpdate) {
       currentLocation++;
       target.updateAttributes(attrUpdate);
     }
 
+    /**
+     * Creates text spans reflecting every combination of text formatting annotation values.
+     *
+     * @param text text to be saved
+     * @param textLocation location of the text beginning in the document
+     * @param startLocation start location of the deleted block
+     * @param finishLocation finish location of the deleted block
+     */
+    private void saveDeletedText(String text, int textLocation, int startLocation, int finishLocation) {
+      // TODO(dyukon): This solution supports only text styles (weight, decoration, font etc.)
+      // which can be applied to text SPANs.
+      // It's necessary to add support for paragraph styles (headers ordered/numbered lists,
+      // indents) which cannot be kept in text SPANs.
+      Iterator<AnnotationInterval<Object>> aiIterator = inner.annotationIntervals(
+          startLocation, finishLocation, AnnotationConstants.DELETED_STYLE_KEYS).iterator();
+      if (aiIterator.hasNext()) { // Some annotations are changed throughout deleted text
+        while (aiIterator.hasNext()) {
+          AnnotationInterval<Object> ai = aiIterator.next();
+          createDeleteElement(text.substring(ai.start() - textLocation, ai.end() - textLocation),
+              ai.annotations());
+        }
+      } else { // No annotations are changed throughout deleted text
+        createDeleteElement(text.substring(startLocation - textLocation, finishLocation - textLocation),
+            findDeletedStyleAnnotations(startLocation));
+      }
+    }
+
+    private ReadableStringMap<Object> findDeletedStyleAnnotations(final int location) {
+      final StringMap<Object> annotations = CollectionUtils.createStringMap();
+      AnnotationConstants.DELETED_STYLE_KEYS.each(new ReadableStringSet.Proc() {
+        @Override
+        public void apply(String key) {
+          annotations.put(key, inner.getAnnotation(location, key));
+        }
+      });
+      return annotations;
+    }
+
+    private void createDeleteElement(String innerText, ReadableStringMap<Object> annotations) {
+      Element element = Document.get().createSpanElement();
+      applyAnnotationsToElement(element, annotations);
+      DiffManager.styleElement(element, DiffType.DELETE);
+      element.setInnerText(innerText);
+      currentDeleteInfo.htmlElements.add(element);
+    }
+
+    private void applyAnnotationsToElement(Element element, ReadableStringMap<Object> annotations) {
+      final Style style = element.getStyle();
+      annotations.each(new ReadableStringMap.ProcV<Object>() {
+        @Override
+        public void apply(String key, Object value) {
+          if (value != null && value instanceof String) {
+            String styleValue = (String) value;
+            if (!styleValue.isEmpty()) {
+              style.setProperty(StyleAnnotationHandler.suffix(key), styleValue);
+            }
+          }
+        }
+      });
+    }
   };
 
   /**
