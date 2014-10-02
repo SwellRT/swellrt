@@ -22,4 +22,5 @@ public interface Chat {
 
   ChatPresenceStatus getParticipantStatus(ParticipantId participant);
 
+
 }

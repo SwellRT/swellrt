@@ -77,9 +77,9 @@ import org.waveprotocol.wave.client.events.WaveCreationEvent;
 import org.waveprotocol.wave.client.events.WaveCreationEventHandler;
 import org.waveprotocol.wave.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
-import org.waveprotocol.wave.client.extended.WaveContentChat;
 import org.waveprotocol.wave.client.extended.WaveContentManager;
 import org.waveprotocol.wave.client.extended.WaveContentWrapper;
+import org.waveprotocol.wave.client.extended.type.WaveChat;
 import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
 import org.waveprotocol.wave.client.wavepanel.event.FocusManager;
 import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
@@ -563,7 +563,8 @@ public class WebClient implements EntryPoint {
       @Override
       public void execute() {
 
-        presenter.bind(WaveContentChat.create(contentWrapper));
+        presenter.bind(WaveChat.create(contentWrapper.getWave(), contentWrapper.getLocalDomain(),
+            contentWrapper.getLoggedInUser(), contentWrapper.isNewWave()));
 
         waveFrame.clear();
         UIObject.setVisible(waveFrame.getElement(), true);
@@ -597,7 +598,8 @@ public class WebClient implements EntryPoint {
       @Override
       public void execute() {
 
-        presenter.bind(WaveContentChat.create(contentWrapper));
+        presenter.bind(WaveChat.create(contentWrapper.getWave(), contentWrapper.getLocalDomain(),
+            contentWrapper.getLoggedInUser(), contentWrapper.isNewWave()));
 
         waveFrame.clear();
         UIObject.setVisible(waveFrame.getElement(), true);

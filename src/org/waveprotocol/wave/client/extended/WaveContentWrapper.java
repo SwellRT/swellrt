@@ -169,4 +169,24 @@ public class WaveContentWrapper extends Stages {
     return closed ? (AsyncHolder<T>) HALT : provider;
   }
 
+
+  public WaveContext getWave() {
+    return wave;
+  }
+
+
+  public String getLocalDomain() {
+    return localDomain;
+  }
+
+
+  public boolean isNewWave() {
+    return isNewWave;
+  }
+
+
+  public ParticipantId getLoggedInUser() {
+    return loggedInUser;
+  }
+
 }

@@ -11,7 +11,7 @@
   <inherits name="org.waveprotocol.box.webclient.WebClient" />
 
    <!-- Specify the app entry point class.                         -->
-  <entry-point class='org.waveprotocol.jsclient.WaveJSClient'/>
+  <entry-point class='org.waveprotocol.wavejs.WaveJS'/>
 
 
   <add-linker name="xsiframe"/>

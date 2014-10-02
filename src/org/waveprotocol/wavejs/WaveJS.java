@@ -1,4 +1,4 @@
-package org.waveprotocol.jsclient;
+package org.waveprotocol.wavejs;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
@@ -22,7 +22,6 @@ import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
 import org.waveprotocol.box.webclient.search.SearchService;
 import org.waveprotocol.box.webclient.search.WaveStore;
-import org.waveprotocol.jsclient.js.WaveJS;
 import org.waveprotocol.wave.client.extended.WaveContentManager;
 import org.waveprotocol.wave.client.extended.WaveContentWrapper;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -42,9 +41,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class WaveJSClient implements EntryPoint {
+public class WaveJS implements EntryPoint {
 
-  private static final Logger log = Logger.getLogger(WaveJSClient.class.getName());
+  private static final Logger log = Logger.getLogger(WaveJS.class.getName());
 
 
   public class UnsavedDataListenerProxy implements UnsavedDataListener {
@@ -95,12 +94,12 @@ public class WaveJSClient implements EntryPoint {
   private Map<String, WaveContentWrapper> activeWaveMap = null;
 
 
-  private static WaveJS wavejs = null;
+
 
   /**
    * Default constructor
    */
-  public WaveJSClient() {
+  public WaveJS() {
 
     this.activeWaveMap = new HashMap<String, WaveContentWrapper>();
     this.schemaProvider = new ConversationSchemas();
@@ -165,7 +164,7 @@ public class WaveJSClient implements EntryPoint {
 
             // This fakes the former Wave Client JS session object.
             String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
-            createWebClientSession(WaveJSClient.this.waveServerDomain, participantId.getAddress(),
+            createWebClientSession(WaveJS.this.waveServerDomain, participantId.getAddress(),
                 sessionId);
 
             callback.onSuccess(sessionId);
@@ -313,21 +312,7 @@ public class WaveJSClient implements EntryPoint {
 
   }
 
-  public boolean startSessionJS(String url, String user, String password) {
 
-    return startSession(user, password, url, new Callback<String, String>() {
-
-      @Override
-      public void onSuccess(String result) {
-        if (wavejs != null) wavejs.startSessionOnSucess(result);
-      }
-
-      @Override
-      public void onFailure(String reason) {
-        if (wavejs != null) wavejs.startSessionOnFailure(reason);
-      }
-    });
-  }
 
 
   /**
@@ -394,7 +379,7 @@ public class WaveJSClient implements EntryPoint {
    */
   public String openWave(final String wave, final Callback<WaveContentWrapper, String> callback) {
 
-    if (activeWaveMap.containsKey(wave)) return wave;
+    // if (activeWaveMap.containsKey(wave)) return wave;
 
     WaveId waveId = null;
     try {
@@ -409,7 +394,7 @@ public class WaveJSClient implements EntryPoint {
     final WaveContentWrapper waveWrapper =
         waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), false);
 
-    activeWaveMap.put(waveId.toString(), waveWrapper);
+    activeWaveMap.put(wave, waveWrapper);
 
     waveWrapper.load(new Command() {
       @Override
@@ -424,22 +409,7 @@ public class WaveJSClient implements EntryPoint {
 
   }
 
-  public String openWaveJS(final String wave) {
 
-
-    return openWave(wave, new Callback<WaveContentWrapper, String>() {
-
-      @Override
-      public void onFailure(String reason) {
-        if (wavejs != null) wavejs.openWaveOnFailure(reason);
-      }
-
-      @Override
-      public void onSuccess(WaveContentWrapper result) {
-        if (wavejs != null) wavejs.openWaveOnSucess(wave);
-      }
-    });
-  }
 
 
   public boolean closeWave(String wave) {
@@ -456,19 +426,15 @@ public class WaveJSClient implements EntryPoint {
   }
 
 
-  private static native void installJSObjects() /*-{
-    $wnd.wavejs = @org.waveprotocol.jsclient.WaveJSClient::wavejs;
-  }-*/;
 
   private static native void notifyLoaded() /*-{
-    $wnd.onWaveJSClientReady();
+    $wnd.onWaveJSReady();
   }-*/;
 
   public void onModuleLoad() {
 
     RootPanel.get();
-    wavejs = WaveJS.create(this);
-    installJSObjects();
+    WaveClient.create(this); // Startup the WaveJS Client
 
     // Notify the host page that client is already loaded
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {

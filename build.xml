@@ -436,7 +436,7 @@
     <touch file="${dep}/compile-gwt-dev"/>
   </target>
 
-  <target name="compile-wavejsclient-dev" depends="compile, compile-gwt-dev-dep"
+  <target name="compile-wavejs-dev" depends="compile, compile-gwt-dev-dep"
       description="GWT compile of a restricted set of permutations suitable for development.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
@@ -453,7 +453,7 @@
       <!-- Assertions on. -->
       <arg line="-ea"/>
       <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.jsclient.WaveJSClient"/>
+      <arg value="org.waveprotocol.wavejs.WaveJS"/>
     </java>
     <!-- Only one GWT compile output is valid at any one time. -->
     <delete file="${dep}/compile-gwt"/>

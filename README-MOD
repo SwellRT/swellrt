@@ -11,7 +11,7 @@ JavaScript Client
 
     ant compile-gwt
 
-    ant compile-wavejsclient-dev
+    ant compile-wavejs-dev
 
     ant run-server (or ./run-server.sh)
 

@@ -1,11 +1,10 @@
 package org.waveprotocol.box.webclient.client.extended.ui;
 
 
-import org.waveprotocol.wave.client.extended.WaveContentChat;
+import org.waveprotocol.wave.client.extended.type.WaveChat;
 import org.waveprotocol.wave.model.extended.type.chat.ChatMessage;
 import org.waveprotocol.wave.model.extended.type.chat.ChatPresenceStatus;
 import org.waveprotocol.wave.model.extended.type.chat.ObservableChat;
-import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.Set;
@@ -16,7 +15,7 @@ public class SimpleChatPresenter implements ObservableChat.Listener, SimpleChatV
 
   private final SimpleChatView view;
   private final ParticipantId participant;
-  private WaveContentChat waveContent;
+  private WaveChat waveContent;
 
   public static SimpleChatPresenter create(SimpleChatView view, ParticipantId participant) {
     SimpleChatPresenter listPresenter = new SimpleChatPresenter(view, participant);
@@ -34,7 +33,7 @@ public class SimpleChatPresenter implements ObservableChat.Listener, SimpleChatV
     this.view.setListener(this);
   }
 
-  public void bind(WaveContentChat chatContent) {
+  public void bind(WaveChat chatContent) {
     this.waveContent = chatContent;
     this.waveContent.getChat().addListener(this);
 
@@ -78,14 +77,12 @@ public class SimpleChatPresenter implements ObservableChat.Listener, SimpleChatV
 
     ParticipantId newParticipantId = null;
 
-    try {
-      newParticipantId = ParticipantId.of(address);
-      waveContent.addParticipant(newParticipantId);
+
+    if (waveContent.addParticipant(address)) {
+
       waveContent.getChat().addMessage(
           new ChatMessage("", address + " has joined to this conversation.", System
               .currentTimeMillis(), participant));
-    } catch (InvalidParticipantAddress e) {
-      // TODO - bad participant address
     }
   }
 

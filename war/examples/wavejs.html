@@ -9,19 +9,25 @@
     <!-- If you add any GWT meta tags, they must   -->
     <!-- be added before this line.                -->
     <!--                                           -->
-<script type="text/javascript" src="wavejsclient/wavejsclient.nocache.js"></script>
+<script type="text/javascript" src="../wavejsclient/wavejsclient.nocache.js"></script>
  <script type="text/javascript">
 
-   function onWaveJSClientReady() {
+   function onWaveJSReady() {
 
-     wavejs.startSession("http://localhost:9898", "tim", "tim",
+     WaveJS.startSession("http://localhost:9898", "tim", "tim",
             function() {
               alert("Login succesfull!");
 
+              var chat = null;
 
-              wavejs.openWave("local.net/c+YLvAtVjZjAA",
-                       function() {
+              WaveJS.openChat("local.net/c+gJjhWqFq7WA",
+                       function(chatjs) {
                             alert("Wave opened succesfully!");
+                            WaveJS.chat = chatjs;
+                            chatjs.registerEventHandler("onMessageAdded", function(text) {
+                              alert("Text received: "+text);
+                            });
+
                         },
                          function() {
                           alert("Wave open failure!");

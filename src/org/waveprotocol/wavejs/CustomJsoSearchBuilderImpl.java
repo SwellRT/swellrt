@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.waveprotocol.jsclient;
+package org.waveprotocol.wavejs;
 
 import java.util.List;
 
