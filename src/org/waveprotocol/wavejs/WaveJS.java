@@ -343,7 +343,7 @@ public class WaveJS implements EntryPoint {
 
 
 
-  public String createWave(String type, final Callback<String, String> callback) {
+  public String createWave(String type, final Callback<WaveContentWrapper, String> callback) {
 
     WaveType waveType = WaveType.valueOf(type);
     if (WaveType.UNKNOWN == waveType) return null;
@@ -359,7 +359,7 @@ public class WaveJS implements EntryPoint {
       @Override
       public void execute() {
 
-        callback.onSuccess(waveId.toString());
+        callback.onSuccess(waveWrapper);
 
       }
     });

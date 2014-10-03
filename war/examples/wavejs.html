@@ -9,16 +9,15 @@
     <!-- If you add any GWT meta tags, they must   -->
     <!-- be added before this line.                -->
     <!--                                           -->
-<script type="text/javascript" src="../wavejsclient/wavejsclient.nocache.js"></script>
+<script type="text/javascript" src="../wavejs/wavejs.nocache.js"></script>
  <script type="text/javascript">
 
    function onWaveJSReady() {
 
      WaveJS.startSession("http://localhost:9898", "tim", "tim",
-            function() {
-              alert("Login succesfull!");
+            function(sessionid) {
+              alert("Login succesfull! session is "+sessionid);
 
-              var chat = null;
 
               WaveJS.openChat("local.net/c+gJjhWqFq7WA",
                        function(chatjs) {
@@ -29,13 +28,13 @@
                             });
 
                         },
-                         function() {
-                          alert("Wave open failure!");
+                         function(error) {
+                          alert("Wave open failure! "+error);
                         });
 
 
-            },function() {
-              alert("Login failed!");
+            },function(error) {
+              alert("Login failed! "+error);
             });
 
 
@@ -48,7 +47,7 @@
 </head>
 <body>
 
- <h2>Wave JavaScript client example</h2>
+ <h2>Wave JS client example</h2>
 
 
 

@@ -130,4 +130,34 @@ public class WaveClient {
 
   }
 
+
+  public String createChat() {
+
+    return wavejs.createWave("chat", new Callback<WaveContentWrapper, String>() {
+
+      @Override
+      public void onSuccess(WaveContentWrapper wrapper) {
+
+        WaveChat waveChat =
+            WaveChat.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
+                wrapper.isNewWave());
+
+        WaveChatJS waveChatJS = WaveChatJS.create(waveChat);
+        waveChat.getChat().addListener(waveChatJS);
+
+        jso.callbackEvent("createChat", "onSuccess", waveChatJS);
+      }
+
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("createChat", "onFailure", reason);
+      }
+
+
+    });
+
+  }
+
+
 }

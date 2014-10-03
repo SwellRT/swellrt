@@ -26,7 +26,7 @@ public class WaveClientJS extends JavaScriptObject {
 
          callbackMap: new Object(),
 
-         startSession: $entry(function(url, user, password, onSuccess, onFailure) {
+         startSession: function(url, user, password, onSuccess, onFailure) {
 
             this.callbackMap.startSession = new Object();
             this.callbackMap.startSession.onSuccess = onSuccess;
@@ -34,37 +34,48 @@ public class WaveClientJS extends JavaScriptObject {
 
             return delegate.@org.waveprotocol.wavejs.WaveClient::startSession(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(url, user, password);
 
-         }),
+         },
 
-         stopSession: $entry(function() {
+         stopSession: function() {
 
-            return delegate.@org.waveprotocol.wavejs.WaveClient::stopSession()();
-         }),
+            return $entry(delegate.@org.waveprotocol.wavejs.WaveClient::stopSession()());
+         },
 
-         openWave: $entry(function(wave, onSuccess, onFailure) {
+         openWave: function(wave, onSuccess, onFailure) {
 
               this.callbackMap.openWave = new Object();
               this.callbackMap.openWave.onSuccess = onSuccess;
               this.callbackMap.openWave.onFailure = onFailure;
 
               return delegate.@org.waveprotocol.wavejs.WaveClient::openWave(Ljava/lang/String;)(wave);
-         }),
+         },
 
-         closeWave: $entry(function(wave) {
+         closeWave: function(wave) {
 
              return delegate.@org.waveprotocol.wavejs.WaveClient::closeWave(Ljava/lang/String;)(wave);
-         }),
+         },
 
 
-         openChat: $entry(function(wave, callback) {
+         openChat: function(wave, onSuccess, onFailure) {
 
             this.callbackMap.openChat = new Object();
-            this.callbackMap.openChat.onSuccess = callback;
+            this.callbackMap.openChat.onSuccess = onSuccess;
+            this.callbackMap.openChat.onFailure = onFailure;
 
             return delegate.@org.waveprotocol.wavejs.WaveClient::openChat(Ljava/lang/String;)(wave);
 
-         })
+         },
 
+
+         createChat: function(onSuccess, onFailure) {
+
+            this.callbackMap.createChat = new Object();
+            this.callbackMap.createChat.onSuccess = onSuccess;
+            this.callbackMap.createChat.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.wavejs.WaveClient::createChat()();
+
+         }
 
     }; // wavejs
 

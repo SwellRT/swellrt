@@ -3,6 +3,7 @@ package org.waveprotocol.wave.client.extended.type;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.extended.WaveExtendedModel;
 import org.waveprotocol.wave.model.extended.type.chat.ChatMessage;
+import org.waveprotocol.wave.model.extended.type.chat.ChatPresenceStatus;
 import org.waveprotocol.wave.model.extended.type.chat.DocumentBasedChat;
 import org.waveprotocol.wave.model.extended.type.chat.ObservableChat;
 import org.waveprotocol.wave.model.id.IdUtil;
@@ -11,17 +12,21 @@ import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class WaveChat {
 
   private final ObservableChat chat;
   private final ObservableWavelet wavelet;
+  private final ParticipantId me;
 
-  protected WaveChat(ObservableWavelet wavelet) {
+  protected WaveChat(ObservableWavelet wavelet, ParticipantId me) {
 
     this.wavelet = wavelet;
     this.chat = DocumentBasedChat.create(wavelet);
+    this.me = me;
 
   }
 
@@ -52,7 +57,7 @@ public class WaveChat {
     // Use this to use the wavelet conv+root
     // ObservableWavelet wavelet = wcWrapper.wave.getWave().getRoot();
 
-    WaveChat wcChat = new WaveChat(wavelet);
+    WaveChat wcChat = new WaveChat(wavelet, loggedInUser);
     if (isNewWave) {
       wcChat.getChat().setCreator(loggedInUser);
     }
@@ -93,11 +98,50 @@ public class WaveChat {
 
   public void send(String text) {
     getChat().addMessage(
-        new ChatMessage("", text, System.currentTimeMillis(), getChat().getCreator()));
+        new ChatMessage("", text, System.currentTimeMillis(), me));
   }
 
 
+  public int getNumMessages() {
+    return getChat().numMessages();
+  }
 
+
+  /**
+   * 
+   * 
+   * @param from index of the latest message (newest)
+   * @param to index of the oldest message
+   * @return
+   */
+  public List<ChatMessage> getMessages(int from, int to) {
+
+    List<ChatMessage> messages = new ArrayList<ChatMessage>();
+
+    int total = getChat().numMessages();
+
+    if (from > total || to < 0) return messages;
+
+    int marker = total;
+
+    // to <= marker <= from
+
+    for (ChatMessage m : getChat().getMessages()) {
+
+      if (marker <= from && marker >= to) messages.add(m);
+    }
+
+    return messages;
+
+  }
+
+  public void setStatusOnline() {
+    getChat().setParticipantStatus(me, ChatPresenceStatus.createOnlineStatus());
+  }
+
+  public void setStatusWriting() {
+    getChat().setParticipantStatus(me, ChatPresenceStatus.createWritingStatus());
+  }
 
 
 }

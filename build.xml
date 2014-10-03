@@ -460,6 +460,32 @@
     <touch file="${dep}/compile-gwt-dev"/>
   </target>
 
+
+  <target name="compile-wavejs" depends="compile, compile-gwt-dep"
+      description="GWT compile to production JavaScript" unless="skip.compile-gwt">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Small Javascript size. -->
+      <arg line="-style OBFUSCATED"/>
+      <!-- Do not include class and package names in compiled JS. -->
+      <arg line="-XdisableClassMetadata"/>
+      <arg line="-XdisableCastChecking"/>
+      <arg line="-localWorkers 4"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.waveprotocol.wavejs.WaveJS"/>
+    </java>
+    <!-- Only one GWT compile output is valid at any one time. -->
+    <delete file="${dep}/compile-gwt-dev"/>
+    <touch file="${dep}/compile-gwt"/>
+  </target>
+
+
   <!--=====
       Hosted and Superdev
       ======-->
