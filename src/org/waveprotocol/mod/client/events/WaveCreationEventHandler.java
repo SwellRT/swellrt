@@ -17,32 +17,15 @@
  * under the License.
  */
 
-package org.waveprotocol.wave.client.events;
+package org.waveprotocol.mod.client.events;
 
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.EventHandler;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import java.util.Set;
 
-public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
-  public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
-
-  private final Set<ParticipantId> participants;
-
-  public WaveCreationEvent() {
-    this.participants = null;
-  }
-
-  public WaveCreationEvent(Set<ParticipantId> participants) {
-    this.participants = participants;
-  }
-
-  @Override
-  protected void dispatch(WaveCreationEventHandler handler) {
-    handler.onCreateRequest(this, participants);
-  }
-
-  @Override
-  public com.google.gwt.event.shared.GwtEvent.Type<WaveCreationEventHandler> getAssociatedType() {
-    return TYPE;
-  }
+public abstract class WaveCreationEventHandler implements EventHandler {
+  /**
+   * Called when something wants to create a new wave.
+   */
+  public abstract void onCreateRequest(WaveCreationEvent event, Set<ParticipantId> participants);
 }

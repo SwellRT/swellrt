@@ -35,8 +35,8 @@ import org.waveprotocol.box.server.persistence.memory.MemoryStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbIndexStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
+import org.waveprotocol.mod.model.WaveConversationUtils;
 import org.waveprotocol.wave.crypto.CertPathStore;
-import org.waveprotocol.wave.model.extended.WaveConversationUtils;
 
 /**
  * Module for setting up the different persistence stores.

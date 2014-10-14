@@ -378,6 +378,7 @@
     <!-- Only one GWT compile output is valid at any one time. -->
     <delete file="${dep}/compile-gwt-dev"/>
     <touch file="${dep}/compile-gwt"/>
+    <delete file="${dep}/compile-gwt-mod"/>
   </target>
 
   <target name="compile-gwt-dev-dep">
@@ -409,6 +410,7 @@
      <!-- Only one GWT compile output is valid at any one time. -->
      <delete file="${dep}/compile-gwt"/>
      <touch file="${dep}/compile-gwt-dev"/>
+     <delete file="${dep}/compile-gwt-mod"/>
    </target>
 
   <target name="compile-gwt-dev" depends="compile, compile-gwt-dev-dep"
@@ -434,55 +436,6 @@
     <!-- Only one GWT compile output is valid at any one time. -->
     <delete file="${dep}/compile-gwt"/>
     <touch file="${dep}/compile-gwt-dev"/>
-  </target>
-
-  <target name="compile-wavejs-dev" depends="compile, compile-gwt-dev-dep"
-      description="GWT compile of a restricted set of permutations suitable for development.">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-        <path refid="test.libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <!-- Human-readable JS. -->
-      <arg line="-style PRETTY"/>
-      <!-- Less optimal JS, but faster compile. -->
-      <arg line="-draftCompile"/>
-      <!-- Assertions on. -->
-      <arg line="-ea"/>
-      <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.wavejs.WaveJS"/>
-    </java>
-    <!-- Only one GWT compile output is valid at any one time. -->
-    <delete file="${dep}/compile-gwt"/>
-    <touch file="${dep}/compile-gwt-dev"/>
-  </target>
-
-
-  <target name="compile-wavejs" depends="compile, compile-gwt-dep"
-      description="GWT compile to production JavaScript" unless="skip.compile-gwt">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-        <path refid="test.libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <!-- Small Javascript size. -->
-      <arg line="-style OBFUSCATED"/>
-      <!-- Do not include class and package names in compiled JS. -->
-      <arg line="-XdisableClassMetadata"/>
-      <arg line="-XdisableCastChecking"/>
-      <arg line="-localWorkers 4"/>
-      <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.wavejs.WaveJS"/>
-    </java>
-    <!-- Only one GWT compile output is valid at any one time. -->
-    <delete file="${dep}/compile-gwt-dev"/>
-    <touch file="${dep}/compile-gwt"/>
   </target>
 
 
@@ -1152,6 +1105,11 @@
   </target>
 
 
+    <!--=====
+         Mod
+        =====-->
+
+
   <!--
     Compact artifacts for separated GWT client development
    -->
@@ -1163,6 +1121,10 @@
          <exclude name="org/waveprotocol/box/server/**/*" />
         </fileset>
         <fileset dir="${staging.dir}" includes="com/google/gwt/websockets/**/*">
+        </fileset>
+        <fileset dir="${staging.dir}" includes="org/waveprotocol/mod/**/*">
+         <exclude name="org/waveprotocol/mod/wavejs/**/*" />
+         <exclude name="org/waveprotocol/mod/webclient/**/*" />
         </fileset>
         <manifest>
           <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
@@ -1186,6 +1148,10 @@
         </fileset>
         <fileset dir="${src.dir}" includes="com/google/gwt/websockets/**/*">
         </fileset>
+        <fileset dir="${staging.dir}" includes="org/waveprotocol/mod/**/*">
+         <exclude name="org/waveprotocol/mod/wavejs/**/*" />
+         <exclude name="org/waveprotocol/mod/webclient/**/*" />
+        </fileset>
         <manifest>
           <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
           <attribute name="Specification-Title" value="Custom Compact Wave client dependency set"/>
@@ -1198,4 +1164,128 @@
         <metainf dir="." includes="LICENSE, NOTICE" />
       </jar>
     </target>
+
+
+  <target name="compile-gwt-mod-dep">
+    <uptodate targetfile="${dep}/compile-gwt" property="skip.compile-gwt-mod">
+      <srcfiles dir="${lib.dir}"/>
+      <srcfiles dir="${src.dir}"/>
+      <srcfiles dir="${gen.dir}/messages"/>
+    </uptodate>
+  </target>
+
+
+  <target name="compile-gwt-mod" depends="compile, compile-gwt-mod-dep"
+      description="GWT compile of a restricted set of permutations suitable for development."
+      unless="skip.compile-gwt-mod">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Human-readable JS. -->
+      <arg line="-style PRETTY"/>
+      <!-- Less optimal JS, but faster compile. -->
+      <arg line="-draftCompile"/>
+      <!-- Assertions on. -->
+      <arg line="-ea"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.waveprotocol.mod.webclient.WebClientMod"/>
+    </java>
+    <!-- Only one GWT compile output is valid at any one time. -->
+    <delete file="${dep}/compile-gwt-dev"/>
+    <delete file="${dep}/compile-gwt"/>
+    <touch file="${dep}/compile-gwt-mod"/>
+  </target>
+
+  <target name="hosted-gwt-mod" depends="compile"
+      description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${build.src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
+      <jvmarg value="-Djava.util.logging.config.file=wiab-logging.conf" />
+      <arg value="-noserver" />
+      <arg line="-bindAddress 127.0.0.1" />
+      <arg line="${gwt.args}"/>
+      <arg line="-startupUrl http://localhost:9898"/>
+      <arg line="-logLevel DEBUG"/>
+      <arg value="org.waveprotocol.mod.webclient.WebClientMod"/>
+    </java>
+  </target>
+
+
+  <target name="superdev-gwt-mod" depends="compile"
+      description="Runs the superdev mode, for debugging the GWT client in a browser.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+      </classpath>
+      <arg line="${gwt.args}"/>
+      <arg line="-src src"/>
+      <arg value="org.waveprotocol.mod.webclient.WebClientMod"/>
+    </java>
+  </target>
+
+
+  <target name="compile-wavejs-dev" depends="compile"
+      description="GWT compile of a restricted set of permutations suitable for development.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Human-readable JS. -->
+      <arg line="-style PRETTY"/>
+      <!-- Less optimal JS, but faster compile. -->
+      <arg line="-draftCompile"/>
+      <!-- Assertions on. -->
+      <arg line="-ea"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.waveprotocol.mod.wavejs.WaveJS"/>
+    </java>
+  </target>
+
+
+  <target name="compile-wavejs" depends="compile"
+      description="GWT compile to production JavaScript">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Small Javascript size. -->
+      <arg line="-style OBFUSCATED"/>
+      <!-- Do not include class and package names in compiled JS. -->
+      <arg line="-XdisableClassMetadata"/>
+      <arg line="-XdisableCastChecking"/>
+      <arg line="-localWorkers 4"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.waveprotocol.mod.wavejs.WaveJS"/>
+    </java>
+  </target>
+
+  <target name="clean-mod" description="Cleans up the build artifacts and temporary directories">
+    <delete dir="war/wavejs"/>
+  </target>
+
+
+
 </project>

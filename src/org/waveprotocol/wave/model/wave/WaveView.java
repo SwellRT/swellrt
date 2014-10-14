@@ -19,7 +19,6 @@
 
 package org.waveprotocol.wave.model.wave;
 
-import org.waveprotocol.wave.model.extended.model.ExtendedWaveView;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 
@@ -27,7 +26,7 @@ import org.waveprotocol.wave.model.id.WaveletId;
  * A Wave View is a collection of wavelets within a wave.
  *
  */
-public interface WaveView extends ExtendedWaveView {
+public interface WaveView {
   /**
    * Gets the unique identifier of the wave in view.
    *
@@ -86,5 +85,12 @@ public interface WaveView extends ExtendedWaveView {
    * @throws IllegalStateException if the user-data wavelet already exists.
    */
   Wavelet createUserData();
+
+  /**
+   * Creates a new wavelet in the wave with a custom id
+   * 
+   * @return a new wavelet.
+   */
+  Wavelet createWavelet(WaveletId waveletId);
 
 }

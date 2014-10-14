@@ -17,32 +17,27 @@
  * under the License.
  */
 
-package org.waveprotocol.wave.client.events;
+package org.waveprotocol.mod.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import java.util.Set;
 
-public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
-  public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
+import org.waveprotocol.wave.model.waveref.WaveRef;
 
-  private final Set<ParticipantId> participants;
+public class WaveOpenEvent extends GwtEvent<WaveOpenEventHandler> {
+  public static final GwtEvent.Type<WaveOpenEventHandler> TYPE = new GwtEvent.Type<WaveOpenEventHandler>();
+  private final WaveRef id;
 
-  public WaveCreationEvent() {
-    this.participants = null;
-  }
-
-  public WaveCreationEvent(Set<ParticipantId> participants) {
-    this.participants = participants;
+  public WaveOpenEvent(WaveRef waveRef) {
+    this.id = waveRef;
   }
 
   @Override
-  protected void dispatch(WaveCreationEventHandler handler) {
-    handler.onCreateRequest(this, participants);
-  }
-
-  @Override
-  public com.google.gwt.event.shared.GwtEvent.Type<WaveCreationEventHandler> getAssociatedType() {
+  public Type<WaveOpenEventHandler> getAssociatedType() {
     return TYPE;
   }
+
+  @Override
+  protected void dispatch(WaveOpenEventHandler handler) {
+    handler.onOpen(id);
+  }  
 }

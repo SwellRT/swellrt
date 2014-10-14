@@ -17,32 +17,34 @@
  * under the License.
  */
 
-package org.waveprotocol.wave.client.events;
+package org.waveprotocol.mod.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import java.util.Set;
 
-public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
-  public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
-
-  private final Set<ParticipantId> participants;
-
-  public WaveCreationEvent() {
-    this.participants = null;
+public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
+  public enum ConnectionStatus {
+    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED;
   }
 
-  public WaveCreationEvent(Set<ParticipantId> participants) {
-    this.participants = participants;
-  }
+  public static final Type<NetworkStatusEventHandler> TYPE = new Type<NetworkStatusEventHandler>();
 
-  @Override
-  protected void dispatch(WaveCreationEventHandler handler) {
-    handler.onCreateRequest(this, participants);
+  private final ConnectionStatus status;
+
+  public NetworkStatusEvent(ConnectionStatus status) {
+    this.status = status;
   }
 
   @Override
-  public com.google.gwt.event.shared.GwtEvent.Type<WaveCreationEventHandler> getAssociatedType() {
+  public com.google.gwt.event.shared.GwtEvent.Type<NetworkStatusEventHandler> getAssociatedType() {
     return TYPE;
+  }
+
+  public ConnectionStatus getStatus() {
+    return status;
+  }
+
+  @Override
+  protected void dispatch(NetworkStatusEventHandler handler) {
+    handler.onNetworkStatus(this);
   }
 }
