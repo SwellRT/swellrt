@@ -22,12 +22,11 @@ import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
 import org.waveprotocol.box.webclient.search.SearchService;
 import org.waveprotocol.box.webclient.search.WaveStore;
-import org.waveprotocol.mod.client.WaveContentManager;
-import org.waveprotocol.mod.client.WaveContentWrapper;
-import org.waveprotocol.mod.model.WaveType;
-import org.waveprotocol.mod.model.showcase.id.IdGeneratorExtended;
-import org.waveprotocol.mod.model.showcase.id.IdGeneratorExtendedImpl;
+import org.waveprotocol.mod.client.WaveManager;
+import org.waveprotocol.mod.client.WaveWrapper;
+import org.waveprotocol.mod.model.IdGeneratorGeneric;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
+import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
@@ -76,7 +75,7 @@ public class WaveJS implements EntryPoint {
   private String seed;
   private ParticipantId loggedInUser = null;
   private RemoteViewServiceMultiplexer channel;
-  private IdGeneratorExtended idGenerator;
+  private IdGenerator idGenerator;
 
   /* Components shared across sessions */
   private final SchemaProvider schemaProvider;
@@ -90,8 +89,8 @@ public class WaveJS implements EntryPoint {
   private WaveWebSocketClient websocket;
   private SearchBuilder searchBuilder;
 
-  private WaveContentManager waveContentManager = null;
-  private Map<String, WaveContentWrapper> activeWaveMap = null;
+  private WaveManager waveContentManager = null;
+  private Map<String, WaveWrapper> activeWaveMap = null;
 
 
 
@@ -101,7 +100,7 @@ public class WaveJS implements EntryPoint {
    */
   public WaveJS() {
 
-    this.activeWaveMap = new HashMap<String, WaveContentWrapper>();
+    this.activeWaveMap = new HashMap<String, WaveWrapper>();
     this.schemaProvider = new ConversationSchemas();
     this.waveStore = new SimpleWaveStore();
 
@@ -224,11 +223,11 @@ public class WaveJS implements EntryPoint {
     websocket.connect();
 
     channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
-    idGenerator = new IdGeneratorExtendedImpl(ClientIdGenerator.create());
+    idGenerator = ClientIdGenerator.create();
     seed = Session.get().getIdSeed();
 
     waveContentManager =
-        WaveContentManager.create(waveStore, waveServerDomain, idGenerator,
+        WaveManager.create(waveStore, waveServerDomain, idGenerator,
         loggedInUser, seed,
         channel);
 
@@ -323,7 +322,7 @@ public class WaveJS implements EntryPoint {
   public boolean stopSession() {
 
     // Destroy all waves
-    for (Entry<String, WaveContentWrapper> entry : activeWaveMap.entrySet())
+    for (Entry<String, WaveWrapper> entry : activeWaveMap.entrySet())
       entry.getValue().destroy();
 
     activeWaveMap.clear();
@@ -343,13 +342,13 @@ public class WaveJS implements EntryPoint {
 
 
 
-  public String createWave(String type, final Callback<WaveContentWrapper, String> callback) {
+  public String createWave(IdGeneratorGeneric idGenerator,
+      final Callback<WaveWrapper, String> callback) {
 
-    WaveType waveType = WaveType.valueOf(type);
-    if (WaveType.UNKNOWN == waveType) return null;
+    idGenerator.initialize(this.idGenerator);
 
-    final WaveId waveId = idGenerator.newWaveId(waveType);
-    final WaveContentWrapper waveWrapper =
+    final WaveId waveId = idGenerator.newWaveId();
+    final WaveWrapper waveWrapper =
         waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), true);
 
     activeWaveMap.put(waveId.toString(), waveWrapper);
@@ -377,7 +376,7 @@ public class WaveJS implements EntryPoint {
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    */
-  public String openWave(final String wave, final Callback<WaveContentWrapper, String> callback) {
+  public String openWave(final String wave, final Callback<WaveWrapper, String> callback) {
 
     // if (activeWaveMap.containsKey(wave)) return wave;
 
@@ -391,7 +390,7 @@ public class WaveJS implements EntryPoint {
       return null;
     }
 
-    final WaveContentWrapper waveWrapper =
+    final WaveWrapper waveWrapper =
         waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), false);
 
     activeWaveMap.put(wave, waveWrapper);
@@ -414,7 +413,7 @@ public class WaveJS implements EntryPoint {
 
   public boolean closeWave(String wave) {
 
-    WaveContentWrapper waveWrapper = activeWaveMap.get(wave);
+    WaveWrapper waveWrapper = activeWaveMap.get(wave);
 
     if (waveWrapper == null) return false;
 

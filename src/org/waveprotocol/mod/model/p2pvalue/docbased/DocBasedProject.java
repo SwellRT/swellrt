@@ -2,7 +2,6 @@ package org.waveprotocol.mod.model.p2pvalue.docbased;
 
 import org.waveprotocol.mod.model.p2pvalue.Project;
 import org.waveprotocol.mod.model.p2pvalue.Task;
-import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorP2Pvalue;
 import org.waveprotocol.wave.model.adt.BasicValue;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
@@ -33,7 +32,7 @@ import java.util.Collections;
 public class DocBasedProject implements Project {
 
 
-  public static final String DOC_ID_PREFIX = IdGeneratorP2Pvalue.PROJECT_DOC_PREFIX;
+  public static final String DOC_ID_PREFIX = "prj";
 
   // Doc Top tag <project ...>
   public static final String TOP_TAG = "project";

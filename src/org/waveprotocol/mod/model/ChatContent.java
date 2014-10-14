@@ -2,7 +2,7 @@ package org.waveprotocol.mod.model;
 
 import com.google.gwt.core.client.Duration;
 
-import org.waveprotocol.mod.client.WaveContentWrapper;
+import org.waveprotocol.mod.client.WaveWrapper;
 import org.waveprotocol.wave.model.conversation.ObservableConversation;
 import org.waveprotocol.wave.model.conversation.ObservableConversationBlip;
 import org.waveprotocol.wave.model.conversation.ObservableConversationThread;
@@ -52,7 +52,7 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
   private final ObservableDocument doc;
 
   /** We still need the wave for participant mgmt */
-  private final WaveContentWrapper waveWrapper;
+  private final WaveWrapper waveWrapper;
 
   /** List of listeners of this doc */
   private final List<Listener> listeners;
@@ -62,7 +62,7 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
 
 
 
-  private ChatContent(WaveContentWrapper waveWrapper, ObservableDocument document,
+  private ChatContent(WaveWrapper waveWrapper, ObservableDocument document,
       ParticipantId contributor) {
     this.doc = document;
     this.waveWrapper = waveWrapper;
@@ -71,7 +71,7 @@ public class ChatContent implements DocHandler, ObservableConversation.Listener 
 
   }
 
-  public static ChatContent create(WaveContentWrapper waveWrapper, ParticipantId contributor) {
+  public static ChatContent create(WaveWrapper waveWrapper, ParticipantId contributor) {
 
 
     // ObservableDocument rawDocument =

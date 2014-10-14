@@ -2,10 +2,14 @@ package org.waveprotocol.mod.wavejs;
 
 import com.google.gwt.core.client.Callback;
 
-import org.waveprotocol.mod.client.WaveContentWrapper;
+import org.waveprotocol.mod.client.WaveWrapper;
+import org.waveprotocol.mod.model.p2pvalue.CommunityWavelet;
+import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
 import org.waveprotocol.mod.model.showcase.chat.WaveChat;
-import org.waveprotocol.mod.wavejs.js.WaveChatJS;
+import org.waveprotocol.mod.model.showcase.id.IdGeneratorChat;
 import org.waveprotocol.mod.wavejs.js.WaveClientJS;
+import org.waveprotocol.mod.wavejs.js.p2pvalue.CommunityWaveletJS;
+import org.waveprotocol.mod.wavejs.js.showcase.chat.WaveChatJS;
 
 public class WaveClient {
 
@@ -68,10 +72,10 @@ public class WaveClient {
    */
   public String openWave(final String wave) {
 
-    return wavejs.openWave(wave, new Callback<WaveContentWrapper, String>() {
+    return wavejs.openWave(wave, new Callback<WaveWrapper, String>() {
 
       @Override
-      public void onSuccess(WaveContentWrapper result) {
+      public void onSuccess(WaveWrapper result) {
         jso.callbackEvent("openWave", "onSuccess", wave);
       }
 
@@ -95,20 +99,24 @@ public class WaveClient {
   }
 
 
+  // Chat
+
+
   /**
-   * Open a wave as a Chat.
+   * Opens a wave as a Chat. JavaScript callback is called passing the Chat JS
+   * object.
+   * 
    * 
    * @param wave WaveId
-   * @param callback gets the WaveChatJS object on success
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    */
   public String openChat(final String wave) {
 
 
-    return wavejs.openWave(wave, new Callback<WaveContentWrapper, String>() {
+    return wavejs.openWave(wave, new Callback<WaveWrapper, String>() {
 
       @Override
-      public void onSuccess(WaveContentWrapper wrapper) {
+      public void onSuccess(WaveWrapper wrapper) {
 
         WaveChat waveChat =
             WaveChat.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
@@ -131,12 +139,92 @@ public class WaveClient {
   }
 
 
-  public String createChat() {
+  /**
+   * Creates a new Chat Wave. JavaScript callback is called passing the Chat JS
+   * object.
+   * 
+   * @return the WaveId or null if wave wasn't created.
+   */
+  public String createP2PvCommunity() {
 
-    return wavejs.createWave("chat", new Callback<WaveContentWrapper, String>() {
+    return wavejs.createWave(IdGeneratorCommunity.get(), new Callback<WaveWrapper, String>() {
 
       @Override
-      public void onSuccess(WaveContentWrapper wrapper) {
+      public void onSuccess(WaveWrapper wrapper) {
+
+        CommunityWavelet community =
+            CommunityWavelet.create(wrapper.getWave(), wrapper.getLocalDomain(),
+                wrapper.getLoggedInUser(), wrapper.isNewWave());
+
+        CommunityWaveletJS communityJS = CommunityWaveletJS.create(community);
+        community.addListener(communityJS);
+
+        jso.callbackEvent("createP2PvCommunity", "onSuccess", communityJS);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("createP2PvCommunity", "onFailure", reason);
+      }
+
+
+    });
+
+  }
+
+  // P2Pvalue
+
+
+  /**
+   * Opens a wave as a Chat. JavaScript callback is called passing the Chat JS
+   * object.
+   * 
+   * 
+   * @param wave WaveId
+   * @return null if wave is not a valid WaveId. The WaveId otherwise.
+   */
+  public String openP2PvCommunity(final String wave) {
+
+
+    return wavejs.openWave(wave, new Callback<WaveWrapper, String>() {
+
+      @Override
+      public void onSuccess(WaveWrapper wrapper) {
+
+
+        WaveChat waveChat =
+            WaveChat.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
+                wrapper.isNewWave());
+
+        WaveChatJS waveChatJS = WaveChatJS.create(waveChat);
+        waveChat.getChat().addListener(waveChatJS);
+
+        jso.callbackEvent("openP2PvCommunity", "onSuccess", waveChatJS);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("openP2PvCommunity", "onFailure", reason);
+      }
+
+    });
+
+
+  }
+
+
+  /**
+   * Creates a new Chat Wave. JavaScript callback is called passing the Chat JS
+   * object.
+   * 
+   * @return the WaveId or null if wave wasn't created.
+   */
+  public String createChat() {
+
+    return wavejs.createWave(IdGeneratorChat.get(), new Callback<WaveWrapper, String>() {
+
+      @Override
+      public void onSuccess(WaveWrapper wrapper) {
 
         WaveChat waveChat =
             WaveChat.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),

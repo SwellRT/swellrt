@@ -2,7 +2,7 @@ package org.waveprotocol.mod.model.p2pvalue;
 
 import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedCommunity;
 import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedProject;
-import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorP2Pvalue;
+import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -20,6 +20,9 @@ import java.util.List;
 public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener> {
 
 
+  public static final String WAVELET_ID = "community" + IdUtil.TOKEN_SEPARATOR + "root";
+
+
   public interface Listener {
 
     void onAddParticipant(ParticipantId participant);
@@ -30,13 +33,14 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
 
     void onProjectRemoved(String projectId);
 
+    void onNameChanged(String name);
+
   }
 
 
-  public static final String WAVELET_ID = "community" + IdUtil.TOKEN_SEPARATOR + "root";
-
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
+  private final IdGeneratorCommunity idGenerator;
   private final ObservableWavelet wavelet;
   private final DocBasedCommunity community;
   private final WaveletListener waveletListener = new WaveletListener() {
@@ -96,7 +100,7 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
 
     @Override
     public void onBlipAdded(ObservableWavelet wavelet, Blip blip) {
-      if (IdUtil.getInitialToken(blip.getId()).equals(IdGeneratorP2Pvalue.PROJECT_DOC_PREFIX)) {
+      if (IdUtil.getInitialToken(blip.getId()).equals(DocBasedProject.DOC_ID_PREFIX)) {
         for (Listener l : listeners)
           l.onProjectAdded(blip.getId());
       }
@@ -104,7 +108,7 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
 
     @Override
     public void onBlipRemoved(ObservableWavelet wavelet, Blip blip) {
-      if (IdUtil.getInitialToken(blip.getId()).equals(IdGeneratorP2Pvalue.PROJECT_DOC_PREFIX)) {
+      if (IdUtil.getInitialToken(blip.getId()).equals(DocBasedProject.DOC_ID_PREFIX)) {
         for (Listener l : listeners)
           l.onProjectRemoved(blip.getId());
       }
@@ -124,7 +128,7 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
    * @return the CommunityWavelet object
    */
   public static CommunityWavelet create(WaveContext wave, String domain,
-      ParticipantId loggedInUser, boolean isNewWave) {
+      ParticipantId loggedInUser, boolean isNewWave, IdGeneratorCommunity idGenerator) {
 
     WaveletId waveletId = WaveletId.of(domain, WAVELET_ID);
 
@@ -135,7 +139,7 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
       wavelet.addParticipant(loggedInUser);
     }
 
-    CommunityWavelet communityWavelet = new CommunityWavelet(wavelet);
+    CommunityWavelet communityWavelet = new CommunityWavelet(wavelet, idGenerator);
 
     return communityWavelet;
   }
@@ -146,7 +150,8 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
    *
    * @param wavelet The Wavelet supporting a community.
    */
-  CommunityWavelet(ObservableWavelet wavelet) {
+  CommunityWavelet(ObservableWavelet wavelet, IdGeneratorCommunity idGenerator) {
+    this.idGenerator = idGenerator;
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
     this.community = DocBasedCommunity.create(wavelet);
@@ -165,26 +170,55 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
     return community;
   }
 
-  /**
-   * Return list of Projects in the Community. Project objects are built in each
-   * call of this method. Avoid call it several times.
-   *
-   *
-   * @return Set of Project Id's
-   */
-  public Iterable<Project> getProjects() {
+  public int getNumProjects() {
+    int count = 0;
+    for (String docId : wavelet.getDocumentIds()) {
+      if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) count++;
+    }
+    return count;
+  }
 
-    List<Project> list = new ArrayList<Project>();
+  /**
+   * Return a list of Projects. Project objects are built in each call of this
+   * method. Avoid call it several times.
+   * 
+   * 
+   * @return Iterable of Projects
+   */
+  public Iterable<Project> getProjects(int from, int to) {
+
+    List<Project> projects = new ArrayList<Project>();
+
+    int marker = 0;
 
     for (String docId : wavelet.getDocumentIds()) {
-      if (IdUtil.getInitialToken(docId).equals(IdGeneratorP2Pvalue.PROJECT_DOC_PREFIX))
-        list.add(DocBasedProject.create(wavelet, docId));
+      if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
+        if (marker >= from && marker <= to) {
+          projects.add(DocBasedProject.create(wavelet, docId));
+        }
+        marker++;
+      }
     }
-
-    return list;
+    return projects;
   }
 
 
+  public Project createProject() {
+    return DocBasedProject
+        .create(wavelet, idGenerator.newDocumentId(DocBasedProject.DOC_ID_PREFIX));
+  }
+
+  public void deleteProject(String docId) {
+  }
+
+
+  public void setName(String name) {
+    community.setName(name);
+  }
+
+  public String getName() {
+    return community.getName();
+  }
 
 
   @Override

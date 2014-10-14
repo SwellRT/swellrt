@@ -1,25 +1,28 @@
-package org.waveprotocol.mod.wavejs.js;
+package org.waveprotocol.mod.wavejs.js.showcase.chat;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 
 import org.waveprotocol.mod.model.showcase.chat.ChatMessage;
 import org.waveprotocol.mod.model.showcase.chat.ChatPresenceStatus;
 import org.waveprotocol.mod.model.showcase.chat.ObservableChat;
 import org.waveprotocol.mod.model.showcase.chat.WaveChat;
+import org.waveprotocol.mod.wavejs.WaveJSUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.util.List;
-import java.util.Set;
-
+/**
+ * A JavaScript Wrapper for the WaveChat class
+ *
+ * @author pablojan@gmail.com
+ *
+ */
 public class WaveChatJS extends JavaScriptObject implements ObservableChat.Listener {
 
 
   public native static WaveChatJS create(WaveChat delegate) /*-{
 
 
-     var jsobject = {
+     var jso = {
 
        callbackMap: new Object(),
 
@@ -33,7 +36,7 @@ public class WaveChatJS extends JavaScriptObject implements ObservableChat.Liste
       getParticipants: function() {
 
             var _participants = delegate.@org.waveprotocol.mod.model.showcase.chat.WaveChat::getParticipants()();
-            return @org.waveprotocol.mod.wavejs.js.WaveChatJS::getParticipantsAdapter(Ljava/util/Set;)(_participants);
+            return @org.waveprotocol.mod.wavejs.WaveJSUtils::toJsArray(Ljava/lang/Iterable;)(_participants);
          },
 
       addParticipant:  function(address) {
@@ -56,7 +59,6 @@ public class WaveChatJS extends JavaScriptObject implements ObservableChat.Liste
             else if (status == "writing") {
               delegate.@org.waveprotocol.mod.model.showcase.chat.WaveChat::setStatusWriting()();
             }
-
       },
 
       getNumMessages: function() {
@@ -67,7 +69,7 @@ public class WaveChatJS extends JavaScriptObject implements ObservableChat.Liste
       getMessages: function(from, to) {
 
           var _messages = delegate.@org.waveprotocol.mod.model.showcase.chat.WaveChat::getMessages(II)(from, to);
-          return @org.waveprotocol.mod.wavejs.js.WaveChatJS::getMessagesAdapter(Ljava/util/List;)(_messages);
+          return @org.waveprotocol.mod.wavejs.js.showcase.chat.ChatMessageJS::create(Ljava/lang/Iterable;)(_messages);
       },
 
 
@@ -84,9 +86,9 @@ public class WaveChatJS extends JavaScriptObject implements ObservableChat.Liste
       }
 
 
-    }; // jsobject
+    }; // jso
 
-    return jsobject;
+    return jso;
 
   }-*/;
 
@@ -96,34 +98,6 @@ public class WaveChatJS extends JavaScriptObject implements ObservableChat.Liste
 
   }
 
-  protected final static native JsArrayString getJsArrayString(int size) /*-{
-    return new Array(size);
-  }-*/;
-
-  @SuppressWarnings("rawtypes")
-  protected final static native JsArray getJsArray(int size) /*-{
-    return new Array(size);
-  }-*/;
-
-
-  protected static JsArrayString getParticipantsAdapter(Set<ParticipantId> participants) {
-
-    JsArrayString array = getJsArrayString(participants.size());
-    for (ParticipantId p: participants)
-      array.push(p.getAddress());
-
-    return array;
-  }
-
-  protected static JsArray<ChatMessageJS> getMessagesAdapter(List<ChatMessage> messages) {
-
-    @SuppressWarnings({"unchecked"})
-    JsArray<ChatMessageJS> array = getJsArray(messages.size());
-    for (ChatMessage m : messages)
-      array.push(ChatMessageJS.create(m));
-
-    return array;
-  }
 
 
   public final native void fireEvent(String event, Object parameter) /*-{
@@ -159,7 +133,7 @@ public class WaveChatJS extends JavaScriptObject implements ObservableChat.Liste
   @Override
   public final void onParticipantStatusChanged(ParticipantId participant, ChatPresenceStatus status) {
 
-    JsArrayString jsStatus = getJsArrayString(2);
+    JsArrayString jsStatus = WaveJSUtils.createJsArrayString();
     jsStatus.push(participant.getAddress());
 
     if (status.isWriting()) {

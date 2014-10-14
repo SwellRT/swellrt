@@ -19,7 +19,7 @@ import java.util.Map;
 
 
 
-public class WaveContentManager {
+public class WaveManager {
 
 
 
@@ -65,7 +65,7 @@ public class WaveContentManager {
    **/
 
 
-  private final Map<WaveRef, WaveContentWrapper> waveWrappers;
+  private final Map<WaveRef, WaveWrapper> waveWrappers;
 
   /**
    * It needs a proper Session object
@@ -75,19 +75,19 @@ public class WaveContentManager {
    * @param channel
    * @return
    */
-  public static WaveContentManager create(WaveStore waveStore, IdGenerator idGenerator,
+  public static WaveManager create(WaveStore waveStore, IdGenerator idGenerator,
       RemoteViewServiceMultiplexer channel) {
-    return new WaveContentManager(waveStore, Session.get().getDomain(),
+    return new WaveManager(waveStore, Session.get().getDomain(),
         ParticipantId.ofUnsafe(Session.get().getAddress()), Session.get().getIdSeed(),
         new ConversationSchemas(), channel, idGenerator);
   }
 
 
-  public static WaveContentManager create(WaveStore waveStore, String localDomain,
+  public static WaveManager create(WaveStore waveStore, String localDomain,
       IdGenerator idGenerator, ParticipantId loggedInUser, String idSeed,
       RemoteViewServiceMultiplexer channel) {
 
-    return new WaveContentManager(waveStore, localDomain, loggedInUser, idSeed,
+    return new WaveManager(waveStore, localDomain, loggedInUser, idSeed,
         new ConversationSchemas(),
         channel, idGenerator);
   }
@@ -96,7 +96,7 @@ public class WaveContentManager {
 
 
 
-  protected WaveContentManager(WaveStore waveStore, String localDomain, ParticipantId signedUserId,
+  protected WaveManager(WaveStore waveStore, String localDomain, ParticipantId signedUserId,
       String seed,
       SchemaProvider schemaProvider,
       RemoteViewServiceMultiplexer channel, IdGenerator idGenerator) {
@@ -104,7 +104,7 @@ public class WaveContentManager {
     this.waveStore = waveStore;
     this.signedUserId = signedUserId;
     this.seed = seed;
-    this.waveWrappers = new HashMap<WaveRef, WaveContentWrapper>();
+    this.waveWrappers = new HashMap<WaveRef, WaveWrapper>();
     this.schemaProvider = schemaProvider;
     this.channel = channel;
     this.idGenerator = idGenerator;
@@ -113,9 +113,9 @@ public class WaveContentManager {
 
 
 
-  public WaveContentWrapper getWaveContentWrapper(WaveRef waveRef, boolean isNewWave) {
+  public WaveWrapper getWaveContentWrapper(WaveRef waveRef, boolean isNewWave) {
 
-    return new WaveContentWrapper(waveRef, getChannel(), getIdGenerator(), getWaveStore(),
+    return new WaveWrapper(waveRef, getChannel(), getIdGenerator(), getWaveStore(),
         getLocalDomain(), null, getSignedUserId(), isNewWave);
 
   }

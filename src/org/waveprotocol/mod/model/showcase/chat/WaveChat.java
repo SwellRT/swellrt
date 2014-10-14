@@ -1,6 +1,5 @@
 package org.waveprotocol.mod.model.showcase.chat;
 
-import org.waveprotocol.mod.model.WaveExtendedModel;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -13,6 +12,9 @@ import java.util.List;
 import java.util.Set;
 
 public class WaveChat {
+
+
+  public final static String WAVELET_ID = "chat" + IdUtil.TOKEN_SEPARATOR + "root";
 
   private final ObservableChat chat;
   private final ObservableWavelet wavelet;
@@ -35,17 +37,13 @@ public class WaveChat {
   public static WaveChat create(WaveContext wave, String localDomain,
       ParticipantId loggedInUser, boolean isNewWave) {
 
-    // Use this to use wavelet chat+root
-    String chatRootWaveletId =
-        WaveExtendedModel.CONTENT_WAVELET_CHAT_PREFIX + IdUtil.TOKEN_SEPARATOR
-            + WaveExtendedModel.CONTENT_WAVELET_ROOT;
 
     ObservableWavelet wavelet =
-        wave.getWave().getWavelet(WaveletId.of(localDomain, chatRootWaveletId));
+ wave.getWave().getWavelet(WaveletId.of(localDomain, WAVELET_ID));
 
     if (wavelet == null) {
       wavelet =
- wave.getWave().createWavelet(WaveletId.of(localDomain, chatRootWaveletId));
+ wave.getWave().createWavelet(WaveletId.of(localDomain, WAVELET_ID));
 
       wavelet.addParticipant(loggedInUser);
     }
@@ -104,10 +102,10 @@ public class WaveChat {
 
 
   /**
+   * Retrive a sublist of messages
    * 
-   * 
-   * @param from index of the latest message (newest)
-   * @param to index of the oldest message
+   * @param from index of the oldest message
+   * @param to index of the newest message
    * @return
    */
   public List<ChatMessage> getMessages(int from, int to) {
@@ -116,15 +114,13 @@ public class WaveChat {
 
     int total = getChat().numMessages();
 
-    if (from > total || to < 0) return messages;
+    if (from > total || to < from) return messages;
 
-    int marker = total;
-
-    // to <= marker <= from
+    int marker = 0;
 
     for (ChatMessage m : getChat().getMessages()) {
-
-      if (marker <= from && marker >= to) messages.add(m);
+      if (marker >= from && marker <= to) messages.add(m);
+      marker++;
     }
 
     return messages;

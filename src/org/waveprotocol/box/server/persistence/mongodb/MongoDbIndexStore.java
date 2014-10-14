@@ -18,7 +18,9 @@ import org.waveprotocol.box.server.waveserver.TokenQueryType;
 import org.waveprotocol.mod.model.WaveConversationUtils;
 import org.waveprotocol.mod.model.WaveExtendedModel;
 import org.waveprotocol.mod.model.WaveType;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
@@ -82,6 +84,16 @@ public class MongoDbIndexStore {
     LOG.info("Started mongoDB index store");
   }
 
+
+  protected boolean isContentWavelet(WaveletId waveletId) {
+
+    String typeToken = IdUtil.getInitialToken(waveletId.getId());
+
+    if (IdUtil.isConversationalId(waveletId) || typeToken.equals("doc") || typeToken.equals("chat")
+        || typeToken.equals("app")) return true;
+
+    return false;
+  }
 
   //
   // Index change methods

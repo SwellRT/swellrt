@@ -28,7 +28,6 @@ import org.waveprotocol.box.webclient.search.Search.State;
 import org.waveprotocol.box.webclient.search.SearchPanelView;
 import org.waveprotocol.box.webclient.search.SearchView;
 import org.waveprotocol.box.webclient.search.i18n.SearchPresenterMessages;
-import org.waveprotocol.mod.model.WaveType;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.scheduler.Scheduler.IncrementalTask;
@@ -60,7 +59,7 @@ public final class SearchPresenterMod
    */
   public interface WaveActionHandler {
     /** Handles the wave creation action. */
-    void onCreateWave(WaveType type);
+    void onCreateWave(String type);
 
     /** Handles a wave selection action. */
     void onWaveSelected(WaveId id);
@@ -177,7 +176,7 @@ public final class SearchPresenterMod
         group.addClickButton(), new ToolbarClickButton.Listener() {
           @Override
           public void onClicked() {
-            actionHandler.onCreateWave(WaveType.CONVERSATION);
+            actionHandler.onCreateWave("conversation");
 
             // HACK(hearnden): To mimic live search, fire a search poll
             // reasonably soon (500ms) after creating a wave. This will be unnecessary
@@ -192,7 +191,7 @@ public final class SearchPresenterMod
         new ToolbarClickButton.Listener() {
           @Override
           public void onClicked() {
-            actionHandler.onCreateWave(WaveType.CHAT);
+            actionHandler.onCreateWave("chat");
 
             // HACK(hearnden): To mimic live search, fire a search poll
             // reasonably soon (500ms) after creating a wave. This will be

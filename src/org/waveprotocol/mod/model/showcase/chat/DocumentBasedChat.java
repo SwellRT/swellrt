@@ -14,6 +14,7 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocumentEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.version.HashedVersion;
@@ -27,7 +28,8 @@ import java.util.Map;
 
 public class DocumentBasedChat implements ObservableChat {
 
-  public static final String DOC_ID = "chat+main";
+  public static final String DOC_ID_PREFIX = "chat";
+  public static final String DOC_ID = DOC_ID_PREFIX + IdUtil.TOKEN_SEPARATOR + "main";
 
   private static final String CHAT_TAG = "chat";
   private static final String MESSAGE_TAG = "message";

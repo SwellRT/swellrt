@@ -70,8 +70,8 @@ import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 import org.waveprotocol.box.webclient.widget.error.ErrorIndicatorPresenter;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;
 import org.waveprotocol.box.webclient.widget.loading.LoadingIndicator;
-import org.waveprotocol.mod.client.WaveContentManager;
-import org.waveprotocol.mod.client.WaveContentWrapper;
+import org.waveprotocol.mod.client.WaveManager;
+import org.waveprotocol.mod.client.WaveWrapper;
 import org.waveprotocol.mod.client.events.ClientEvents;
 import org.waveprotocol.mod.client.events.Log;
 import org.waveprotocol.mod.client.events.NetworkStatusEvent;
@@ -80,10 +80,8 @@ import org.waveprotocol.mod.client.events.WaveCreationEvent;
 import org.waveprotocol.mod.client.events.WaveCreationEventHandler;
 import org.waveprotocol.mod.client.events.WaveSelectionEvent;
 import org.waveprotocol.mod.client.events.WaveSelectionEventHandler;
-import org.waveprotocol.mod.model.WaveType;
 import org.waveprotocol.mod.model.showcase.chat.WaveChat;
-import org.waveprotocol.mod.model.showcase.id.IdGeneratorExtended;
-import org.waveprotocol.mod.model.showcase.id.IdGeneratorExtendedImpl;
+import org.waveprotocol.mod.model.showcase.id.IdGeneratorChat;
 import org.waveprotocol.mod.webclient.search.SearchPresenterMod;
 import org.waveprotocol.mod.webclient.showcase.chat.SimpleChatPresenter;
 import org.waveprotocol.mod.webclient.showcase.chat.SimpleChatView;
@@ -104,6 +102,7 @@ import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeFactory;
 import org.waveprotocol.wave.client.widget.popup.PopupFactory;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
+import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
@@ -181,7 +180,7 @@ public class WebClientMod implements EntryPoint {
 
   private ParticipantId loggedInUser;
 
-  private IdGeneratorExtended idGenerator;
+  private IdGenerator idGenerator;
 
   private RemoteViewServiceMultiplexer channel;
 
@@ -191,9 +190,9 @@ public class WebClientMod implements EntryPoint {
   /**
    * A central point for new wave models instances
    */
-  private WaveContentManager waveContentManager;
+  private WaveManager waveContentManager;
 
-  private WaveContentWrapper currentContentWave;
+  private WaveWrapper currentContentWave;
 
   /**
    * This is the entry point method.
@@ -214,11 +213,11 @@ public class WebClientMod implements EntryPoint {
           throw new RuntimeException("Spaghetti attack.  Create occured before login");
         }
 
-        if (event.getType().equals(WaveType.CONVERSATION)) {
+        if (event.getType().equals("conversation")) {
           openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
 
-        } else if (event.getType().equals(WaveType.CHAT)) {
-          openNewChat(WaveRef.of(idGenerator.newWaveId(WaveType.CHAT)));
+        } else if (event.getType().equals("chat")) {
+          openNewChat(WaveRef.of(IdGeneratorChat.get().initialize(idGenerator).newWaveId()));
         }
       }
     });
@@ -234,11 +233,11 @@ public class WebClientMod implements EntryPoint {
 
     if (Session.get().isLoggedIn()) {
       loggedInUser = new ParticipantId(Session.get().getAddress());
-      idGenerator = new IdGeneratorExtendedImpl(ClientIdGenerator.create());
+      idGenerator = ClientIdGenerator.create();
       loginToServer();
     }
 
-    waveContentManager = WaveContentManager.create(this.waveStore, this.idGenerator, this.channel);
+    waveContentManager = WaveManager.create(this.waveStore, this.idGenerator, this.channel);
 
     setupUi();
     setupStatistics();
@@ -278,7 +277,7 @@ public class WebClientMod implements EntryPoint {
         new SearchPresenterMod.WaveActionHandler() {
 
       @Override
-      public void onCreateWave(WaveType type) {
+          public void onCreateWave(String type) {
         ClientEvents.get().fireEvent(new WaveCreationEvent(type));
       }
 
@@ -302,9 +301,11 @@ public class WebClientMod implements EntryPoint {
       @Override
       public void onSelection(WaveRef waveRef) {
 
-        WaveType type = WaveType.fromWaveId(waveRef.getWaveId());
+        String type =
+            waveRef.getWaveId().getId().startsWith(IdGeneratorChat.WAVE_ID_PREFIX) ? "chat"
+                : "conversation";
 
-        if (type.equals(WaveType.CHAT))
+        if (type.equals("chat"))
           openExistingChat(waveRef);
         else
           openWave(waveRef, false, null);
@@ -567,7 +568,7 @@ public class WebClientMod implements EntryPoint {
     }
 
     this.currentContentWave = waveContentManager.getWaveContentWrapper(waveRef, false);
-    final WaveContentWrapper contentWrapper = this.currentContentWave;
+    final WaveWrapper contentWrapper = this.currentContentWave;
 
     final SimpleChatView view = new SimpleChatViewImpl();
     final SimpleChatPresenter presenter = SimpleChatPresenter.create(view, loggedInUser);
@@ -601,7 +602,7 @@ public class WebClientMod implements EntryPoint {
     }
 
     this.currentContentWave = waveContentManager.getWaveContentWrapper(waveRef, true);
-    final WaveContentWrapper contentWrapper = this.currentContentWave;
+    final WaveWrapper contentWrapper = this.currentContentWave;
 
     final SimpleChatView view = new SimpleChatViewImpl();
     final SimpleChatPresenter presenter = SimpleChatPresenter.create(view, loggedInUser);

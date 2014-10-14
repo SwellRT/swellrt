@@ -5,12 +5,13 @@ import com.google.common.base.Preconditions;
 import org.waveprotocol.wave.model.id.WaveId;
 
 
-
+@Deprecated
 public enum WaveType {
 
 
   CONVERSATION("conversation","w"),
-  CHAT("chat","c"), DOCUMENT("document","d"), UNKNOWN("unknown","u");
+ CHAT("chat", "sc.chat"), DOCUMENT("document", "d"), UNKNOWN(
+      "unknown", "u");
 
   private final String typeStrValue;
   private final String prefix;

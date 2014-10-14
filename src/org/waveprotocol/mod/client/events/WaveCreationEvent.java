@@ -21,7 +21,6 @@ package org.waveprotocol.mod.client.events;
 
 import com.google.gwt.event.shared.GwtEvent;
 
-import org.waveprotocol.mod.model.WaveType;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.Set;
@@ -30,9 +29,9 @@ public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
   public static final Type<WaveCreationEventHandler> TYPE = new Type<WaveCreationEventHandler>();
 
   private final Set<ParticipantId> participants;
-  private final WaveType type;
+  private final String type;
 
-  public WaveCreationEvent(WaveType type) {
+  public WaveCreationEvent(String type) {
     this.participants = null;
     this.type = type;
   }
@@ -42,7 +41,7 @@ public class WaveCreationEvent extends GwtEvent<WaveCreationEventHandler> {
     this.type = null;
   }
 
-  public WaveType getType() {
+  public String getType() {
     return this.type;
   }
 

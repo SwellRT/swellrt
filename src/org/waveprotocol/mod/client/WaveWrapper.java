@@ -13,7 +13,7 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
 
 import java.util.Set;
 
-public class WaveContentWrapper extends Stages {
+public class WaveWrapper extends Stages {
 
 
   private final static AsyncHolder<Object> HALT = new AsyncHolder<Object>() {
@@ -36,12 +36,12 @@ public class WaveContentWrapper extends Stages {
   protected String localDomain;
   protected Set<ParticipantId> participants;
   protected boolean isNewWave;
-  private WaveContentManager.UnsavedDataListenerProxy dataListenerProxy;
+  private WaveManager.UnsavedDataListenerProxy dataListenerProxy;
   protected ParticipantId loggedInUser;
 
 
 
-  protected WaveContentWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+  protected WaveWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, WaveStore waveStore, String localDomain,
       Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave) {
     super();
@@ -94,7 +94,7 @@ public class WaveContentWrapper extends Stages {
 
       @Override
       protected String getLocalDomain() {
-        return WaveContentWrapper.this.localDomain;
+        return WaveWrapper.this.localDomain;
       }
     });
   }
