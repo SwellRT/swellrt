@@ -14,6 +14,12 @@ public class IdGeneratorCommunity implements IdGeneratorGeneric {
     return singleton;
   }
 
+  public static IdGeneratorCommunity get(IdGenerator idGenerator) {
+    if (singleton == null) singleton = new IdGeneratorCommunity();
+    singleton.idGenerator = idGenerator;
+    return singleton;
+  }
+
   public static final String WAVE_ID_PREFIX = "p2pv.c";
 
   private IdGenerator idGenerator;

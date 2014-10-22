@@ -1,7 +1,9 @@
 package org.waveprotocol.mod.model.p2pvalue.docbased;
 
+import org.waveprotocol.mod.model.p2pvalue.ModelIndex;
 import org.waveprotocol.mod.model.p2pvalue.Project;
 import org.waveprotocol.mod.model.p2pvalue.Task;
+import org.waveprotocol.mod.model.p2pvalue.Task.Initialiser;
 import org.waveprotocol.wave.model.adt.BasicValue;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
@@ -16,7 +18,6 @@ import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
-import org.waveprotocol.wave.model.wave.ObservableWavelet;
 
 import java.util.Collections;
 
@@ -60,6 +61,8 @@ public class DocBasedProject implements Project {
   // Listeners
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
+  private ModelIndex modelIndex;
+  private String documentId;
 
   /**
    * Creates a DocBasedProject instance backed by a Document. The top element
@@ -87,14 +90,11 @@ public class DocBasedProject implements Project {
    * Create or adapt a DocBasedProject backed by the provided Wavelet. This
    * method is provided because Project is the root type of the Document.
    * 
-   * @param wavelet
-   * @param docId
+   * @param doc Document supporting the Project
    * @return
    */
-  public static <E> DocBasedProject create(ObservableWavelet wavelet, String docId) {
+  public static <E> DocBasedProject create(ObservableDocument doc) {
 
-    // Retrieve or create
-    ObservableDocument doc = wavelet.getDocument(docId);
     DocEventRouter router = DefaultDocEventRouter.create(doc);
 
     // <project>
@@ -150,9 +150,17 @@ public class DocBasedProject implements Project {
       public void onValueRemoved(Task entry) {
         for (Listener l : listeners)
           l.onTaskRemoved(entry);
+
       }
     };
 
+  }
+
+
+  // TODO this should be protected
+  public void setIndexMetadata(String documentId, ModelIndex modelIndex) {
+    this.modelIndex = modelIndex;
+    this.documentId = documentId;
   }
 
 
@@ -193,21 +201,28 @@ public class DocBasedProject implements Project {
   }
 
 
+
   @Override
-  public int numOfTasks() {
+  public String getDocumentId() {
+    return documentId;
+  }
+
+
+  @Override
+  public int getNumTasks() {
     return tasks.size();
   }
 
 
   @Override
-  public Task getTask(int index) {
-    return tasks.get(index);
+  public Iterable<Task> getTasks() {
+    return tasks.getValues();
   }
 
 
   @Override
-  public void addTask(Task.Initialiser task) {
-    tasks.add(task);
+  public Task addTask(Initialiser task) {
+    return tasks.add(task);
   }
 
 
@@ -216,16 +231,21 @@ public class DocBasedProject implements Project {
     tasks.remove(task);
   }
 
-
   @Override
-  public int getTaskIndex(Task task) {
-    return tasks.indexOf(task);
+  public Task getTask(int index) {
+    return tasks.get(index);
   }
 
 
   @Override
-  public Iterable<? extends Task> getTasks() {
-    return tasks.getValues();
+  public void addListener(Listener listener) {
+    listeners.add(listener);
+  }
+
+
+  @Override
+  public void removeListener(Listener listener) {
+    listeners.remove(listener);
   }
 
 }

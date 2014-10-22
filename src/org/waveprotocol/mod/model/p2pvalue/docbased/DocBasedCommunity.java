@@ -1,6 +1,9 @@
 package org.waveprotocol.mod.model.p2pvalue.docbased;
 
 import org.waveprotocol.mod.model.p2pvalue.Community;
+import org.waveprotocol.mod.model.p2pvalue.ModelIndex;
+import org.waveprotocol.mod.model.p2pvalue.ModelIndex.Action;
+import org.waveprotocol.mod.model.p2pvalue.Project;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableSingleton;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
@@ -12,11 +15,14 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
+import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
-import org.waveprotocol.wave.model.wave.ObservableWavelet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,6 +47,11 @@ public class DocBasedCommunity implements Community {
 
   // Listeners
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
+
+  private ModelIndex modelIndex;
+  private ModelIndex.Listener modelIndexListener;
+
+  private String documentId;
 
 
   /**
@@ -81,7 +92,8 @@ public class DocBasedCommunity implements Community {
     Preconditions.checkArgument(router.getDocument().getTagName(top).equals(TOP_TAG),
         "Invalid Community top tag %s", router.getDocument().getTagName(top));
 
-    return new DocBasedCommunity(DocumentBasedBasicValue.create(router, top, Serializer.STRING,
+    return new DocBasedCommunity(DocumentBasedBasicValue.create(router, top,
+        Serializer.STRING,
         NAME_ATTR));
   }
 
@@ -94,17 +106,15 @@ public class DocBasedCommunity implements Community {
    * @param wavelet
    * @return
    */
-  public static <E> DocBasedCommunity create(ObservableWavelet wavelet) {
+  public static <E> DocBasedCommunity create(ObservableDocument thisDocument) {
 
-    // Retrieve or create
-    ObservableDocument doc = wavelet.getDocument(DOC_ID);
-    DocEventRouter router = DefaultDocEventRouter.create(doc);
+    DocEventRouter router = DefaultDocEventRouter.create(thisDocument);
 
     // All document content is wrapped in a singleton container
     // TODO(pablojan) create the <community> top tag
 
     ObservableSingleton<DocBasedCommunity, Void> container =
-        DocumentBasedSingleton.create(router, doc.getDocumentElement(), TOP_TAG,
+        DocumentBasedSingleton.create(router, thisDocument.getDocumentElement(), TOP_TAG,
             DocBasedCommunity.FACTORY);
 
 
@@ -126,6 +136,36 @@ public class DocBasedCommunity implements Community {
       }
     };
 
+
+    this.modelIndexListener = new ModelIndex.Listener() {
+
+      @Override
+      public void onDocumentRemoved(String docId) {
+        if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
+          for (Listener l : listeners)
+            l.onProjectRemoved(docId);
+        }
+      }
+
+      @Override
+      public void onDocumentAdded(String docId) {
+        if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
+
+          DocBasedProject project = DocBasedProject.create(modelIndex.getDocument(docId));
+          project.setIndexMetadata(docId, modelIndex);
+
+          for (Listener l : listeners)
+            l.onProjectAdded(project);
+        }
+      }
+    };
+
+  }
+
+  // TODO this should be protected
+  public void setIndexMetadata(String documentId, ModelIndex modelIndex) {
+    this.modelIndex = modelIndex;
+    this.documentId = documentId;
   }
 
   @Override
@@ -146,6 +186,51 @@ public class DocBasedCommunity implements Community {
   @Override
   public String getName() {
     return this.name.get();
+  }
+
+
+  @Override
+  public List<Project> getProjects() {
+
+    final List<Project> projects = new ArrayList<Project>();
+
+
+    modelIndex.traverseDocuments(new Action() {
+
+      @Override
+      public void execute(String docId) {
+
+        if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
+          DocBasedProject project = DocBasedProject.create(modelIndex.getDocument(docId));
+          project.setIndexMetadata(docId, modelIndex);
+          projects.add(project);
+        }
+
+      }
+
+    });
+
+    return projects;
+
+  }
+
+  @Override
+  public Project addProject() {
+    Pair<String, ObservableDocument> doc = modelIndex.createDocument(DocBasedProject.DOC_ID_PREFIX);
+    DocBasedProject project = DocBasedProject.create(doc.getSecond());
+    project.setIndexMetadata(doc.getFirst(), modelIndex);
+    return project;
+  }
+
+  @Override
+  public void removeProject(String projectId) {
+    Preconditions.checkNotNull(projectId, "Removing a null Project");
+    modelIndex.removeDocument(projectId);
+  }
+
+  @Override
+  public String getDocumentId() {
+    return documentId;
   }
 
 

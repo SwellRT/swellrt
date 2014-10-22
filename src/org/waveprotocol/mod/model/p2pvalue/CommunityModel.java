@@ -1,8 +1,9 @@
 package org.waveprotocol.mod.model.p2pvalue;
 
 import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedCommunity;
-import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedProject;
+import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedModelIndex;
 import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
+import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -14,10 +15,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveletListener;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
-public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener> {
+public class CommunityModel implements SourcesEvents<CommunityModel.Listener> {
 
 
   public static final String WAVELET_ID = "community" + IdUtil.TOKEN_SEPARATOR + "root";
@@ -29,20 +29,16 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
 
     void onRemoveParticipant(ParticipantId participant);
 
-    void onProjectAdded(String projectId);
-
-    void onProjectRemoved(String projectId);
-
-    void onNameChanged(String name);
-
   }
 
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
-  private final IdGeneratorCommunity idGenerator;
+
   private final ObservableWavelet wavelet;
+  private final DocBasedModelIndex modelIndex;
   private final DocBasedCommunity community;
+
   private final WaveletListener waveletListener = new WaveletListener() {
 
     @Override
@@ -100,18 +96,10 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
 
     @Override
     public void onBlipAdded(ObservableWavelet wavelet, Blip blip) {
-      if (IdUtil.getInitialToken(blip.getId()).equals(DocBasedProject.DOC_ID_PREFIX)) {
-        for (Listener l : listeners)
-          l.onProjectAdded(blip.getId());
-      }
     }
 
     @Override
     public void onBlipRemoved(ObservableWavelet wavelet, Blip blip) {
-      if (IdUtil.getInitialToken(blip.getId()).equals(DocBasedProject.DOC_ID_PREFIX)) {
-        for (Listener l : listeners)
-          l.onProjectRemoved(blip.getId());
-      }
     }
 
   };
@@ -127,7 +115,7 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
    *        provider).
    * @return the CommunityWavelet object
    */
-  public static CommunityWavelet create(WaveContext wave, String domain,
+  public static CommunityModel create(WaveContext wave, String domain,
       ParticipantId loggedInUser, boolean isNewWave, IdGeneratorCommunity idGenerator) {
 
     WaveletId waveletId = WaveletId.of(domain, WAVELET_ID);
@@ -135,11 +123,14 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
     ObservableWavelet wavelet = wave.getWave().getWavelet(waveletId);
 
     if (wavelet == null) {
+
       wavelet = wave.getWave().createWavelet(waveletId);
       wavelet.addParticipant(loggedInUser);
+
+
     }
 
-    CommunityWavelet communityWavelet = new CommunityWavelet(wavelet, idGenerator);
+    CommunityModel communityWavelet = new CommunityModel(wavelet, idGenerator);
 
     return communityWavelet;
   }
@@ -150,75 +141,46 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
    *
    * @param wavelet The Wavelet supporting a community.
    */
-  CommunityWavelet(ObservableWavelet wavelet, IdGeneratorCommunity idGenerator) {
-    this.idGenerator = idGenerator;
+  CommunityModel(ObservableWavelet wavelet, IdGeneratorCommunity idGenerator) {
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
-    this.community = DocBasedCommunity.create(wavelet);
+
+    // This is the only place where wavelet.getDocument() can be used
+    // Following code must manage wavelet's docs using the ModelIndex interface
+    modelIndex = DocBasedModelIndex.create(wavelet.getDocument(DocBasedModelIndex.DOC_ID));
+    modelIndex.initialize(wavelet, idGenerator);
+
+    ObservableDocument communityDoc = modelIndex.getDocument(DocBasedCommunity.DOC_ID);
+
+    if (communityDoc != null) {
+      this.community = DocBasedCommunity.create(communityDoc);
+      this.community.setIndexMetadata(DocBasedCommunity.DOC_ID, modelIndex);
+    } else {
+      communityDoc = modelIndex.createDocumentWithId(DocBasedCommunity.DOC_ID);
+      this.community = DocBasedCommunity.create(communityDoc);
+      this.community.setIndexMetadata(DocBasedCommunity.DOC_ID, modelIndex);
+    }
+
+
   }
 
 
-  public void addParticipant(ParticipantId participant) {
-    wavelet.addParticipant(participant);
+  public Set<ParticipantId> getParticipants() {
+    return wavelet.getParticipantIds();
   }
 
-  public void removeParticipant(ParticipantId participant) {
-    wavelet.removeParticipant(participant);
+  public void addParticipant(String address) {
+    wavelet.addParticipant(ParticipantId.ofUnsafe(address));
+  }
+
+  public void removeParticipant(String address) {
+    wavelet.removeParticipant(ParticipantId.ofUnsafe(address));
   }
 
   public Community getCommunity() {
     return community;
   }
 
-  public int getNumProjects() {
-    int count = 0;
-    for (String docId : wavelet.getDocumentIds()) {
-      if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) count++;
-    }
-    return count;
-  }
-
-  /**
-   * Return a list of Projects. Project objects are built in each call of this
-   * method. Avoid call it several times.
-   * 
-   * 
-   * @return Iterable of Projects
-   */
-  public Iterable<Project> getProjects(int from, int to) {
-
-    List<Project> projects = new ArrayList<Project>();
-
-    int marker = 0;
-
-    for (String docId : wavelet.getDocumentIds()) {
-      if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
-        if (marker >= from && marker <= to) {
-          projects.add(DocBasedProject.create(wavelet, docId));
-        }
-        marker++;
-      }
-    }
-    return projects;
-  }
-
-
-  public Project createProject() {
-    return DocBasedProject
-        .create(wavelet, idGenerator.newDocumentId(DocBasedProject.DOC_ID_PREFIX));
-  }
-
-  public void deleteProject(String docId) {
-  }
-
-
-  public void setName(String name) {
-    community.setName(name);
-  }
-
-  public String getName() {
-    return community.getName();
-  }
 
 
   @Override
@@ -230,5 +192,8 @@ public class CommunityWavelet implements SourcesEvents<CommunityWavelet.Listener
   public void removeListener(Listener listener) {
     listeners.remove(listener);
   }
+
+
+
 
 }

@@ -17,6 +17,7 @@ import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.Collections;
+import java.util.Map;
 
 public class DocBasedTask implements Task {
 
@@ -62,14 +63,20 @@ public class DocBasedTask implements Task {
 
         @Override
       public DocBasedTask adapt(DocumentEventRouter<? super E, E, ?> router, E taskElement) {
-          // TODO Auto-generated method stub
-          return null;
+        return create(router, taskElement);
         }
 
         @Override
-        public Initializer createInitializer(Initialiser initialState) {
-          // TODO Auto-generated method stub
-          return null;
+      public Initializer createInitializer(final Initialiser initialState) {
+
+        return new Initializer() {
+
+          @Override
+          public void initialize(Map<String, String> target) {
+            target.put(NAME_ATTR, initialState.name);
+          }
+
+        };
         }
 
       };

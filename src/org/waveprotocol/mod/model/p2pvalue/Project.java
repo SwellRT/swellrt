@@ -1,13 +1,23 @@
 package org.waveprotocol.mod.model.p2pvalue;
 
+import org.waveprotocol.wave.model.wave.SourcesEvents;
+
+
 
 /**
- * 
- * 
+ *
+ *
  * @author pablojan@gmail.com
- * 
+ *
  */
-public interface Project {
+public interface Project extends SourcesEvents<Project.Listener> {
+
+
+  // Meta data
+
+  String getDocumentId();
+
+  // Project data
 
   void setName(String name);
 
@@ -23,17 +33,16 @@ public interface Project {
 
   // Tasks
 
-  int numOfTasks();
+  int getNumTasks();
 
-  Task getTask(int index);
+  Iterable<Task> getTasks();
 
-  void addTask(Task.Initialiser task);
+  Task addTask(Task.Initialiser task);
 
   void removeTask(Task task);
 
-  int getTaskIndex(Task task);
+  Task getTask(int index);
 
-  Iterable<? extends Task> getTasks();
 
 
   public interface Listener {

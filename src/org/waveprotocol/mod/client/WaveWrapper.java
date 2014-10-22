@@ -189,4 +189,9 @@ public class WaveWrapper extends Stages {
     return loggedInUser;
   }
 
+  public IdGenerator getIdGenerator() {
+    return idGenerator;
+
+  }
+
 }

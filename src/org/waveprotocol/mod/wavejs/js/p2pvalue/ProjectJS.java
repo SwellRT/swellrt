@@ -1,11 +1,9 @@
 package org.waveprotocol.mod.wavejs.js.p2pvalue;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 
 import org.waveprotocol.mod.model.p2pvalue.Project;
 import org.waveprotocol.mod.model.p2pvalue.Task;
-import org.waveprotocol.mod.wavejs.WaveJSUtils;
 
 /**
  * A JavaScript wrapper for the Project class
@@ -17,58 +15,39 @@ public class ProjectJS extends JavaScriptObject implements Project.Listener {
 
     public native static ProjectJS create(Project delegate) /*-{
 
-    var jso = {
+      var jso = {
 
-     callbackMap: new Object(),
+       callbackMap: new Object(),
 
-     eventHandlers: new Object(),
+       eventHandlers: new Object(),
 
-     registerEventHandler: function(event, handler) {
-      this.eventHandlers[event] = handler;
-     },
+       registerEventHandler: function(event, handler) {
+        this.eventHandlers[event] = handler;
+       },
 
-     unregisterEventHandler: function(event, handler) {
-      this.eventHandlers[event] = null;
-     },
+       unregisterEventHandler: function(event, handler) {
+        this.eventHandlers[event] = null;
+       },
 
-     setName: function(name) {
-       delegate.@org.waveprotocol.mod.model.p2pvalue.Project::setName(Ljava/lang/String;)(name);
-     },
+       setName: function(name) {
+         delegate.@org.waveprotocol.mod.model.p2pvalue.Project::setName(Ljava/lang/String;)(name);
+       },
 
-     getName: function() {
-       return delegate.@org.waveprotocol.mod.model.p2pvalue.Project::getName()();
-     },
+       getName: function() {
+         return delegate.@org.waveprotocol.mod.model.p2pvalue.Project::getName()();
+       }
 
-     getParticipants: function() {
+      }; // jso
 
-     },
-
-     addParticipant: function() {
-
-     },
-
-     removeParticipant: function() {
-
-     }
-
-
-
-
-    }; // jso
-
-    return jso;
+      return jso;
 
   }-*/;
 
 
-  public static JsArray<JavaScriptObject> create(Iterable<Project> delegators) {
+  protected ProjectJS() {
 
-    JsArray<JavaScriptObject> array = WaveJSUtils.createJsArray();
-    for (Project delegate : delegators)
-      array.push(ProjectJS.create(delegate));
-
-    return array;
   }
+
 
   public final native void fireEvent(String event, Object parameter) /*-{
 
@@ -79,19 +58,19 @@ public class ProjectJS extends JavaScriptObject implements Project.Listener {
   }-*/;
 
   @Override
-  public void onStatusChanged(String name) {
+  public final void onStatusChanged(String name) {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void onTaskAdded(Task task) {
+  public final void onTaskAdded(Task task) {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void onTaskRemoved(Task task) {
+  public final void onTaskRemoved(Task task) {
     // TODO Auto-generated method stub
 
   }

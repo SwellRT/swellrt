@@ -75,6 +75,27 @@ public class WaveClientJS extends JavaScriptObject {
 
             return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createChat()();
 
+         },
+
+         openCommunityModel: function(wave, onSuccess, onFailure) {
+
+            this.callbackMap.openCommunityModel = new Object();
+            this.callbackMap.openCommunityModel.onSuccess = onSuccess;
+            this.callbackMap.openCommunityModel.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openCommunityModel(Ljava/lang/String;)(wave);
+
+         },
+
+
+         createCommunityModel: function(onSuccess, onFailure) {
+
+            this.callbackMap.createCommunityModel = new Object();
+            this.callbackMap.createCommunityModel.onSuccess = onSuccess;
+            this.callbackMap.createCommunityModel.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createCommunityModel()();
+
          }
 
     }; // wavejs
