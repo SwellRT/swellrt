@@ -7,7 +7,7 @@ import org.waveprotocol.wave.model.id.WaveId;
 public class IdGeneratorCommunity implements IdGeneratorGeneric {
 
 
-  private static IdGeneratorCommunity singleton;
+  private static IdGeneratorCommunity singleton = null;
 
   public static IdGeneratorCommunity get() {
     if (singleton == null) singleton = new IdGeneratorCommunity();

@@ -45,8 +45,22 @@ ant compile-wavejs-dev
 
 ## Running Wave JavaScript client
 
+```
+ant run-server
+```
 
-See war/examples/wavejs.html
+Browse http://localhost:9898/examples/wavejs.html
+
+
+## Debugging Wave JavaScript client
+
+```
+ant run-server
+
+ant hosted-wavejs
+```
+
+Browse in a GWT-debug compatible: http://localhost:9898/test/wavejs.html?gwt.codesvr=localhost:9997
 
 
 ## Wave GWT Client

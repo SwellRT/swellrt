@@ -38,7 +38,7 @@ public class WaveClientJS extends JavaScriptObject {
 
          stopSession: function() {
 
-            return $entry(delegate.@org.waveprotocol.mod.wavejs.WaveClient::stopSession()());
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::stopSession()();
          },
 
          openWave: function(wave, onSuccess, onFailure) {

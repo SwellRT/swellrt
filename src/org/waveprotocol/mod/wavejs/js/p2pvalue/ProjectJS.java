@@ -35,6 +35,10 @@ public class ProjectJS extends JavaScriptObject implements Project.Listener {
 
        getName: function() {
          return delegate.@org.waveprotocol.mod.model.p2pvalue.Project::getName()();
+       },
+
+       getId: function() {
+         return delegate.@org.waveprotocol.mod.model.p2pvalue.Project::getDocumentId()();
        }
 
       }; // jso

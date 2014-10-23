@@ -111,13 +111,12 @@ public class DocBasedCommunity implements Community {
     DocEventRouter router = DefaultDocEventRouter.create(thisDocument);
 
     // All document content is wrapped in a singleton container
-    // TODO(pablojan) create the <community> top tag
-
     ObservableSingleton<DocBasedCommunity, Void> container =
         DocumentBasedSingleton.create(router, thisDocument.getDocumentElement(), TOP_TAG,
             DocBasedCommunity.FACTORY);
 
-
+    // Sets the value
+    container.set(null);
     return container.get();
   }
 

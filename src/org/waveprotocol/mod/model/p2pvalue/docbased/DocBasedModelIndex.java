@@ -78,14 +78,16 @@ public class DocBasedModelIndex implements ModelIndex {
     // <index>
     Doc.E projectElement = DocHelper.getElementWithTagName(doc, TOP_TAG);
     if (projectElement == null) {
-      doc.createChildElement(doc.getDocumentElement(), TOP_TAG,
+      projectElement =
+          doc.createChildElement(doc.getDocumentElement(), TOP_TAG,
           Collections.<String, String> emptyMap());
     }
 
     // <documents>
     Doc.E documentsElement = DocHelper.getElementWithTagName(doc, DOCUMENTS_TAG);
     if (documentsElement == null) {
-      doc.createChildElement(projectElement, DOCUMENTS_TAG,
+      documentsElement =
+          doc.createChildElement(projectElement, DOCUMENTS_TAG,
           Collections.<String, String> emptyMap());
     }
 
