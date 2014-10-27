@@ -3,6 +3,7 @@ package org.waveprotocol.mod.wavejs;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -163,8 +164,10 @@ public class WaveJS implements EntryPoint {
 
             // This fakes the former Wave Client JS session object.
             String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
+            // oh yes, Session doesn't work. Wiab implementation does the same.
+            String seed = WaveJSUtils.nextBase64(10);
             createWebClientSession(WaveJS.this.waveServerDomain, participantId.getAddress(),
-                sessionId);
+                seed);
 
             callback.onSuccess(sessionId);
 
@@ -350,6 +353,8 @@ public class WaveJS implements EntryPoint {
     final WaveId waveId = idGenerator.newWaveId();
     final WaveWrapper waveWrapper =
         waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), true);
+
+    GWT.log("Generated new WaveId = " + waveId.serialise());
 
     activeWaveMap.put(waveId.toString(), waveWrapper);
 
