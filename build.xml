@@ -1307,6 +1307,33 @@
     </java>
   </target>
 
+  <target name="compile-wavejs-test" description="Build WaveJS Selenium tests">
+     <echo message="Compile WaveJS Selenium Test"/>
+     <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium">
+       <classpath>
+           <fileset dir="${basedir}/selenium/lib">
+             <include name="**/*.jar"/>
+           </fileset>
+       </classpath>
+     </javac>
+   </target>
+
+
+  <target name="wavejs-test" depends="compile-wavejs-test"
+       description="Test WaveJS against a running Wave Server instance">
+     <java failonerror="true" fork="true" classname="TestWaveJS">
+       <classpath>
+           <pathelement location="${basedir}/selenium/"/>
+           <fileset dir="${basedir}/selenium/lib">
+             <include name="**/*.jar"/>
+           </fileset>
+       </classpath>
+       <!--
+       <jvmarg value="-Xmx1024M"/>
+        -->
+     </java>
+   </target>
+
   <target name="clean-mod" description="Cleans up the build artifacts and temporary directories">
     <delete dir="war/wavejs"/>
   </target>
