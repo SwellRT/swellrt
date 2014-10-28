@@ -100,14 +100,16 @@ public class DocBasedProject implements Project {
     // <project>
     Doc.E projectElement = DocHelper.getElementWithTagName(doc, TOP_TAG);
     if (projectElement == null) {
-      doc.createChildElement(doc.getDocumentElement(), TOP_TAG,
+      projectElement =
+          doc.createChildElement(doc.getDocumentElement(), TOP_TAG,
           Collections.<String, String> emptyMap());
     }
 
     // <tasks>
     Doc.E tasksElement = DocHelper.getElementWithTagName(doc, TASKS_TAG);
     if (tasksElement == null) {
-      doc.createChildElement(doc.getDocumentElement(), TASKS_TAG,
+      tasksElement =
+          doc.createChildElement(doc.getDocumentElement(), TASKS_TAG,
           Collections.<String, String> emptyMap());
     }
 

@@ -118,7 +118,7 @@ public class WaveClientJS extends JavaScriptObject {
 
 
   public final native void callbackEvent(String method, String event, Object parameter) /*-{
-      this.callbackMap[method][event](parameter);
+    this.callbackMap[method][event](parameter);
   }-*/;
 
 

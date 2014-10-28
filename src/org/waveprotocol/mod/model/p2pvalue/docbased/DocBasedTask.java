@@ -109,7 +109,8 @@ public class DocBasedTask implements Task {
         DocHelper.getElementWithTagName(router.getDocument(), PARTICIPANTS_TAG, taskElement);
 
     if (participantsElement == null)
-      router.getDocument().createChildElement(taskElement, PARTICIPANTS_TAG,
+      participantsElement =
+          router.getDocument().createChildElement(taskElement, PARTICIPANTS_TAG,
             Collections.<String, String> emptyMap());
 
 
