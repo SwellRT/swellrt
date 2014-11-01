@@ -56,6 +56,14 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
 
   }
 
+  private final native void fireEvent(String event, Object parameter) /*-{
+
+    if (this.eventHandlers[event] != null) {
+    this.eventHandlers[event](parameter);
+    }
+
+  }-*/;
+
   protected static final JsArray<JavaScriptObject> adapt(Iterable<Object> values, AdapterJS adapter) {
 
     JsArray<JavaScriptObject> array = WaveJSUtils.createJsArray();
@@ -84,14 +92,23 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
 
   @Override
   public final void onValueAdded(Object entry) {
+
     JsArray<JavaScriptObject> array = getArray();
     AdapterJS adapter = getAdapter();
-    array.push(adapter.adaptToJS(entry));
+
+    // Mutation of the JS array
+    JavaScriptObject entryJS = adapter.adaptToJS(entry);
+    array.push(entryJS);
+
+    // Fire event to registered handlers
+    fireEvent("ITEM_ADDED", entryJS);
   }
 
 
   @Override
   public final void onValueRemoved(Object entry) {
+
+    // Mutation of the JS array
     JavaScriptObject removedObject = getAdapter().adaptToJS(entry);
     for (int i = 0; i < getArray().length(); i++) {
       if (getArray().get(i).equals(removedObject)) {
@@ -99,6 +116,9 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
         break;
       }
     }
+
+    // Fire event to registered handlers
+    fireEvent("ITEM_REMOVED", removedObject);
   }
 
 

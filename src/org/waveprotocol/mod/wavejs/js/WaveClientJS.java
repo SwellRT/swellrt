@@ -31,6 +31,13 @@ public class WaveClientJS extends JavaScriptObject {
            type: {
              GENERIC : "GENERIC",
              P2PVALUE : "P2PVALUE"
+           },
+
+           event: {
+             ITEM_ADDED: "ITEM_ADDED",
+             ITEM_REMOVED: "ITEM_REMOVED",
+             PARTICIPANT_ADDED: "PARTICIPANT_ADDED",
+             PARTICIPANT_REMOVED: "PARTICIPANT_REMOVED"
            }
 
          },
