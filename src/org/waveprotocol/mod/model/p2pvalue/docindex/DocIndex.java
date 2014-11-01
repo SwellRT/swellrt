@@ -1,10 +1,10 @@
-package org.waveprotocol.mod.model.p2pvalue;
+package org.waveprotocol.mod.model.p2pvalue.docindex;
 
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
-public interface ModelIndex extends SourcesEvents<ModelIndex.Listener> {
+public interface DocIndex extends SourcesEvents<DocIndex.Listener> {
 
 
   public interface Action {

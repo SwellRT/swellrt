@@ -5,6 +5,7 @@ import org.waveprotocol.mod.model.p2pvalue.Task;
 import org.waveprotocol.wave.model.adt.BasicValue;
 import org.waveprotocol.wave.model.adt.ObservableBasicSet;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
+import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicSet;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
 import org.waveprotocol.wave.model.adt.docbased.Factory;
@@ -14,7 +15,6 @@ import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.Collections;
 import java.util.Map;
@@ -49,8 +49,6 @@ public class DocBasedTask implements Task {
   private static final String PARTICIPANT_TAG = "participant";
   private static final String PARTICIPANT_ID_ATTR = "id";
   private final ObservableBasicSet<String> participants;
-  private final ObservableBasicSet.Listener<String> participantsListener;
-
 
   // Listeners
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
@@ -158,23 +156,6 @@ public class DocBasedTask implements Task {
       }
     };
 
-    this.participantsListener = new ObservableBasicSet.Listener<String>() {
-
-      @Override
-      public void onValueAdded(String newValue) {
-        for (Listener l : listeners)
-          l.onParticipantAdded(ParticipantId.ofUnsafe(newValue));
-      }
-
-      @Override
-      public void onValueRemoved(String oldValue) {
-        for (Listener l : listeners)
-          l.onParticipantRemoved(ParticipantId.ofUnsafe(oldValue));
-      }
-
-
-    };
-
   }
 
 
@@ -218,25 +199,6 @@ public class DocBasedTask implements Task {
     return description.get();
   }
 
-  @Override
-  public void addParticipant(String participant) {
-    participants.add(participant);
-  }
-
-  @Override
-  public void removeParticipant(String participant) {
-    participants.remove(participant);
-  }
-
-  @Override
-  public Iterable<String> getParticipants() {
-    return participants.getValues();
-  }
-
-  @Override
-  public boolean isParticipantInTask(String participant) {
-    return participants.contains(participant);
-  }
 
   @Override
   public void setDeadline(long datetime) {
@@ -248,20 +210,17 @@ public class DocBasedTask implements Task {
     return deadline.get().longValue();
   }
 
-  @Override
-  public void addReminder(ParticipantId participant, long datetime) {
-    // TODO Complete
-  }
 
   @Override
-  public void removeReminder(Reminder reminder) {
-    // TODO Complete
+  public ObservableBasicSet<String> getParticipants() {
+    return participants;
   }
 
+
   @Override
-  public Reminder[] getReminders(ParticipantId participant) {
-    // TODO Complete
+  public ObservableElementList<Reminder, Reminder.Initialiser> getReminders() {
     return null;
   }
+
 
 }

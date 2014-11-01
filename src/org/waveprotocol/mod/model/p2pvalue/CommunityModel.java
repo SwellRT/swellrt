@@ -1,7 +1,7 @@
 package org.waveprotocol.mod.model.p2pvalue;
 
 import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedCommunity;
-import org.waveprotocol.mod.model.p2pvalue.docbased.DocBasedModelIndex;
+import org.waveprotocol.mod.model.p2pvalue.docindex.DocBasedDocIndex;
 import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.WaveContext;
@@ -19,8 +19,8 @@ import java.util.Set;
 
 public class CommunityModel implements SourcesEvents<CommunityModel.Listener> {
 
-
-  public static final String WAVELET_ID = "community" + IdUtil.TOKEN_SEPARATOR + "root";
+  public static final String WAVELET_ID_PREFIX = "community";
+  public static final String WAVELET_ID = WAVELET_ID_PREFIX + IdUtil.TOKEN_SEPARATOR + "root";
 
 
   public interface Listener {
@@ -36,7 +36,7 @@ public class CommunityModel implements SourcesEvents<CommunityModel.Listener> {
 
 
   private final ObservableWavelet wavelet;
-  private final DocBasedModelIndex modelIndex;
+  private final DocBasedDocIndex docIndex;
   private final DocBasedCommunity community;
 
   private final WaveletListener waveletListener = new WaveletListener() {
@@ -123,11 +123,8 @@ public class CommunityModel implements SourcesEvents<CommunityModel.Listener> {
     ObservableWavelet wavelet = wave.getWave().getWavelet(waveletId);
 
     if (wavelet == null) {
-
       wavelet = wave.getWave().createWavelet(waveletId);
       wavelet.addParticipant(loggedInUser);
-
-
     }
 
     CommunityModel communityWavelet = new CommunityModel(wavelet, idGenerator);
@@ -146,19 +143,19 @@ public class CommunityModel implements SourcesEvents<CommunityModel.Listener> {
     this.wavelet.addListener(waveletListener);
 
     // This is the only place where wavelet.getDocument() can be used
-    // Following code must manage wavelet's docs using the ModelIndex interface
-    modelIndex = DocBasedModelIndex.create(wavelet.getDocument(DocBasedModelIndex.DOC_ID));
-    modelIndex.initialize(wavelet, idGenerator);
+    // Following code must manage wavelet's docs using the DocIndex interface
+    docIndex = DocBasedDocIndex.create(wavelet.getDocument(DocBasedDocIndex.DOC_ID));
+    docIndex.initialize(wavelet, idGenerator);
 
-    ObservableDocument communityDoc = modelIndex.getDocument(DocBasedCommunity.DOC_ID);
+    ObservableDocument communityDoc = docIndex.getDocument(DocBasedCommunity.DOC_ID);
 
     if (communityDoc != null) {
       this.community = DocBasedCommunity.create(communityDoc);
-      this.community.setIndexMetadata(DocBasedCommunity.DOC_ID, modelIndex);
+      this.community.setDocIndex(DocBasedCommunity.DOC_ID, docIndex);
     } else {
-      communityDoc = modelIndex.createDocumentWithId(DocBasedCommunity.DOC_ID);
+      communityDoc = docIndex.createDocumentWithId(DocBasedCommunity.DOC_ID);
       this.community = DocBasedCommunity.create(communityDoc);
-      this.community.setIndexMetadata(DocBasedCommunity.DOC_ID, modelIndex);
+      this.community.setDocIndex(DocBasedCommunity.DOC_ID, docIndex);
     }
 
 

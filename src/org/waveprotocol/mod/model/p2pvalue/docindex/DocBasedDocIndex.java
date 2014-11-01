@@ -1,6 +1,5 @@
-package org.waveprotocol.mod.model.p2pvalue.docbased;
+package org.waveprotocol.mod.model.p2pvalue.docindex;
 
-import org.waveprotocol.mod.model.p2pvalue.ModelIndex;
 import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
 import org.waveprotocol.wave.model.adt.ObservableBasicSet;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicSet;
@@ -18,7 +17,7 @@ import org.waveprotocol.wave.model.wave.ObservableWavelet;
 
 import java.util.Collections;
 
-public class DocBasedModelIndex implements ModelIndex {
+public class DocBasedDocIndex implements DocIndex {
 
 
 
@@ -41,7 +40,7 @@ public class DocBasedModelIndex implements ModelIndex {
 
 
   // Listeners
-  private final CopyOnWriteSet<ModelIndex.Listener> listeners = CopyOnWriteSet.create();
+  private final CopyOnWriteSet<DocIndex.Listener> listeners = CopyOnWriteSet.create();
 
   private IdGeneratorCommunity idGenerator;
   private ObservableWavelet wavelet;
@@ -54,13 +53,13 @@ public class DocBasedModelIndex implements ModelIndex {
    * @param top the parent Element of the Project inside the document
    * @return a DocBasedProject instance
    */
-  private static <E> DocBasedModelIndex create(DocumentEventRouter<? super E, E, ?> router,
+  private static <E> DocBasedDocIndex create(DocumentEventRouter<? super E, E, ?> router,
       E indexElement, E docsElement) {
 
     Preconditions.checkArgument(router.getDocument().getTagName(indexElement).equals(TOP_TAG),
         "Invalid Model index top tag %s", router.getDocument().getTagName(indexElement));
 
-    return new DocBasedModelIndex(DocumentBasedBasicSet.create(router, docsElement,
+    return new DocBasedDocIndex(DocumentBasedBasicSet.create(router, docsElement,
         Serializer.STRING, DOC_TAG, DOC_ID_ATTR));
   }
 
@@ -71,7 +70,7 @@ public class DocBasedModelIndex implements ModelIndex {
    * @param doc Document supporting the Project
    * @return
    */
-  public static <E> DocBasedModelIndex create(ObservableDocument doc) {
+  public static <E> DocBasedDocIndex create(ObservableDocument doc) {
 
     DocEventRouter router = DefaultDocEventRouter.create(doc);
 
@@ -99,7 +98,7 @@ public class DocBasedModelIndex implements ModelIndex {
   // Constructor
 
 
-  DocBasedModelIndex(ObservableBasicSet<String> documents) {
+  DocBasedDocIndex(ObservableBasicSet<String> documents) {
 
     this.documents = documents;
 
@@ -107,14 +106,14 @@ public class DocBasedModelIndex implements ModelIndex {
 
       @Override
       public void onValueAdded(String newValue) {
-        for (ModelIndex.Listener l: listeners) {
+        for (DocIndex.Listener l: listeners) {
           l.onDocumentAdded(newValue);
         }
       }
 
       @Override
       public void onValueRemoved(String oldValue) {
-        for (ModelIndex.Listener l : listeners) {
+        for (DocIndex.Listener l : listeners) {
           l.onDocumentRemoved(oldValue);
         }
       }

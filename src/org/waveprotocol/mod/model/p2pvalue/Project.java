@@ -1,5 +1,7 @@
 package org.waveprotocol.mod.model.p2pvalue;
 
+import org.waveprotocol.mod.model.p2pvalue.docindex.DocIndexed;
+import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 
@@ -10,12 +12,19 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
  * @author pablojan@gmail.com
  *
  */
-public interface Project extends SourcesEvents<Project.Listener> {
+public interface Project extends DocIndexed, SourcesEvents<Project.Listener> {
 
+  public class Initializer {
 
-  // Meta data
+    public String name, status, description;
 
-  String getDocumentId();
+    Initializer(String name, String status, String description) {
+      this.name = name;
+      this.status = status;
+      this.description = description;
+    }
+
+  }
 
   // Project data
 
@@ -31,27 +40,16 @@ public interface Project extends SourcesEvents<Project.Listener> {
 
   String getDescription();
 
+
   // Tasks
 
-  int getNumTasks();
-
-  Iterable<Task> getTasks();
-
-  Task addTask(Task.Initialiser task);
-
-  void removeTask(Task task);
-
-  Task getTask(int index);
+  ObservableElementList<Task, Task.Initialiser> getTasks();
 
 
 
   public interface Listener {
 
     void onStatusChanged(String name);
-
-    void onTaskAdded(Task task);
-
-    void onTaskRemoved(Task task);
 
   }
 

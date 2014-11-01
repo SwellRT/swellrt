@@ -13,8 +13,8 @@ import java.util.Set;
 
 public class WaveChat {
 
-
-  public final static String WAVELET_ID = "chat" + IdUtil.TOKEN_SEPARATOR + "root";
+  public final static String WAVELET_ID_PREFIX = "chat";
+  public final static String WAVELET_ID = WAVELET_ID_PREFIX + IdUtil.TOKEN_SEPARATOR + "root";
 
   private final ObservableChat chat;
   private final ObservableWavelet wavelet;

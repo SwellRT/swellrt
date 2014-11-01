@@ -35,4 +35,6 @@
   <source path="p2pvalue/id" />
 
   <source path="p2pvalue/docbased" />
+
+  <source path="dummy" />
 </module>

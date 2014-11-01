@@ -3,9 +3,10 @@
 
 ## Features and Objectives
 
-This flavor of Apache Wave provides and looks for...
+The aims of this MOD of Apache Wave are...
 
 - Allow new data models, not only the conversation model.
+- Provide a JavaScript Client API aka WaveJS
 - Adapt the indexing system to support new data models.
 - Store index in MongoDB to provide easy querying.
 - Provide examples of new data models.
@@ -27,13 +28,11 @@ ant compile-gwt-mod
 Ant targets for Hosted and Superdev mode are also provided.
 
 
-## Build Wave JavaScript client
+## Build WaveJS Library
 
 
 ```
 ant compile
-
-ant compile-gwt
 
 ant compile-wavejs
 
@@ -43,16 +42,17 @@ ant compile-wavejs-dev
 ```
 
 
-## Running Wave JavaScript client
+## Test WaveJS Library
 
 ```
 ant run-server
 ```
 
-Browse http://localhost:9898/examples/wavejs.html
+Browse `http://localhost:9898/test/wavejs.html`. It provides a Web console to launch WaveJS API tests.
+It also shows how to use the API.
 
 
-## Debugging Wave JavaScript client
+## Debug WaveJS Library
 
 ```
 ant run-server
@@ -60,7 +60,134 @@ ant run-server
 ant hosted-wavejs
 ```
 
-Browse in a GWT-debug compatible: http://localhost:9898/test/wavejs.html?gwt.codesvr=localhost:9997
+Browse in a: http://localhost:9898/test/wavejs.html?gwt.codesvr=localhost:9997
+This requires a  GWT-debug compatible browser
+
+
+
+## Using the WaveJS API in your Web
+
+
+### Preconditions
+
+* Access to a Wave Mod Server. By default the Wave Server runs at http://localhost:9898.
+* An user account. Navigate to http://localhost:9898 and follow the instructions.
+
+See the README file to build and run the Wave Server.
+
+
+### Import JavaScript WaveJS Client Library
+
+```
+<script type="text/javascript" src="http://localhost:9898/wavejs/wavejs.nocache.js"></script>
+```
+
+The following method is called when library is fully loaded, from here the WaveJS object is available.
+
+```
+  function onWaveJSReady() {
+    // Here your code using the WaveJS API:
+    // WaveJS.startSession(...
+    // WaveJS.open...
+    // ...
+  }
+```
+
+
+### Start and Stop sessions
+
+In order to work with any collaborative feature you must start a session against the Wave Server with an user's credentials.
+
+```
+  WaveJS.startSession("http://localhost:9898", "MyUserName", "MyPassword",
+      function(sessionId) {
+
+        // Success Callback
+
+
+      }, function(error) {
+
+        // Failure Callback
+
+      });
+};
+
+```
+
+To stop a session (it disposes resources and connections to the server) use following method:
+
+```
+ WaveJS.stopSession();
+```
+
+
+
+
+### Create and use a collaborative list
+
+Create a new list:
+
+```
+    // Function's return value is the list Id!!!
+    var listId =
+        WaveJS.createListModel(
+
+
+           function(listModel) {
+
+                // Attach the created list to the WaveJS
+                WaveJS.listModel = listModel;
+
+                // Add a participant to share the list
+                WaveJS.listModel.addParticipant("myfriend@local.net");
+
+                // Add a element (only strings are valid now)
+                WaveJS.listModel.list.add("my new element");
+
+                // Get list values as a Mutable Array
+                WaveJS.listModel.list.values;
+
+                // Remove first element by index (Don't modify the values array directly)
+                WaveJS.listModel.list.remove(0);
+
+
+            },
+
+            function(error) {
+
+              alert("Error creating a collaborative list "+error);
+
+            });
+```
+
+Open an existing list with Id = "local.net/dummy+Xxn3-XupCUA":
+
+```
+        // We pass the list Id as first parameter
+
+        WaveJS.openListModel("local.net/dummy+Xxn3-XupCUA",
+
+           function(listModel) {
+
+                // Attach the created list to the WaveJS
+                WaveJS.listModel = listModel;
+
+                // ...
+
+            },
+
+            function(error) {
+
+              alert("Error openning a collaborative list "+error);
+
+            });
+```
+
+Close the collaborative list, it disposes connection and resources:
+
+```
+    WaveJS.close("local.net/dummy+Xxn3-XupCUA");
+```
 
 
 ## Wave GWT Client

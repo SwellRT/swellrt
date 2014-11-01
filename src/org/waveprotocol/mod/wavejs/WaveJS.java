@@ -376,19 +376,19 @@ public class WaveJS implements EntryPoint {
 
   /**
    * Open an existing wave.
-   *
-   * @param wave WaveId
+   * 
+   * @param id WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    */
-  public String openWave(final String wave, final Callback<WaveWrapper, String> callback) {
+  public String openWave(final String id, final Callback<WaveWrapper, String> callback) {
 
     // if (activeWaveMap.containsKey(wave)) return wave;
 
     WaveId waveId = null;
     try {
 
-      waveId = WaveId.deserialise(wave);
+      waveId = WaveId.deserialise(id);
 
     } catch (Exception e) {
       callback.onFailure(e.getMessage());
@@ -398,7 +398,7 @@ public class WaveJS implements EntryPoint {
     final WaveWrapper waveWrapper =
         waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), false);
 
-    activeWaveMap.put(wave, waveWrapper);
+    activeWaveMap.put(id, waveWrapper);
 
     waveWrapper.load(new Command() {
       @Override
@@ -409,21 +409,21 @@ public class WaveJS implements EntryPoint {
       }
     });
 
-    return wave;
+    return id;
 
   }
 
 
 
 
-  public boolean closeWave(String wave) {
+  public boolean close(String waveId) {
 
-    WaveWrapper waveWrapper = activeWaveMap.get(wave);
+    WaveWrapper waveWrapper = activeWaveMap.get(waveId);
 
     if (waveWrapper == null) return false;
 
     waveWrapper.destroy();
-    activeWaveMap.remove(wave);
+    activeWaveMap.remove(waveId);
 
     return true;
 

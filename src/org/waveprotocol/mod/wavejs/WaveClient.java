@@ -3,11 +3,14 @@ package org.waveprotocol.mod.wavejs;
 import com.google.gwt.core.client.Callback;
 
 import org.waveprotocol.mod.client.WaveWrapper;
+import org.waveprotocol.mod.model.dummy.IdGeneratorDummy;
+import org.waveprotocol.mod.model.dummy.ListModel;
 import org.waveprotocol.mod.model.p2pvalue.CommunityModel;
 import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
 import org.waveprotocol.mod.model.showcase.chat.WaveChat;
 import org.waveprotocol.mod.model.showcase.id.IdGeneratorChat;
 import org.waveprotocol.mod.wavejs.js.WaveClientJS;
+import org.waveprotocol.mod.wavejs.js.dummy.ListModelJS;
 import org.waveprotocol.mod.wavejs.js.p2pvalue.CommunityModelJS;
 import org.waveprotocol.mod.wavejs.js.showcase.chat.WaveChatJS;
 
@@ -31,7 +34,7 @@ public class WaveClient {
 
   /**
    * Start a Wave session
-   * 
+   *
    * @param url
    * @param user
    * @param password
@@ -56,7 +59,7 @@ public class WaveClient {
 
   /**
    * Stops the WaveSession. No callback needed.
-   * 
+   *
    * @return
    */
   public boolean stopSession() {
@@ -66,7 +69,7 @@ public class WaveClient {
 
   /**
    * Open a Wave to support a content.
-   * 
+   *
    * @param wave the WaveId
    * @return the WaveId for success, null otherwise
    */
@@ -91,11 +94,11 @@ public class WaveClient {
   /**
    * Close a wave. No callback needed.
    * 
-   * @param wave
+   * @param waveId
    * @return true for success
    */
-  public boolean closeWave(String wave) {
-    return wavejs.closeWave(wave);
+  public boolean close(String waveId) {
+    return wavejs.close(waveId);
   }
 
 
@@ -105,8 +108,8 @@ public class WaveClient {
   /**
    * Opens a wave as a Chat. JavaScript callback is called passing the Chat JS
    * object.
-   * 
-   * 
+   *
+   *
    * @param wave WaveId
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    */
@@ -141,7 +144,7 @@ public class WaveClient {
   /**
    * Creates a new Chat Wave. JavaScript callback is called passing the Chat JS
    * object.
-   * 
+   *
    * @return the WaveId or null if wave wasn't created.
    */
   public String createChat() {
@@ -172,13 +175,14 @@ public class WaveClient {
 
   }
 
-
+  //
   // P2Pvalue
+  //
 
   /**
    * Creates a new Community Model. JavaScript callback is called passing the
    * Chat JS object.
-   * 
+   *
    * @return the WaveId or null if wave wasn't created.
    */
   public String createCommunityModel() {
@@ -215,8 +219,8 @@ public class WaveClient {
     /**
    * Opens a wave as a Community Model. JavaScript callback is called passing
    * the Chat JS object.
-   * 
-   * 
+   *
+   *
    * @param wave WaveId
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    */
@@ -251,7 +255,72 @@ public class WaveClient {
   }
 
 
+  //
+  // Dummy types
+  //
 
+
+  public String createListModel() {
+
+    return wavejs.createWave(IdGeneratorDummy.get(), new Callback<WaveWrapper, String>() {
+
+      @Override
+      public void onSuccess(WaveWrapper wrapper) {
+
+        ListModel list =
+            ListModel.create(wrapper.getWave(), wrapper.getLocalDomain(),
+                wrapper.getLoggedInUser(), wrapper.isNewWave(),
+                IdGeneratorDummy.get(wrapper.getIdGenerator()));
+
+
+        ListModelJS listJS = ListModelJS.create(list);
+        list.addListener(listJS);
+
+        jso.callbackEvent("createListModel", "onSuccess", listJS);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("createListModel", "onFailure", reason);
+      }
+
+
+    });
+
+  }
+
+
+  public String openListModel(final String wave) {
+
+
+    return wavejs.openWave(wave, new Callback<WaveWrapper, String>() {
+
+
+      @Override
+      public void onSuccess(WaveWrapper wrapper) {
+
+        ListModel list =
+            ListModel.create(wrapper.getWave(), wrapper.getLocalDomain(),
+                wrapper.getLoggedInUser(), wrapper.isNewWave(),
+                IdGeneratorDummy.get(wrapper.getIdGenerator()));
+
+
+        ListModelJS listJS = ListModelJS.create(list);
+        list.addListener(listJS);
+
+
+        jso.callbackEvent("openListModel", "onSuccess", listJS);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("openListModel", "onFailure", reason);
+      }
+
+    });
+
+
+  }
 
 
 }

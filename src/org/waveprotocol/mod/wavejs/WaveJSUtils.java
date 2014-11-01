@@ -28,6 +28,10 @@ public class WaveJSUtils {
     return new Array();
   }-*/;
 
+  public static native void removeJsArrayElement(JsArray<JavaScriptObject> array, int index) /*-{
+     array.splice(index,1);
+  }-*/;
+
   public static JsArrayString toJsArray(Iterable<ParticipantId> participants) {
 
     JsArrayString array = createJsArrayString();
@@ -36,6 +40,11 @@ public class WaveJSUtils {
 
     return array;
   }
+
+  public static native JavaScriptObject toJs(String s) /*-{
+     return s;
+  }-*/;
+
 
   public static String nextBase64(int length) {
     StringBuilder result = new StringBuilder(length);

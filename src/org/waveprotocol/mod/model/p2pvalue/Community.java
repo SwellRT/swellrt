@@ -1,15 +1,10 @@
 package org.waveprotocol.mod.model.p2pvalue;
 
+import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
-
-import java.util.List;
 
 public interface Community extends SourcesEvents<Community.Listener> {
 
-
-  // Meta data
-
-  String getDocumentId();
 
   // Community data
 
@@ -20,11 +15,7 @@ public interface Community extends SourcesEvents<Community.Listener> {
 
   // Projects
 
-  List<Project> getProjects();
-
-  Project addProject();
-
-  void removeProject(String projectId);
+  ObservableElementList<Project, Project.Initializer> getProjects();
 
 
   // Events

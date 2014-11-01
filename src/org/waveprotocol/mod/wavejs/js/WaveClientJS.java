@@ -26,6 +26,15 @@ public class WaveClientJS extends JavaScriptObject {
 
          callbackMap: new Object(),
 
+         model: {
+
+           type: {
+             GENERIC : "GENERIC",
+             P2PVALUE : "P2PVALUE"
+           }
+
+         },
+
          startSession: function(url, user, password, onSuccess, onFailure) {
 
             this.callbackMap.startSession = new Object();
@@ -50,9 +59,9 @@ public class WaveClientJS extends JavaScriptObject {
               return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openWave(Ljava/lang/String;)(wave);
          },
 
-         closeWave: function(wave) {
+         close: function(waveid) {
 
-             return delegate.@org.waveprotocol.mod.wavejs.WaveClient::closeWave(Ljava/lang/String;)(wave);
+             return delegate.@org.waveprotocol.mod.wavejs.WaveClient::close(Ljava/lang/String;)(waveid);
          },
 
 
@@ -96,9 +105,49 @@ public class WaveClientJS extends JavaScriptObject {
 
             return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createCommunityModel()();
 
+         },
+
+         openListModel: function(wave, onSuccess, onFailure) {
+
+            this.callbackMap.openListModel = new Object();
+            this.callbackMap.openListModel.onSuccess = onSuccess;
+            this.callbackMap.openListModel.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openListModel(Ljava/lang/String;)(wave);
+
+         },
+
+
+         createListModel: function(onSuccess, onFailure) {
+
+            this.callbackMap.createListModel = new Object();
+            this.callbackMap.createListModel.onSuccess = onSuccess;
+            this.callbackMap.createListModel.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createListModel()();
+
+         },
+
+         // GENERIC MODEL API ---------------------------------------
+
+         createModel: function(type, onSuccess, onFailure) {
+
+
+         },
+
+         createModel: function(onSuccess, onFailure) {
+
+
+         },
+
+
+         openModel: function(waveId, onSuccess, onFailure) {
+
          }
 
     }; // wavejs
+
+
 
     // Accessible from the Window object
     $wnd.WaveJS = wavejs;

@@ -1,13 +1,16 @@
 package org.waveprotocol.mod.wavejs.js.p2pvalue;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 
 import org.waveprotocol.mod.model.p2pvalue.Community;
 import org.waveprotocol.mod.model.p2pvalue.Project;
-import org.waveprotocol.mod.wavejs.WaveJSUtils;
+import org.waveprotocol.mod.wavejs.js.adt.AdapterJS;
+
 
 public class CommunityJS extends JavaScriptObject implements Community.Listener {
+
+  private static AdapterJS projectAdapterJS = new ProjectAdapterJS();
+
 
 
   public native static CommunityJS create(Community delegate) /*-{
@@ -32,24 +35,14 @@ public class CommunityJS extends JavaScriptObject implements Community.Listener 
 
          getName: function() {
           return delegate.@org.waveprotocol.mod.model.p2pvalue.Community::getName()();
-         },
-
-         getProjects: function() {
-          var _projects = delegate.@org.waveprotocol.mod.model.p2pvalue.Community::getProjects()();
-          return @org.waveprotocol.mod.wavejs.js.p2pvalue.CommunityJS::projectsToJsArray(Ljava/lang/Iterable;)(_projects);
-         },
-
-         addProject: function() {
-          var _project = delegate.@org.waveprotocol.mod.model.p2pvalue.Community::addProject()();
-          return @org.waveprotocol.mod.wavejs.js.p2pvalue.CommunityJS::getProjectJS(Lorg/waveprotocol/mod/model/p2pvalue/Project;)(_project);
-         },
-
-         removeProject: function(projectid) {
-          delegate.@org.waveprotocol.mod.model.p2pvalue.Community::removeProject(Ljava/lang/String;)(projectid);
          }
 
-
     }; // jso
+
+    var _projects = delegate.@org.waveprotocol.mod.model.p2pvalue.Community::getProjects()();
+    var _adapter = @org.waveprotocol.mod.wavejs.js.p2pvalue.CommunityJS::projectAdapterJS;
+    jso.projects = @org.waveprotocol.mod.wavejs.js.adt.ObservableListJS::create(Lorg/waveprotocol/wave/model/adt/ObservableElementList;Lorg/waveprotocol/mod/wavejs/js/adt/AdapterJS;)
+                (_projects, _adapter);
 
     return jso;
 
@@ -69,39 +62,22 @@ public class CommunityJS extends JavaScriptObject implements Community.Listener 
   }-*/;
 
 
-  private static final JsArray<JavaScriptObject> projectsToJsArray(Iterable<Project> projects) {
-
-    JsArray<JavaScriptObject> array = WaveJSUtils.createJsArray();
-
-    for (Project p : projects)
-      array.push(getProjectJS(p));
-
-    return array;
-  }
-
-  private static final ProjectJS getProjectJS(Project project) {
-
-    ProjectJS projectJS = ProjectJS.create(project);
-    project.addListener(projectJS);
-    return projectJS;
-
-  }
 
   @Override
   public final void onNameChanged(String name) {
-    fireEvent("onNameChanged", name);
+
   }
 
 
   @Override
   public final void onProjectAdded(Project project) {
-    fireEvent("onProjectAdded", getProjectJS(project));
+
   }
 
 
   @Override
   public final void onProjectRemoved(String projectId) {
-    fireEvent("onProjectRemoved", projectId);
+
   }
 
 }

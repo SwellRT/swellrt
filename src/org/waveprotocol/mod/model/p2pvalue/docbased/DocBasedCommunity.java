@@ -1,10 +1,14 @@
 package org.waveprotocol.mod.model.p2pvalue.docbased;
 
 import org.waveprotocol.mod.model.p2pvalue.Community;
-import org.waveprotocol.mod.model.p2pvalue.ModelIndex;
-import org.waveprotocol.mod.model.p2pvalue.ModelIndex.Action;
 import org.waveprotocol.mod.model.p2pvalue.Project;
+import org.waveprotocol.mod.model.p2pvalue.docindex.DocIndex;
+import org.waveprotocol.mod.model.p2pvalue.docindex.DocIndexAware;
+import org.waveprotocol.mod.model.p2pvalue.docindex.DocIndexed;
+import org.waveprotocol.mod.model.p2pvalue.docindex.DocIndexedFactory;
+import org.waveprotocol.mod.model.p2pvalue.docindex.IndexBasedElementList;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
+import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.ObservableSingleton;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedSingleton;
@@ -15,14 +19,10 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
-import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
-import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,7 +31,7 @@ import java.util.Map;
  * @author pablojan@gmail.com
  *
  */
-public class DocBasedCommunity implements Community {
+public class DocBasedCommunity implements Community, DocIndexed, DocIndexAware {
 
   public static final String DOC_ID_PREFIX = "community";
   public static final String DOC_ID = DOC_ID_PREFIX;
@@ -45,12 +45,14 @@ public class DocBasedCommunity implements Community {
   private final ObservableBasicValue<String> name;
   private final ObservableBasicValue.Listener<String> nameListener;
 
+  // Projects (as Documents)
+  private ObservableElementList<Project, Project.Initializer> projects;
+
   // Listeners
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
-  private ModelIndex modelIndex;
-  private ModelIndex.Listener modelIndexListener;
-
+  // DocIndex Awareness
+  private DocIndex docIndex;
   private String documentId;
 
 
@@ -135,36 +137,32 @@ public class DocBasedCommunity implements Community {
       }
     };
 
+  }
 
-    this.modelIndexListener = new ModelIndex.Listener() {
+  @Override
+  public void setDocIndex(String documentId, DocIndex modelIndex) {
+    this.docIndex = modelIndex;
+    this.documentId = documentId;
 
-      @Override
-      public void onDocumentRemoved(String docId) {
-        if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
-          for (Listener l : listeners)
-            l.onProjectRemoved(docId);
-        }
-      }
+    // projects only are available after setting the document index
+    this.projects =
+        IndexBasedElementList.create(DocBasedProject.DOC_ID_PREFIX, docIndex,
+            new DocIndexedFactory<Project>() {
 
-      @Override
-      public void onDocumentAdded(String docId) {
-        if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
+              @Override
+              public Project adapt(ObservableDocument doc, String docId) {
+                DocBasedProject docBasedProject = DocBasedProject.create(doc);
+                docBasedProject.setDocIndex(docId, docIndex);
+                return docBasedProject;
+              }
 
-          DocBasedProject project = DocBasedProject.create(modelIndex.getDocument(docId));
-          project.setIndexMetadata(docId, modelIndex);
-
-          for (Listener l : listeners)
-            l.onProjectAdded(project);
-        }
-      }
-    };
+            });
 
   }
 
-  // TODO this should be protected
-  public void setIndexMetadata(String documentId, ModelIndex modelIndex) {
-    this.modelIndex = modelIndex;
-    this.documentId = documentId;
+  @Override
+  public String getDocumentId() {
+    return documentId;
   }
 
   @Override
@@ -189,47 +187,8 @@ public class DocBasedCommunity implements Community {
 
 
   @Override
-  public List<Project> getProjects() {
-
-    final List<Project> projects = new ArrayList<Project>();
-
-
-    modelIndex.traverseDocuments(new Action() {
-
-      @Override
-      public void execute(String docId) {
-
-        if (IdUtil.getInitialToken(docId).equals(DocBasedProject.DOC_ID_PREFIX)) {
-          DocBasedProject project = DocBasedProject.create(modelIndex.getDocument(docId));
-          project.setIndexMetadata(docId, modelIndex);
-          projects.add(project);
-        }
-
-      }
-
-    });
-
+  public ObservableElementList<Project, Project.Initializer> getProjects() {
     return projects;
-
-  }
-
-  @Override
-  public Project addProject() {
-    Pair<String, ObservableDocument> doc = modelIndex.createDocument(DocBasedProject.DOC_ID_PREFIX);
-    DocBasedProject project = DocBasedProject.create(doc.getSecond());
-    project.setIndexMetadata(doc.getFirst(), modelIndex);
-    return project;
-  }
-
-  @Override
-  public void removeProject(String projectId) {
-    Preconditions.checkNotNull(projectId, "Removing a null Project");
-    modelIndex.removeDocument(projectId);
-  }
-
-  @Override
-  public String getDocumentId() {
-    return documentId;
   }
 
 

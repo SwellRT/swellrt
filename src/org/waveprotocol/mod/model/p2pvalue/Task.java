@@ -1,35 +1,33 @@
 package org.waveprotocol.mod.model.p2pvalue;
 
-import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.adt.ObservableBasicSet;
+import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 
 public interface Task extends SourcesEvents<Task.Listener> {
 
-
   public class Initialiser {
 
-    public String name;
+    public String name, status, description;
 
-    public Initialiser(String name) {
+    Initialiser(String name, String status, String description) {
       this.name = name;
+      this.status = status;
+      this.description = description;
     }
 
   }
 
-  // Name
+  // Task Data
 
   void setName(String name);
 
   String getName();
 
-  // Status (only none or completed)
-
   void setStatus(String status);
 
   String getStatus();
-
-  // Description
 
   void setDescription(String description);
 
@@ -37,13 +35,7 @@ public interface Task extends SourcesEvents<Task.Listener> {
 
   // Participants
 
-  void addParticipant(String participant);
-
-  void removeParticipant(String participant);
-
-  Iterable<String> getParticipants();
-
-  boolean isParticipantInTask(String participant);
+  ObservableBasicSet<String> getParticipants();
 
   // Deadline (shared across all participants)
 
@@ -51,27 +43,17 @@ public interface Task extends SourcesEvents<Task.Listener> {
 
   long getDeadline();
 
+  // Reminders
 
-  // Reminders (separated by participants, they should be placed in a private
-  // wavelet)
+  ObservableElementList<Reminder, Reminder.Initialiser> getReminders();
 
-  void addReminder(ParticipantId participant, long datetime);
-
-  void removeReminder(Reminder reminder);
-
-  Reminder[] getReminders(ParticipantId participant);
-
-
+  // Listener
 
   public interface Listener {
 
     void onStatusChanged(String status);
 
     void onDeadlineChanged(long deadline);
-
-    void onParticipantAdded(ParticipantId participant);
-
-    void onParticipantRemoved(ParticipantId participant);
 
   }
 
