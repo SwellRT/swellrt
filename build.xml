@@ -1309,7 +1309,7 @@
 
   <target name="compile-wavejs-test" description="Build WaveJS Selenium tests">
      <echo message="Compile WaveJS Selenium Test"/>
-     <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium">
+     <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium" debug="true">
        <classpath>
            <fileset dir="${basedir}/selenium/lib">
              <include name="**/*.jar"/>
