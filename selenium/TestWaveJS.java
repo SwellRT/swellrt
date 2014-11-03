@@ -1,3 +1,5 @@
+import static junit.framework.Assert.assertTrue;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -52,9 +54,15 @@ public class TestWaveJS  {
     // Wait for the page to load, timeout after 10 seconds
     (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
-        return d.findElement(By.cssSelector("span.bar.passed")).isDisplayed();
+        return d.findElement(By.cssSelector("div.results")).isDisplayed();
       }
     });
+
+    System.out.println("Failures: ");
+    System.out.println(driver.findElement(By.cssSelector("div.failures")).getText());
+
+    assertTrue(driver.findElement(By.cssSelector("span.bar.passed")).isDisplayed());
+
 
     // Close the browser
     driver.quit();
