@@ -12,7 +12,7 @@ public class TestWaveJS  {
     // not the implementation.
     WebDriver driver = new ChromeDriver();
 
-    (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
+    (new WebDriverWait(driver, 180)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         d.get("http://localhost:9898/test/wavejs.html");
 
