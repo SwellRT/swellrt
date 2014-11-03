@@ -12,10 +12,13 @@ public class TestWaveJS  {
     // not the implementation.
     WebDriver driver = new ChromeDriver();
 
-    // And now use this to visit Google
-    driver.get("http://localhost:9898/test/wavejs.html");
-    // Alternatively the same thing can be done like this
-    // driver.navigate().to("http://www.google.com");
+    (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
+      public Boolean apply(WebDriver d) {
+        d.get("http://localhost:9898/test/wavejs.html");
+
+        return d.findElement(By.id("loginForm")).isDisplayed();
+      }
+    });
 
     // Find the text input element by its name
     WebElement uid = driver.findElement(By.id("uid"));
