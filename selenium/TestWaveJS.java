@@ -58,13 +58,15 @@ public class TestWaveJS  {
       }
     });
 
-    System.out.println("Failures: ");
-    System.out.println(driver.findElement(By.cssSelector("div.failures")).getText());
+    try {
 
-    assertTrue(driver.findElement(By.cssSelector("span.bar.passed")).isDisplayed());
+      System.out.println("Failures: ");
+      System.out.println(driver.findElement(By.cssSelector("div.failures")).getText());
 
-
-    // Close the browser
-    driver.quit();
+      assertTrue(driver.findElement(By.cssSelector("span.bar.passed")).isDisplayed());
+    } finally {
+      // Close the browser
+      driver.quit();
+    }
   }
 }
