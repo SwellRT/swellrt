@@ -50,7 +50,7 @@ public class TestWaveJS  {
     driver.findElement(By.id("runP2PvalueTest")).click();
 
     // Wait for the page to load, timeout after 10 seconds
-    (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+    (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         return d.findElement(By.cssSelector("span.bar.passed")).isDisplayed();
       }
