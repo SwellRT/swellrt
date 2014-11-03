@@ -35,3 +35,4 @@ war/WEB-INF
 /selenium/driver/*
 /selenium/*.class
 /selenium/.settings
+**/*swp
