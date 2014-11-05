@@ -99,7 +99,7 @@ The following method is called when library is fully loaded, from here the WaveJ
 In order to work with any collaborative feature you must start a session against the Wave Server with an user's credentials.
 
 ```
-  WaveJS.startSession("http://localhost:9898", "MyUserName", "MyPassword",
+  WaveJS.startSession("http://localhost:9898", "MyUserName@waveDomain", "MyPassword",
       function(sessionId) {
 
         // Success Callback
