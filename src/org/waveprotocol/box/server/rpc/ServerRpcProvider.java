@@ -385,6 +385,9 @@ public class ServerRpcProvider {
     context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", "WSESSIONID");
 
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
+    corsFilterHolder.setInitParameter("allowedOrigins", "*");
+    corsFilterHolder.setInitParameter("allowedMethods", "*");
+    corsFilterHolder.setInitParameter("allowedHeaders", "*");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
     addWebSocketServlets();
