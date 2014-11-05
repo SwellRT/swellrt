@@ -7,7 +7,7 @@ var P2PvalueTest = {
 
 
 
-    describe("Community", function(){
+    xdescribe("Community", function(){
 
       it("The community model exists", function(){
           expect(cm).not.toBeUndefined();
@@ -21,14 +21,14 @@ var P2PvalueTest = {
     });
 
 
-    describe("Participants", function(){
+    xdescribe("Participants", function(){
 
 
 
     });
 
 
-    describe("Community simple properties", function(){
+    xdescribe("Community simple properties", function(){
 
 
 
@@ -41,7 +41,7 @@ var P2PvalueTest = {
 
 
 
-    describe("Community projects", function(){
+    xdescribe("Community projects", function(){
 
 
 
@@ -79,7 +79,7 @@ var P2PvalueTest = {
 
 
 
-    describe("Project simple properties", function(){
+    xdescribe("Project simple properties", function(){
 
 
       it("Set/Get Project Name", function(){
