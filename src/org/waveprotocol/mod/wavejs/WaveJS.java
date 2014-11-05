@@ -131,7 +131,7 @@ public class WaveJS implements EntryPoint {
     // query += "&r=" + URL.encodeQueryString("/profile/?adresses=");
 
     String url =
-        "http://" + waveServerURL + "/auth/signin?r="
+        waveServerURLSchema + waveServerURL + "/auth/signin?r="
         + URL.encodeQueryString("/profile/?addresses=" + participantId.getAddress());
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
