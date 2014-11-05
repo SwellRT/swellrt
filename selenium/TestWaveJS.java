@@ -9,12 +9,12 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class TestWaveJS  {
   public static void main(String[] args) {
-    try {
-      // Create a new instance of the Firefox driver
-      // Notice that the remainder of the code relies on the interface,
-      // not the implementation.
-      WebDriver driver = new ChromeDriver();
+    // Create a new instance of the Firefox driver
+    // Notice that the remainder of the code relies on the interface,
+    // not the implementation.
+    WebDriver driver = new ChromeDriver();
 
+    try {
       (new WebDriverWait(driver, 180)).until(new ExpectedCondition<Boolean>() {
         public Boolean apply(WebDriver d) {
           d.get("http://localhost:9898/test/wavejs.html");
