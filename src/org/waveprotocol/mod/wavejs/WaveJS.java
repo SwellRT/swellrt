@@ -122,7 +122,7 @@ public class WaveJS implements EntryPoint {
   private void login(final String user, final String password,
       final Callback<String, String> callback) {
 
-    final ParticipantId participantId = ParticipantId.ofUnsafe(user + "@" + this.waveServerDomain);
+    final ParticipantId participantId = ParticipantId.ofUnsafe(user);
 
     String query = URL.encodeQueryString("address") + "=" + participantId.getAddress();
     query += "&password=" + URL.encodeQueryString(password);
@@ -289,7 +289,7 @@ public class WaveJS implements EntryPoint {
 
     waveServerURLSchema = url.startsWith("http://") ? "http://" : "https://";
     // TODO extract domain from URL
-    waveServerDomain = "local.net";
+    waveServerDomain = user.split("@")[1];
     waveServerURL = url.replace(waveServerURLSchema, "");
 
     login(user, password, new Callback<String, String>() {
@@ -376,7 +376,7 @@ public class WaveJS implements EntryPoint {
 
   /**
    * Open an existing wave.
-   * 
+   *
    * @param id WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
