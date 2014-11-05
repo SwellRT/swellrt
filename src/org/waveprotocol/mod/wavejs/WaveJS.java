@@ -14,7 +14,6 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.RootPanel;
 
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
@@ -289,7 +288,8 @@ public class WaveJS implements EntryPoint {
     // TODO validate url, if it fails return false
 
     waveServerURLSchema = url.startsWith("http://") ? "http://" : "https://";
-    waveServerDomain = CoreSettings.WAVE_SERVER_DOMAIN;
+    // TODO extract domain from URL
+    waveServerDomain = "local.net";
     waveServerURL = url.replace(waveServerURLSchema, "");
 
     login(user, password, new Callback<String, String>() {
