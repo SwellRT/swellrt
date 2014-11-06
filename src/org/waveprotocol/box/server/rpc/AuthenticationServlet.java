@@ -28,13 +28,11 @@ import com.google.inject.name.Named;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
 import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.gxp.AuthenticationPage;
+import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.box.server.util.RegistrationUtil;
 import org.waveprotocol.wave.model.id.WaveIdentifiers;
@@ -54,13 +52,13 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
-import java.security.cert.X509Certificate;
 import java.security.Principal;
+import java.security.cert.X509Certificate;
 
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
-import javax.naming.ldap.Rdn;
 import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.Configuration;
@@ -214,6 +212,13 @@ private final WelcomeRobot welcomeBot;
         LOG.info("User authentication failed: " + e.getLocalizedMessage());
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         resp.setContentType("text/html;charset=utf-8");
+
+        if (checkNoRedirect(req)) {
+          resp.getWriter().write("login forbidden");
+          resp.getWriter().flush();
+          return;
+        }
+
         AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
             responseType, isLoginPageDisabled, analyticsAccount);
         return;
@@ -247,7 +252,12 @@ private final WelcomeRobot welcomeBot;
     sessionManager.setLoggedInUser(session, loggedInAddress);
     LOG.info("Authenticated user " + loggedInAddress);
 
-    redirectLoggedInUser(req, resp);
+    if (checkNoRedirect(req)) {
+      resp.setStatus(HttpServletResponse.SC_OK);
+      resp.getWriter().write("login successfull");
+      resp.getWriter().flush();
+    } else
+      redirectLoggedInUser(req, resp);
   }
 
   /**
@@ -414,4 +424,11 @@ private final WelcomeRobot welcomeBot;
       resp.sendRedirect(path);
     }
   }
+
+  protected boolean checkNoRedirect(HttpServletRequest req) {
+    String query = req.getQueryString();
+    String encoded_url = query.substring("r=".length());
+    return encoded_url.equalsIgnoreCase("none");
+  }
+
 }
