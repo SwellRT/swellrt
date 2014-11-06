@@ -155,7 +155,7 @@ public class WaveJS implements EntryPoint {
 
           // TODO fix Wave auth server to do not make redirects
           // xmlHTTTPResquest object doesn't handle 302 properly
-          if (response.getStatusCode() == 200) {
+          if (true) {// (response.getStatusCode() == 200) {
 
             log.log(Level.INFO, "Wave login succesfull for: " + user);
             log.log(Level.INFO, "Wave user info: " + response.getText());
