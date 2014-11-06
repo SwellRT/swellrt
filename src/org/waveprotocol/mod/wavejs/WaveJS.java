@@ -131,8 +131,7 @@ public class WaveJS implements EntryPoint {
     // query += "&r=" + URL.encodeQueryString("/profile/?adresses=");
 
     String url =
-        waveServerURLSchema + waveServerURL + "/auth/signin?r="
-        + URL.encodeQueryString("/profile/?addresses=" + participantId.getAddress());
+ waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
     try {
@@ -153,9 +152,8 @@ public class WaveJS implements EntryPoint {
           log.log(Level.INFO, "Wave login response status: " + response.getStatusCode() + ","
               + response.getStatusText());
 
-          // TODO fix Wave auth server to do not make redirects
           // xmlHTTTPResquest object doesn't handle 302 properly
-          if (true) {// (response.getStatusCode() == 200) {
+          if (response.getStatusCode() == 200) {
 
             log.log(Level.INFO, "Wave login succesfull for: " + user);
             log.log(Level.INFO, "Wave user info: " + response.getText());
