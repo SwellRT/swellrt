@@ -214,8 +214,9 @@ private final WelcomeRobot welcomeBot;
         resp.setContentType("text/html;charset=utf-8");
 
         if (checkNoRedirect(req)) {
+          resp.setContentType("text/plain");
           resp.getWriter().write("login forbidden");
-          resp.getWriter().flush();
+          resp.getWriter().close();
           return;
         }
 
@@ -254,8 +255,9 @@ private final WelcomeRobot welcomeBot;
 
     if (checkNoRedirect(req)) {
       resp.setStatus(HttpServletResponse.SC_OK);
+      resp.setContentType("text/plain");
       resp.getWriter().write("login successfull");
-      resp.getWriter().flush();
+      resp.getWriter().close();
     } else
       redirectLoggedInUser(req, resp);
   }
