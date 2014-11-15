@@ -388,7 +388,6 @@ public class ServerRpcProvider {
     corsFilterHolder.setInitParameter("allowedOrigins", "*");
     corsFilterHolder.setInitParameter("allowedMethods", "*");
     corsFilterHolder.setInitParameter("allowedHeaders", "*");
-    corsFilterHolder.setInitParameter("exposedHeaders", "Connection,Upgrade");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
     addWebSocketServlets();
