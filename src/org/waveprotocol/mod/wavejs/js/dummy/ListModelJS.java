@@ -5,6 +5,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import org.waveprotocol.mod.model.dummy.ListModel;
 import org.waveprotocol.mod.wavejs.js.adt.AdapterJS;
 import org.waveprotocol.mod.wavejs.js.adt.ObservableListJS;
+import org.waveprotocol.wave.model.adt.BasicValue;
+import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**

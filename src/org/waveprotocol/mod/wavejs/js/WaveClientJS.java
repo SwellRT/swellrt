@@ -26,19 +26,13 @@ public class WaveClientJS extends JavaScriptObject {
 
          callbackMap: new Object(),
 
-         model: {
+         events: {
 
-           type: {
-             GENERIC : "GENERIC",
-             P2PVALUE : "P2PVALUE"
-           },
-
-           event: {
-             ITEM_ADDED: "ITEM_ADDED",
-             ITEM_REMOVED: "ITEM_REMOVED",
-             PARTICIPANT_ADDED: "PARTICIPANT_ADDED",
-             PARTICIPANT_REMOVED: "PARTICIPANT_REMOVED"
-           }
+           ITEM_CHANGED: "ITEM_CHANGED",
+           ITEM_ADDED: "ITEM_ADDED",
+           ITEM_REMOVED: "ITEM_REMOVED",
+           PARTICIPANT_ADDED: "PARTICIPANT_ADDED",
+           PARTICIPANT_REMOVED: "PARTICIPANT_REMOVED"
 
          },
 
@@ -72,48 +66,6 @@ public class WaveClientJS extends JavaScriptObject {
          },
 
 
-         openChat: function(wave, onSuccess, onFailure) {
-
-            this.callbackMap.openChat = new Object();
-            this.callbackMap.openChat.onSuccess = onSuccess;
-            this.callbackMap.openChat.onFailure = onFailure;
-
-            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openChat(Ljava/lang/String;)(wave);
-
-         },
-
-
-         createChat: function(onSuccess, onFailure) {
-
-            this.callbackMap.createChat = new Object();
-            this.callbackMap.createChat.onSuccess = onSuccess;
-            this.callbackMap.createChat.onFailure = onFailure;
-
-            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createChat()();
-
-         },
-
-         openCommunityModel: function(wave, onSuccess, onFailure) {
-
-            this.callbackMap.openCommunityModel = new Object();
-            this.callbackMap.openCommunityModel.onSuccess = onSuccess;
-            this.callbackMap.openCommunityModel.onFailure = onFailure;
-
-            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openCommunityModel(Ljava/lang/String;)(wave);
-
-         },
-
-
-         createCommunityModel: function(onSuccess, onFailure) {
-
-            this.callbackMap.createCommunityModel = new Object();
-            this.callbackMap.createCommunityModel.onSuccess = onSuccess;
-            this.callbackMap.createCommunityModel.onFailure = onFailure;
-
-            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createCommunityModel()();
-
-         },
-
          openListModel: function(wave, onSuccess, onFailure) {
 
             this.callbackMap.openListModel = new Object();
@@ -137,18 +89,24 @@ public class WaveClientJS extends JavaScriptObject {
 
          // GENERIC MODEL API ---------------------------------------
 
-         createModel: function(type, onSuccess, onFailure) {
-
-
-         },
-
          createModel: function(onSuccess, onFailure) {
 
+            this.callbackMap.createModel = new Object();
+            this.callbackMap.createModel.onSuccess = onSuccess;
+            this.callbackMap.createModel.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::createModel()();
 
          },
 
 
          openModel: function(waveId, onSuccess, onFailure) {
+
+            this.callbackMap.openModel = new Object();
+            this.callbackMap.openModel.onSuccess = onSuccess;
+            this.callbackMap.openModel.onFailure = onFailure;
+
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openModel(Ljava/lang/String;)(modelId);
 
          }
 

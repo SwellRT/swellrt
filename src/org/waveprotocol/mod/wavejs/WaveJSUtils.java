@@ -5,6 +5,8 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.Random;
 
+import org.waveprotocol.mod.model.generic.Type;
+import org.waveprotocol.mod.wavejs.js.generic.AdapterTypeJS;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
@@ -31,6 +33,23 @@ public class WaveJSUtils {
   public static native void removeJsArrayElement(JsArray<JavaScriptObject> array, int index) /*-{
      array.splice(index,1);
   }-*/;
+
+
+  public static native Type getDelegate(JavaScriptObject jso) /*-{
+    return jso._delegate;
+  }-*/;
+
+  public static JsArray<JavaScriptObject> valuesToJsArray(Iterable<Type> values) {
+
+    JsArray<JavaScriptObject> jsArray = WaveJSUtils.createJsArray();
+
+    for (Type v : values) {
+      jsArray.push(AdapterTypeJS.adapt(v));
+    }
+
+    return jsArray;
+
+  }
 
   public static JsArrayString toJsArray(Iterable<ParticipantId> participants) {
 

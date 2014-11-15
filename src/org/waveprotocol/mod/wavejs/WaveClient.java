@@ -5,14 +5,11 @@ import com.google.gwt.core.client.Callback;
 import org.waveprotocol.mod.client.WaveWrapper;
 import org.waveprotocol.mod.model.dummy.IdGeneratorDummy;
 import org.waveprotocol.mod.model.dummy.ListModel;
-import org.waveprotocol.mod.model.p2pvalue.CommunityModel;
-import org.waveprotocol.mod.model.p2pvalue.id.IdGeneratorCommunity;
-import org.waveprotocol.mod.model.showcase.chat.WaveChat;
-import org.waveprotocol.mod.model.showcase.id.IdGeneratorChat;
+import org.waveprotocol.mod.model.generic.Model;
+import org.waveprotocol.mod.model.generic.TypeIdGenerator;
 import org.waveprotocol.mod.wavejs.js.WaveClientJS;
 import org.waveprotocol.mod.wavejs.js.dummy.ListModelJS;
-import org.waveprotocol.mod.wavejs.js.p2pvalue.CommunityModelJS;
-import org.waveprotocol.mod.wavejs.js.showcase.chat.WaveChatJS;
+import org.waveprotocol.mod.wavejs.js.generic.ModelJS;
 
 public class WaveClient {
 
@@ -102,157 +99,7 @@ public class WaveClient {
   }
 
 
-  // Chat
 
-
-  /**
-   * Opens a wave as a Chat. JavaScript callback is called passing the Chat JS
-   * object.
-   *
-   *
-   * @param wave WaveId
-   * @return null if wave is not a valid WaveId. The WaveId otherwise.
-   */
-  public String openChat(final String wave) {
-
-
-    return wavejs.openWave(wave, new Callback<WaveWrapper, String>() {
-
-      @Override
-      public void onSuccess(WaveWrapper wrapper) {
-
-        WaveChat waveChat =
-            WaveChat.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave());
-
-        WaveChatJS waveChatJS = WaveChatJS.create(waveChat);
-        waveChat.getChat().addListener(waveChatJS);
-
-        jso.callbackEvent("openChat", "onSuccess", waveChatJS);
-      }
-
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("openChat", "onFailure", reason);
-      }
-
-    });
-
-
-  }
-
-  /**
-   * Creates a new Chat Wave. JavaScript callback is called passing the Chat JS
-   * object.
-   *
-   * @return the WaveId or null if wave wasn't created.
-   */
-  public String createChat() {
-
-    return wavejs.createWave(IdGeneratorChat.get(), new Callback<WaveWrapper, String>() {
-
-      @Override
-      public void onSuccess(WaveWrapper wrapper) {
-
-        WaveChat waveChat =
-            WaveChat.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave());
-
-        WaveChatJS waveChatJS = WaveChatJS.create(waveChat);
-        waveChat.getChat().addListener(waveChatJS);
-
-        jso.callbackEvent("createChat", "onSuccess", waveChatJS);
-      }
-
-
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("createChat", "onFailure", reason);
-      }
-
-
-    });
-
-  }
-
-  //
-  // P2Pvalue
-  //
-
-  /**
-   * Creates a new Community Model. JavaScript callback is called passing the
-   * Chat JS object.
-   *
-   * @return the WaveId or null if wave wasn't created.
-   */
-  public String createCommunityModel() {
-
-    return wavejs.createWave(IdGeneratorCommunity.get(), new Callback<WaveWrapper, String>() {
-
-      @Override
-      public void onSuccess(WaveWrapper wrapper) {
-
-        CommunityModel community =
-            CommunityModel.create(wrapper.getWave(), wrapper.getLocalDomain(),
-                wrapper.getLoggedInUser(), wrapper.isNewWave(),
-                IdGeneratorCommunity.get(wrapper.getIdGenerator()));
-
-        CommunityModelJS communityJS = CommunityModelJS.create(community);
-        community.addListener(communityJS);
-
-        jso.callbackEvent("createCommunityModel", "onSuccess", communityJS);
-      }
-
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("createCommunityModel", "onFailure", reason);
-      }
-
-
-    });
-
-  }
-
-
-
-
-    /**
-   * Opens a wave as a Community Model. JavaScript callback is called passing
-   * the Chat JS object.
-   *
-   *
-   * @param wave WaveId
-   * @return null if wave is not a valid WaveId. The WaveId otherwise.
-   */
-  public String openCommunityModel(final String wave) {
-
-
-    return wavejs.openWave(wave, new Callback<WaveWrapper, String>() {
-
-
-      @Override
-      public void onSuccess(WaveWrapper wrapper) {
-
-        CommunityModel community =
-            CommunityModel.create(wrapper.getWave(), wrapper.getLocalDomain(),
-                wrapper.getLoggedInUser(), wrapper.isNewWave(),
-                IdGeneratorCommunity.get(wrapper.getIdGenerator()));
-
-        CommunityModelJS communityJS = CommunityModelJS.create(community);
-        community.addListener(communityJS);
-
-        jso.callbackEvent("openCommunityModel", "onSuccess", communityJS);
-      }
-
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("openCommunityModel", "onFailure", reason);
-      }
-
-    });
-
-
-  }
 
 
   //
@@ -319,6 +166,65 @@ public class WaveClient {
 
     });
 
+
+  }
+
+  //
+  // Generic model
+  //
+
+  public String createModel() {
+
+    return wavejs.createWave(TypeIdGenerator.get(), new Callback<WaveWrapper, String>() {
+
+      @Override
+      public void onSuccess(WaveWrapper wrapper) {
+
+        Model model =
+            Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
+                wrapper.isNewWave(), wrapper.getIdGenerator());
+
+        ModelJS modelJS = ModelJS.create(model);
+        model.addListener(modelJS);
+
+        jso.callbackEvent("createModel", "onSuccess", modelJS);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("createModel", "onFailure", reason);
+      }
+
+
+    });
+
+  }
+
+
+  public String openModel(String waveId) {
+
+    return wavejs.openWave(waveId, new Callback<WaveWrapper, String>() {
+
+      @Override
+      public void onSuccess(WaveWrapper wrapper) {
+
+        Model model =
+            Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
+                wrapper.isNewWave(), wrapper.getIdGenerator());
+
+        ModelJS modelJS = ModelJS.create(model);
+        model.addListener(modelJS);
+
+        jso.callbackEvent("openModel", "onSuccess", modelJS);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        jso.callbackEvent("openModel", "onFailure", reason);
+      }
+
+
+    });
 
   }
 
