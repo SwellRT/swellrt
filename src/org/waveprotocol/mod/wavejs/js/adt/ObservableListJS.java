@@ -91,7 +91,7 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
   }
 
   @Override
-  public void onValueAdded(Object entry) {
+  public final void onValueAdded(Object entry) {
 
     JsArray<JavaScriptObject> array = getArray();
     AdapterJS adapter = getAdapter();
@@ -106,7 +106,7 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
 
 
   @Override
-  public void onValueRemoved(Object entry) {
+  public final void onValueRemoved(Object entry) {
 
     // Mutation of the JS array
     JavaScriptObject removedObject = getAdapter().adaptToJS(entry);
