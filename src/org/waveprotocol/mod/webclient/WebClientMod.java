@@ -80,12 +80,7 @@ import org.waveprotocol.mod.client.events.WaveCreationEvent;
 import org.waveprotocol.mod.client.events.WaveCreationEventHandler;
 import org.waveprotocol.mod.client.events.WaveSelectionEvent;
 import org.waveprotocol.mod.client.events.WaveSelectionEventHandler;
-import org.waveprotocol.mod.model.showcase.chat.WaveChat;
-import org.waveprotocol.mod.model.showcase.id.IdGeneratorChat;
 import org.waveprotocol.mod.webclient.search.SearchPresenterMod;
-import org.waveprotocol.mod.webclient.showcase.chat.SimpleChatPresenter;
-import org.waveprotocol.mod.webclient.showcase.chat.SimpleChatView;
-import org.waveprotocol.mod.webclient.showcase.chat.SimpleChatViewImpl;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.safehtml.SafeHtml;
 import org.waveprotocol.wave.client.common.safehtml.SafeHtmlBuilder;
@@ -216,8 +211,6 @@ public class WebClientMod implements EntryPoint {
         if (event.getType().equals("conversation")) {
           openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
 
-        } else if (event.getType().equals("chat")) {
-          openNewChat(WaveRef.of(IdGeneratorChat.get().initialize(idGenerator).newWaveId()));
         }
       }
     });
@@ -301,14 +294,9 @@ public class WebClientMod implements EntryPoint {
       @Override
       public void onSelection(WaveRef waveRef) {
 
-        String type =
-            waveRef.getWaveId().getId().startsWith(IdGeneratorChat.WAVE_ID_PREFIX) ? "chat"
-                : "conversation";
+        String type = "conversation";
 
-        if (type.equals("chat"))
-          openExistingChat(waveRef);
-        else
-          openWave(waveRef, false, null);
+        openWave(waveRef, false, null);
       }
     });
   }
@@ -551,77 +539,7 @@ public class WebClientMod implements EntryPoint {
     }
   }
 
-  /*
-   * New wave models
-   */
-
-  private void openExistingChat(WaveRef waveRef) {
-
-    if (wave != null) {
-      wave.destroy();
-      wave = null;
-    }
-
-    if (currentContentWave != null) {
-      currentContentWave.destroy();
-      currentContentWave = null;
-    }
-
-    this.currentContentWave = waveContentManager.getWaveContentWrapper(waveRef, false);
-    final WaveWrapper contentWrapper = this.currentContentWave;
-
-    final SimpleChatView view = new SimpleChatViewImpl();
-    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view, loggedInUser);
-
-    currentContentWave.load(new Command() {
-      @Override
-      public void execute() {
-
-        presenter.bind(WaveChat.create(contentWrapper.getWave(), contentWrapper.getLocalDomain(),
-            contentWrapper.getLoggedInUser(), contentWrapper.isNewWave()));
-
-        waveFrame.clear();
-        UIObject.setVisible(waveFrame.getElement(), true);
-        waveFrame.add(view.asWidget());
-      }
-    });
-
-  }
 
 
-  private void openNewChat(WaveRef waveRef) {
 
-    if (wave != null) {
-      wave.destroy();
-      wave = null;
-    }
-
-    if (currentContentWave != null) {
-      currentContentWave.destroy();
-      currentContentWave = null;
-    }
-
-    this.currentContentWave = waveContentManager.getWaveContentWrapper(waveRef, true);
-    final WaveWrapper contentWrapper = this.currentContentWave;
-
-    final SimpleChatView view = new SimpleChatViewImpl();
-    final SimpleChatPresenter presenter = SimpleChatPresenter.create(view, loggedInUser);
-
-    currentContentWave.load(new Command() {
-
-      @Override
-      public void execute() {
-
-        presenter.bind(WaveChat.create(contentWrapper.getWave(), contentWrapper.getLocalDomain(),
-            contentWrapper.getLoggedInUser(), contentWrapper.isNewWave()));
-
-        waveFrame.clear();
-        UIObject.setVisible(waveFrame.getElement(), true);
-        waveFrame.add(view.asWidget());
-
-      }
-    });
-
-
-  }
 }
