@@ -60,11 +60,15 @@ public class WaveClientJS extends JavaScriptObject {
               return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openWave(Ljava/lang/String;)(wave);
          },
 
-         close: function(waveid) {
+         closeWave: function(waveid) {
 
              return delegate.@org.waveprotocol.mod.wavejs.WaveClient::close(Ljava/lang/String;)(waveid);
          },
 
+         closeModel: function(waveid) {
+
+             return delegate.@org.waveprotocol.mod.wavejs.WaveClient::close(Ljava/lang/String;)(waveid);
+         },
 
          openListModel: function(wave, onSuccess, onFailure) {
 
@@ -87,8 +91,6 @@ public class WaveClientJS extends JavaScriptObject {
 
          },
 
-         // GENERIC MODEL API ---------------------------------------
-
          createModel: function(onSuccess, onFailure) {
 
             this.callbackMap.createModel = new Object();
@@ -106,7 +108,7 @@ public class WaveClientJS extends JavaScriptObject {
             this.callbackMap.openModel.onSuccess = onSuccess;
             this.callbackMap.openModel.onFailure = onFailure;
 
-            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openModel(Ljava/lang/String;)(modelId);
+            return delegate.@org.waveprotocol.mod.wavejs.WaveClient::openModel(Ljava/lang/String;)(waveId);
 
          }
 

@@ -214,7 +214,7 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
   public Set<String> keySet() {
-    return map.keySet();
+    return observableMap.keySet();
   }
 
   public void remove(String key) {

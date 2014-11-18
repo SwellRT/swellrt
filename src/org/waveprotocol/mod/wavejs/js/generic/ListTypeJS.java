@@ -68,7 +68,7 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
     // Populate the JavaScript array of values
     var _values = delegate.@org.waveprotocol.mod.model.generic.ListType::getValues()();
     if (_values != null) // Prevent errors in unattached delegates
-      jso.values = @org.waveprotocol.mod.wavejs.WaveJSUtils::valuesToJsArray(Ljava/lang/Iterable;)(_values);
+      jso.values = @org.waveprotocol.mod.wavejs.WaveJSUtils::typeIterableToJs(Ljava/lang/Iterable;)(_values);
 
 
     return jso;

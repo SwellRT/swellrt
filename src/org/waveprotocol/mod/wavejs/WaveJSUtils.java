@@ -3,6 +3,7 @@ package org.waveprotocol.mod.wavejs;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.user.client.Random;
 
 import org.waveprotocol.mod.model.generic.Type;
@@ -39,7 +40,7 @@ public class WaveJSUtils {
     return jso._delegate;
   }-*/;
 
-  public static JsArray<JavaScriptObject> valuesToJsArray(Iterable<Type> values) {
+  public static JsArray<JavaScriptObject> typeIterableToJs(Iterable<Type> values) {
 
     JsArray<JavaScriptObject> jsArray = WaveJSUtils.createJsArray();
 
@@ -51,6 +52,31 @@ public class WaveJSUtils {
 
   }
 
+
+  public static void addStringToJsArray(JsArray<JavaScriptObject> array, String s) {
+    JsArrayString strArray = array.<JsArrayString> cast();
+    strArray.push(s);
+  }
+
+
+  public static JsArrayString stringIterableToJs(Iterable<String> strings) {
+    JsArrayString array = createJsArrayString();
+    for (String s : strings)
+      array.push(s);
+
+    return array;
+  }
+
+  public static JsArrayString participantIterableToJs(Iterable<ParticipantId> participants) {
+
+    JsArrayString array = createJsArrayString();
+    for (ParticipantId p : participants)
+      array.push(p.getAddress());
+
+    return array;
+  }
+
+  @Deprecated
   public static JsArrayString toJsArray(Iterable<ParticipantId> participants) {
 
     JsArrayString array = createJsArrayString();
@@ -60,9 +86,10 @@ public class WaveJSUtils {
     return array;
   }
 
-  public static native JavaScriptObject toJs(String s) /*-{
-     return s;
-  }-*/;
+  public static JavaScriptObject toJs(String s) {
+    return JsonUtils.safeEval(s);
+  }
+
 
 
   public static String nextBase64(int length) {

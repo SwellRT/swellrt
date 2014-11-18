@@ -354,7 +354,7 @@ public class WaveJS implements EntryPoint {
 
     GWT.log("Generated new WaveId = " + waveId.serialise());
 
-    activeWaveMap.put(waveId.toString(), waveWrapper);
+    activeWaveMap.put(waveId.serialise(), waveWrapper);
 
 
     waveWrapper.load(new Command() {
@@ -366,7 +366,7 @@ public class WaveJS implements EntryPoint {
       }
     });
 
-    return waveId.toString();
+    return waveId.serialise();
 
 
   }
@@ -381,7 +381,8 @@ public class WaveJS implements EntryPoint {
    */
   public String openWave(final String id, final Callback<WaveWrapper, String> callback) {
 
-    // if (activeWaveMap.containsKey(wave)) return wave;
+    // Avoid open a wave twice
+    if (activeWaveMap.containsKey(id)) closeWave(id);
 
     WaveId waveId = null;
     try {
@@ -414,7 +415,7 @@ public class WaveJS implements EntryPoint {
 
 
 
-  public boolean close(String waveId) {
+  public boolean closeWave(String waveId) {
 
     WaveWrapper waveWrapper = activeWaveMap.get(waveId);
 

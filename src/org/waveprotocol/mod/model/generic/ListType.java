@@ -96,7 +96,7 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
     this.observableList =
         DocumentBasedElementList.create(router, parentElement, ITEM_TAG, new TypeFactory(model));
-
+    this.observableList.addListener(observableListListener);
 
     this.element = parentElement;
     this.documentId = documentId;

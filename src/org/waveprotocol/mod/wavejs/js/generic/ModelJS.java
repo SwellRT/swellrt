@@ -35,7 +35,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
      getParticipants: function() {
       var _participants = delegate.@org.waveprotocol.mod.model.generic.Model::getParticipants()();
-      return @org.waveprotocol.mod.wavejs.WaveJSUtils::toJsArray(Ljava/lang/Iterable;)(_participants);
+      return @org.waveprotocol.mod.wavejs.WaveJSUtils::participantIterableToJs(Ljava/lang/Iterable;)(_participants);
      },
 
      addParticipant: function(address) {
@@ -63,8 +63,8 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
     }; // jso
 
-    var _root =  delegate.@org.waveprotocol.mod.model.generic.Model::getRoot()();
-    jso.root = @org.waveprotocol.mod.wavejs.js.generic.MapTypeJS::create(Lorg/waveprotocol/mod/model/generic/MapType;)(_root);
+    // Initialize the JS root map
+    jso.root = @org.waveprotocol.mod.wavejs.js.generic.ModelJS::createRootJs(Lorg/waveprotocol/mod/model/generic/Model;)(delegate);
 
     return jso;
 
@@ -75,6 +75,14 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
   }
 
+
+  private final static MapTypeJS createRootJs(Model delegate) {
+
+    MapTypeJS mapJs = MapTypeJS.create(delegate.getRoot());
+    delegate.getRoot().addListener(mapJs);
+
+    return mapJs;
+  }
 
 
   private final native void fireEvent(String event, Object parameter) /*-{

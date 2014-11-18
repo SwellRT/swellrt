@@ -71,7 +71,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
 
        keySet: function() {
           var _keyset = delegate.@org.waveprotocol.mod.model.generic.MapType::keySet()();
-          return @org.waveprotocol.mod.wavejs.WaveJSUtils::toJsArray(Ljava/lang/Iterable;)(_keyset)
+          return @org.waveprotocol.mod.wavejs.WaveJSUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset)
        },
 
        remove: function(key) {
@@ -116,7 +116,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
       // Update the JS map
       JavaScriptObject newValueJs = AdapterTypeJS.adapt(newValue);
 
-      values.push(WaveJSUtils.toJs(key));
+      WaveJSUtils.addStringToJsArray(values, key);
       values.push(newValueJs);
 
       // Fire JS event
@@ -128,7 +128,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
       JavaScriptObject oldValueJs = AdapterTypeJS.adapt(oldValue);
       JavaScriptObject newValueJs = AdapterTypeJS.adapt(newValue);
 
-      values.push(WaveJSUtils.toJs(key));
+      WaveJSUtils.addStringToJsArray(values, key);
       values.push(newValueJs);
       values.push(oldValueJs);
 
@@ -145,7 +145,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
     JsArray<JavaScriptObject> values = WaveJSUtils.createJsArray();
     // Update the JS map
     JavaScriptObject oldValue = AdapterTypeJS.adapt(value);
-    values.push(WaveJSUtils.toJs(key));
+    WaveJSUtils.addStringToJsArray(values, key);
     values.push(oldValue);
     // Fire JS Event
     fireEvent("ITEM_REMOVED", values);

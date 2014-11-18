@@ -95,7 +95,7 @@ public class WaveClient {
    * @return true for success
    */
   public boolean close(String waveId) {
-    return wavejs.close(waveId);
+    return wavejs.closeWave(waveId);
   }
 
 
