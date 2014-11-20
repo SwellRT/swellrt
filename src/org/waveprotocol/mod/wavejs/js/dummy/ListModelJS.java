@@ -39,7 +39,7 @@ public class ListModelJS extends JavaScriptObject implements ListModel.Listener 
 
      getParticipants: function() {
       var _participants = delegate.@org.waveprotocol.mod.model.dummy.ListModel::getParticipants()();
-      return @org.waveprotocol.mod.wavejs.WaveJSUtils::toJsArray(Ljava/lang/Iterable;)(_participants);
+      return @org.waveprotocol.mod.wavejs.WaveJSUtils::participantIterableToJs(Ljava/lang/Iterable;)(_participants);
      },
 
      addParticipant: function(address) {
