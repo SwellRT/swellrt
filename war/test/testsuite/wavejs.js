@@ -251,14 +251,14 @@ var WaveJS_Tester = {
           // removing #1
           root_list4.remove(1);
           expect(root_list4.size()).toBe(listSizeBefore+2);
-          expect(root_list4.get(1).get(0).getValue()).toBe("string value");
+          expect(root_list4.get(1).get("key").getValue()).toBe("string value");
           expect(_model.root.get("root.list4").values[1].get("key").getValue()).toBe("string value");
 
 
           // removing #1
           root_list4.remove(1);
           expect(root_list4.size()).toBe(listSizeBefore+1);
-          expect(root_list4.get(1).get(0).getValue()).toBe("string value");
+          expect(root_list4.get(0).getValue()).toBe("string value");
 
 
         });

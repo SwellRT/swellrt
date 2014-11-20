@@ -13,8 +13,9 @@
 <link rel="stylesheet" href="jasmine/jasmine.css">
 <script src="jasmine/jasmine.js"></script>
 <script src="jasmine/jasmine-html.js"></script>
+<!--
 <script src="jasmine/boot.js"></script>
-
+ -->
 
 
 <!-- AngularJS -->
@@ -25,7 +26,7 @@
 <!-- WaveJS -->
 <!-- This page is meant to be deployed on the Wave server -->
 <script type="text/javascript" src="../wavejs/wavejs.nocache.js"></script>
-<script type="text/javascript" src="testsuite/p2pvalue.js"></script>
+<script type="text/javascript" src="testsuite/wavejs.js"></script>
 
 <script type="text/javascript">
   var consoleApp = angular.module('consoleApp', []);
@@ -83,17 +84,79 @@
   consoleApp.controller('TestingCtrl', [ '$scope', '$rootScope',
       function($scope, $rootScope) {
 
-        $scope.runP2PvalueTest = function() {
+        $scope.runTestModel = function() {
 
-          P2PvalueTest.run();
+          $scope.modelid = WaveJS_Tester.runTestBasic("testResults");
+
 
         };
 
+
+
+        $scope.createModel = function() {
+
+          $scope.modelid = WaveJS.createModel(
+
+                  function(model) {
+
+                    WaveJS.model = model;
+                    console.log("Attached new collaborative data model to WaveJS.model");
+
+                   },
+
+                  function(error) {
+                      console.log("Error creating new collaborative data model: "+ error)
+                    });
+
+              if ($scope.modelid != null) {
+                console.log("Created new collaborative data model with id "+ $scope.modelid);
+              }
+
+        };
+
+        $scope.openModel = function() {
+
+          if ($scope.modelid == null) return;
+
+          $scope.modelid = WaveJS.openModel($scope.modelid,
+
+                  function(model) {
+
+                    WaveJS.model = model;
+                    console.log("Attached collaborative data model to WaveJS.model");
+
+                   },
+
+                  function(error) {
+                      console.log("Error opening collaborative data model: "+ error)
+                    });
+
+              if ($scope.modelid != null) {
+                console.log("Opened collaborative data model with id "+ $scope.modelid);
+              }
+
+        };
+
+        $scope.closeModel = function() {
+
+          if ($scope.modelid == null) return;
+
+          if (WaveJS.openModel($scope.modelid))
+            console.log("Closed collaborative data model with id "+ $scope.modelid);
+          else
+            console.log("Error closing collaborative data model with id "+ $scope.modelid);
+
+          WaveJS.model = undefined;
+        };
+
+
+
       } ]); // TestingCtrl
 
-  function onWaveJSReady() {
+    function onWaveJSReady() {
 
-  };
+    };
+
 </script>
 
 </head>
@@ -104,7 +167,7 @@
 
     <div class="jumbotron">
       <div class="container">
-        <h1>WaveJS Testing Console</h1>
+        <h1>WaveJS Console</h1>
       </div>
     </div>
 
@@ -123,7 +186,7 @@
                   class="form-control" id="server" ng-model="server" required>
               </div>
               <div class="form-group">
-                <label for="uid">User ID (e.g. tim)</label> <input type="text"
+                <label for="uid">User ID (eg tim@local.net)</label> <input type="text"
                   class="form-control" id="uid" placeholder="User ID"
                   ng-model="uid" required>
               </div>
@@ -152,11 +215,44 @@
         <div class="panel panel-default" ng-show="sessionId !== ''">
           <div class="panel-heading">Tests</div>
           <div class="panel-body">
+
+              <div class="form-group">
+                <label for="modelid">Model instance id</label> <input type="text"
+                  class="form-control" id="modelid" ng-model="modelid" required>
+              </div>
+
             <form role="form" id="testForm">
-              <button type="submit" class="btn btn-default" id="runP2PvalueTest"
-                ng-click="runP2PvalueTest()">Run Test Community Model</button>
-              <button type="submit" class="btn btn-default">Create a Community Model in WaveJS.cm</button>
+
+              <button type="submit" class="btn btn-default" id="runTestModel"
+                ng-click="runTestModel()">Run Test for new model</button>
+
             </form>
+
+
+
+            <form role="form" id="createForm">
+
+              <button type="submit" class="btn btn-default"
+                ng-click="createModel()">Create collaborative model instance</button>
+
+            </form>
+
+            <form role="form" id="openForm">
+
+
+              <button type="submit" class="btn btn-default"
+                ng-click="openModel()">Open collaborative model instance</button>
+
+            </form>
+
+
+            <form role="form" id="closeForm">
+
+              <button type="submit" class="btn btn-default"
+                ng-click="closeModel()">Close collaborative model instance</button>
+
+            </form>
+
           </div>
         </div>
       </div>
@@ -166,7 +262,7 @@
       <br> <br> <br>
       <div class="col-md-12">
         <div class="panel panel-default">
-          <div class="panel-heading">Jasmine's Tests output</div>
+          <div class="panel-heading">Test output</div>
           <div class="panel-body" id="testResults"></div>
         </div>
       </div>
