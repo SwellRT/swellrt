@@ -56,7 +56,7 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   public StringType(Model model, String value) {
     this.model = model;
-    this.initValue = value;
+    this.initValue = value != null ? value : ""; // Emtpy string not valid
 
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
