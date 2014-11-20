@@ -141,7 +141,7 @@
 
           if ($scope.modelid == null) return;
 
-          if (WaveJS.openModel($scope.modelid))
+          if (WaveJS.closeModel($scope.modelid))
             console.log("Closed collaborative data model with id "+ $scope.modelid);
           else
             console.log("Error closing collaborative data model with id "+ $scope.modelid);
