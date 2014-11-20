@@ -57,6 +57,9 @@ public class Model implements SourcesEvents<Model.Listener> {
   // The top level (root) map is stored in the root Document
   private static final String ROOT_MAP_TAG = "root-map";
 
+  // Generic root tag for all data documents.
+  private static final String ROOT_DATA_TAG = "data";
+
   private final TypeSerializer typeSerializer;
 
 
@@ -191,7 +194,18 @@ public class Model implements SourcesEvents<Model.Listener> {
       Preconditions.checkArgument(!wavelet.getDocumentIds().contains(docId),
           "Trying to create an existing substrate document");
       ObservableDocument doc = wavelet.getDocument(docId);
-      instance.attachToParent(docId, doc, doc.getDocumentElement());
+
+      // Create a root tag to ensure the document is persisted.
+      // If the doc is created empty and it's not populated with data it won't exist when the
+      // wavelet is open again.
+      Doc.E rootDataElement = DocHelper.getElementWithTagName(doc, ROOT_DATA_TAG);
+      if (rootDataElement == null)
+        rootDataElement =
+            doc.createChildElement(doc.getDocumentElement(), ROOT_DATA_TAG,
+                Collections.<String, String> emptyMap());
+
+
+      instance.attachToParent(docId, doc, rootDataElement);
 
     }
   }
@@ -237,7 +251,7 @@ public class Model implements SourcesEvents<Model.Listener> {
     // Delayed initialization of the Root Map
     if (rootMap == null) {
       rootMap = new MapType(this);
-      rootMap.attachToParent(null, rootModelDocument, rootMapElement);
+      rootMap.attachToParent(ROOT_DOC_ID, rootModelDocument, rootMapElement);
     }
 
     return rootMap;
