@@ -47,107 +47,111 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
 
       private static final class AtmosphereSocket extends JavaScriptObject {
+
         public static native AtmosphereSocket create(AtmosphereConnectionImpl impl, String urlBase) /*-{
 
-      var client = $wnd.atmosphere;
+        var client = $wnd.atmosphere;
 
-                var atsocket = {
-                    request: null,
-                    socket: null };
+                  var atsocket = {
+                      request: null,
+                      socket: null };
 
-                var connectionUrl = window.location.protocol + "//" +  $wnd.__websocket_address + "/";
+                  var connectionUrl = window.location.protocol + "//" +  $wnd.__websocket_address + "/";
 
-                connectionUrl += 'atmosphere';
+                  connectionUrl += 'atmosphere';
 
-                //console.log("Connection URL is "+urlBase);
-                atsocket.request = new client.AtmosphereRequest();
-                atsocket.request.url = connectionUrl;
-                atsocket.request.contenType = 'text/plain;charset=UTF-8';
-                atsocket.request.transport = 'long-polling';
-                atsocket.request.fallbackTransport = 'polling';
-                atsocket.request.enableXDR = true; // allows CORS
-                atsocket.request.readResponsesHeaders = false; // allows CORS
-                atsocket.request.withCredentials = true;
+                  //console.log("Connection URL is "+urlBase);
+                  atsocket.request = new client.AtmosphereRequest();
+                  atsocket.request.url = connectionUrl;
+                  atsocket.request.contenType = 'text/plain;charset=UTF-8';
+                  atsocket.request.transport = 'long-polling';
+                  atsocket.request.fallbackTransport = 'polling';
+                  atsocket.request.enableXDR = true; // allows CORS
+                  atsocket.request.readResponsesHeaders = false; // allows CORS
+                  atsocket.request.withCredentials = true;
 
-                atsocket.request.onOpen = $entry(function() {
-                    impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
-                });
+                  atsocket.request.onOpen = $entry(function() {
+                      impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+                  });
 
-                atsocket.request.onMessage =  $entry(function(response) {
+                  atsocket.request.onMessage =  $entry(function(response) {
 
-                  var r = response.responseBody;
+                    var r = response.responseBody;
 
-                  if (r.indexOf('|') == 0) {
+                    if (r.indexOf('|') == 0) {
 
-                      while (r.indexOf('|') == 0 && r.length > 1) {
+                        while (r.indexOf('|') == 0 && r.length > 1) {
 
-                        r = r.substring(1);
-                        var marker = r.indexOf('}|');
-                        impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r.substring(0, marker+1));
-                        r = r.substring(marker+1);
+                          r = r.substring(1);
+                          var marker = r.indexOf('}|');
+                          impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r.substring(0, marker+1));
+                          r = r.substring(marker+1);
 
-                     }
+                       }
 
-                  }
-                  else {
+                    }
+                    else {
 
-                    impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r);
+                      impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r);
 
-                  }
+                    }
 
-                });
+                  });
 
-                atsocket.request.onClose = $entry(function(response) {
+                  atsocket.request.onClose = $entry(function(response) {
 
-                   client.util.info("Connection closed");
+                     client.util.info("Connection closed");
 
-                   impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response);
-                });
-
-
-
-                atsocket.request.onTransportFailure = function(errorMsg, request) {
-
-                      client.util.info(errorMsg);
-
-                  };
+                     impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response);
+                  });
 
 
-                atsocket.request.onReconnect = function(request, response) {
 
-                      client.util.info("Reconnected to the server");
+                  atsocket.request.onTransportFailure = function(errorMsg, request) {
 
-                  };
+                        client.util.info(errorMsg);
 
-                  atsocket.request.onError = function(response) {
-
-                      client.util.info("Unexpected Error");
-
-                  };
+                    };
 
 
-                return atsocket;
+                  atsocket.request.onReconnect = function(request, response) {
+
+                        client.util.info("Reconnected to the server");
+
+                    };
+
+                    atsocket.request.onError = function(response) {
+
+                        client.util.info("Unexpected Error");
+
+                    };
+
+
+                  return atsocket;
 
 
         }-*/;
 
+
         protected AtmosphereSocket() {
+
+        }
+
+
+        public native void close() /*-{
+           this.socket.unsubscribe();
+        }-*/;
+
+        public native AtmosphereSocket connect() /*-{
+           this.socket = $wnd.atmosphere.subscribe(this.request);
+        }-*/;
+
+        public native void send(String data) /*-{
+           this.socket.push(data);
+        }-*/;
+
     }
 
-
-    public native void close() /*-{
-                               this.socket.unsubscribe();
-                               }-*/;
-
-    public native AtmosphereSocket connect() /*-{
-                                             this.socket = $wnd.atmosphere.subscribe(this.request);
-
-                                             }-*/;
-
-    public native void send(String data) /*-{
-                                         this.socket.push(data);
-                                         }-*/;
-    }
 
 
     private final AtmosphereConnectionListener listener;
@@ -165,21 +169,35 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
     @Override
     public void connect() {
-        if (socket == null) {
 
-                ScriptInjector.fromUrl("/atmosphere/atmosphere.js").setCallback(
-                        new Callback<Void, Exception>() {
-                                public void onFailure(Exception reason) {
-                                        throw new IllegalStateException("atmosphere.js load failed!");
-                                }
-                                public void onSuccess(Void result) {
+    if (socket == null) {
 
-                                        socket = AtmosphereSocket.create(AtmosphereConnectionImpl.this, urlBase);
-                                        socket.connect();
-                                }
-                        }).setWindow(ScriptInjector.TOP_WINDOW).inject();
+      // Build the atmosphere.js URL using the Websocket URL
+      String scriptUrl =
+          urlBase.startsWith("wss://") ? "https://" + urlBase.substring(6) : "http://"
+              + urlBase.substring(5);
+
+      // Remove trailing '/' before add context
+      if (scriptUrl.lastIndexOf("/") == scriptUrl.length() - 1)
+        scriptUrl = scriptUrl.substring(0, scriptUrl.length() - 1);
+
+      scriptUrl += "/atmosphere/atmosphere.js";
+
+      ScriptInjector.fromUrl(scriptUrl).setCallback(new Callback<Void, Exception>() {
+        public void onFailure(Exception reason) {
+          throw new IllegalStateException("atmosphere.js load failed!");
+        }
+
+        public void onSuccess(Void result) {
+
+          socket = AtmosphereSocket.create(AtmosphereConnectionImpl.this, urlBase);
+          socket.connect();
+        }
+
+      }).setWindow(ScriptInjector.TOP_WINDOW).inject();
+
+
         } else {
-
 
           if (AtmosphereConnectionState.CLOSED.equals(this.state))
             socket.connect();
