@@ -2,8 +2,8 @@ package org.waveprotocol.mod.wavejs;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -258,7 +258,7 @@ public class WaveJS implements EntryPoint {
 
 
   private native boolean websocketNotAvailable() /*-{
-                                                 return !window.WebSocket
+                                                 return !window.WebSocket;
                                                  }-*/;
 
   private native void setWebsocketAddress(String address) /*-{
@@ -434,10 +434,24 @@ public class WaveJS implements EntryPoint {
     $wnd.onWaveJSReady();
   }-*/;
 
+  private static native void dirtyLog(String msg) /*-{
+    $wnd.console.log(msg);
+  }-*/;
+
   public void onModuleLoad() {
 
     RootPanel.get();
     WaveClient.create(this); // Startup the WaveJS Client
+
+
+    GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
+
+      @Override
+      public void onUncaughtException(Throwable e) {
+        dirtyLog(e.toString());
+        GWT.log(e.getMessage(), e);
+      }
+    });
 
     // Notify the host page that client is already loaded
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
@@ -446,6 +460,7 @@ public class WaveJS implements EntryPoint {
         notifyLoaded();
       }
     });
+
 
 
   }
