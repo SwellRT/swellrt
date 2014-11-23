@@ -3,7 +3,6 @@ package org.waveprotocol.mod.wavejs;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.user.client.Random;
 
 import org.waveprotocol.mod.model.generic.Type;
@@ -86,9 +85,10 @@ public class WaveJSUtils {
     return array;
   }
 
-  public static JavaScriptObject toJs(String s) {
-    return JsonUtils.safeEval(s);
-  }
+  /*
+   * public static JavaScriptObject toJs(String s) { return
+   * JsonUtils.safeEval(s); }
+   */
 
 
 
