@@ -68,7 +68,7 @@ Build the server
 ant compile
 ```
 
-Build the current Wave UI with some quirks (it's needed to create users at the moment).
+Build the current Wave UI with some quirks (it's needed to create users at this moment).
 Ant targets for Hosted and Superdev mode are also provided. See the ant `build.xml` file.
 ```
 ant compile-gwt-mod
@@ -131,7 +131,7 @@ The following method will be called when library was fully loaded. Then the Wave
 
 #### Start and Stop sessions
 
-In order to work with the APU, first you must start a session against the Wave Server with a participant's credentials.
+In order to work with the API, first you must start a session against the Wave Server with a participant's credentials.
 ```
   WaveJS.startSession("http://localhost:9898", "myuser@local.net", "mypassword",
       function(sessionId) {
@@ -189,7 +189,7 @@ Create the model instance
 ```
 
 Don't forget to store the return value of WaveJS.createModel(...). It's the model instance Id (a.k.a. wave Id).
-It is needed to close the model.
+It's required to close the model later.
 
 
 Open an existing model instance
@@ -216,7 +216,7 @@ Open an existing model instance
             });
 ```
 
-Close the collaborative model instance, it disposes connection and resources:
+Close the collaborative model instance, it closes server's connection and dispose resources:
 
 ```
     WaveJS.close("local.net/dummy+Xxn3-XupCUA");
