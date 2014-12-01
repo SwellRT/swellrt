@@ -1,4 +1,13 @@
+
+   Wave Collaborative API 
+   Copyright 2014 Pablo Ojanguren <pablojan@gmail.com> and Universidad Complutense de Madrid (UCM) Spain.
+   This work has been developed as part of the P2Pvalue project: http://p2pvalue.eu
+
+   This work is published under the Apache License 2.0, as it is shown below.
+
+
 ***THE FOLLOWING LICENSE APPLIES TO***
+- Wave Collaborative API 
 - Apache Wave
 - Apache Commons CLI, Codec, Collection, Configuration, File Upload, HTTP
 Client, Lang, Logging libraries included in the generated jar files
