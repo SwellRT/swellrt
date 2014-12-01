@@ -246,7 +246,25 @@ http://www.gwtproject.org/doc/latest/DevGuideCompilingAndDebugging.html
 
 ## Using the Wave API
 
-This section assumes you have already opened a session in your Web App and you have attached the open model to `WaveJS.model`, as it's shown in the previous section.
+This section assumes you have already opened a session in your Web App and you have attached the opened model to `WaveJS.model`, as it's shown in the previous section.
+
+### The model object
+
+The model is the base object that can be shared between participants. A first user creates it and then it's shared adding participants:
+
+```
+WaveJS.model.addParticipant("myfriend@local.net");
+WaveJS.model.removeParticipant("myfriend@local.net");
+
+```
+
+Of course, a listener can be added to be notified when a new participant is added or an existing one is removed.
+
+```
+WaveJS.model.registerEventHandler(WaveJS.events.PARTICIPANT_ADDED, function(address) { ... });
+WaveJS.model.registerEventHandler(WaveJS.events.PARTICIPANT_REMOVED, function(address) { ... });
+```
+
 
 ### The root map
 
