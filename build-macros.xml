@@ -122,6 +122,32 @@
     </sequential>
   </macrodef>
 
+  <!-- Macro which gets a URL and checks it against the given checksum. -->
+  <!-- Modified from https://ant.apache.org/manual/Tasks/get.html . -->
+  <!-- The parameter "dest" must be a directory. -->
+  <macrodef name="get-and-checksum">
+    <attribute name="url"/>
+    <attribute name="dest"/>
+    <attribute name="checksum"/>
+    <attribute name="algorithm"/>
+    <attribute name="usetimestamp" default="false"/>
+    <attribute name="skipexisting" default="false"/>
+    <sequential>
+      <get dest="@{dest}" usetimestamp="@{usetimestamp}"
+           skipexisting="@{skipexisting}" src="@{url}"/>
+      <local name="checksum.matches"/>
+      <local name="checksum.matches.fail"/>
+      <local name="url.basename"/>
+      <basename property="url.basename" file="@{url}" />
+      <checksum file="@{dest}/${url.basename}" algorithm="@{algorithm}" property="@{checksum}"
+                verifyproperty="checksum.matches"/>
+      <condition property="checksum.matches.fail">
+        <equals arg1="${checksum.matches}" arg2="false"/>
+      </condition>
+      <fail if="checksum.matches.fail">Checksum error for "@{url}"</fail>
+    </sequential>
+  </macrodef>
+
   <!-- Macro which runs unit tests with JUnit -->
   <macrodef name="runtests">
     <attribute name="forkmode" description="How to fork the JVM for each test/batch"/>

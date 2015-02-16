@@ -963,13 +963,13 @@
   </target>
 
   <target name="get-third-party-codegen" description="Download code generating third party dependencies">
+    <get-and-checksum dest="${lib.codegen}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="25a61404c4b41e48eeaed49d41122f9400092248a10eb776d75ce3513295870eca1acc4b06c74925284a27cc64ca0506e34de39fb91996f09727cc5cc72dd9a6" url="http://www.antlr3.org/download/antlr-3.2.jar" />
     <get dest="${lib.codegen}" usetimestamp="true" skipexisting="true">
-      <url url="http://www.antlr3.org/download/antlr-3.2.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.6.1/gwt-dev-2.6.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.6.1/gwt-codeserver-2.6.1.jar" />
-      <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" />
-      <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final-sources.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/gwt/gwt-dev/2.6.1/gwt-dev-2.6.1.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/gwt/gwt-codeserver/2.6.1/gwt-codeserver-2.6.1.jar" />
+      <url url="https://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" />
+      <url url="https://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final-sources.jar" />
       <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" />
       <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3-dep.jar" />
     </get>
@@ -1026,68 +1026,68 @@
   </target>
 
   <target name="get-third-party-runtime" depends="get-jetty-dep, get-atmosphere-dep" description="Download run time third party dependencies">
+    <get-and-checksum dest="${lib.runtime}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="fb55f5aa8b10131e9290ec839ee7de78fe33ba6f2a83f6c95bab8b297d5d37fb26adf857a25e71223a0cb4e67c791b56dedf8189f8de3fd812ec33927738d319" url="http://wave.alown.co.uk/third_party/websocket.jar" />
+    <get-and-checksum dest="${lib.runtime}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="72756e905bc3aafe67ba0521247c94e549913318b77d95b226b94fd28efd230c0c5664eb8a63e12e3cf7d23a6209a46e3b269a7fecdce158a2dc6fd152a0f109" url="http://wave.alown.co.uk/third_party/whack.jar" />
+    <get-and-checksum dest="${lib.runtime}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="703c90575bf765fe44ccaab8fed6ab496967589c586ab40c655e12b167534220590c52d8f70ad4e4d64e8b0b8865a430d9cd2b7b616b8d63a5d3060adfc3dfd6" url="http://wave.alown.co.uk/third_party/xmpp.jar" />
+    <get-and-checksum dest="${lib.runtime}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="1dc2c9f78811ea56731f19f159b90db9af92c2b4fae03b5601965599f96a1f00eb1079fdac0c0101b8d93abe0f0914746b95707f8b0395f4dac2461978d2cb6d" url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar" />
+    <get-and-checksum dest="${lib.runtime}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="aa584a2e76c38285bb03594397518014bce7bac49b5aa848f00935bb36724c933fd550b13f031223af65ee59d35b40287df82913ac719a06ac9621cc186c800e" url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar" />
+    <get-and-checksum dest="${lib.runtime}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="46ea2d945efefd6fafd4d1048f2c37d0530ba63b6888c676bd261c4a02b64f1cac3b0077f603e5276051e73294eac9d458d493670781caf45958b86ddca66e29" url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-server/1.0-SNAPSHOT/gwt-initials-avatars-server-1.0-20140324.102825-10.jar" />
     <get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
-      <url url="http://central.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" />
-      <url url="http://central.maven.org/maven2/org/bouncycastle/bcprov-jdk16/1.45/bcprov-jdk16-1.45.jar" />
-      <url url="http://central.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar" />
+      <url url="https://repo1.maven.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" />
+      <url url="https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk16/1.45/bcprov-jdk16-1.45.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar" />
       <url url="https://archive.apache.org/dist/commons/fileupload/source/commons-fileupload-1.2.2-src.zip" />
-      <url url="http://central.maven.org/maven2/commons-cli/commons-cli/1.2/commons-cli-1.2.jar" />
-      <url url="http://central.maven.org/maven2/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-cli/commons-cli/1.2/commons-cli-1.2.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" />
       <url url="https://archive.apache.org/dist/commons/codec/source/commons-codec-1.4-src.zip" />
-      <url url="http://central.maven.org/maven2/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar" />
-      <url url="http://central.maven.org/maven2/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar" />
-      <url url="http://central.maven.org/maven2/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.1/commons-collections-3.2.1.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-configuration/commons-configuration/1.6/commons-configuration-1.6.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar" />
       <url url="https://archive.apache.org/dist/httpcomponents/commons-httpclient/source/commons-httpclient-3.1-src.zip" />
-      <url url="http://central.maven.org/maven2/commons-lang/commons-lang/2.5/commons-lang-2.5.jar" />
-      <url url="http://central.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-api.jar" />
-      <url url="http://central.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar" />
-      <url url="http://central.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar" />
-      <url url="http://central.maven.org/maven2/com/google/guava/guava/15.0/guava-15.0.jar" />
-      <url url="http://central.maven.org/maven2/com/google/guava/guava-gwt/15.0/guava-gwt-15.0.jar"/>
-      <url url="http://central.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/3.0/guice-assistedinject-3.0.jar" />
-      <url url="http://central.maven.org/maven2/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar" />
-      <url url="http://central.maven.org/maven2/com/google/inject/guice/3.0/guice-3.0.jar" />
-      <url url="http://central.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gxp/google-gxp/0.2.4-beta/google-gxp-0.2.4-beta.jar" />
-      <url url="http://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" />
-      <url url="http://central.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar" />
-      <url url="http://central.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-lang/commons-lang/2.5/commons-lang-2.5.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-api.jar" />
+      <url url="https://repo1.maven.org/maven2/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar" />
+      <url url="https://repo1.maven.org/maven2/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/guava/guava/15.0/guava-15.0.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/guava/guava-gwt/15.0/guava-gwt-15.0.jar"/>
+      <url url="https://repo1.maven.org/maven2/com/google/inject/extensions/guice-assistedinject/3.0/guice-assistedinject-3.0.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/inject/guice/3.0/guice-3.0.jar" />
+      <url url="https://repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/gxp/google-gxp/0.2.4-beta/google-gxp-0.2.4-beta.jar" />
+      <url url="https://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" />
+      <url url="https://repo1.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
 
-      <url url="http://central.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" />
-      <url url="http://central.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" />
-      <url url="http://central.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" />
-      <url url="http://repo1.maven.org/maven2/org/mongodb/mongo-java-driver/2.11.2/mongo-java-driver-2.11.2.jar" />
+      <url url="https://repo1.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" />
+      <url url="https://repo1.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" />
+      <url url="https://repo1.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" />
+      <url url="https://repo1.maven.org/maven2/org/mongodb/mongo-java-driver/2.11.2/mongo-java-driver-2.11.2.jar" />
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-provider/20100527/oauth-provider-20100527-sources.jar" />
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth/20100527/oauth-20100527.jar" />
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-provider/20100527/oauth-provider-20100527.jar" />
       <url url="https://oauth.googlecode.com/svn/code/maven/net/oauth/core/oauth-consumer/20100527/oauth-consumer-20100527.jar" />
-      <url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" />
+      <url url="https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" />
       <url url="https://protobuf-java-format.googlecode.com/files/protobuf-format-java-1.1.jar" />
-      <url url="http://wave.alown.co.uk/third_party/websocket.jar" />
-      <url url="http://wave.alown.co.uk/third_party/whack.jar" />
-      <url url="http://wave.alown.co.uk/third_party/xmpp.jar" />
-      <url url="http://central.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
-      <url url="http://central.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" />
-      <url url="http://repo1.maven.org/maven2/org/gnu/inet/libidn/1.15/libidn-1.15.jar" />
-      <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar" />
-      <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar" />
-      <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-server/1.0-SNAPSHOT/gwt-initials-avatars-server-1.0-20140324.102825-10.jar" />
+      <url url="https://repo1.maven.org/maven2/xpp3/xpp3/1.1.4c/xpp3-1.1.4c.jar" />
+      <url url="https://repo1.maven.org/maven2/xpp3/xpp3_xpath/1.1.4c/xpp3_xpath-1.1.4c.jar" />
+      <url url="https://repo1.maven.org/maven2/org/gnu/inet/libidn/1.15/libidn-1.15.jar" />
     </get>
   </target>
 
   <target name="get-third-party-test" description="Download testing third party dependencies">
+    <get-and-checksum dest="${lib.test}" usetimestamp="true" skipexisting="true" algorithm="SHA-512" checksum="589024b3f3e01a5831bf2b0f401a08804a7853c4f71e257583761ab94a66a073a9e2a2dd52448f74af61fc25336d184ca14705e0d93b977970c359c85e2e64f3" url="http://download.forge.objectweb.org/asm/asm-3.2.jar" />
     <get dest="${lib.test}" usetimestamp="true" skipexisting="true">
-      <url url="http://central.maven.org/maven2/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar" />
-      <url url="http://download.forge.objectweb.org/asm/asm-3.2.jar" />
-      <url url="http://central.maven.org/maven2/cglib/cglib/2.2/cglib-2.2.jar" />
-      <url url="http://central.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar" />
-      <url url="http://central.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar" />
+      <url url="https://repo1.maven.org/maven2/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar" />
+      <url url="https://repo1.maven.org/maven2/cglib/cglib/2.2/cglib-2.2.jar" />
+      <url url="https://repo1.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar" />
+      <url url="https://repo1.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar" />
       <url url="https://hamcrest.googlecode.com/files/hamcrest-all-1.2.jar" />
-      <url url="http://central.maven.org/maven2/org/jmock/jmock-junit3/2.6.0/jmock-junit3-2.6.0.jar" />
-      <url url="http://central.maven.org/maven2/org/jmock/jmock/2.6.0/jmock-2.6.0.jar" />
-      <url url="http://central.maven.org/maven2/junit/junit/4.10/junit-4.10.jar" />
-      <url url="http://central.maven.org/maven2/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar" />
+      <url url="https://repo1.maven.org/maven2/org/jmock/jmock-junit3/2.6.0/jmock-junit3-2.6.0.jar" />
+      <url url="https://repo1.maven.org/maven2/org/jmock/jmock/2.6.0/jmock-2.6.0.jar" />
+      <url url="https://repo1.maven.org/maven2/junit/junit/4.10/junit-4.10.jar" />
+      <url url="https://repo1.maven.org/maven2/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar" />
     </get>
   </target>
 
