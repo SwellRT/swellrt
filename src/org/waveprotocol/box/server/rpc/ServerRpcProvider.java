@@ -363,9 +363,12 @@ public class ServerRpcProvider {
     if (connectors.isEmpty()) {
       LOG.severe("No valid http end point address provided!");
     }
+
+
     for (Connector connector : connectors) {
       httpServer.addConnector(connector);
     }
+
     final WebAppContext context = new WebAppContext();
 
     context.setParentLoaderPriority(true);
@@ -410,11 +413,13 @@ public class ServerRpcProvider {
       context.addEventListener(contextListener);
       context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
       context.addFilter(GzipFilter.class, "/webclient/*", EnumSet.allOf(DispatcherType.class));
+
       String[] hosts = new String[httpAddresses.length];
-      for (int i=0; i < httpAddresses.length; i++) {
-        hosts[i] = httpAddresses[i].getHostName();
+      for (int i = 0; i < httpAddresses.length; i++) {
+        hosts[i] = httpAddresses[i].getHostString();
       }
       context.addVirtualHosts(hosts);
+
       httpServer.setHandler(context);
 
       httpServer.start();
@@ -553,7 +558,8 @@ public class ServerRpcProvider {
       } else {
         connector = new ServerConnector(httpServer);
       }
-      connector.setHost(address.getHostName());
+      // Allow access by IP and Hostname
+      connector.setHost(address.getAddress().getHostAddress());
       connector.setPort(address.getPort());
       connector.setIdleTimeout(0);
       list.add(connector);
