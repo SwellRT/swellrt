@@ -429,7 +429,9 @@ private final WelcomeRobot welcomeBot;
 
   protected boolean checkNoRedirect(HttpServletRequest req) {
     String query = req.getQueryString();
+    if (query == null) return false;
     String encoded_url = query.substring("r=".length());
+    if (encoded_url == null) return false;
     return encoded_url.equalsIgnoreCase("none");
   }
 
