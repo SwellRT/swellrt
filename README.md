@@ -49,19 +49,17 @@ Recomended:
 - MongoDB
 
 
-### Configure Server
-
-The Wave server is configured in the `server.config` file. For more info see `README.wave`.
-Default values configures the server to available at `http://localhost:9898`.
-
 ### Build Server and API
 
-Clone the Wave API server to a local forlder. Then `cd` to it.
+
+Clone the Wave API server to a local forlder. Then `cd` to it. Wave uses Ant to build.
 
 Get Apache Wave Dependencies
+
 ```
- ant get-third-party
- ```
+ant get-third-party
+```
+
 
 Build the server
 ```
@@ -74,27 +72,37 @@ Ant targets for Hosted and Superdev mode are also provided. See the ant `build.x
 ant compile-gwt-mod
 ```
 
-Build the JavaScript API for development
+Build the JavaScript API client for development
 ```
 ant compile-wavejs-dev
 ```
 
-To compile the Javascript API for production use `ant compile-wavejs-dev`.
+To compile the Javascript API client for production use `ant compile-wavejs`.
 
 
-### Run Server
+### Configure the Server
 
-In order to work with the API in a Web app, the server have to be running. Start it with followinf task:
+You need to configure your Wave server instance before you can use it. To create a default simple configuration for the first time run:
+```
+ant -f server-config.xml
+```
+
+Then, you can edit the server configuration in the generated `server.config` file.
+
+### Run the Server
+
+The JavaScript API client is served by the Wave server itself. Start it with following task:
 ```
 ant run-server
 ```
-Additional ways to start the server are described in the `README.wave` file.
 
 The server will be ready after following message is prompted:
 
 ```
  [java] 19069 [main] INFO org.eclipse.jetty.server.ServerConnector - Started ServerConnector@ae26011{HTTP/1.1}{localhost:9898}
 ```
+
+For more info please check `README.wave`
 
 ### Users
 
