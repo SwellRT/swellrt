@@ -227,7 +227,7 @@ Open an existing model instance
 Close the collaborative model instance, it closes server's connection and dispose resources:
 
 ```
-    WaveJS.close("local.net/dummy+Xxn3-XupCUA");
+    WaveJS.closeWave("local.net/dummy+Xxn3-XupCUA");
 ```
 
 
