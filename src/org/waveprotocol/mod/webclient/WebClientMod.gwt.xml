@@ -38,7 +38,7 @@
 
   <!-- Specify the app entry point class.   -->
   <entry-point class='org.waveprotocol.mod.webclient.WebClientMod'/>
-  <set-property name="user.agent" value="safari" />
+  <set-property name="user.agent" value="gecko1_8,safari" />
   <set-property name="mobile.user.agent" value="not_mobile" />
   <set-property name="loglevel" value="debug" />
 
