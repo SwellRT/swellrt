@@ -45,7 +45,17 @@ public interface StageZero {
     protected final void create(Accessor<StageZero> whenReady) {
       onStageInit();
       // TODO: enable webdriver hook.
-      GWT.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
+      // GWT.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
+      // It seems channel throws some ignorable exceptions :/
+      GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
+
+        @Override
+        public void onUncaughtException(Throwable e) {
+          GWT.log("Wave channel internal exception: " + e.getMessage(), e);
+
+        }
+      });
+
       if (GWT.isScript()) {
         CollectionUtils.setDefaultCollectionFactory(new JsoCollectionFactory());
       }
