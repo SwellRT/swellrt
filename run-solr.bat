@@ -14,13 +14,13 @@ rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 rem See the License for the specific language governing permissions and
 rem limitations under the License.
 
-if not exist "third_party\solr\solr-4.9.0\example" (
+if not exist "third_party\solr\solr-4.9.1\example" (
   echo "Please download Solr by running: ant get-third-party-solr-dep "
-  echo "Or download it manually from http://apache.spd.co.il/lucene/solr/4.9.0/ into third_party\solr and unzip there."
+  echo "Or download it manually from http://apache.spd.co.il/lucene/solr/4.9.1/ into third_party\solr and unzip there."
   pause
   exit 1
 )
 
-cd third_party\solr\solr-4.9.0\example
+cd third_party\solr\solr-4.9.1\example
 java -jar start.jar
 pause

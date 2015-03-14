@@ -135,7 +135,7 @@ Or on Ubuntu Linux you can use the following command:
 
 To enable Solr:
 --
-In order to specify Solr in server.config as the search type - you need to install Solr according to instructions at: http://www.apache.org/dyn/closer.cgi/lucene/solr/4.9.0.  
+In order to specify Solr in server.config as the search type - you need to install Solr according to instructions at: http://www.apache.org/dyn/closer.cgi/lucene/solr/4.9.1.  
 Or, you can use built in Ant script, i.e. run:  
     ant get-third-party-solr-dep  
 This will download and unzip the Solr distribution into third_party/solr folder.  

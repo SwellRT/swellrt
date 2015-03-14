@@ -19,12 +19,12 @@
 
 # This script will start the Solr server.
 
-# Make sure the third_party/solr/solr-4.9.0/example folder exists.
-if [ ! -d third_party/solr/solr-4.9.0/example ]; then
+# Make sure the third_party/solr/solr-4.9.1/example folder exists.
+if [ ! -d third_party/solr/solr-4.9.1/example ]; then
   echo "Please download Solr by running: ant get-third-party-solr-dep "
-  echo "Or download it manually from http://apache.spd.co.il/lucene/solr/4.9.0/ into third_party/solr and unzip there."
+  echo "Or download it manually from http://apache.spd.co.il/lucene/solr/4.9.1/ into third_party/solr and unzip there."
   exit 1
 fi
 
-cd third_party/solr/solr-4.9.0/example
+cd third_party/solr/solr-4.9.1/example
 exec java -jar start.jar
