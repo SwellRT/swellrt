@@ -371,4 +371,17 @@ list.size();
 list.remove(<index>);
 ```
 
+### General API callbacks
+
+The API runtime will call to some predefined methods in following cases:
+
+`window.onWaveJSException(exception)` will be invoked if some serious exception happens. You must avoid further actions to the current Wave Content instance and close it.
+
+`window.onWaveJSUpdate(inFlightSize, notAckedSize, unCommitedSize)` will be invoked anytime you have perfomed actions to the current Wave Content instance. Having any parameter
+with value different to 0 implies that changes are not persisted in the server yet. This method is invoked anytime unsaved data is acknowledge or commited by the server.
+
+`window.onWaveJSClose(everythingCommitted)` will be invoked if connection to server for current Wave Content is closed. You must avoid further actions
+to the current Wave Content instance. Closing the wave instance is not necessary.
+
+
 
