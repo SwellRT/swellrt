@@ -41,33 +41,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class WaveJS implements EntryPoint {
+public class WaveJS implements EntryPoint, UnsavedDataListener {
 
   private static final Logger log = Logger.getLogger(WaveJS.class.getName());
-
-
-  public class UnsavedDataListenerProxy implements UnsavedDataListener {
-
-    private UnsavedDataListener actualListener = null;
-
-    public void setActualUnsavedDataListener(UnsavedDataListener actualListener) {
-      this.actualListener = actualListener;
-    }
-
-    @Override
-    public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
-      if (actualListener != null)
-        this.actualListener.onUpdate(unsavedDataInfo);
-
-    }
-
-    @Override
-    public void onClose(boolean everythingCommitted) {
-      if (actualListener != null)
-        this.actualListener.onClose(everythingCommitted);
-    }
-
-  }
 
 
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
@@ -228,9 +204,8 @@ public class WaveJS implements EntryPoint {
     seed = Session.get().getIdSeed();
 
     waveContentManager =
-        WaveManager.create(waveStore, waveServerDomain, idGenerator,
-        loggedInUser, seed,
-        channel);
+        WaveManager.create(waveStore, waveServerDomain, idGenerator, loggedInUser, seed, channel,
+            this);
 
   }
 
@@ -428,14 +403,29 @@ public class WaveJS implements EntryPoint {
 
   }
 
-
-
   private static native void notifyLoaded() /*-{
-    $wnd.onWaveJSReady();
+    if (typeof $wnd.onWaveJSReady === "function")
+      $wnd.onWaveJSReady();
   }-*/;
 
   private static native void dirtyLog(String msg) /*-{
     $wnd.console.log(msg);
+  }-*/;
+
+  private static native void notifyException(Throwable e) /*-{
+    if (typeof $wnd.onWaveJSException === "function")
+      $wnd.onWaveJSException(e);
+  }-*/;
+
+  private static native void notifyOnUpdate(int inFlightSize, int notAckedSize,
+      int unCommitedSize) /*-{
+    if (typeof $wnd.onWaveJSUpdate === "function")
+      $wnd.onWaveJSUpdate(inFlightSize, notAckedSize, unCommitedSize);
+  }-*/;
+
+  private static native void notifyOnClose(boolean everythingCommitted) /*-{
+    if (typeof $wnd.onWaveJSClose === "function")
+      $wnd.onWaveJSClose(everythingCommitted);
   }-*/;
 
   public void onModuleLoad() {
@@ -450,6 +440,7 @@ public class WaveJS implements EntryPoint {
       public void onUncaughtException(Throwable e) {
         dirtyLog(e.toString());
         GWT.log(e.getMessage(), e);
+        notifyException(e);
       }
     });
 
@@ -463,6 +454,17 @@ public class WaveJS implements EntryPoint {
 
 
 
+  }
+
+  @Override
+  public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
+    notifyOnUpdate(unsavedDataInfo.inFlightSize(), unsavedDataInfo.estimateUnacknowledgedSize(),
+        unsavedDataInfo.estimateUncommittedSize());
+  }
+
+  @Override
+  public void onClose(boolean everythingCommitted) {
+    notifyOnClose(everythingCommitted);
   }
 
 }

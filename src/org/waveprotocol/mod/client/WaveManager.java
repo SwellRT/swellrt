@@ -23,31 +23,6 @@ public class WaveManager {
 
 
 
-
-  public class UnsavedDataListenerProxy implements UnsavedDataListener {
-
-
-    private UnsavedDataListener actualListener = null;
-
-    public void setActualUnsavedDataListener(UnsavedDataListener actualListener) {
-      this.actualListener = actualListener;
-    }
-
-    @Override
-    public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
-      if (actualListener != null) this.actualListener.onUpdate(unsavedDataInfo);
-
-    }
-
-    @Override
-    public void onClose(boolean everythingCommitted) {
-      if (actualListener != null) this.actualListener.onClose(everythingCommitted);
-    }
-
-
-  }
-
-
   private final String seed;
   private final ParticipantId signedUserId;
   private final SchemaProvider schemaProvider;
@@ -55,6 +30,7 @@ public class WaveManager {
   private final IdGenerator idGenerator;
   private final String localDomain;
   private final WaveStore waveStore;
+  private final UnsavedDataListener dataListener;
 
   /**
    * private ProfileManager profileManager;
@@ -76,20 +52,21 @@ public class WaveManager {
    * @return
    */
   public static WaveManager create(WaveStore waveStore, IdGenerator idGenerator,
-      RemoteViewServiceMultiplexer channel) {
+      RemoteViewServiceMultiplexer channel, UnsavedDataListener dataListener) {
     return new WaveManager(waveStore, Session.get().getDomain(),
         ParticipantId.ofUnsafe(Session.get().getAddress()), Session.get().getIdSeed(),
-        new ConversationSchemas(), channel, idGenerator);
+ new ConversationSchemas(), channel,
+        idGenerator, dataListener);
   }
 
 
   public static WaveManager create(WaveStore waveStore, String localDomain,
       IdGenerator idGenerator, ParticipantId loggedInUser, String idSeed,
-      RemoteViewServiceMultiplexer channel) {
+      RemoteViewServiceMultiplexer channel, UnsavedDataListener dataListener) {
 
     return new WaveManager(waveStore, localDomain, loggedInUser, idSeed,
         new ConversationSchemas(),
-        channel, idGenerator);
+        channel, idGenerator, dataListener);
   }
 
 
@@ -99,7 +76,8 @@ public class WaveManager {
   protected WaveManager(WaveStore waveStore, String localDomain, ParticipantId signedUserId,
       String seed,
       SchemaProvider schemaProvider,
-      RemoteViewServiceMultiplexer channel, IdGenerator idGenerator) {
+ RemoteViewServiceMultiplexer channel,
+      IdGenerator idGenerator, UnsavedDataListener dataListener) {
 
     this.waveStore = waveStore;
     this.signedUserId = signedUserId;
@@ -109,6 +87,7 @@ public class WaveManager {
     this.channel = channel;
     this.idGenerator = idGenerator;
     this.localDomain = localDomain;
+    this.dataListener = dataListener;
   }
 
 
@@ -116,7 +95,7 @@ public class WaveManager {
   public WaveWrapper getWaveContentWrapper(WaveRef waveRef, boolean isNewWave) {
 
     return new WaveWrapper(waveRef, getChannel(), getIdGenerator(), getWaveStore(),
-        getLocalDomain(), null, getSignedUserId(), isNewWave);
+        getLocalDomain(), null, getSignedUserId(), isNewWave, dataListener);
 
   }
 

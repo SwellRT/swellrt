@@ -5,6 +5,7 @@ import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
+import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
@@ -36,14 +37,15 @@ public class WaveWrapper extends Stages {
   protected String localDomain;
   protected Set<ParticipantId> participants;
   protected boolean isNewWave;
-  private WaveManager.UnsavedDataListenerProxy dataListenerProxy;
+  private UnsavedDataListener dataListener;
   protected ParticipantId loggedInUser;
 
 
 
   protected WaveWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, WaveStore waveStore, String localDomain,
-      Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave) {
+      Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave,
+      UnsavedDataListener dataListener) {
     super();
     this.waveRef = waveRef;
     this.channel = channel;
@@ -53,6 +55,7 @@ public class WaveWrapper extends Stages {
     this.participants = participants;
     this.isNewWave = isNewWave;
     this.loggedInUser = loggedInUser;
+    this.dataListener = dataListener;
 
   }
 
@@ -74,7 +77,7 @@ public class WaveWrapper extends Stages {
   @Override
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
     return haltIfClosed(new StageTwoProvider(this.one = one, this.waveRef, this.channel,
-        this.isNewWave, this.idGenerator, this.dataListenerProxy,
+        this.isNewWave, this.idGenerator, this.dataListener,
         this.participants));
   }
 
