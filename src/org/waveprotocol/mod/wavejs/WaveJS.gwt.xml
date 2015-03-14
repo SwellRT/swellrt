@@ -41,7 +41,6 @@
   <source path="" />
   <source path="js" />
   <source path="js/adt" />
-  <source path="js/dummy" />
-  <source path="js/p2pvalue" />
-  <source path="js/showcase/chat" />
+  <source path="js/generic" />
+
 </module>

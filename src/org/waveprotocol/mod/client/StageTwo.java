@@ -23,7 +23,6 @@ package org.waveprotocol.mod.client;
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;
 
-import org.waveprotocol.mod.model.dummy.ListModel;
 import org.waveprotocol.mod.model.generic.Model;
 import org.waveprotocol.wave.client.OptimalGroupingScheduler;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -441,7 +440,6 @@ public interface StageTwo {
       ArrayList<String> prefixes = new ArrayList<String>();
       prefixes.add(IdConstants.CONVERSATION_WAVELET_PREFIX);
       prefixes.add(Model.WAVELET_ID_PREFIX);
-      prefixes.add(ListModel.WAVELET_ID_PREFIX);
       final IdFilter filter = IdFilter.of(Collections.singleton(udwId), prefixes);
 
       WaveletDataImpl.Factory snapshotFactory =
