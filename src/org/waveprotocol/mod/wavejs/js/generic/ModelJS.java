@@ -59,6 +59,16 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
      createList: function() {
        var _list = delegate.@org.waveprotocol.mod.model.generic.Model::createList()();
        return @org.waveprotocol.mod.wavejs.js.generic.AdapterTypeJS::adapt(Lorg/waveprotocol/mod/model/generic/Type;)(_list);
+     },
+
+     // For debug purpose only
+     getModelDocuments: function() {
+       var _docs = delegate.@org.waveprotocol.mod.model.generic.Model::getModelDocuments()();
+       return @org.waveprotocol.mod.wavejs.WaveJSUtils::stringIterableToJs(Ljava/lang/Iterable;)(_docs);
+     },
+
+     getModelDocument: function(docId) {
+       return delegate.@org.waveprotocol.mod.model.generic.Model::getModelDocument(Ljava/lang/String;)(docId);
      }
 
     }; // jso
