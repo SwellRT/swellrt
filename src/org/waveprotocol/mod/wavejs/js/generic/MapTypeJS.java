@@ -71,7 +71,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
 
        keySet: function() {
           var _keyset = delegate.@org.waveprotocol.mod.model.generic.MapType::keySet()();
-          return @org.waveprotocol.mod.wavejs.WaveJSUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset)
+          return @org.waveprotocol.mod.wavejs.WaveJSUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset);
        },
 
        remove: function(key) {
