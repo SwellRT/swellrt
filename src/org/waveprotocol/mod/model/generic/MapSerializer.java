@@ -1,10 +1,10 @@
 package org.waveprotocol.mod.model.generic;
 
-public class TypeSerializer implements org.waveprotocol.wave.model.util.Serializer<Type> {
+public class MapSerializer implements org.waveprotocol.wave.model.util.Serializer<Type> {
 
   protected Model model;
 
-  protected TypeSerializer(Model model) {
+  protected MapSerializer(Model model) {
     this.model = model;
   }
 
@@ -18,15 +18,15 @@ public class TypeSerializer implements org.waveprotocol.wave.model.util.Serializ
 
     if (s.startsWith(StringType.PREFIX)) {
 
-      return StringType.fromString(model, s);
+      return StringType.createAndAttach(model, s);
 
     } else if (s.startsWith(MapType.PREFIX)) {
 
-      return MapType.fromString(model, s);
+      return MapType.createAndAttach(model, s);
 
     } else if (s.startsWith(ListType.PREFIX)) {
 
-      return ListType.fromString(model, s);
+      return ListType.createAndAttach(model, s);
     }
 
 

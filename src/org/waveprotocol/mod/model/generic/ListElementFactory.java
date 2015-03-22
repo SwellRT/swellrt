@@ -2,19 +2,18 @@ package org.waveprotocol.mod.model.generic;
 
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
-import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import java.util.Map;
 
-public class TypeFactory implements
-    org.waveprotocol.wave.model.adt.docbased.Factory<Doc.E, Type, TypeInitializer> {
+public class ListElementFactory implements
+    org.waveprotocol.wave.model.adt.docbased.Factory<Doc.E, Type, ListElementInitializer> {
 
 
   private Model model;
 
-  protected TypeFactory(Model model) {
+  protected ListElementFactory(Model model) {
     this.model = model;
   }
 
@@ -23,29 +22,31 @@ public class TypeFactory implements
 
     Map<String, String> attributes = router.getDocument().getAttributes(element);
     Preconditions.checkArgument(attributes != null,
-        "Adapting an element to Type but attributes not found");
+        "Adapting a list element to Type but attributes not found");
 
     String type = attributes.get("t");
     Preconditions.checkArgument(type != null,
-        "Adapting an element to Type but 't' attribute not found");
+        "Adapting a list element to Type but attribute for type not found");
 
-    Type typeInstance = Type.createInstance(type, model);
-    typeInstance.attachToParent(null, (ObservableDocument) router.getDocument(), element);
+    String value = attributes.get("r");
+    Preconditions.checkArgument(value != null,
+        "Adapting a list element to Type but attribute for reference not found");
 
-    return typeInstance;
+    return Type.createInstance(type, value, model);
+
   }
 
   @Override
   public org.waveprotocol.wave.model.adt.docbased.Initializer createInitializer(
-      final TypeInitializer initialState) {
+      final ListElementInitializer initialState) {
 
     return new org.waveprotocol.wave.model.adt.docbased.Initializer() {
 
       @Override
       public void initialize(Map<String, String> target) {
         target.put("t", initialState.getType());
-        if (initialState.getSimpleValue() != null) {
-          target.put("v", initialState.getSimpleValue());
+        if (initialState.getBackendId() != null) {
+          target.put("r", initialState.getBackendId());
         }
       }
 

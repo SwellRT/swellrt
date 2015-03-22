@@ -1,17 +1,18 @@
 package org.waveprotocol.mod.model.generic;
 
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
-import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicMap;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,16 +29,17 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
 
-  protected static MapType fromString(Model model, String s) {
 
-    Preconditions.checkArgument(s.startsWith(PREFIX), "MapType.fromString() is not a MapType");
+  protected static Type createAndAttach(Model model, String id) {
+
+    Preconditions.checkArgument(id.startsWith(PREFIX), "MapType.fromString() not a map id");
     MapType map = new MapType(model);
-    map.attachToModel(s);
+    map.attach(id);
     return map;
 
   }
 
-
+  public final static String ROOT_TAG = "map";
   public final static String TYPE = "map";
   public final static String PREFIX = "map";
 
@@ -50,9 +52,9 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
   private Model model;
 
-  private ObservableDocument document;
-  private String documentId;
-  private Doc.E element;
+  private ObservableDocument backendDocument;
+  private String backendDocumentId;
+  private Doc.E backendRootElement;
 
   private boolean isAttached;
 
@@ -93,46 +95,52 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   // Type interface
   //
 
+  @Override
+  protected void attach(String docId) {
+
+
+    if (docId == null) {
+
+      docId = model.generateDocId(getPrefix());
+      backendDocument = model.createDocument(docId);
+
+    } else
+      backendDocument = model.getDocument(docId);
+
+    backendDocumentId = docId;
+
+    // Create a root tag to ensure the document is persisted.
+    // If the doc is created empty and it's not populated with data it won't
+    // exist when the wavelet is open again.
+    backendRootElement = DocHelper.getElementWithTagName(backendDocument, ROOT_TAG);
+    if (backendRootElement == null)
+      backendRootElement =
+          backendDocument.createChildElement(backendDocument.getDocumentElement(), ROOT_TAG,
+              Collections.<String, String> emptyMap());
+
+    DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
+
+    this.observableMap =
+        DocumentBasedBasicMap.create(router, backendRootElement, Serializer.STRING,
+            model.getTypeSerializer(), ENTRY_TAG_NAME, KEY_ATTR_NAME, VALUE_ATTR_NAME);
+
+    this.observableMap.addListener(observableMapListener);
+
+    this.isAttached = true;
+
+  }
+
+  protected void deattach() {
+    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
+
+    // nothing to do. wavelet doesn't provide doc deletion
+  }
 
   @Override
   protected String getPrefix() {
     return PREFIX;
   }
 
-  @Override
-  protected void attachToModel() {
-    model.attach(this);
-  }
-
-  @Override
-  protected void attachToModel(String documentId) {
-    model.attach(this, documentId);
-  }
-
-
-  @Override
-  protected void attachToParent(String documentId, ObservableDocument parentDoc, Doc.E parentElement) {
-
-    DocEventRouter router = DefaultDocEventRouter.create(parentDoc);
-
-    this.observableMap =
-        DocumentBasedBasicMap.create(router, parentElement, Serializer.STRING,
-            model.getTypeSerializer(), ENTRY_TAG_NAME, KEY_ATTR_NAME, VALUE_ATTR_NAME);
-
-    this.observableMap.addListener(observableMapListener);
-
-    this.element = parentElement;
-    this.documentId = documentId;
-    this.document = parentDoc;
-
-    this.isAttached = true;
-
-  }
-
-  @Override
-  protected void attachToString(int indexStringPos, ObservableBasicValue<String> observableValue) {
-    // Nothing to do
-  }
 
   @Override
   protected boolean isAttached() {
@@ -142,12 +150,23 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   @Override
   protected String serializeToModel() {
     Preconditions.checkArgument(isAttached, "Unable to serialize an unattached MapType");
-    return documentId;
+    return backendDocumentId;
   }
 
   @Override
-  protected TypeInitializer getTypeInitializer() {
-    return TypeInitializer.MapTypeInitializer;
+  protected ListElementInitializer getListElementInitializer() {
+    return new ListElementInitializer() {
+
+      @Override
+      public String getType() {
+        return TYPE;
+      }
+
+      @Override
+      public String getBackendId() {
+        return serializeToModel();
+      }
+    };
   }
 
 
@@ -188,8 +207,10 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
   public Type put(String key, Type value) {
     Preconditions.checkArgument(isAttached, "MapType.put(): not attached to model");
+    Preconditions.checkArgument(!value.isAttached(),
+        "MapType.put(): forbidden to add an already attached Type");
 
-    if (!value.isAttached()) value.attachToModel();
+    value.attach(null);
 
     if (!observableMap.put(key, value)) {
       return null;
@@ -203,14 +224,14 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   public StringType put(String key, String value) {
     Preconditions.checkArgument(isAttached, "MapType.put(): not attached to model");
 
-    StringType svalue = new StringType(model, value);
-    svalue.attachToModel();
+    StringType strValue = new StringType(model, value);
+    strValue.attach(null);
 
-    if (!observableMap.put(key, svalue)) {
+    if (!observableMap.put(key, strValue)) {
       return null;
     }
 
-    return svalue;
+    return strValue;
   }
 
   public Set<String> keySet() {

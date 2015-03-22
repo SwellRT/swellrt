@@ -1,14 +1,8 @@
 package org.waveprotocol.mod.model.generic;
 
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
-import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
-import org.waveprotocol.wave.model.document.Doc.E;
-import org.waveprotocol.wave.model.document.ObservableDocument;
-import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
-import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 public class StringType extends Type implements SourcesEvents<StringType.Listener> {
@@ -20,19 +14,13 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   }
 
+  protected static Type createAndAttach(Model model, String id) {
 
-  protected static StringType fromString(Model model, String s) {
-
-    Preconditions.checkArgument(s.startsWith(PREFIX), "StringType.fromString() not a StringType");
-    int indexStringPos = Integer.valueOf(s.split("\\+")[1]);
-
-    ObservableBasicValue<String> observableValue =
-        model.getStringIndex().get(Integer.valueOf(indexStringPos));
-
-    StringType str = new StringType(model, observableValue.get());
-    str.attachToString(indexStringPos, observableValue);
-
-    return str;
+    Preconditions.checkArgument(id.startsWith(PREFIX),
+        "StringType.createAndAttach() not a string id");
+    StringType string = new StringType(model);
+    string.attach(id);
+    return string;
 
   }
 
@@ -53,8 +41,22 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
+  protected StringType(Model model) {
+
+    this.model = model;
+    this.initValue = null;
+    this.observableValueListener = new ObservableBasicValue.Listener<String>() {
+
+      @Override
+      public void onValueChanged(String oldValue, String newValue) {
+        for (Listener l : listeners)
+          l.onValueChanged(oldValue, newValue);
+      }
+    };
+  }
 
   public StringType(Model model, String value) {
+
     this.model = model;
     this.initValue = value != null ? value : ""; // Emtpy string not valid
 
@@ -77,33 +79,33 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
 
   @Override
-  protected void attachToModel() {
-    model.attach(this);
-  }
+  protected void attach(String stringId) {
 
-  @Override
-  protected void attachToModel(String documentId) {
-    // Nothing to do
-  }
+    if (stringId == null) {
 
-  protected void attachToString(int indexStringPos, ObservableBasicValue<String> observableValue) {
-    this.indexStringPos = indexStringPos;
-    this.observableValue = observableValue;
-    this.observableValue.addListener(observableValueListener);
-    isAttached = true;
-  }
+      indexStringPos = model.getStringIndex().size();
+      observableValue = model.getStringIndex().add(indexStringPos, initValue);
 
-  @Override
-  protected void attachToParent(String documentId, ObservableDocument parentDoc, E parentElement) {
+    } else {
 
-    DocEventRouter router = DefaultDocEventRouter.create(parentDoc);
+      indexStringPos = Integer.valueOf(stringId.split("\\+")[1]);
+      observableValue = model.getStringIndex().get(indexStringPos);
+      initValue = observableValue.get();
 
-    this.observableValue =
-        DocumentBasedBasicValue.create(router, parentElement, Serializer.STRING, VALUE_ATTR);
-    this.observableValue.addListener(observableValueListener);
-    isAttached = true;
+    }
+
+    observableValue.addListener(observableValueListener);
+
+    this.isAttached = true;
 
   }
+
+  protected void deattach() {
+    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
+
+    // For now, we are not remove strings from index
+  }
+
 
   @Override
   protected boolean isAttached() {
@@ -118,8 +120,8 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
   }
 
   @Override
-  protected TypeInitializer getTypeInitializer() {
-    return new TypeInitializer() {
+  protected ListElementInitializer getListElementInitializer() {
+    return new ListElementInitializer() {
 
       @Override
       public String getType() {
@@ -127,8 +129,9 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
       }
 
       @Override
-      public String getSimpleValue() {
-        return initValue;
+      public String getBackendId() {
+        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached StringType");
+        return serializeToModel();
       }
 
     };

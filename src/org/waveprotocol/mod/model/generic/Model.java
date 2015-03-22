@@ -1,5 +1,7 @@
 package org.waveprotocol.mod.model.generic;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
@@ -8,6 +10,7 @@ import org.waveprotocol.wave.model.adt.docbased.Factory;
 import org.waveprotocol.wave.model.adt.docbased.Initializer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
+import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
@@ -28,12 +31,41 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveletListener;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-
+/**
+ * Main interface of the dynamic Wave's generic content model. See following
+ * model version info:
+ * 
+ * <p>
+ * [version not provided] <br/>
+ * The original very buggy implementation. No longer supported.
+ * 
+ * <p>
+ * version 0.1 <br/>
+ * 
+ * Each <code>Type</code> instance stores values in a new <code>Document</code>.
+ * Strings are stored in a separated string index.<br/>
+ * 
+ * Simplified <code>Type</code> interface, only one <code>attach()</code>
+ * method. <br/>
+ * 
+ * Improved class names to distinguish List and Map inner tools:
+ * ListElementFactory...<br/>
+ * 
+ * The main document is now "map+root", supporting metadata, index of string and
+ * the root map.<br/>
+ * 
+ */
 public class Model implements SourcesEvents<Model.Listener> {
 
+  /**
+   * The model version of the current source code. In the future, code could
+   * support multiple model versions havinf backwards compatibility.
+   */
+  public static final String MODEL_VERSION = "0.1";
 
   public interface Listener {
 
@@ -47,20 +79,19 @@ public class Model implements SourcesEvents<Model.Listener> {
   public static final String WAVELET_ID = WAVELET_ID_PREFIX + IdUtil.TOKEN_SEPARATOR + "root";
 
   // The root document
-  private static final String ROOT_DOC_ID = "model+root";
+  private static final String ROOT_DOC_ID = "map+root";
+
+  private static final String METADATA_TAG = "model";
+  private static final String METADATA_ATTR_VERSION = "v";
 
   // String Index is stored in the root Document
-  private static final String STRING_INDEX_TAG = "s-index";
+  private static final String STRING_INDEX_TAG = "strings";
   private static final String STRING_ITEM_TAG = "s";
   private static final String STRING_VALUE_ATTR = "v";
 
-  // The top level (root) map is stored in the root Document
-  private static final String ROOT_MAP_TAG = "root-map";
 
-  // Generic root tag for all data documents.
-  private static final String ROOT_DATA_TAG = "data";
 
-  private final TypeSerializer typeSerializer;
+  private final MapSerializer typeSerializer;
 
 
 
@@ -90,11 +121,12 @@ public class Model implements SourcesEvents<Model.Listener> {
 
 
   private final ObservableDocument rootModelDocument;
-  private final Doc.E rootMapElement;
   private final ObservableElementList<ObservableBasicValue<String>, String> stringIndex;
   private final ObservableWavelet wavelet;
   private final TypeIdGenerator idGenerator;
   private MapType rootMap = null;
+
+  private final Map<String, Document> documents = new HashMap<String, Document>();
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
@@ -113,6 +145,13 @@ public class Model implements SourcesEvents<Model.Listener> {
     ObservableDocument modelDocument = wavelet.getDocument(ROOT_DOC_ID);
     DocEventRouter router = DefaultDocEventRouter.create(modelDocument);
 
+    // Get or create model version and additional metadata
+    Doc.E metadataElement = DocHelper.getElementWithTagName(modelDocument, METADATA_TAG);
+    if (metadataElement == null) {
+      metadataElement = modelDocument.createChildElement(modelDocument.getDocumentElement(), METADATA_TAG,
+              ImmutableMap.of(METADATA_ATTR_VERSION, MODEL_VERSION));
+    }
+
     // Create a String Index Tag in the Root Document
     Doc.E strIndexElement = DocHelper.getElementWithTagName(modelDocument, STRING_INDEX_TAG);
     if (strIndexElement == null) {
@@ -121,18 +160,10 @@ public class Model implements SourcesEvents<Model.Listener> {
               Collections.<String, String> emptyMap());
     }
 
-    // Create a Tag for the Root Map in the Root Document
-    Doc.E rootMapElement = DocHelper.getElementWithTagName(modelDocument, ROOT_MAP_TAG);
-    if (rootMapElement == null) {
-      rootMapElement =
-          modelDocument.createChildElement(modelDocument.getDocumentElement(), ROOT_MAP_TAG,
-              Collections.<String, String> emptyMap());
-    }
 
 
     return new Model(wavelet, TypeIdGenerator.get(idGenerator), DocumentBasedElementList.create(
-        router, strIndexElement,
-        STRING_ITEM_TAG, StringIndexFactory), modelDocument, rootMapElement);
+        router, strIndexElement, STRING_ITEM_TAG, StringIndexFactory), modelDocument);
 
 
 
@@ -141,7 +172,7 @@ public class Model implements SourcesEvents<Model.Listener> {
 
   protected Model(ObservableWavelet wavelet, TypeIdGenerator idGenerator,
       ObservableElementList<ObservableBasicValue<String>, String> stringIndex,
-      ObservableDocument modelDocument, Doc.E rootMapElement) {
+      ObservableDocument modelDocument) {
 
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
@@ -149,8 +180,9 @@ public class Model implements SourcesEvents<Model.Listener> {
     this.idGenerator = idGenerator;
     this.stringIndex = stringIndex;
     this.rootModelDocument = modelDocument;
-    this.rootMapElement = rootMapElement;
-    this.typeSerializer = new TypeSerializer(this);
+    this.typeSerializer = new MapSerializer(this);
+
+    documents.put(ROOT_DOC_ID, rootModelDocument);
   }
 
   protected ObservableElementList<ObservableBasicValue<String>, String> getStringIndex() {
@@ -158,59 +190,36 @@ public class Model implements SourcesEvents<Model.Listener> {
   }
 
 
-  //
-  // Manage instances attachment to model
-  //
 
-  protected void attach(Type instance, String documentId) {
-
-    Preconditions.checkArgument(wavelet.getDocumentIds().contains(documentId),
-        "Model.attach() the documentId doesn't math an actual Document");
-
-    ObservableDocument document = wavelet.getDocument(documentId);
-
-    instance.attachToParent(documentId, document, document.getDocumentElement());
+  protected String generateDocId(String prefix) {
+    return idGenerator.newDocumentId(prefix);
   }
 
-  protected void attach(Type instance) {
 
-    if (instance instanceof StringType) {
+  protected ObservableDocument createDocument(String docId) {
 
-      // Strings are attached to the String Index structure in model+root
-      // document
-      StringType str = (StringType) instance;
+    Preconditions.checkArgument(!wavelet.getDocumentIds().contains(docId),
+        "Trying to create an existing substrate document");
+    ObservableDocument doc = wavelet.getDocument(docId);
 
-      int indexStringPos = stringIndex.size();
-      ObservableBasicValue<String> observableValue =
-          stringIndex.add(indexStringPos, str.getValue());
+    documents.put(docId, doc);
 
-      instance.attachToString(indexStringPos, observableValue);
-
-    } else {
-
-      // Other Types are attached to separated documents
-
-      String docId = idGenerator.newDocumentId(instance.getPrefix());
-      Preconditions.checkArgument(!wavelet.getDocumentIds().contains(docId),
-          "Trying to create an existing substrate document");
-      ObservableDocument doc = wavelet.getDocument(docId);
-
-      // Create a root tag to ensure the document is persisted.
-      // If the doc is created empty and it's not populated with data it won't exist when the
-      // wavelet is open again.
-      Doc.E rootDataElement = DocHelper.getElementWithTagName(doc, ROOT_DATA_TAG);
-      if (rootDataElement == null)
-        rootDataElement =
-            doc.createChildElement(doc.getDocumentElement(), ROOT_DATA_TAG,
-                Collections.<String, String> emptyMap());
-
-
-      instance.attachToParent(docId, doc, rootDataElement);
-
-    }
+    return doc;
   }
 
-  protected TypeSerializer getTypeSerializer() {
+  protected ObservableDocument getDocument(String docId) {
+
+    Preconditions.checkArgument(wavelet.getDocumentIds().contains(docId),
+        "Trying to create an existing substrate document");
+    ObservableDocument doc = wavelet.getDocument(docId);
+
+    documents.put(docId, doc);
+
+    return doc;
+  }
+
+
+  protected MapSerializer getTypeSerializer() {
     return typeSerializer;
   }
 
@@ -250,8 +259,7 @@ public class Model implements SourcesEvents<Model.Listener> {
 
     // Delayed initialization of the Root Map
     if (rootMap == null) {
-      rootMap = new MapType(this);
-      rootMap.attachToParent(ROOT_DOC_ID, rootModelDocument, rootMapElement);
+      rootMap = (MapType) MapType.createAndAttach(this, ROOT_DOC_ID);
     }
 
     return rootMap;
@@ -268,6 +276,20 @@ public class Model implements SourcesEvents<Model.Listener> {
 
   public ListType createList() {
     return new ListType(this);
+  }
+
+  /**
+   * For debug purposes only
+   */
+  public Set<String> getModelDocuments() {
+      return documents.keySet();
+  }
+
+  /**
+   * For debug purposes only
+   */
+  public String getModelDocument(String documentId) {
+    return documents.get(documentId).toDebugString();
   }
 
   //
@@ -358,7 +380,6 @@ public class Model implements SourcesEvents<Model.Listener> {
       // TODO Auto-generated method stub
 
     }
-
 
   };
 

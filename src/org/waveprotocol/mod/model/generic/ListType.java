@@ -1,14 +1,13 @@
 package org.waveprotocol.mod.model.generic;
 
 
-import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
 import org.waveprotocol.wave.model.document.Doc;
-import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
@@ -25,11 +24,12 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
   }
 
-  protected static ListType fromString(Model model, String s) {
 
-    Preconditions.checkArgument(s.startsWith(PREFIX), "ListType.fromString() is not a StringType");
+  protected static Type createAndAttach(Model model, String id) {
+
+    Preconditions.checkArgument(id.startsWith(PREFIX), "ListType.createAndAttach() not a list id");
     ListType list = new ListType(model);
-    list.attachToModel(s);
+    list.attach(id);
     return list;
 
   }
@@ -39,16 +39,19 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   public final static String PREFIX = "list";
 
 
+  public final static String ROOT_TAG = "list";
   private final static String ITEM_TAG = "item";
 
-  private ObservableElementList<Type, TypeInitializer> observableList;
+  private ObservableElementList<Type, ListElementInitializer> observableList;
   private ObservableElementList.Listener<Type> observableListListener;
 
 
   private Model model;
 
-  private String documentId;
-  private Doc.E element;
+  private String backendDocumentId;
+  private ObservableDocument backendDocument;
+  private Doc.E backendRootElement;
+
 
   private boolean isAttached;
 
@@ -90,36 +93,41 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
 
   @Override
-  protected void attachToParent(String documentId, ObservableDocument parentDoc, E parentElement) {
+  protected void attach(String docId) {
 
-    DocEventRouter router = DefaultDocEventRouter.create(parentDoc);
+    if (docId == null) {
+
+      docId = model.generateDocId(getPrefix());
+      backendDocument = model.createDocument(docId);
+
+    } else
+      backendDocument = model.getDocument(docId);
+
+    backendDocumentId = docId;
+
+    // Create a root tag to ensure the document is persisted.
+    // If the doc is created empty and it's not populated with data it won't
+    // exist when the wavelet is open again.
+    backendRootElement = DocHelper.getElementWithTagName(backendDocument, ROOT_TAG);
+    if (backendRootElement == null)
+      backendRootElement =
+          backendDocument.createChildElement(backendDocument.getDocumentElement(), ROOT_TAG,
+              Collections.<String, String> emptyMap());
+
+    DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
 
     this.observableList =
-        DocumentBasedElementList.create(router, parentElement, ITEM_TAG, new TypeFactory(model));
+        DocumentBasedElementList.create(router, backendRootElement, ITEM_TAG,
+            new ListElementFactory(model));
     this.observableList.addListener(observableListListener);
-
-    this.element = parentElement;
-    this.documentId = documentId;
 
     this.isAttached = true;
   }
 
+  protected void deattach() {
+    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
 
-  @Override
-  protected void attachToModel() {
-    model.attach(this);
-  }
-
-
-  @Override
-  protected void attachToModel(String documentId) {
-    model.attach(this, documentId);
-  }
-
-  @Override
-  protected void attachToString(int indexStringPos, ObservableBasicValue<String> observableValue) {
-    // Nothing to do
-
+    // nothing to do. wavelet doesn't provide doc deletion
   }
 
 
@@ -132,12 +140,24 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   @Override
   protected String serializeToModel() {
     Preconditions.checkArgument(isAttached, "Unable to serialize an unattached ListType");
-    return documentId;
+    return backendDocumentId;
   }
 
   @Override
-  protected TypeInitializer getTypeInitializer() {
-    return TypeInitializer.ListTypeInitializer;
+  protected ListElementInitializer getListElementInitializer() {
+    return new ListElementInitializer() {
+
+      @Override
+      public String getType() {
+        return TYPE;
+      }
+
+      @Override
+      public String getBackendId() {
+        return serializeToModel();
+      }
+
+    };
   }
 
   //
@@ -163,9 +183,12 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
     Preconditions.checkArgument(!value.isAttached(),
         "ListType.add(): forbidden to add an already attached Type");
 
-    Type attachedValue = observableList.add(value.getTypeInitializer());
+    value.attach(null);
+    Type listValue = observableList.add(value.getListElementInitializer());
 
-    return attachedValue;
+    // return the value generated from list to double check add() success
+    // also it is the cached value in the observable list
+    return listValue;
   }
 
   public Type add(int index, Type value) {
@@ -176,9 +199,12 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
     Preconditions.checkArgument(!value.isAttached(),
         "ListType.add(): forbidden to add an already attached Type");
 
-    Type attachedValue = observableList.add(index, value.getTypeInitializer());
+    value.attach(null);
+    Type listValue = observableList.add(index, value.getListElementInitializer());
 
-    return attachedValue;
+    // return the value generated from list to double check add() success
+    // also it is the cached value in the observable list
+    return listValue;
   }
 
 

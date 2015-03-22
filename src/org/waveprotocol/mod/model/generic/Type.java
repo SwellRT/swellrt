@@ -1,47 +1,54 @@
 package org.waveprotocol.mod.model.generic;
 
-import org.waveprotocol.wave.model.adt.ObservableBasicValue;
-import org.waveprotocol.wave.model.document.Doc;
-import org.waveprotocol.wave.model.document.ObservableDocument;
+
 
 public abstract class Type {
 
-  public static Type createInstance(String type, Model model) {
+  public static Type createInstance(String type, String backendId, Model model) {
 
-    Type typeInstance = null;
+    Type instance = null;
 
-    if (ListType.TYPE.equals(type)) {
+    if (StringType.PREFIX.equals(type)) {
 
-      typeInstance = new ListType(model);
+      instance = StringType.createAndAttach(model, backendId);
 
-    } else if (MapType.TYPE.equals(type)) {
+    } else if (ListType.PREFIX.equals(type)) {
 
-      typeInstance = new MapType(model);
+      instance = ListType.createAndAttach(model, backendId);
 
-    } else if (StringType.TYPE.equals(type)) {
+    } else if (MapType.PREFIX.equals(type)) {
 
-      typeInstance = new StringType(model, "");
-
+      instance = MapType.createAndAttach(model, backendId);
     }
 
-    return typeInstance;
+    return instance;
   }
 
-  protected abstract TypeInitializer getTypeInitializer();
+  /**
+   * Provides a independent document-based backend to this Type instance
+   */
+  protected abstract void attach(String docId);
+
+  /**
+   * Remove the backend document or document artifact
+   */
+  protected abstract void deattach();
+
+  /**
+   * Provides a document element backend to this Type instance
+   * 
+   * @param docEventRouter
+   * @param parentElement
+   */
+  // protected abstract void attach(DocEventRouter docEventRouter, Doc.E
+  // parentElement);
+
+  protected abstract ListElementInitializer getListElementInitializer();
 
   protected abstract String getPrefix();
-
-  protected abstract void attachToString(int indexStringPos,
-      ObservableBasicValue<String> observableValue);
-
-  protected abstract void attachToParent(String documentId, ObservableDocument parentDoc,
-      Doc.E parentElement);
-
-  protected abstract void attachToModel();
-
-  protected abstract void attachToModel(String documentId);
 
   protected abstract boolean isAttached();
 
   protected abstract String serializeToModel();
+
 }
