@@ -19,7 +19,6 @@
 
 package org.waveprotocol.box.server;
 
-import org.waveprotocol.box.server.executor.ExecutorsModule;
 import cc.kune.initials.InitialsAvatarsServlet;
 
 import com.google.gwt.logging.server.RemoteLoggingServiceImpl;
@@ -33,8 +32,12 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.eclipse.jetty.proxy.ProxyServlet;
+import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
+import org.waveprotocol.box.rest.dsharing.DSFileServlet;
 import org.waveprotocol.box.server.authentication.AccountStoreHolder;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.executor.ExecutorsModule;
 import org.waveprotocol.box.server.frontend.ClientFrontend;
 import org.waveprotocol.box.server.frontend.ClientFrontendImpl;
 import org.waveprotocol.box.server.frontend.WaveClientRpcImpl;
@@ -54,11 +57,13 @@ import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
 import org.waveprotocol.box.server.robots.dataapi.DataApiServlet;
 import org.waveprotocol.box.server.robots.passive.RobotsGateway;
+import org.waveprotocol.box.server.rpc.AttachmentInfoServlet;
 import org.waveprotocol.box.server.rpc.AttachmentServlet;
 import org.waveprotocol.box.server.rpc.AuthenticationServlet;
 import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
 import org.waveprotocol.box.server.rpc.FetchServlet;
 import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
+import org.waveprotocol.box.server.rpc.LocaleServlet;
 import org.waveprotocol.box.server.rpc.NotificationServlet;
 import org.waveprotocol.box.server.rpc.SearchServlet;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
@@ -66,6 +71,9 @@ import org.waveprotocol.box.server.rpc.SignOutServlet;
 import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
 import org.waveprotocol.box.server.rpc.WaveClientServlet;
 import org.waveprotocol.box.server.rpc.WaveRefServlet;
+import org.waveprotocol.box.server.stat.RequestScopeFilter;
+import org.waveprotocol.box.server.stat.StatuszServlet;
+import org.waveprotocol.box.server.stat.TimingFilter;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
@@ -73,8 +81,7 @@ import org.waveprotocol.box.server.waveserver.WaveIndexer;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.box.server.waveserver.WaveletStateException;
-import org.waveprotocol.box.server.rpc.AttachmentInfoServlet;
-import org.waveprotocol.box.server.rpc.AttachmentServlet;
+import org.waveprotocol.box.stat.StatService;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.federation.FederationSettings;
 import org.waveprotocol.wave.federation.FederationTransport;
@@ -94,14 +101,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
-
-import org.eclipse.jetty.proxy.ProxyServlet;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
-import org.waveprotocol.box.server.rpc.LocaleServlet;
-import org.waveprotocol.box.server.stat.RequestScopeFilter;
-import org.waveprotocol.box.server.stat.StatuszServlet;
-import org.waveprotocol.box.server.stat.TimingFilter;
-import org.waveprotocol.box.stat.StatService;
 
 /**
  * Wave Server entrypoint.
@@ -275,6 +274,9 @@ public class ServerMain {
       server.addFilter("/*", TimingFilter.class);
       server.addServlet(StatService.STAT_URL, StatuszServlet.class);
     }
+
+    // DSWG experimental
+    server.addServlet("/shared/*", DSFileServlet.class);
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {
