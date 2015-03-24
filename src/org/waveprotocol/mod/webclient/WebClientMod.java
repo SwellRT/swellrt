@@ -230,7 +230,7 @@ public class WebClientMod implements EntryPoint {
       loginToServer();
     }
 
-    waveContentManager = WaveManager.create(this.waveStore, this.idGenerator, this.channel);
+    waveContentManager = WaveManager.create(this.waveStore, this.idGenerator, this.channel, null);
 
     setupUi();
     setupStatistics();
