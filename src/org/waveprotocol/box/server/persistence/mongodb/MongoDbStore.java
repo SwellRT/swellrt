@@ -36,6 +36,8 @@ import com.mongodb.gridfs.GridFSInputFile;
 
 import org.bson.types.BasicBSONList;
 import org.waveprotocol.box.attachment.AttachmentMetadata;
+import org.waveprotocol.box.attachment.AttachmentProto;
+import org.waveprotocol.box.attachment.proto.AttachmentMetadataProtoImpl;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
@@ -54,6 +56,7 @@ import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -101,9 +104,15 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private static final Logger LOG = Logger.getLogger(MongoDbStore.class.getName());
 
   private final DB database;
+  private final GridFS attachmentGrid;
+  private final GridFS thumbnailGrid;
+  private final GridFS metadataGrid;
 
   MongoDbStore(DB database) {
     this.database = database;
+    attachmentGrid = new GridFS(database, "attachments");
+    thumbnailGrid = new GridFS(database, "thumbnails");
+    metadataGrid = new GridFS(database, "metadata");
   }
 
   @Override
@@ -168,44 +177,61 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
 
   // *********** Attachments.
 
-  private GridFS attachmentGrid;
-
-  private GridFS getAttachmentGrid() {
-    if (attachmentGrid == null) {
-      attachmentGrid = new GridFS(database, "attachments");
-    }
-
-    return attachmentGrid;
-  }
-
   @Override
   public AttachmentData getAttachment(AttachmentId attachmentId) {
 
-    final GridFSDBFile attachment = getAttachmentGrid().findOne(attachmentId.serialise());
-
-    if (attachment == null) {
-      return null;
-    } else {
-      return new AttachmentData() {
-
-        @Override
-        public InputStream getInputStream() throws IOException {
-          return attachment.getInputStream();
-        }
-
-        @Override
-        public long getSize() {
-          return attachment.getLength();
-        }
-      };
-    }
+    final GridFSDBFile attachment = attachmentGrid.findOne(attachmentId.serialise());
+    return fileToAttachmentData(attachment);
   }
 
   @Override
   public void storeAttachment(AttachmentId attachmentId, InputStream data)
       throws IOException {
-    GridFSInputFile file = getAttachmentGrid().createFile(data, attachmentId.serialise());
+    saveFile(attachmentGrid.createFile(data, attachmentId.serialise()));
+  }
 
+  @Override
+  public void deleteAttachment(AttachmentId attachmentId) {
+    attachmentGrid.remove(attachmentId.serialise());
+    thumbnailGrid.remove(attachmentId.serialise());
+    metadataGrid.remove(attachmentId.serialise());
+  }
+
+
+  @Override
+  public AttachmentMetadata getMetadata(AttachmentId attachmentId) throws IOException {
+    final GridFSDBFile metadata = metadataGrid.findOne(attachmentId.serialise());
+
+    if (metadata == null) {
+      return null;
+    }
+    AttachmentProto.AttachmentMetadata protoMetadata =
+        AttachmentProto.AttachmentMetadata.parseFrom(metadata.getInputStream());
+    return new AttachmentMetadataProtoImpl(protoMetadata);
+  }
+
+  @Override
+  public AttachmentData getThumbnail(AttachmentId attachmentId) throws IOException {
+    final GridFSDBFile thumbnail = thumbnailGrid.findOne(attachmentId.serialise());
+    return fileToAttachmentData(thumbnail);
+  }
+
+  @Override
+  public void storeMetadata(AttachmentId attachmentId, AttachmentMetadata metaData)
+      throws IOException {
+    AttachmentMetadataProtoImpl proto = new AttachmentMetadataProtoImpl(metaData);
+    byte[] bytes = proto.getPB().toByteArray();
+    GridFSInputFile file =
+        metadataGrid.createFile(new ByteArrayInputStream(bytes), attachmentId.serialise());
+    saveFile(file);
+  }
+
+  @Override
+  public void storeThumbnail(AttachmentId attachmentId, InputStream dataData) throws IOException {
+    saveFile(thumbnailGrid.createFile(dataData, attachmentId.serialise()));
+  }
+
+  private void saveFile(GridFSInputFile file) throws IOException {
     try {
       file.save();
     } catch (MongoException e) {
@@ -218,33 +244,26 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       } else {
         throw e;
       }
+    };
+  }
+
+  private AttachmentData fileToAttachmentData(final GridFSDBFile attachmant) {
+    if (attachmant == null) {
+      return null;
+    } else {
+      return new AttachmentData() {
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+          return attachmant.getInputStream();
+        }
+
+        @Override
+        public long getSize() {
+          return attachmant.getLength();
+        }
+      };
     }
-  }
-
-  @Override
-  public void deleteAttachment(AttachmentId attachmentId) {
-    getAttachmentGrid().remove(attachmentId.serialise());
-  }
-
-
-  @Override
-  public AttachmentMetadata getMetadata(AttachmentId attachmentId) throws IOException {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public AttachmentData getThumbnail(AttachmentId attachmentId) throws IOException {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void storeMetadata(AttachmentId attachmentId, AttachmentMetadata metaData) throws IOException {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void storeThumbnail(AttachmentId attachmentId, InputStream dataData) throws IOException {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   // ******** AccountStore
