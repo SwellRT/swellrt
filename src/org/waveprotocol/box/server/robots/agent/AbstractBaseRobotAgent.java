@@ -21,17 +21,12 @@ package org.waveprotocol.box.server.robots.agent;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 import com.google.wave.api.AbstractRobot;
-
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.register.RobotRegistrar;
 import org.waveprotocol.box.server.robots.util.RobotsUtil.RobotRegistrationException;
-import org.waveprotocol.wave.model.id.TokenGenerator;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -52,9 +47,8 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
     private final List<String> addresses;
 
     @Inject
-    ServerFrontendAddressHolder(
-        @Named(CoreSettings.HTTP_FRONTEND_ADDRESSES) List<String> addresses) {
-      this.addresses = addresses;
+    ServerFrontendAddressHolder(Config config) {
+      this.addresses = config.getStringList("core.http_frontend_addresses");
     }
 
     public List<String> getAddresses() {
@@ -87,11 +81,13 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
    * @param injector the injector instance.
    */
   public AbstractBaseRobotAgent(Injector injector) {
-    this(injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WAVE_SERVER_DOMAIN))),
-        injector.getInstance(TokenGenerator.class), injector
-            .getInstance(ServerFrontendAddressHolder.class), injector
-            .getInstance(AccountStore.class), injector.getInstance(RobotRegistrar.class),
-        injector.getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_SSL))));
+    Config config = injector.getInstance(Config.class);
+    this.waveDomain = config.getString("core.wave_server_domain");
+    this.frontendAddressHolder = injector.getInstance(ServerFrontendAddressHolder.class);
+    this.robotRegistrar = injector.getInstance(RobotRegistrar.class);
+    this.accountStore = injector.getInstance(AccountStore.class);
+    this.isSSLEnabled = config.getBoolean("security.enable_ssl");
+    ensureRegistered(getFrontEndAddress());
   }
 
   /**
@@ -99,22 +95,22 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
    * {@link #getRobotUri()} and ensures that the agent is registered in the
    * Account store.
    */
-  AbstractBaseRobotAgent(String waveDomain, TokenGenerator tokenGenerator,
-      ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
-      RobotRegistrar robotRegistator, Boolean sslEnabled) {
+  AbstractBaseRobotAgent(String waveDomain,
+                         ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
+                         RobotRegistrar robotRegistator, Boolean sslEnabled) {
     this.waveDomain = waveDomain;
     this.frontendAddressHolder = frontendAddressHolder;
     this.robotRegistrar = robotRegistator;
     this.accountStore = accountStore;
     this.isSSLEnabled = sslEnabled;
-    ensureRegistered(tokenGenerator, getFrontEndAddress());
+    ensureRegistered(getFrontEndAddress());
   }
 
   /**
    * Ensures that the robot agent is registered in the {@link AccountStore}.
    */
-  private void ensureRegistered(TokenGenerator tokenGenerator, String serverFrontendAddress) {
-    ParticipantId robotId = null;
+  private void ensureRegistered(String serverFrontendAddress) {
+    ParticipantId robotId;
     try {
       robotId = ParticipantId.of(getRobotId() + "@" + waveDomain);
     } catch (InvalidParticipantAddress e) {
@@ -126,9 +122,7 @@ public abstract class AbstractBaseRobotAgent extends AbstractRobot {
       // In order to re-register the agents if the server frontend address has changed.
       robotRegistrar.registerOrUpdate(robotId, location);
 
-    } catch (RobotRegistrationException e) {
-      LOG.log(Level.SEVERE, "Failed to register the agent:" + getRobotId(), e);
-    } catch (PersistenceException e) {
+    } catch (RobotRegistrationException | PersistenceException e) {
       LOG.log(Level.SEVERE, "Failed to register the agent:" + getRobotId(), e);
     }
   }

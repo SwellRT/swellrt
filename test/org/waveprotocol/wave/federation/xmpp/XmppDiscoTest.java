@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import com.google.common.collect.Lists;
 
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.dom4j.Element;
@@ -37,7 +38,9 @@ import org.xmpp.packet.Packet;
 import org.xmpp.packet.PacketError;
 import org.joda.time.DateTimeUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -55,7 +58,7 @@ public class XmppDiscoTest extends TestCase {
 
   private static final String DISCO_ITEMS_ID = "disco-items";
   private static final String DISCO_INFO_ID = "disco-info";
-  private static final String SERVER_DESCRIPTION = "Google Wave Server";
+  private static final String SERVER_DESCRIPTION = "Wave in a Box";
 
   // The following JID is intentionally non-Wave.
   private static final String REMOTE_PUBSUB_JID = "pubsub." + REMOTE_DOMAIN;
@@ -88,7 +91,7 @@ public class XmppDiscoTest extends TestCase {
     "\n<iq type=\"result\" id=\""+ DISCO_INFO_ID + "\" from=\"" + LOCAL_JID + "\" "
     + "to=\"" + REMOTE_JID + "\">\n"
     + "  <query xmlns=\"http://jabber.org/protocol/disco#info\">\n"
-    + "    <identity category=\"collaboration\" type=\"google-wave\" "
+    + "    <identity category=\"collaboration\" type=\"apache-wave\" "
     + "name=\"" + SERVER_DESCRIPTION + "\"/>\n"
     + "    <feature var=\"http://waveprotocol.org/protocol/0.2/waveserver\"/>\n"
     + "  </query>\n"
@@ -116,10 +119,12 @@ public class XmppDiscoTest extends TestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    disco = new XmppDisco(SERVER_DESCRIPTION, DISCO_FAIL_EXPIRY_SECS, DISCO_SUCCESS_EXPIRY_SECS);
+    disco = new XmppDisco(MockDisco.config);
     transport = new MockOutgoingPacketTransport();
+    final Map<String, Object> props = new HashMap<>();
+    props.put("federation.xmpp_jid", LOCAL_JID);
     manager = new XmppManager(mock(XmppFederationHost.class), mock(XmppFederationRemote.class),
-        disco, transport, LOCAL_JID);
+        disco, transport, ConfigFactory.parseMap(props).withFallback(MockDisco.config));
     disco.setManager(manager);
     discoCallback = createMockCallback();
 
@@ -545,8 +550,8 @@ public class XmppDiscoTest extends TestCase {
     if (forWaveJID) {
       response.setFrom(REMOTE_JID);
       query.addElement("identity")
-          .addAttribute("category", XmppDisco.DISCO_INFO_CATEGORY)
-          .addAttribute("type", XmppDisco.DISCO_INFO_TYPE)
+          .addAttribute("category", MockDisco.config.getString("federation.disco_info_category"))
+        .addAttribute("type",  MockDisco.config.getString("federation.disco_info_type"))
           .addAttribute("name", SERVER_DESCRIPTION);
       query.addElement("feature")
           .addAttribute("var", XmppNamespace.NAMESPACE_WAVE_SERVER);
@@ -614,12 +619,15 @@ public class XmppDiscoTest extends TestCase {
    */
   private IQ createDiscoRequest(String namespace) {
     IQ request = new IQ(IQ.Type.get);
-    if (namespace.equals(XmppNamespace.NAMESPACE_DISCO_ITEMS)) {
-      request.setID(DISCO_ITEMS_ID);
-    } else if (namespace.equals(XmppNamespace.NAMESPACE_DISCO_INFO)) {
-      request.setID(DISCO_INFO_ID);
-    } else {
-      throw new IllegalArgumentException();
+    switch (namespace) {
+      case XmppNamespace.NAMESPACE_DISCO_ITEMS:
+        request.setID(DISCO_ITEMS_ID);
+        break;
+      case XmppNamespace.NAMESPACE_DISCO_INFO:
+        request.setID(DISCO_INFO_ID);
+        break;
+      default:
+        throw new IllegalArgumentException();
     }
     request.setTo(LOCAL_JID);
     request.setFrom(REMOTE_JID);

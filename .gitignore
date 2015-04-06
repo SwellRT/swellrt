@@ -30,3 +30,8 @@ war/WEB-INF
 /src/org/waveprotocol/box/server/rpc/atmosphere/atmosphere-min.js
 /src/org/waveprotocol/box/server/rpc/atmosphere/atmosphere.js
 .DS_Store
+.idea
+*.iml
+*.eml
+.settings/
+

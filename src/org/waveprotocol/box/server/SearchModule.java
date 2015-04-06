@@ -22,24 +22,11 @@ package org.waveprotocol.box.server;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.persistence.lucene.FSIndexDirectory;
 import org.waveprotocol.box.server.persistence.lucene.IndexDirectory;
-import org.waveprotocol.box.server.waveserver.LucenePerUserWaveViewHandlerImpl;
-import org.waveprotocol.box.server.waveserver.LuceneWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.MemoryPerUserWaveViewHandlerImpl;
-import org.waveprotocol.box.server.waveserver.MemoryWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.NoOpWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
-import org.waveprotocol.box.server.waveserver.PerUserWaveViewHandler;
-import org.waveprotocol.box.server.waveserver.PerUserWaveViewProvider;
-import org.waveprotocol.box.server.waveserver.SearchProvider;
-import org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl;
-import org.waveprotocol.box.server.waveserver.SolrSearchProviderImpl;
-import org.waveprotocol.box.server.waveserver.SolrWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.WaveIndexer;
+import org.waveprotocol.box.server.waveserver.*;
 
 /**
  * @author yurize@apache.org (Yuri Zelikov)
@@ -50,10 +37,9 @@ public class SearchModule extends AbstractModule {
   private final String indexDirectory;
 
   @Inject
-  public SearchModule(@Named(CoreSettings.SEARCH_TYPE) String searchType,
-      @Named(CoreSettings.INDEX_DIRECTORY) String indexDirectory) {
-    this.searchType = searchType;
-    this.indexDirectory = indexDirectory;
+  public SearchModule(Config config) {
+    this.searchType = config.getString("core.search_type");
+    this.indexDirectory = config.getString("core.index_directory");
   }
 
   @Override

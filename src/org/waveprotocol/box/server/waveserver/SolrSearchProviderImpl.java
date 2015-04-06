@@ -27,16 +27,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.wave.api.SearchResult;
-
+import com.typesafe.config.Config;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.http.HttpStatus;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.stat.Timed;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -49,7 +45,6 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -106,11 +101,9 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
     }};
 
   @Inject
-  public SolrSearchProviderImpl(WaveDigester digester, WaveMap waveMap,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String waveDomain,
-      @Named(CoreSettings.SOLR_BASE_URL) String solrUrl) {
-    super(waveDomain, digester, waveMap);
-    solrBaseUrl = solrUrl;
+  public SolrSearchProviderImpl(WaveDigester digester, WaveMap waveMap, Config config) {
+    super(config.getString("core.wave_server_domain"), digester, waveMap);
+    solrBaseUrl = config.getString("core.solr_base_url");
   }
 
   @Timed
@@ -199,13 +192,12 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
 
   private void addSearchResultsToCurrentWaveView(
       LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView, JsonArray docsJson) {
-    Iterator<JsonElement> docJsonIterator = docsJson.iterator();
-    while (docJsonIterator.hasNext()) {
-      JsonObject docJson = docJsonIterator.next().getAsJsonObject();
+    for (JsonElement aDocsJson : docsJson) {
+      JsonObject docJson = aDocsJson.getAsJsonObject();
 
       WaveId waveId = WaveId.deserialise(docJson.getAsJsonPrimitive(WAVE_ID).getAsString());
       WaveletId waveletId =
-          WaveletId.deserialise(docJson.getAsJsonPrimitive(WAVELET_ID).getAsString());
+              WaveletId.deserialise(docJson.getAsJsonPrimitive(WAVELET_ID).getAsString());
       currentUserWavesView.put(waveId, waveletId);
     }
   }
@@ -213,8 +205,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
   private static JsonArray extractDocsJson(InputStreamReader isr) {
     JsonObject json = new JsonParser().parse(isr).getAsJsonObject();
     JsonObject responseJson = json.getAsJsonObject("response");
-    JsonArray docsJson = responseJson.getAsJsonArray("docs");
-    return docsJson;
+    return responseJson.getAsJsonArray("docs");
   }
 
   private String buildCurrentSolrQuery(int start, int rows, String fq) {
@@ -223,8 +214,7 @@ public class SolrSearchProviderImpl extends AbstractSearchProviderImpl {
   }
 
   private JsonArray sendSearchRequest(String solrQuery,
-      Function<InputStreamReader, JsonArray> function) throws URIException, IOException,
-      HttpException {
+      Function<InputStreamReader, JsonArray> function) throws IOException {
     JsonArray docsJson;
     GetMethod getMethod = new GetMethod();
     HttpClient httpClient = new HttpClient();

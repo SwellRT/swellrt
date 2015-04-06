@@ -14,12 +14,6 @@ rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 rem See the License for the specific language governing permissions and
 rem limitations under the License.
 
-if not exist "server.config" (
-  echo "You need to copy server.config.example to server.config and edit it. Or run: 'ant -f server-config.xml' to generate the file automatically."
-  pause
-  exit 1
-)
-
 for /F "tokens=1* delims==" %%A IN (build.properties) DO (
     IF "%%A"=="waveinabox.version" set WAVEINABOX_VERSION=%%B
     IF "%%A"=="name" set NAME=%%B

@@ -23,12 +23,17 @@ import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,9 +49,24 @@ public class MockDisco extends XmppDisco {
 
   private static final int FAIL_EXPIRY_SECS = 5 * 60;
   private static final int SUCCESS_EXPIRY_SECS = 2 * 60 * 60;
+  private static final int DISCO_EXPIRY_HOURS = 6;
 
-  MockDisco(String serverName) {
-    super(serverName, FAIL_EXPIRY_SECS, SUCCESS_EXPIRY_SECS);
+  public static final Config config;
+
+  static {
+    Map<String, Object> props = new HashMap<>();
+    props.put("federation.xmpp_server_description", "Wave in a Box");
+    props.put("federation.disco_info_category", "collaboration");
+    props.put("federation.disco_info_type", "apache-wave");
+    props.put("federation.xmpp_disco_failed_expiry", FAIL_EXPIRY_SECS + "s");
+    props.put("federation.xmpp_disco_successful_expiry", SUCCESS_EXPIRY_SECS + "s");
+    props.put("federation.disco_expiration", DISCO_EXPIRY_HOURS + "h");
+
+    config = ConfigFactory.parseMap(props);
+  }
+
+  MockDisco() {
+    super(config);
   }
 
   public static class PendingMockDisco {

@@ -26,6 +26,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Mock;
@@ -129,10 +132,19 @@ public class UserRegistrationServletTest extends TestCase {
       HttpServletRequest req, HttpServletResponse resp, String address,
       String password, boolean disabledRegistration) throws IOException {
 
+    Config config1 = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "administration.disable_registration", false,
+      "administration.analytics_account", "UA-someid")
+    );
     UserRegistrationServlet enabledServlet =
-        new UserRegistrationServlet(store, "example.com", welcomeBot, false, "UA-someid");
+        new UserRegistrationServlet(store, "example.com", config1, welcomeBot);
+
+    Config config2 = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "administration.disable_registration", true,
+      "administration.analytics_account", "UA-someid")
+    );
     UserRegistrationServlet disabledServlet =
-        new UserRegistrationServlet(store, "example.com", welcomeBot, true, "UA-someid");
+        new UserRegistrationServlet(store, "example.com", config2, welcomeBot);
 
     when(req.getParameter("address")).thenReturn(address);
     when(req.getParameter("password")).thenReturn(password);

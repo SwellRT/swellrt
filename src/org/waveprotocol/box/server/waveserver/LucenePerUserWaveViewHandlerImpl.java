@@ -19,11 +19,6 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import static org.waveprotocol.box.server.waveserver.IndexFieldType.LMT;
-import static org.waveprotocol.box.server.waveserver.IndexFieldType.WAVEID;
-import static org.waveprotocol.box.server.waveserver.IndexFieldType.WAVELETID;
-import static org.waveprotocol.box.server.waveserver.IndexFieldType.WITH;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -32,31 +27,19 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NRTManager;
-import org.apache.lucene.search.NRTManagerReopenThread;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.search.SearcherWarmer;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.util.Version;
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.CoreSettingsNames;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
 import org.waveprotocol.box.server.persistence.lucene.IndexDirectory;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -69,11 +52,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
+import static org.waveprotocol.box.server.waveserver.IndexFieldType.*;
 
 /**
  * Lucene based implementation of {@link PerUserWaveViewHandler}.
@@ -122,7 +104,6 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
   private static final int MAX_WAVES = 10000;
 
   private final StandardAnalyzer analyzer;
-  private final TextCollator textCollator;
   private final IndexWriter indexWriter;
   private final NRTManager nrtManager;
   private final NRTManagerReopenThread nrtManagerReopenThread;
@@ -132,18 +113,17 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
 
   @Inject
   public LucenePerUserWaveViewHandlerImpl(IndexDirectory directory,
-      ReadableWaveletDataProvider waveletProvider, TextCollator textCollator,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
-      @IndexExecutor Executor executor) {
-    this.textCollator = textCollator;
+                                          ReadableWaveletDataProvider waveletProvider,
+                                          @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
+                                          @IndexExecutor Executor executor) {
     this.waveletProvider = waveletProvider;
     this.executor = executor;
     analyzer = new StandardAnalyzer(LUCENE_VERSION);
     try {
-      IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, analyzer);
-      config.setOpenMode(OpenMode.CREATE_OR_APPEND);
-      indexWriter = new IndexWriter(directory.getDirectory(), config);
-      nrtManager = new NRTManager(indexWriter, new WaveSearchWarmer(waveDomain));
+      IndexWriterConfig indexConfig = new IndexWriterConfig(LUCENE_VERSION, analyzer);
+      indexConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
+      indexWriter = new IndexWriter(directory.getDirectory(), indexConfig);
+      nrtManager = new NRTManager(indexWriter, new WaveSearchWarmer(domain));
     } catch (IOException ex) {
       throw new IndexException(ex);
     }
@@ -191,7 +171,7 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
     Preconditions.checkNotNull(waveletName);
     Preconditions.checkNotNull(participant);
 
-    ListenableFutureTask<Void> task = ListenableFutureTask.<Void>create(new Callable<Void>() {
+    ListenableFutureTask<Void> task = ListenableFutureTask.create(new Callable<Void>() {
 
       @Override
       public Void call() throws Exception {
@@ -216,7 +196,7 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
     Preconditions.checkNotNull(waveletName);
     Preconditions.checkNotNull(participant);
 
-    ListenableFutureTask<Void> task = ListenableFutureTask.<Void>create(new Callable<Void>() {
+    ListenableFutureTask<Void> task = ListenableFutureTask.create(new Callable<Void>() {
 
       @Override
       public Void call() throws Exception {
@@ -225,9 +205,6 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
           waveletData = waveletProvider.getReadableWaveletData(waveletName);
           try {
             removeParticipantfromIndex(waveletData, participant, nrtManager);
-          } catch (CorruptIndexException e) {
-            LOG.log(Level.SEVERE, "Failed to update index for " + waveletName, e);
-            throw e;
           } catch (IOException e) {
             LOG.log(Level.SEVERE, "Failed to update index for " + waveletName, e);
             throw e;
@@ -247,7 +224,7 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
   public ListenableFuture<Void> onWaveInit(final WaveletName waveletName) {
     Preconditions.checkNotNull(waveletName);
 
-    ListenableFutureTask<Void> task = ListenableFutureTask.<Void>create(new Callable<Void>() {
+    ListenableFutureTask<Void> task = ListenableFutureTask.create(new Callable<Void>() {
 
       @Override
       public Void call() throws Exception {
@@ -271,24 +248,21 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
     try {
       // TODO (Yuri Z): Update documents instead of totally removing and adding.
       removeIndex(wavelet, nrtManager);
-      addIndex(wavelet, indexWriter, nrtManager, textCollator);
+      addIndex(wavelet, nrtManager);
       indexWriter.commit();
-    } catch (CorruptIndexException e) {
-      throw new IndexException(String.valueOf(wavelet.getWaveletId()), e);
     } catch (IOException e) {
       throw new IndexException(String.valueOf(wavelet.getWaveletId()), e);
     }
   }
 
-  private static void addIndex(ReadableWaveletData wavelet, IndexWriter indexWriter,
-      NRTManager nrtManager, TextCollator textCollator) throws CorruptIndexException, IOException {
+  private static void addIndex(ReadableWaveletData wavelet,
+      NRTManager nrtManager) throws IOException {
     Document doc = new Document();
-    addWaveletFieldsToIndex(wavelet, textCollator, doc);
+    addWaveletFieldsToIndex(wavelet, doc);
     nrtManager.addDocument(doc);
   }
 
-  private static void addWaveletFieldsToIndex(ReadableWaveletData wavelet,
-      TextCollator textCollator, Document doc) {
+  private static void addWaveletFieldsToIndex(ReadableWaveletData wavelet, Document doc) {
     doc.add(new Field(WAVEID.toString(), wavelet.getWaveId().serialise(), Field.Store.YES,
         Field.Index.NOT_ANALYZED));
     doc.add(new Field(WAVELETID.toString(), wavelet.getWaveletId().serialise(), Field.Store.YES,
@@ -302,7 +276,7 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
   }
 
   private static void removeIndex(ReadableWaveletData wavelet, NRTManager nrtManager)
-      throws CorruptIndexException, IOException {
+      throws IOException {
     BooleanQuery query = new BooleanQuery();
     query.add(new TermQuery(new Term(WAVEID.toString(), wavelet.getWaveId().serialise())),
         BooleanClause.Occur.MUST);
@@ -312,7 +286,7 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
   }
 
   private static void removeParticipantfromIndex(ReadableWaveletData wavelet,
-      ParticipantId participant, NRTManager nrtManager) throws CorruptIndexException, IOException {
+      ParticipantId participant, NRTManager nrtManager) throws IOException {
     BooleanQuery query = new BooleanQuery();
     Term waveIdTerm = new Term(WAVEID.toString(), wavelet.getWaveId().serialise());
     query.add(new TermQuery(waveIdTerm), BooleanClause.Occur.MUST);
@@ -343,7 +317,6 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
       } catch (IOException e) {
         LOG.log(Level.WARNING, "Failed to close searcher. ", e);
       }
-      indexSearcher = null;
     }
   }
 
@@ -373,7 +346,6 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
       } catch (IOException e) {
         LOG.log(Level.WARNING, "Failed to close searcher. " + user, e);
       }
-      indexSearcher = null;
     }
     return userWavesViewMap;
   }

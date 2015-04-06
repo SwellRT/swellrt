@@ -19,15 +19,13 @@
 
 package org.waveprotocol.box.server.persistence.file;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.waveprotocol.box.common.ExceptionalIterator;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
+import org.waveprotocol.box.stat.Timed;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -39,7 +37,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.waveprotocol.box.stat.Timed;
 
 /**
  * A flat file based implementation of DeltaStore.
@@ -62,9 +59,8 @@ public class FileDeltaStore implements DeltaStore {
   final private String basePath;
 
   @Inject
-  public FileDeltaStore(@Named(CoreSettings.DELTA_STORE_DIRECTORY) String basePath) {
-    Preconditions.checkNotNull(basePath, "Requested path is null");
-    this.basePath = basePath;
+  public FileDeltaStore(Config config) {
+    this.basePath = config.getString("core.delta_store_directory");
   }
 
   @Timed

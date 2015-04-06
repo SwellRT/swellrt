@@ -19,17 +19,11 @@
 
 package org.waveprotocol.box.server.robots.agent.passwd;
 
-import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.CANNOT_CHANGE_PASSWORD_FOR_USER;
-import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.changeUserPassword;
-
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
-
+import com.typesafe.config.Config;
 import org.apache.commons.cli.CommandLine;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.agent.AbstractCliRobotAgent;
@@ -38,6 +32,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.CANNOT_CHANGE_PASSWORD_FOR_USER;
+import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.changeUserPassword;
 
 /**
  * Robot agent that handles the password reset for users by admin.
@@ -61,18 +58,17 @@ public final class PasswordAdminRobot extends AbstractCliRobotAgent {
   public PasswordAdminRobot(Injector injector) {
     super(injector);
     serverAdminId =
-        injector.getInstance(Key.get(String.class, Names.named(CoreSettings.ADMIN_USER)));
+        injector.getInstance(Config.class).getString("administration.admin_user");
     accountStore = injector.getInstance(AccountStore.class);
   }
 
   @Override
   protected String maybeExecuteCommand(CommandLine commandLine, String modifiedBy) {
-    String robotMessage = null;
-    String adminId = modifiedBy;
+    String robotMessage;
     // Verify that the user that attempts to change the password has admin privileges.
-    if (!adminId.equals(serverAdminId)) {
+    if (!modifiedBy.equals(serverAdminId)) {
       robotMessage =
-          "User " + adminId + " is not authorized to use " + getCommandName() + " command.";
+          "User " + modifiedBy + " is not authorized to use " + getCommandName() + " command.";
     } else {
       String userId = null;
       try {
@@ -86,14 +82,11 @@ public final class PasswordAdminRobot extends AbstractCliRobotAgent {
         robotMessage =
             String.format("Changed password for user %s, the new password is: %s\n", userId,
                 newPassword);
-        LOG.log(Level.INFO, "Password changed for user " + userId + " by " + adminId);
+        LOG.log(Level.INFO, "Password changed for user " + userId + " by " + modifiedBy);
       } catch (IllegalArgumentException e) {
         LOG.log(Level.SEVERE, userId, e);
         robotMessage = e.getMessage();
-      } catch (PersistenceException e) {
-        robotMessage = CANNOT_CHANGE_PASSWORD_FOR_USER + userId;
-        LOG.log(Level.SEVERE, "userId: " + userId, e);
-      } catch (InvalidParticipantAddress e) {
+      } catch (PersistenceException | InvalidParticipantAddress e) {
         robotMessage = CANNOT_CHANGE_PASSWORD_FOR_USER + userId;
         LOG.log(Level.SEVERE, "userId: " + userId, e);
       }

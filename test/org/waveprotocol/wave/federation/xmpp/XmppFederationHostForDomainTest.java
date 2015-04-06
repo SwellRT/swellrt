@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 
 import com.google.protobuf.ByteString;
 
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.waveprotocol.wave.federation.ProtocolHashedVersionFactory;
@@ -110,12 +111,15 @@ public class XmppFederationHostForDomainTest extends TestCase {
       }
     };
 
-    disco = new MockDisco(null);
+    disco = new MockDisco();
     transport = new MockOutgoingPacketTransport();
     XmppManager manager =
         new XmppManager(mock(XmppFederationHost.class), mock(XmppFederationRemote.class),
-                        disco, transport, LOCAL_JID);
-    fedHost = new XmppFederationHostForDomain(REMOTE_DOMAIN, manager, disco, LOCAL_JID);
+                        disco, transport, ConfigFactory.parseString("federation.xmpp_jid : "
+                                                                      + LOCAL_JID));
+    fedHost = new XmppFederationHostForDomain(
+      REMOTE_DOMAIN, manager, disco, ConfigFactory.parseString("federation.xmpp_jid : "
+                                                                 + LOCAL_JID));
   }
 
   @Override
@@ -230,7 +234,7 @@ public class XmppFederationHostForDomainTest extends TestCase {
    * @param updateCallback result callback
    */
   private void update(WaveletFederationListener.WaveletUpdateCallback updateCallback) {
-    fedHost.waveletUpdate(WAVELET_NAME, Collections.<ByteString>singletonList(DELTA_BYTESTRING),
+    fedHost.waveletUpdate(WAVELET_NAME, Collections.singletonList(DELTA_BYTESTRING),
         null, updateCallback);
   }
 

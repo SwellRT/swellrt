@@ -84,7 +84,7 @@ public class WaveMapTest extends TestCase {
 
     waveletStore = mock(DeltaAndSnapshotStore.class);
     waveMap =
-        new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
+        new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
             remoteWaveletContainerFactory, "example.com", storageContinuationExecutor);
   }
 

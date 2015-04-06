@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.ArgumentCaptor;
@@ -42,6 +43,8 @@ import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.xmpp.MockOutgoingPacketTransport.Router;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -61,8 +64,6 @@ public class RoundTripTest extends TestCase {
   private static final String SERVER2_DOMAIN = "acmewave.com";
 
   private static final int PACKET_TIMEOUT = 10;
-  private static final int DISCO_FAIL_EXPIRY_SECS = 5 * 60;
-  private static final int DISCO_SUCCESS_EXPIRY_SECS = 2 * 60 * 60;
 
   private static class ServerInstances {
     final String jid;
@@ -81,7 +82,12 @@ public class RoundTripTest extends TestCase {
       // 'Real' instantiated classes!
       jid = "wave." + domain;
       transport = new MockOutgoingPacketTransport(router);
-      manager = new XmppManager(host, remote, disco, transport, jid);
+
+      final Map<String, Object> props = new HashMap<>();
+      props.put("federation.xmpp_disco_successful_expiry", "6s");
+      props.put("federation.xmpp_jid", jid);
+      manager = new XmppManager(
+        host, remote, disco, transport, ConfigFactory.parseMap(props));
 
       // Verify manager callback.
       verify(host).setManager(eq(manager));
@@ -184,8 +190,7 @@ public class RoundTripTest extends TestCase {
     // that will never be processed.
     ArgumentCaptor<PacketCallback> server2Callback = ArgumentCaptor.forClass(PacketCallback.class);
     verify(server2.disco).processDiscoItemsGet(eq(packet), server2Callback.capture());
-    XmppDisco realDisco = new XmppDisco("Some Unchecked Wave Server", DISCO_FAIL_EXPIRY_SECS,
-                                        DISCO_SUCCESS_EXPIRY_SECS);
+    XmppDisco realDisco = new XmppDisco(MockDisco.config);
     realDisco.setManager(server2.manager);
     realDisco.processDiscoItemsGet(packet, server2Callback.getValue());
 

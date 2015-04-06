@@ -264,6 +264,7 @@
         <include name="**/*.html"/>
         <include name="**/*.properties"/>
         <include name="**/*.proto"/>
+        <include name="**/*.conf"/>
       </fileset>
     </copy>
 
@@ -543,13 +544,7 @@
       Server
       ======-->
 
-  <target name="check-server-config" description="Checks server configuration is available">
-    <available file="server.config" property="server.config.present"/>
-    <fail message="You need to copy server.config.example to server.config and edit it."
-      unless="server.config.present"/>
-  </target>
-
-  <target name="run-server" depends="compile, check-server-config"
+  <target name="run-server" depends="compile"
       description="Runs Wave in a Box server">
     <java failonerror="true" fork="true" classname="org.waveprotocol.box.server.ServerMain">
       <classpath>
@@ -560,11 +555,10 @@
       </classpath>
       <jvmarg value="-Dorg.eclipse.jetty.LEVEL=DEBUG"/>
       <jvmarg value="-Djava.security.auth.login.config=jaas.config"/>
-      <jvmarg value="-Dwave.server.config=server.config"/>
     </java>
   </target>
 
-  <target name="debug-server" depends="compile, check-server-config"
+  <target name="debug-server" depends="compile"
       description="Runs Wave in a Box server with debugging">
     <java failonerror="true" fork="true" classname="org.waveprotocol.box.server.ServerMain">
       <classpath>
@@ -1064,7 +1058,6 @@
       <url url="http://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" />
       <url url="http://central.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar" />
       <url url="http://central.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
-
       <url url="http://central.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" />
       <url url="http://central.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" />
       <url url="http://central.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" />
@@ -1082,6 +1075,7 @@
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar" />
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-shared/1.0-SNAPSHOT/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar" />
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-server/1.0-SNAPSHOT/gwt-initials-avatars-server-1.0-20140324.102825-10.jar" />
+      <url url="http://central.maven.org/maven2/com/typesafe/config/1.2.1/config-1.2.1.jar" />
     </get>
     <get dest="${lib.runtime}/whack_1_0_0.zip" usetimestamp="true" skipexisting="true">
       <url url="http://www.igniterealtime.org/downloadServlet?filename=whack/whack_1_0_0.zip" />

@@ -20,29 +20,17 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
-
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
 import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.wave.crypto.CachedCertPathValidator;
-import org.waveprotocol.wave.crypto.CertPathStore;
-import org.waveprotocol.wave.crypto.DefaultCacheImpl;
-import org.waveprotocol.wave.crypto.DefaultTimeSource;
-import org.waveprotocol.wave.crypto.DefaultTrustRootsProvider;
-import org.waveprotocol.wave.crypto.DisabledCertPathValidator;
-import org.waveprotocol.wave.crypto.TimeSource;
-import org.waveprotocol.wave.crypto.TrustRootsProvider;
-import org.waveprotocol.wave.crypto.VerifiedCertChainCache;
-import org.waveprotocol.wave.crypto.WaveCertPathValidator;
-import org.waveprotocol.wave.crypto.WaveSignatureVerifier;
+import org.waveprotocol.wave.crypto.*;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.version.HashedVersionFactory;
@@ -51,9 +39,6 @@ import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
 
 /**
  * Guice Module for the prototype Server.
@@ -70,10 +55,10 @@ public class WaveServerModule extends AbstractModule {
 
 
   @Inject
-  WaveServerModule(@Named(CoreSettings.ENABLE_FEDERATION) boolean enableFederation,
+  WaveServerModule(Config config,
       @WaveletLoadExecutor Executor waveletLoadExecutor,
       @StorageContinuationExecutor Executor storageContinuationExecutor) {
-    this.enableFederation = enableFederation;
+    this.enableFederation = config.getBoolean("federation.enable_federation");
     this.waveletLoadExecutor = waveletLoadExecutor;
     this.storageContinuationExecutor = storageContinuationExecutor;
   }
@@ -142,18 +127,18 @@ public class WaveServerModule extends AbstractModule {
     };
   }
 
-  @Provides
-  @SuppressWarnings("unused")
-  private WaveCertPathValidator provideWaveCertPathValidator(
-      @Named(CoreSettings.WAVESERVER_DISABLE_SIGNER_VERIFICATION) boolean disableSignerVerification,
-      TimeSource timeSource, VerifiedCertChainCache certCache,
-      TrustRootsProvider trustRootsProvider) {
-    if (disableSignerVerification) {
-      return new DisabledCertPathValidator();
-    } else {
-      return new CachedCertPathValidator(certCache, timeSource, trustRootsProvider);
+    @Provides
+    @SuppressWarnings("unused")
+    private WaveCertPathValidator provideWaveCertPathValidator(Config config,
+       TimeSource timeSource,
+       VerifiedCertChainCache certCache,
+       TrustRootsProvider trustRootsProvider) {
+        if (config.getBoolean("federation.waveserver_disable_signer_verification")) {
+            return new DisabledCertPathValidator();
+        } else {
+            return new CachedCertPathValidator(certCache, timeSource, trustRootsProvider);
+        }
     }
-  }
 
   /**
    * Returns a future whose result is the state of the wavelet after it has been
@@ -164,14 +149,14 @@ public class WaveServerModule extends AbstractModule {
   static ListenableFuture<DeltaStoreBasedWaveletState> loadWaveletState(Executor executor,
       final DeltaStore deltaStore, final WaveletName waveletName, final Executor persistExecutor) {
     ListenableFutureTask<DeltaStoreBasedWaveletState> task =
-        ListenableFutureTask.<DeltaStoreBasedWaveletState>create(
-            new Callable<DeltaStoreBasedWaveletState>() {
-              @Override
-              public DeltaStoreBasedWaveletState call() throws PersistenceException {
-                return DeltaStoreBasedWaveletState.create(deltaStore.open(waveletName),
-                    persistExecutor);
-              }
-            });
+        ListenableFutureTask.create(
+           new Callable<DeltaStoreBasedWaveletState>() {
+             @Override
+             public DeltaStoreBasedWaveletState call() throws PersistenceException {
+               return DeltaStoreBasedWaveletState.create(deltaStore.open(waveletName),
+                                                                persistExecutor);
+             }
+           });
     executor.execute(task);
     return task;
   }

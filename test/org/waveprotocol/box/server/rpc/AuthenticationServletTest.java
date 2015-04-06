@@ -26,6 +26,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Mock;
@@ -77,8 +80,16 @@ public class AuthenticationServletTest extends TestCase {
         new HumanAccountDataImpl(USER, new PasswordDigest("password".toCharArray()));
     store.putAccount(account);
 
+    Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "administration.disable_registration", false,
+      "administration.analytics_account", "UA-someid",
+      "security.enable_clientauth", false,
+      "security.clientauth_cert_domain", "",
+      "administration.disable_loginpage", false)
+    );
+
     servlet = new AuthenticationServlet(store, AuthTestUtil.makeConfiguration(),
-        manager, "examPLe.com", false, "", false, false, welcomeBot, "UA-someid");
+        manager, "examPLe.com", config, welcomeBot);
     AccountStoreHolder.init(store, "eXaMple.com");
   }
 

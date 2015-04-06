@@ -29,8 +29,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -40,7 +39,6 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.http.HttpStatus;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.Snippets;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.SolrExecutor;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.stat.Timed;
@@ -78,12 +76,11 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
   public SolrWaveIndexerImpl(WaveMap waveMap, WaveletProvider waveletProvider,
       ReadableWaveletDataProvider waveletDataProvider, ConversationUtil conversationUtil,
       WaveletNotificationDispatcher notificationDispatcher,
-      @Named(CoreSettings.SOLR_BASE_URL) String solrUrl,
+      Config config,
       @SolrExecutor Executor solrExecutor) {
     super(waveMap, waveletProvider);
-
     executor = solrExecutor;
-    solrBaseUrl = solrUrl;
+    solrBaseUrl = config.getString("core.solr_base_url");
     this.waveletDataProvider = waveletDataProvider;
     notificationDispatcher.subscribe(this);
   }
@@ -258,7 +255,7 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
   }
 
   @Override
-  public synchronized void remakeIndex() throws WaveletStateException, WaveServerException {
+  public synchronized void remakeIndex() throws WaveServerException {
 
     /*-
      * To fully rebuild the index, need to delete everything first

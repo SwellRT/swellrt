@@ -23,22 +23,16 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.dom4j.Element;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
-import org.waveprotocol.wave.federation.FederationSettings;
 import org.xmpp.packet.IQ;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
 import org.xmpp.packet.PacketError;
 
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,12 +114,12 @@ public class XmppManager implements IncomingPacketHandler {
 
   @Inject
   public XmppManager(XmppFederationHost host, XmppFederationRemote remote, XmppDisco disco,
-      OutgoingPacketTransport transport, @Named(FederationSettings.XMPP_JID) String jid) {
+      OutgoingPacketTransport transport, Config config) {
     this.host = host;
     this.remote = remote;
     this.disco = disco;
     this.transport = transport;
-    this.jid = jid;
+    this.jid = config.getString("federation.xmpp_jid");
 
     // Configure all related objects with this manager. Eventually, this should
     // be replaced by better Guice interface bindings.
@@ -328,12 +322,16 @@ public class XmppManager implements IncomingPacketHandler {
         sendErrorResponse(iq, FederationError.Code.BAD_REQUEST, "Unhandled pubsub request");
       }
     } else if (!isIQSet) {
-      if (namespace.equals(XmppNamespace.NAMESPACE_DISCO_INFO)) {
-        disco.processDiscoInfoGet(iq, responseCallback);
-      } else if (namespace.equals(XmppNamespace.NAMESPACE_DISCO_ITEMS)) {
-        disco.processDiscoItemsGet(iq, responseCallback);
-      } else {
-        sendErrorResponse(iq, FederationError.Code.BAD_REQUEST, "Unhandled IQ get");
+      switch (namespace) {
+        case XmppNamespace.NAMESPACE_DISCO_INFO:
+          disco.processDiscoInfoGet(iq, responseCallback);
+          break;
+        case XmppNamespace.NAMESPACE_DISCO_ITEMS:
+          disco.processDiscoItemsGet(iq, responseCallback);
+          break;
+        default:
+          sendErrorResponse(iq, FederationError.Code.BAD_REQUEST, "Unhandled IQ get");
+          break;
       }
     } else {
       sendErrorResponse(iq, FederationError.Code.BAD_REQUEST, "Unhandled IQ set");

@@ -23,23 +23,21 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-
+import com.typesafe.config.Config;
 import org.dom4j.Element;
+import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.FederationHostBridge;
-import org.waveprotocol.wave.federation.FederationSettings;
-import org.waveprotocol.wave.federation.WaveletFederationListener;
-import org.waveprotocol.wave.federation.WaveletFederationProvider;
-import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.Proto.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignedDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
+import org.waveprotocol.wave.federation.WaveletFederationListener;
+import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.federation.xmpp.XmppUtil.UnknownSignerType;
-import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
+import org.waveprotocol.wave.model.id.WaveletName;
 import org.xmpp.packet.IQ;
 
 import java.util.List;
@@ -56,21 +54,13 @@ public class XmppFederationHost implements WaveletFederationListener.Factory {
   private static final Logger LOG = Logger.getLogger(XmppFederationHost.class.getCanonicalName());
 
   private final WaveletFederationProvider waveletProvider;
-  private final XmppDisco disco;
-  private final String jid;
 
   private XmppManager manager = null;
 
   // A map of update listeners. There is one per remote domain we are sending updates to.
   // The name 'listener' refers to them listening for updates from the waveserver to send to the
   // network.
-  private final LoadingCache<String, WaveletFederationListener> listeners =
-      CacheBuilder.newBuilder().build(new CacheLoader<String, WaveletFederationListener>() {
-    @Override
-    public WaveletFederationListener load(String domain) {
-      return new XmppFederationHostForDomain(domain, manager, disco, jid);
-    }
-  });
+  private final LoadingCache<String, WaveletFederationListener> listeners;
 
   /**
    * Constructor. Note that {@link #setManager} must be called before this class
@@ -78,15 +68,18 @@ public class XmppFederationHost implements WaveletFederationListener.Factory {
    *
    * @param waveletProvider used for communicating back to the Host part of the
    *        wavelet server.
-   * @param disco           used for discovery
-   * @param jid             this server's local JID
+   * @param disco used for discovery
    */
   @Inject
   public XmppFederationHost(@FederationHostBridge WaveletFederationProvider waveletProvider,
-      XmppDisco disco, @Named(FederationSettings.XMPP_JID) String jid) {
+      final XmppDisco disco, final Config config) {
     this.waveletProvider = waveletProvider;
-    this.disco = disco;
-    this.jid = jid;
+    listeners = CacheBuilder.newBuilder().build(new CacheLoader<String, WaveletFederationListener>() {
+      @Override
+      public WaveletFederationListener load(@SuppressWarnings("NullableProblems") String domain) {
+        return new XmppFederationHostForDomain(domain, manager, disco, config);
+      }
+    });
   }
 
   /**

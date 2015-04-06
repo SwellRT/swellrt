@@ -21,6 +21,7 @@ package org.waveprotocol.box.server.persistence.file;
 
 import com.google.common.collect.ImmutableList;
 
+import com.typesafe.config.ConfigFactory;
 import org.waveprotocol.box.server.persistence.DeltaStoreTestBase;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
@@ -54,7 +55,8 @@ public class DeltaStoreTest extends DeltaStoreTestBase {
 
   @Override
   protected DeltaStore newDeltaStore() {
-    return new FileDeltaStore(path.getAbsolutePath());
+    return new FileDeltaStore(ConfigFactory.parseString("core.delta_store_directory : " + path
+      .getAbsolutePath()));
   }
 
   @Override

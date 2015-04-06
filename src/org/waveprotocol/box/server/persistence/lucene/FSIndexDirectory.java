@@ -19,11 +19,9 @@
 package org.waveprotocol.box.server.persistence.lucene;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.waveserver.IndexException;
@@ -41,7 +39,8 @@ public class FSIndexDirectory implements IndexDirectory {
   private Directory directory;
 
   @Inject
-  public FSIndexDirectory(@Named(CoreSettings.INDEX_DIRECTORY) String directoryName) {
+  public FSIndexDirectory(Config config) {
+    String directoryName = config.getString("core.index_directory");
     if (directory == null) {
       File file;
       try {

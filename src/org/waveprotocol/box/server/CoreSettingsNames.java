@@ -17,21 +17,11 @@
  * under the License.
  */
 
-package org.waveprotocol.wave.util.settings;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * A setting descriptor. All settings are mandatory unless explicitly specified
- * otherwise.
+ /**
+ * @author yurize@apache.org(Yuri Zelikov)
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Setting {
-  String name();
-  String description() default "";
-  String defaultValue() default "";
+package org.waveprotocol.box.server;
+
+public interface CoreSettingsNames {
+    String WAVE_SERVER_DOMAIN = "wave_server_domain";
 }

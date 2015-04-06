@@ -20,10 +20,8 @@
 package org.waveprotocol.wave.federation.xmpp;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.jivesoftware.whack.ExternalComponentManager;
-import org.waveprotocol.wave.federation.FederationSettings;
 import org.xmpp.component.Component;
 import org.xmpp.component.ComponentException;
 import org.xmpp.component.ComponentManager;
@@ -64,20 +62,15 @@ public class ComponentPacketTransport implements Component, OutgoingPacketTransp
   private boolean connected = false;
 
   @Inject
-  public ComponentPacketTransport(IncomingPacketHandler handler,
-      @Named(FederationSettings.XMPP_COMPONENT_NAME) String componentName,
-      @Named(FederationSettings.XMPP_SERVER_HOSTNAME) String serverDomain,
-      @Named(FederationSettings.XMPP_SERVER_SECRET) String serverSecret,
-      @Named(FederationSettings.XMPP_SERVER_IP) String serverAddress,
-      @Named(FederationSettings.XMPP_SERVER_COMPONENT_PORT) int serverPort) {
+  public ComponentPacketTransport(IncomingPacketHandler handler, Config config) {
     this.handler = handler;
-    this.componentName = componentName;
-    this.serverDomain = serverDomain;
-    this.serverSecret = serverSecret;
-    this.serverAddress = serverAddress;
-    this.serverPort = serverPort;
+    this.componentName = config.getString("federation.xmpp_component_name");
+    this.serverDomain = config.getString("federation.xmpp_server_hostname");
+    this.serverSecret = config.getString("federation.xmpp_server_secret");
+    this.serverAddress = config.getString("federation.xmpp_server_ip");
+    this.serverPort = config.getInt("federation.xmpp_server_component_port");
 
-    queuedPackets = new LinkedList<Packet>();
+    queuedPackets = new LinkedList<>();
   }
 
   /**

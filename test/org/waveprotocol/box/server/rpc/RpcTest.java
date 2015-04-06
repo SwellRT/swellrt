@@ -24,29 +24,20 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
-
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
-
 import org.mockito.Mockito;
 import org.waveprotocol.box.common.comms.WaveClientRpc;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolOpenRequest;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolSubmitRequest;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolSubmitResponse;
-import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveletUpdate;
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.common.comms.WaveClientRpc.*;
 import org.waveprotocol.box.server.authentication.SessionManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,12 +68,14 @@ public class RpcTest extends TestCase {
         new ServerRpcProvider(new InetSocketAddress[] {new InetSocketAddress("localhost", 0)},
             new String[] {"./war"}, sessionManager, null, null, false, null, null,
             MoreExecutors.sameThreadExecutor());
+    final Map<String, Object> props = new HashMap<>();
+    props.put("network.websocket_max_idle_time", 0);
+    props.put("network.websocket_max_message_size", 2);
     Injector injector = Guice.createInjector(new AbstractModule() {
       @Override
       protected void configure() {
         bind(ServerRpcProvider.class).toInstance(server);
-        bind(Key.get(Integer.class, Names.named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME))).toInstance(0);
-        bind(Key.get(Integer.class, Names.named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE))).toInstance(2);
+        bind(Config.class).toInstance(ConfigFactory.parseMap(props));
       }
     });
     server.startWebSocketServer(injector);
@@ -235,7 +228,7 @@ public class RpcTest extends TestCase {
 
     // Wait for a response, and assert that is a complete failure. :-)
     responseLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-    assertEquals(Arrays.asList((ProtocolWaveletUpdate) null), responses);
+    assertEquals(Collections.singletonList((ProtocolWaveletUpdate) null), responses);
     assertTrue(controller.failed());
     assertEquals(ERROR_TEXT, controller.errorText());
   }

@@ -137,7 +137,7 @@ public class SimpleSearchProviderImplTest extends TestCase {
         }
 
         private ParticipantId computeAuthor(SearchResult.Digest digest) {
-          ParticipantId author = null;
+          ParticipantId author;
           author = ParticipantId.ofUnsafe(digest.getParticipants().get(0));
           assert author != null : "Cannot find author for the wave: " + digest.getWaveId();
           return author;
@@ -165,8 +165,6 @@ public class SimpleSearchProviderImplTest extends TestCase {
   @Mock private PerUserWaveViewProvider waveViewProvider;
 
   private SearchProvider searchProvider;
-  private ConversationUtil conversationUtil;
-  private WaveDigester digester;
   private WaveMap waveMap;
 
   @Override
@@ -181,8 +179,8 @@ public class SimpleSearchProviderImplTest extends TestCase {
     when(waveViewProvider.retrievePerUserWaveView(USER2)).thenReturn(wavesViewUser2);
     when(waveViewProvider.retrievePerUserWaveView(SHARED_USER)).thenReturn(wavesViewUser3);
 
-    conversationUtil = new ConversationUtil(idGenerator);
-    digester = new WaveDigester(conversationUtil);
+    ConversationUtil conversationUtil = new ConversationUtil(idGenerator);
+    WaveDigester digester = new WaveDigester(conversationUtil);
 
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
@@ -206,8 +204,9 @@ public class SimpleSearchProviderImplTest extends TestCase {
         };
 
     waveMap =
-        new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
+        new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
             remoteWaveletContainerFactory, DOMAIN, lookupExecutor);
+
     searchProvider = new SimpleSearchProviderImpl(DOMAIN, digester, waveMap, waveViewProvider);
   }
 

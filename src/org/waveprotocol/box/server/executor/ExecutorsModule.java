@@ -21,32 +21,11 @@ package org.waveprotocol.box.server.executor;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
+import com.google.inject.*;
+import com.typesafe.config.Config;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.*;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.ContactExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.DeltaPersistExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.SolrExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.XmppExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.IndexExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.ListenerExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.LookupExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.RobotConnectionExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.RobotGatewayExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
+import java.util.concurrent.*;
 
 /**
  * Module with executors.
@@ -69,15 +48,18 @@ public class ExecutorsModule extends AbstractModule {
   @Singleton
   @ClientServerExecutor
   protected Executor provideClientServerExecutor(Provider<RequestScopeExecutor> executorProvider) {
-    return provideThreadPoolExecutor(executorProvider, -1, ClientServerExecutor.class.getSimpleName());
+    return provideThreadPoolExecutor(executorProvider, -1, ClientServerExecutor.class
+        .getSimpleName());
   }
 
   @Provides
   @Singleton
   @DeltaPersistExecutor
   protected Executor provideDeltaPersistExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.DELTA_PERSIST_EXECUTOR_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, DeltaPersistExecutor.class.getSimpleName());
+      Config config) {
+    return provideThreadPoolExecutor(executorProvider, config
+        .getInt("threads.delta_persist_executor_thread_count"), DeltaPersistExecutor.class
+        .getSimpleName());
   }
 
   @Provides
@@ -91,72 +73,86 @@ public class ExecutorsModule extends AbstractModule {
   @Singleton
   @ListenerExecutor
   protected Executor provideListenerExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.LISTENER_EXECUTOR_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, ListenerExecutor.class.getSimpleName());
+      Config config) {
+    return provideThreadPoolExecutor(executorProvider, config
+        .getInt("threads.listener_executor_thread_count"), ListenerExecutor.class.getSimpleName());
   }
 
   @Provides
   @Singleton
   @LookupExecutor
   protected Executor provideLookupExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.LOOKUP_EXECUTOR_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, LookupExecutor.class.getSimpleName());
+      Config config) {
+    return provideThreadPoolExecutor(executorProvider, config
+        .getInt("threads.lookup_executor_thread_count"), LookupExecutor.class.getSimpleName());
   }
 
   @Provides
   @Singleton
   @StorageContinuationExecutor
-  protected Executor provideStorageContinuationExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.STORAGE_CONTINUATION_EXECUTOR_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, StorageContinuationExecutor.class.getSimpleName());
+  protected Executor provideStorageContinuationExecutor(
+      Provider<RequestScopeExecutor> executorProvider, Config config) {
+    return provideThreadPoolExecutor(executorProvider, config
+        .getInt("threads.storage_continuation_executor_thread_count"),
+        StorageContinuationExecutor.class.getSimpleName());
   }
 
   @Provides
   @Singleton
   @WaveletLoadExecutor
   protected Executor provideWaveletLoadExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.WAVELET_LOAD_EXECUTOR_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, WaveletLoadExecutor.class.getSimpleName());
+      Config config) {
+    return provideThreadPoolExecutor(executorProvider, config
+        .getInt("threads.wavelet_load_executor_thread_count"), WaveletLoadExecutor.class
+        .getSimpleName());
   }
 
   @Provides
   @Singleton
   @ContactExecutor
-  protected ScheduledExecutorService provideContactExecutor(Provider<ScheduledRequestScopeExecutor> executorProvider) {
-    return provideScheduledThreadPoolExecutor(executorProvider, 1, ContactExecutor.class.getSimpleName());
+  protected ScheduledExecutorService provideContactExecutor(
+      Provider<ScheduledRequestScopeExecutor> executorProvider, Config config) {
+    return provideScheduledThreadPoolExecutor(executorProvider, config
+        .getInt("threads.contact_executor_thread_count"), ContactExecutor.class.getSimpleName());
   }
 
   @Provides
   @Singleton
   @RobotConnectionExecutor
-  protected ScheduledExecutorService provideRobotConnectionExecutor(Provider<ScheduledRequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.ROBOT_CONNECTION_THREAD_COUNT) int threadCount) {
-    return provideScheduledThreadPoolExecutor(executorProvider, threadCount, RobotConnectionExecutor.class.getSimpleName());
+  protected ScheduledExecutorService provideRobotConnectionExecutor(
+      Provider<ScheduledRequestScopeExecutor> executorProvider, Config config) {
+    return provideScheduledThreadPoolExecutor(executorProvider, config
+        .getInt("threads.robot_connection_thread_count"), RobotConnectionExecutor.class
+        .getSimpleName());
   }
 
   @Provides
   @Singleton
   @RobotGatewayExecutor
   protected Executor provideRobotGatewayExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.ROBOT_GATEWAY_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, RobotGatewayExecutor.class.getSimpleName());
+      Config config) {
+    return provideThreadPoolExecutor(executorProvider, config
+        .getInt("threads.robot_gateway_thread_count"), RobotGatewayExecutor.class.getSimpleName());
   }
 
   @Provides
   @Singleton
   @XmppExecutor
-  protected ScheduledExecutorService provideXmppExecutor(Provider<ScheduledRequestScopeExecutor> executorProvider) {
-    return provideScheduledThreadPoolExecutor(executorProvider, 1, XmppExecutor.class.getSimpleName());
+  protected ScheduledExecutorService provideXmppExecutor(
+      Provider<ScheduledRequestScopeExecutor> executorProvider) {
+    return provideScheduledThreadPoolExecutor(executorProvider, 1, XmppExecutor.class
+        .getSimpleName());
   }
-  
+
   @Provides
   @Singleton
   @SolrExecutor
   protected Executor provideSolrExecutor(Provider<RequestScopeExecutor> executorProvider,
-      @Named(CoreSettings.SOLR_THREAD_COUNT) int threadCount) {
-    return provideThreadPoolExecutor(executorProvider, threadCount, SolrExecutor.class.getSimpleName());
+      Config config) {
+    return provideThreadPoolExecutor(executorProvider, config.getInt("threads.solr_thread_count"),
+        SolrExecutor.class.getSimpleName());
   }
-  
+
   private Executor provideThreadPoolExecutor(Provider<RequestScopeExecutor> executorProvider,
       int threadCount, String name) {
     if (threadCount == 0) {

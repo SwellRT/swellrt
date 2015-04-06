@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.file;
 
+import com.typesafe.config.ConfigFactory;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
 import org.waveprotocol.box.server.persistence.AttachmentStoreTestBase;
 
@@ -39,7 +40,8 @@ public class AttachmentStoreTest extends AttachmentStoreTestBase {
 
   @Override
   protected AttachmentStore newAttachmentStore() {
-    return new FileAttachmentStore(path.getAbsolutePath());
+    return new FileAttachmentStore(
+      ConfigFactory.parseString("core.attachment_store_directory : " + path.getAbsolutePath()));
   }
 
   @Override

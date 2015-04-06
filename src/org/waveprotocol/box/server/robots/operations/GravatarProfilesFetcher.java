@@ -20,11 +20,9 @@
 package org.waveprotocol.box.server.robots.operations;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.wave.api.ParticipantProfile;
-
+import com.typesafe.config.Config;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.robots.operations.FetchProfilesService.ProfilesFetcher;
 
 /**
@@ -38,14 +36,14 @@ import org.waveprotocol.box.server.robots.operations.FetchProfilesService.Profil
  */
 public class GravatarProfilesFetcher implements ProfilesFetcher {
 
-  private final String SECURE_GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
-  private final String NON_SECURE_GRAVATAR_URL = "http://gravatar.com/avatar/";
+  private final static String SECURE_GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
+  private final static String NON_SECURE_GRAVATAR_URL = "http://gravatar.com/avatar/";
 
   private final String gravatarUrl;
 
   @Inject
-  public GravatarProfilesFetcher(@Named(CoreSettings.ENABLE_SSL) boolean enableSsl) {
-    if (enableSsl) {
+  public GravatarProfilesFetcher(Config config) {
+    if (config.getBoolean("security.enable_ssl")) {
       gravatarUrl = SECURE_GRAVATAR_URL;
     } else {
       gravatarUrl = NON_SECURE_GRAVATAR_URL;
@@ -64,10 +62,8 @@ public class GravatarProfilesFetcher implements ProfilesFetcher {
 
   @Override
   public ParticipantProfile fetchProfile(String email) {
-    ParticipantProfile pTemp = null;
+    ParticipantProfile pTemp;
     pTemp = ProfilesFetcher.SIMPLE_PROFILES_FETCHER.fetchProfile(email);
-    ParticipantProfile profile =
-        new ParticipantProfile(email, pTemp.getName(), getImageUrl(email), pTemp.getProfileUrl());
-    return profile;
+    return new ParticipantProfile(email, pTemp.getName(), getImageUrl(email), pTemp.getProfileUrl());
   }
 }

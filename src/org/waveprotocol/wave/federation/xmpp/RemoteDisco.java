@@ -67,8 +67,8 @@ public class RemoteDisco {
   static final int DISCO_INFO_TIMEOUT = 20;
 
   private final long creationTimeMillis;
-  private final int failExpirySecs;
-  private final int successExpirySecs;
+  private final long failExpirySecs;
+  private final long successExpirySecs;
 
   enum Status {
     INIT, PENDING, COMPLETE
@@ -113,8 +113,8 @@ public class RemoteDisco {
    * @param failExpirySecs    how long to keep alive a failed disco result
    * @param successExpirySecs how long to keep alive a successful disco result
    */
-  public RemoteDisco(XmppManager manager, String remoteDomain, int failExpirySecs,
-                     int successExpirySecs) {
+  public RemoteDisco(XmppManager manager, String remoteDomain, long failExpirySecs,
+                     long successExpirySecs) {
     this.manager = manager;
     status = new AtomicReference<Status>(Status.INIT);
     pending = new ConcurrentLinkedQueue<SuccessFailCallback<String, String>>();

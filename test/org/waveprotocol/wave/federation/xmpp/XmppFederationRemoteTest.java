@@ -19,44 +19,39 @@
 
 package org.waveprotocol.wave.federation.xmpp;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
-
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
-
 import org.dom4j.Element;
 import org.mockito.ArgumentCaptor;
-import org.waveprotocol.wave.federation.ProtocolHashedVersionFactory;
-import org.waveprotocol.wave.federation.WaveletFederationListener;
-import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.Proto.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignedDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
+import org.waveprotocol.wave.federation.ProtocolHashedVersionFactory;
+import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.federation.WaveletFederationListener.WaveletUpdateCallback;
+import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.federation.WaveletFederationProvider.DeltaSignerInfoResponseListener;
 import org.waveprotocol.wave.federation.WaveletFederationProvider.HistoryResponseListener;
 import org.waveprotocol.wave.federation.WaveletFederationProvider.PostSignerInfoResponseListener;
 import org.waveprotocol.wave.federation.WaveletFederationProvider.SubmitResultListener;
+import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
 import org.xmpp.packet.IQ;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.PacketError;
 
 import java.util.List;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests for {@link XmppFederationRemote}.
@@ -167,12 +162,15 @@ public class XmppFederationRemoteTest extends TestCase {
         .thenReturn(mockUpdateListener);
 
     // Create mockDisco. It wants an XmppManager, but we don't need to set it here.
-    disco = new MockDisco("irrelevant");
+    disco = new MockDisco();
 
     transport = new MockOutgoingPacketTransport();
-    remote = new XmppFederationRemote(mockUpdateListenerFactory, disco, LOCAL_JID);
-    host = new XmppFederationHost(mockProvider, disco, REMOTE_JID);
-    manager = new XmppManager(host, remote, disco, transport, LOCAL_JID);
+    remote = new XmppFederationRemote(mockUpdateListenerFactory, disco,
+               ConfigFactory.parseString("federation.xmpp_jid : " + LOCAL_JID));
+    host = new XmppFederationHost(mockProvider, disco,
+             ConfigFactory.parseString("federation.xmpp_jid : " + REMOTE_JID));
+    manager = new XmppManager(host, remote, disco, transport,
+                ConfigFactory.parseString("federation.xmpp_jid : " + LOCAL_JID));
 
     remote.setManager(manager);
   }

@@ -26,7 +26,6 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
@@ -35,60 +34,38 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.Service;
-
+import com.typesafe.config.Config;
 import org.apache.commons.lang.StringUtils;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.config.service.AtmosphereHandlerService;
-import org.atmosphere.cpr.AtmosphereHandler;
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResourceEvent;
-import org.atmosphere.cpr.AtmosphereResourceSession;
-import org.atmosphere.cpr.AtmosphereResourceSessionFactory;
-import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.*;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
 import org.atmosphere.util.IOUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.eclipse.jetty.websocket.servlet.*;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereChannel;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereClientInterceptor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.util.NetUtils;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
@@ -96,6 +73,12 @@ import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 /**
  * ServerRpcProvider can provide instances of type Service over an incoming
@@ -177,7 +160,7 @@ public class ServerRpcProvider {
 
     @Override
     protected void sendMessage(int sequenceNo, Message message) {
-      atmosphereChannel.sendMessage(sequenceNo, message);;
+      atmosphereChannel.sendMessage(sequenceNo, message);
     }
 
     public AtmosphereChannel getAtmosphereChannel() {
@@ -191,7 +174,7 @@ public class ServerRpcProvider {
 
   static abstract class Connection implements ProtoCallback {
     private final Map<Integer, ServerRpcController> activeRpcs =
-        new ConcurrentHashMap<Integer, ServerRpcController>();
+        new ConcurrentHashMap<>();
 
     // The logged in user.
     // Note: Due to this bug:
@@ -204,7 +187,7 @@ public class ServerRpcProvider {
     /**
      * @param loggedInUser The currently logged in user, or null if no user is
      *        logged in.
-     * @param provider
+     * @param provider the provider
      */
     public Connection(ParticipantId loggedInUser, ServerRpcProvider provider) {
       this.loggedInUser = loggedInUser;
@@ -225,8 +208,7 @@ public class ServerRpcProvider {
 
     private ParticipantId authenticate(String token) {
       HttpSession session = provider.sessionManager.getSessionFromToken(token);
-      ParticipantId user = provider.sessionManager.getLoggedInUser(session);
-      return user;
+      return provider.sessionManager.getLoggedInUser(session);
     }
 
     @Override
@@ -278,8 +260,7 @@ public class ServerRpcProvider {
                       if (message instanceof Rpc.RpcFinished
                           || !serviceMethod.method.getOptions().getExtension(Rpc.isStreamingRpc)) {
                         // This RPC is over - remove it from the map.
-                        boolean failed = message instanceof Rpc.RpcFinished
-                            ? ((Rpc.RpcFinished) message).getFailed() : false;
+                        boolean failed = message instanceof Rpc.RpcFinished && ((Rpc.RpcFinished) message).getFailed();
                         LOG.fine("RPC " + sequenceNo + " is now finished, failed = " + failed);
                         if (failed) {
                           LOG.info("error = " + ((Rpc.RpcFinished) message).getErrorText());
@@ -340,18 +321,19 @@ public class ServerRpcProvider {
   }
 
   @Inject
-  public ServerRpcProvider(@Named(CoreSettings.HTTP_FRONTEND_ADDRESSES) List<String> httpAddresses,
-      @Named(CoreSettings.HTTP_WEBSOCKET_PUBLIC_ADDRESS) String websocketAddress,
-      @Named(CoreSettings.RESOURCE_BASES) List<String> resourceBases,
-      SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
-      @Named(CoreSettings.SESSIONS_STORE_DIRECTORY) String sessionStoreDir,
-      @Named(CoreSettings.ENABLE_SSL) boolean sslEnabled,
-      @Named(CoreSettings.SSL_KEYSTORE_PATH) String sslKeystorePath,
-      @Named(CoreSettings.SSL_KEYSTORE_PASSWORD) String sslKeystorePassword,
-      @ClientServerExecutor Executor executorService) {
-    this(parseAddressList(httpAddresses, websocketAddress), resourceBases
-        .toArray(new String[0]), sessionManager, jettySessionManager, sessionStoreDir,
-        sslEnabled, sslKeystorePath, sslKeystorePassword, executorService);
+  public ServerRpcProvider(Config config,
+                           SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
+                           @ClientServerExecutor Executor executorService) {
+    this(parseAddressList(config.getStringList("core.http_frontend_addresses"),
+                    config.getString("core.http_websocket_public_address")),
+            config.getStringList("core.resource_bases").toArray(new String[0]),
+            sessionManager,
+            jettySessionManager,
+            config.getString("core.sessions_store_directory"),
+            config.getBoolean("security.enable_ssl"),
+            config.getString("security.ssl_keystore_path"),
+            config.getString("security.ssl_keystore_password"),
+            executorService);
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -382,13 +364,12 @@ public class ServerRpcProvider {
     addWebSocketServlets();
 
     try {
-      final Injector parentInjector = injector;
 
-      final ServletModule servletModule = getServletModule(parentInjector);
+      final ServletModule servletModule = getServletModule();
 
       ServletContextListener contextListener = new GuiceServletContextListener() {
 
-        private final Injector childInjector = parentInjector.createChildInjector(servletModule);
+        private final Injector childInjector = injector.createChildInjector(servletModule);
 
         @Override
         protected Injector getInjector() {
@@ -444,7 +425,7 @@ public class ServerRpcProvider {
     addServlet("/webclient/*", DefaultServlet.class);
   }
 
-  public ServletModule getServletModule(final Injector injector) {
+  public ServletModule getServletModule() {
 
     return new ServletModule() {
       @Override
@@ -474,7 +455,7 @@ public class ServerRpcProvider {
     } else {
       Set<InetSocketAddress> addresses = Sets.newHashSet();
       // We add the websocketAddress as another listening address.
-      ArrayList<String> mergedAddressList = new ArrayList<String>(addressList);
+      ArrayList<String> mergedAddressList = new ArrayList<>(addressList);
       if (!StringUtils.isEmpty(websocketAddress)) {
         mergedAddressList.add(websocketAddress);
       }
@@ -496,7 +477,7 @@ public class ServerRpcProvider {
           }
         }
       }
-      return addresses.toArray(new InetSocketAddress[0]);
+      return addresses.toArray(new InetSocketAddress[addresses.size()]);
     }
   }
 
@@ -555,13 +536,11 @@ public class ServerRpcProvider {
     final int websocketMaxMessageSize;
 
     @Inject
-    public WaveWebSocketServlet(ServerRpcProvider provider,
-        @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int websocketMaxIdleTime,
-        @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int websocketMaxMessageSize) {
+    public WaveWebSocketServlet(ServerRpcProvider provider, Config config) {
       super();
       this.provider = provider;
-      this.websocketMaxIdleTime= websocketMaxIdleTime;
-      this.websocketMaxMessageSize = websocketMaxMessageSize;
+      this.websocketMaxIdleTime = config.getInt("network.websocket_max_idle_time");
+      this.websocketMaxMessageSize = config.getInt("network.websocket_max_message_size");
     }
 
     @SuppressWarnings("cast")
@@ -669,7 +648,7 @@ public class ServerRpcProvider {
 
           LOG.fine("SEND MESSAGE ARRAY " + event.getMessage().toString());
 
-          List<Object> list = Arrays.asList(event.getMessage());
+          List<Object> list = Collections.singletonList(event.getMessage());
 
           response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
           for (Object object : list) {
@@ -819,7 +798,7 @@ public class ServerRpcProvider {
     if (initParams != null) {
       servletHolder.setInitParameters(initParams);
     }
-    servletRegistry.add(new Pair<String, ServletHolder>(urlPattern, servletHolder));
+    servletRegistry.add(Pair.of(urlPattern, servletHolder));
     return servletHolder;
   }
 

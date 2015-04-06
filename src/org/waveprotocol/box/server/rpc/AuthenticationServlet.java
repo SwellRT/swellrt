@@ -24,17 +24,15 @@ import com.google.common.base.Strings;
 import com.google.gxp.base.GxpContext;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.account.HumanAccountDataImpl;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.gxp.AuthenticationPage;
+import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.box.server.util.RegistrationUtil;
 import org.waveprotocol.wave.model.id.WaveIdentifiers;
@@ -42,6 +40,20 @@ import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
+import javax.inject.Singleton;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.x500.X500Principal;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -54,23 +66,8 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
-import java.security.cert.X509Certificate;
 import java.security.Principal;
-
-import javax.inject.Singleton;
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.Rdn;
-import javax.naming.ldap.LdapName;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.x500.X500Principal;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import java.security.cert.X509Certificate;
 
 /**
  * A servlet for authenticating a user's password and giving them a token via a
@@ -105,27 +102,25 @@ private final WelcomeRobot welcomeBot;
 
   @Inject
   public AuthenticationServlet(AccountStore accountStore,
-      Configuration configuration, SessionManager sessionManager,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
-      @Named(CoreSettings.ENABLE_CLIENTAUTH) boolean isClientAuthEnabled,
-      @Named(CoreSettings.CLIENTAUTH_CERT_DOMAIN) String clientAuthCertDomain,
-      @Named(CoreSettings.DISABLE_REGISTRATION) boolean isRegistrationDisabled,
-      @Named(CoreSettings.DISABLE_LOGINPAGE) boolean isLoginPageDisabled,
-    WelcomeRobot welcomeBot,
-      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
+                               Configuration configuration,
+                               SessionManager sessionManager,
+                               @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
+                               Config config,
+                               WelcomeRobot welcomeBot) {
     Preconditions.checkNotNull(accountStore, "AccountStore is null");
     Preconditions.checkNotNull(configuration, "Configuration is null");
     Preconditions.checkNotNull(sessionManager, "Session manager is null");
+
     this.accountStore = accountStore;
     this.configuration = configuration;
     this.sessionManager = sessionManager;
     this.domain = domain.toLowerCase();
-    this.isClientAuthEnabled = isClientAuthEnabled;
-    this.clientAuthCertDomain = clientAuthCertDomain.toLowerCase();
-    this.isRegistrationDisabled = isRegistrationDisabled;
-    this.isLoginPageDisabled = isLoginPageDisabled;
+    this.isClientAuthEnabled = config.getBoolean("security.enable_clientauth");
+    this.clientAuthCertDomain = config.getString("security.clientauth_cert_domain").toLowerCase();
+    this.isRegistrationDisabled = config.getBoolean("administration.disable_registration");
+    this.isLoginPageDisabled = config.getBoolean("administration.disable_loginpage");
     this.welcomeBot = welcomeBot;
-    this.analyticsAccount = analyticsAccount;
+    this.analyticsAccount = config.getString("administration.analytics_account");
   }
 
   @SuppressWarnings("unchecked")

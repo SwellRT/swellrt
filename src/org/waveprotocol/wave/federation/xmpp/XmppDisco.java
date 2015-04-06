@@ -20,28 +20,22 @@
 package org.waveprotocol.wave.federation.xmpp;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.typesafe.config.Config;
+import org.dom4j.Element;
+import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
+import org.waveprotocol.wave.federation.FederationErrors;
+import org.xmpp.packet.IQ;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.dom4j.Element;
-import org.xmpp.packet.IQ;
-
-import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
-import org.waveprotocol.wave.federation.FederationErrors;
-import org.waveprotocol.wave.federation.FederationSettings;
 
 /**
  * Implementation of XMPP Discovery. Provides public methods to respond to incoming disco requests
@@ -55,14 +49,11 @@ public class XmppDisco {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(XmppDisco.class.getCanonicalName());
 
-  static final String DISCO_INFO_CATEGORY = "collaboration";
-  static final String DISCO_INFO_TYPE = "google-wave";
-
   // This tracks the number of disco attempts started.
   public static final LoadingCache<String, AtomicLong> statDiscoStarted =
       CacheBuilder.newBuilder().build(new CacheLoader<String, AtomicLong>() {
             @Override
-            public AtomicLong load(String domain) {
+            public AtomicLong load(@SuppressWarnings("NullableProblems") String domain) {
               return new AtomicLong();
             }
           });
@@ -71,29 +62,29 @@ public class XmppDisco {
   private final String serverDescription;
 
   private XmppManager manager = null;
-  private static int DISCO_EXPIRATION_HOURS = 6;
   // Accessed by XmppFederationHostForDomain.
-  final int failExpirySecs;
-  final int successExpirySecs;
+  final long failExpirySecs;
+  final long successExpirySecs;
+  final long discoExpirationHours;
+  final String discoInfoCategory;
+  final String discoInfoType;
 
   /**
    * Constructor. Note that {@link #setManager} must be called before this class is ready to use.
-   *
-   * @param serverDescription the name of this server - passed in from flags
-   * @param failExpirySecs    how long to cache failed disco results
-   * @param successExpirySecs how long to cache successful disco results
    */
   @Inject
-  public XmppDisco(@Named(FederationSettings.XMPP_SERVER_DESCRIPTION) String serverDescription,
-      @Named(FederationSettings.XMPP_DISCO_FAILED_EXPIRY_SECS) final int failExpirySecs,
-      @Named(FederationSettings.XMPP_DISCO_SUCCESSFUL_EXPIRY_SECS) final int successExpirySecs) {
-    this.serverDescription = serverDescription;
-    this.failExpirySecs = failExpirySecs;
-    this.successExpirySecs = successExpirySecs;
+  public XmppDisco(Config config) {
+    this.serverDescription = config.getString("federation.xmpp_server_description");
+    this.discoInfoCategory = config.getString("federation.disco_info_category");
+    this.discoInfoType = config.getString("federation.disco_info_type");
+    this.failExpirySecs = config.getDuration("federation.xmpp_disco_failed_expiry", TimeUnit.SECONDS);
+    this.successExpirySecs = config.getDuration("federation.xmpp_disco_successful_expiry", TimeUnit.SECONDS);
+    this.discoExpirationHours = config.getDuration("federation.disco_expiration", TimeUnit.HOURS);
 
+    //noinspection NullableProblems
     discoRequests =
         CacheBuilder.newBuilder().expireAfterWrite(
-        DISCO_EXPIRATION_HOURS, TimeUnit.HOURS).build(
+                discoExpirationHours, TimeUnit.HOURS).build(
         new CacheLoader<String, RemoteDisco>() {
 
           @Override
@@ -125,9 +116,9 @@ public class XmppDisco {
     Element query = response.setChildElement("query", XmppNamespace.NAMESPACE_DISCO_INFO);
 
     query.addElement("identity")
-        .addAttribute("category", DISCO_INFO_CATEGORY)
-        .addAttribute("type", DISCO_INFO_TYPE)
-        .addAttribute("name", serverDescription);
+        .addAttribute("category", discoInfoCategory)
+        .addAttribute("type", discoInfoType)
+      .addAttribute("name", serverDescription);
 
     query.addElement("feature")
         .addAttribute("var", XmppNamespace.NAMESPACE_WAVE_SERVER);

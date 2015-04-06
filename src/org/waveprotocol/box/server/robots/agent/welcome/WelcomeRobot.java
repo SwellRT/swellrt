@@ -19,22 +19,16 @@
 
 package org.waveprotocol.box.server.robots.agent.welcome;
 
-import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.appendLine;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
 import com.google.wave.api.Wavelet;
-
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.account.RobotAccountData;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.agent.AbstractBaseRobotAgent;
-import org.waveprotocol.box.server.robots.agent.passwd.PasswordRobot;
 import org.waveprotocol.box.server.robots.util.RobotsUtil;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -44,6 +38,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.appendLine;
 
 
 /**
@@ -66,7 +62,7 @@ public class WelcomeRobot extends AbstractBaseRobotAgent {
   public WelcomeRobot(Injector injector) {
     super(injector);
     String welcomeWaveIdStr =
-      injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WELCOME_WAVE_ID)));
+      injector.getInstance(Config.class).getString("administration.welcome_wave_id");
     if (!"".equals(welcomeWaveIdStr)) {
       try {
         welcomeWaveId = WaveId.ofChecked(getWaveDomain(), welcomeWaveIdStr);

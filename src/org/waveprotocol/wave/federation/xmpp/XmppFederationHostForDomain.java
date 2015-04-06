@@ -20,17 +20,15 @@
 package org.waveprotocol.wave.federation.xmpp;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.protobuf.ByteString;
-
+import com.typesafe.config.Config;
 import org.dom4j.Element;
-import org.waveprotocol.wave.federation.FederationErrors;
-import org.waveprotocol.wave.federation.FederationSettings;
-import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
+import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.Proto.ProtocolHashedVersion;
-import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
+import org.waveprotocol.wave.model.id.WaveletName;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
 
@@ -58,10 +56,10 @@ class XmppFederationHostForDomain implements WaveletFederationListener {
 
   @Inject
   public XmppFederationHostForDomain(final String domain, XmppManager manager,
-      XmppDisco disco, @Named(FederationSettings.XMPP_JID) String jid) {
+      XmppDisco disco, Config config) {
     this.remoteDomain = domain;
     this.manager = manager;
-    this.jid = jid;
+    this.jid = config.getString("federation.xmpp_jid");
     this.disco = disco;
   }
 

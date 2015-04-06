@@ -27,7 +27,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.wave.api.SearchResult;
 
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.waveserver.QueryHelper.InvalidQueryException;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -55,7 +55,7 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
   private final PerUserWaveViewProvider waveViewProvider;
 
   @Inject
-  public SimpleSearchProviderImpl(@Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
+  public SimpleSearchProviderImpl(@Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain,
       WaveDigester digester, final WaveMap waveMap, PerUserWaveViewProvider userWaveViewProvider) {
     super(waveDomain, digester, waveMap);
     this.waveViewProvider = userWaveViewProvider;

@@ -23,24 +23,22 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.protobuf.ByteString;
-
+import com.typesafe.config.Config;
 import org.apache.commons.codec.binary.Base64;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
+import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.FederationRemoteBridge;
-import org.waveprotocol.wave.federation.FederationSettings;
-import org.waveprotocol.wave.federation.WaveletFederationListener;
-import org.waveprotocol.wave.federation.WaveletFederationProvider;
-import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.Proto.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignedDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
+import org.waveprotocol.wave.federation.WaveletFederationListener;
+import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.federation.xmpp.XmppUtil.UnknownSignerType;
-import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
+import org.waveprotocol.wave.model.id.WaveletName;
 import org.xmpp.packet.IQ;
 import org.xmpp.packet.Message;
 import org.xmpp.packet.Packet;
@@ -77,10 +75,10 @@ public class XmppFederationRemote implements WaveletFederationProvider {
   @Inject
   public XmppFederationRemote(
       @FederationRemoteBridge WaveletFederationListener.Factory updatesListenerFactory,
-      XmppDisco disco, @Named(FederationSettings.XMPP_JID) String jid) {
+      XmppDisco disco, Config config) {
     this.updatesListenerFactory = updatesListenerFactory;
     this.disco = disco;
-    this.jid = jid;
+    this.jid = config.getString("federation.xmpp_jid");
   }
 
   /**
@@ -531,30 +529,35 @@ public class XmppFederationRemote implements WaveletFederationProvider {
       for (Element itemElement : (List<Element>) items.elements()) {
         for (Element element : (List<Element>) itemElement.elements()) {
           String elementName = element.getQName().getName();
-          if (elementName.equals("applied-delta")) {
-            String deltaBody = element.getText();
-            deltaList.add(ByteString.copyFrom(Base64.decodeBase64(deltaBody.getBytes())));
-          } else if (elementName.equals("commit-notice")) {
-            Attribute commitVersion = element.attribute("version");
-            if (commitVersion != null) {
-              try {
-                lastCommittedVersion = Long.parseLong(commitVersion.getValue());
-              } catch (NumberFormatException e) {
-                lastCommittedVersion = -1;
+          switch (elementName) {
+            case "applied-delta":
+              String deltaBody = element.getText();
+              deltaList.add(ByteString.copyFrom(Base64.decodeBase64(deltaBody.getBytes())));
+              break;
+            case "commit-notice":
+              Attribute commitVersion = element.attribute("version");
+              if (commitVersion != null) {
+                try {
+                  lastCommittedVersion = Long.parseLong(commitVersion.getValue());
+                } catch (NumberFormatException e) {
+                  lastCommittedVersion = -1;
+                }
               }
-            }
-          } else if (elementName.equals("history-truncated")) {
-            Attribute truncVersion = element.attribute("version");
-            if (truncVersion != null) {
-              try {
-                versionTruncatedAt = Long.parseLong(truncVersion.getValue());
-              } catch (NumberFormatException e) {
-                versionTruncatedAt = -1;
+              break;
+            case "history-truncated":
+              Attribute truncVersion = element.attribute("version");
+              if (truncVersion != null) {
+                try {
+                  versionTruncatedAt = Long.parseLong(truncVersion.getValue());
+                } catch (NumberFormatException e) {
+                  versionTruncatedAt = -1;
+                }
               }
-            }
-          } else {
-            listener.onFailure(FederationErrors.badRequest(
-                "Bad response packet: " + historyResponse));
+              break;
+            default:
+              listener.onFailure(FederationErrors.badRequest(
+                      "Bad response packet: " + historyResponse));
+              break;
           }
         }
       }
