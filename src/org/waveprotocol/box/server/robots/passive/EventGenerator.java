@@ -333,7 +333,9 @@ public class EventGenerator {
           if (capabilities.containsKey(EventType.FORM_BUTTON_CLICKED)) {
             if (eventComponent.getType() == DocumentEvent.Type.CONTENT_INSERTED) {
               ContentInserted<N, E, T> contentInserted = (ContentInserted<N, E, T>) eventComponent;
-              org.waveprotocol.wave.model.document.raw.impl.Element elementInserted = ((org.waveprotocol.wave.model.document.raw.impl.Element) contentInserted.getSubtreeElement());
+              org.waveprotocol.wave.model.document.raw.impl.Element elementInserted =
+                ((org.waveprotocol.wave.model.document.raw.impl.Element)
+                  contentInserted.getSubtreeElement());
               if (elementInserted.getTagName().equals("click")) {
                 FormButtonClickedEvent buttonClickedEvent =
                     new FormButtonClickedEvent(null, null,
@@ -343,8 +345,7 @@ public class EventGenerator {
                 addEvent(buttonClickedEvent, capabilities, blip.getId(), messages);
               }
             }
-
-          } else
+          }
           if (capabilities.containsKey(EventType.DOCUMENT_CHANGED)
               && !documentChangedEventGenerated && !gadgetStateChangeEvent) {
             DocumentChangedEvent apiEvent =
