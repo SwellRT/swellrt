@@ -19,6 +19,12 @@
 
 package org.waveprotocol.wave.client.doodad.form.button;
 
+import com.google.gwt.user.client.Event;
+
+import org.waveprotocol.box.webclient.client.Session;
+import org.waveprotocol.wave.client.common.util.DomHelper;
+import org.waveprotocol.wave.client.common.util.DomHelper.HandlerReference;
+import org.waveprotocol.wave.client.common.util.DomHelper.JavaScriptEventListener;
 import org.waveprotocol.wave.client.doodad.form.events.ContentEvents;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.NodeEventHandler;
@@ -32,10 +38,14 @@ import org.waveprotocol.wave.client.widget.button.ClickButton;
 import org.waveprotocol.wave.model.document.util.Property;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 
+import java.util.HashMap;
+
 public final class Button {
   private static final String TAGNAME = "button";
 
   static final Property<ClickButton> BUTTON_LOGIC_PROP = Property.immutable("button_logic");
+  private static final Property<HandlerReference> HANDLE = Property.mutable("handle");
+
 
   private static final ButtonRenderingMutationHandler RENDERING_MUTATION_HANDLER =
       new ButtonRenderingMutationHandler();
@@ -54,6 +64,31 @@ public final class Button {
       } else {
         return false;
       }
+    }
+
+    @Override
+    public void onActivated(final ContentElement element) {
+      element.setProperty(HANDLE, DomHelper.registerEventHandler(element.getImplNodelet(), "click",
+          new JavaScriptEventListener() {
+            @Override
+            public void onJavaScriptEvent(String name, Event event) {
+              ContentNode ev = element.getFirstChild();
+              while (ev.getNextSibling() != null && ev.asElement().getName() != "events") {
+                ev = ev.getNextSibling();
+            }
+              HashMap<String, String> attr = new HashMap<String, String>();
+              attr.put("time", Long.toString(System.currentTimeMillis()));
+              attr.put("clicker", Session.get().getAddress());
+              ev.getMutableDoc().createChildElement(ev.asElement(), "click", attr);
+            }
+
+          }));
+    }
+
+    @Override
+    public void onDeactivated(ContentElement element) {
+      // Clean up
+      element.getProperty(HANDLE).unregister();
     }
   };
 

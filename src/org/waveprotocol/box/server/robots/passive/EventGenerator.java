@@ -30,6 +30,7 @@ import com.google.wave.api.event.AnnotatedTextChangedEvent;
 import com.google.wave.api.event.DocumentChangedEvent;
 import com.google.wave.api.event.Event;
 import com.google.wave.api.event.EventType;
+import com.google.wave.api.event.FormButtonClickedEvent;
 import com.google.wave.api.event.WaveletBlipCreatedEvent;
 import com.google.wave.api.event.WaveletBlipRemovedEvent;
 import com.google.wave.api.event.WaveletParticipantsChangedEvent;
@@ -54,6 +55,8 @@ import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Doc.T;
 import org.waveprotocol.wave.model.document.indexed.DocumentEvent;
 import org.waveprotocol.wave.model.document.indexed.DocumentEvent.AnnotationChanged;
+import org.waveprotocol.wave.model.document.indexed.DocumentEvent.ContentInserted;
+import org.waveprotocol.wave.model.document.raw.impl.Element;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.operation.SilentOperationSink;
 import org.waveprotocol.wave.model.operation.wave.BasicWaveletOperationContextFactory;
@@ -280,6 +283,21 @@ public class EventGenerator {
             addEvent(apiEvent, capabilities, blip.getId(), messages);
           }
         } else {
+          if (capabilities.containsKey(EventType.FORM_BUTTON_CLICKED)) {
+            if (eventComponent.getType() == DocumentEvent.Type.CONTENT_INSERTED) {
+              ContentInserted<N, E, T> contentInserted = (ContentInserted<N, E, T>) eventComponent;
+              Element elementInserted = ((Element) contentInserted.getSubtreeElement());
+              if (elementInserted.getTagName().equals("click")) {
+                FormButtonClickedEvent buttonClickedEvent =
+                    new FormButtonClickedEvent(null, null,
+                        elementInserted.getAttribute("clicker"), Long.decode(elementInserted
+                            .getAttribute("time")), blip.getId(), elementInserted
+                            .getParentElement().getAttribute("name"));
+                addEvent(buttonClickedEvent, capabilities, blip.getId(), messages);
+              }
+            }
+
+          } else
           if (capabilities.containsKey(EventType.DOCUMENT_CHANGED)
               && !documentChangedEventGenerated) {
             DocumentChangedEvent apiEvent = new DocumentChangedEvent(
