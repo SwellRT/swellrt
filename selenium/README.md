@@ -13,13 +13,13 @@ Edit `selenium/TestWaveJS.java`.
 
 ## Build
 
-Compile with Ant: `ant compile-wavejs-test`
+Compile with Ant: `ant -f build-swellrt.xml swellrt-compile-js-dev`
 
 ## Run
 
 Build a run Wave Server separately: `ant compile run-server`
 
-Run test: `ant wavejs-test`
+Run test: `ant -f build-swellrt.xml swellrt-js-test`
 
 
 

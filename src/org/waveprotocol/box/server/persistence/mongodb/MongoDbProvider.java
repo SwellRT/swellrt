@@ -27,8 +27,8 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
+import org.swellrt.model.WaveConversationUtils;
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
-import org.waveprotocol.mod.model.WaveConversationUtils;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.net.UnknownHostException;

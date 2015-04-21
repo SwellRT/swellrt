@@ -33,8 +33,8 @@ import com.google.inject.name.Names;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.eclipse.jetty.proxy.ProxyServlet;
+import org.swellrt.server.ds.DSFileServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
-import org.waveprotocol.box.rest.dsharing.DSFileServlet;
 import org.waveprotocol.box.server.authentication.AccountStoreHolder;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.executor.ExecutorsModule;

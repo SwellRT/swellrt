@@ -12,12 +12,12 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+import org.swellrt.model.WaveConversationUtils;
+import org.swellrt.model.WaveExtendedModel;
+import org.swellrt.model.WaveType;
 import org.waveprotocol.box.server.waveserver.QueryHelper;
 import org.waveprotocol.box.server.waveserver.QueryHelper.OrderByValueType;
 import org.waveprotocol.box.server.waveserver.TokenQueryType;
-import org.waveprotocol.mod.model.WaveConversationUtils;
-import org.waveprotocol.mod.model.WaveExtendedModel;
-import org.waveprotocol.mod.model.WaveType;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html ng-app="consoleApp">
+
+<head>
+<meta charset="UTF-8">
+<title>SwellRT Testing Console</title>
+
+<!-- Bootstrap -->
+<link rel="stylesheet"
+  href="bootstrap.min.css">
+
+<!-- Jasmine Test framework -->
+<link rel="stylesheet" href="jasmine/jasmine.css">
+<script src="jasmine/jasmine.js"></script>
+<script src="jasmine/jasmine-html.js"></script>
+<!--
+<script src="jasmine/boot.js"></script>
+ -->
+
+
+<!-- AngularJS -->
+<script
+  src="angular.min.js"></script>
+
+
+<!-- Load SwellRT scripts -->
+<!-- This page is meant to be deployed on the Wave server -->
+<script type="text/javascript" src="../swellrt/swellrt.nocache.js"></script>
+<script type="text/javascript" src="testsuite/swellrt.js"></script>
+
+<script type="text/javascript">
+  var consoleApp = angular.module('consoleApp', []);
+
+  consoleApp.controller('SessionCtrl', [
+      '$scope',
+      '$rootScope',
+      function($scope, $rootScope) {
+
+        // Default Values
+        $rootScope.sessionId = "";
+
+        $scope.errorMsg = "";
+        $scope.loginStatus = 'no'; // no, yes, wait
+
+        $scope.server = "http://localhost:9898";
+
+        $scope.login = function() {
+
+          $scope.loginStatus = "wait";
+
+          // Callbacks and controllers...
+          // http://stackoverflow.com/questions/18931689/angularjs-service-callback-to-update-scope-of-controller
+          // http://markdalgleish.com/2013/06/using-promises-in-angularjs-views/
+
+          SwellRT.startSession($scope.server, $scope.uid,
+              $scope.password, function(sessionId) {
+
+                $scope.errorMsg = "";
+                $rootScope.sessionId = sessionId;
+                $scope.loginStatus = "yes";
+                $rootScope.$apply();
+
+              }, function(error) {
+
+                $scope.errorMsg = error;
+                $scope.loginStatus = "no";
+                $rootScope.sessionId = "";
+                $rootScope.$apply();
+
+              });
+        };
+
+        $scope.logout = function() {
+
+          SwellRT.stopSession();
+          $scope.errorMsg = "";
+          $scope.loginStatus = "no";
+          $rootScope.sessionId = "";
+
+        };
+
+      } ]); // SessionCtrl
+
+  consoleApp.controller('TestingCtrl', [ '$scope', '$rootScope',
+      function($scope, $rootScope) {
+
+        $scope.runTestModel = function() {
+
+          $scope.modelid = SwellRT_Tester.runTestBasic("testResults");
+
+
+        };
+
+
+
+        $scope.createModel = function() {
+
+          $scope.modelid = SwellRT.createModel(
+
+                  function(model) {
+
+                    SwellRT.model = model;
+                    console.log("Attached new collaborative data model to SwellRT.model");
+
+                   },
+
+                  function(error) {
+                      console.log("Error creating new collaborative data model: "+ error)
+                    });
+
+              if ($scope.modelid != null) {
+                console.log("Created new collaborative data model with id "+ $scope.modelid);
+              }
+
+        };
+
+        $scope.openModel = function() {
+
+          if ($scope.modelid == null) return;
+
+          $scope.modelid = SwellRT.openModel($scope.modelid,
+
+                  function(model) {
+
+                    SwellRT.model = model;
+                    console.log("Attached collaborative data model to SwellRT.model");
+
+                   },
+
+                  function(error) {
+                      console.log("Error opening collaborative data model: "+ error)
+                    });
+
+              if ($scope.modelid != null) {
+                console.log("Opened collaborative data model with id "+ $scope.modelid);
+              }
+
+        };
+
+        $scope.closeModel = function() {
+
+          if ($scope.modelid == null) return;
+
+          if (SwellRT.closeModel($scope.modelid))
+            console.log("Closed collaborative data model with id "+ $scope.modelid);
+          else
+            console.log("Error closing collaborative data model with id "+ $scope.modelid);
+
+          SwellRT.model = undefined;
+        };
+
+
+
+      } ]); // TestingCtrl
+
+    function onSwellRTReady() {
+
+    };
+
+</script>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="jumbotron">
+      <div class="container">
+        <h1>SwellRT Test Console</h1>
+      </div>
+    </div>
+
+    <div class="row">
+
+
+      <div class="col-md-4" ng-controller="SessionCtrl">
+        <div class="panel panel-default">
+          <div class="panel-heading">Server status</div>
+          <div class="panel-body">
+            <div class="alert alert-danger" ng-show="errorMsg != ''">{{errorMsg}}</div>
+
+            <form role="form" id="loginForm" ng-hide="loginStatus != 'no'">
+              <div class="form-group">
+                <label for="server">Server URL</label> <input type="url"
+                  class="form-control" id="server" ng-model="server" required>
+              </div>
+              <div class="form-group">
+                <label for="uid">User ID (eg tim@local.net)</label> <input type="text"
+                  class="form-control" id="uid" placeholder="User ID"
+                  ng-model="uid" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label> <input type="password"
+                  class="form-control" id="password" placeholder="Password"
+                  ng-model="password" required>
+              </div>
+              <button type="submit" class="btn btn-default" ng-click="login()" id="login">Sign
+                in</button>
+            </form>
+
+
+
+            <form role="form" id="logoutForm" ng-show="loginStatus == 'yes'">
+              <div class="alert alert-success" role="alert">Session
+                started: {{sessionId}}</div>
+              <button type="submit" class="btn btn-default" ng-click="logout()">Log
+                out</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8" ng-controller="TestingCtrl">
+        <div class="panel panel-default" ng-show="sessionId !== ''">
+          <div class="panel-heading">Tests</div>
+          <div class="panel-body">
+
+              <div class="form-group">
+                <label for="modelid">Model instance id</label> <input type="text"
+                  class="form-control" id="modelid" ng-model="modelid" required>
+              </div>
+
+            <form role="form" id="testForm">
+
+              <button type="submit" class="btn btn-default" id="runTestModel"
+                ng-click="runTestModel()">Run Test for new model</button>
+
+            </form>
+
+
+
+            <form role="form" id="createForm">
+
+              <button type="submit" class="btn btn-default"
+                ng-click="createModel()">Create collaborative model instance</button>
+
+            </form>
+
+            <form role="form" id="openForm">
+
+
+              <button type="submit" class="btn btn-default"
+                ng-click="openModel()">Open collaborative model instance</button>
+
+            </form>
+
+
+            <form role="form" id="closeForm">
+
+              <button type="submit" class="btn btn-default"
+                ng-click="closeModel()">Close collaborative model instance</button>
+
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <br> <br> <br>
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">Test output</div>
+          <div class="panel-body" id="testResults"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

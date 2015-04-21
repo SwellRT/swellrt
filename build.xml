@@ -378,7 +378,6 @@
     <!-- Only one GWT compile output is valid at any one time. -->
     <delete file="${dep}/compile-gwt-dev"/>
     <touch file="${dep}/compile-gwt"/>
-    <delete file="${dep}/compile-gwt-mod"/>
   </target>
 
   <target name="compile-gwt-dev-dep">
@@ -410,7 +409,6 @@
      <!-- Only one GWT compile output is valid at any one time. -->
      <delete file="${dep}/compile-gwt"/>
      <touch file="${dep}/compile-gwt-dev"/>
-     <delete file="${dep}/compile-gwt-mod"/>
    </target>
 
   <target name="compile-gwt-dev" depends="compile, compile-gwt-dev-dep"
@@ -438,7 +436,6 @@
     <touch file="${dep}/compile-gwt-dev"/>
   </target>
 
-
   <!--=====
       Hosted and Superdev
       ======-->
@@ -455,7 +452,6 @@
       <jvmarg value="-Xmx1024M"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
-      <jvmarg value="-Djava.util.logging.config.file=wiab-logging.conf" />
       <arg value="-noserver" />
       <arg line="-bindAddress 127.0.0.1" />
       <arg line="${gwt.args}"/>
@@ -567,10 +563,7 @@
         <path location="${build.proto.dir}"/>
         <path location="${build.messages.dir}"/>
       </classpath>
-      <jvmarg value="-Djava.util.logging.config.file=wiab-logging.conf" />
-      <jvmarg value="-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"/>
-      <jvmarg value="-Dorg.eclipse.jetty.webapp.LEVEL=DEBUG"/>
-
+      <jvmarg value="-Dorg.eclipse.jetty.LEVEL=DEBUG"/>
       <jvmarg value="-Djava.security.auth.login.config=jaas.config"/>
       <jvmarg value="-Dwave.server.config=server.config"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=10898"/>
@@ -631,13 +624,13 @@
   </target>
 
   <target name="dist-robot-client-api" depends="compile">
-    <jar destfile="${robotclient.jar.out}">
+  	<jar destfile="${robotclient.jar.out}">
       <fileset dir="${staging.dir}">
-        <include name="com/google/wave/api/*" />
-        <include name="com/google/wave/api/event/**/*" />
-        <include name="com/google/wave/api/impl/**/*" />
-        <include name="com/google/wave/api/oauth/**/*" />
-        <include name="com/google/wave/api/v2/**/*" />
+      	<include name="com/google/wave/api/*" />
+      	<include name="com/google/wave/api/event/**/*" />
+      	<include name="com/google/wave/api/impl/**/*" />
+      	<include name="com/google/wave/api/oauth/**/*" />
+      	<include name="com/google/wave/api/v2/**/*" />
       </fileset>
       <manifest>
         <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
@@ -688,7 +681,7 @@
         <include name="META-INF/services/*" />
         <include name="com/mongodb/**/*" />
         <include name="org/slf4j/**/*" />
-  <include name="org/atmosphere/**/*" />
+	<include name="org/atmosphere/**/*" />
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
@@ -779,7 +772,7 @@
   <target name="dist-export-import" depends="stage, dist-export-import-dep" description="Assembles the Wave Export/Import utilities" unless="skip.dist-export-import">
     <jar destfile="${export-import.jar.out}">
       <fileset dir="${staging.dir}">
-  <include name="org/waveprotocol/box/server/common/**/*"/>
+	<include name="org/waveprotocol/box/server/common/**/*"/>
         <include name="org/waveprotocol/box/expimp/**/*"/>
         <include name="org/waveprotocol/box/server/persistence/**/*"/>
         <include name="org/waveprotocol/box/server/rpc/**/*"/>
@@ -877,7 +870,7 @@
   <target name="release-bin" depends="compile-gwt, dist-server, dist-export-import" description="Creates unsigned tar+zip for server binary release">
     <delete file="${dist.dir}/${release.bin.path}.tar.bz2"/>
     <delete file="${dist.dir}/${release.bin.path}.zip"/>
-    <antcall target="gen-server-config"/>
+    <antcall target="gen-server-config"/> 
     <copy file="LICENSE.bin" tofile="LICENSE" />
     <copy file="NOTICE.bin" tofile="NOTICE" />
     <tar destfile="${dist.dir}/${release.bin.path}.tar" longfile="gnu">
@@ -979,11 +972,11 @@
   </target>
 
   <target name="get-jetty-dep" description="Download run time third party dependencies">
-  <get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
-    <url url="https://olex-secure.openlogic.com/content/openlogic/jetty/9.1.1/jetty-distribution-9.1.1.v20140108.zip" />
-  </get>
-  <unzip src="${lib.runtime}/jetty-distribution-9.1.1.v20140108.zip" dest="${lib.runtime}">
-    <patternset>
+	<get dest="${lib.runtime}" usetimestamp="true" skipexisting="true">
+	  <url url="https://olex-secure.openlogic.com/content/openlogic/jetty/9.1.1/jetty-distribution-9.1.1.v20140108.zip" />
+	</get>
+	<unzip src="${lib.runtime}/jetty-distribution-9.1.1.v20140108.zip" dest="${lib.runtime}">
+	  <patternset>
         <include name="jetty-distribution-9.1.1.v20140108/lib/jetty-client-9.1.1.v20140108.jar"/>
         <include name="jetty-distribution-9.1.1.v20140108/lib/jetty-annotations-9.1.1.v20140108.jar"/>
         <include name="jetty-distribution-9.1.1.v20140108/lib/jetty-continuation-9.1.1.v20140108.jar"/>
@@ -1004,7 +997,7 @@
         <include name="jetty-distribution-9.1.1.v20140108/lib/websocket/websocket-server-9.1.1.v20140108.jar"/>
         <include name="jetty-distribution-9.1.1.v20140108/lib/websocket/websocket-servlet-9.1.1.v20140108.jar"/>
       </patternset>
-    <mapper type="flatten"/>
+	  <mapper type="flatten"/>
     </unzip>
   </target>
 
@@ -1106,241 +1099,4 @@
       <footer>&lt;a href="http://www.waveprotocol.org/"&gt;Wave Project&lt;a/&gt;</footer>
     </javadoc>
   </target>
-
-
-    <!--=====
-         Mod
-        =====-->
-
-
-  <!--
-    Compact artifacts for separated GWT client development
-   -->
-  <target name="dist-compact-client" depends="stage" description="Assembles a compact artifact with all client stuff">
-      <jar destfile="${dist.dir}/compact-client.jar">
-        <fileset dir="${staging.dir}" includes="org/waveprotocol/wave/**/*">
-        </fileset>
-        <fileset dir="${staging.dir}" includes="org/waveprotocol/box/**/*">
-         <exclude name="org/waveprotocol/box/server/**/*" />
-        </fileset>
-        <fileset dir="${staging.dir}" includes="com/google/gwt/websockets/**/*">
-        </fileset>
-        <fileset dir="${staging.dir}" includes="org/waveprotocol/mod/**/*">
-         <exclude name="org/waveprotocol/mod/wavejs/**/*" />
-         <exclude name="org/waveprotocol/mod/webclient/**/*" />
-        </fileset>
-        <manifest>
-          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set (Source)"/>
-          <attribute name="Specification-Version" value="${waveinabox.version}"/>
-          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set (Source)"/>
-          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
-          <attribute name="Built-By" value="${user.name}"/>
-        </manifest>
-        <metainf dir="." includes="LICENSE, NOTICE" />
-      </jar>
-    </target>
-
-    <target name="dist-compact-client-src" description="Assembles a compact artifact with all client stuff">
-      <jar destfile="${dist.dir}/compact-client-src.jar">
-        <fileset dir="${src.dir}" includes="org/waveprotocol/wave/**/*">
-        </fileset>
-        <fileset dir="${src.dir}" includes="org/waveprotocol/box/**/*">
-         <exclude name="org/waveprotocol/box/server/**/*" />
-        </fileset>
-        <fileset dir="${src.dir}" includes="com/google/gwt/websockets/**/*">
-        </fileset>
-        <fileset dir="${staging.dir}" includes="org/waveprotocol/mod/**/*">
-         <exclude name="org/waveprotocol/mod/wavejs/**/*" />
-         <exclude name="org/waveprotocol/mod/webclient/**/*" />
-        </fileset>
-        <manifest>
-          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set"/>
-          <attribute name="Specification-Version" value="${waveinabox.version}"/>
-          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set"/>
-          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
-          <attribute name="Built-By" value="${user.name}"/>
-        </manifest>
-        <metainf dir="." includes="LICENSE, NOTICE" />
-      </jar>
-    </target>
-
-
-  <target name="compile-gwt-mod-dep">
-    <uptodate targetfile="${dep}/compile-gwt" property="skip.compile-gwt-mod">
-      <srcfiles dir="${lib.dir}"/>
-      <srcfiles dir="${src.dir}"/>
-      <srcfiles dir="${gen.dir}/messages"/>
-    </uptodate>
-  </target>
-
-
-  <target name="compile-gwt-mod" depends="compile, compile-gwt-mod-dep"
-      description="GWT compile of a restricted set of permutations suitable for development."
-      unless="skip.compile-gwt-mod">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-        <path refid="test.libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <!-- Human-readable JS. -->
-      <arg line="-style PRETTY"/>
-      <!-- Less optimal JS, but faster compile. -->
-      <arg line="-draftCompile"/>
-      <!-- Assertions on. -->
-      <arg line="-ea"/>
-      <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.mod.webclient.WebClientMod"/>
-    </java>
-    <!-- Only one GWT compile output is valid at any one time. -->
-    <delete file="${dep}/compile-gwt-dev"/>
-    <delete file="${dep}/compile-gwt"/>
-    <touch file="${dep}/compile-gwt-mod"/>
-  </target>
-
-  <target name="hosted-gwt-mod" depends="compile"
-      description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${build.src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <jvmarg value="-ea"/>
-      <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
-      <jvmarg value="-Djava.util.logging.config.file=wiab-logging.conf" />
-      <arg value="-noserver" />
-      <arg line="-bindAddress 127.0.0.1" />
-      <arg line="${gwt.args}"/>
-      <arg line="-startupUrl http://localhost:9898"/>
-      <arg line="-logLevel DEBUG"/>
-      <arg value="org.waveprotocol.mod.webclient.WebClientMod"/>
-    </java>
-  </target>
-
-
-  <target name="superdev-gwt-mod" depends="compile"
-      description="Runs the superdev mode, for debugging the GWT client in a browser.">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-      </classpath>
-      <arg line="${gwt.args}"/>
-      <arg line="-src src"/>
-      <arg value="org.waveprotocol.mod.webclient.WebClientMod"/>
-    </java>
-  </target>
-
-
-  <target name="compile-wavejs-dev" depends="compile"
-      description="GWT compile of a restricted set of permutations suitable for development.">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-        <path refid="test.libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <!-- Human-readable JS. -->
-      <arg line="-style PRETTY"/>
-      <!-- Less optimal JS, but faster compile. -->
-      <arg line="-draftCompile"/>
-      <!--
-      <arg line="-logLevel DEBUG"/>
-      -->
-      <!-- Assertions on. -->
-      <arg line="-ea"/>
-      <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.mod.wavejs.WaveJS"/>
-    </java>
-  </target>
-
-
-  <target name="compile-wavejs" depends="compile"
-      description="GWT compile to production JavaScript">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-        <path refid="test.libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <!-- Small Javascript size. -->
-      <arg line="-style OBFUSCATED"/>
-      <!-- Do not include class and package names in compiled JS. -->
-      <arg line="-XdisableClassMetadata"/>
-      <arg line="-XdisableCastChecking"/>
-      <arg line="-localWorkers 4"/>
-      <arg line="${gwt.args}"/>
-      <arg value="org.waveprotocol.mod.wavejs.WaveJS"/>
-    </java>
-  </target>
-
-
-  <target name="hosted-wavejs" depends="compile"
-      description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
-    <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
-      <classpath>
-        <pathelement location="${src.dir}"/>
-        <pathelement location="${build.src.dir}"/>
-        <pathelement location="${gen.dir}/messages"/>
-        <path refid="libpath"/>
-      </classpath>
-      <jvmarg value="-Xmx1024M"/>
-      <jvmarg value="-ea"/>
-      <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
-      <arg value="-noserver" />
-      <arg line="-bindAddress 127.0.0.1" />
-      <arg line="${gwt.args}"/>
-      <arg line="-startupUrl http://localhost:9898"/>
-      <arg line="-logLevel DEBUG"/>
-      <arg value="org.waveprotocol.mod.wavejs.WaveJS"/>
-    </java>
-  </target>
-
-  <target name="compile-wavejs-test" description="Build WaveJS Selenium tests">
-     <echo message="Compile WaveJS Selenium Test"/>
-     <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium" debug="true">
-       <classpath>
-           <fileset dir="${basedir}/selenium/lib">
-             <include name="**/*.jar"/>
-           </fileset>
-       </classpath>
-     </javac>
-   </target>
-
-
-  <target name="wavejs-test" depends="compile-wavejs-test"
-       description="Test WaveJS against a running Wave Server instance">
-     <java failonerror="true" fork="true" classname="TestWaveJS">
-       <classpath>
-           <pathelement location="${basedir}/selenium/"/>
-           <fileset dir="${basedir}/selenium/lib">
-             <include name="**/*.jar"/>
-           </fileset>
-       </classpath>
-       <!--
-       <jvmarg value="-Xmx1024M"/>
-        -->
-     </java>
-   </target>
-
-  <target name="clean-mod" description="Cleans up the build artifacts and temporary directories">
-    <delete dir="war/wavejs"/>
-  </target>
-
-
-
 </project>

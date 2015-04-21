@@ -17,7 +17,7 @@ public class TestWaveJS  {
     try {
       (new WebDriverWait(driver, 180)).until(new ExpectedCondition<Boolean>() {
         public Boolean apply(WebDriver d) {
-          d.get("http://localhost:9898/test/wavejs.html");
+          d.get("http://localhost:9898/test/index.html");
 
           return d.findElement(By.id("loginForm")).isDisplayed();
         }

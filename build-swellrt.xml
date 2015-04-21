@@ -1,0 +1,260 @@
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * Author: Pablo Ojanguren (pablojan@gmail.com)
+ -->
+<project name="SwellRT" default="dist">
+  <description>SwellRT, a Real-Time Federated Collaboration Framework</description>
+
+  <!-- Import original Wave build scripts -->
+  <import file="build.xml"/>
+
+
+  <!--
+    Compact artifacts for separated GWT client development
+   -->
+  <target name="dist-compact-client" depends="stage" description="Assembles a compact artifact with all client stuff">
+      <jar destfile="${dist.dir}/compact-client.jar">
+        <fileset dir="${staging.dir}" includes="org/waveprotocol/wave/**/*">
+        </fileset>
+        <fileset dir="${staging.dir}" includes="org/waveprotocol/box/**/*">
+         <exclude name="org/waveprotocol/box/server/**/*" />
+        </fileset>
+        <fileset dir="${staging.dir}" includes="com/google/gwt/websockets/**/*">
+        </fileset>
+        <fileset dir="${staging.dir}" includes="org/swellrt/**/*">
+         <exclude name="org/swellrt/api/**/*" />
+         <exclude name="org/swellrt/webclient/**/*" />
+        </fileset>
+        <manifest>
+          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set"/>
+          <attribute name="Specification-Version" value="${waveinabox.version}"/>
+          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set"/>
+          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+          <attribute name="Built-By" value="${user.name}"/>
+        </manifest>
+        <metainf dir="." includes="LICENSE, NOTICE" />
+      </jar>
+    </target>
+
+    <target name="dist-compact-client-src" description="Assembles a compact artifact with all client stuff">
+      <jar destfile="${dist.dir}/compact-client-src.jar">
+        <fileset dir="${src.dir}" includes="org/waveprotocol/wave/**/*">
+        </fileset>
+        <fileset dir="${src.dir}" includes="org/waveprotocol/box/**/*">
+         <exclude name="org/waveprotocol/box/server/**/*" />
+        </fileset>
+        <fileset dir="${src.dir}" includes="com/google/gwt/websockets/**/*">
+        </fileset>
+        <fileset dir="${staging.dir}" includes="org/swellrt/**/*">
+         <exclude name="org/swellrt/api/**/*" />
+         <exclude name="org/swellrt/webclient/**/*" />
+        </fileset>
+        <manifest>
+          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set (Source)"/>
+          <attribute name="Specification-Version" value="${waveinabox.version}"/>
+          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
+          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set (Source)"/>
+          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
+          <attribute name="Built-By" value="${user.name}"/>
+        </manifest>
+        <metainf dir="." includes="LICENSE, NOTICE" />
+      </jar>
+    </target>
+
+
+  <target name="swellrt-compile-gwt-dep">
+    <uptodate targetfile="${dep}/compile-gwt" property="skip.swellrt-compile-gwt">
+      <srcfiles dir="${lib.dir}"/>
+      <srcfiles dir="${src.dir}"/>
+      <srcfiles dir="${gen.dir}/messages"/>
+    </uptodate>
+  </target>
+
+
+  <target name="swellrt-compile-gwt" depends="compile, swellrt-compile-gwt-dep"
+      description="GWT compile of a restricted set of permutations suitable for development."
+      unless="skip.swellrt-compile-gwt">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Human-readable JS. -->
+      <arg line="-style PRETTY"/>
+      <!-- Less optimal JS, but faster compile. -->
+      <arg line="-draftCompile"/>
+      <!-- Assertions on. -->
+      <arg line="-ea"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.swellrt.webclient.WebClientMod"/>
+    </java>
+    <!-- Only one GWT compile output is valid at any one time. -->
+    <delete file="${dep}/compile-gwt-dev"/>
+    <delete file="${dep}/compile-gwt"/>
+    <touch file="${dep}/swellrt-compile-gwt"/>
+  </target>
+
+  <target name="swellrt-hosted" depends="compile"
+      description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${build.src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
+      <jvmarg value="-Djava.util.logging.config.file=wiab-logging.conf" />
+      <arg value="-noserver" />
+      <arg line="-bindAddress 127.0.0.1" />
+      <arg line="${gwt.args}"/>
+      <arg line="-startupUrl http://localhost:9898"/>
+      <arg line="-logLevel DEBUG"/>
+      <arg value="org.swellrt.webclient.WebClientMod"/>
+    </java>
+  </target>
+
+
+  <target name="swellrt-superdev-gwt" depends="compile"
+      description="Runs the superdev mode, for debugging the GWT client in a browser.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+      </classpath>
+      <arg line="${gwt.args}"/>
+      <arg line="-src src"/>
+      <arg value="org.swellrt.webclient.WebClientMod"/>
+    </java>
+  </target>
+
+
+
+
+  <target name="swellrt-compile-js-dev" depends="compile"
+      description="GWT compile of a restricted set of permutations suitable for development.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Human-readable JS. -->
+      <arg line="-style PRETTY"/>
+      <!-- Less optimal JS, but faster compile. -->
+      <arg line="-draftCompile"/>
+      <!--
+      <arg line="-logLevel DEBUG"/>
+      -->
+      <!-- Assertions on. -->
+      <arg line="-ea"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.swellrt.api.SwellRT"/>
+    </java>
+  </target>
+
+
+  <target name="swellrt-compile-js" depends="compile"
+      description="GWT compile to production JavaScript">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <!-- Small Javascript size. -->
+      <arg line="-style OBFUSCATED"/>
+      <!-- Do not include class and package names in compiled JS. -->
+      <arg line="-XdisableClassMetadata"/>
+      <arg line="-XdisableCastChecking"/>
+      <arg line="-localWorkers 4"/>
+      <arg line="${gwt.args}"/>
+      <arg value="org.swellrt.api.SwellRT"/>
+    </java>
+  </target>
+
+
+  <target name="swellrt-hosted-js" depends="compile"
+      description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
+      <classpath>
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${build.src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024M"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8001"/>
+      <arg value="-noserver" />
+      <arg line="-bindAddress 127.0.0.1" />
+      <arg line="${gwt.args}"/>
+      <arg line="-startupUrl http://localhost:9898"/>
+      <arg line="-logLevel DEBUG"/>
+      <arg value="org.swellrt.api.SwellRT"/>
+    </java>
+  </target>
+
+  <target name="swellrt-compile-js-test" description="Build SwellRT Selenium tests">
+     <echo message="Compile SwellRT Selenium Test"/>
+     <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium" debug="true">
+       <classpath>
+           <fileset dir="${basedir}/selenium/lib">
+             <include name="**/*.jar"/>
+           </fileset>
+       </classpath>
+     </javac>
+   </target>
+
+
+  <target name="swellrt-js-test" depends="swellrt-compile-js-test"
+       description="Test SwellRT against a running Wave Server instance">
+     <java failonerror="true" fork="true" classname="TestWaveJS">
+       <classpath>
+           <pathelement location="${basedir}/selenium/"/>
+           <fileset dir="${basedir}/selenium/lib">
+             <include name="**/*.jar"/>
+           </fileset>
+       </classpath>
+       <!--
+       <jvmarg value="-Xmx1024M"/>
+        -->
+     </java>
+   </target>
+
+  <target name="swellrt-clean" description="Cleans up the build artifacts and temporary directories">
+    <delete dir="war/swellrt"/>
+  </target>
+
+
+
+</project>
