@@ -221,25 +221,11 @@ Close the collaborative model instance, it closes server's connection and dispos
     SwellRT.closeModel("local.net/dummy+Xxn3-XupCUA");
 ```
 
-
-### Debugging the API
-
-In order to debug the API (like any other GWT app) start a Hosted session as follows
-```
-ant hosted-SwellRT
-```
-
-Go to `http://localhost:9898/test/SwellRT.html?gwt.codesvr=localhost:9997` using a GWT compatible browser (e.g. Firefox 23)
-
-More info about GWT compiling and debugging here:
-http://www.gwtproject.org/doc/latest/DevGuideCompilingAndDebugging.html
-
-
 ## Using the Wave API
 
 This section assumes you have already opened a session in your Web App and you have attached the opened model to `SwellRT.model`, as it's shown in the previous section.
 
-### The model object
+### The model shared object
 
 The model is the base object that can be shared between participants. A first user creates it and then it's shared adding participants:
 
@@ -379,5 +365,18 @@ to the current Wave Content instance. Closing the wave instance is not necessary
 |org.swell.webclient    | Wave UI Client mods          | GWT                    |
 |org.swell.api          | JS API Generic Data Model    | GWT                    |
 |org.swell.server       | Wave Java server mods        | Java                   |
+
+
+### Debugging
+
+In order to debug the API source code (like any GWT app) a Hosted session must be started:
+```
+ant -f build-swellrt.xml swellrt-hosted-js
+```
+
+Go to `http://localhost:9898/test/index.html?gwt.codesvr=localhost:9997` using a GWT compatible browser (e.g. Firefox 23)
+
+More info about GWT compiling and debugging here:
+http://www.gwtproject.org/doc/latest/DevGuideCompilingAndDebugging.html
 
 
