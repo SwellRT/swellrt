@@ -2,9 +2,7 @@
 
 ## Setting up
 
-* Download selenium library and dependencies from http://selenium-release.storage.googleapis.com/2.44/selenium-java-2.44.0.zip
-* Uncompress and copy all files to `selenium/lib` folder.
-* Download the suitable driver (e.g. chromedriver) and copy it to the `selenium/driver` folder.
+* Download the suitable driver (e.g. chromedriver)
 
 ## Development Using Eclipse IDE
 
@@ -19,10 +17,13 @@ Compile with Ant: `ant -f build-swellrt.xml swellrt-compile-js-dev`
 
 Build a run Wave Server separately: `ant compile run-server`
 
+The first time you run the test you should register the test user at http://localhost:9898/auth/register with name 'test' and password 'test'
+
 Run test: `ant -f build-swellrt.xml swellrt-js-test`
 
+Note: if the location of the chrome driver is different from "/usr/local/bin/chromedriver" you should set the path as JVM option as:
 
-
+ `ant -f build-swellrt.xml swellrt-js-test -Ddriverpath=path/to/chromedriver`
 
 
 

@@ -224,21 +224,38 @@
     </java>
   </target>
 
-  <target name="swellrt-compile-js-test" description="Build SwellRT Selenium tests">
+  <target name="swellrt-get-third-party-test" description="Download SwellRT testing third party dependencies">
+    <get dest="${basedir}/selenium" usetimestamp="true" skipexisting="true">
+      <url url="http://selenium-release.storage.googleapis.com/2.44/selenium-java-2.44.0.zip"/>
+    </get>
+    <unzip src="${basedir}/selenium/selenium-java-2.44.0.zip"
+           dest="${basedir}/selenium/lib">
+      <patternset>
+        <include name="**/*.jar"/>
+      </patternset>
+    </unzip>
+  </target>
+
+   <target name="swellrt-compile-js-test" depends="swellrt-get-third-party-test" description="Build SwellRT Selenium tests">
      <echo message="Compile SwellRT Selenium Test"/>
      <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium" debug="true">
        <classpath>
-           <fileset dir="${basedir}/selenium/lib">
-             <include name="**/*.jar"/>
-           </fileset>
+         <fileset dir="${basedir}/selenium/**/*">
+           <include name="**/*.jar"/>
+         </fileset>
        </classpath>
      </javac>
    </target>
 
-
   <target name="swellrt-js-test" depends="swellrt-compile-js-test"
        description="Test SwellRT against a running Wave Server instance">
+       <condition property="driverpath" value="/usr/local/bin/chromedriver">
+         <not>
+           <isset property="driverpath"/>
+         </not>
+       </condition>
      <java failonerror="true" fork="true" classname="TestWaveJS">
+       <sysproperty key="webdriver.chrome.driver" value="${driverpath}"></sysproperty>
        <classpath>
            <pathelement location="${basedir}/selenium/"/>
            <fileset dir="${basedir}/selenium/lib">
