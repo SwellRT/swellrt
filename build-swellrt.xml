@@ -240,7 +240,7 @@
      <echo message="Compile SwellRT Selenium Test"/>
      <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium" debug="true">
        <classpath>
-         <fileset dir="${basedir}/selenium/**/*">
+         <fileset dir="${basedir}/selenium/lib">
            <include name="**/*.jar"/>
          </fileset>
        </classpath>
