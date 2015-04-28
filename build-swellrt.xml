@@ -254,14 +254,8 @@
            <isset property="driverpath"/>
          </not>
        </condition>
-       <condition property="selenium_timeout" value="30000">
-         <not>
-           <isset property="selenium_timeout"/>
-         </not>
-       </condition>
      <java failonerror="true" fork="true" classname="TestWaveJS">
        <sysproperty key="webdriver.chrome.driver" value="${driverpath}"></sysproperty>
-       <sysproperty key="webdriver.server.session.timeout" value="${selenium_timeout}"></sysproperty>
        <classpath>
            <pathelement location="${basedir}/selenium/"/>
            <fileset dir="${basedir}/selenium/lib">
