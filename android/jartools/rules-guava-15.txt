@@ -1,0 +1,9 @@
+keep com.google.common.collect.BiMap
+keep com.google.common.collect.HashBiMap
+keep com.google.common.base.Preconditions
+keep com.google.common.collect.ForwardingList
+keep com.google.common.collect.ImmutableList
+keep com.google.common.annotations.GwtCompatible
+keep com.google.common.base.Joiner
+keep com.google.common.collect.Lists
+keep com.google.common.collect.Maps

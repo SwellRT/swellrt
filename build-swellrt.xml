@@ -24,62 +24,155 @@
   <!-- Import original Wave build scripts -->
   <import file="build.xml"/>
 
+  <!-- Import SwellRT build properties -->
+  <property file="build-swellrt.properties"/>
 
-  <!--
-    Compact artifacts for separated GWT client development
-   -->
-  <target name="dist-compact-client" depends="stage" description="Assembles a compact artifact with all client stuff">
-      <jar destfile="${dist.dir}/compact-client.jar">
-        <fileset dir="${staging.dir}" includes="org/waveprotocol/wave/**/*">
-        </fileset>
-        <fileset dir="${staging.dir}" includes="org/waveprotocol/box/**/*">
-         <exclude name="org/waveprotocol/box/server/**/*" />
-        </fileset>
-        <fileset dir="${staging.dir}" includes="com/google/gwt/websockets/**/*">
-        </fileset>
-        <fileset dir="${staging.dir}" includes="org/swellrt/**/*">
-         <exclude name="org/swellrt/api/**/*" />
-         <exclude name="org/swellrt/webclient/**/*" />
-        </fileset>
-        <manifest>
-          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set"/>
-          <attribute name="Specification-Version" value="${waveinabox.version}"/>
-          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set"/>
-          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
-          <attribute name="Built-By" value="${user.name}"/>
-        </manifest>
-        <metainf dir="." includes="LICENSE, NOTICE" />
-      </jar>
-    </target>
+  <!-- Android's Wave dependecies  -->
 
-    <target name="dist-compact-client-src" description="Assembles a compact artifact with all client stuff">
-      <jar destfile="${dist.dir}/compact-client-src.jar">
-        <fileset dir="${src.dir}" includes="org/waveprotocol/wave/**/*">
-        </fileset>
-        <fileset dir="${src.dir}" includes="org/waveprotocol/box/**/*">
-         <exclude name="org/waveprotocol/box/server/**/*" />
-        </fileset>
-        <fileset dir="${src.dir}" includes="com/google/gwt/websockets/**/*">
-        </fileset>
-        <fileset dir="${staging.dir}" includes="org/swellrt/**/*">
-         <exclude name="org/swellrt/api/**/*" />
-         <exclude name="org/swellrt/webclient/**/*" />
-        </fileset>
-        <manifest>
-          <attribute name="Specification-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Specification-Title" value="Custom Compact Wave client dependency set (Source)"/>
-          <attribute name="Specification-Version" value="${waveinabox.version}"/>
-          <attribute name="Implementation-Vendor" value="The Apache Software Foundation"/>
-          <attribute name="Implementation-Title" value="Custom Compact Wave client dependency set (Source)"/>
-          <attribute name="Implementation-Version" value="${waveinabox.version}"/>
-          <attribute name="Built-By" value="${user.name}"/>
-        </manifest>
-        <metainf dir="." includes="LICENSE, NOTICE" />
-      </jar>
-    </target>
+  <fileset dir="${build.src.dir}" id="android-wave-dep-fileset">
+   <include name="org/waveprotocol/wave/model/**/*" />
+   <include name="org/waveprotocol/wave/common/logging/*" />
+   <include name="org/waveprotocol/wave/communication/**/*" />
+   <include name="org/waveprotocol/wave/concurrencycontrol/**/*" />
+   <include name="org/waveprotocol/wave/client/state/BlipReadStateMonitor.*" />
+   <include name="org/waveprotocol/wave/client/state/BlipReadStateMonitor$*.*" />
 
+   <exclude name="org/waveprotocol/wave/**/*.xml" />
+   <exclude name="org/waveprotocol/wave/communication/gwt/**/*" />
+   <exclude name="org/waveprotocol/wave/model/testing/**/*" />
+   <exclude name="org/waveprotocol/wave/model/conversation/testing/**/*" />
+   <exclude name="org/waveprotocol/wave/concurrencycontrol/testing/**/*" />
+
+   <include name="org/waveprotocol/box/common/*" />
+   <exclude name="org/waveprotocol/box/common/*.xml" />
+
+   <include name="org/swellrt/model/**/*" />
+   <exclude name="org/swellrt/model/**/*.xml" />
+  </fileset>
+
+  <fileset dir="${build.messages.dir}" id="android-wave-msg-fileset">
+      <include name="**/*" />
+      <exclude name="**/jso/**" />
+  </fileset>
+
+  <fileset dir="${build.proto.dir}" id="android-wave-proto-fileset" includes="**/*" />
+
+
+  <!-- Android Targets -->
+
+  <target name="get-third-party-swellrt-android">
+    <get dest="${swellrt.android.lib.dir}" usetimestamp="true" skipexisting="true">
+
+      <!-- Atmosphere & Http Client staff -->
+      <url url="http://central.maven.org/maven2/com/ning/async-http-client/1.8.14/async-http-client-1.8.14.jar" />
+      <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-framework/2.3.18/grizzly-framework-2.3.18.jar" />
+      <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.3.18/grizzly-http-2.3.18.jar" />
+      <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.3.18/grizzly-http-2.3.18.jar" />
+      <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-websockets/2.3.18/grizzly-websockets-2.3.18.jar" />
+      <url url="http://central.maven.org/maven2/org/atmosphere/wasync/1.4.3/wasync-1.4.3.jar" />
+
+      <url url="http://central.maven.org/maven2/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar" />
+      <url url="http://central.maven.org/maven2/com/google/guava/guava/15.0/guava-15.0.jar" />
+      <url url="http://central.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" />
+
+      <url url="http://www.slf4j.org/android/slf4j-android-1.6.1-RC1.jar" />
+
+    </get>
+
+  </target>
+
+
+  <target name="dist-swellrt-android-dep"
+   description="Assembles JAR artifact containing classes shared with Wave"
+   depends="compile, compile-messages">
+
+   <jar destfile="${swellrt.android.lib.dir}/swellrt-android-dep-${swellrt.version}.jar">
+
+    <fileset refid="android-wave-dep-fileset" />
+    <fileset refid="android-wave-msg-fileset" />
+    <fileset refid="android-wave-proto-fileset" />
+
+    <manifest>
+     <attribute name="Specification-Vendor" value="The SwellRT project" />
+     <attribute name="Specification-Title"
+      value="Apache Wave shared components for SwellRT Android" />
+     <attribute name="Specification-Version" value="${swellrt.version}" />
+     <attribute name="Implementation-Vendor" value="The SwellRT project" />
+     <attribute name="Implementation-Title"
+      value="Apache Wave shared components for SwellRT Android" />
+     <attribute name="Implementation-Version" value="${swellrt.version}" />
+     <attribute name="Built-By" value="${user.name}" />
+    </manifest>
+    <metainf dir="." includes="LICENSE, NOTICE" />
+   </jar>
+  </target>
+
+
+  <target name="compile-swellrt-android"
+    description="Compile SwellRT Android service classes"
+    depends="get-third-party-swellrt-android, dist-swellrt-android-dep">
+
+    <delete dir="${swellrt.android.build.dir}"/>
+    <mkdir dir="${swellrt.android.build.dir}"/>
+
+    <javac
+        destdir="${swellrt.android.build.dir}"
+        srcdir="${swellrt.android.src.dir}"
+        debug="false">
+
+    <classpath>
+        <fileset dir="${android.sdk.dir}" includes="android.jar" />
+        <fileset dir="${swellrt.android.lib.dir}" includes="*.jar" />
+    </classpath>
+
+
+      <compilerarg value="-Xlint:all"/>
+      <compilerarg value="-Xlint:-serial"/>
+      <!-- Deprecation warnings are generated for .class files for some
+           compilers, e.g. org.hamcrest.Matcher -> org.hamcrest.BaseMatcher. -->
+      <compilerarg value="-Xlint:-deprecation"/>
+      <compilerarg value="-Werror"/>
+
+    </javac>
+
+  </target>
+
+  <target name="dist-swellrt-android"
+   description="Assembles SwellRT JAR artifact all-in-one"
+   depends="compile-swellrt-android">
+
+    <delete dir="${swellrt.android.dist.dir}"/>
+    <mkdir dir="${swellrt.android.dist.dir}"/>
+
+   <jar destfile="${swellrt.android.dist.dir}/swellrt-android-${swellrt.version}.jar">
+
+    <fileset refid="android-wave-dep-fileset" />
+    <fileset refid="android-wave-msg-fileset" />
+    <fileset refid="android-wave-proto-fileset" />
+    <fileset dir="${swellrt.android.build.dir}">
+        <include name="**/*" />
+    </fileset>
+
+    <manifest>
+     <attribute name="Specification-Vendor" value="The SwellRT project" />
+     <attribute name="Specification-Title"
+      value="Apache Wave shared components for SwellRT-Android" />
+     <attribute name="Specification-Version" value="${waveinabox.version}" />
+     <attribute name="Implementation-Vendor" value="The SwellRT project" />
+     <attribute name="Implementation-Title"
+      value="Apache Wave shared components for SwellRT-Android" />
+     <attribute name="Implementation-Version" value="${waveinabox.version}" />
+     <attribute name="Built-By" value="${user.name}" />
+    </manifest>
+    <metainf dir="." includes="LICENSE, NOTICE" />
+   </jar>
+
+  </target>
+
+
+
+  <!-- Web / JavaScript Targets -->
 
   <target name="swellrt-compile-gwt-dep">
     <uptodate targetfile="${dep}/compile-gwt" property="skip.swellrt-compile-gwt">
