@@ -48,7 +48,7 @@ public class TestWaveJS  {
       driver.findElement(By.id("login")).click();
 
       // Wait for the page to load, timeout after 10 seconds
-      (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+      (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
         public Boolean apply(WebDriver d) {
           return d.findElement(By.id("logoutForm")).isDisplayed();
         }
