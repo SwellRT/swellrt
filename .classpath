@@ -87,5 +87,6 @@
 	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/config-1.2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
