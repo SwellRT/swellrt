@@ -1,9 +1,9 @@
 .git
+build
+gwt-unitCache
 test
 gen
 src
 test_out
 selenium
 third_party
-gwt-unitCache
-build 
