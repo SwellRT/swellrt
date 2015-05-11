@@ -8,6 +8,13 @@ import org.swellrt.client.WaveWrapper;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
 
+/**
+ * SwellRT client API entrypoint
+ *
+ * @author Pablo Ojanguren (pablojan@gmail.com)
+ * 
+ * 
+ */
 public class WaveClient {
 
   private final SwellRT swelljs;
@@ -87,7 +94,7 @@ public class WaveClient {
 
   /**
    * Close a wave. No callback needed.
-   * 
+   *
    * @param waveId
    * @return true for success
    */
