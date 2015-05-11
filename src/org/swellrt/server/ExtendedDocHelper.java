@@ -1,4 +1,4 @@
-package org.swellrt.model;
+package org.swellrt.server;
 
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;

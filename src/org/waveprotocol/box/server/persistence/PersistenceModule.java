@@ -25,7 +25,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import org.swellrt.model.WaveConversationUtils;
+import org.swellrt.server.WaveConversationUtils;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.file.FileAccountStore;
 import org.waveprotocol.box.server.persistence.file.FileAttachmentStore;

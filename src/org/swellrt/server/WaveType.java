@@ -1,4 +1,4 @@
-package org.swellrt.model;
+package org.swellrt.server;
 
 import com.google.common.base.Preconditions;
 

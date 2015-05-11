@@ -1,4 +1,4 @@
-package org.swellrt.model;
+package org.swellrt.server;
 
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveletId;
