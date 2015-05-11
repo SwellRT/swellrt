@@ -7,12 +7,17 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.Properties;
+
 public class TestWaveJS  {
   public static void main(String[] args) {
-    // Create a new instance of the Firefox driver
-    // Notice that the remainder of the code relies on the interface,
-    // not the implementation.
+
+    if (System.getProperty("webdriver.chrome.driver") == null)
+      System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
+
+    // Create a new instance of the Chrome driver
     WebDriver driver = new ChromeDriver();
+
 
     try {
       (new WebDriverWait(driver, 180)).until(new ExpectedCondition<Boolean>() {
@@ -43,7 +48,7 @@ public class TestWaveJS  {
       driver.findElement(By.id("login")).click();
 
       // Wait for the page to load, timeout after 10 seconds
-      (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+      (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
         public Boolean apply(WebDriver d) {
           return d.findElement(By.id("logoutForm")).isDisplayed();
         }
