@@ -56,7 +56,11 @@ public class StringTypeJS extends JavaScriptObject implements StringType.Listene
   private final native void fireEvent(String event, Object parameter) /*-{
 
     if (this.eventHandlers[event] != null) {
-      this.eventHandlers[event](parameter[0],parameter[1]);
+      if (!parameter.constructor === Array){
+        this.eventHandlers[event](parameter);
+      } else {
+      this.eventHandlers[event].apply(this,parameter);
+      }
     }
 
   }-*/;
