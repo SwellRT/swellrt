@@ -270,7 +270,7 @@ For example, to handle changes in a string value:
 ```
 string_key1.registerEventHandler(SwellRT.events.ITEM_CHANGED,
 
-                                 function(oldStr, newStr) {
+                                 function(newStr, oldStr) {
 
                                     alert("String changed:"+oldStr+"->"+newStr);
 
