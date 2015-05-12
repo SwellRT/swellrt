@@ -35,7 +35,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
      getParticipants: function() {
       var _participants = delegate.@org.swellrt.model.generic.Model::getParticipants()();
-      return @org.swellrt.api.WaveJSUtils::participantIterableToJs(Ljava/lang/Iterable;)(_participants);
+      return @org.swellrt.api.SwellRTUtils::participantIterableToJs(Ljava/lang/Iterable;)(_participants);
      },
 
      addParticipant: function(address) {
@@ -64,7 +64,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
      // For debug purpose only
      getModelDocuments: function() {
        var _docs = delegate.@org.swellrt.model.generic.Model::getModelDocuments()();
-       return @org.swellrt.api.WaveJSUtils::stringIterableToJs(Ljava/lang/Iterable;)(_docs);
+       return @org.swellrt.api.SwellRTUtils::stringIterableToJs(Ljava/lang/Iterable;)(_docs);
      },
 
      getModelDocument: function(docId) {

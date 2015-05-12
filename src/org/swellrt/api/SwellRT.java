@@ -139,7 +139,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
             // This fakes the former Wave Client JS session object.
             String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
             // oh yes, Session doesn't work. Wiab implementation does the same.
-            String seed = WaveJSUtils.nextBase64(10);
+            String seed = SwellRTUtils.nextBase64(10);
             createWebClientSession(SwellRT.this.waveServerDomain, participantId.getAddress(),
                 seed);
 

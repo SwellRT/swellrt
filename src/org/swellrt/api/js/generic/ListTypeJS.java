@@ -4,7 +4,7 @@ package org.swellrt.api.js.generic;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
-import org.swellrt.api.WaveJSUtils;
+import org.swellrt.api.SwellRTUtils;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.Type;
 
@@ -68,7 +68,7 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
     // Populate the JavaScript array of values
     var _values = delegate.@org.swellrt.model.generic.ListType::getValues()();
     if (_values != null) // Prevent errors in unattached delegates
-      jso.values = @org.swellrt.api.WaveJSUtils::typeIterableToJs(Ljava/lang/Iterable;)(_values);
+      jso.values = @org.swellrt.api.SwellRTUtils::typeIterableToJs(Ljava/lang/Iterable;)(_values);
 
 
     return jso;
@@ -123,14 +123,14 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
 
     for (int i = 0; i < values.length(); i++) {
 
-      Type delegate = WaveJSUtils.getDelegate(values.get(i));
+      Type delegate = SwellRTUtils.getDelegate(values.get(i));
       if (value.equals(delegate)) {
         removedIndex = i;
         break;
       }
     }
 
-    WaveJSUtils.removeJsArrayElement(values, removedIndex);
+    SwellRTUtils.removeJsArrayElement(values, removedIndex);
 
     // Fire JS Event
     fireEvent("ITEM_REMOVED", removedIndex);

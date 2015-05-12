@@ -15,7 +15,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * @author pablojan@gmail.com
  *
  */
-public class WaveJSUtils {
+public class SwellRTUtils {
 
 
   static final char[] WEB64_ALPHABET =
@@ -41,7 +41,7 @@ public class WaveJSUtils {
 
   public static JsArray<JavaScriptObject> typeIterableToJs(Iterable<Type> values) {
 
-    JsArray<JavaScriptObject> jsArray = WaveJSUtils.createJsArray();
+    JsArray<JavaScriptObject> jsArray = SwellRTUtils.createJsArray();
 
     for (Type v : values) {
       jsArray.push(AdapterTypeJS.adapt(v));

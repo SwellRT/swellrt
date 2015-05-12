@@ -4,7 +4,7 @@ package org.swellrt.api.js.generic;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
-import org.swellrt.api.WaveJSUtils;
+import org.swellrt.api.SwellRTUtils;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Type;
 
@@ -71,7 +71,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
 
        keySet: function() {
           var _keyset = delegate.@org.swellrt.model.generic.MapType::keySet()();
-          return @org.swellrt.api.WaveJSUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset);
+          return @org.swellrt.api.SwellRTUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset);
        },
 
        remove: function(key) {
@@ -109,14 +109,14 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
   @Override
   public final void onValueChanged(String key, Type oldValue, Type newValue) {
 
-    JsArray<JavaScriptObject> values = WaveJSUtils.createJsArray();
+    JsArray<JavaScriptObject> values = SwellRTUtils.createJsArray();
 
     if (oldValue == null) {
 
       // Update the JS map
       JavaScriptObject newValueJs = AdapterTypeJS.adapt(newValue);
 
-      WaveJSUtils.addStringToJsArray(values, key);
+      SwellRTUtils.addStringToJsArray(values, key);
       values.push(newValueJs);
 
       // Fire JS event
@@ -128,7 +128,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
       JavaScriptObject oldValueJs = AdapterTypeJS.adapt(oldValue);
       JavaScriptObject newValueJs = AdapterTypeJS.adapt(newValue);
 
-      WaveJSUtils.addStringToJsArray(values, key);
+      SwellRTUtils.addStringToJsArray(values, key);
       values.push(newValueJs);
       values.push(oldValueJs);
 
@@ -142,10 +142,10 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
   @Override
   public final void onValueRemoved(String key, Type value) {
 
-    JsArray<JavaScriptObject> values = WaveJSUtils.createJsArray();
+    JsArray<JavaScriptObject> values = SwellRTUtils.createJsArray();
     // Update the JS map
     JavaScriptObject oldValue = AdapterTypeJS.adapt(value);
-    WaveJSUtils.addStringToJsArray(values, key);
+    SwellRTUtils.addStringToJsArray(values, key);
     values.push(oldValue);
     // Fire JS Event
     fireEvent("ITEM_REMOVED", values);

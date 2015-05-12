@@ -4,7 +4,7 @@ package org.swellrt.api.js.adt;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
-import org.swellrt.api.WaveJSUtils;
+import org.swellrt.api.SwellRTUtils;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 
 
@@ -66,7 +66,7 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
 
   protected static final JsArray<JavaScriptObject> adapt(Iterable<Object> values, AdapterJS adapter) {
 
-    JsArray<JavaScriptObject> array = WaveJSUtils.createJsArray();
+    JsArray<JavaScriptObject> array = SwellRTUtils.createJsArray();
 
     for (Object o : values)
       array.push(adapter.adaptToJS(o));
@@ -112,7 +112,7 @@ public class ObservableListJS extends JavaScriptObject implements ObservableElem
     JavaScriptObject removedObject = getAdapter().adaptToJS(entry);
     for (int i = 0; i < getArray().length(); i++) {
       if (getArray().get(i).equals(removedObject)) {
-        WaveJSUtils.removeJsArrayElement(getArray(), i);
+        SwellRTUtils.removeJsArrayElement(getArray(), i);
         break;
       }
     }
