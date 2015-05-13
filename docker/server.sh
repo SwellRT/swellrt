@@ -1,5 +1,5 @@
 SWELLRT_HOME=/usr/local/swellrt
-SWELLRT_CONSOLE_LOGFILE=${SWELLRT_HOME}/console.log
+SWELLRT_CONSOLE_LOGFILE=${SWELLRT_HOME}/log/console.log
 SWELLRT_JAR=${SWELLRT_HOME}/wave.jar
 
 nohup java $DEBUG_FLAGS \
