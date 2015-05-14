@@ -365,6 +365,8 @@
     <delete dir="war/swellrt"/>
   </target>
 
+  <target name="dist" description="Takes all the necessary steps to build the jar" depends="get-third-party, compile-gwt, swellrt-compile-js, dist-server">
+  </target>
 
 
 </project>
