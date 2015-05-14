@@ -37,10 +37,17 @@ Data models are formed by a free combination of
 
 The data structure can be changed any time. The API provides a root Map which contains the rest of structures and data.
 
-
 ## Setting up a SwellRT Server (JavaScript API Provider)
 
-### Prerequisites
+### Fastest way: use Docker
+
+1. [Install Docker](https://docs.docker.com/installation/)
+
+2. sudo docker run -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+
+### Hardcore way: Setting up your environment
+
+#### Prerequisites
 
 Minimun:
 - Java JDK 6
@@ -51,7 +58,7 @@ Recomended:
 - MongoDB
 
 
-### Build and Run
+#### Build and Run
 
 Clone this repo, go into the created folder and follow these steps:
 
@@ -74,7 +81,7 @@ Clone this repo, go into the created folder and follow these steps:
   * For production:  `ant -f build-swellrt.xml swellrt-compile-js`
 
 
-### Configure the Server
+#### Configure the Server
 
 You need to configure your SwellRT/Wave server instance before you can use it. To create a default simple configuration for the first time run:
 
@@ -82,7 +89,7 @@ You need to configure your SwellRT/Wave server instance before you can use it. T
 
 Then, you can edit the server configuration in the generated `server.config` file.
 
-### Run the Server
+#### Run the Server
 
 The JavaScript API client is served by the server itself. Start it with following task:
 

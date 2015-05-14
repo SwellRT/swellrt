@@ -1,9 +1,11 @@
 FROM java:7
 MAINTAINER P2Pvalue UCM Team <p2pv@ucm.es>
 
+# SwellRT port
+EXPOSE 9898
+
 ENV home /usr/local/swellrt
 ENV config_files server.config wiab-logging.conf jaas.config server.federation.config
-
 
 RUN adduser --system --home $home swellrt \
     && addgroup --system swellrt
@@ -26,4 +28,4 @@ VOLUME $home/config $home/log
 
 USER swellrt
 
-CMD ./server.sh
+ENTRYPOINT ["./server.sh"]
