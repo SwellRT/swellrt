@@ -1,13 +1,17 @@
 
-   Wave Collaborative API 
+   SwellRT - Real-time federated collaboration framework based on Apache Wave
+   SwellRT Android - Android native client for SwellRT framework
+
    Copyright 2014 Pablo Ojanguren <pablojan@gmail.com> and Universidad Complutense de Madrid (UCM) Spain.
    This work has been developed as part of the P2Pvalue project: http://p2pvalue.eu
 
-   This work is published under the Apache License 2.0, as it is shown below.
+   This work is published under the Apache License 2.0, as it is shown below and
+   it taks shared parts with the Apache Wave project.
 
 
 ***THE FOLLOWING LICENSE APPLIES TO***
-- Wave Collaborative API 
+- SwellRT
+- SwellRT Android
 - Apache Wave
 - Apache Commons CLI, Codec, Collection, Configuration, File Upload, HTTP
 Client, Lang, Logging libraries included in the generated jar files
