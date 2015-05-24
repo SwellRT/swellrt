@@ -6,10 +6,13 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.swellrt.android.service.scheduler.OptimalGroupingScheduler;
+import org.swellrt.android.service.scheduler.SchedulerInstance;
 import org.swellrt.android.service.wave.WaveDocuments;
 import org.swellrt.android.service.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.swellrt.android.service.wave.client.concurrencycontrol.LiveChannelBinder;
 import org.swellrt.android.service.wave.client.concurrencycontrol.MuxConnector;
+import org.swellrt.android.service.wave.client.concurrencycontrol.MuxConnector.Command;
 import org.swellrt.android.service.wave.client.concurrencycontrol.WaveletOperationalizer;
 import org.swellrt.model.generic.Model;
 import org.waveprotocol.wave.common.logging.LoggerBundle;
@@ -60,11 +63,12 @@ import com.google.common.base.Preconditions;
 
 public class WaveLoader {
 
-  public class WaveAndroidTask extends TimerTask {
+
+  public class WaveLoaderTask extends TimerTask {
 
     private org.waveprotocol.wave.model.util.Scheduler.Command command;
 
-    public WaveAndroidTask(org.waveprotocol.wave.model.util.Scheduler.Command command) {
+    public WaveLoaderTask(org.waveprotocol.wave.model.util.Scheduler.Command command) {
       this.command = command;
     }
 
@@ -81,7 +85,7 @@ public class WaveLoader {
 
         @Override
         public void cancel() {
-          WaveAndroidTask.this.cancel();
+          WaveLoaderTask.this.cancel();
         }
 
       };
@@ -130,9 +134,7 @@ public class WaveLoader {
       UnsavedDataListener unsavedDataListener, Timer timer) {
 
     WaveLoader loader = new WaveLoader(isNewWave, waveRef, channel, participant, otherParticipants,
-        idGenerator,
- unsavedDataListener, timer);
-    loader.init();
+        idGenerator, unsavedDataListener, timer);
     return loader;
   }
 
@@ -151,7 +153,7 @@ public class WaveLoader {
     this.timer = timer;
   }
 
-  protected void init() {
+  protected void init(Command command) {
 
     waveData = WaveViewDataImpl.create(waveRef.getWaveId());
 
@@ -172,7 +174,8 @@ public class WaveLoader {
 
       getConversations().createRoot().addParticipantIds(otherParticipants);
 
-      getConnector().connect(null);
+      getConnector().connect(command);
+
 
 
 
@@ -185,7 +188,8 @@ public class WaveLoader {
 
       // Install diff control before rendering, because logical diff state may
       // need to be adjusted due to arbitrary UI policies.
-      getConnector().connect(null);
+      getConnector().connect(command);
+
     }
 
     isClosed = false;
@@ -230,15 +234,22 @@ public class WaveLoader {
   }
 
   protected MuxConnector createConnector() {
-    LoggerBundle logger = LoggerBundle.NOP_IMPL;
-    LoggerContext loggers = new LoggerContext(logger, logger, logger, logger);
+    // LoggerBundle logger = LoggerBundle.NOP_IMPL;
+
+    LoggerBundle loggerOps = new AndroidLoggerBundle("WaveProtocol::ops");
+    LoggerBundle loggerDeltas = new AndroidLoggerBundle("WaveProtocol::deltas");
+    LoggerBundle loggerCc = new AndroidLoggerBundle("WaveProtocol::CC");
+    LoggerBundle loggerView = new AndroidLoggerBundle("WaveProtocol::view");
+
+    LoggerContext loggers = new LoggerContext(loggerOps, loggerDeltas, loggerCc, loggerView);
 
     IdURIEncoderDecoder uriCodec = new IdURIEncoderDecoder(new ClientPercentEncoderDecoder());
     HashedVersionFactory hashFactory = new HashedVersionZeroFactoryImpl(uriCodec);
 
-    Scheduler scheduler = new FuzzingBackOffScheduler.Builder(getRpcScheduler()).build();
+    Scheduler scheduler = new FuzzingBackOffScheduler.Builder(getRpcScheduler())
+        .setInitialBackOffMs(1000).setMaxBackOffMs(60000).setRandomisationFactor(0.5).build();
 
-    ViewChannelFactory viewFactory = ViewChannelImpl.factory(createWaveViewService(), logger);
+    ViewChannelFactory viewFactory = ViewChannelImpl.factory(createWaveViewService(), loggerView);
     UnsavedDataListenerFactory unsyncedListeners = new UnsavedDataListenerFactory() {
 
       private final UnsavedDataListener listener = unsavedDataListener;
@@ -332,25 +343,9 @@ public class WaveLoader {
 
 
     // Use a scheduler that runs closely-timed tasks at the same time.
-    // return new
-    // OptimalGroupingScheduler(SchedulerInstance.getLowPriorityTimer());
+    // Adapted Android version from orignal GWT-based
+    return new OptimalGroupingScheduler(SchedulerInstance.getLowPriorityTimer());
 
-    // TODO Consider to use an OptimalGroupingScheduler implementation like GWT
-    // version
-    CollectiveScheduler androidCollectiveScheduler = new CollectiveScheduler() {
-
-      @Override
-      public Cancellable schedule(org.waveprotocol.wave.model.util.Scheduler.Command task,
-          int minAllowedMs, int targetTimeMs) {
-
-        WaveAndroidTask nativeTask = new WaveAndroidTask(task);
-        timer.schedule(nativeTask, minAllowedMs);
-
-        return nativeTask.getCancellable();
-      }
-    };
-
-    return androidCollectiveScheduler;
   }
 
   protected WaveViewService createWaveViewService() {

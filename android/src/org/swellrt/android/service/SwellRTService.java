@@ -8,8 +8,10 @@ import java.util.Map;
 import java.util.Timer;
 
 import org.swellrt.android.service.WaveWebSocketClient.ConnectionListener;
+import org.swellrt.android.service.wave.client.concurrencycontrol.MuxConnector.Command;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
+import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
@@ -26,8 +28,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
-public class SwellRTService extends Service {
+public class SwellRTService extends Service implements UnsavedDataListener {
 
 
   public interface SwellRTServiceCallback {
@@ -36,7 +39,9 @@ public class SwellRTService extends Service {
 
     public void onStartSessionFail(String error);
 
-    public void onOpen();
+    public void onCreate(Model model);
+
+    public void onOpen(Model model);
 
     public void onClose(boolean everythingCommitted);
 
@@ -48,7 +53,7 @@ public class SwellRTService extends Service {
 
   }
 
-
+  public final static String TAG = "SwellRTService";
 
 
   public class SwellRTBinder extends Binder {
@@ -79,6 +84,7 @@ public class SwellRTService extends Service {
 
   private Map<WaveRef, Pair<WaveLoader, Model>> waveStore;
   private Timer timer;
+
 
   private class LoginTask extends AsyncTask<String, Void, String> {
 
@@ -115,41 +121,46 @@ public class SwellRTService extends Service {
     waveStore = new HashMap<WaveRef, Pair<WaveLoader, Model>>();
     timer = new Timer("WaveServiceTimer");
 
-  }
-
-  @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
-    return START_STICKY;
+    Log.d(TAG, "SwellRT Service onCreated()");
 
   }
+
+
 
   @Override
   public IBinder onBind(Intent intent) {
+
+    Log.d(TAG, "SwellRT Service onBind() for " + intent.toString());
     return mBinder;
+  }
+
+
+  @Override
+  public void onDestroy() {
+
+    Log.d(TAG, "SwellRT Service onDestroy()");
+    // Close and clean all comms
+    stopSession();
   }
 
   //
   // Public service interface
   //
 
-  public void startSession(String host, String username, String password) throws MalformedURLException {
+  public void startSession(String host, String username, String password)
+      throws MalformedURLException, InvalidParticipantAddress {
 
 
     serverUrl = new URL(host);
-
-    try {
-      participantId = ParticipantId.of(username);
-    } catch (InvalidParticipantAddress e) {
-
-      mCallback.onError(e.getMessage());
-      return;
-    }
+    participantId = ParticipantId.of(username);
 
     new LoginTask().execute(serverUrl.toString(), participantId.toString(), password);
 
   }
 
-
+  public boolean isSessionStarted() {
+    return sessionId != null;
+  }
 
 
   private void openWebSocket(String waveDomain, final String sessionId) {
@@ -161,13 +172,14 @@ public class SwellRTService extends Service {
         + serverUrl.getPort() + "/atmosphere";
 
     this.sessionId = sessionId;
+    this.waveDomain = waveDomain;
 
     idGenerator = new IdGeneratorImpl(waveDomain, new Seed() {
 
       @Override
       public String get() {
 
-        return sessionId;
+        return sessionId.substring(0, 5);
       }
     });
 
@@ -197,45 +209,66 @@ public class SwellRTService extends Service {
   }
 
 
-  public Model openModel(String modelId) {
+  public void openModel(String modelId) {
 
-    WaveRef waveRef = WaveRef.of(WaveId.deserialise(modelId));
+    final WaveRef waveRef = WaveRef.of(WaveId.deserialise(modelId));
 
     if (waveStore.containsKey(waveRef)) {
-      return waveStore.get(waveRef).getSecond();
+      mCallback.onOpen(waveStore.get(waveRef).getSecond());
     }
 
-    WaveLoader loader = WaveLoader.create(false, waveRef, channel, participantId,
+
+    final WaveLoader loader = WaveLoader.create(false, waveRef, channel, participantId,
         Collections.<ParticipantId> emptySet(), idGenerator, null, timer);
 
-    WaveContext wave = loader.getWaveContext();
-    Model model = Model.create(wave, waveDomain, participantId, false, idGenerator);
+    loader.init(new Command() {
 
-    waveStore.put(waveRef, new Pair<WaveLoader, Model>(loader, model));
+      @Override
+      public void execute() {
 
-    return model;
+        WaveContext wave = loader.getWaveContext();
+        Model model = Model.create(wave, waveDomain, participantId, false, idGenerator);
+
+        waveStore.put(waveRef, new Pair<WaveLoader, Model>(loader, model));
+
+        mCallback.onOpen(model);
+
+      }
+    });
+
   }
 
-  public Model createModel() {
+  public String createModel() {
 
     WaveId newWaveId = typeIdGenerator.newWaveId();
-    WaveRef waveRef = WaveRef.of(newWaveId);
+    final WaveRef waveRef = WaveRef.of(newWaveId);
 
-    WaveLoader loader = WaveLoader.create(true, waveRef, channel, participantId,
+    final WaveLoader loader = WaveLoader.create(true, waveRef, channel, participantId,
         Collections.<ParticipantId> emptySet(), idGenerator, null, timer);
 
-    WaveContext wave = loader.getWaveContext();
-    Model model = Model.create(wave, waveDomain, participantId, true, idGenerator);
+    loader.init(new Command() {
 
-    waveStore.put(waveRef, new Pair<WaveLoader, Model>(loader, model));
+      @Override
+      public void execute() {
 
-    return model;
+        WaveContext wave = loader.getWaveContext();
+        Model model = Model.create(wave, waveDomain, participantId, true, idGenerator);
+
+        waveStore.put(waveRef, new Pair<WaveLoader, Model>(loader, model));
+
+        mCallback.onCreate(model);
+      }
+
+    });
+
+
+    return waveRef.getWaveId().serialise();
   }
 
 
-  public void closeModel(String waveId) {
+  public void closeModel(String modelId) {
 
-    WaveRef waveRef = WaveRef.of(WaveId.deserialise(waveId));
+    WaveRef waveRef = WaveRef.of(WaveId.deserialise(modelId));
     Preconditions.checkState(waveStore.containsKey(waveRef), "Trying to close a not opened Model");
 
     WaveLoader loader = waveStore.get(waveRef).getFirst();
@@ -244,6 +277,13 @@ public class SwellRTService extends Service {
     waveStore.remove(waveRef);
   }
 
+  public Model getModel(String modelId) {
+    WaveRef waveRef = WaveRef.of(WaveId.deserialise(modelId));
+    if (!waveStore.containsKey(waveRef))
+      return null;
+
+    return waveStore.get(waveRef).getSecond();
+  }
 
   private void closeWebSocket() {
 
@@ -268,6 +308,19 @@ public class SwellRTService extends Service {
     sessionId = null;
     participantId = null;
     waveDomain = null;
+  }
+
+
+  @Override
+  public void onClose(boolean everythingCommited) {
+    mCallback.onClose(everythingCommited);
+  }
+
+  @Override
+  public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
+    mCallback.onUpdate(unsavedDataInfo.inFlightSize(),
+        unsavedDataInfo.estimateUnacknowledgedSize(), unsavedDataInfo.estimateUncommittedSize());
+    Log.d(TAG, "OnUpdate(): " + unsavedDataInfo.getInfo());
   }
 
 }

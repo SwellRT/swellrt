@@ -29,7 +29,6 @@ import java.util.Map;
 import org.waveprotocol.wave.communication.Blob;
 import org.waveprotocol.wave.communication.Codec;
 import org.waveprotocol.wave.federation.ProtocolDocumentOperation;
-import org.waveprotocol.wave.federation.ProtocolDocumentOperation.Component;
 import org.waveprotocol.wave.federation.ProtocolDocumentOperation.Component.AnnotationBoundary;
 import org.waveprotocol.wave.federation.ProtocolDocumentOperation.Component.ElementStart;
 import org.waveprotocol.wave.federation.ProtocolDocumentOperation.Component.KeyValuePair;
@@ -69,9 +68,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * Utility class for serializing/deserializing wavelet operations (and their
  * components) to/from their protocol buffer representations (and their
  * components).
- * 
+ *
  * Modified version for using Gson objects in Android/Java client
- * 
+ *
  */
 public class WaveletOperationSerializer {
   private WaveletOperationSerializer() {
@@ -272,19 +271,25 @@ public class WaveletOperationSerializer {
 
   /**
    * Serializes a {@link DocOp} as a {@link ProtocolDocumentOperation}.
-   *
-   * @param inputOp document operation to serialize
+   * 
+   * Adapted version for {@link ComponentGsonImpl} components. Components are
+   * populated before being added to
+   * {@link ProtocolDocumentOperationGsonImpl#addComponent} because this method
+   * adds a copy of the argument value (a hard pass-by-value semantic).
+   * 
+   * @param inputOp
+   *          document operation to serialize
    * @return serialized protocol buffer document operation
    */
   public static ProtocolDocumentOperation serialize(DocOp inputOp) {
     final ProtocolDocumentOperation output = new ProtocolDocumentOperationGsonImpl();
     inputOp.apply(new DocOpCursor() {
 
-      private Component addComponent() {
-        ComponentGsonImpl component = new ComponentGsonImpl();
+      private void addComponent(ComponentGsonImpl component) {
         output.addComponent(component);
-        return component;
       }
+
+
 
       private KeyValuePair keyValuePair(String key, String value) {
         KeyValuePair pair = new ComponentGsonImpl.KeyValuePairGsonImpl();
@@ -307,27 +312,37 @@ public class WaveletOperationSerializer {
 
       @Override
       public void retain(int itemCount) {
-        addComponent().setRetainItemCount(itemCount);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setRetainItemCount(itemCount);
+        addComponent(component);
       }
 
       @Override
       public void characters(String characters) {
-        addComponent().setCharacters(characters);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setCharacters(characters);
+        addComponent(component);
       }
 
       @Override
       public void deleteCharacters(String characters) {
-        addComponent().setDeleteCharacters(characters);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setDeleteCharacters(characters);
+        addComponent(component);
       }
 
       @Override
       public void elementStart(String type, Attributes attributes) {
-        addComponent().setElementStart(makeElementStart(type, attributes));
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setElementStart(makeElementStart(type, attributes));
+        addComponent(component);
       }
 
       @Override
       public void deleteElementStart(String type, Attributes attributes) {
-        addComponent().setDeleteElementStart(makeElementStart(type, attributes));
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setDeleteElementStart(makeElementStart(type, attributes));
+        addComponent(component);
       }
 
       private ElementStart makeElementStart(String type, Attributes attributes) {
@@ -341,12 +356,16 @@ public class WaveletOperationSerializer {
 
       @Override
       public void elementEnd() {
-        addComponent().setElementEnd(true);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setElementEnd(true);
+        addComponent(component);
       }
 
       @Override
       public void deleteElementEnd() {
-        addComponent().setDeleteElementEnd(true);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setDeleteElementEnd(true);
+        addComponent(component);
       }
 
       @Override
@@ -363,7 +382,10 @@ public class WaveletOperationSerializer {
             r.addNewAttribute(keyValuePair(name, newAttributes.get(name)));
           }
         }
-        addComponent().setReplaceAttributes(r);
+
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setReplaceAttributes(r);
+        addComponent(component);
       }
 
       @Override
@@ -377,7 +399,9 @@ public class WaveletOperationSerializer {
                 attributes.getOldValue(i), attributes.getNewValue(i)));
           }
         }
-        addComponent().setUpdateAttributes(u);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setUpdateAttributes(u);
+        addComponent(component);
       }
 
       @Override
@@ -394,7 +418,9 @@ public class WaveletOperationSerializer {
                 keyValueUpdate(map.getChangeKey(i), map.getOldValue(i), map.getNewValue(i)));
           }
         }
-        addComponent().setAnnotationBoundary(a);
+        ComponentGsonImpl component = new ComponentGsonImpl();
+        component.setAnnotationBoundary(a);
+        addComponent(component);
       }
     });
     return output;
