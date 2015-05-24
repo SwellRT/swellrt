@@ -89,12 +89,6 @@ Close the data model. The result is provided asyncronously in **SwellRTServiceCa
 
 
 
-
-
-
-
-
-
 ## Developing the SwellRT Android Client
 
 ### Eclipse
