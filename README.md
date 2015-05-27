@@ -73,12 +73,12 @@ Clone this repo, go into the created folder and follow these steps:
 
 3. Build the former Wave's Web Client:
 
-  `ant -f build-swellrt.xml swellrt-compile-gwt`
+  `ant -f build-swellrt.xml swellrt-webclient-compile`
 
 4. Build the JavaScript API client
 
-  * For development: `ant -f build-swellrt.xml swellrt-compile-js-dev`
-  * For production:  `ant -f build-swellrt.xml swellrt-compile-js`
+  * For development: `ant -f build-swellrt.xml swellrt-js-compile-dev`
+  * For production:  `ant -f build-swellrt.xml swellrt-js-compile`
 
 
 #### Configure the Server
@@ -91,7 +91,7 @@ Then, you can edit the server configuration in the generated `server.config` fil
 
 #### Run the Server
 
-The JavaScript API client is served by the server itself. Start it with following task:
+The JavaScript API client is served by the Web server. Start it with following task:
 
 * `ant run-server`
 
@@ -374,16 +374,35 @@ to the current Wave Content instance. Closing the wave instance is not necessary
 |org.swell.server       | Wave Java server mods        | Java                   |
 
 
-### Debugging
+### Debugging (GWT Super Dev Mode)
 
-In order to debug the API source code (like any GWT app) a Hosted session must be started:
+First, launch the web server `ant run-server` serving the SwellRT javascript files.
+
+Enable debugging of SwellRT/Apache Wave source code starting a **GWT Super Dev** session:
+
 ```
-ant -f build-swellrt.xml swellrt-hosted-js
+ant -f build-swellrt.xml swellrt-js-superdev
 ```
 
-Go to `http://localhost:9898/test/index.html?gwt.codesvr=localhost:9997` using a GWT compatible browser (e.g. Firefox 23)
+Then (by default) visit `http://localhost:9876` and bookmark provided links for de/activate the Dev mode.
 
-More info about GWT compiling and debugging here:
-http://www.gwtproject.org/doc/latest/DevGuideCompilingAndDebugging.html
+Go to your web (e.g. http://localhost:9898/test/index.html) and activate de Dev mode with the provided link.
 
+You can now use the browser's debugger as usual. Please, be sure your browser's debbuger has the "source maps" option activated.
+Chrome is the recommended.
+
+For more info about GWT debugging, please visit http://www.gwtproject.org/articles/superdevmode.html
+
+
+#### Debugging issues
+
+Debugging in the old hosted mode could raise the following error:
+
+```
+00:10:30,530 [ERROR] Failed to load module 'swellrt' from user agent 'Mozilla/5.0 (X11; Linux x86_64; rv:23.0) Gecko/20100101 Firefox/23.0' at localhost:36570
+java.lang.AssertionError: Jso should contain method: @org.waveprotocol.wave.model.adt.ObservableElementList.Listener::onValueAdded(Ljava/lang/Object;)
+at com.google.gwt.dev.shell.CompilingClassLoader$MyInstanceMethodOracle.<init>(CompilingClassLoader.java:431)
+...
+```
+It can be avoided removing the **final** modifier from overrided methods in the **ObservableListJS** class.
 

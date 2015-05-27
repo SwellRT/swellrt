@@ -183,7 +183,7 @@
   </target>
 
 
-  <target name="swellrt-compile-gwt" depends="compile, swellrt-compile-gwt-dep"
+  <target name="swellrt-webclient-compile" depends="compile, swellrt-compile-gwt-dep"
       description="GWT compile of a restricted set of permutations suitable for development."
       unless="skip.swellrt-compile-gwt">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
@@ -209,7 +209,7 @@
     <touch file="${dep}/swellrt-compile-gwt"/>
   </target>
 
-  <target name="swellrt-hosted" depends="compile"
+  <target name="swellrt-webclient-hosted" depends="compile"
       description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
@@ -232,10 +232,12 @@
   </target>
 
 
-  <target name="swellrt-superdev-gwt" depends="compile"
+  <target name="swellrt-webclient-superdev" depends="compile"
       description="Runs the superdev mode, for debugging the GWT client in a browser.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
       <classpath>
+        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
         <pathelement location="${src.dir}"/>
         <pathelement location="${gen.dir}/messages"/>
         <path refid="libpath"/>
@@ -249,7 +251,7 @@
 
 
 
-  <target name="swellrt-compile-js-dev" depends="compile"
+  <target name="swellrt-js-compile-dev" depends="compile"
       description="GWT compile of a restricted set of permutations suitable for development.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
@@ -274,7 +276,7 @@
   </target>
 
 
-  <target name="swellrt-compile-js" depends="compile"
+  <target name="swellrt-js-compile" depends="compile"
       description="GWT compile to production JavaScript">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
@@ -296,7 +298,7 @@
   </target>
 
 
-  <target name="swellrt-hosted-js" depends="compile"
+  <target name="swellrt-js-hosted" depends="compile"
       description="Runs the hosted mode server, for debugging the GWT client in a JVM.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.DevMode">
       <classpath>
@@ -317,6 +319,24 @@
     </java>
   </target>
 
+  <target name="swellrt-js-superdev" depends="compile"
+      description="Runs the superdev mode, for debugging the GWT client in a browser.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
+      <classpath>
+        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${build.src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+      </classpath>
+      <arg line="${gwt.args}"/>
+      <arg line="-src src"/>
+      <arg value="org.swellrt.api.SwellRT"/>
+    </java>
+  </target>
+
+
   <target name="swellrt-get-third-party-test" description="Download SwellRT testing third party dependencies">
     <get dest="${basedir}/selenium" usetimestamp="true" skipexisting="true">
       <url url="http://selenium-release.storage.googleapis.com/2.44/selenium-java-2.44.0.zip"/>
@@ -329,7 +349,7 @@
     </unzip>
   </target>
 
-   <target name="swellrt-compile-js-test" depends="swellrt-get-third-party-test" description="Build SwellRT Selenium tests">
+   <target name="swellrt-js-compile-test" depends="swellrt-get-third-party-test" description="Build SwellRT Selenium tests">
      <echo message="Compile SwellRT Selenium Test"/>
      <javac srcdir="${basedir}/selenium" destdir="${basedir}/selenium" debug="true">
        <classpath>
@@ -340,7 +360,7 @@
      </javac>
    </target>
 
-  <target name="swellrt-js-test" depends="swellrt-compile-js-test"
+  <target name="swellrt-js-test" depends="swellrt-js-compile-test"
        description="Test SwellRT against a running Wave Server instance">
        <condition property="driverpath" value="/usr/local/bin/chromedriver">
          <not>
@@ -365,7 +385,7 @@
     <delete dir="war/swellrt"/>
   </target>
 
-  <target name="dist" description="Takes all the necessary steps to build the jar" depends="get-third-party, compile-gwt, swellrt-compile-js, dist-server">
+  <target name="dist" description="Takes all the necessary steps to build the jar" depends="get-third-party, compile-gwt, swellrt-js-compile, dist-server">
   </target>
 
 
