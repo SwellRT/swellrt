@@ -374,7 +374,7 @@ to the current Wave Content instance. Closing the wave instance is not necessary
 |org.swell.server       | Wave Java server mods        | Java                   |
 
 
-### Debugging (GWT Super Dev Mode)
+### Debug (GWT Super Dev Mode)
 
 First, launch the web server `ant run-server` serving the SwellRT javascript files.
 
@@ -389,12 +389,12 @@ Then (by default) visit `http://localhost:9876` and bookmark provided links for 
 Go to your web (e.g. http://localhost:9898/test/index.html) and activate de Dev mode with the provided link.
 
 You can now use the browser's debugger as usual. Please, be sure your browser's debbuger has the "source maps" option activated.
-Chrome is the recommended.
+Chrome is recommended.
 
 For more info about GWT debugging, please visit http://www.gwtproject.org/articles/superdevmode.html
 
 
-#### Debugging issues
+#### Debug issues
 
 Debugging in the old hosted mode could raise the following error:
 

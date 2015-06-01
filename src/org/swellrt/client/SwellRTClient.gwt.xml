@@ -32,8 +32,11 @@
  <inherits name="org.waveprotocol.wave.model.Model" />
  <inherits name="org.waveprotocol.wave.model.account.Account" />
 
-  <!--  Custom models -->
-  <inherits name='org.swellrt.model.SwellRTModel'/>
+ <!--  Custom models -->
+ <inherits name='org.swellrt.model.SwellRTModel'/>
+
+ <!-- Super Dev Mode -->
+ <add-linker name="xsiframe"/>
 
  <source path="" />
 

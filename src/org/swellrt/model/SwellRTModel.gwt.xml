@@ -24,5 +24,7 @@
   <inherits name="com.google.gwt.user.User"/>
   <inherits name="org.waveprotocol.wave.model.util.Util"/>
 
+  <add-linker name="xsiframe"/>
+
   <source path="" />
 </module>
