@@ -56,7 +56,9 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
                       request: null,
                       socket: null };
 
-                  var connectionUrl = window.location.protocol + "//" +  $wnd.__websocket_address + "/";
+                  var connectionUrl = urlBase;
+                  if (connectionUrl.charAt(connectionUrl.length-1) != "/")
+                    connectionUrl+="/";
 
                   connectionUrl += 'atmosphere';
 
@@ -173,9 +175,11 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
     if (socket == null) {
 
       // Build the atmosphere.js URL using the Websocket URL
-      String scriptUrl =
+      final String scriptHost =
           urlBase.startsWith("wss://") ? "https://" + urlBase.substring(6) : "http://"
               + urlBase.substring(5);
+
+      String scriptUrl = new String(scriptHost);
 
       // Remove trailing '/' before add context
       if (scriptUrl.lastIndexOf("/") == scriptUrl.length() - 1)
@@ -190,7 +194,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
         public void onSuccess(Void result) {
 
-          socket = AtmosphereSocket.create(AtmosphereConnectionImpl.this, urlBase);
+          // We assume Atmosphere is going to work only with http(s) schemas
+          socket = AtmosphereSocket.create(AtmosphereConnectionImpl.this, scriptHost);
           socket.connect();
         }
 
