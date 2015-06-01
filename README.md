@@ -1,12 +1,12 @@
 # SwellRT, a Real-Time Federated Collaboration Framework
 
-This is a Real-time collaboration framework based on [Apache Wave](http://incubator.apache.org/wave/).
-It allows you to write real-time collaborative apps for Web (JavaScript or GWT), Android and Java.
+This is a collaboration framework based on [Apache Wave](http://incubator.apache.org/wave/).
+It allows to write real-time collaborative apps for **Web** (JavaScript or GWT), **Android** and **Java**.
 
-In a nutshell, SwellRT provides to apps shared objects that can be changed by different participants at the same time.
-Changes are distributed and notified to all participants on nearly real-time.
+In a nutshell, SwellRT provides to apps shared objects that can be modified by different participants on nearly real-time
+distributing changes and managing concurrency.
 
-In particular you can use "text" shared objects supporting collaborative real-time editing.
+In particular, **text objects support collaborative real-time editing.**
 
 You can install your own server infrastructure or build on top of an existing SwellRT provider.
 SwellRT servers can be federated, so your app can be deployed in a decetralized way and become interoperable easily.
@@ -228,7 +228,7 @@ Close the collaborative model instance, it closes server's connection and dispos
     SwellRT.closeModel("local.net/dummy+Xxn3-XupCUA");
 ```
 
-## Using the Wave API
+## Using the SwellRT API
 
 This section assumes you have already opened a session in your Web App and you have attached the opened model to `SwellRT.model`, as it's shown in the previous section.
 
@@ -304,6 +304,7 @@ Observable objects are created from the 'model' object:
 var list = SwellRT.model.createList();
 var map = SwellRT.model.createMap();
 var str = SwellRT.model.createString("default value");
+var txt = SwellRT.model.createText("initial content");
 ```
 
 They are not useful until they are attached to the model, for example, being added to the root map, or added to an already attached object:
@@ -346,6 +347,45 @@ var observable_object = list.get(<index>);
 list.size();
 list.remove(<index>);
 ```
+### Texts & Web Text editor
+
+Text objects allows collaborative editing of formatted text through the provided *Text Editor*.
+
+Create a text object and attach it to the model before editing:
+
+```
+text = SwellRT.model.createText("Write here initial content");
+SwellRT.model.root.put("text",text);
+```
+
+In your Web, provide a Text Editor and edit your Text objects:
+
+```
+<!-- The element where the editor will be displayed -->
+<div id="editor-panel"/></div>
+
+
+<script>
+
+// Create an editor associated to an existing DOM element
+editor = SwellRT.editor("editor-panel");
+
+// Start editing a text object from your shared model
+editor.edit(SwellRT.model.root.get("text"));
+
+// At this point, the text is displayed and it can be edited.
+
+// Dispose the editor before editing other text
+editor.cleanUp();
+
+// At this point, the text is not displayed.
+
+</script>
+
+
+```
+
+
 
 ### General API callbacks
 
