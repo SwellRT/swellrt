@@ -34,8 +34,6 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
   }
 
-
-  public final static String TYPE = "list";
   public final static String PREFIX = "list";
 
 
@@ -149,7 +147,7 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
       @Override
       public String getType() {
-        return TYPE;
+        return PREFIX;
       }
 
       @Override

@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.StringType;
+import org.swellrt.model.generic.TextType;
 import org.swellrt.model.generic.Type;
 
 public class AdapterTypeJS {
@@ -34,7 +35,15 @@ public class AdapterTypeJS {
       list.addListener(listJs);
 
       return listJs;
+
+    } else if (instance instanceof TextType) {
+      TextType txt = (TextType) instance;
+      TextTypeJS txtJs = TextTypeJS.create(txt);
+      txt.addListener(txtJs);
+
+      return txtJs;
     }
+
 
     return null;
   }

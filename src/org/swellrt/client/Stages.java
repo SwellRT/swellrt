@@ -36,6 +36,9 @@ public abstract class Stages {
   /** Continuation for when the last stage is loaded. */
   private Command whenFinished;
 
+  /** True if all stages were successfully loaded */
+  private boolean isLoaded = false;
+
   /**
    * Creates a new stage loading sequence.
    */
@@ -65,7 +68,8 @@ public abstract class Stages {
    *
    * @param whenFinished optional command to run once the last stage is loaded
    */
-  public final void load(Command whenFinished) {
+  public void load(Command whenFinished) {
+    this.isLoaded = false;
     this.whenFinished = whenFinished;
     loadStageZero();
   }
@@ -118,10 +122,16 @@ public abstract class Stages {
   }
 
   private void finish() {
+    this.isLoaded = true;
     if (whenFinished != null) {
       whenFinished.execute();
       whenFinished = null;
     }
+
+  }
+
+  public boolean isLoaded() {
+    return isLoaded;
   }
 
   private static abstract class SimpleAsyncCallback implements RunAsyncCallback {

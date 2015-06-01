@@ -89,7 +89,13 @@ public class WaveClientJS extends JavaScriptObject {
 
             return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;)(waveId);
 
+         },
+
+         editor: function(elementId) {
+           return delegate.@org.swellrt.api.WaveClient::getTextEditor(Ljava/lang/String;)(elementId);
          }
+
+
 
     }; // SwellRT
 

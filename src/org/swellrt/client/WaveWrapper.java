@@ -1,10 +1,11 @@
 package org.swellrt.client;
 
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
-import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.document.WaveContext;
@@ -33,7 +34,6 @@ public class WaveWrapper extends Stages {
   private RemoteViewServiceMultiplexer channel;
   protected IdGenerator idGenerator;
   private ProfileManager profileManager;
-  protected WaveStore waveStore;
   protected String localDomain;
   protected Set<ParticipantId> participants;
   protected boolean isNewWave;
@@ -41,16 +41,14 @@ public class WaveWrapper extends Stages {
   protected ParticipantId loggedInUser;
 
 
-
-  protected WaveWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
-      IdGenerator idGenerator, WaveStore waveStore, String localDomain,
+  public WaveWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+      IdGenerator idGenerator, String localDomain,
       Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave,
       UnsavedDataListener dataListener) {
     super();
     this.waveRef = waveRef;
     this.channel = channel;
     this.idGenerator = idGenerator;
-    this.waveStore = waveStore;
     this.localDomain = localDomain;
     this.participants = participants;
     this.isNewWave = isNewWave;
@@ -116,15 +114,16 @@ public class WaveWrapper extends Stages {
     wave =
         new WaveContext(two.getWave(), two.getConversations(), two.getSupplement(),
  null);
-    // this.waveStore.add(wave); // TODO check compatibility with no
-    // conversation waves
+    // Add into some Wave store?
     install();
     whenReady.use(x);
   }
 
   private void initNewWave(StageThree three) {
+
     // Do the new-wave flow.
     ConversationView wave = two.getConversations();
+
 
     // Force rendering to finish.
   }
@@ -132,6 +131,7 @@ public class WaveWrapper extends Stages {
   private void handleExistingWave(StageThree three) {
 
   }
+
 
   /**
    * A hook to install features that are not dependent an a certain stage.
@@ -142,8 +142,7 @@ public class WaveWrapper extends Stages {
 
   public void destroy() {
     if (wave != null) {
-      // this.waveStore.remove(wave); // TODO check compatibility with no
-      // conversation waves
+      // Remove from some wave store
       wave = null;
     }
     if (three != null) {
@@ -197,4 +196,11 @@ public class WaveWrapper extends Stages {
 
   }
 
+  public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry() {
+    return two.getDocumentRegistry();
+  }
+
+  public boolean isClosed() {
+    return isClosed();
+  }
 }

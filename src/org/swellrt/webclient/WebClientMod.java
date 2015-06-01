@@ -43,7 +43,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
-import org.swellrt.client.WaveManager;
 import org.swellrt.client.WaveWrapper;
 import org.swellrt.client.events.ClientEvents;
 import org.swellrt.client.events.Log;
@@ -185,8 +184,6 @@ public class WebClientMod implements EntryPoint {
   /**
    * A central point for new wave models instances
    */
-  private WaveManager waveContentManager;
-
   private WaveWrapper currentContentWave;
 
   /**
@@ -229,8 +226,6 @@ public class WebClientMod implements EntryPoint {
       idGenerator = ClientIdGenerator.create();
       loginToServer();
     }
-
-    waveContentManager = WaveManager.create(this.waveStore, this.idGenerator, this.channel, null);
 
     setupUi();
     setupStatistics();

@@ -31,8 +31,9 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
 
   protected static Type createAndAttach(Model model, String id) {
-
-    Preconditions.checkArgument(id.startsWith(PREFIX), "MapType.fromString() not a map id");
+    // Model Root Doc is a map and more... allow model+root as map doc
+    Preconditions.checkArgument(id.startsWith(PREFIX) || id.startsWith(Model.ROOT_DOC_PREFIX),
+        "MapType.fromString() not a map id");
     MapType map = new MapType(model);
     map.attach(id);
     return map;
@@ -40,7 +41,6 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
   public final static String ROOT_TAG = "map";
-  public final static String TYPE = "map";
   public final static String PREFIX = "map";
 
   private final static String ENTRY_TAG_NAME = "entry";
@@ -132,7 +132,6 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
   protected void deattach() {
     Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
-
     // nothing to do. wavelet doesn't provide doc deletion
   }
 
@@ -159,7 +158,7 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
       @Override
       public String getType() {
-        return TYPE;
+        return PREFIX;
       }
 
       @Override

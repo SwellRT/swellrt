@@ -14,27 +14,26 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.RootPanel;
 
-import org.swellrt.client.WaveManager;
 import org.swellrt.client.WaveWrapper;
 import org.swellrt.model.IdGeneratorGeneric;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.box.webclient.client.Session;
-import org.waveprotocol.box.webclient.client.SimpleWaveStore;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
 import org.waveprotocol.box.webclient.search.SearchService;
-import org.waveprotocol.box.webclient.search.WaveStore;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
+import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -54,10 +53,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private RemoteViewServiceMultiplexer channel;
   private IdGenerator idGenerator;
 
+
+
   /* Components shared across sessions */
   private final SchemaProvider schemaProvider;
-
-  private final WaveStore waveStore;
 
 
   private String waveServerDomain;
@@ -66,8 +65,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private WaveWebSocketClient websocket;
   private SearchBuilder searchBuilder;
 
-  private WaveManager waveContentManager = null;
-  private Map<String, WaveWrapper> activeWaveMap = null;
+  /** List of living waves for the active session. */
+  private Map<WaveId, WaveWrapper> waveWrappers = CollectionUtils.newHashMap();;
 
 
 
@@ -76,11 +75,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * Default constructor
    */
   public SwellRT() {
-
-    this.activeWaveMap = new HashMap<String, WaveWrapper>();
     this.schemaProvider = new ConversationSchemas();
-    this.waveStore = new SimpleWaveStore();
-
     Timing.setEnabled(false);
   }
 
@@ -203,14 +198,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     idGenerator = ClientIdGenerator.create();
     seed = Session.get().getIdSeed();
 
-    waveContentManager =
-        WaveManager.create(waveStore, waveServerDomain, idGenerator, loggedInUser, seed, channel,
-            this);
 
   }
 
   public void stopComms() {
-    waveContentManager = null;
     channel = null;
     seed = null;
   }
@@ -298,10 +289,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public boolean stopSession() {
 
     // Destroy all waves
-    for (Entry<String, WaveWrapper> entry : activeWaveMap.entrySet())
+    for (Entry<WaveId, WaveWrapper> entry : waveWrappers.entrySet())
       entry.getValue().destroy();
 
-    activeWaveMap.clear();
+    waveWrappers.clear();
 
     // Disconnect from Wave's websocket
     stopComms();
@@ -311,93 +302,102 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     loggedInUser = null;
     searchBuilder = null;
 
-
     return true;
-
   }
 
+  protected WaveWrapper getWaveWrapper(WaveId waveId, boolean isNew) {
+
+
+    if (isNew) {
+      Preconditions.checkArgument(!waveWrappers.containsKey(waveId),
+          "Trying to create an existing Wave");
+      WaveWrapper ww =
+          new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveServerDomain,
+              Collections.EMPTY_SET, loggedInUser, isNew, this);
+      waveWrappers.put(waveId, ww);
+    } else {
+      if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
+        WaveWrapper ww =
+            new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveServerDomain,
+                Collections.EMPTY_SET, loggedInUser, isNew, this);
+        waveWrappers.put(waveId, ww);
+      }
+    }
+
+    return waveWrappers.get(waveId);
+  }
 
 
   public String createWave(IdGeneratorGeneric idGenerator,
       final Callback<WaveWrapper, String> callback) {
 
-    idGenerator.initialize(this.idGenerator);
+    idGenerator.initialize(this.idGenerator); // TODO what???
 
     final WaveId waveId = idGenerator.newWaveId();
-    final WaveWrapper waveWrapper =
-        waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), true);
+    final WaveWrapper waveWrapper = getWaveWrapper(waveId, true);
 
-    GWT.log("Generated new WaveId = " + waveId.serialise());
-
-    activeWaveMap.put(waveId.serialise(), waveWrapper);
-
-
-    waveWrapper.load(new Command() {
-      @Override
-      public void execute() {
-
-        callback.onSuccess(waveWrapper);
-
-      }
-    });
-
+    if (waveWrapper.isLoaded()) {
+      callback.onSuccess(waveWrapper);
+    } else {
+      waveWrapper.load(new Command() {
+        @Override
+        public void execute() {
+          callback.onSuccess(waveWrapper);
+        }
+      });
+    }
     return waveId.serialise();
-
-
   }
 
 
   /**
    * Open an existing wave.
    *
-   * @param id WaveId
+   * @param strWaveId WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    */
-  public String openWave(final String id, final Callback<WaveWrapper, String> callback) {
-
-    // Avoid open a wave twice
-    if (activeWaveMap.containsKey(id)) closeWave(id);
+  public String openWave(final String strWaveId, final Callback<WaveWrapper, String> callback) {
 
     WaveId waveId = null;
     try {
 
-      waveId = WaveId.deserialise(id);
+      waveId = WaveId.deserialise(strWaveId);
 
     } catch (Exception e) {
       callback.onFailure(e.getMessage());
       return null;
     }
 
-    final WaveWrapper waveWrapper =
-        waveContentManager.getWaveContentWrapper(WaveRef.of(waveId), false);
+    final WaveWrapper waveWrapper = getWaveWrapper(waveId, false);
 
-    activeWaveMap.put(id, waveWrapper);
+    if (waveWrapper.isLoaded()) {
+      callback.onSuccess(waveWrapper);
+    } else {
+      waveWrapper.load(new Command() {
+        @Override
+        public void execute() {
+          callback.onSuccess(waveWrapper);
+        }
+      });
 
-    waveWrapper.load(new Command() {
-      @Override
-      public void execute() {
-
-        callback.onSuccess(waveWrapper);
-
-      }
-    });
-
-    return id;
-
+    }
+    return strWaveId;
   }
 
 
 
 
-  public boolean closeWave(String waveId) {
+  public boolean closeWave(String waveIdStr) {
 
-    WaveWrapper waveWrapper = activeWaveMap.get(waveId);
+    WaveId waveId = WaveId.deserialise(waveIdStr);
+
+    WaveWrapper waveWrapper = waveWrappers.get(waveId);
 
     if (waveWrapper == null) return false;
 
     waveWrapper.destroy();
-    activeWaveMap.remove(waveId);
+    waveWrappers.remove(waveId);
 
     return true;
 

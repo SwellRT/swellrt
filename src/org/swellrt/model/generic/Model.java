@@ -2,6 +2,9 @@ package org.swellrt.model.generic;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
@@ -10,15 +13,18 @@ import org.waveprotocol.wave.model.adt.docbased.Factory;
 import org.waveprotocol.wave.model.adt.docbased.Initializer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
-import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.WaveContext;
+import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.document.parser.XmlParseException;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdUtil;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -31,7 +37,6 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveletListener;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,8 +51,8 @@ import java.util.Set;
  * <p>
  * version 0.1 <br/>
  * 
- * Each <code>Type</code> instance stores values in a new <code>Document</code>.
- * Strings are stored in a separated string index.<br/>
+ * Each <code>Type</code> instance stores values in a new <code>Document</code>
+ * but strings, they are stored in a separated document storing a string index.<br/>
  * 
  * Simplified <code>Type</code> interface, only one <code>attach()</code>
  * method. <br/>
@@ -58,6 +63,13 @@ import java.util.Set;
  * The main document is now "map+root", supporting metadata, index of string and
  * the root map.<br/>
  * 
+ * version 0.2 - SwellRT branding and new TextType<br/>
+ * 
+ * Wave: s+XXXXXX <br/>
+ * Wavelet: swl+root <br/>
+ * Root Document : model+root <br/>
+ * 
+ * 
  */
 public class Model implements SourcesEvents<Model.Listener> {
 
@@ -65,7 +77,7 @@ public class Model implements SourcesEvents<Model.Listener> {
    * The model version of the current source code. In the future, code could
    * support multiple model versions havinf backwards compatibility.
    */
-  public static final String MODEL_VERSION = "0.1";
+  public static final String MODEL_VERSION = "0.2";
 
   public interface Listener {
 
@@ -75,20 +87,30 @@ public class Model implements SourcesEvents<Model.Listener> {
 
   }
 
-  public static final String WAVELET_ID_PREFIX = "generic";
+  public static final String WAVELET_ID_PREFIX = "swl";
   public static final String WAVELET_ID = WAVELET_ID_PREFIX + IdUtil.TOKEN_SEPARATOR + "root";
 
-  // The root document
-  private static final String ROOT_DOC_ID = "map+root";
+  /**
+   * The root document of this model. It contains the root map and the string
+   * index
+   */
+  public static final String ROOT_DOC_PREFIX = "model";
+  private static final String ROOT_DOC_ID = ROOT_DOC_PREFIX + "+root";
 
   private static final String METADATA_TAG = "model";
   private static final String METADATA_ATTR_VERSION = "v";
 
-  // String Index is stored in the root Document
+  // A strings index is stored in the root Document
+  //
+  // <strings>
+  // <s v="bla bla bla" />
+  // <s v="bla bla bla" />
+  // ...
+  // </strings>
+  //
   private static final String STRING_INDEX_TAG = "strings";
   private static final String STRING_ITEM_TAG = "s";
   private static final String STRING_VALUE_ATTR = "v";
-
 
 
   private final MapSerializer typeSerializer;
@@ -124,14 +146,14 @@ public class Model implements SourcesEvents<Model.Listener> {
   private final ObservableElementList<ObservableBasicValue<String>, String> stringIndex;
   private final ObservableWavelet wavelet;
   private final TypeIdGenerator idGenerator;
+  private final WaveDocuments<? extends InteractiveDocument> documentRegistry;
   private MapType rootMap = null;
-
-  private final Map<String, Document> documents = new HashMap<String, Document>();
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
   public static Model create(WaveContext wave, String domain, ParticipantId loggedInUser,
-      boolean isNewWave, IdGenerator idGenerator) {
+      boolean isNewWave, IdGenerator idGenerator,
+      WaveDocuments<? extends InteractiveDocument> documentRegistry) {
 
     WaveletId waveletId = WaveletId.of(domain, WAVELET_ID);
     ObservableWavelet wavelet = wave.getWave().getWavelet(waveletId);
@@ -161,63 +183,97 @@ public class Model implements SourcesEvents<Model.Listener> {
     }
 
 
-
     return new Model(wavelet, TypeIdGenerator.get(idGenerator), DocumentBasedElementList.create(
-        router, strIndexElement, STRING_ITEM_TAG, StringIndexFactory), modelDocument);
-
-
+        router, strIndexElement, STRING_ITEM_TAG, StringIndexFactory), modelDocument,
+        documentRegistry);
 
   }
 
 
   protected Model(ObservableWavelet wavelet, TypeIdGenerator idGenerator,
       ObservableElementList<ObservableBasicValue<String>, String> stringIndex,
-      ObservableDocument modelDocument) {
+      ObservableDocument modelDocument,
+      WaveDocuments<? extends InteractiveDocument> documentRegistry) {
 
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
 
     this.idGenerator = idGenerator;
+    this.documentRegistry = documentRegistry;
     this.stringIndex = stringIndex;
     this.rootModelDocument = modelDocument;
     this.typeSerializer = new MapSerializer(this);
-
-    documents.put(ROOT_DOC_ID, rootModelDocument);
   }
 
   protected ObservableElementList<ObservableBasicValue<String>, String> getStringIndex() {
     return stringIndex;
   }
 
-
+  protected String getWaveletIdString() {
+    return ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId());
+  }
 
   protected String generateDocId(String prefix) {
     return idGenerator.newDocumentId(prefix);
   }
 
-
   protected ObservableDocument createDocument(String docId) {
-
     Preconditions.checkArgument(!wavelet.getDocumentIds().contains(docId),
         "Trying to create an existing substrate document");
-    ObservableDocument doc = wavelet.getDocument(docId);
+    return wavelet.getDocument(docId);
+  }
 
-    documents.put(docId, doc);
+  protected DocInitialization getBlipDocInitialization(String text) {
 
-    return doc;
+    DocInitialization op;
+    String initContent = "<body><line/>" + text + "</body>";
+
+    try {
+      op = DocProviders.POJO.parse(initContent).asOperation();
+    } catch (IllegalArgumentException e) {
+      if (e.getCause() instanceof XmlParseException) {
+        // GWT.log("Ill-formed XML string ", e.getCause());
+        // TODO How handle this?
+      } else {
+        // GWT.log("Error", e);
+      }
+      return null;
+    }
+
+
+    // DocumentSchema schema = ConversationSchemas.BLIP_SCHEMA_CONSTRAINTS;
+
+    // ViolationCollector vc = new ViolationCollector();
+    // if (!DocOpValidator.validate(vc, schema, op).isValid()) {
+    // GWT.log("That content does not conform to the schema: " + vc.toString());
+    // return;
+    // }
+
+    return op;
+  }
+
+  protected Blip createBlip(String docId) {
+    Preconditions.checkArgument(!wavelet.getDocumentIds().contains(docId),
+        "Trying to create an existing substrate document");
+    return wavelet.createBlip(docId);
   }
 
   protected ObservableDocument getDocument(String docId) {
-
     Preconditions.checkArgument(wavelet.getDocumentIds().contains(docId),
-        "Trying to create an existing substrate document");
-    ObservableDocument doc = wavelet.getDocument(docId);
-
-    documents.put(docId, doc);
-
-    return doc;
+        "Trying to get a non existing substrate document");
+    return wavelet.getDocument(docId);
   }
 
+
+  protected Blip getBlip(String docId) {
+    Preconditions.checkArgument(wavelet.getDocumentIds().contains(docId),
+        "Trying to get a non existing substrate document");
+    return wavelet.getBlip(docId);
+  }
+
+  protected ContentDocument getDocument(Blip blip) {
+    return documentRegistry.getBlipDocument(getWaveletIdString(), blip.getId()).getDocument();
+  }
 
   protected MapSerializer getTypeSerializer() {
     return typeSerializer;
@@ -278,18 +334,28 @@ public class Model implements SourcesEvents<Model.Listener> {
     return new ListType(this);
   }
 
+  public TextType createText() {
+    return new TextType(this);
+  }
+
+  public TextType createText(String textOrXml) {
+    TextType tt = new TextType(this);
+    if (textOrXml != null) tt.setInitContent(textOrXml);
+    return tt;
+  }
+
   /**
    * For debug purposes only
    */
   public Set<String> getModelDocuments() {
-      return documents.keySet();
+    return wavelet.getDocumentIds();
   }
 
   /**
    * For debug purposes only
    */
   public String getModelDocument(String documentId) {
-    return documents.get(documentId).toDebugString();
+    return wavelet.getDocument(documentId).toDebugString();
   }
 
   //

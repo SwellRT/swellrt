@@ -20,7 +20,7 @@ public class TypeIdGenerator implements IdGeneratorGeneric {
     return singleton;
   }
 
-  public static final String WAVE_ID_PREFIX = "gen";
+  public static final String WAVE_ID_PREFIX = "s";
 
   private IdGenerator idGenerator;
 

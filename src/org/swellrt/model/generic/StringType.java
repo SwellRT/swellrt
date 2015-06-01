@@ -24,8 +24,6 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   }
 
-
-  public final static String TYPE = "str";
   public final static String PREFIX = "str";
   public final static String VALUE_ATTR = "v";
 
@@ -58,7 +56,7 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
   public StringType(Model model, String value) {
 
     this.model = model;
-    this.initValue = value != null ? value : ""; // Emtpy string not valid
+    this.initValue = value != null ? value : ""; // null string is not valid
 
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
@@ -125,7 +123,7 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
       @Override
       public String getType() {
-        return TYPE;
+        return PREFIX;
       }
 
       @Override

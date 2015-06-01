@@ -1,16 +1,20 @@
 package org.swellrt.api;
 
+import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.Callback;
+import com.google.gwt.dom.client.Document;
 
 import org.swellrt.api.js.WaveClientJS;
+import org.swellrt.api.js.editor.TextEditorJS;
 import org.swellrt.api.js.generic.ModelJS;
 import org.swellrt.client.WaveWrapper;
+import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
 
 /**
  * SwellRT client API entrypoint
- *
+ * 
  * @author Pablo Ojanguren (pablojan@gmail.com)
  * 
  * 
@@ -116,12 +120,13 @@ public class WaveClient {
 
         Model model =
             Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave(), wrapper.getIdGenerator());
+                wrapper.isNewWave(), wrapper.getIdGenerator(), wrapper.getDocumentRegistry());
 
         ModelJS modelJS = ModelJS.create(model);
         model.addListener(modelJS);
 
         jso.callbackEvent("createModel", "onSuccess", modelJS);
+
       }
 
       @Override
@@ -144,7 +149,7 @@ public class WaveClient {
 
         Model model =
             Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave(), wrapper.getIdGenerator());
+                wrapper.isNewWave(), wrapper.getIdGenerator(), wrapper.getDocumentRegistry());
 
         ModelJS modelJS = ModelJS.create(model);
         model.addListener(modelJS);
@@ -162,5 +167,13 @@ public class WaveClient {
 
   }
 
+  public TextEditorJS getTextEditor(String elementId) {
+    Preconditions.checkArgument(Document.get().getElementById(elementId) != null,
+        "Element id is not provided");
+
+    TextEditor textEditor = TextEditor.create();
+    textEditor.setElement(elementId);
+    return TextEditorJS.create(textEditor);
+  }
 
 }

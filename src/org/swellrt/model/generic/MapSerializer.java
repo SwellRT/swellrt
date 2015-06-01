@@ -27,6 +27,10 @@ public class MapSerializer implements org.waveprotocol.wave.model.util.Serialize
     } else if (s.startsWith(ListType.PREFIX)) {
 
       return ListType.createAndAttach(model, s);
+
+    } else if (s.startsWith(TextType.PREFIX)) {
+
+      return TextType.createAndAttach(model, s);
     }
 
 

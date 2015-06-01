@@ -19,36 +19,54 @@ public abstract class Type {
     } else if (MapType.PREFIX.equals(type)) {
 
       instance = MapType.createAndAttach(model, backendId);
+
+    } else if (TextType.PREFIX.equals(type)) {
+
+      instance = TextType.createAndAttach(model, backendId);
     }
 
     return instance;
   }
 
   /**
-   * Provides a independent document-based backend to this Type instance
+   * Attach the instance to a new or existing backend document when data is
+   * actually stored.
    */
   protected abstract void attach(String docId);
 
   /**
-   * Remove the backend document or document artifact
+   * Remove the backend document
    */
   protected abstract void deattach();
 
-  /**
-   * Provides a document element backend to this Type instance
-   * 
-   * @param docEventRouter
-   * @param parentElement
-   */
-  // protected abstract void attach(DocEventRouter docEventRouter, Doc.E
-  // parentElement);
 
+  /**
+   * Provide a initializer of this Type instance to be added in a ListType.
+   * 
+   * @return
+   */
   protected abstract ListElementInitializer getListElementInitializer();
 
+  /**
+   * Get the document prefix used by documents of this type.
+   * 
+   * @return
+   */
   protected abstract String getPrefix();
 
+  /**
+   * Check if the instance is supported by a document.
+   * 
+   * @return
+   */
   protected abstract boolean isAttached();
 
+  /**
+   * Provide a serialized Id for referencing the instance from others instance
+   * of the model, by now just for MapType.
+   * 
+   * @return
+   */
   protected abstract String serializeToModel();
 
 }

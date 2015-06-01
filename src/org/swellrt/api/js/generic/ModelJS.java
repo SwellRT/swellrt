@@ -61,6 +61,11 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
        return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_list);
      },
 
+     createText: function(textOrXml) {
+       var _txt = delegate.@org.swellrt.model.generic.Model::createText(Ljava/lang/String;)(textOrXml);
+       return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_txt);
+     },
+
      // For debug purpose only
      getModelDocuments: function() {
        var _docs = delegate.@org.swellrt.model.generic.Model::getModelDocuments()();
