@@ -66,8 +66,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
                   atsocket.request = new client.AtmosphereRequest();
                   atsocket.request.url = connectionUrl;
                   atsocket.request.contenType = 'text/plain;charset=UTF-8';
-                  atsocket.request.transport = 'long-polling';
-                  atsocket.request.fallbackTransport = 'polling';
+                  atsocket.request.transport = 'websocket';
+                  atsocket.request.fallbackTransport = 'long-polling';
                   atsocket.request.enableXDR = true; // allows CORS
                   atsocket.request.readResponsesHeaders = false; // allows CORS
                   atsocket.request.withCredentials = true;

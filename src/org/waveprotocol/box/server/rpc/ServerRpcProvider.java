@@ -452,6 +452,9 @@ public class ServerRpcProvider {
     // Atmosphere framework. Replacement of Socket.IO
     // See https://issues.apache.org/jira/browse/WAVE-405
     ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
+    // Avoid loading defualt CORS interceptor which is in conflict with general
+    // jetty CORS filter
+    atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
     atholder.setInitParameter("org.atmosphere.cpr.objectFactory",
@@ -609,16 +612,25 @@ public class ServerRpcProvider {
   }
 
   /**
-   * Manange atmosphere connections and dispatch messages to
-   * wave channels.
-   *
+   * Manange atmosphere connections and dispatch messages to wave channels.
+   * 
+   * Atmosphere interceptors are set manually here, to avoid duplicated CORS
+   * response headers.
+   * 
    * @author pablojan@gmail.com <Pablo Ojanguren>
-   *
+   * 
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
  interceptors = {
-AtmosphereClientInterceptor.class},
+      AtmosphereClientInterceptor.class, org.atmosphere.interceptor.CacheHeadersInterceptor.class,
+      org.atmosphere.interceptor.PaddingAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.AndroidAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.HeartbeatInterceptor.class,
+      org.atmosphere.interceptor.SSEAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.JSONPAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.JavaScriptProtocol.class,
+      org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor.class},
       broadcasterCache = UUIDBroadcasterCache.class)
   public static class WaveAtmosphereService implements AtmosphereHandler {
 
