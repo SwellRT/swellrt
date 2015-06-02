@@ -43,6 +43,10 @@ public class WaveSocketFactory {
    */
   public static WaveSocket create(boolean useWebSocketAlt, final String urlBase,
       final WaveSocket.WaveSocketCallback callback) {
+
+    // Force using Atmosphere to provide fallback to long-polling
+    useWebSocketAlt = true;
+
     if (useWebSocketAlt) {
       return new WaveSocket() {
 
