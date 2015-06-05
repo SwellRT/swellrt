@@ -27,7 +27,6 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsOb
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
 
 import com.google.common.base.Preconditions;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Cookies;
 
@@ -158,23 +157,29 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * Opens this connection.
    */
   public void connect() {
-    reconnectCommand.execute();
-    Scheduler.get().scheduleFixedDelay(reconnectCommand, RECONNECT_TIME_MS);
+    // reconnectCommand.execute();
+    // Scheduler.get().scheduleFixedDelay(reconnectCommand, RECONNECT_TIME_MS);
+
+    socket.connect();
   }
 
   @Override
   public void onConnect() {
     connected = ConnectState.CONNECTED;
-    connectedAtLeastOnce = true;
+
 
     // Sends the session cookie to the server via an RPC to work around browser bugs.
     // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
-    String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
-    if (token != null) {
-      ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
-      auth.setToken(token);
-      send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
+    if (!connectedAtLeastOnce) {
+      // Send the auth message if is the first connection
+      String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
+      if (token != null) {
+        ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
+        auth.setToken(token);
+        send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
+      }
     }
+    connectedAtLeastOnce = true;
 
     // Flush queued messages.
     while (!messages.isEmpty() && connected == ConnectState.CONNECTED) {

@@ -40,6 +40,8 @@ import com.google.gwt.core.client.ScriptInjector;
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
  *
  *
+ *
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
@@ -50,88 +52,101 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
         public static native AtmosphereSocket create(AtmosphereConnectionImpl impl, String urlBase) /*-{
 
-        var client = $wnd.atmosphere;
+          // Atmoshpere client
+          var atmosphere = $wnd.atmosphere;
 
-                  var atsocket = {
-                      request: null,
-                      socket: null };
-
-                  var connectionUrl = urlBase;
-                  if (connectionUrl.charAt(connectionUrl.length-1) != "/")
-                    connectionUrl+="/";
-
-                  connectionUrl += 'atmosphere';
-
-                  //console.log("Connection URL is "+urlBase);
-                  atsocket.request = new client.AtmosphereRequest();
-                  atsocket.request.url = connectionUrl;
-                  atsocket.request.contenType = 'text/plain;charset=UTF-8';
-                  atsocket.request.transport = 'websocket';
-                  atsocket.request.fallbackTransport = 'long-polling';
-                  atsocket.request.enableXDR = true; // allows CORS
-                  atsocket.request.readResponsesHeaders = false; // allows CORS
-                  atsocket.request.withCredentials = true;
-
-                  atsocket.request.onOpen = $entry(function() {
-                      impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
-                  });
-
-                  atsocket.request.onMessage =  $entry(function(response) {
-
-                    var r = response.responseBody;
-
-                    if (r.indexOf('|') == 0) {
-
-                        while (r.indexOf('|') == 0 && r.length > 1) {
-
-                          r = r.substring(1);
-                          var marker = r.indexOf('}|');
-                          impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r.substring(0, marker+1));
-                          r = r.substring(marker+1);
-
-                       }
-
-                    }
-                    else {
-
-                      impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r);
-
-                    }
-
-                  });
-
-                  atsocket.request.onClose = $entry(function(response) {
-
-                     client.util.info("Connection closed");
-
-                     impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response);
-                  });
+          // Atmosphere socket
+          var socket = {
+            request: null,
+            socket: null
+          };
 
 
+          var socketURL = urlBase;
+          if (socketURL.charAt(socketURL.length-1) != "/")
+            socketURL+="/";
+          socketURL += 'atmosphere';
 
-                  atsocket.request.onTransportFailure = function(errorMsg, request) {
+          // Set up atmosphere connection properties
+          socket.request = new atmosphere.AtmosphereRequest();
 
-                        client.util.info(errorMsg);
+          socket.request.url = socketURL;
+          socket.request.contenType = 'text/plain;charset=UTF-8';
 
-                    };
+          socket.request.logLevel = 'debug';
+          socket.request.transport = 'websocket';
+          socket.request.fallbackTransport = 'long-polling';
 
+          // CORS
+          socket.request.enableXDR = true;
+          socket.request.readResponsesHeaders = false;
+          socket.request.withCredentials = true;
 
-                  atsocket.request.onReconnect = function(request, response) {
+          socket.request.connectTimeout = 6000;
+          socket.request.maxReconnectOnClose = 5; // Number of reconnect attempts before throw an error
+          socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
 
-                        client.util.info("Reconnected to the server");
-
-                    };
-
-                    atsocket.request.onError = function(response) {
-
-                        client.util.info("Unexpected Error");
-
-                    };
-
-
-                  return atsocket;
+          //socket.request.trackMessageLength = true;
 
 
+          // OPEN
+          socket.request.onOpen = function() {
+            atmosphere.util.info("Atmosphere Connection Open");
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+          };
+
+           // REOPEN
+          socket.request.onReopen = function() {
+            atmosphere.util.info("Atmosphere Connection ReOpen");
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+          };
+
+          // MESSAGE
+          socket.request.onMessage = function(response) {
+            atmosphere.util.info("Atmosphere Message received: "+response.responseBody);
+            var r = response.responseBody;
+
+            if (r.indexOf('|') == 0) {
+              while (r.indexOf('|') == 0 && r.length > 1) {
+                r = r.substring(1);
+                var marker = r.indexOf('}|');
+                impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r.substring(0, marker+1));
+                r = r.substring(marker+1);
+              }
+            }
+            else {
+              impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r);
+            }
+          };
+
+          // CLOSE
+          socket.request.onClose = function(response) {
+            atmosphere.util.info("Atmosphere Connection Close");
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response);
+          };
+
+          // TRANSPORT FAILURE
+          socket.request.onTransportFailure = function(errorMsg, request) {
+            atmosphere.util.info("Atmosphere Connection Transport Failure: "+errorMsg);
+          };
+
+          //  RECONNECT
+          socket.request.onReconnect = function(request, response) {
+            atmosphere.util.info("Atmosphere Connection Reconnect");
+
+            atmosphere.util.info("Reconnect request.transport: "+request.transport);
+            atmosphere.util.info("Reconnect request.enableXDR: "+request.enableXDR);
+            atmosphere.util.info("Reconnect request.readResponsesHeaders: "+request.readResponsesHeaders);
+            atmosphere.util.info("Reconnect request.withCredentials: "+request.withCredentials);
+            atmosphere.util.info("Reconnect request.maxReconnectOnClose: "+request.maxReconnectOnClose);
+          };
+
+          // ERROR
+          socket.request.onError = function(response) {
+            atmosphere.util.info("Atmosphere Connection Error");
+          };
+
+          return socket;
         }-*/;
 
 
@@ -169,88 +184,78 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
     }
 
 
+
     @Override
     public void connect() {
 
-    if (socket == null) {
+      if (socket == null) {
 
-      // Build the atmosphere.js URL using the Websocket URL
-      final String scriptHost =
-          urlBase.startsWith("wss://") ? "https://" + urlBase.substring(6) : "http://"
-              + urlBase.substring(5);
+        // Build the atmosphere.js URL using the Websocket URL
+        final String scriptHost =
+            urlBase.startsWith("wss://") ? "https://" + urlBase.substring(6) : "http://"
+                + urlBase.substring(5);
 
-      String scriptUrl = new String(scriptHost);
+            String scriptUrl = new String(scriptHost);
 
-      // Remove trailing '/' before add context
-      if (scriptUrl.lastIndexOf("/") == scriptUrl.length() - 1)
-        scriptUrl = scriptUrl.substring(0, scriptUrl.length() - 1);
+            // Remove trailing '/' before add context
+            if (scriptUrl.lastIndexOf("/") == scriptUrl.length() - 1)
+              scriptUrl = scriptUrl.substring(0, scriptUrl.length() - 1);
 
-      scriptUrl += "/atmosphere/atmosphere.js";
+            scriptUrl += "/atmosphere/atmosphere.js";
 
-      ScriptInjector.fromUrl(scriptUrl).setCallback(new Callback<Void, Exception>() {
-        public void onFailure(Exception reason) {
-          throw new IllegalStateException("atmosphere.js load failed!");
-        }
+            ScriptInjector.fromUrl(scriptUrl).setCallback(new Callback<Void, Exception>() {
+              public void onFailure(Exception reason) {
+                throw new IllegalStateException("atmosphere.js load failed!");
+              }
 
-        public void onSuccess(Void result) {
+              public void onSuccess(Void result) {
+                // We assume Atmosphere is going to work only with http(s) schemas
+                socket = AtmosphereSocket.create(AtmosphereConnectionImpl.this, scriptHost);
+                socket.connect();
+              }
 
-          // We assume Atmosphere is going to work only with http(s) schemas
-          socket = AtmosphereSocket.create(AtmosphereConnectionImpl.this, scriptHost);
-          socket.connect();
-        }
+            }).setWindow(ScriptInjector.TOP_WINDOW).inject();
 
-      }).setWindow(ScriptInjector.TOP_WINDOW).inject();
-
-
-        } else {
-
-          if (AtmosphereConnectionState.CLOSED.equals(this.state))
-            socket.connect();
-
-        }
+      } else {
+        socket.connect();
+      }
     }
 
     @Override
     public void close() {
-        if (!AtmosphereConnectionState.CLOSED.equals(this.state))
-                socket.close();
-
+      socket.close();
     }
 
 
     @Override
     public void sendMessage(String message) {
-    this.state = AtmosphereConnectionState.MESSAGE_PUBLISHED;
-        socket.send(message);
+      socket.send(message);
     }
 
 
 
+  /**
+   * Notify the Wave's socket that connection is ready. It will be invoked in an
+   * Atmosphere's open or reconnect event.
+   *
+   */
     @SuppressWarnings("unused")
     private void onConnect() {
-    this.state = AtmosphereConnectionState.OPENED;
-        listener.onConnect();
+      listener.onConnect();
     }
 
   /**
-   * This method is called when an Atmosphere onClose event happens:
-   *
-   * when an error occurs. when the server or a proxy closes the connection.
-   * when an expected exception occurs. when the specified transport is not
-   * supported or fail to connect.
-   *
-   * @param response
+   * Notify the Wave's socket that connection was closed. It will be invoked in
+   * an Atmosphere's onClose event.
    *
    */
     @SuppressWarnings("unused")
     private void onDisconnect(String response) {
-      this.state = AtmosphereConnectionState.CLOSED;
       listener.onDisconnect();
     }
 
     @SuppressWarnings("unused")
     private void onMessage(String message) {
-    this.state = AtmosphereConnectionState.MESSAGE_RECEIVED;
       listener.onMessage(message);
     }
 
