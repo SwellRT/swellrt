@@ -455,6 +455,11 @@ public class ServerRpcProvider {
     // Avoid loading defualt CORS interceptor which is in conflict with general
     // jetty CORS filter
     atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
+    // Enable Hear Beat for websockets to avoid firewalls closing innactive
+    // connections
+    atholder.setInitParameter(
+        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "60");
+
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
     atholder.setInitParameter("org.atmosphere.cpr.objectFactory",
