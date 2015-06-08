@@ -27,6 +27,7 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsOb
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Cookies;
 
@@ -157,10 +158,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * Opens this connection.
    */
   public void connect() {
-    // reconnectCommand.execute();
-    // Scheduler.get().scheduleFixedDelay(reconnectCommand, RECONNECT_TIME_MS);
-
-    socket.connect();
+    reconnectCommand.execute();
+    Scheduler.get().scheduleFixedDelay(reconnectCommand, RECONNECT_TIME_MS);
   }
 
   @Override
