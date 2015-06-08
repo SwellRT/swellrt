@@ -167,6 +167,20 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
     if (isAttached()) observableValue.set(value);
   }
 
+  @Override
+  public String getDocumentId() {
+    return null;
+  }
+
+  @Override
+  public Model getModel() {
+    return model;
+  }
+
+  @Override
+  public String getType() {
+    return "StringType";
+  }
 
 
 

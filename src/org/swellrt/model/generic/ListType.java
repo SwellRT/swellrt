@@ -233,4 +233,19 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
     return observableList != null ? observableList.getValues() : Collections.<Type> emptyList();
   }
 
+  @Override
+  public String getDocumentId() {
+    return backendDocumentId;
+  }
+
+  @Override
+  public Model getModel() {
+    return model;
+  }
+
+  @Override
+  public String getType() {
+    return "ListType";
+  }
+
 }

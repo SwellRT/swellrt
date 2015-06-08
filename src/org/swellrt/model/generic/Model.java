@@ -2,9 +2,6 @@ package org.swellrt.model.generic;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.wave.InteractiveDocument;
-import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
@@ -25,6 +22,7 @@ import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -146,14 +144,12 @@ public class Model implements SourcesEvents<Model.Listener> {
   private final ObservableElementList<ObservableBasicValue<String>, String> stringIndex;
   private final ObservableWavelet wavelet;
   private final TypeIdGenerator idGenerator;
-  private final WaveDocuments<? extends InteractiveDocument> documentRegistry;
   private MapType rootMap = null;
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
   public static Model create(WaveContext wave, String domain, ParticipantId loggedInUser,
-      boolean isNewWave, IdGenerator idGenerator,
-      WaveDocuments<? extends InteractiveDocument> documentRegistry) {
+      boolean isNewWave, IdGenerator idGenerator) {
 
     WaveletId waveletId = WaveletId.of(domain, WAVELET_ID);
     ObservableWavelet wavelet = wave.getWave().getWavelet(waveletId);
@@ -184,22 +180,19 @@ public class Model implements SourcesEvents<Model.Listener> {
 
 
     return new Model(wavelet, TypeIdGenerator.get(idGenerator), DocumentBasedElementList.create(
-        router, strIndexElement, STRING_ITEM_TAG, StringIndexFactory), modelDocument,
-        documentRegistry);
+        router, strIndexElement, STRING_ITEM_TAG, StringIndexFactory), modelDocument);
 
   }
 
 
   protected Model(ObservableWavelet wavelet, TypeIdGenerator idGenerator,
       ObservableElementList<ObservableBasicValue<String>, String> stringIndex,
-      ObservableDocument modelDocument,
-      WaveDocuments<? extends InteractiveDocument> documentRegistry) {
+      ObservableDocument modelDocument) {
 
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
 
     this.idGenerator = idGenerator;
-    this.documentRegistry = documentRegistry;
     this.stringIndex = stringIndex;
     this.rootModelDocument = modelDocument;
     this.typeSerializer = new MapSerializer(this);
@@ -209,7 +202,11 @@ public class Model implements SourcesEvents<Model.Listener> {
     return stringIndex;
   }
 
-  protected String getWaveletIdString() {
+  public WaveId getWaveId() {
+    return this.wavelet.getWaveId();
+  }
+
+  public String getWaveletIdString() {
     return ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId());
   }
 
@@ -271,9 +268,6 @@ public class Model implements SourcesEvents<Model.Listener> {
     return wavelet.getBlip(docId);
   }
 
-  protected ContentDocument getDocument(Blip blip) {
-    return documentRegistry.getBlipDocument(getWaveletIdString(), blip.getId()).getDocument();
-  }
 
   protected MapSerializer getTypeSerializer() {
     return typeSerializer;

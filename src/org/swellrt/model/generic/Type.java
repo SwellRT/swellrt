@@ -42,21 +42,21 @@ public abstract class Type {
 
   /**
    * Provide a initializer of this Type instance to be added in a ListType.
-   * 
+   *
    * @return
    */
   protected abstract ListElementInitializer getListElementInitializer();
 
   /**
    * Get the document prefix used by documents of this type.
-   * 
+   *
    * @return
    */
   protected abstract String getPrefix();
 
   /**
    * Check if the instance is supported by a document.
-   * 
+   *
    * @return
    */
   protected abstract boolean isAttached();
@@ -64,9 +64,19 @@ public abstract class Type {
   /**
    * Provide a serialized Id for referencing the instance from others instance
    * of the model, by now just for MapType.
-   * 
+   *
    * @return
    */
   protected abstract String serializeToModel();
+
+
+  /** Return the Id of the Wave document storing this Type instance */
+  public abstract String getDocumentId();
+
+  /** Return the Model object managing this Type instance */
+  public abstract Model getModel();
+
+  /** Return this instance's Type as String */
+  public abstract String getType();
 
 }

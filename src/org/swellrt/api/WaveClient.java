@@ -10,7 +10,10 @@ import org.swellrt.api.js.generic.ModelJS;
 import org.swellrt.client.WaveWrapper;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
+import org.swellrt.model.generic.TextType;
 import org.swellrt.model.generic.TypeIdGenerator;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.client.wave.WaveDocuments;
 
 /**
  * SwellRT client API entrypoint
@@ -120,7 +123,7 @@ public class WaveClient {
 
         Model model =
             Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave(), wrapper.getIdGenerator(), wrapper.getDocumentRegistry());
+                wrapper.isNewWave(), wrapper.getIdGenerator());
 
         ModelJS modelJS = ModelJS.create(model);
         model.addListener(modelJS);
@@ -149,7 +152,7 @@ public class WaveClient {
 
         Model model =
             Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave(), wrapper.getIdGenerator(), wrapper.getDocumentRegistry());
+                wrapper.isNewWave(), wrapper.getIdGenerator());
 
         ModelJS modelJS = ModelJS.create(model);
         model.addListener(modelJS);
@@ -173,7 +176,20 @@ public class WaveClient {
 
     TextEditor textEditor = TextEditor.create();
     textEditor.setElement(elementId);
-    return TextEditorJS.create(textEditor);
+    return TextEditorJS.create(textEditor, this);
+  }
+
+  /**
+   * Set TextEditor dependencies. In particular, set the document registry
+   * associated with TextType's Model before editing.
+   * 
+   * @param text
+   */
+  public void configureTextEditor(TextEditor editor, TextType text) {
+    WaveDocuments<? extends InteractiveDocument> documentRegistry =
+        swelljs.getDocumentRegistry(text.getModel());
+
+    editor.setDocumentRegistry(documentRegistry);
   }
 
 }

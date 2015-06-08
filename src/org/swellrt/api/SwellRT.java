@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 import org.swellrt.client.WaveWrapper;
 import org.swellrt.model.IdGeneratorGeneric;
+import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
@@ -23,6 +24,8 @@ import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
 import org.waveprotocol.box.webclient.search.SearchService;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -401,6 +404,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     return true;
 
+  }
+
+  protected WaveDocuments<? extends InteractiveDocument> getDocumentRegistry(Model model) {
+    Preconditions.checkArgument(waveWrappers.containsKey(model.getWaveId()),
+        "Wave wrapper is not aviable for the model");
+    WaveWrapper ww = waveWrappers.get(model.getWaveId());
+    return ww.getDocumentRegistry();
   }
 
   private static native void notifyLoaded() /*-{

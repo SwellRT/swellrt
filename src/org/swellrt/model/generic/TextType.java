@@ -1,6 +1,6 @@
 package org.swellrt.model.generic;
 
-import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -113,10 +113,23 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
     listeners.remove(listener);
   }
 
-  public ContentDocument getDocument() {
-    Preconditions
-        .checkArgument(isAttached, "ContentDocument not available for unattached TextType");
-    return model.getDocument(blip);
+  @Override
+  public String getDocumentId() {
+    return blip.getId();
+  }
+
+  @Override
+  public Model getModel() {
+    return model;
+  }
+
+  @Override
+  public String getType() {
+    return "TextType";
+  }
+
+  public ObservableDocument getMutableDocument() {
+    return blip.getWavelet().getDocument(blip.getId());
   }
 
 }

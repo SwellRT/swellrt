@@ -22,6 +22,8 @@ import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.webdriver.EditorWebDriverUtil;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
@@ -48,6 +50,12 @@ public class TextEditor {
   private LogicalPanel.Impl editorPanel;
   private LogicalPanel.Impl docPanel;
 
+  /**
+   * The gateway to get UI-versions of Blips. Registry is GWT related, so must
+   * be injected in the Editor by the JS API. Model's classes have to ignore it.
+   */
+  private WaveDocuments<? extends InteractiveDocument> documentRegistry;
+
   private Editor editor;
   private ContentDocument doc;
 
@@ -59,6 +67,15 @@ public class TextEditor {
   protected TextEditor() {
   }
 
+  /**
+   * Inject document registry which manages UI versions of blips. Registry must
+   * be only injected by the JS API.
+   * 
+   * @param documentRegistry
+   */
+  public void setDocumentRegistry(WaveDocuments<? extends InteractiveDocument> documentRegistry) {
+    this.documentRegistry = documentRegistry;
+  }
 
   private void launchEditor(ContentDocument doc) {
 
@@ -106,7 +123,14 @@ public class TextEditor {
 
   private void setText(TextType text) {
 
-    doc = text.getDocument();
+    Preconditions.checkNotNull(documentRegistry,
+        "A document registry must be provided before editing a text");
+
+    doc =
+        documentRegistry
+            .getBlipDocument(text.getModel().getWaveletIdString(), text.getDocumentId())
+            .getDocument();
+
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
 
     this.docPanel = new LogicalPanel.Impl() {

@@ -242,6 +242,20 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
     observableMap.remove(key);
   }
 
+  @Override
+  public String getDocumentId() {
+    return backendDocumentId;
+  }
+
+  @Override
+  public Model getModel() {
+    return model;
+  }
+
+  @Override
+  public String getType() {
+    return "MapType";
+  }
 
 
 
