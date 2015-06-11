@@ -30,6 +30,7 @@ import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
@@ -392,7 +393,7 @@ public class WaveLoader {
 
       @Override
       public CcDataDocumentImpl create(WaveletId waveletId, String docId, DocInitialization content) {
-        return new CcDataDocumentImpl(null, content);
+        return new CcDataDocumentImpl(DocumentSchema.NO_SCHEMA_CONSTRAINTS, content);
       }
 
     };
