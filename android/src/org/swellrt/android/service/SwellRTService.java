@@ -298,7 +298,7 @@ public class SwellRTService extends Service implements UnsavedDataListener {
 
   private void closeWebSocket() {
 
-    waveStore = null;
+    waveStore.clear();
     idGenerator = null;
 
     channel = null;
