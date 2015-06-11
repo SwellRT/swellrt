@@ -92,7 +92,6 @@ public class SwellRTService extends Service implements UnsavedDataListener {
 
     @Override
     protected String doInBackground(String... params) {
-
       String sessionId = null;
       WaveHttpLogin login = new WaveHttpLogin(params[0], params[1], params[2]);
       sessionId = login.execute();
@@ -101,37 +100,26 @@ public class SwellRTService extends Service implements UnsavedDataListener {
 
     @Override
     protected void onPostExecute(String result) {
-
       if (result != null) {
-
         openWebSocket(participantId.getDomain(), result);
-
       } else {
-
         mCallback.onStartSessionFail("");
-
       }
-
     }
-
   }
 
 
   @Override
   public void onCreate() {
-
     waveStore = new HashMap<WaveRef, Pair<WaveLoader, Model>>();
     timer = new Timer("WaveServiceTimer");
-
     Log.d(TAG, "SwellRT Service onCreated()");
-
   }
 
 
 
   @Override
   public IBinder onBind(Intent intent) {
-
     Log.d(TAG, "SwellRT Service onBind() for " + intent.toString());
     return mBinder;
   }
@@ -139,7 +127,6 @@ public class SwellRTService extends Service implements UnsavedDataListener {
 
   @Override
   public void onDestroy() {
-
     Log.d(TAG, "SwellRT Service onDestroy()");
     // Close and clean all comms
     stopSession();
@@ -148,6 +135,11 @@ public class SwellRTService extends Service implements UnsavedDataListener {
   //
   // Public service interface
   //
+
+  public boolean registerUser(String host, String username, String password) {
+    WaveHttpRegister service = new WaveHttpRegister(host, username, password);
+    return service.execute();
+  }
 
   public void startSession(String host, String username, String password)
       throws MalformedURLException, InvalidParticipantAddress {
