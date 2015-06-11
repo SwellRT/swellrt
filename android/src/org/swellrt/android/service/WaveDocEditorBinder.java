@@ -544,4 +544,14 @@ public class WaveDocEditorBinder implements TextWatcher, DocumentHandler<N, E, T
 
   }
 
+  /**
+   * After this method is called, changes in EditBox won't be sent to the doc
+   * and viceversa. and this binder instance is not usable anymore. EditText
+   * text/view is not cleaned up.
+   */
+  public void unbind() {
+    doc.removeListener(this);
+    editor.removeTextChangedListener(this);
+  }
+
 }
