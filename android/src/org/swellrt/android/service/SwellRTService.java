@@ -10,8 +10,10 @@ import java.util.Timer;
 import org.swellrt.android.service.WaveWebSocketClient.ConnectionListener;
 import org.swellrt.android.service.wave.client.concurrencycontrol.MuxConnector.Command;
 import org.swellrt.model.generic.Model;
+import org.swellrt.model.generic.TextType;
 import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
+import org.waveprotocol.wave.concurrencycontrol.wave.CcDataDocumentImpl;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
@@ -283,6 +285,15 @@ public class SwellRTService extends Service implements UnsavedDataListener {
       return null;
 
     return waveStore.get(waveRef).getSecond();
+  }
+
+  public CcDataDocumentImpl getReadableDocument(TextType text) {
+    WaveRef waveRef = WaveRef.of(text.getModel().getWaveId());
+    if (!waveStore.containsKey(waveRef))
+      return null;
+
+    return waveStore.get(waveRef).getFirst().getDocumentRegistry()
+        .getBlipDocument(text.getModel().getWaveletIdString(), text.getDocumentId());
   }
 
   private void closeWebSocket() {
