@@ -192,4 +192,13 @@ public class WaveClient {
     editor.setDocumentRegistry(documentRegistry);
   }
 
+  /**
+   * Enable/disable WebSockets transport. Alternative protocol is long-polling.
+   * 
+   * @param enabled
+   */
+  public void useWebSocket(boolean enabled) {
+    swelljs.useWebSocket(enabled);
+  }
+
 }

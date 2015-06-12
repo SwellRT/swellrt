@@ -93,6 +93,10 @@ public class WaveClientJS extends JavaScriptObject {
 
          editor: function(elementId) {
            return delegate.@org.swellrt.api.WaveClient::getTextEditor(Ljava/lang/String;)(elementId);
+         },
+
+         useWebSocket: function(enabled) {
+           delegate.@org.swellrt.api.WaveClient::useWebSocket(Z)(enabled);
          }
 
 

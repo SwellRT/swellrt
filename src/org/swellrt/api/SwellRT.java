@@ -71,7 +71,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   /** List of living waves for the active session. */
   private Map<WaveId, WaveWrapper> waveWrappers = CollectionUtils.newHashMap();;
 
-
+  private boolean useWebSocket = true;
 
 
   /**
@@ -194,7 +194,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String webSocketURL = waveServerURLSchema.equals("http://") ? "ws://" : "wss://";
     webSocketURL += waveServerURL + "/";
 
-    websocket = new WaveWebSocketClient(websocketNotAvailable(), webSocketURL);
+    websocket = new WaveWebSocketClient(websocketNotAvailable() || !useWebSocket, webSocketURL);
     websocket.connect();
 
     channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
@@ -238,6 +238,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   /*******************************************************************************************/
 
 
+  public void useWebSocket(boolean enabled) {
+    useWebSocket = enabled;
+  }
 
 
   /**
