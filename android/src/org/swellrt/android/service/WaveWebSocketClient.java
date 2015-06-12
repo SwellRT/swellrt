@@ -261,13 +261,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private void sendMessage(int sequenceNo, String type, JsonElement message) {
 
     String json = "";
+    try {
+      json = MessageWrapper.serialize(type, sequenceNo, message);
+    } catch (Exception e) {
+      Log.e(TAG, "Error serializing message ", e);
+    } finally {
+
+    }
     switch (connected) {
     case CONNECTED:
-      try {
-        json = MessageWrapper.serialize(type, sequenceNo, message);
-      } finally {
-
-      }
       send(json);
       break;
     default:
