@@ -9,6 +9,7 @@ This is the SwellRT sub-project providing the Android native client component.
 ### Building the SwellRT Android artificats
 
 - Configure Android SDK classpath in **swellrt/build-swellrt.properties**
+- Build Wave server: `ant get-third-party compile`.
 - Get third-party libraries: `ant -f build-swellrt.xml get-third-party-swellrt-android`. They will be put into **swellrt/android/libs**
 - Build and generate client components: `ant -f build-swellrt.xml dist-swellrt-android`. They will be put into **swellrt/android/dist**
 
