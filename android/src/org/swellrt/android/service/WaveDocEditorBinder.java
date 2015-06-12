@@ -33,15 +33,15 @@ import android.widget.EditText;
  * Instances of this class bind an EditText component to a Wave's document, so
  * remote changes from a doc are adapted and applied to the editor's view and
  * changes from the editor are adapted and sent to the doc.
- * 
+ *
  * A doc's tag index is kept to convert view's cursor positions from/to doc's
  * positions.
- * 
+ *
  * TODO Avoid event eco: when a operation is send to the doc, it is send-back as
  * an event which must be ignored.
- * 
+ *
  * @author Pablo Ojanguren (pablojan@gmail.com)
- * 
+ *
  */
 public class WaveDocEditorBinder implements TextWatcher, DocumentHandler<N, E, T> {
 
@@ -449,7 +449,7 @@ public class WaveDocEditorBinder implements TextWatcher, DocumentHandler<N, E, T
         // Add breakline
         if (breaklineFound) {
           Point<N> point = doc.locate(partDocPos + partLength);
-          doc.createElement(point, "line", Collections.EMPTY_MAP);
+          doc.createElement(point, "line", Collections.<String, String>emptyMap());
         }
 
         doc.addListener(this);
