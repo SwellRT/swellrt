@@ -80,6 +80,17 @@
 
     </get>
 
+    <!-- Slice jars to make them suitable for Android projects -->
+    <java fork="true" jar="${swellrt.android.tools.dir}/jarjar-1.4.jar">
+        <arg value="process" />
+        <arg value="${swellrt.android.tools.dir}/rules-guava-15.txt" />
+        <arg value="${swellrt.android.lib.dir}/guava-15.0.jar" />
+        <arg value="${swellrt.android.lib.dir}/guava-15.0-sliced.jar" />
+    </java>
+
+    <!-- Delete no sliced Jars  -->
+    <delete file="${swellrt.android.lib.dir}/guava-15.0.jar" />
+
   </target>
 
 
