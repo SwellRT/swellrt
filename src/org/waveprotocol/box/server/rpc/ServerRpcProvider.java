@@ -454,12 +454,8 @@ public class ServerRpcProvider {
     ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
     // Avoid loading defualt CORS interceptor which is in conflict with general
     // jetty CORS filter
-    // atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults",
-    // "true");
-    // Enable Hear Beat for websockets to avoid firewalls closing innactive
-    // connections
-    // atholder.setInitParameter("org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds",
-    // "60");
+    atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
+
 
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
@@ -628,17 +624,18 @@ public class ServerRpcProvider {
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
-      interceptors = {AtmosphereClientInterceptor.class},
+ interceptors = {
+      AtmosphereClientInterceptor.class, org.atmosphere.interceptor.CacheHeadersInterceptor.class,
+      org.atmosphere.interceptor.PaddingAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.AndroidAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.HeartbeatInterceptor.class,
+      org.atmosphere.interceptor.SSEAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.JSONPAtmosphereInterceptor.class,
+      org.atmosphere.interceptor.JavaScriptProtocol.class,
+      org.atmosphere.interceptor.OnDisconnectInterceptor.class,
+      org.atmosphere.interceptor.IdleResourceInterceptor.class,
+      org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor.class},
       broadcasterCache = UUIDBroadcasterCache.class)
-  // org.atmosphere.interceptor.CacheHeadersInterceptor.class,
-  // org.atmosphere.interceptor.PaddingAtmosphereInterceptor.class,
-  // org.atmosphere.interceptor.AndroidAtmosphereInterceptor.class,
-  // org.atmosphere.interceptor.HeartbeatInterceptor.class,
-  // org.atmosphere.interceptor.SSEAtmosphereInterceptor.class,
-  // org.atmosphere.interceptor.JSONPAtmosphereInterceptor.class,
-  // org.atmosphere.interceptor.JavaScriptProtocol.class,
-  // org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor.class},
-  // broadcasterCache = UUIDBroadcasterCache.class
   public static class WaveAtmosphereService implements AtmosphereHandler {
 
 

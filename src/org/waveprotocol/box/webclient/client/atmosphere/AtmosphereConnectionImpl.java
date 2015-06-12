@@ -74,8 +74,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           socket.request.contenType = 'text/plain;charset=UTF-8';
 
           socket.request.logLevel = 'debug';
-          socket.request.transport = 'websocket';
-          socket.request.fallbackTransport = 'long-polling';
+          socket.request.transport = 'long-polling';
+          socket.request.fallbackTransport = 'polling';
 
           // CORS
           socket.request.enableXDR = true;
