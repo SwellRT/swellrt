@@ -18,6 +18,10 @@ public class TextTypeJS extends JavaScriptObject implements TextType.Listener {
 
        getDelegate: function() {
          return delegate;
+       },
+
+       type: function() {
+          return delegate.@org.swellrt.model.generic.TextType::getType()();
        }
 
     }; // jsWrapper

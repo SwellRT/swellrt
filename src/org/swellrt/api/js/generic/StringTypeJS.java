@@ -40,6 +40,10 @@ public class StringTypeJS extends JavaScriptObject implements StringType.Listene
 
         setValue: function(value) {
          delegate.@org.swellrt.model.generic.StringType::setValue(Ljava/lang/String;)(value);
+        },
+
+        type: function() {
+          return delegate.@org.swellrt.model.generic.StringType::getType()();
         }
 
       }; // jso

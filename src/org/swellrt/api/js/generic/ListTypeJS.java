@@ -61,6 +61,10 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
 
         size: function() {
            return delegate.@org.swellrt.model.generic.ListType::size()();
+        },
+
+        type: function() {
+          return delegate.@org.swellrt.model.generic.ListType::getType()();
         }
 
     }; // jso

@@ -29,13 +29,14 @@ in your own applications.
 ## What is a Collaborative Data Model?
 
 A collaborative data model is a data structure that is shared between a set of participants or users.
-Any change made in the model by a participant is notified to any other participant on near real-time.
+Any change made in the model by a participant is notified to others on near real-time.
 
 Data models are formed by a free combination of
 - Maps and lists
 - String values
+- Text documents
 
-The data structure can be changed any time. The API provides a root Map which contains the rest of structures and data.
+The data structure can be changed at any time. The API provides a root Map which contains the rest of data elements.
 
 ## Setting up a SwellRT Server (JavaScript API Provider)
 
@@ -134,6 +135,14 @@ The `onSwellRTReady()` method will be called when js file was fully loaded. Then
   }
 ```
 
+#### WebSockets vs. Long-Polling
+
+By default, SwellRT's JavaScript client will communicate with the server using the **WebSocket** protocol if it is available. If not, the fallback protocol will be **long-polling**.
+If you want to force disabling WebSockets, call the following method just before start a new session:
+
+```
+SwellRT.useWebSocket(false);
+```
 
 #### Start and Stop sessions
 
@@ -382,10 +391,15 @@ editor.cleanUp();
 
 </script>
 
-
 ```
 
+### Checking object's data type
 
+Use the method *type()* to check object's type.
+
+```
+SwellRT.model.root.type() == SwellRT.type.MAP;
+```
 
 ### General API callbacks
 

@@ -27,13 +27,18 @@ public class WaveClientJS extends JavaScriptObject {
          callbackMap: new Object(),
 
          events: {
-
            ITEM_CHANGED: "ITEM_CHANGED",
            ITEM_ADDED: "ITEM_ADDED",
            ITEM_REMOVED: "ITEM_REMOVED",
            PARTICIPANT_ADDED: "PARTICIPANT_ADDED",
            PARTICIPANT_REMOVED: "PARTICIPANT_REMOVED"
+         },
 
+         type: {
+           MAP: "MapType",
+           STRING: "StringType",
+           TEXT: "TextType",
+           LIST: "ListType"
          },
 
          startSession: function(url, user, password, onSuccess, onFailure) {

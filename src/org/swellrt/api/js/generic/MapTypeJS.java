@@ -76,6 +76,10 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
 
        remove: function(key) {
           delegate.@org.swellrt.model.generic.MapType::remove(Ljava/lang/String;)(key);
+       },
+
+       type: function() {
+          return delegate.@org.swellrt.model.generic.MapType::getType()();
        }
 
 
