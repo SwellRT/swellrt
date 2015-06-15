@@ -1,11 +1,16 @@
 package org.swellrt.model.generic;
 
+import org.waveprotocol.wave.model.document.Doc.N;
+import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
+import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
+
+import java.util.Collections;
 
 public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
@@ -130,6 +135,53 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   public ObservableDocument getMutableDocument() {
     return blip.getWavelet().getDocument(blip.getId());
+  }
+
+  //
+  // Text operations
+  //
+
+  /**
+   * Insert a text in the doc's location. Text must not contain XML.
+   * 
+   * @param location
+   * @param text
+   */
+  public void insertText(int location, String text) {
+    Document doc = blip.getContent();
+    doc.insertText(location, text);
+  }
+
+  public void insertNewLine(int location) {
+    Document doc = blip.getContent();
+    Point<N> point = doc.locate(location);
+    doc.createElement(point, "line", Collections.<String, String> emptyMap());
+  }
+
+  /**
+   * Delete text in the range.
+   * 
+   * @param start
+   * @param end
+   */
+  public void deleteText(int start, int end) {
+    Document doc = blip.getContent();
+    doc.deleteRange(start, end);
+  }
+
+  /**
+   * Returns the size of the document.
+   * 
+   * @return
+   */
+  public int getSize() {
+    Document doc = blip.getContent();
+    return doc.size();
+  }
+
+  public String getXml() {
+    Document doc = blip.getContent();
+    return doc.toXmlString();
   }
 
 }

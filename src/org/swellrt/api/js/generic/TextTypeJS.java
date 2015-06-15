@@ -22,6 +22,26 @@ public class TextTypeJS extends JavaScriptObject implements TextType.Listener {
 
        type: function() {
           return delegate.@org.swellrt.model.generic.TextType::getType()();
+       },
+
+       insert: function(location, text) {
+         delegate.@org.swellrt.model.generic.TextType::insertText(ILjava/lang/String;)(location, text);
+       },
+
+       newLine: function(location) {
+         delegate.@org.swellrt.model.generic.TextType::insertNewLine(I)(location);
+       },
+
+       remove: function(start, end) {
+          delegate.@org.swellrt.model.generic.TextType::deleteText(II)(start, end);
+       },
+
+       size: function() {
+          return delegate.@org.swellrt.model.generic.TextType::getSize()();
+       },
+
+       xml: function() {
+          return delegate.@org.swellrt.model.generic.TextType::getXml()();
        }
 
     }; // jsWrapper

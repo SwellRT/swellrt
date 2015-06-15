@@ -356,18 +356,40 @@ var observable_object = list.get(<index>);
 list.size();
 list.remove(<index>);
 ```
-### Texts & Web Text editor
+### Text Documents
 
-Text objects allows collaborative editing of formatted text through the provided *Text Editor*.
+Text documents allow real-time collaborative text editing from different clients. They are based on the Apache Wave's Documents XML  format (http://www.waveprotocol.org/protocol/draft-protocol-specs/wave-conversation-model).
+Each XML's start or end tag is represented as a location point in the document. First location is 0.
 
-Create a text object and attach it to the model before editing:
+Create a Text doc. object and attach it to the model before start editing it.
 
 ```
 text = SwellRT.model.createText("Write here initial content");
 SwellRT.model.root.put("text",text);
 ```
 
-In your Web, provide a Text Editor and edit your Text objects:
+A document exposes following methods to change its content:
+
+```
+text.insert(2, "A new text"); // Insert text at location 2. Text can't contain XML.
+text.delete(2,3);   // Delete one character starting at location 2
+text.newLine(3);    // Insert a new line.
+text.size();        // Returns the size of the document, tags are counted as locations
+text.xml();
+```
+
+
+
+### Text editor
+
+First, create a text object and attach it to the model before editing:
+
+```
+text = SwellRT.model.createText("Write here initial content");
+SwellRT.model.root.put("text",text);
+```
+
+In your Web page, provide a Text Editor and edit your Text objects:
 
 ```
 <!-- The element where the editor will be displayed -->
