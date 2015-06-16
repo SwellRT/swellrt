@@ -136,6 +136,31 @@ public class SwellRTService extends Service implements UnsavedDataListener {
   // Public service interface
   //
 
+  /**
+   * Set a global property of the SwellRT client. See {@link SwellRTConfig}
+   * 
+   * @param property
+   * @param value
+   */
+  public void setProperty(String property, boolean value) {
+    if (property.equalsIgnoreCase(SwellRTConfig.DISABLE_SSL_CHECK_KEY)) {
+      SwellRTConfig.DISABLE_SSL_CHECK = value;
+    }
+  }
+
+  /**
+   * Get a global property of the SwellRT client. See {@link SwellRTConfig}
+   * 
+   * @param property
+   * @return
+   */
+  public String getProperty(String property) {
+    if (property.equalsIgnoreCase(SwellRTConfig.DISABLE_SSL_CHECK_KEY)) {
+      return Boolean.toString(SwellRTConfig.DISABLE_SSL_CHECK);
+    }
+    return null;
+  }
+
   public boolean registerUser(String host, String username, String password) {
     WaveHttpRegister service = new WaveHttpRegister(host, username, password);
     return service.execute();
@@ -162,8 +187,9 @@ public class SwellRTService extends Service implements UnsavedDataListener {
     Preconditions.checkArgument(sessionId != null, "Session id is null");
     Preconditions.checkArgument(waveDomain != null, "Wave domain is null");
 
-    this.webSocketUrl = serverUrl.getProtocol() + "://" + serverUrl.getHost() + ":"
-        + serverUrl.getPort() + "/atmosphere";
+    this.webSocketUrl = serverUrl.getProtocol() + "://" + serverUrl.getHost()
+        + (serverUrl.getPort() != -1 ? ":" + serverUrl.getPort() : "") + "/atmosphere";
+
 
     this.sessionId = sessionId;
     this.waveDomain = waveDomain;
