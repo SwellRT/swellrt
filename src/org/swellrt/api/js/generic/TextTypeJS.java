@@ -17,7 +17,7 @@ public class TextTypeJS extends JavaScriptObject implements TextType.Listener {
        _delegate: delegate,
 
        getDelegate: function() {
-         return delegate;
+         return this._delegate;
        },
 
        type: function() {
