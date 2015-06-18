@@ -22,6 +22,10 @@ public class SwellRTUtils {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
       .toCharArray();
 
+  public static native JsArray<? extends JavaScriptObject> createTypedJsArray() /*-{
+  return new Array();
+}-*/;
+
   public static native JsArray<JavaScriptObject> createJsArray() /*-{
     return new Array();
   }-*/;

@@ -1,5 +1,6 @@
 package org.swellrt.model.generic;
 
+import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
@@ -152,6 +153,11 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
     doc.insertText(location, text);
   }
 
+  /**
+   * Insert a new line element in a doc's location.
+   * 
+   * @param location
+   */
   public void insertNewLine(int location) {
     Document doc = blip.getContent();
     Point<N> point = doc.locate(location);
@@ -179,9 +185,34 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
     return doc.size();
   }
 
+  /**
+   * Returns a XML string of the whole doc. This is function has moderate time
+   * cost.
+   * 
+   * 
+   * @return
+   */
   public String getXml() {
     Document doc = blip.getContent();
     return doc.toXmlString();
   }
+
+
+  public void setAnnotation(int start, int end, String key, String value) {
+    Document doc = blip.getContent();
+    doc.setAnnotation(start, end, key, value);
+  }
+
+  public String getAnnotation(int location, String key) {
+    Document doc = blip.getContent();
+    return doc.getAnnotation(location, key);
+  }
+
+  public Iterable<AnnotationInterval<String>> getAllAnnotations(int start, int end) {
+    Document doc = blip.getContent();
+    return doc.annotationIntervals(start, end, null);
+  }
+
+
 
 }
