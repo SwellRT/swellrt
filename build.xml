@@ -493,6 +493,8 @@
   <target name="editor-superdev" depends="compile" description="Runs the editor harness through the GWT superdev mode server, for debugging in a browser.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
       <classpath>
+        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
         <pathelement location="${src.dir}"/>
         <path refid="libpath"/>
       </classpath>
