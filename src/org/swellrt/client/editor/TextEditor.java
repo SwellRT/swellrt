@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Element;
 
 import org.swellrt.model.generic.TextType;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
-import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.Editor;
@@ -15,10 +14,8 @@ import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
-import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.webdriver.EditorWebDriverUtil;
@@ -27,6 +24,7 @@ import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
+import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
 
 import java.util.Map;
@@ -40,11 +38,23 @@ import java.util.Map;
  */
 public class TextEditor {
 
+  private static final String TOPLEVEL_CONTAINER_TAGNAME = "body";
+
+  static {
+    Editors.initRootRegistries();
+    LineContainers.setTopLevelContainerTagname(TOPLEVEL_CONTAINER_TAGNAME);
+  }
+
+
+  private static final EditorSettings EDITOR_SETTINGS = new EditorSettings()
+      .setHasDebugDialog(true).setUndoEnabled(true).setUseFancyCursorBias(true)
+      .setUseSemanticCopyPaste(false).setUseWhitelistInEditor(false)
+      .setUseWebkitCompositionEvents(false);
 
   // Wave Editor specific
 
   private final Registries registries = Editor.ROOT_REGISTRIES;
-  private final KeyBindingRegistry keysRegistry = new KeyBindingRegistry();
+  private final KeyBindingRegistry KEY_REGISTRY = new KeyBindingRegistry();
 
 
   private LogicalPanel.Impl editorPanel;
@@ -70,7 +80,7 @@ public class TextEditor {
   /**
    * Inject document registry which manages UI versions of blips. Registry must
    * be only injected by the JS API.
-   * 
+   *
    * @param documentRegistry
    */
   public void setDocumentRegistry(WaveDocuments<? extends InteractiveDocument> documentRegistry) {
@@ -93,7 +103,7 @@ public class TextEditor {
       });
 
       editor = Editors.attachTo(doc);
-      editor.init(null, keysRegistry, EditorSettings.DEFAULT);
+      editor.init(null, KEY_REGISTRY, EditorSettings.DEFAULT);
 
       editor.addUpdateListener(new EditorUpdateListener() {
         @Override
@@ -111,7 +121,7 @@ public class TextEditor {
         editor.reset();
       }
       editor.setContent(doc);
-      editor.init(null, keysRegistry, EditorSettings.DEFAULT);
+      editor.init(null, KEY_REGISTRY, EDITOR_SETTINGS);
 
     }
 
@@ -188,15 +198,13 @@ public class TextEditor {
 
   private void registerDoodads() {
 
-    ElementHandlerRegistry testHandlerRegistry = registries.getElementHandlerRegistry();
 
     // TOPLEVEL_CONTAINER_TAGNAME
-    LineRendering.registerContainer("body",
+    LineRendering.registerContainer(TOPLEVEL_CONTAINER_TAGNAME,
         registries.getElementHandlerRegistry());
 
-    StyleAnnotationHandler.register(registries);
-    DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),
-        registries.getPaintRegistry());
+    // StyleAnnotationHandler.register(registries);
+    // DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),registries.getPaintRegistry());
 
     LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
       @Override
@@ -205,17 +213,6 @@ public class TextEditor {
         return current;
       }
     });
-
-    // TODO(danilatos): Open source spelly stuff
-    // SpellDocument testSpellDocument =
-    // SpellDebugHelper.createTestSpellDocument(
-    // EditorStaticDeps.logger);
-    // SpellAnnotationHandler.register(Editor.ROOT_REGISTRIES,
-    // SpellySettings.DEFAULT, testSpellDocument);
-    // SpellDebugHelper.setDebugSpellDoc(testSpellDocument);
-    // SpellSuggestion.register(testHandlerRegistry, testSpellDocument);
-    // SpellTesting.registerDebugCombo(keysRegistry);
-    // SpellDebugHelper.setDebugSpellDoc(testSpellDocument);
 
     // Add additional doodas here
   }
