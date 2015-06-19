@@ -241,9 +241,9 @@ Close the collaborative model instance, it closes server's connection and dispos
 
 This section assumes you have already opened a session in your Web App and you have attached the opened model to `SwellRT.model`, as it's shown in the previous section.
 
-### The model shared object
+### The Data Model object
 
-The model is the base object that can be shared between participants. A first user creates it and then it's shared adding participants:
+The model object is the data container shared among participants. The creator must add new participants. Any participant can add additional ones.
 
 ```
 SwellRT.model.addParticipant("myfriend@local.net");
@@ -259,7 +259,7 @@ SwellRT.model.registerEventHandler(SwellRT.events.PARTICIPANT_REMOVED, function(
 ```
 
 
-### The root map
+### The Root Map object
 
 Any data model provide by default a root Map where data structures and values will be attached.
 
@@ -279,7 +279,7 @@ alert(SwellRT.model.root.keySet());
 ```
 
 
-### Observable objects
+### Observable Data objects
 
 Objects in the data model are observables. This allows you to register listeners to know when the object changes.
 For example, to handle changes in a string value:
@@ -305,8 +305,6 @@ A list of events applying each observable type follows:
 - Map: `SwellRT.events.ITEM_ADDED` `SwellRT.events.ITEM_CHANGED` `SwellRT.events.ITEM_REMOVED`
 - List: `SwellRT.events.ITEM_ADDED` `SwellRT.events.ITEM_REMOVED`
 
-
-### Using observable objects
 
 Observable objects are created from the 'model' object:
 ```
@@ -358,8 +356,8 @@ list.remove(<index>);
 ```
 ### Text Documents
 
-Text documents allow real-time collaborative text editing from different clients. They are based on the Apache Wave's Documents XML  format (http://www.waveprotocol.org/protocol/draft-protocol-specs/wave-conversation-model).
-Each XML's start or end tag is represented as a location point in the document. First location is 0.
+Text documents allow real-time collaborative text editing from different clients. They are based on the Apache Wave's Documents XML format (http://www.waveprotocol.org/protocol/draft-protocol-specs/wave-conversation-model).
+Each XML's start/end tag is represented as a location point in the document. First location is 0.
 
 Create a Text doc. object and attach it to the model before start editing it.
 
@@ -372,10 +370,20 @@ A document exposes following methods to change its content:
 
 ```
 text.insert(2, "A new text"); // Insert text at location 2. Text can't contain XML.
-text.delete(2,3);   // Delete one character starting at location 2
+text.delete(2,3);   // Delete one character starting at location 2.
 text.newLine(3);    // Insert a new line.
-text.size();        // Returns the size of the document, tags are counted as locations
-text.xml();
+text.size();        // Returns the size of the document, tags are counted as locations.
+text.xml();         // Returns the XML as string.
+```
+
+Wave's documents supports annotations relative to a range of locations:
+
+```
+text.setAnnotation(10, 16, "key", "value"); // Set a new annotation spaning the location range.
+text.setAnnotation(5, 20, "key", null); // Remove all annotations with the provided key within the location range.
+text.getAnnotation:(12, "key"); // Get the annotation's value in the location.
+text.getAllAnnotations(5, 20); // Get all annotations withinn the provided range.
+
 ```
 
 
