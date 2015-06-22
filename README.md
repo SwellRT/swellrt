@@ -356,7 +356,7 @@ map.remove("key");
 
 Lists provide folliwing methods:
 ```
-var observable_object = list.add(<observable object>);
+var observable_object = list.add(<observable object>, <index>);
 var observable_object = list.get(<index>);
 list.size();
 list.remove(<index>);
