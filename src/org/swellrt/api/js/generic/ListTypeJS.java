@@ -109,13 +109,19 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
     int index = delegate.indexOf(value);
 
     // Update the JS array
-    JavaScriptObject newValue = AdapterTypeJS.adapt(value);
-
     JsArray<JavaScriptObject> values = getValues();
+
+    JavaScriptObject oldValue = values.get(index);
+    JavaScriptObject newValue = AdapterTypeJS.adapt(value);
     values.set(index, newValue);
 
-    // Fire JS Event
-    fireEvent("ITEM_ADDED", newValue);
+    JsArray<JavaScriptObject> changes = SwellRTUtils.createJsArray();
+    SwellRTUtils.addStringToJsArray(changes, Integer.toString(index));
+    changes.push(newValue);
+    if (oldValue != null) changes.push(oldValue);
+
+    // Fire JS Event with parameters: index, newValue, [oldValue]
+    fireEvent("ITEM_ADDED", changes);
   }
 
 
@@ -124,6 +130,7 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
 
     JsArray<JavaScriptObject> values = getValues();
     int removedIndex = -1;
+    JavaScriptObject removedValue = null;
 
     for (int i = 0; i < values.length(); i++) {
 
@@ -134,10 +141,15 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
       }
     }
 
+    removedValue = values.get(removedIndex);
     SwellRTUtils.removeJsArrayElement(values, removedIndex);
 
-    // Fire JS Event
-    fireEvent("ITEM_REMOVED", removedIndex);
+    JsArray<JavaScriptObject> changes = SwellRTUtils.createJsArray();
+    SwellRTUtils.addStringToJsArray(changes, Integer.toString(removedIndex));
+    changes.push(removedValue);
+
+    // Fire JS Event with parameters: index, removedValue
+    fireEvent("ITEM_REMOVED", changes);
   }
 
 

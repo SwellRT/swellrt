@@ -305,6 +305,13 @@ A list of events applying each observable type follows:
 - Map: `SwellRT.events.ITEM_ADDED` `SwellRT.events.ITEM_CHANGED` `SwellRT.events.ITEM_REMOVED`
 - List: `SwellRT.events.ITEM_ADDED` `SwellRT.events.ITEM_REMOVED`
 
+Handler functions receive operation's changes as parameter:
+- String: two string parameters: **new value**, **old value**
+- List: array of objects: **index**, **new value**, [**old value**]
+- Map: array of objects: **key**, **new value / removed value**, [**old value**]
+
+
+
 
 Observable objects are created from the 'model' object:
 ```
