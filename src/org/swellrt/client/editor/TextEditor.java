@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
+import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.model.generic.TextType;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
@@ -16,6 +17,7 @@ import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListene
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.webdriver.EditorWebDriverUtil;
@@ -203,7 +205,7 @@ public class TextEditor {
     LineRendering.registerContainer(TOPLEVEL_CONTAINER_TAGNAME,
         registries.getElementHandlerRegistry());
 
-    // StyleAnnotationHandler.register(registries);
+    StyleAnnotationHandler.register(registries);
     // DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),registries.getPaintRegistry());
 
     LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
@@ -213,6 +215,8 @@ public class TextEditor {
         return current;
       }
     });
+
+    ExternalAnnotationHandler.register(registries);
 
     // Add additional doodas here
   }
