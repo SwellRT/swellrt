@@ -402,5 +402,8 @@
   <target name="dist-dev" description="Takes all the necessary steps to build a development jar" depends="get-third-party, compile-gwt, swellrt-js-compile-dev, dist-server">
   </target>
 
+  <target name="re-run" description="Clean, recompile and run server" depends="clean, swellrt-clean, compile-gwt, swellrt-js-compile-dev, run-server">
+  </target>
+
 
 </project>
