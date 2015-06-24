@@ -22,6 +22,10 @@ package org.waveprotocol.box.webclient.client.atmosphere;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.ScriptInjector;
+import com.google.gwt.core.shared.GWT;
+
+import org.waveprotocol.wave.model.util.Base64DecoderException;
+import org.waveprotocol.wave.model.util.CharBase64;
 
 /**
  * The wrapper implementation of the atmosphere javascript client.
@@ -52,101 +56,97 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
         public static native AtmosphereSocket create(AtmosphereConnectionImpl impl, String urlBase) /*-{
 
-          // Atmoshpere client
-          var atmosphere = $wnd.atmosphere;
+        // Atmoshpere client
+        var atmosphere = $wnd.atmosphere;
 
-          // Atmosphere socket
-          var socket = {
-            request: null,
-            socket: null
-          };
-
-
-          var socketURL = urlBase;
-          if (socketURL.charAt(socketURL.length-1) != "/")
-            socketURL+="/";
-          socketURL += 'atmosphere';
-
-          // Set up atmosphere connection properties
-          socket.request = new atmosphere.AtmosphereRequest();
-
-          socket.request.url = socketURL;
-          socket.request.contenType = 'text/plain;charset=UTF-8';
-
-          socket.request.logLevel = 'debug';
-          socket.request.transport = 'long-polling';
-          socket.request.fallbackTransport = 'polling';
-
-          // CORS
-          socket.request.enableXDR = true;
-          socket.request.readResponsesHeaders = false;
-          socket.request.withCredentials = true;
-
-          socket.request.connectTimeout = 6000;
-          socket.request.maxReconnectOnClose = 5; // Number of reconnect attempts before throw an error
-          socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
-
-          //socket.request.trackMessageLength = true;
+        // Atmosphere socket
+        var socket = {
+        request: null,
+        socket: null
+        };
 
 
-          // OPEN
-          socket.request.onOpen = function() {
-            atmosphere.util.info("Atmosphere Connection Open");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
-          };
+        var socketURL = urlBase;
+        if (socketURL.charAt(socketURL.length-1) != "/")
+        socketURL+="/";
+        socketURL += 'atmosphere';
 
-           // REOPEN
-          socket.request.onReopen = function() {
-            atmosphere.util.info("Atmosphere Connection ReOpen");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
-          };
+        // Set up atmosphere connection properties
+        socket.request = new atmosphere.AtmosphereRequest();
 
-          // MESSAGE
-          socket.request.onMessage = function(response) {
-            atmosphere.util.info("Atmosphere Message received: "+response.responseBody);
-            var r = response.responseBody;
+        socket.request.url = socketURL;
+        socket.request.contenType = 'text/plain;charset=UTF-8';
 
-            if (r.indexOf('|') == 0) {
-              while (r.indexOf('|') == 0 && r.length > 1) {
-                r = r.substring(1);
-                var marker = r.indexOf('}|');
-                impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r.substring(0, marker+1));
-                r = r.substring(marker+1);
-              }
-            }
-            else {
-              impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(r);
-            }
-          };
+        //socket.request.logLevel = 'debug';
 
-          // CLOSE
-          socket.request.onClose = function(response) {
-            atmosphere.util.info("Atmosphere Connection Close");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response);
-          };
+        socket.request.transport = 'long-polling';
+        socket.request.fallbackTransport = 'polling';
 
-          // TRANSPORT FAILURE
-          socket.request.onTransportFailure = function(errorMsg, request) {
-            atmosphere.util.info("Atmosphere Connection Transport Failure: "+errorMsg);
-          };
+        // Track Message Lenght. Avoid partial message delivery
+        socket.request.trackMessageLength = true;
 
-          //  RECONNECT
-          socket.request.onReconnect = function(request, response) {
-            atmosphere.util.info("Atmosphere Connection Reconnect");
+        // CORS
+        socket.request.enableXDR = true;
+        socket.request.readResponsesHeaders = false;
+        socket.request.withCredentials = true;
 
-            atmosphere.util.info("Reconnect request.transport: "+request.transport);
-            atmosphere.util.info("Reconnect request.enableXDR: "+request.enableXDR);
-            atmosphere.util.info("Reconnect request.readResponsesHeaders: "+request.readResponsesHeaders);
-            atmosphere.util.info("Reconnect request.withCredentials: "+request.withCredentials);
-            atmosphere.util.info("Reconnect request.maxReconnectOnClose: "+request.maxReconnectOnClose);
-          };
+        socket.request.connectTimeout = 6000;
+        socket.request.maxReconnectOnClose = 5; // Number of reconnect attempts before throw an error
+        socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
 
-          // ERROR
-          socket.request.onError = function(response) {
-            atmosphere.util.info("Atmosphere Connection Error");
-          };
+        // Used with the server's TrackMessageSizeB64Interceptor
+        // Delegate Base64 decoding to
+        socket.request.trackMessageLength = true;
 
-          return socket;
+
+        // OPEN
+        socket.request.onOpen = function() {
+        atmosphere.util.debug("Atmosphere Connection Open");
+        impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+        };
+
+        // REOPEN
+        socket.request.onReopen = function() {
+        atmosphere.util.debug("Atmosphere Connection ReOpen");
+        impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+        };
+
+        // MESSAGE
+        socket.request.onMessage = function(response) {
+        //atmosphere.util.debug("Atmosphere Message received: "+response.responseBody);
+        //atmosphere.util.debug("Atmosphere Message received");
+        impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(response.responseBody);
+
+        };
+
+        // CLOSE
+        socket.request.onClose = function(response) {
+        atmosphere.util.debug("Atmosphere Connection Close");
+        impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response);
+        };
+
+        // TRANSPORT FAILURE
+        socket.request.onTransportFailure = function(errorMsg, request) {
+        //atmosphere.util.debug("Atmosphere Connection Transport Failure: "+errorMsg);
+        };
+
+        //  RECONNECT
+        socket.request.onReconnect = function(request, response) {
+        atmosphere.util.debug("Atmosphere Connection Reconnect");
+
+        //atmosphere.util.debug("Reconnect request.transport: "+request.transport);
+        //atmosphere.util.debug("Reconnect request.enableXDR: "+request.enableXDR);
+        //atmosphere.util.debug("Reconnect request.readResponsesHeaders: "+request.readResponsesHeaders);
+        //atmosphere.util.debug("Reconnect request.withCredentials: "+request.withCredentials);
+        //atmosphere.util.debug("Reconnect request.maxReconnectOnClose: "+request.maxReconnectOnClose);
+        };
+
+        // ERROR
+        socket.request.onError = function(response) {
+        atmosphere.util.debug("Atmosphere Connection Error");
+        };
+
+        return socket;
         }-*/;
 
 
@@ -256,7 +256,39 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
     @SuppressWarnings("unused")
     private void onMessage(String message) {
-      listener.onMessage(message);
+
+      try {
+
+      // Decode from Base64 because of Atmosphere Track Message Lenght feauture
+      // NOTE: no Charset is specified, so this relies on UTF-8 as default
+      // charset
+      String dm = new String(CharBase64.decode(message));
+
+      // Split into differente Wave Protocol messages. Server's atmosphere implementation could pack Wave messages
+      if (dm.indexOf('|') == 0) {
+        while (dm.indexOf('|') == 0 && dm.length() > 1) {
+          dm = dm.substring(1);
+          int marker = dm.indexOf("}|");
+          GWT.log("onMessage: " + dm);
+          listener.onMessage(dm);
+          dm = dm.substring(marker + 1);
+        }
+      } else {
+
+        // Ignore heart-beat messages
+        if (dm != null && !dm.isEmpty() && !dm.equals("  ")) {
+
+          // TODO: check this trailing | separator, ???
+          if (dm.charAt(dm.length() - 1) == '|') dm = dm.substring(0, dm.length() - 1);
+          GWT.log("onMessage: " + dm);
+          listener.onMessage(dm);
+        }
+      }
+
+      } catch (Base64DecoderException e) {
+        GWT.log("Error decoding Bas64 message", e);
+      }
+
     }
 
 
