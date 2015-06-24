@@ -634,7 +634,8 @@ public class ServerRpcProvider {
       org.atmosphere.interceptor.JavaScriptProtocol.class,
       org.atmosphere.interceptor.OnDisconnectInterceptor.class,
       org.atmosphere.interceptor.IdleResourceInterceptor.class,
-      org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor.class},
+      org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor.class,
+      org.atmosphere.interceptor.TrackMessageSizeB64Interceptor.class},
       broadcasterCache = UUIDBroadcasterCache.class)
   public static class WaveAtmosphereService implements AtmosphereHandler {
 
