@@ -286,7 +286,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
         // Ignore heart-beat messages
         // NOTE: is heart beat string always " "?
-        if (dm != null && !dm.isEmpty() && !dm.equals("  ")) {
+        if (dm != null && !dm.isEmpty() && !dm.startsWith(" ")) {
 
           if (dm.charAt(dm.length() - 1) == '|') dm = dm.substring(0, dm.length() - 1);
           GWT.log("onMessage: " + dm);
