@@ -28,26 +28,32 @@ import org.waveprotocol.wave.model.util.Base64DecoderException;
 import org.waveprotocol.wave.model.util.CharBase64;
 
 /**
- * The wrapper implementation of the atmosphere javascript client.
- *
+ * The wrapper implementation of the atmosphere javascript client. By now only
+ * implements Long-polling transport without fallback.
+ * 
+ * Atmosphere server and client must support following features:
+ * <ul>
+ * <li>Heart beat messages</li>
+ * <li>Track message size + Base64 message encoding</li>
+ * <li>Multiple Wave messages packed in one single HTTP message</li>
+ * </ul>
+ * 
+ * TODO: implement fallback transport procedure, improve exception control and
+ * propagation
+ * 
+ * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- *
- * More info about transports
+ * 
+ * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
- * -WebServers-and-Browsers
- *
- * It tries to use Server-Sent Events first and fallback transport to
- * long-polling. We ignore Websockets by now because they are the default
- * transport on WiAB and atmosphere is the fallback.
- *
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- *
- *
- *
- *
+ * 
+ * 
+ * 
+ * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
- *
+ * 
  */
 public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
@@ -259,12 +265,15 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
       try {
 
-      // Decode from Base64 because of Atmosphere Track Message Lenght feauture
+      // Decode from Base64 because of Atmosphere Track Message Lenght server
+      // feauture
       // NOTE: no Charset is specified, so this relies on UTF-8 as default
       // charset
       String dm = new String(CharBase64.decode(message));
 
-      // Split into differente Wave Protocol messages. Server's atmosphere implementation could pack Wave messages
+      // Split into differente Wave Protocol messages.
+      // Atmosphere's server implementation usually pack several Wave messages
+      // in on HTTP response
       if (dm.indexOf('|') == 0) {
         while (dm.indexOf('|') == 0 && dm.length() > 1) {
           dm = dm.substring(1);
@@ -276,9 +285,9 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       } else {
 
         // Ignore heart-beat messages
+        // NOTE: is heart beat string always " "?
         if (dm != null && !dm.isEmpty() && !dm.equals("  ")) {
 
-          // TODO: check this trailing | separator, ???
           if (dm.charAt(dm.length() - 1) == '|') dm = dm.substring(0, dm.length() - 1);
           GWT.log("onMessage: " + dm);
           listener.onMessage(dm);
@@ -286,7 +295,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       }
 
       } catch (Base64DecoderException e) {
-        GWT.log("Error decoding Bas64 message", e);
+        GWT.log("Error decoding Base64 message", e);
       }
 
     }
