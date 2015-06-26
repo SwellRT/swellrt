@@ -3,6 +3,7 @@ package org.swellrt.android.service;
 
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -29,7 +30,31 @@ import android.util.Log;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.providers.grizzly.GrizzlyAsyncHttpProvider;
+import com.ning.http.util.Base64;
 
+/**
+ * A WaveSocket implementation backed by an Atmosphere/WAsync client.
+ *
+ * It encapsulates the WAsync's socket connection in a non UI thread.
+ *
+ * Messages comming from the WAsync socket are passed to the UI-thread through a
+ * Handler. Messages from UI-thread to WAsync socket are are passed through new
+ * threads.
+ *
+ * TODO: consider to use Handler to pass messages to the WAsync socket
+ *
+ * Atmosphere server and client must support following features:
+ * <ul>
+ * <li>Heart beat messages</li>
+ * <li>Track message size + Base64 message encoding</li>
+ * <li>Multiple Wave messages packed in one single HTTP message</li>
+ * </ul>
+ *
+ *
+ *
+ * @author Pablo Ojanguren (pablojan@gmail.com)
+ *
+ */
 public class WaveSocketWAsync implements WaveSocket {
 
   public final static int EVENT_ON_OPEN = 1;
@@ -57,21 +82,31 @@ public class WaveSocketWAsync implements WaveSocket {
         break;
       case EVENT_ON_MESSAGE:
 
-        String str = (String) msg.obj;
-
+        // Messages are coded in Base64 by the Server's Track Message
+        // Interceptor
+        String str = new String(Base64.decode((String) msg.obj), Charset.forName("UTF-8"));
         if (str.indexOf('|') == 0) {
 
           while (str.indexOf('|') == 0 && str.length() > 1) {
-
             str = str.substring(1);
             int marker = str.indexOf("}|");
-            callback.onMessage(str.substring(0, marker + 1));
+            String m = str.substring(0, marker + 1);
+            callback.onMessage(m);
             str = str.substring(marker + 1);
-
           }
 
         } else {
-          callback.onMessage(str);
+
+          // Ignore heart-beat messages
+          // NOTE: is heart beat string always " "?
+          if (str != null && !str.isEmpty() && !str.startsWith(" ")) {
+
+            if (str.charAt(str.length() - 1) == '|')
+              str = str.substring(0, str.length() - 1);
+
+            callback.onMessage(str);
+          }
+
         }
 
         break;
@@ -172,9 +207,7 @@ public class WaveSocketWAsync implements WaveSocket {
       AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
       AtmosphereRequestBuilder requestBuilder = client.newRequestBuilder()
-          .method(Request.METHOD.GET).trackMessageLength(false).uri(WaveSocketWAsync.this.urlBase)
-          // UrlBase
-          // .transport(Request.TRANSPORT.WEBSOCKET)
+          .method(Request.METHOD.GET).trackMessageLength(true).uri(WaveSocketWAsync.this.urlBase)
           .transport(Request.TRANSPORT.LONG_POLLING)
           .header("Cookie", "WSESSIONID=" + sessionId);
 
@@ -273,7 +306,7 @@ public class WaveSocketWAsync implements WaveSocket {
   public void connect() {
 
     if (socket != null) {
-
+      return;
     }
 
     new Thread(new WebSocketRunnable(urlBase, uiHandler, sessionId)).start();
