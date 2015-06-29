@@ -7,6 +7,8 @@ import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -15,6 +17,7 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
 
 import org.atmosphere.wasync.ClientFactory;
+import org.atmosphere.wasync.Decoder;
 import org.atmosphere.wasync.Event;
 import org.atmosphere.wasync.Function;
 import org.atmosphere.wasync.Request;
@@ -41,13 +44,12 @@ import com.ning.http.util.Base64;
  * Handler. Messages from UI-thread to WAsync socket are are passed through new
  * threads.
  *
- * TODO: consider to use Handler to pass messages to the WAsync socket
+ * TODO: consider to use a Handler to pass messages to the WAsync socket
  *
  * Atmosphere server and client must support following features:
  * <ul>
  * <li>Heart beat messages</li>
  * <li>Track message size + Base64 message encoding</li>
- * <li>Multiple Wave messages packed in one single HTTP message</li>
  * </ul>
  *
  *
@@ -65,6 +67,23 @@ public class WaveSocketWAsync implements WaveSocket {
 
   public final static String TAG = "WaveSocketWAsync";
 
+
+  private class Base64Decoder implements Decoder<String, String> {
+
+    private final Charset UTF8 = Charset.forName("UTF-8");
+
+    @Override
+    public String decode(Event event, String message) {
+
+      if (event.name().equals(Event.MESSAGE.name())) {
+        // Decoding Base64 message
+        return new String(Base64.decode(message), UTF8);
+      }
+      return message;
+    }
+  };
+
+
   // A gateway between socket thread and UI thread
   private Handler uiHandler = new Handler(Looper.getMainLooper()) {
 
@@ -81,34 +100,7 @@ public class WaveSocketWAsync implements WaveSocket {
         callback.onDisconnect();
         break;
       case EVENT_ON_MESSAGE:
-
-        // Messages are coded in Base64 by the Server's Track Message
-        // Interceptor
-        String str = new String(Base64.decode((String) msg.obj), Charset.forName("UTF-8"));
-        if (str.indexOf('|') == 0) {
-
-          while (str.indexOf('|') == 0 && str.length() > 1) {
-            str = str.substring(1);
-            int marker = str.indexOf("}|");
-            String m = str.substring(0, marker + 1);
-            callback.onMessage(m);
-            str = str.substring(marker + 1);
-          }
-
-        } else {
-
-          // Ignore heart-beat messages
-          // NOTE: is heart beat string always " "?
-          if (str != null && !str.isEmpty() && !str.startsWith(" ")) {
-
-            if (str.charAt(str.length() - 1) == '|')
-              str = str.substring(0, str.length() - 1);
-
-            callback.onMessage(str);
-          }
-
-        }
-
+        callback.onMessage((String) msg.obj);
         break;
       case EVENT_ON_EXCEPTION:
         callback.onDisconnect();
@@ -123,6 +115,8 @@ public class WaveSocketWAsync implements WaveSocket {
 
   };
 
+
+
   private final String urlBase;
   private Socket socket = null;
   private final WaveSocketCallback callback;
@@ -131,15 +125,42 @@ public class WaveSocketWAsync implements WaveSocket {
 
   private class WebSocketRunnable implements Runnable {
 
-
     final String urlBase;
     final Handler uiHandler;
     final String sessionId;
+
+
+    final static int WAVE_MESSAGE_SEPARATOR = '|';
+    final static String WAVE_MESSAGE_END_MARKER = "}|";
 
     public WebSocketRunnable(String urlBase, Handler uiHandler, String sessionId) {
       this.urlBase = urlBase;
       this.uiHandler = uiHandler;
       this.sessionId = sessionId;
+    }
+
+    private boolean isPackedWaveMessage(String message) {
+      return message.indexOf(WAVE_MESSAGE_SEPARATOR) == 0;
+    }
+
+    private List<String> unpackWaveMessages(String packedMessage) {
+
+      List<String> messages = new ArrayList<String>();
+
+      if (isPackedWaveMessage(packedMessage)) {
+
+        while (packedMessage.indexOf(WAVE_MESSAGE_SEPARATOR) == 0 && packedMessage.length() > 1) {
+          packedMessage = packedMessage.substring(1);
+          int marker = packedMessage.indexOf(WAVE_MESSAGE_END_MARKER);
+          String splitMessage = packedMessage.substring(0, marker + 1);
+          messages.add(splitMessage);
+          packedMessage = packedMessage.substring(marker + 1);
+        }
+
+      }
+
+      return messages;
+
     }
 
     @Override
@@ -206,10 +227,14 @@ public class WaveSocketWAsync implements WaveSocket {
 
       AtmosphereClient client = ClientFactory.getDefault().newClient(AtmosphereClient.class);
 
+
       AtmosphereRequestBuilder requestBuilder = client.newRequestBuilder()
-          .method(Request.METHOD.GET).trackMessageLength(true).uri(WaveSocketWAsync.this.urlBase)
+          .method(Request.METHOD.GET).uri(WaveSocketWAsync.this.urlBase)
           .transport(Request.TRANSPORT.LONG_POLLING)
-          .header("Cookie", "WSESSIONID=" + sessionId);
+          .header("Cookie", "WSESSIONID=" + sessionId)
+          .enableProtocol(true)
+          .trackMessageLength(true)
+          .decoder(new Base64Decoder());
 
       // Using waitBeforeUnlocking(2000) option to avoid high delay on long-polling connection
       WaveSocketWAsync.this.socket = client
@@ -247,15 +272,33 @@ public class WaveSocketWAsync implements WaveSocket {
 
             }
 
+
           }).on(Event.MESSAGE.name(), new Function<String>() {
 
             @Override
-            public void on(String arg) {
+            public void on(String message) {
 
-              Message msg = uiHandler.obtainMessage();
-              msg.arg1 = EVENT_ON_MESSAGE;
-              msg.obj = arg;
-              uiHandler.sendMessage(msg);
+              // Ignoring Heart Beat messages
+              if (message.isEmpty() || message.equals(" ") || message.equals(" "))
+                return;
+
+              // Unpack wave messages
+              if (isPackedWaveMessage(message)) {
+
+                List<String> unpacked = unpackWaveMessages(message);
+                for (String s : unpacked) {
+                  Message msg = uiHandler.obtainMessage();
+                  msg.arg1 = EVENT_ON_MESSAGE;
+                  msg.obj = s;
+                  uiHandler.sendMessage(msg);
+                }
+
+              } else {
+                Message msg = uiHandler.obtainMessage();
+                msg.arg1 = EVENT_ON_MESSAGE;
+                msg.obj = message;
+                uiHandler.sendMessage(msg);
+              }
 
             }
 
