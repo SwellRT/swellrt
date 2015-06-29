@@ -81,6 +81,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -643,8 +644,9 @@ public class ServerRpcProvider {
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
     private static final String WAVE_CHANNEL_ATTRIBUTE = "WAVE_CHANNEL_ATTRIBUTE";
-    private static final String MSG_SEPARATOR = "|";
-    private static final String MSG_CHARSET = "UTF-8";
+    private static final String CHARSET = "UTF-8";
+    private static final String SEPARATOR = "|";
+
 
     @Inject
     public ServerRpcProvider provider;
@@ -689,6 +691,28 @@ public class ServerRpcProvider {
 
     }
 
+    /**
+     * Packing messages ensures that a Wave message order is preserved when
+     * server is delivering messages through atmosphere long-polling. I wasn't
+     * able to avoid this forcing the flush/resuming of atmosphere's output
+     * stream.
+     * 
+     * @param messages
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    private byte[] packWaveMessages(List<Object> messages) throws UnsupportedEncodingException {
+
+      StringBuilder sb = new StringBuilder();
+
+      sb.append(SEPARATOR);
+      for (Object obj : messages) {
+        LOG.fine("Sending Wave message: " + (String) obj);
+        sb.append((String) obj).append(SEPARATOR);
+      }
+
+      return sb.toString().getBytes(CHARSET);
+    }
 
     @Override
     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
@@ -707,37 +731,22 @@ public class ServerRpcProvider {
 
         if (event.getMessage().getClass().isArray()) {
 
-          LOG.fine("SEND MESSAGE ARRAY " + event.getMessage().toString());
-
           List<Object> list = Arrays.asList(event.getMessage());
-
-          response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
-          for (Object object : list) {
-            String message = (String) object;
-            message += MSG_SEPARATOR;
-            response.getOutputStream().write(message.getBytes(MSG_CHARSET));
-          }
+          response.getOutputStream().write(packWaveMessages(list));
 
         } else if (event.getMessage() instanceof List) {
 
-          LOG.fine("SEND MESSAGE LIST " + event.getMessage().toString());
+          LOG.fine("Sending packed Wave messages: " + event.getMessage().toString());
 
           @SuppressWarnings("unchecked")
           List<Object> list = List.class.cast(event.getMessage());
+          response.getOutputStream().write(packWaveMessages(list));
 
-          response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
-          for (Object object : list) {
-            String message = (String) object;
-            message += MSG_SEPARATOR;
-            response.getOutputStream().write(message.getBytes(MSG_CHARSET));
-          }
 
         } else if (event.getMessage() instanceof String) {
-
-          LOG.fine("SEND MESSAGE " + event.getMessage().toString());
-
+          LOG.fine("Sending Wave message: " + event.getMessage().toString());
           String message = (String) event.getMessage();
-          response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+          response.getOutputStream().write(message.getBytes(CHARSET));
         }
 
 
