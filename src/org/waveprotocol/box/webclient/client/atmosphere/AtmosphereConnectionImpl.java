@@ -27,33 +27,35 @@ import com.google.gwt.core.shared.GWT;
 import org.waveprotocol.wave.model.util.Base64DecoderException;
 import org.waveprotocol.wave.model.util.CharBase64;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The wrapper implementation of the atmosphere javascript client. By now only
  * implements Long-polling transport without fallback.
- * 
+ *
  * Atmosphere server and client must support following features:
  * <ul>
  * <li>Heart beat messages</li>
  * <li>Track message size + Base64 message encoding</li>
- * <li>Multiple Wave messages packed in one single HTTP message</li>
  * </ul>
- * 
+ *
  * TODO: implement fallback transport procedure, improve exception control and
  * propagation
- * 
+ *
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- * 
+ *
  * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
@@ -80,6 +82,9 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
         // Set up atmosphere connection properties
         socket.request = new atmosphere.AtmosphereRequest();
 
+        // It's true by default. Just a reminder.
+        socket.request.enableProtocol = true;
+
         socket.request.url = socketURL;
         socket.request.contenType = 'text/plain;charset=UTF-8';
 
@@ -88,7 +93,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
         socket.request.transport = 'long-polling';
         socket.request.fallbackTransport = 'polling';
 
-        // Track Message Lenght. Avoid partial message delivery
+        // Track Message Lenght
+        // Used with the server's TrackMessageSizeB64Interceptor
         socket.request.trackMessageLength = true;
 
         // CORS
@@ -100,9 +106,6 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
         socket.request.maxReconnectOnClose = 5; // Number of reconnect attempts before throw an error
         socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
 
-        // Used with the server's TrackMessageSizeB64Interceptor
-        // Delegate Base64 decoding to
-        socket.request.trackMessageLength = true;
 
 
         // OPEN
@@ -175,6 +178,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
     }
 
+    final static int WAVE_MESSAGE_SEPARATOR = '|';
+    final static String WAVE_MESSAGE_END_MARKER = "}|";
 
 
     private final AtmosphereConnectionListener listener;
@@ -260,38 +265,56 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       listener.onDisconnect();
     }
 
+    private boolean isPackedWaveMessage(String message) {
+      return message.indexOf(WAVE_MESSAGE_SEPARATOR) == 0;
+    }
+
+    private List<String> unpackWaveMessages(String packedMessage) {
+
+      List<String> messages = new ArrayList<String>();
+
+      if (isPackedWaveMessage(packedMessage)) {
+
+        while (packedMessage.indexOf(WAVE_MESSAGE_SEPARATOR) == 0 && packedMessage.length() > 1) {
+          packedMessage = packedMessage.substring(1);
+          int marker = packedMessage.indexOf(WAVE_MESSAGE_END_MARKER);
+          String splitMessage = packedMessage.substring(0, marker + 1);
+          messages.add(splitMessage);
+          packedMessage = packedMessage.substring(marker + 1);
+        }
+
+      }
+
+      return messages;
+
+    }
+
+
     @SuppressWarnings("unused")
     private void onMessage(String message) {
 
       try {
 
-      // Decode from Base64 because of Atmosphere Track Message Lenght server
-      // feauture
-      // NOTE: no Charset is specified, so this relies on UTF-8 as default
-      // charset
-      String dm = new String(CharBase64.decode(message));
+        // Decode from Base64 because of Atmosphere Track Message Lenght server
+        // feauture
+        // NOTE: no Charset is specified, so this relies on UTF-8 as default
+        // charset
+        String decoded = new String(CharBase64.decode(message));
 
-      // Split into differente Wave Protocol messages.
-      // Atmosphere's server implementation usually pack several Wave messages
-      // in on HTTP response
-      if (dm.indexOf('|') == 0) {
-        while (dm.indexOf('|') == 0 && dm.length() > 1) {
-          dm = dm.substring(1);
-          int marker = dm.indexOf("}|");
-          GWT.log("onMessage: " + dm);
-          listener.onMessage(dm);
-          dm = dm.substring(marker + 1);
-        }
-      } else {
 
         // Ignore heart-beat messages
         // NOTE: is heart beat string always " "?
-        if (dm != null && !dm.isEmpty() && !dm.startsWith(" ")) {
+        if (decoded == null || decoded.isEmpty() || decoded.startsWith(" ")
+            || decoded.startsWith("  ")) return;
 
-          if (dm.charAt(dm.length() - 1) == '|') dm = dm.substring(0, dm.length() - 1);
-          GWT.log("onMessage: " + dm);
-          listener.onMessage(dm);
-        }
+
+      if (isPackedWaveMessage(decoded)) {
+        List<String> unpacked = unpackWaveMessages(decoded);
+        for (String s : unpacked)
+          listener.onMessage(s);
+
+      } else {
+        listener.onMessage(decoded);
       }
 
       } catch (Base64DecoderException e) {
