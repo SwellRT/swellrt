@@ -279,7 +279,7 @@ public class WaveSocketWAsync implements WaveSocket {
             public void on(String message) {
 
               // Ignoring Heart Beat messages
-              if (message.isEmpty() || message.equals(" ") || message.equals(" "))
+              if (message.isEmpty() || message.equals(" ") || message.equals("  "))
                 return;
 
               // Unpack wave messages

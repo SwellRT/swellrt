@@ -19,9 +19,6 @@
 
 package org.waveprotocol.box.webclient.client;
 
-import com.google.gwt.websockets.client.WebSocket;
-import com.google.gwt.websockets.client.WebSocketCallback;
-
 import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection;
 import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl;
 import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionListener;
@@ -41,10 +38,9 @@ public class WaveSocketFactory {
    * is wrapped, otherwise an instance of {@link com.google.gwt.websockets.client.WebSocket} is
    * wrapped.
    */
-  public static WaveSocket create(boolean useWebSocketAlt, final String urlBase,
+  public static WaveSocket create(final boolean useWebSocketAlt, final String urlBase,
       final WaveSocket.WaveSocketCallback callback) {
 
-    if (useWebSocketAlt) {
       return new WaveSocket() {
 
         private final AtmosphereConnection socket
@@ -63,7 +59,13 @@ public class WaveSocketFactory {
           @Override
           public void onMessage(String message) {
             callback.onMessage(message);
-          }}, urlBase);
+          }
+
+          @Override
+          public void onDisconnect(String reason) {
+            callback.onDisconnect(reason);
+            }
+          }, urlBase, useWebSocketAlt);
 
         @Override
         public void connect() {
@@ -78,45 +80,11 @@ public class WaveSocketFactory {
 
         @Override
         public void sendMessage(String message) {
-              socket.sendMessage(message);
+          socket.sendMessage(message);
         }
 
         };
 
-    } else {
-      return new WaveSocket() {
-        final WebSocket socket = new WebSocket(new WebSocketCallback() {
-          @Override
-          public void onConnect() {
-            callback.onConnect();
-          }
 
-          @Override
-          public void onDisconnect() {
-            callback.onDisconnect();
-          }
-
-          @Override
-          public void onMessage(String message) {
-            callback.onMessage(message);
-          }
-        });
-
-        @Override
-        public void connect() {
-          socket.connect(urlBase + "socket");
-        }
-
-        @Override
-        public void disconnect() {
-          socket.close();
-        }
-
-        @Override
-        public void sendMessage(String message) {
-          socket.send(message);
-        }
-      };
-    }
   }
 }

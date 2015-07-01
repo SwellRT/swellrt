@@ -27,8 +27,6 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsOb
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
 
 import com.google.common.base.Preconditions;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Cookies;
 
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
@@ -54,9 +52,7 @@ import java.util.Queue;
  * Wrapper around WebSocket that handles the Wave client-server protocol.
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
-  private static final int MAX_INITIAL_FAILURES = 2;
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
-  private static final int RECONNECT_TIME_MS = 5000;
 
   // Sets an specific session cookie name
   // private static final String JETTY_SESSION_TOKEN_NAME = "JSESSIONID";
@@ -101,8 +97,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final IntMap<SubmitResponseCallback> submitRequestCallbacks;
 
   /**
-   * Lifecycle of a socket is:
-   *   (CONNECTING &#8594; CONNECTED &#8594; DISCONNECTED)&#8727;
+   * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594;
+   * DISCONNECTED)&#8727;
    */
   private enum ConnectState {
     CONNECTED, CONNECTING, DISCONNECTED
@@ -114,30 +110,10 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   private final Queue<JsonMessage> messages = CollectionUtils.createQueue();
 
-  private final RepeatingCommand reconnectCommand = new RepeatingCommand() {
-    @Override
-    public boolean execute() {
-      if (!connectedAtLeastOnce && !websocketNotAvailable && connectTry > MAX_INITIAL_FAILURES) {
-        // Let's try to use websocket alternative, seems that websocket it's not working
-        // (we are under a proxy or similar)
-        socket = WaveSocketFactory.create(true, urlBase, WaveWebSocketClient.this);
-      }
-      connectTry++;
-      if (connected == ConnectState.DISCONNECTED) {
-        LOG.info("Attemping to reconnect");
-        connected = ConnectState.CONNECTING;
-        socket.connect();
-      }
-      return true;
-    }
-  };
-  private final boolean websocketNotAvailable;
   private boolean connectedAtLeastOnce = false;
-  private long connectTry = 0;
   private final String urlBase;
 
   public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
-    this.websocketNotAvailable = websocketNotAvailable;
     this.urlBase = urlBase;
     submitRequestCallbacks = CollectionUtils.createIntMap();
     socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, this);
@@ -158,8 +134,19 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * Opens this connection.
    */
   public void connect() {
-    reconnectCommand.execute();
-    Scheduler.get().scheduleFixedDelay(reconnectCommand, RECONNECT_TIME_MS);
+    connected = ConnectState.CONNECTING;
+    socket.connect();
+  }
+
+  /**
+   * Lets app to fully restart the connection.
+   * 
+   */
+  public void disconnect(boolean discardInFlightMessages) {
+    connected = ConnectState.DISCONNECTED;
+    socket.disconnect();
+    connectedAtLeastOnce = false;
+    if (discardInFlightMessages) messages.clear();
   }
 
   @Override
@@ -192,6 +179,11 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   public void onDisconnect() {
     connected = ConnectState.DISCONNECTED;
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.DISCONNECTED));
+  }
+
+  @Override
+  public void onDisconnect(String reason) {
+    onDisconnect();
   }
 
   @Override
@@ -249,5 +241,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         messages.add(message);
     }
   }
+
+
 
 }

@@ -38,7 +38,13 @@ public interface AtmosphereConnectionListener {
   void onDisconnect();
 
   /**
+   * Called when connection is closed properly or by error
+   */
+  void onDisconnect(String reason);
+
+  /**
    * Called when a new message is received from the server
+   * 
    * @param message
    */
   void onMessage(String message);
