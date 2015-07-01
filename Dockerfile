@@ -19,7 +19,7 @@ RUN mkdir config log \
 ADD server.config wiab-logging.conf jaas.config server.federation.config $home/config/
 
 ADD docker/* $home/
-ADD war $home/war
+ADD war $home/war/
 ADD dist/wave*jar $home/wave.jar
 
 RUN chown -R swellrt:swellrt $home
