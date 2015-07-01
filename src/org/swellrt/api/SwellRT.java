@@ -205,6 +205,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
   public void stopComms() {
+    websocket.disconnect(true);
     channel = null;
     seed = null;
   }
