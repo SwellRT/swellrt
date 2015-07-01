@@ -20,7 +20,7 @@ ADD server.config wiab-logging.conf jaas.config server.federation.config $home/c
 
 ADD docker/* $home/
 ADD war $home/war/
-ADD dist/wave*jar $home/wave.jar
+ADD dist/wave-in-a-box-server*jar $home/wave.jar
 
 RUN chown -R swellrt:swellrt $home
 
