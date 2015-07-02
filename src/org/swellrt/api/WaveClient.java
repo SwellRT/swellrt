@@ -2,6 +2,7 @@ package org.swellrt.api;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 
 import org.swellrt.api.js.WaveClientJS;
@@ -48,18 +49,19 @@ public class WaveClient {
    * @param password
    * @return
    */
-  public boolean startSession(String url, String user, String password) {
+  public boolean startSession(String url, String user, String password,
+      final JavaScriptObject callback) {
 
     return swelljs.startSession(user, password, url, new Callback<String, String>() {
 
       @Override
       public void onSuccess(String result) {
-        jso.callbackEvent("startSession", "onSuccess", result);
+        jso.callbackEvent("onSuccess", callback, result);
       }
 
       @Override
       public void onFailure(String reason) {
-        jso.callbackEvent("startSession", "onFailure", reason);
+        jso.callbackEvent("onFailure", callback, reason);
       }
     });
   }
@@ -81,18 +83,18 @@ public class WaveClient {
    * @param wave the WaveId
    * @return the WaveId for success, null otherwise
    */
-  public String openWave(final String wave) {
+  public String openWave(final String wave, final JavaScriptObject callback) {
 
     return swelljs.openWave(wave, new Callback<WaveWrapper, String>() {
 
       @Override
       public void onSuccess(WaveWrapper result) {
-        jso.callbackEvent("openWave", "onSuccess", wave);
+        jso.callbackEvent("onSuccess", callback, wave);
       }
 
       @Override
       public void onFailure(String reason) {
-        jso.callbackEvent("openWave", "onFailure", reason);
+        jso.callbackEvent("onFailure", callback, reason);
       }
 
     });
@@ -114,7 +116,7 @@ public class WaveClient {
   // Generic model
   //
 
-  public String createModel() {
+  public String createModel(final JavaScriptObject callback) {
 
     return swelljs.createWave(TypeIdGenerator.get(), new Callback<WaveWrapper, String>() {
 
@@ -128,13 +130,13 @@ public class WaveClient {
         ModelJS modelJS = ModelJS.create(model);
         model.addListener(modelJS);
 
-        jso.callbackEvent("createModel", "onSuccess", modelJS);
+        jso.callbackEvent("onSuccess", callback, modelJS);
 
       }
 
       @Override
       public void onFailure(String reason) {
-        jso.callbackEvent("createModel", "onFailure", reason);
+        jso.callbackEvent("onFailure", callback, reason);
       }
 
 
@@ -143,7 +145,7 @@ public class WaveClient {
   }
 
 
-  public String openModel(String waveId) {
+  public String openModel(String waveId, final JavaScriptObject callback) {
 
     return swelljs.openWave(waveId, new Callback<WaveWrapper, String>() {
 
@@ -157,12 +159,12 @@ public class WaveClient {
         ModelJS modelJS = ModelJS.create(model);
         model.addListener(modelJS);
 
-        jso.callbackEvent("openModel", "onSuccess", modelJS);
+        jso.callbackEvent("onSuccess", callback, modelJS);
       }
 
       @Override
       public void onFailure(String reason) {
-        jso.callbackEvent("openModel", "onFailure", reason);
+        jso.callbackEvent("onFailure", callback, reason);
       }
 
 
