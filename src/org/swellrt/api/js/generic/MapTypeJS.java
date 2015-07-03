@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
 import org.swellrt.api.SwellRTUtils;
+import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Type;
 
@@ -124,7 +125,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
       values.push(newValueJs);
 
       // Fire JS event
-      fireEvent("ITEM_ADDED", values);
+      fireEvent(WaveClientJS.ITEM_ADDED, values);
 
     } else {
 
@@ -137,7 +138,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
       values.push(oldValueJs);
 
       // Fire JS event
-      fireEvent("ITEM_CHANGED", values);
+      fireEvent(WaveClientJS.ITEM_CHANGED, values);
 
     }
   }
@@ -152,7 +153,7 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
     SwellRTUtils.addStringToJsArray(values, key);
     values.push(oldValue);
     // Fire JS Event
-    fireEvent("ITEM_REMOVED", values);
+    fireEvent(WaveClientJS.ITEM_REMOVED, values);
   }
 
 

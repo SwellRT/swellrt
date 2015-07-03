@@ -44,14 +44,6 @@ import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
 import org.swellrt.client.WaveWrapper;
-import org.swellrt.client.events.ClientEvents;
-import org.swellrt.client.events.Log;
-import org.swellrt.client.events.NetworkStatusEvent;
-import org.swellrt.client.events.NetworkStatusEventHandler;
-import org.swellrt.client.events.WaveCreationEvent;
-import org.swellrt.client.events.WaveCreationEventHandler;
-import org.swellrt.client.events.WaveSelectionEvent;
-import org.swellrt.client.events.WaveSelectionEventHandler;
 import org.swellrt.webclient.search.SearchPresenterMod;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
@@ -87,6 +79,14 @@ import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.debug.logger.LogLevel;
 import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerImpl;
 import org.waveprotocol.wave.client.doodad.attachment.AttachmentManagerProvider;
+import org.waveprotocol.wave.client.events.ClientEvents;
+import org.waveprotocol.wave.client.events.Log;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent;
+import org.waveprotocol.wave.client.events.NetworkStatusEventHandler;
+import org.waveprotocol.wave.client.events.WaveCreationEvent;
+import org.waveprotocol.wave.client.events.WaveCreationEventHandler;
+import org.waveprotocol.wave.client.events.WaveSelectionEvent;
+import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
 import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
 import org.waveprotocol.wave.client.wavepanel.event.FocusManager;
 import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
@@ -205,10 +205,7 @@ public class WebClientMod implements EntryPoint {
           throw new RuntimeException("Spaghetti attack.  Create occured before login");
         }
 
-        if (event.getType().equals("conversation")) {
-          openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
-
-        }
+        openWave(WaveRef.of(idGenerator.newWaveId()), true, participantSet);
       }
     });
 
@@ -266,7 +263,7 @@ public class WebClientMod implements EntryPoint {
 
       @Override
           public void onCreateWave(String type) {
-        ClientEvents.get().fireEvent(new WaveCreationEvent(type));
+            ClientEvents.get().fireEvent(new WaveCreationEvent());
       }
 
       @Override

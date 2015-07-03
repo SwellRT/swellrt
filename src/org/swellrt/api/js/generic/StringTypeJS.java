@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
 import org.swellrt.api.SwellRTUtils;
+import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.model.generic.StringType;
 
 
@@ -81,7 +82,7 @@ public class StringTypeJS extends JavaScriptObject implements StringType.Listene
     JsArrayString values = SwellRTUtils.createJsArrayString();
     values.push(newValue);
     values.push(oldValue);
-    fireEvent("ITEM_CHANGED", values);
+    fireEvent(WaveClientJS.ITEM_CHANGED, values);
   }
 
 

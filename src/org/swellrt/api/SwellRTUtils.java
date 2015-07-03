@@ -94,7 +94,9 @@ public class SwellRTUtils {
    * JsonUtils.safeEval(s); }
    */
 
-
+  public static native void addField(JavaScriptObject object, String name, Object value) /*-{
+     object[name] = value;
+  }-*/;
 
   public static String nextBase64(int length) {
     StringBuilder result = new StringBuilder(length);

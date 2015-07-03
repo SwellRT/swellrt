@@ -6,8 +6,29 @@ import org.swellrt.api.WaveClient;
 
 public class WaveClientJS extends JavaScriptObject {
 
+  public static final String SUCCESS = "success";
+  public static final String FAILURE = "failure";
+
+  public static final String ITEM_CHANGED = "item-changed";
+  public static final String ITEM_ADDED = "item-added";
+  public static final String ITEM_REMOVED = "item-removed";
+  public static final String PARTICIPANT_ADDED = "participant-added";
+  public static final String PARTICIPANT_REMOVED = "participant-removed";
+
+  public static final String DATA_STATUS_CHANGED = "data-status-changed";
+  public static final String NETWORK_DISCONNECTED = "network-disconnected";
+  public static final String NETWORK_CONNECTED = "network-connected";
+  public static final String NETWORK_CLOSED = "network-closed";
+
+  /** This shouldn't be used. Just for debugging purpose */
+  public static final String FATAL_EXCEPTION = "exception";
 
 
+  public static final String METHOD_START_SESSION = "startSession";
+  public static final String METHOD_OPEN_MODEL = "openModel";
+  public static final String METHOD_CREATE_MODEL = "createModel";
+
+  public static final String METHOD_GLOBAL = "global";
 
   /**
    * The JS Wave Client main interface. Backed by WaveClient
@@ -24,14 +45,25 @@ public class WaveClientJS extends JavaScriptObject {
 
     var swellrt = {
 
-         callbackMap: new Object(),
+         handlers: new Object(),
 
          events: {
-           ITEM_CHANGED: "ITEM_CHANGED",
-           ITEM_ADDED: "ITEM_ADDED",
-           ITEM_REMOVED: "ITEM_REMOVED",
-           PARTICIPANT_ADDED: "PARTICIPANT_ADDED",
-           PARTICIPANT_REMOVED: "PARTICIPANT_REMOVED"
+
+           FATAL_EXCEPTION: "exception",
+
+           SUCCESS: "success",
+           FAILURE: "failure",
+
+           ITEM_CHANGED: "item-changed",
+           ITEM_ADDED: "item-added",
+           ITEM_REMOVED: "item-removed",
+           PARTICIPANT_ADDED: "participant-added",
+           PARTICIPANT_REMOVED: "participant-removed",
+
+           DATA_STATUS_CHANGED: "data-status-changed",
+           NETWORK_DISCONNECTED: "network-disconnected",
+           NETWORK_CONNECTED: "network-connected",
+           NETWORK_CLOSED: "network-closed"
          },
 
          type: {
@@ -41,11 +73,27 @@ public class WaveClientJS extends JavaScriptObject {
            LIST: "ListType"
          },
 
+
+         on: function(event, handler) {
+
+           if (this.handlers.global === undefined) {
+             this.handlers.global = new Object();
+           }
+
+           this.handlers.global[event] = handler;
+
+           return this;
+         },
+
+         //
+         // Session
+         //
+
          startSession: function(url, user, password, onSuccess, onFailure) {
 
-            this.callbackMap.startSession = new Object();
-            this.callbackMap.startSession.onSuccess = onSuccess;
-            this.callbackMap.startSession.onFailure = onFailure;
+            this.handlers.startSession = new Object();
+            this.handlers.startSession.success = onSuccess;
+            this.handlers.startSession.failure = onFailure;
 
             return delegate.@org.swellrt.api.WaveClient::startSession(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(url, user, password);
 
@@ -56,30 +104,21 @@ public class WaveClientJS extends JavaScriptObject {
             return delegate.@org.swellrt.api.WaveClient::stopSession()();
          },
 
-         openWave: function(wave, onSuccess, onFailure) {
 
-              this.callbackMap.openWave = new Object();
-              this.callbackMap.openWave.onSuccess = onSuccess;
-              this.callbackMap.openWave.onFailure = onFailure;
-
-              return delegate.@org.swellrt.api.WaveClient::openWave(Ljava/lang/String;)(wave);
-         },
-
-         closeWave: function(waveid) {
-
-             return delegate.@org.swellrt.api.WaveClient::close(Ljava/lang/String;)(waveid);
-         },
+         //
+         // Data Model
+         //
 
          closeModel: function(waveid) {
 
-             return delegate.@org.swellrt.api.WaveClient::close(Ljava/lang/String;)(waveid);
+             return delegate.@org.swellrt.api.WaveClient::closeModel(Ljava/lang/String;)(waveid);
          },
 
          createModel: function(onSuccess, onFailure) {
 
-            this.callbackMap.createModel = new Object();
-            this.callbackMap.createModel.onSuccess = onSuccess;
-            this.callbackMap.createModel.onFailure = onFailure;
+            this.handlers.createModel = new Object();
+            this.handlers.createModel.success = onSuccess;
+            this.handlers.createModel.failure = onFailure;
 
             return delegate.@org.swellrt.api.WaveClient::createModel()();
 
@@ -88,17 +127,26 @@ public class WaveClientJS extends JavaScriptObject {
 
          openModel: function(waveId, onSuccess, onFailure) {
 
-            this.callbackMap.openModel = new Object();
-            this.callbackMap.openModel.onSuccess = onSuccess;
-            this.callbackMap.openModel.onFailure = onFailure;
+            this.handlers.openModel = new Object();
+            this.handlers.openModel.success = onSuccess;
+            this.handlers.openModel.failure = onFailure;
 
             return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;)(waveId);
 
          },
 
+         //
+         // Editor
+         //
+
          editor: function(elementId) {
            return delegate.@org.swellrt.api.WaveClient::getTextEditor(Ljava/lang/String;)(elementId);
          },
+
+
+         //
+         // Options
+         //
 
          useWebSocket: function(enabled) {
            delegate.@org.swellrt.api.WaveClient::useWebSocket(Z)(enabled);
@@ -127,8 +175,8 @@ public class WaveClientJS extends JavaScriptObject {
 
 
 
-  public final native void callbackEvent(String method, String event, Object parameter) /*-{
-    this.callbackMap[method][event](parameter);
+  public final native void triggerEvent(String method, String event, Object parameter) /*-{
+    this.handlers[method][event](parameter);
   }-*/;
 
 

@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 
 import org.swellrt.api.SwellRTUtils;
+import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.Type;
 
@@ -121,7 +122,7 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
     if (oldValue != null) changes.push(oldValue);
 
     // Fire JS Event with parameters: index, newValue, [oldValue]
-    fireEvent("ITEM_ADDED", changes);
+    fireEvent(WaveClientJS.ITEM_ADDED, changes);
   }
 
 
@@ -149,7 +150,7 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
     changes.push(removedValue);
 
     // Fire JS Event with parameters: index, removedValue
-    fireEvent("ITEM_REMOVED", changes);
+    fireEvent(WaveClientJS.ITEM_REMOVED, changes);
   }
 
 

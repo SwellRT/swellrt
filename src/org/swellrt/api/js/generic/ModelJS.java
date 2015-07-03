@@ -2,6 +2,7 @@ package org.swellrt.api.js.generic;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.model.generic.Model;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -111,13 +112,13 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
   @Override
   public final void onAddParticipant(ParticipantId participant) {
-    fireEvent("PARTICIPANT_ADDED", participant.getAddress());
+    fireEvent(WaveClientJS.PARTICIPANT_ADDED, participant.getAddress());
   }
 
 
   @Override
   public final void onRemoveParticipant(ParticipantId participant) {
-    fireEvent("PARTICIPANT_REMOVED", participant.getAddress());
+    fireEvent(WaveClientJS.PARTICIPANT_REMOVED, participant.getAddress());
   }
 
 

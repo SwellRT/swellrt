@@ -24,6 +24,9 @@ import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
 import org.waveprotocol.box.webclient.search.SearchService;
+import org.waveprotocol.wave.client.events.ClientEvents;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent;
+import org.waveprotocol.wave.client.events.NetworkStatusEventHandler;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -42,11 +45,36 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+/**
+ * A generic module to manage Wave's top operations. It encapsulates
+ * Wave-semantic from SwellRT data model interface.
+ * 
+ * It should avoid JSNI/ operations.
+ * 
+ * @author Pablo Ojanguren (pablojan@gmail.com)
+ * 
+ */
 public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   private static final Logger log = Logger.getLogger(SwellRT.class.getName());
 
+
+  public interface Listener {
+
+    public void onDataStatusChanged(UnsavedDataInfo dataInfo);
+
+    public void onNetworkDisconnected(String cause);
+
+    public void onNetworkConnected();
+
+    public void onNetworkClosed(boolean everythingCommitted);
+
+    public void onException(String cause);
+
+    public void onReady();
+
+
+  }
 
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
@@ -71,6 +99,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   /** List of living waves for the active session. */
   private Map<WaveId, WaveWrapper> waveWrappers = CollectionUtils.newHashMap();;
 
+  /** A listener to global data/network/runtime events */
+  private SwellRT.Listener listener = null;
+
   private boolean useWebSocket = true;
 
 
@@ -83,13 +114,21 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
   /**
+   * 
+   * @param listener
+   */
+  public void attachListener(SwellRT.Listener listener) {
+    this.listener = listener;
+  }
+
+  /**
    * Performs a login against Wave's /auth servlet. This method doesn't start a
    * web socket session. Wave server will set a session cookie.
-   *
+   * 
    * CORS and XHR is taken into account:
    * http://stackoverflow.com/questions/10977058
    * /xmlhttprequest-and-set-cookie-cookie
-   *
+   * 
    * @param user name of the user without domain part
    * @param callback
    */
@@ -417,30 +456,36 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     return ww.getDocumentRegistry();
   }
 
+  @Deprecated
   private static native void notifyLoaded() /*-{
     if (typeof $wnd.onSwellRTReady === "function")
       $wnd.onSwellRTReady();
   }-*/;
 
+  @Deprecated
   private static native void dirtyLog(String msg) /*-{
     $wnd.console.log(msg);
   }-*/;
 
+  @Deprecated
   private static native void notifyException(Throwable e) /*-{
     if (typeof $wnd.onSwellRTException === "function")
       $wnd.onSwellRTException(e);
   }-*/;
 
+  @Deprecated
   private static native void notifyOnUpdate(int inFlightSize, int notAckedSize,
       int unCommitedSize) /*-{
     if (typeof $wnd.onSwellRTUpdate === "function")
       $wnd.onSwellRTUpdate(inFlightSize, notAckedSize, unCommitedSize);
   }-*/;
 
+  @Deprecated
   private static native void notifyOnClose(boolean everythingCommitted) /*-{
     if (typeof $wnd.onSwellRTClose === "function")
       $wnd.onSwellRTClose(everythingCommitted);
   }-*/;
+
 
   public void onModuleLoad() {
 
@@ -453,9 +498,39 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       @Override
       public void onUncaughtException(Throwable e) {
         dirtyLog(e.toString());
-        GWT.log(e.getMessage(), e);
         notifyException(e);
+
+        GWT.log(e.getMessage(), e);
+        if (listener != null) listener.onException(e.getMessage());
       }
+    });
+
+    // Capture and notify Network events. They are sent from
+    // WaveWebSocketClient. We use the original Wave client event system.
+    ClientEvents.get().addNetworkStatusEventHandler(new NetworkStatusEventHandler() {
+
+      @Override
+      public void onNetworkStatus(NetworkStatusEvent event) {
+
+        if (listener == null) return;
+
+        switch (event.getStatus()) {
+          case CONNECTED:
+            listener.onNetworkConnected();
+            break;
+          case RECONNECTED:
+            listener.onNetworkConnected();
+            break;
+          case DISCONNECTED:
+            listener.onNetworkDisconnected(null);
+            break;
+          case RECONNECTING:
+            listener.onNetworkDisconnected(null);
+            break;
+        }
+
+      }
+
     });
 
     // Notify the host page that client is already loaded
@@ -463,22 +538,24 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       @Override
       public void execute() {
         notifyLoaded();
+        if (listener != null) listener.onReady();
       }
     });
-
-
-
   }
+
 
   @Override
   public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
     notifyOnUpdate(unsavedDataInfo.inFlightSize(), unsavedDataInfo.estimateUnacknowledgedSize(),
         unsavedDataInfo.estimateUncommittedSize());
+    if (listener != null) listener.onDataStatusChanged(unsavedDataInfo);
+
   }
 
   @Override
   public void onClose(boolean everythingCommitted) {
     notifyOnClose(everythingCommitted);
+    if (listener != null) listener.onNetworkClosed(everythingCommitted);
   }
 
 }

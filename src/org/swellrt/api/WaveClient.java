@@ -2,6 +2,7 @@ package org.swellrt.api;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 
 import org.swellrt.api.js.WaveClientJS;
@@ -14,31 +15,38 @@ import org.swellrt.model.generic.TextType;
 import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
+import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener.UnsavedDataInfo;
 
 /**
  * SwellRT client API entrypoint
- * 
+ *
  * @author Pablo Ojanguren (pablojan@gmail.com)
- * 
- * 
+ *
+ *
  */
-public class WaveClient {
+public class WaveClient implements SwellRT.Listener {
 
-  private final SwellRT swelljs;
-  private static WaveClientJS jso = null; // TODO why static?
+  private final SwellRT coreClient;
+  private static WaveClientJS jsClient = null; // TODO why static?
 
 
-  protected static WaveClient create(SwellRT swelljs) {
+  protected static WaveClient create(SwellRT coreClient) {
 
-    WaveClient waveClient = new WaveClient(swelljs);
-    jso = WaveClientJS.create(waveClient);
+    WaveClient waveClient = new WaveClient(coreClient);
+    coreClient.attachListener(waveClient);
+    jsClient = WaveClientJS.create(waveClient);
     return waveClient;
 
   }
 
-  private WaveClient(SwellRT swelljs) {
-    this.swelljs = swelljs;
+  private WaveClient(SwellRT swell) {
+    this.coreClient = swell;
   }
+
+  //
+  // Session
+  //
+
 
   /**
    * Start a Wave session
@@ -50,18 +58,28 @@ public class WaveClient {
    */
   public boolean startSession(String url, String user, String password) {
 
-    return swelljs.startSession(user, password, url, new Callback<String, String>() {
+    boolean startOk = false;
 
-      @Override
-      public void onSuccess(String result) {
-        jso.callbackEvent("startSession", "onSuccess", result);
-      }
+    try {
 
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("startSession", "onFailure", reason);
-      }
-    });
+      startOk = coreClient.startSession(user, password, url, new Callback<String, String>() {
+
+        @Override
+        public void onSuccess(String result) {
+          jsClient.triggerEvent(WaveClientJS.METHOD_START_SESSION, WaveClientJS.SUCCESS, result);
+        }
+
+        @Override
+        public void onFailure(String reason) {
+          jsClient.triggerEvent(WaveClientJS.METHOD_START_SESSION, WaveClientJS.FAILURE, reason);
+        }
+      });
+
+    } catch (Exception e) {
+      jsClient.triggerEvent(WaveClientJS.METHOD_START_SESSION, WaveClientJS.FAILURE, e.getMessage());
+    }
+
+    return startOk;
   }
 
 
@@ -71,102 +89,129 @@ public class WaveClient {
    * @return
    */
   public boolean stopSession() {
-    return swelljs.stopSession();
+    return coreClient.stopSession();
   }
 
+  //
+  // Data model
+  //
 
   /**
-   * Open a Wave to support a content.
-   *
-   * @param wave the WaveId
-   * @return the WaveId for success, null otherwise
-   */
-  public String openWave(final String wave) {
-
-    return swelljs.openWave(wave, new Callback<WaveWrapper, String>() {
-
-      @Override
-      public void onSuccess(WaveWrapper result) {
-        jso.callbackEvent("openWave", "onSuccess", wave);
-      }
-
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("openWave", "onFailure", reason);
-      }
-
-    });
-  }
-
-
-  /**
-   * Close a wave. No callback needed.
+   * Close a data model. No callback needed.
    *
    * @param waveId
    * @return true for success
    */
-  public boolean close(String waveId) {
-    return swelljs.closeWave(waveId);
+  public boolean closeModel(String waveId) {
+    return coreClient.closeWave(waveId);
   }
 
 
-  //
-  // Generic model
-  //
-
+  /**
+   * Create a new data model.
+   *
+   * TODO: check if try-catch blocks are necessary
+   *
+   * @return the new data model Id.
+   */
   public String createModel() {
 
-    return swelljs.createWave(TypeIdGenerator.get(), new Callback<WaveWrapper, String>() {
+    String waveId = null;
 
-      @Override
-      public void onSuccess(WaveWrapper wrapper) {
+    try {
 
-        Model model =
-            Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave(), wrapper.getIdGenerator());
+        waveId = coreClient.createWave(TypeIdGenerator.get(), new Callback<WaveWrapper, String>() {
 
-        ModelJS modelJS = ModelJS.create(model);
-        model.addListener(modelJS);
-
-        jso.callbackEvent("createModel", "onSuccess", modelJS);
-
-      }
-
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("createModel", "onFailure", reason);
-      }
+        @Override
+        public void onSuccess(WaveWrapper wrapper) {
 
 
-    });
+          ModelJS modelJS = null;
+
+          try {
+
+            Model model =
+                Model.create(wrapper.getWave(), wrapper.getLocalDomain(),
+                    wrapper.getLoggedInUser(),
+                  wrapper.isNewWave(), wrapper.getIdGenerator());
+
+            modelJS = ModelJS.create(model);
+            model.addListener(modelJS);
+
+          } catch (Exception e) {
+            jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.FAILURE, e.getMessage());
+          }
+
+          jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.SUCCESS, modelJS);
+
+        }
+
+        @Override
+        public void onFailure(String reason) {
+          jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.FAILURE, reason);
+        }
+
+
+      });
+
+    } catch (Exception e) {
+      jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.FAILURE, e.getMessage());
+    }
+
+
+    return waveId;
 
   }
 
-
+  /**
+   * Open a data model.
+   *
+   * TODO: check if try-catch blocks are necessary
+   *
+   * @return the new data model Id.
+   */
   public String openModel(String waveId) {
 
-    return swelljs.openWave(waveId, new Callback<WaveWrapper, String>() {
+    String modelId = null;
 
-      @Override
-      public void onSuccess(WaveWrapper wrapper) {
+    try {
 
-        Model model =
-            Model.create(wrapper.getWave(), wrapper.getLocalDomain(), wrapper.getLoggedInUser(),
-                wrapper.isNewWave(), wrapper.getIdGenerator());
+      modelId = coreClient.openWave(waveId, new Callback<WaveWrapper, String>() {
 
-        ModelJS modelJS = ModelJS.create(model);
-        model.addListener(modelJS);
+        @Override
+        public void onSuccess(WaveWrapper wrapper) {
 
-        jso.callbackEvent("openModel", "onSuccess", modelJS);
-      }
+          ModelJS modelJS = null;
 
-      @Override
-      public void onFailure(String reason) {
-        jso.callbackEvent("openModel", "onFailure", reason);
-      }
+          try {
+
+            Model model =
+                Model.create(wrapper.getWave(), wrapper.getLocalDomain(),
+                    wrapper.getLoggedInUser(), wrapper.isNewWave(), wrapper.getIdGenerator());
+
+            modelJS = ModelJS.create(model);
+            model.addListener(modelJS);
+
+          } catch (Exception e) {
+            jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.FAILURE, e.getMessage());
+          }
+
+          jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.SUCCESS, modelJS);
+        }
+
+        @Override
+        public void onFailure(String reason) {
+          jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.FAILURE, reason);
+        }
+
+      });
+
+    } catch (Exception e) {
+      jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.FAILURE, e.getMessage());
+    }
 
 
-    });
+    return modelId;
 
   }
 
@@ -182,23 +227,83 @@ public class WaveClient {
   /**
    * Set TextEditor dependencies. In particular, set the document registry
    * associated with TextType's Model before editing.
-   * 
+   *
    * @param text
    */
   public void configureTextEditor(TextEditor editor, TextType text) {
     WaveDocuments<? extends InteractiveDocument> documentRegistry =
-        swelljs.getDocumentRegistry(text.getModel());
+        coreClient.getDocumentRegistry(text.getModel());
 
     editor.setDocumentRegistry(documentRegistry);
   }
 
   /**
    * Enable/disable WebSockets transport. Alternative protocol is long-polling.
-   * 
+   *
    * @param enabled
    */
   public void useWebSocket(boolean enabled) {
-    swelljs.useWebSocket(enabled);
+    coreClient.useWebSocket(enabled);
+  }
+
+
+  @Override
+  public void onDataStatusChanged(UnsavedDataInfo dataInfo) {
+
+    JavaScriptObject payload = JavaScriptObject.createObject();
+
+    SwellRTUtils.addField(payload, "inFlightSize", dataInfo.inFlightSize());
+    SwellRTUtils.addField(payload, "uncommittedSize", dataInfo.estimateUncommittedSize());
+    SwellRTUtils.addField(payload, "unacknowledgedSize", dataInfo.estimateUnacknowledgedSize());
+    SwellRTUtils.addField(payload, "lastAckVersion", dataInfo.laskAckVersion());
+    SwellRTUtils.addField(payload, "lastCommitVersion", dataInfo.lastCommitVersion());
+
+    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.DATA_STATUS_CHANGED, payload);
+  }
+
+  @Override
+  public void onNetworkDisconnected(String cause) {
+
+    JavaScriptObject payload = JavaScriptObject.createObject();
+    SwellRTUtils.addField(payload, "cause", cause);
+    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.NETWORK_DISCONNECTED, payload);
+  }
+
+  @Override
+  public void onNetworkConnected() {
+
+    JavaScriptObject payload = JavaScriptObject.createObject();
+    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.NETWORK_CONNECTED, payload);
+  }
+
+  @Override
+  public void onNetworkClosed(boolean everythingCommitted) {
+
+    JavaScriptObject payload = JavaScriptObject.createObject();
+    SwellRTUtils.addField(payload, "everythingCommitted", everythingCommitted);
+
+    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.NETWORK_CLOSED, payload);
+  }
+
+  @Override
+  public void onException(String cause) {
+    JavaScriptObject payload = JavaScriptObject.createObject();
+    SwellRTUtils.addField(payload, "cause", cause);
+
+    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.FATAL_EXCEPTION, payload);
+  }
+
+
+  private static native void callOnSwellRTReady() /*-{
+
+  if (typeof $wnd.onSwellRTReady === "function")
+    $wnd.onSwellRTReady();
+
+  }-*/;
+
+  @Override
+  public void onReady() {
+    callOnSwellRTReady();
   }
 
 }
