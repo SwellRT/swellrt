@@ -28,8 +28,6 @@ public class WaveClientJS extends JavaScriptObject {
   public static final String METHOD_OPEN_MODEL = "openModel";
   public static final String METHOD_CREATE_MODEL = "createModel";
 
-  public static final String METHOD_GLOBAL = "global";
-
   /**
    * The JS Wave Client main interface. Backed by WaveClient
    *
@@ -76,11 +74,7 @@ public class WaveClientJS extends JavaScriptObject {
 
          on: function(event, handler) {
 
-           if (this.handlers.global === undefined) {
-             this.handlers.global = new Object();
-           }
-
-           this.handlers.global[event] = handler;
+           this.handlers[event] = handler;
 
            return this;
          },
@@ -91,12 +85,11 @@ public class WaveClientJS extends JavaScriptObject {
 
          startSession: function(url, user, password, onSuccess, onFailure) {
 
-            this.handlers.startSession = new Object();
-            this.handlers.startSession.success = onSuccess;
-            this.handlers.startSession.failure = onFailure;
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
 
-            return delegate.@org.swellrt.api.WaveClient::startSession(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)(url, user, password);
-
+            return delegate.@org.swellrt.api.WaveClient::startSession(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(url, user, password, callback);
          },
 
          stopSession: function() {
@@ -116,22 +109,22 @@ public class WaveClientJS extends JavaScriptObject {
 
          createModel: function(onSuccess, onFailure) {
 
-            this.handlers.createModel = new Object();
-            this.handlers.createModel.success = onSuccess;
-            this.handlers.createModel.failure = onFailure;
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
 
-            return delegate.@org.swellrt.api.WaveClient::createModel()();
+            return delegate.@org.swellrt.api.WaveClient::createModel(Lcom/google/gwt/core/client/JavaScriptObject;)(callback);
 
          },
 
 
          openModel: function(waveId, onSuccess, onFailure) {
 
-            this.handlers.openModel = new Object();
-            this.handlers.openModel.success = onSuccess;
-            this.handlers.openModel.failure = onFailure;
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
 
-            return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;)(waveId);
+            return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(waveId, callback);
 
          },
 
@@ -175,8 +168,11 @@ public class WaveClientJS extends JavaScriptObject {
 
 
 
-  public final native void triggerEvent(String method, String event, Object parameter) /*-{
-    this.handlers[method][event](parameter);
+  public final native void triggerEvent(String event, Object parameter) /*-{
+
+    if (this.handlers[event] !== undefined)
+      this.handlers[event](parameter);
+
   }-*/;
 
 

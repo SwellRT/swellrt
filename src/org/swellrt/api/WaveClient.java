@@ -43,6 +43,11 @@ public class WaveClient implements SwellRT.Listener {
     this.coreClient = swell;
   }
 
+
+  private native void invoke(JavaScriptObject object, String method, Object arg) /*-{
+     object[method](arg);
+  }-*/;
+
   //
   // Session
   //
@@ -56,7 +61,8 @@ public class WaveClient implements SwellRT.Listener {
    * @param password
    * @return
    */
-  public boolean startSession(String url, String user, String password) {
+  public boolean startSession(String url, String user, String password,
+      final JavaScriptObject callback) {
 
     boolean startOk = false;
 
@@ -66,17 +72,17 @@ public class WaveClient implements SwellRT.Listener {
 
         @Override
         public void onSuccess(String result) {
-          jsClient.triggerEvent(WaveClientJS.METHOD_START_SESSION, WaveClientJS.SUCCESS, result);
+          invoke(callback, WaveClientJS.SUCCESS, result);
         }
 
         @Override
         public void onFailure(String reason) {
-          jsClient.triggerEvent(WaveClientJS.METHOD_START_SESSION, WaveClientJS.FAILURE, reason);
+          invoke(callback, WaveClientJS.FAILURE, reason);
         }
       });
 
     } catch (Exception e) {
-      jsClient.triggerEvent(WaveClientJS.METHOD_START_SESSION, WaveClientJS.FAILURE, e.getMessage());
+      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
     }
 
     return startOk;
@@ -114,7 +120,7 @@ public class WaveClient implements SwellRT.Listener {
    *
    * @return the new data model Id.
    */
-  public String createModel() {
+  public String createModel(final JavaScriptObject callback) {
 
     String waveId = null;
 
@@ -139,23 +145,23 @@ public class WaveClient implements SwellRT.Listener {
             model.addListener(modelJS);
 
           } catch (Exception e) {
-            jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.FAILURE, e.getMessage());
+            invoke(callback, WaveClientJS.FAILURE, e.getMessage());
           }
 
-          jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.SUCCESS, modelJS);
+          invoke(callback, WaveClientJS.SUCCESS, modelJS);
 
         }
 
         @Override
         public void onFailure(String reason) {
-          jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.FAILURE, reason);
+          invoke(callback, WaveClientJS.FAILURE, reason);
         }
 
 
       });
 
     } catch (Exception e) {
-      jsClient.triggerEvent(WaveClientJS.METHOD_CREATE_MODEL, WaveClientJS.FAILURE, e.getMessage());
+      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
     }
 
 
@@ -170,7 +176,7 @@ public class WaveClient implements SwellRT.Listener {
    *
    * @return the new data model Id.
    */
-  public String openModel(String waveId) {
+  public String openModel(String waveId, final JavaScriptObject callback) {
 
     String modelId = null;
 
@@ -193,21 +199,21 @@ public class WaveClient implements SwellRT.Listener {
             model.addListener(modelJS);
 
           } catch (Exception e) {
-            jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.FAILURE, e.getMessage());
+            invoke(callback, WaveClientJS.FAILURE, e.getMessage());
           }
 
-          jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.SUCCESS, modelJS);
+          invoke(callback, WaveClientJS.SUCCESS, modelJS);
         }
 
         @Override
         public void onFailure(String reason) {
-          jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.FAILURE, reason);
+          invoke(callback, WaveClientJS.FAILURE, reason);
         }
 
       });
 
     } catch (Exception e) {
-      jsClient.triggerEvent(WaveClientJS.METHOD_OPEN_MODEL, WaveClientJS.FAILURE, e.getMessage());
+      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
     }
 
 
@@ -258,7 +264,7 @@ public class WaveClient implements SwellRT.Listener {
     SwellRTUtils.addField(payload, "lastAckVersion", dataInfo.laskAckVersion());
     SwellRTUtils.addField(payload, "lastCommitVersion", dataInfo.lastCommitVersion());
 
-    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.DATA_STATUS_CHANGED, payload);
+    jsClient.triggerEvent(WaveClientJS.DATA_STATUS_CHANGED, payload);
   }
 
   @Override
@@ -266,14 +272,14 @@ public class WaveClient implements SwellRT.Listener {
 
     JavaScriptObject payload = JavaScriptObject.createObject();
     SwellRTUtils.addField(payload, "cause", cause);
-    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.NETWORK_DISCONNECTED, payload);
+    jsClient.triggerEvent(WaveClientJS.NETWORK_DISCONNECTED, payload);
   }
 
   @Override
   public void onNetworkConnected() {
 
     JavaScriptObject payload = JavaScriptObject.createObject();
-    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.NETWORK_CONNECTED, payload);
+    jsClient.triggerEvent(WaveClientJS.NETWORK_CONNECTED, payload);
   }
 
   @Override
@@ -282,7 +288,7 @@ public class WaveClient implements SwellRT.Listener {
     JavaScriptObject payload = JavaScriptObject.createObject();
     SwellRTUtils.addField(payload, "everythingCommitted", everythingCommitted);
 
-    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.NETWORK_CLOSED, payload);
+    jsClient.triggerEvent(WaveClientJS.NETWORK_CLOSED, payload);
   }
 
   @Override
@@ -290,16 +296,16 @@ public class WaveClient implements SwellRT.Listener {
     JavaScriptObject payload = JavaScriptObject.createObject();
     SwellRTUtils.addField(payload, "cause", cause);
 
-    jsClient.triggerEvent(WaveClientJS.METHOD_GLOBAL, WaveClientJS.FATAL_EXCEPTION, payload);
+    jsClient.triggerEvent(WaveClientJS.FATAL_EXCEPTION, payload);
   }
 
 
   private static native void callOnSwellRTReady() /*-{
 
-                                                  if (typeof $wnd.onSwellRTReady === "function")
-                                                  $wnd.onSwellRTReady();
+    if (typeof $wnd.onSwellRTReady === "function")
+    $wnd.onSwellRTReady();
 
-                                                  }-*/;
+  }-*/;
 
   @Override
   public void onReady() {

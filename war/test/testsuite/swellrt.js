@@ -1,5 +1,13 @@
 
+// Global vars for testing
+
+// The model used for testing
 var _model = undefined;
+
+// To check mutliple callback support #31
+var _modelA_callback = undefined;
+var _modelB_callbacl = undefined;
+
 var SwellRT_Tester = {
 
 
@@ -106,7 +114,14 @@ var SwellRT_Tester = {
 
     describeTestBasic: function() {
 
+      describe("Callbacks", function() {
 
+        it("#31 Don't override createModel() callback methods", function() {
+          expect(_modelA_callback).toBe("A");
+          expect(_modelB_callback).toBe("B");
+        });
+
+      });
 
       describe("Root map", function() {
 
@@ -268,35 +283,68 @@ var SwellRT_Tester = {
     },
 
 
+    runOnReady: function(modelA_id, modelB_id) {
+
+       console.log("Running test");
+       this.describeTestBasic();
+       this.jasmine.getEnv().execute();
+
+       console.log("Closing model A "+modelA_id);
+       SwellRT.closeModel(modelA_id);
+       console.log("Closing model B "+modelB_id);
+       SwellRT.closeModel(modelB_id);
+
+    },
+
+
     runTestBasic: function(elementIdForResults) {
 
       this.setupJasmine(elementIdForResults);
 
       var self = this;
 
-      this.modelid = SwellRT.createModel(
+      modelA_id = SwellRT.createModel(
 
               function(model) {
+                console.log("Created new model A");
+                _modelA_callback = "A";
+               },
+
+              function(error) {
+                  console.log("Error creating data model A: "+ error)
+                });
 
 
-                console.log("Created new model");
-                _model = model; // pass the model as global var
+      modelB_id = SwellRT.createModel(
 
-                console.log("Running test");
-                self.describeTestBasic();
-                self.jasmine.getEnv().execute();
+              function(model) {
+                console.log("Created new model B");
+                _modelB_callback = "B";
 
-                console.log("Closing model "+self.modelid);
-                SwellRT.closeModel(this.modelid);
+                // Use this model for testing
+                _model = model;
 
                },
 
               function(error) {
-                  console.log("Error creating data model for testing: "+ error)
+                  console.log("Error creating data model B: "+ error)
                 });
 
+      // A nasty sync method.
+      runFlag = setInterval(function(){
 
-      return this.modelid;
+        if (_modelA_callback !== undefined &&
+         _modelB_callback !== undefined) {
+
+          window.clearInterval(runFlag);
+          SwellRT_Tester.runOnReady(modelA_id, modelB_id);
+
+        } else {
+          console.log("Models are not ready yet, waiting...");
+        }
+
+
+      },2000);
 
 
     }
