@@ -616,12 +616,15 @@ public class ServerRpcProvider {
 
   /**
    * Manange atmosphere connections and dispatch messages to wave channels.
-   * 
+   *
    * Atmosphere interceptors are set manually here, to avoid duplicated CORS
    * response headers.
-   * 
+   *
+   * This Atmosphere handler supports both WebSocket and Long-polling
+   * connections.
+   *
    * @author pablojan@gmail.com <Pablo Ojanguren>
-   * 
+   *
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
@@ -666,6 +669,9 @@ public class ServerRpcProvider {
         ParticipantId loggedInUser =
             provider.sessionManager.getLoggedInUser(resource.getRequest().getSession(false));
 
+        LOG.info("Creating a new Atmosphere connection for user " + loggedInUser != null
+            ? loggedInUser.getName() : "null");
+
         AtmosphereConnection connection = new AtmosphereConnection(loggedInUser, provider);
         resourceChannel = connection.getAtmosphereChannel();
         resourceSession.setAttribute(WAVE_CHANNEL_ATTRIBUTE, resourceChannel);
@@ -676,17 +682,13 @@ public class ServerRpcProvider {
                                                                  // request
 
       if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
-
         resource.suspend();
-
       }
 
 
       if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
-
         StringBuilder b = IOUtils.readEntirely(resource);
         resourceChannel.onMessage(b.toString());
-
       }
 
     }
@@ -696,7 +698,7 @@ public class ServerRpcProvider {
      * server is delivering messages through atmosphere long-polling. I wasn't
      * able to avoid this forcing the flush/resuming of atmosphere's output
      * stream.
-     * 
+     *
      * @param messages
      * @return
      * @throws UnsupportedEncodingException
@@ -727,7 +729,6 @@ public class ServerRpcProvider {
         // http://docs.oracle.com/javaee/5/api/javax/servlet/ServletResponse.html#setContentType(java.lang.String)
         response.setContentType("text/plain; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
-
 
         if (event.getMessage().getClass().isArray()) {
 
@@ -776,15 +777,15 @@ public class ServerRpcProvider {
 
       } else if (event.isResuming()) {
 
-        LOG.fine("RESUMING");
+        LOG.info("Resuming " + event.getResource().uuid());
 
       } else if (event.isResumedOnTimeout()) {
 
-        LOG.fine("RESUMED ON TIMEOUT");
+        LOG.info("Resuming on timeout " + event.getResource().uuid());
 
       } else if (event.isClosedByApplication() || event.isClosedByClient()) {
 
-        LOG.fine("CONNECTION CLOSED");
+        LOG.info("Connection closed " + event.getResource().uuid());
 
         AtmosphereResourceSession resourceSession =
             AtmosphereResourceSessionFactory.getDefault().getSession(resource);

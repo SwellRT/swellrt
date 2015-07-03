@@ -288,7 +288,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       }
     };
 
-    t.schedule(5000);
+    t.schedule(10000);
 
   }
 
