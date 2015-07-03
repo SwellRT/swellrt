@@ -6,24 +6,24 @@ Wave Document Model Implementation
 
 
 
-					
-					  (output sink)
-				   SilentOperationSink 
-				            A
-							      |
-[IndexedDocument]		|                [MutableDocument]
-    	  		\				|	 	                /
-    	  		 <--[OperationSequencer]-->			   
-    	  		  \				                /
-    		     [PluggableMutableDocument]
-    		    			    |
-    		    			    |		     
-    		     [ObservablePluggableMutableDocument]
-    		  				    |
-    		  				    |
-    		  		  [CcDataDocumentImpl]
+          
+            (output sink)
+           SilentOperationSink 
+                     A
+                     |
+[IndexedDocument]    |             [MutableDocument]
+            \        |                /
+             <--[OperationSequencer]-->         
+              \                     /
+             [PluggableMutableDocument]
+                      |
+                      |         
+             [ObservablePluggableMutableDocument]
+                      |
+                      |
+                [CcDataDocumentImpl]
 
-					
+          
 
 
 
@@ -31,9 +31,9 @@ Wave Document Model Implementation
 IndexedDocument 
 ---------------
 
-Is a: ReadableWDocument, TextNodeOrganiser,	SuperSink
+Is a: ReadableWDocument, TextNodeOrganiser,  SuperSink
 
-Implemented in:	IndexedDocumentImpl
+Implemented in:  IndexedDocumentImpl
 
 A DOM-style document with indexed nodes that provides a consistent readable view of a document.
 To create new IndexedDocument use the utility class IndexedDocProvider.
@@ -93,18 +93,18 @@ Delivering deltas from server to local wavelet
 
 
  
-		                            ServerConnectionListener
-		                      .onServerDelta(TransformedWaveletDelta)                             ConnectionListener.onOperationReceived() 
+                                ServerConnectionListener
+                          .onServerDelta(TransformedWaveletDelta)                             ConnectionListener.onOperationReceived() 
         OperationChannel  ---------------------------------------------->  ConcurrencyControl -------------------------------------------------
- as WaveletDeltaChannel.Receiver.																	ConcurrencyControl.peek()/receive():
-onDelta(TransformedWaveletDelta) 																			  WaveletOperation
+ as WaveletDeltaChannel.Receiver.                                  ConcurrencyControl.peek()/receive():
+onDelta(TransformedWaveletDelta)                                         WaveletOperation
 
 
 
 
-						     (Forward notification)
-						   OperationChannel.Listener
-							.onOperationReceived()									  FlushingOperationSink.consume(WaveletOperation)					     	
+                 (Forward notification)
+               OperationChannel.Listener
+              .onOperationReceived()                    FlushingOperationSink.consume(WaveletOperation)                 
 -------> OperationChannel --------------------------------------> OperationSucker ---------------------------------------------------------
                             OperationChannel.peek()/       (is a OperationChannel.Listener)
                             .receive(): WaveletOperation
@@ -113,8 +113,8 @@ onDelta(TransformedWaveletDelta) 																			  WaveletOperation
 
                                                WaveletOperation
                                                   .apply(CcBasedWavelet.ObservableWaveletData)
--------> 	.OperationApplier  --------------------------------------------------------> [Apply WaveletOperation to a Wavelet]
-          (is a FlushingOperationSink)	
+------->   .OperationApplier  --------------------------------------------------------> [Apply WaveletOperation to a Wavelet]
+          (is a FlushingOperationSink)  
 
 
 
@@ -132,9 +132,9 @@ send(WaveletOperation[])                 onClientOperations(WaveletOperation[]) 
 
 
 ------------> ServerConnection ------------------------> WaveletDeltaChannel
-		   sendDelta(WaveletDelta)                        send(Transmitter)
+       sendDelta(WaveletDelta)                        send(Transmitter)
               (Implemented in 
-	        OperationalChannelImpl)
+          OperationalChannelImpl)
 
 
 
@@ -167,14 +167,14 @@ OperationChannelImpl
 
                           ConcurrencyControl                  
                                |      |
-	          onServerDelta()    |      | 
+            onServerDelta()    |      | 
             ClientOperations() |      |
                                |      |
-						                   A      V
-		       			   	           |      |
-						                   |      |
-						                   |      |
-	ConnectionListener (in) >-----      ---> ServerConnection (out)
+                               A      V
+                               |      |
+                               |      |
+                               |      |
+  ConnectionListener (in) >-----      ---> ServerConnection (out)
             A                                      |
             |                                      |  
             |                                      |
@@ -185,8 +185,8 @@ OperationChannelImpl
             |                 |                    | 
             |                 V                    |
             ---------< OperationChannel <----------
-            				          A
-            				          |
+                              A
+                              |
                               | WaveletDeltaChannel.Receiver
                               | WaveletDeltaChannel.Trasmitter
                               |
@@ -247,7 +247,7 @@ BlipData.getContent() is a DocumentOperationSink which is implemented actually b
 
 
 
-					
+          
                  
                  
 
