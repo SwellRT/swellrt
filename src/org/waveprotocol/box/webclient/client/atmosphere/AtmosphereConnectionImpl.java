@@ -92,6 +92,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
           // Set up atmosphere connection properties
           socket.request = new atmosphere.AtmosphereRequest();
+          socket.request.uuid = 0;
 
           // It's true by default. Just a reminder.
           socket.request.enableProtocol = true;
@@ -163,7 +164,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
           //  RECONNECT
           socket.request.onReconnect = function(request, response) {
-            atmosphere.util.debug("Atmosphere Connection Reconnect");
+             atmosphere.util.debug("Atmosphere Connection Reconnect");
+             request.uuid = 0;
           };
 
           // ERROR
