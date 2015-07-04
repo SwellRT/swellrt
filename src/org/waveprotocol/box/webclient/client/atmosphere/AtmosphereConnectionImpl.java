@@ -23,7 +23,6 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.user.client.Timer;
 
 import org.waveprotocol.wave.model.util.Base64DecoderException;
 import org.waveprotocol.wave.model.util.CharBase64;
@@ -151,8 +150,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
             request.contenType = 'text/plain;charset=UTF-8';
 
-            request.transport = 'long-polling';
-            request.fallbackTransport = 'long-polling';
+            request.transport = fallback;
+            request.fallbackTransport = fallback;
 
             request.trackMessageLength = true;
 
@@ -184,7 +183,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
 
         public native void close() /*-{
-          // TODO: call the right unsubscribe method
+           $wnd.atmosphere.unsubscribe();
         }-*/;
 
         public native AtmosphereSocket connect() /*-{
@@ -204,9 +203,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
     private final AtmosphereConnectionListener listener;
     private final String urlBase;
-    private String urlAtmosphere;
     private AtmosphereSocket socket = null;
-    private boolean isClosed = true;
     private final boolean useWebSocket;
 
 
@@ -228,8 +225,6 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
         final String scriptHost =
             urlBase.startsWith("wss://") ? "https://" + urlBase.substring(6) : "http://"
                 + urlBase.substring(5);
-
-      urlAtmosphere = scriptHost;
 
             String scriptUrl = new String(scriptHost);
 
@@ -262,7 +257,6 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
     @Override
     public void close() {
       socket.close();
-      isClosed = true;
     }
 
 
@@ -271,26 +265,6 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       socket.send(message);
     }
 
-
-  private void reconnect() {
-
-    // Stop reconnection when socket has been disconnected
-    if (isClosed) return;
-
-    Timer t = new Timer() {
-      @Override
-      public void run() {
-        // Try a more "stable" connection
-        socket =
-            AtmosphereSocket.create(AtmosphereConnectionImpl.this, urlAtmosphere, "long-polling",
-                "long-polling", 10, 10000);
-        socket.connect();
-      }
-    };
-
-    t.schedule(10000);
-
-  }
 
   /**
    * Atmosphere has detected a fatal error in the connection. Trigger a fallback
@@ -301,10 +275,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
   private void onError(String error) {
 
     // Unsubscribe the old socket
-    socket.close();
-
-    reconnect();
-
+    close();
     listener.onDisconnect(error);
 
   }
@@ -316,7 +287,6 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
    */
     @SuppressWarnings("unused")
     private void onConnect() {
-      isClosed = false;
       listener.onConnect();
     }
 

@@ -669,9 +669,6 @@ public class ServerRpcProvider {
         ParticipantId loggedInUser =
             provider.sessionManager.getLoggedInUser(resource.getRequest().getSession(false));
 
-        LOG.info("Creating a new Atmosphere connection for user " + loggedInUser != null
-            ? loggedInUser.getName() : "null");
-
         AtmosphereConnection connection = new AtmosphereConnection(loggedInUser, provider);
         resourceChannel = connection.getAtmosphereChannel();
         resourceSession.setAttribute(WAVE_CHANNEL_ATTRIBUTE, resourceChannel);
@@ -709,7 +706,7 @@ public class ServerRpcProvider {
 
       sb.append(SEPARATOR);
       for (Object obj : messages) {
-        LOG.fine("Sending Wave message: " + (String) obj);
+        LOG.info("Sending Wave message: " + (String) obj);
         sb.append((String) obj).append(SEPARATOR);
       }
 
@@ -737,7 +734,6 @@ public class ServerRpcProvider {
 
         } else if (event.getMessage() instanceof List) {
 
-          LOG.fine("Sending packed Wave messages: " + event.getMessage().toString());
 
           @SuppressWarnings("unchecked")
           List<Object> list = List.class.cast(event.getMessage());
@@ -745,7 +741,9 @@ public class ServerRpcProvider {
 
 
         } else if (event.getMessage() instanceof String) {
-          LOG.fine("Sending Wave message: " + event.getMessage().toString());
+
+          LOG.info("Sending Wave message: " + event.getMessage().toString());
+
           String message = (String) event.getMessage();
           response.getOutputStream().write(message.getBytes(CHARSET));
         }
