@@ -185,6 +185,9 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
 
         public native void close() /*-{
+           // Avoid Use of XMLHttpRequest's withCredentials attribute is no longer supported
+           // in the synchronous mode in window context.
+           this.socket.request.withCredentials = false;
            $wnd.atmosphere.unsubscribe();
         }-*/;
 
