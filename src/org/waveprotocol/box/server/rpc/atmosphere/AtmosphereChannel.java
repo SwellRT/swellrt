@@ -83,12 +83,15 @@ public class AtmosphereChannel extends WebSocketChannel  {
   /**
    * The atmosphere resource has been closed
    */
-  public void onDisconnect() {
+  public void onDisconnect(AtmosphereResource resource) {
 
-    broadcaster = null;
+    broadcaster.removeAtmosphereResource(resource);
   }
 
 
+  public boolean hasResources() {
+    return broadcaster.getAtmosphereResources().size() > 0;
+  }
 
   /**
    * Send the given data String

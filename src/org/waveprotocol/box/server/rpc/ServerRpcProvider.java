@@ -42,8 +42,6 @@ import org.atmosphere.config.service.AtmosphereHandlerService;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
-import org.atmosphere.cpr.AtmosphereResourceSession;
-import org.atmosphere.cpr.AtmosphereResourceSessionFactory;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
 import org.atmosphere.util.IOUtils;
@@ -97,8 +95,11 @@ import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 /**
  * ServerRpcProvider can provide instances of type Service over an incoming
@@ -122,6 +123,10 @@ public class ServerRpcProvider {
   private final boolean sslEnabled;
   private final String sslKeystorePath;
   private final String sslKeystorePassword;
+
+
+  private static ConcurrentHashMap<String, Connection> CONNECTIONS =
+      new ConcurrentHashMap<String, Connection>();
 
   // Mapping from incoming protocol buffer type -> specific handler.
   private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices =
@@ -465,6 +470,31 @@ public class ServerRpcProvider {
     atholder.setAsyncSupported(true);
     atholder.setInitOrder(0);
 
+    jettySessionManager.addEventListener(new HttpSessionListener() {
+
+      @Override
+      public void sessionCreated(HttpSessionEvent arg0) {
+        LOG.info("Sessiong created " + arg0.getSession().getId());
+
+        // Remove previously existing connections for the session
+        if (CONNECTIONS.containsKey(arg0.getSession().getId())) {
+          LOG.info("Creating session and removing old conection " + arg0.getSession().getId());
+          CONNECTIONS.remove(arg0.getSession().getId());
+        }
+      }
+
+      @Override
+      public void sessionDestroyed(HttpSessionEvent arg0) {
+
+        // Forget connections when they are destroyed
+        if (CONNECTIONS.containsKey(arg0.getSession().getId())) {
+          LOG.info("Destroying session and removing conection " + arg0.getSession().getId());
+          CONNECTIONS.remove(arg0.getSession().getId());
+        }
+      }
+
+    });
+
     // Serve the static content and GWT web client with the default servlet
     // (acts like a standard file-based web server).
     addServlet("/static/*", DefaultServlet.class);
@@ -646,46 +676,77 @@ public class ServerRpcProvider {
 
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
-    private static final String WAVE_CHANNEL_ATTRIBUTE = "WAVE_CHANNEL_ATTRIBUTE";
+    private static final String WAVE_CONNECTION_ATTRIBUTE = "WAVE_CONNECTION_ATTRIBUTE";
     private static final String CHARSET = "UTF-8";
     private static final String SEPARATOR = "|";
+
+
 
 
     @Inject
     public ServerRpcProvider provider;
 
 
+    private HttpSession getSession(AtmosphereResource resource) {
+      HttpSession session = null;
+
+      Cookie[] cookies = resource.getRequest().getCookies();
+
+      if (cookies != null)
+        for (Cookie c : cookies) {
+          if (c.getName().equals("WSESSIONID"))
+            session = provider.sessionManager.getSessionFromToken(c.getValue());
+        }
+
+      return session;
+    }
+
     @Override
     public void onRequest(AtmosphereResource resource) throws IOException {
 
-      AtmosphereResourceSession resourceSession =
-          AtmosphereResourceSessionFactory.getDefault().getSession(resource);
+      HttpSession httpSession = getSession(resource);
 
-      AtmosphereChannel resourceChannel =
-          resourceSession.getAttribute(WAVE_CHANNEL_ATTRIBUTE, AtmosphereChannel.class);
+      ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-      if (resourceChannel == null) {
+      AtmosphereConnection connection = null;
 
-        ParticipantId loggedInUser =
-            provider.sessionManager.getLoggedInUser(resource.getRequest().getSession(false));
+      if (!CONNECTIONS.containsKey(httpSession.getId())) {
+        LOG.fine("Creating connection for user " + loggedInUser.getAddress());
 
-        AtmosphereConnection connection = new AtmosphereConnection(loggedInUser, provider);
-        resourceChannel = connection.getAtmosphereChannel();
-        resourceSession.setAttribute(WAVE_CHANNEL_ATTRIBUTE, resourceChannel);
-        resourceChannel.onConnect(resource);
+        connection = new AtmosphereConnection(loggedInUser, provider);
+        CONNECTIONS.put(httpSession.getId(), connection);
+      } else {
+        connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
       }
 
-      resource.setBroadcaster(resourceChannel.getBroadcaster()); // on every
-                                                                 // request
+      if (!connection.getAtmosphereChannel().hasResources()) {
+        LOG.fine("Setting Connection's resource for user " + loggedInUser.getAddress() + " : "
+            + resource.uuid());
+        connection.getAtmosphereChannel().onConnect(resource);
+      } else {
+        LOG.fine("Connection for user "
+            + loggedInUser.getAddress()
+            + " has resource "
+            + connection.getAtmosphereChannel().getBroadcaster().getAtmosphereResources()
+                .iterator().next().uuid());
+      }
+
+
+      resource.setBroadcaster(connection.getAtmosphereChannel().getBroadcaster());
 
       if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
-        resource.suspend();
+        LOG.fine("Getting connection for " + loggedInUser.getAddress() + " by resource "
+            + resource.uuid());
+        resource.suspend(20000); // use this to simulate server's behaviour
+        // resource.suspend();
       }
 
 
       if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
+        LOG.fine("Getting message for " + loggedInUser.getAddress() + " by resource "
+            + resource.uuid());
         StringBuilder b = IOUtils.readEntirely(resource);
-        resourceChannel.onMessage(b.toString());
+        connection.getAtmosphereChannel().onMessage(b.toString());
       }
 
     }
@@ -706,7 +767,7 @@ public class ServerRpcProvider {
 
       sb.append(SEPARATOR);
       for (Object obj : messages) {
-        LOG.info("Sending Wave message: " + (String) obj);
+        LOG.fine("Sending Wave message: " + (String) obj);
         sb.append((String) obj).append(SEPARATOR);
       }
 
@@ -742,7 +803,7 @@ public class ServerRpcProvider {
 
         } else if (event.getMessage() instanceof String) {
 
-          LOG.info("Sending Wave message: " + event.getMessage().toString());
+          LOG.fine("Sending Wave message: " + event.getMessage().toString());
 
           String message = (String) event.getMessage();
           response.getOutputStream().write(message.getBytes(CHARSET));
@@ -773,28 +834,47 @@ public class ServerRpcProvider {
         }
 
 
-      } else if (event.isResuming()) {
+      } else if (event.isCancelled()) {
 
-        LOG.info("Resuming " + event.getResource().uuid());
+        LOG.fine("Resource cancelled by remote client: " + event.getResource().uuid());
+        HttpSession httpSession = getSession(resource);
+        ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-      } else if (event.isResumedOnTimeout()) {
+        LOG.fine("Removing connection for user " + loggedInUser.getAddress());
+        CONNECTIONS.remove(httpSession.getId());
 
-        LOG.info("Resuming on timeout " + event.getResource().uuid());
 
-      } else if (event.isClosedByApplication() || event.isClosedByClient()) {
+      } else {
 
-        LOG.info("Connection closed " + event.getResource().uuid());
+        String eventStr = "None";
 
-        AtmosphereResourceSession resourceSession =
-            AtmosphereResourceSessionFactory.getDefault().getSession(resource);
 
-        AtmosphereChannel resourceChannel =
-            resourceSession.getAttribute(WAVE_CHANNEL_ATTRIBUTE, AtmosphereChannel.class);
+        if (event.isClosedByApplication())
+          eventStr = "ClosedByApplication";
+        else if (event.isClosedByClient())
+          eventStr = "ClosedByClient";
+        else if (event.isResumedOnTimeout())
+          eventStr = "ResumedOnTimeout";
+        else if (event.isResuming()) eventStr = "Resuming";
 
-        if (resourceChannel != null) {
-          resourceChannel.onDisconnect();
+        LOG.fine("Resource " + eventStr + ": " + event.getResource().uuid());
+
+        HttpSession httpSession = getSession(resource);
+
+        ParticipantId loggedInUser =
+            provider.sessionManager.getLoggedInUser(httpSession);
+
+        AtmosphereConnection connection =
+            (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+
+        if (connection != null) {
+          LOG.fine("Unsetting Connection's resource for user " + loggedInUser.getAddress() + " : "
+              + resource.uuid());
+
+          connection.getAtmosphereChannel().onDisconnect(event.getResource());
         }
       }
+
     }
 
     @Override
