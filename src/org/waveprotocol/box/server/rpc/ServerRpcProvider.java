@@ -741,8 +741,8 @@ public class ServerRpcProvider {
       if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
         LOG.fine("Getting connection for " + loggedInUser.getAddress() + " by resource "
             + resource.uuid());
-        resource.suspend(20000); // use this to simulate server's behaviour
-        // resource.suspend();
+        // resource.suspend(20000); // use this to simulate network cuts
+        resource.suspend();
       }
 
 
