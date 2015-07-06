@@ -268,6 +268,11 @@ public class ServerRpcProvider {
 
         loggedInUser = authenticatedAs;
         LOG.info("Session authenticated as " + loggedInUser);
+
+        if (!activeRpcs.isEmpty()) {
+          LOG.info("Cleaning up RPCs for this connection (dirty reconnection?)");
+          activeRpcs.clear(); // Allow dirty reconnections
+        }
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
@@ -676,7 +681,6 @@ public class ServerRpcProvider {
 
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
-    private static final String WAVE_CONNECTION_ATTRIBUTE = "WAVE_CONNECTION_ATTRIBUTE";
     private static final String CHARSET = "UTF-8";
     private static final String SEPARATOR = "|";
 
