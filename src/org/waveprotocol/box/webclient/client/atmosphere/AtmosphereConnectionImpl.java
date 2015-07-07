@@ -115,6 +115,11 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           socket.request.readResponsesHeaders = false;
           socket.request.withCredentials = true;
 
+          // This value assumes that server sends hearbeat messages each t < 15s
+          // This way we can detect network cut issues
+          socket.request.timeout = 15000;
+          //socket.request.heartbeat.server
+
           socket.request.connectTimeout = timeout;
           socket.request.maxReconnectOnClose = maxReconnect; // Number of reconnect attempts before throw an error
           socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
