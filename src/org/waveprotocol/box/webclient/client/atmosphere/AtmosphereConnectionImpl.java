@@ -32,17 +32,8 @@ import java.util.List;
 
 /**
  * A wrapper implementation of the atmosphere javascript client. Websocket
- * trasnport will be used first by default. If not avaiable or a fatal error
+ * transport will be used first by default. If not avaiable or a fatal error
  * occurs, long-polling will be tried.
- *
- * If the server gets down and up again the Wave's channel will get corrupted,
- * as long as the client will keep sending messages to the server but the server
- * won't have the active paired connection anymore. The Wave protocol can't
- * handle this situation currently. Clients must detect this, closing and
- * reopening all wave views again.
- *
- * This client will keep trying to reconnect undefinitely until a call to the
- * close() method is done.
  *
  *
  * Atmosphere server and client must support following features:
@@ -51,7 +42,17 @@ import java.util.List;
  * <li>Track message size + Base64 message encoding</li>
  * </ul>
  *
+ * The atmosphere client/server configuration avoids network issues with:
  *
+ * <ul>
+ * <li>Server Heartbeat frecuency t = 10s. Greater values didn't avoid cuts in
+ * some environments</li>
+ * <li>Client will raise a reconnection by timeout if no data is received in t <
+ * 15s.</li>
+ * </ul>
+ *
+ * Both configurations will try to keep the communication alive ant to reconnect
+ * if it's missed.
  *
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
@@ -118,11 +119,10 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           // This value assumes that server sends hearbeat messages each t < 15s
           // This way we can detect network cut issues
           socket.request.timeout = 15000;
-          //socket.request.heartbeat.server
 
           socket.request.connectTimeout = timeout;
           socket.request.maxReconnectOnClose = maxReconnect; // Number of reconnect attempts before throw an error
-          socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
+          socket.request.reconnectOnServerError = false; // Try to reconnect on server's errors
 
 
           // OPEN
@@ -283,11 +283,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
    */
   @SuppressWarnings("unused")
   private void onError(String error) {
-
-    // Unsubscribe the old socket
-    close();
-    listener.onDisconnect(error);
-
+      listener.onDisconnect("500");
   }
 
   /**

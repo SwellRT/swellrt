@@ -515,6 +515,12 @@ public class ServerRpcProvider {
         // Forget connections when they are destroyed
         if (CONNECTIONS.containsKey(arg0.getSession().getId())) {
           LOG.info("Destroying session and removing conection " + arg0.getSession().getId());
+
+          Connection conn = CONNECTIONS.get(arg0.getSession().getId());
+          if (conn instanceof AtmosphereConnection) {
+            AtmosphereConnection atmosphereConn = (AtmosphereConnection) conn;
+            atmosphereConn.getAtmosphereChannel().getBroadcaster().broadcast("ERROR=403=Session expired");
+          }
           CONNECTIONS.remove(arg0.getSession().getId());
         }
       }
@@ -731,6 +737,13 @@ public class ServerRpcProvider {
 
       HttpSession httpSession = getSession(resource);
 
+      if (httpSession == null) {
+        // Session has expired, close the connection
+        resource.getResponse().setStatus(403, "Session not found");
+        resource.close();
+        return;
+      }
+
       ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
       AtmosphereConnection connection = null;
@@ -813,6 +826,7 @@ public class ServerRpcProvider {
         response.setContentType("text/plain; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+
         if (event.getMessage().getClass().isArray()) {
 
           List<Object> list = Arrays.asList(event.getMessage());
@@ -828,10 +842,17 @@ public class ServerRpcProvider {
 
         } else if (event.getMessage() instanceof String) {
 
-          LOG.fine("Sending Wave message: " + event.getMessage().toString());
-
           String message = (String) event.getMessage();
-          response.getOutputStream().write(message.getBytes(CHARSET));
+
+          if (message.startsWith("ERROR=")) {
+             String[] error = message.split("=");
+            response.setStatus(Integer.valueOf(error[1]), error[2]);
+          } else {
+            LOG.fine("Sending Wave message: " + event.getMessage().toString());
+            response.getOutputStream().write(message.getBytes(CHARSET));
+          }
+
+
         }
 
 

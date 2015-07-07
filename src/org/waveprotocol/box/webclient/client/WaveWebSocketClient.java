@@ -183,7 +183,14 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   @Override
   public void onDisconnect(String reason) {
-    onDisconnect();
+    connected = ConnectState.DISCONNECTED;
+    if (reason.equals("403")) {
+      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.SESSION_EXPIRED));
+    } else if (reason.equals("500")) {
+      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.SERVER_ERROR));
+    } else {
+      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.DISCONNECTED));
+    }
   }
 
   @Override

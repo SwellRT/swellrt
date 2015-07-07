@@ -527,6 +527,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           case RECONNECTING:
             listener.onNetworkDisconnected(null);
             break;
+          case SESSION_EXPIRED:
+            listener.onNetworkDisconnected("403");
+            break;
+          case SERVER_ERROR:
+            listener.onNetworkDisconnected("500");
+            break;
+          default:
+            break;
         }
 
       }
