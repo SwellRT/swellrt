@@ -241,6 +241,28 @@ public class ServerRpcProvider {
     public void message(final int sequenceNo, Message message) {
       final String messageName = "/" + message.getClass().getSimpleName();
       final Timer profilingTimer = Timing.startRequest(messageName);
+
+      // Protocol hack allowing reconnection in the transport (atmosphere)
+      // level:
+      // Connection is now tied to the client's Http session. So we must
+      // detect when a remote client makes a reconnection (page reload...)
+      // without
+      // destroying the session.
+
+      // Clean up ServerRpcControllers if remote client starts a new
+      // sequence of protocol messages.
+      if (sequenceNo == 0) {
+        if (!activeRpcs.isEmpty()) {
+          LOG.info("Detected new remote client connection. Cleaning up RPCs");
+          for (ServerRpcController controller : activeRpcs.values()) {
+            if (!controller.isCanceled()) {
+              controller.cancel();
+            }
+          }
+          activeRpcs.clear();
+        }
+      }
+
       if (message instanceof Rpc.CancelRpc) {
         final ServerRpcController controller = activeRpcs.get(sequenceNo);
         if (controller == null) {
@@ -268,11 +290,6 @@ public class ServerRpcProvider {
 
         loggedInUser = authenticatedAs;
         LOG.info("Session authenticated as " + loggedInUser);
-
-        if (!activeRpcs.isEmpty()) {
-          LOG.info("Cleaning up RPCs for this connection (dirty reconnection?)");
-          activeRpcs.clear(); // Allow dirty reconnections
-        }
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
@@ -466,6 +483,10 @@ public class ServerRpcProvider {
     // Avoid loading defualt CORS interceptor which is in conflict with general
     // jetty CORS filter
     atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
+    // Setting a low HeartBeat frequency to avoid network issues. Let clients to
+    // set a hihger value.
+    atholder.setInitParameter(
+        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "10");
 
 
     // Enable guice. See
