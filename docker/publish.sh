@@ -6,7 +6,7 @@ docker build -t $NAME .
 
 echo "Publishing image"
 
-docker push $name
+docker push $NAME
 
 VERSION=`ant -f build-swellrt.xml version | sed -n -e 's/^.*Version=//p'` 
 
