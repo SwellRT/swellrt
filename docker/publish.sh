@@ -1,12 +1,18 @@
+#!/bin/sh
+
 NAME=p2pvalue/swellrt
 
 echo "Building image"
 
 docker build -t $NAME .
 
+if [ $? -ne 0 ]; then; exit 1; fi
+
 echo "Publishing image"
 
 docker push $NAME
+
+if [ $? -ne 0 ]; then; exit 1; fi
 
 VERSION=`ant -f build-swellrt.xml version | sed -n -e 's/^.*Version=//p'` 
 
@@ -24,6 +30,8 @@ then
   docker tag $NAME $NAME:$VERSION
   echo "  pushing tag"
   docker push $NAME:$VERSION
+
+  if [ $? -ne 0 ]; then; exit 1; fi
 else
   echo "  tag already exists"
 fi
