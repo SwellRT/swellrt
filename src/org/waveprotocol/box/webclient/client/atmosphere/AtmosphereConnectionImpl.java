@@ -34,39 +34,47 @@ import java.util.List;
  * A wrapper implementation of the atmosphere javascript client. Websocket
  * transport will be used first by default. If not avaiable or a fatal error
  * occurs, long-polling will be tried.
- *
- *
+ * 
+ * 
  * Atmosphere server and client must support following features:
  * <ul>
  * <li>Heart beat messages</li>
  * <li>Track message size + Base64 message encoding</li>
  * </ul>
- *
+ * 
  * The atmosphere client/server configuration avoids network issues with:
- *
+ * 
  * <ul>
  * <li>Server Heartbeat frecuency t = 10s. Greater values didn't avoid cuts in
  * some environments</li>
  * <li>Client will raise a reconnection by timeout if no data is received in t <
  * 15s.</li>
  * </ul>
- *
+ * 
  * Both configurations will try to keep the communication alive ant to reconnect
  * if it's missed.
- *
+ * 
+ * AtmosphereConnectionListener.onDisconnect(reason != null) will be invoked on
+ * unexpected situations, the app should stop using this connection.
+ * 
+ * AtmosphereConnectionListener.onDisconnect() will be invoked on temporary
+ * disconnections from the server, the app can resume work on an onConnect()
+ * call.
+ * 
+ * 
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- *
+ * 
  * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- *
- *
- *
- *
+ * 
+ * 
+ * 
+ * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
- *
+ * 
  */
 public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
@@ -351,8 +359,9 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
       if (isPackedWaveMessage(decoded)) {
         List<String> unpacked = unpackWaveMessages(decoded);
-        for (String s: unpacked)
+        for (String s : unpacked) {
           listener.onMessage(s);
+        }
 
       } else {
         listener.onMessage(decoded);

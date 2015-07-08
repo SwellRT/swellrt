@@ -41,7 +41,10 @@ import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.config.service.AtmosphereHandlerService;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.AtmosphereResourceSession;
+import org.atmosphere.cpr.AtmosphereResourceSessionFactory;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
 import org.atmosphere.util.IOUtils;
@@ -708,6 +711,7 @@ public class ServerRpcProvider {
 
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
+    private static final String CHANNEL_ATTR = "WAVE_CHANNEL";
     private static final String CHARSET = "UTF-8";
     private static final String SEPARATOR = "|";
 
@@ -746,31 +750,67 @@ public class ServerRpcProvider {
 
       ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-      AtmosphereConnection connection = null;
+      AtmosphereChannel channel = null;
 
-      if (!CONNECTIONS.containsKey(httpSession.getId())) {
-        LOG.fine("Creating connection for user " + loggedInUser.getAddress());
+      // WebSocket Transport:
+      //
+      // A base resource standing for the WebSocket
+      // A new resource for each remote client request
+      // Keep the Wave's connection in session to allow transport reconnection
+      // (we could lost the base resource)
+      // The base resource is kept in the connection, in the session
 
-        connection = new AtmosphereConnection(loggedInUser, provider);
-        CONNECTIONS.put(httpSession.getId(), connection);
+      if (resource.transport().equals(TRANSPORT.WEBSOCKET)) {
+
+        AtmosphereConnection connection = null;
+
+        if (!CONNECTIONS.containsKey(httpSession.getId())) {
+          LOG.fine("Creating connection for user " + loggedInUser.getAddress());
+
+          connection = new AtmosphereConnection(loggedInUser, provider);
+          CONNECTIONS.put(httpSession.getId(), connection);
+        } else {
+          connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+        }
+
+        if (!connection.getAtmosphereChannel().hasResources()) {
+          LOG.fine("Setting Connection's resource for user " + loggedInUser.getAddress() + " : "
+              + resource.uuid());
+          connection.getAtmosphereChannel().onConnect(resource);
+        } else {
+          LOG.fine("Connection for user "
+              + loggedInUser.getAddress()
+              + " has resource "
+              + connection.getAtmosphereChannel().getBroadcaster().getAtmosphereResources()
+                  .iterator().next().uuid());
+        }
+
+        channel = connection.getAtmosphereChannel();
+
       } else {
-        connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+
+        // Long-polling transport:
+        //
+        // Each client request shares the same resource
+        // The AtmosphereChannel/Connection is kept in the resource's session
+        //
+
+        AtmosphereResourceSession resourceSession =
+            AtmosphereResourceSessionFactory.getDefault().getSession(resource);
+
+        channel = resourceSession.getAttribute(CHANNEL_ATTR, AtmosphereChannel.class);
+
+        if (channel == null) {
+          AtmosphereConnection connection = new AtmosphereConnection(loggedInUser, provider);
+          channel = connection.getAtmosphereChannel();
+          resourceSession.setAttribute(CHANNEL_ATTR, channel);
+          channel.onConnect(resource);
+        }
+
+
       }
 
-      if (!connection.getAtmosphereChannel().hasResources()) {
-        LOG.fine("Setting Connection's resource for user " + loggedInUser.getAddress() + " : "
-            + resource.uuid());
-        connection.getAtmosphereChannel().onConnect(resource);
-      } else {
-        LOG.fine("Connection for user "
-            + loggedInUser.getAddress()
-            + " has resource "
-            + connection.getAtmosphereChannel().getBroadcaster().getAtmosphereResources()
-                .iterator().next().uuid());
-      }
-
-
-      resource.setBroadcaster(connection.getAtmosphereChannel().getBroadcaster());
+      resource.setBroadcaster(channel.getBroadcaster());
 
       if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
         LOG.fine("Getting connection for " + loggedInUser.getAddress() + " by resource "
@@ -784,7 +824,7 @@ public class ServerRpcProvider {
         LOG.fine("Getting message for " + loggedInUser.getAddress() + " by resource "
             + resource.uuid());
         StringBuilder b = IOUtils.readEntirely(resource);
-        connection.getAtmosphereChannel().onMessage(b.toString());
+        channel.onMessage(b.toString());
       }
 
     }
