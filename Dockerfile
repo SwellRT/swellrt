@@ -18,7 +18,7 @@ RUN mkdir config log \
 # I could not find a dawn way to set this in an ENV variable
 ADD server.config wiab-logging.conf jaas.config server.federation.config $home/config/
 
-ADD docker/* $home/
+ADD docker/add/* $home/
 ADD war $home/war/
 ADD dist/wave-in-a-box-server*jar $home/wave.jar
 
