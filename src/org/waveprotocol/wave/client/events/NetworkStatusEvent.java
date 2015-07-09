@@ -23,8 +23,7 @@ import com.google.gwt.event.shared.GwtEvent;
 
 public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
   public enum ConnectionStatus {
-    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED, SESSION_EXPIRED,
-    SERVER_ERROR;
+    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED, SERVER_ERROR;
   }
 
   public static final Type<NetworkStatusEventHandler> TYPE = new Type<NetworkStatusEventHandler>();

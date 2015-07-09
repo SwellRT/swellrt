@@ -34,47 +34,47 @@ import java.util.List;
  * A wrapper implementation of the atmosphere javascript client. Websocket
  * transport will be used first by default. If not avaiable or a fatal error
  * occurs, long-polling will be tried.
- * 
- * 
+ *
+ *
  * Atmosphere server and client must support following features:
  * <ul>
  * <li>Heart beat messages</li>
  * <li>Track message size + Base64 message encoding</li>
  * </ul>
- * 
+ *
  * The atmosphere client/server configuration avoids network issues with:
- * 
+ *
  * <ul>
  * <li>Server Heartbeat frecuency t = 10s. Greater values didn't avoid cuts in
  * some environments</li>
  * <li>Client will raise a reconnection by timeout if no data is received in t <
  * 15s.</li>
  * </ul>
- * 
+ *
  * Both configurations will try to keep the communication alive ant to reconnect
  * if it's missed.
- * 
+ *
  * AtmosphereConnectionListener.onDisconnect(reason != null) will be invoked on
  * unexpected situations, the app should stop using this connection.
- * 
+ *
  * AtmosphereConnectionListener.onDisconnect() will be invoked on temporary
  * disconnections from the server, the app can resume work on an onConnect()
  * call.
- * 
- * 
+ *
+ *
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- * 
+ *
  * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
@@ -112,6 +112,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
           //socket.request.logLevel = 'debug';
 
+          socket.request.connectTimeout = timeout;
           socket.request.transport = transport;
           socket.request.fallbackTransport = fallback;
 
@@ -128,9 +129,10 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           // This way we can detect network cut issues
           socket.request.timeout = 15000;
 
-          socket.request.connectTimeout = timeout;
+          // Reconnection policy
+          socket.request.reconnectInterval = timeout;  // Time between reconnection attempts
           socket.request.maxReconnectOnClose = maxReconnect; // Number of reconnect attempts before throw an error
-          socket.request.reconnectOnServerError = false; // Try to reconnect on server's errors
+          socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
 
 
           // OPEN
@@ -147,20 +149,19 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
           // MESSAGE
           socket.request.onMessage = function(response) {
-            //atmosphere.util.debug("Atmosphere Message received: "+response.responseBody);
             //atmosphere.util.debug("Atmosphere Message received");
             impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(response.responseBody);
           };
 
           // CLOSE
           socket.request.onClose = function(response) {
-            atmosphere.util.debug("Atmosphere Connection Close");
+            atmosphere.util.debug("Atmosphere Connection Close "+response.status);
             impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response.status);
           };
 
           // TRANSPORT FAILURE
-          socket.request.onTransportFailure = function(errorMsg, request) {
-            atmosphere.util.debug("Atmosphere Connection Transport Failure: "+errorMsg);
+          socket.request.onTransportFailure = function(error, request) {
+            atmosphere.util.debug("Atmosphere Connection Transport Failure "+error);
 
             request.contenType = 'text/plain;charset=UTF-8';
 
@@ -183,8 +184,17 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
           // ERROR
           socket.request.onError = function(response) {
-            atmosphere.util.debug("Atmosphere Connection Error");
+            atmosphere.util.debug("Atmosphere Connection Error "+response.status);
             impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onError(Ljava/lang/String;)(response.status);
+          };
+
+          // CLIENT TIMEOUT
+          socket.request.onClientTimeout = function(request) {
+            atmosphere.util.debug("Atmosphere Client Timeout ");
+          };
+
+          socket.request.callback = function(response) {
+            atmosphere.util.debug("Atmosphere callback "+response.status);
           };
 
           $wnd._socket = socket;
@@ -261,7 +271,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
               AtmosphereSocket.create(AtmosphereConnectionImpl.this, scriptHost, useWebSocket
-                  ? "websocket" : "long-polling", "long-polling", 5, 5000);
+                  ? "websocket" : "long-polling", "long-polling", 25, 5000);
                 socket.connect();
               }
 
@@ -291,7 +301,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
    */
   @SuppressWarnings("unused")
   private void onError(String error) {
-      listener.onDisconnect("500");
+    listener.onDisconnect(error);
   }
 
   /**
@@ -310,8 +320,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
    *
    */
     @SuppressWarnings("unused")
-    private void onDisconnect(String response) {
-      listener.onDisconnect(response);
+  private void onDisconnect(String statusCode) {
+    listener.onDisconnect(statusCode);
     }
 
     private boolean isPackedWaveMessage(String message) {
