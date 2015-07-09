@@ -201,6 +201,6 @@ public class WaveWrapper extends Stages {
   }
 
   public boolean isClosed() {
-    return isClosed();
+    return closed;
   }
 }
