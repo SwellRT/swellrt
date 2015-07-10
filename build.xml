@@ -685,7 +685,7 @@
         <include name="META-INF/services/*" />
         <include name="com/mongodb/**/*" />
         <include name="org/slf4j/**/*" />
-	<include name="org/atmosphere/**/*" />
+	    <include name="org/atmosphere/**/*" />
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
@@ -697,6 +697,7 @@
         <include name="com/google/inject/**/*" />
         <include name="com/google/protobuf/**/*" />
         <include name="com/google/wave/**/*" />
+        <include name="com/typesafe/**/*" />
         <include name="gnu/inet/**/*" />
         <include name="javax/inject/**/*" />
         <include name="javax/servlet/**/*" />
