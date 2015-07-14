@@ -1,7 +1,7 @@
 # SwellRT, a Real-Time Federated Collaboration Framework
 
-This is a collaboration framework based on [Apache Wave](http://incubator.apache.org/wave/).
-It allows to write real-time collaborative apps for **Web** (JavaScript or GWT), **Android** and **Java**.
+SwellRT is a collaboration framework based on [Apache Wave](http://incubator.apache.org/wave/).
+It allows to develop real-time collaborative apps for **Web** (JavaScript or GWT), **Android** and **Java**.
 
 In a nutshell, SwellRT provides to apps shared objects that can be modified by different participants on nearly real-time
 distributing changes and managing concurrency.
@@ -12,10 +12,9 @@ You can install your own server infrastructure or build on top of an existing Sw
 SwellRT servers can be federated, so your app can be deployed in a decetralized way and become interoperable easily.
 
 In this repo/file you will find info about the **JavaScript API** of SwellRT.
-For Android clients, please visit this repo.
 
 
-## Differences with Wave Project
+## Differences with the Wave Project
 
 The original Wave project provides...
 
@@ -103,22 +102,12 @@ The server will be ready after following message is prompted:
 
 For more info please check `README.wave`
 
-### Users
 
-In order to work with shared objects/data models, your app must access the server in behalf of a participant.
-To create a participant go to `http://localhost:9898`.
-You will be prompted to login into the Apache Wave UI or to register a new account. Follow that link or go to:
-
-* `http://localhost:9898/auth/register`
-
-By default, the server is assigned to the domain `local.net`.
-
-
-### Using SwellRT JavaScript API
+## Adding SwellRT to your Web App
 
 A deep example of the JavaScript API can be found at https://github.com/P2Pvalue/swellrt-showcase
 
-#### Setting up the JS library
+### Loading JavaScript library
 
 Add the js client in your web page.
 ```
@@ -135,7 +124,7 @@ The `onSwellRTReady()` method will be called when js file was fully loaded. Then
   }
 ```
 
-#### WebSockets vs. Long-Polling
+### WebSockets vs. Long-Polling
 
 By default, SwellRT's JavaScript client will communicate with the server using the **WebSocket** protocol if it is available. If not, the fallback protocol will be **long-polling**.
 If you want to force disabling WebSockets, call the following method just before start a new session:
@@ -144,15 +133,48 @@ If you want to force disabling WebSockets, call the following method just before
 SwellRT.useWebSocket(false);
 ```
 
-#### Start and Stop sessions
+### Users
 
-In order to work with collaborative objects, first you must start a session in the Wave Server with a participant's credentials.
+Apps work with the SwellRT API in behalf of participants. Participants have an email-like address belonging to a specific server (*user@domain.com*).
+The default domain in SwellRT local servers is *local.net*. Please see the README.wave for more information.
+
+Use the `registerUser()`method to create new accounts in a SwellRT server.
+
+
 ```
-  SwellRT.startSession("http://localhost:9898", "myuser@local.net", "mypassword",
-      function(sessionId) {
+SwellRT.registerUser("http://server.com","user@server.com","password",
+
+    function() {
 
         // Success Callback
 
+        console.log("Created new user ");
+    },
+
+    function(error) {
+
+        // Error Callback
+
+        console.log("Error creating new user "+s);
+     }
+
+    );
+```
+
+By default, the server is assigned to the domain `local.net`.
+
+
+### Sessions
+
+Sessions are user-authenticated connections to a SwellRT server. API operations with collaborative data models must be performed within a session.
+
+Start a session in the SwellRT Server providing the participant's credentials.
+```
+  SwellRT.startSession("http://localhost:9898", "myuser@local.net", "mypassword",
+
+      function(sessionId) {
+
+        // Success Callback
 
       }, function(error) {
 
@@ -163,17 +185,72 @@ In order to work with collaborative objects, first you must start a session in t
 
 ```
 
-To stop the session and to get disconect from the server. Be carefull, any change in the data model is
+To stop the session and to get disconected from the server use the `stopSession()` method.
 
 ```
  SwellRT.stopSession();
 ```
 
+### Handling Network Status
 
-### Create and use a collaborative data model
+SwellRT requires a reliable network connection to work smoothly. Client apps must be aware of any network issue in order to
+take control of the UI and provide effective feedback to the users.
+
+The API allows to set different event handlers to let apps control network issues through a global handler register method:
+
+```
+SwellRT.on(SwellRT.events.<global_event>, <callback_function>(data));
+```
 
 
-Create the model instance:
+**SwellRT.events.DATA_STATUS_CHANGED**
+
+Event triggered on data changes performed by your app. It provides three status indicators each time your app makes changes to a data model:
+
+`data.inFlightSize`:
+* Number of changes made in the current opened data model but **not sent** to the server yet.
+
+`data.uncommittedSize`:
+* Number of changes made in the current opened data model but **already sent** to the server ye but **not commited in the server** storage.
+
+
+`data.unacknowledgedSize`:
+* Number of changes made in the current opened data model **commited in the server without received acknowledge**.
+
+Any local changes should trigger eventually this event with all values equals to 0. This fact will confirm that all your changes are properly
+stored and distributed among other participants.
+
+Be aware of uncommited and unacknowledge changes if a non acceptable period of time has passed without an all zero-values event.
+
+
+**SwellRT.events.FATAL_EXCEPTION**
+
+Event triggered on some unpected exception in the API. You should stop your app. You can check `data.cause` for more information.
+
+The app should start a new session (and open a model) before resuming API operations.
+
+**SwellRT.events.NETWORK_CLOSED**
+
+Event triggered on a network closed event. The app should start a new session (and open a model) before resuming API operations.
+
+**SwellRT.events.NETWORK_DISCONNECTED**
+
+Event triggered on a temporary or total network disconnection. It will be fatal if the `data.cause` value is not *null*. In that case, the app should start a new session (and open a model) before resuming API operations.
+Otherwise, a *NETWORK_CONNECTED* event will be triggered on network reconnection.
+
+
+**SwellRT.events.NETWORK_CONNECTED**
+
+Event triggered on network new connection or reconnection. The client app can resume API operations.
+
+
+## JavaScript API Guide
+
+
+### Collaborative data models
+
+Data models are created in a session context with an unique ID. Pass to the `createModel()` method both callback methods for success and
+failure:
 
 ```
     // Store the modelId to retrive the data in future sessions
@@ -203,14 +280,17 @@ Create the model instance:
 
 ```
 
-Don't forget to store the return value of SwellRT.createModel(...). It's the model instance Id (a.k.a. wave Id).
-It's required to close the model later.
+The return value of `createModel()` is the data model ID (a.k.a. Wave ID) and
+it's required later to close the model properly. The user who creates a data model is the *author*.
+
+You must keep a local reference to the `model` object passed to the *success* callback method. In this documentation we keep that reference as
+a local attribute of the SwellRT global object: `SwellRT.model`.
 
 
-Open an existing model instance
+To open an existing data model instance you must provide the ID and both callbacks:
 
 ```
-        // We pass the Id as first parameter
+        // We pass the ID as first parameter
 
         SwellRT.openModel("local.net/dummy+Xxn3-XupCUA",
 
@@ -231,15 +311,12 @@ Open an existing model instance
             });
 ```
 
-Close the collaborative model instance, it closes server's connection and dispose resources:
+Close the collaborative model instance using the provided ID. This method will dispose server's connection and resources:
 
 ```
     SwellRT.closeModel("local.net/dummy+Xxn3-XupCUA");
 ```
 
-## Using the SwellRT API
-
-This section assumes you have already opened a session in your Web App and you have attached the opened model to `SwellRT.model`, as it's shown in the previous section.
 
 ### The Data Model object
 
@@ -437,18 +514,6 @@ Use the method *type()* to check object's type.
 ```
 SwellRT.model.root.type() == SwellRT.type.MAP;
 ```
-
-### General API callbacks
-
-The API runtime will call to some predefined methods in following cases:
-
-`window.onSwellRTException(exception)` will be invoked if some serious exception happens. You must avoid further actions to the current Wave Content instance and close it.
-
-`window.onSwellRTUpdate(inFlightSize, notAckedSize, unCommitedSize)` will be invoked anytime you have perfomed actions to the current Wave Content instance. Having any parameter
-with value different to 0 implies that changes are not persisted in the server yet. This method is invoked anytime unsaved data is acknowledge or commited by the server.
-
-`window.onSwellRTClose(everythingCommitted)` will be invoked if connection to server for current Wave Content is closed. You must avoid further actions
-to the current Wave Content instance. Closing the wave instance is not necessary.
 
 
 
