@@ -77,6 +77,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
+  private final static String REGISTER_CTX = "auth/register";
+  private static String CHARSET = "utf-8";
 
   /* Components depending on the user session */
   private String seed;
@@ -282,6 +284,60 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     useWebSocket = enabled;
   }
 
+  /**
+   * Create a new Wave user.
+   * 
+   * @param host The server hosting the user: http(s)://server.com
+   * @param username user address including domain part: username@server.com
+   * @param password the user password
+   * @param callback
+   */
+  public void registerUser(final String host, final String username, final String password,
+      final Callback<String, String> callback) {
+
+
+    String urlStr = host.endsWith("/") ? host + REGISTER_CTX : host + "/" + REGISTER_CTX;
+
+    String queryStr = "address=" + URL.encode(username) + "&password=" + URL.encode(password);
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, urlStr);
+
+    try {
+      // Allow cookie headers, and so Wave session can be set
+      builder.setIncludeCredentials(true);
+
+      builder.setHeader("Accept-Charset", CHARSET);
+      builder.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=" + CHARSET);
+
+      builder.sendRequest(queryStr, new RequestCallback() {
+
+        public void onError(Request request, Throwable exception) {
+          callback.onFailure(exception.getMessage());
+        }
+
+        @Override
+        public void onResponseReceived(Request request, Response response) {
+
+          // xmlHTTTPResquest object doesn't handle 302 properly
+          if (response.getStatusCode() == 200) {
+            callback.onSuccess(response.getStatusText());
+          } else {
+            log.log(Level.WARNING,
+                "Error registering new user " + username + ": " + response.getStatusText());
+            callback.onFailure(response.getStatusText());
+          }
+
+        }
+
+      });
+
+    } catch (RequestException e) {
+      log.log(Level.WARNING, "Error registering new user " + username, e);
+      callback.onFailure(e.getMessage());
+    }
+
+
+  }
 
   /**
    * Login the user in and start communications with Wave provider

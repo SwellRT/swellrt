@@ -52,6 +52,38 @@ public class WaveClient implements SwellRT.Listener {
   // Session
   //
 
+  /**
+   * Create a new Wave user.
+   * 
+   * @param host The server hosting the user: http(s)://server.com
+   * @param username user address including domain part: username@server.com
+   * @param password the user password
+   * @param callback
+   */
+  public void registerUser(String host, String username, String password,
+      final JavaScriptObject callback) {
+
+    try {
+
+      coreClient.registerUser(host, username, password, new Callback<String, String>() {
+
+        @Override
+        public void onSuccess(String result) {
+          invoke(callback, WaveClientJS.SUCCESS, result);
+        }
+
+        @Override
+        public void onFailure(String reason) {
+          invoke(callback, WaveClientJS.FAILURE, reason);
+        }
+      });
+
+    } catch (Exception e) {
+      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
+    }
+
+  }
+
 
   /**
    * Start a Wave session

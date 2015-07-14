@@ -80,6 +80,19 @@ public class WaveClientJS extends JavaScriptObject {
          },
 
          //
+         // Users
+         //
+
+         registerUser: function(host, user, password, onSuccess, onFailure) {
+
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
+
+            return delegate.@org.swellrt.api.WaveClient::registerUser(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(host, user, password, callback);
+         },
+
+         //
          // Session
          //
 
