@@ -457,15 +457,18 @@ public class ServerRpcProvider {
       context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
       context.addFilter(GzipFilter.class, "/webclient/*", EnumSet.allOf(DispatcherType.class));
 
-      String[] hosts = new String[httpAddresses.length];
-      for (int i = 0; i < httpAddresses.length; i++) {
-        hosts[i] = httpAddresses[i].getHostString();
-      }
-      context.addVirtualHosts(hosts);
+      /*
+       * String[] hosts = new String[httpAddresses.length]; for (int i = 0; i <
+       * httpAddresses.length; i++) { hosts[i] =
+       * httpAddresses[i].getHostString(); hosts[i] =
+       * httpAddresses[i].getHostString(); } context.addVirtualHosts(hosts);
+       */
 
       httpServer.setHandler(context);
 
       httpServer.start();
+
+      httpServer.join();
       restoreSessions();
 
     } catch (Exception e) { // yes, .start() throws "Exception"
