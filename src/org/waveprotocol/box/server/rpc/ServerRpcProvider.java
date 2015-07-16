@@ -468,7 +468,6 @@ public class ServerRpcProvider {
 
       httpServer.start();
 
-      httpServer.join();
       restoreSessions();
 
     } catch (Exception e) { // yes, .start() throws "Exception"
