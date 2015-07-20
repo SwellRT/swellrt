@@ -23,11 +23,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 
-import org.swellrt.server.WaveConversationUtils;
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -64,11 +64,6 @@ public class MongoDbProvider {
    * Separated store for Deltas {@link MongoDbDeltaStore}
    */
   private MongoDbDeltaStore mongoDbDeltaStore;
-
-  /**
-   * A store for wavelet search index data {@link MongoDbIndexStore}
-   */
-  private MongoDbIndexStore mongoDbIndexStore;
 
   /** Stores whether we have successfully setup a live {@link Mongo} instance. */
   private boolean isRunning;
@@ -171,12 +166,13 @@ public class MongoDbProvider {
 
   }
 
-  public MongoDbIndexStore provideMongoDbIndexStore(WaveConversationUtils conversationUtils) {
-    if (mongoDbIndexStore == null) {
-      mongoDbIndexStore = new MongoDbIndexStore(getDatabase(), conversationUtils);
-    }
-    return mongoDbIndexStore;
+  /**
+   * Expose MongoDB collections
+   * 
+   * @param name Collection name
+   * @return the DBCollection object
+   */
+  public DBCollection getDBCollection(String name) {
+    return getDatabase().getCollection(name);
   }
-
-
 }

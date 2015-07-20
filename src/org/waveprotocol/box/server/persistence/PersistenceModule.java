@@ -25,7 +25,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import org.swellrt.server.WaveConversationUtils;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.file.FileAccountStore;
 import org.waveprotocol.box.server.persistence.file.FileAttachmentStore;
@@ -33,7 +32,6 @@ import org.waveprotocol.box.server.persistence.file.FileDeltaStore;
 import org.waveprotocol.box.server.persistence.file.FileSignerInfoStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryStore;
-import org.waveprotocol.box.server.persistence.mongodb.MongoDbIndexStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.wave.crypto.CertPathStore;
@@ -91,6 +89,7 @@ public class PersistenceModule extends AbstractModule {
   /**
    * Returns a {@link MongoDbProvider} instance.
    */
+  @Provides
   public MongoDbProvider getMongoDbProvider() {
     if (mongoDbProvider == null) {
       mongoDbProvider = new MongoDbProvider(mongoDBHost, mongoDBPort, mongoDBdatabase);
@@ -163,8 +162,4 @@ public class PersistenceModule extends AbstractModule {
     }
   }
 
-  @Provides
-  public MongoDbIndexStore provideMongoDbIndexStore(WaveConversationUtils conversationUtils) {
-    return getMongoDbProvider().provideMongoDbIndexStore(conversationUtils);
-  }
 }
