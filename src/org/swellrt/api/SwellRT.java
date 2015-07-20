@@ -611,4 +611,41 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     if (listener != null) listener.onNetworkClosed(everythingCommitted);
   }
 
+
+  public void query(String expr, final Callback<String, String> callback) {
+
+    String query = "q=" + URL.encodeQueryString(expr);
+    String url = waveServerURLSchema + waveServerURL + "/swell/model?" + query;
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+
+    try {
+      // Allow cookie headers, and so Wave session can be set
+      builder.setIncludeCredentials(true);
+
+      builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+      builder.sendRequest(query, new RequestCallback() {
+
+        public void onError(Request request, Throwable exception) {
+          callback.onFailure(exception.getMessage());
+        }
+
+        @Override
+        public void onResponseReceived(Request request, Response response) {
+
+          if (response.getStatusCode() == 200) {
+            callback.onSuccess(response.getText());
+          } else {
+            callback.onFailure(response.getStatusText());
+          }
+        }
+
+      });
+
+    } catch (RequestException e) {
+      callback.onFailure(e.getMessage());
+    }
+
+  }
+
 }

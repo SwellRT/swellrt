@@ -3,6 +3,7 @@ package org.swellrt.api;
 import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Document;
 
 import org.swellrt.api.js.WaveClientJS;
@@ -252,6 +253,22 @@ public class WaveClient implements SwellRT.Listener {
 
     return modelId;
 
+  }
+
+
+  public void query(String expr, final JavaScriptObject callback) {
+    coreClient.query(expr, new Callback<String, String>() {
+
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+      }
+    });
   }
 
   public TextEditorJS getTextEditor(String elementId) {

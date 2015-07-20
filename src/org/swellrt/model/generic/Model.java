@@ -33,6 +33,7 @@ import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveletListener;
+import org.waveprotocol.wave.model.wave.data.WaveletData;
 
 import java.util.Collections;
 import java.util.Map;
@@ -143,6 +144,7 @@ public class Model implements SourcesEvents<Model.Listener> {
   private final ObservableDocument rootModelDocument;
   private final ObservableElementList<ObservableBasicValue<String>, String> stringIndex;
   private final ObservableWavelet wavelet;
+  private final WaveletData waveletData;
   private final TypeIdGenerator idGenerator;
   private MapType rootMap = null;
 
@@ -192,6 +194,8 @@ public class Model implements SourcesEvents<Model.Listener> {
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
 
+    this.waveletData = wavelet.getWaveletData();
+
     this.idGenerator = idGenerator;
     this.stringIndex = stringIndex;
     this.rootModelDocument = modelDocument;
@@ -203,7 +207,7 @@ public class Model implements SourcesEvents<Model.Listener> {
   }
 
   public WaveId getWaveId() {
-    return this.wavelet.getWaveId();
+    return this.waveletData.getWaveId();
   }
 
   public String getWaveletIdString() {

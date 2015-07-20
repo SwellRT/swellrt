@@ -33,6 +33,9 @@ import com.google.inject.name.Names;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.eclipse.jetty.proxy.ProxyServlet;
+import org.swellrt.server.box.SwellRtIndexerDispatcher;
+import org.swellrt.server.box.SwellRtModule;
+import org.swellrt.server.box.servlet.SwellRtServlet;
 import org.swellrt.server.ds.DSFileServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
 import org.waveprotocol.box.server.authentication.AccountStoreHolder;
@@ -176,9 +179,10 @@ public class ServerMain {
     Module robotApiModule = new RobotApiModule();
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
     Module searchModule = injector.getInstance(SearchModule.class);
+    Module swellRtModule = injector.getInstance(SwellRtModule.class); // SwellRT
     Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
     injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
-        federationModule, searchModule, profileFetcherModule);
+            federationModule, searchModule, profileFetcherModule, swellRtModule);
 
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
@@ -196,6 +200,7 @@ public class ServerMain {
     initializeFrontend(injector, server, waveBus);
     initializeFederation(injector);
     initializeSearch(injector, waveBus);
+    initializeSwellRt(injector, waveBus);
 
     LOG.info("Starting server");
     server.startWebSocketServer(injector);
@@ -277,6 +282,9 @@ public class ServerMain {
 
     // DSWG experimental
     server.addServlet("/shared/*", DSFileServlet.class);
+
+    // SwellRt
+    server.addServlet("/swell/*", SwellRtServlet.class);
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {
@@ -320,4 +328,16 @@ public class ServerMain {
     WaveIndexer waveIndexer = injector.getInstance(WaveIndexer.class);
     waveIndexer.remakeIndex();
   }
+
+  private static void initializeSwellRt(Injector injector, WaveBus waveBus) {
+    SwellRtIndexerDispatcher indexerDispatcher =
+        injector.getInstance(SwellRtIndexerDispatcher.class);
+    try {
+      indexerDispatcher.initialize();
+    } catch (WaveServerException e) {
+      LOG.warning("Error initializating SwellRtIndexerDispatcher", e);
+    }
+    waveBus.subscribe(indexerDispatcher);
+  }
+
 }
