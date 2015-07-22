@@ -59,6 +59,8 @@ import javax.servlet.http.HttpSession;
  */
 public class AuthenticationServletTest extends TestCase {
   private static final ParticipantId USER = ParticipantId.ofUnsafe("frodo@example.com");
+  private static final ParticipantId ANONYMOUS_USER = ParticipantId
+      .ofUnsafe("_anonymous_null@example.com");
 
   private AuthenticationServlet servlet;
 
@@ -148,6 +150,10 @@ public class AuthenticationServletTest extends TestCase {
     verify(session, never()).setAttribute(eq("address"), anyString());
   }
 
+  public void testAnonymousLogin() throws IOException {
+    attemptLogin("_anonymous_", "", true);
+  }
+
   // *** Utility methods
 
   private void configureRedirectString(String location) {
@@ -174,12 +180,20 @@ public class AuthenticationServletTest extends TestCase {
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.
     if (expectSuccess) {
-      when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(USER);
-      when(session.getAttribute("user")).thenReturn(USER);
+      if (address.startsWith(SessionManager.USER_ANONYMOUS_PREFIX)) {
+        when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(ANONYMOUS_USER);
+        when(session.getAttribute("user")).thenReturn(ANONYMOUS_USER);
+      } else {
+        when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(USER);
+        when(session.getAttribute("user")).thenReturn(USER);
+      }
     }
     servlet.doPost(req, resp);
     if (expectSuccess) {
-      verify(manager).setLoggedInUser(session, USER);
+      if (address.startsWith(SessionManager.USER_ANONYMOUS_PREFIX))
+        verify(manager).setLoggedInUser(session, ANONYMOUS_USER);
+      else
+        verify(manager).setLoggedInUser(session, USER);
     }
   }
 }

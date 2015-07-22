@@ -32,6 +32,7 @@ import javax.servlet.http.HttpSession;
  */
 public interface SessionManager {
   static final String USER_FIELD = "user";
+  static final String USER_ANONYMOUS_PREFIX = "_anonymous_";
 
   static final String SIGN_IN_URL = "/auth/signin";
 
