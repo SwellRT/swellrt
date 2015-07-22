@@ -146,8 +146,10 @@ public class WaveClientJS extends JavaScriptObject {
             var callback = new Object();
             callback.success =  onSuccess;
             callback.failure =  onFailure;
+            var stringExpr = expr;
 
-            var stringExpr = JSON.stringify(expr);
+            if (typeof expr != "string")
+             stringExpr = JSON.stringify(expr);
 
             return delegate.@org.swellrt.api.WaveClient::query(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(stringExpr, callback);
          },

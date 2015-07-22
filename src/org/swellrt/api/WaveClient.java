@@ -55,7 +55,7 @@ public class WaveClient implements SwellRT.Listener {
 
   /**
    * Create a new Wave user.
-   * 
+   *
    * @param host The server hosting the user: http(s)://server.com
    * @param username user address including domain part: username@server.com
    * @param password the user password

@@ -115,7 +115,7 @@ public class SwellRtServlet extends HttpServlet {
     DBCursor result = store.find(objectQuery, objectProjection);
 
     StringBuilder JSONbuilder = new StringBuilder();
-    JSONbuilder.append("{'result':[");
+    JSONbuilder.append("{\"result\":[");
     while (result.hasNext()) {
       JSON.serialize(result.next(), JSONbuilder);
       if (result.hasNext()) JSONbuilder.append(",");
