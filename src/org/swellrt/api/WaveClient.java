@@ -100,10 +100,11 @@ public class WaveClient implements SwellRT.Listener {
 
     try {
 
-      startOk = coreClient.startSession(user, password, url, new Callback<String, String>() {
+      startOk =
+          coreClient.startSession(user, password, url, new Callback<JavaScriptObject, String>() {
 
         @Override
-        public void onSuccess(String result) {
+            public void onSuccess(JavaScriptObject result) {
           invoke(callback, WaveClientJS.SUCCESS, result);
         }
 

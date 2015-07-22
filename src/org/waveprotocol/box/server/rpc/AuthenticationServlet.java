@@ -144,6 +144,7 @@ private final WelcomeRobot welcomeBot;
       parametersLine = parsed.toString();
 
       MultiMap<String> parameters = new UrlEncoded(parametersLine);
+
       CallbackHandler callbackHandler = new HttpRequestBasedCallbackHandler(parameters);
 
       LoginContext context = new LoginContext("Wave", subject, callbackHandler, configuration);
@@ -256,7 +257,8 @@ private final WelcomeRobot welcomeBot;
     if (checkNoRedirect(req)) {
       resp.setStatus(HttpServletResponse.SC_OK);
       resp.setContentType("text/plain");
-      resp.getWriter().write("login successfull");
+      // Return the address in case of auto completed domain
+      resp.getWriter().write(loggedInAddress.getAddress());
       resp.getWriter().close();
     } else
       redirectLoggedInUser(req, resp);

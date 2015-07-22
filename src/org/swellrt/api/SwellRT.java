@@ -3,6 +3,7 @@ package org.swellrt.api;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -48,11 +49,11 @@ import java.util.logging.Logger;
 /**
  * A generic module to manage Wave's top operations. It encapsulates
  * Wave-semantic from SwellRT data model interface.
- * 
+ *
  * It should avoid JSNI/ operations.
- * 
+ *
  * @author Pablo Ojanguren (pablojan@gmail.com)
- * 
+ *
  */
 public class SwellRT implements EntryPoint, UnsavedDataListener {
 
@@ -92,7 +93,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private final SchemaProvider schemaProvider;
 
 
-  private String waveServerDomain;
+  private String waveDomain;
   private String waveServerURLSchema;
   private String waveServerURL;
   private WaveWebSocketClient websocket;
@@ -116,7 +117,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
   /**
-   * 
+   *
    * @param listener
    */
   public void attachListener(SwellRT.Listener listener) {
@@ -126,27 +127,25 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   /**
    * Performs a login against Wave's /auth servlet. This method doesn't start a
    * web socket session. Wave server will set a session cookie.
-   * 
+   *
    * CORS and XHR is taken into account:
    * http://stackoverflow.com/questions/10977058
    * /xmlhttprequest-and-set-cookie-cookie
-   * 
-   * @param user name of the user without domain part
+   *
+   * @param user name of the user with or without domain part
    * @param callback
    */
   private void login(final String user, final String password,
-      final Callback<String, String> callback) {
+      final Callback<JavaScriptObject, String> callback) {
 
-    final ParticipantId participantId = ParticipantId.ofUnsafe(user);
 
-    String query = URL.encodeQueryString("address") + "=" + participantId.getAddress();
+    String query = URL.encodeQueryString("address") + "=" + user;
     query += "&password=" + URL.encodeQueryString(password);
 
     // redirect to the profile servlet (json output)
     // query += "&r=" + URL.encodeQueryString("/profile/?adresses=");
 
-    String url =
- waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
+    String url = waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
     try {
@@ -163,26 +162,19 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         @Override
         public void onResponseReceived(Request request, Response response) {
 
-          log.log(Level.INFO, "Wave login response headers: " + response.getHeadersAsString());
-          log.log(Level.INFO, "Wave login response status: " + response.getStatusCode() + ","
-              + response.getStatusText());
-
           // xmlHTTTPResquest object doesn't handle 302 properly
           if (response.getStatusCode() == 200) {
 
-            log.log(Level.INFO, "Wave login succesfull for: " + user);
-            log.log(Level.INFO, "Wave user info: " + response.getText());
-
-            loggedInUser = participantId;
+            // Get complete user address from the server
+            loggedInUser = ParticipantId.ofUnsafe(response.getText());
 
             // This fakes the former Wave Client JS session object.
             String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
             // oh yes, Session doesn't work. Wiab implementation does the same.
             String seed = SwellRTUtils.nextBase64(10);
-            createWebClientSession(SwellRT.this.waveServerDomain, participantId.getAddress(),
-                seed);
-
-            callback.onSuccess(sessionId);
+            waveDomain = loggedInUser.getDomain();
+            callback.onSuccess(createWebClientSession(loggedInUser.getDomain(),
+                loggedInUser.getAddress(), seed));
 
           } else {
 
@@ -210,13 +202,15 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @param userAddress
    * @param sessionId
    */
-  private native void createWebClientSession(String localDomain, String userAddress,
+  private native JavaScriptObject createWebClientSession(String localDomain, String userAddress,
       String sessionId) /*-{
-                        $wnd.__session = new Object();
-                        $wnd.__session['domain'] = localDomain;
-                        $wnd.__session['address'] = userAddress;
-                        $wnd.__session['id'] = sessionId;
-                        }-*/;
+    $wnd.__session = new Object();
+    $wnd.__session['domain'] = localDomain;
+    $wnd.__session['address'] = userAddress;
+    $wnd.__session['id'] = sessionId;
+    return $wnd.__session;
+  }-*/;
+
 
   /**
    * Initialize the infrastructure of communications with the wave server for
@@ -286,7 +280,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Create a new Wave user.
-   * 
+   *
    * @param host The server hosting the user: http(s)://server.com
    * @param username user address including domain part: username@server.com
    * @param password the user password
@@ -349,16 +343,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @return
    */
   public boolean startSession(String user, String password, final String url,
-      final Callback<String, String> callback) {
+      final Callback<JavaScriptObject, String> callback) {
 
     // TODO validate url, if it fails return false
 
     waveServerURLSchema = url.startsWith("http://") ? "http://" : "https://";
-    // TODO extract domain from URL
-    waveServerDomain = user.split("@")[1];
     waveServerURL = url.replace(waveServerURLSchema, "");
 
-    login(user, password, new Callback<String, String>() {
+    login(user, password, new Callback<JavaScriptObject, String>() {
 
       @Override
       public void onFailure(String reason) {
@@ -366,7 +358,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       }
 
       @Override
-      public void onSuccess(String result) {
+      public void onSuccess(JavaScriptObject result) {
 
         searchBuilder =
             CustomJsoSearchBuilderImpl.create(waveServerURLSchema + waveServerURLSchema);
@@ -414,13 +406,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       Preconditions.checkArgument(!waveWrappers.containsKey(waveId),
           "Trying to create an existing Wave");
       WaveWrapper ww =
-          new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveServerDomain,
+          new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveDomain,
               Collections.EMPTY_SET, loggedInUser, isNew, this);
       waveWrappers.put(waveId, ww);
     } else {
       if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
         WaveWrapper ww =
-            new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveServerDomain,
+            new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveDomain,
                 Collections.EMPTY_SET, loggedInUser, isNew, this);
         waveWrappers.put(waveId, ww);
       }

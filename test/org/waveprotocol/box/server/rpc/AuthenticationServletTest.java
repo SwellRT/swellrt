@@ -148,6 +148,12 @@ public class AuthenticationServletTest extends TestCase {
     verify(session, never()).setAttribute(eq("address"), anyString());
   }
 
+  public void testUserWithNoDomainReturnAddress() throws Exception {
+    configureRedirectString("none");
+    attemptLogin("frodo", "password", true);
+    verify(resp.getWriter()).write("frodo@example.com");
+  }
+
   // *** Utility methods
 
   private void configureRedirectString(String location) {
