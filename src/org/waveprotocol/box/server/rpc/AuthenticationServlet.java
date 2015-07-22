@@ -186,47 +186,47 @@ private final WelcomeRobot welcomeBot;
     if (!isLoginPageDisabled && loggedInAddress == null) {
       try {
 
-        MultiMap<String> parameters;
-
-        try {
-          parameters = getRequestParameters(req);
-        } catch (CharacterCodingException cce) {
-          throw new LoginException("Character coding exception (not utf-8): "
-              + cce.getLocalizedMessage());
-        } catch (UnsupportedEncodingException uee) {
-          throw new LoginException("Bad character encoding specification: "
-              + uee.getLocalizedMessage());
-        } catch (IOException e) {
-          throw new LoginException("Bad parameters: " + e.getLocalizedMessage());
-        }
-
-        if (!isAnonymousCredentials(parameters)) {
-
-          context = login(parameters);
-          subject = context.getSubject();
+          MultiMap<String> parameters;
 
           try {
-            loggedInAddress = getLoggedInUser(subject);
-          } catch (InvalidParticipantAddress e1) {
-            throw new IllegalStateException(
-                "The user provided valid authentication information, but the username"
-                    + " isn't a valid user address.");
+            parameters = getRequestParameters(req);
+          } catch (CharacterCodingException cce) {
+            throw new LoginException("Character coding exception (not utf-8): "
+                + cce.getLocalizedMessage());
+          } catch (UnsupportedEncodingException uee) {
+            throw new LoginException("Bad character encoding specification: "
+                + uee.getLocalizedMessage());
+          } catch (IOException e) {
+            throw new LoginException("Bad parameters: " + e.getLocalizedMessage());
           }
 
-          if (loggedInAddress == null) {
+          if (!isAnonymousCredentials(parameters)) {
+
+            context = login(parameters);
+            subject = context.getSubject();
+
             try {
-              context.logout();
-            } catch (LoginException e) {
-              // Logout failed. Absorb the error, since we're about to throw an
-              // illegal state exception anyway.
+              loggedInAddress = getLoggedInUser(subject);
+            } catch (InvalidParticipantAddress e1) {
+              throw new IllegalStateException(
+                  "The user provided valid authentication information, but the username"
+                      + " isn't a valid user address.");
             }
 
-            throw new IllegalStateException(
-                "The user provided valid authentication information, but we don't "
-                    + "know how to map their identity to a wave user address.");
-          }
+            if (loggedInAddress == null) {
+              try {
+                context.logout();
+              } catch (LoginException e) {
+                // Logout failed. Absorb the error, since we're about to throw an
+                // illegal state exception anyway.
+              }
 
-        }
+              throw new IllegalStateException(
+                  "The user provided valid authentication information, but we don't "
+                      + "know how to map their identity to a wave user address.");
+            }
+
+          }
 
         } catch (LoginException e) {
           String message = "The username or password you entered is incorrect.";
@@ -255,7 +255,7 @@ private final WelcomeRobot welcomeBot;
     // Anonymous log in
     if (loggedInAddress == null) {
       loggedInAddress =
-          ParticipantId.ofUnsafe(SessionManager.USER_ANONYMOUS_PREFIX + session.getId() + "@"
+          ParticipantId.ofUnsafe(SessionManager.USER_ANONYMOUS + session.getId() + "@"
               + domain);
     }
 
@@ -472,7 +472,7 @@ private final WelcomeRobot welcomeBot;
     if (parameters.containsKey(HttpRequestBasedCallbackHandler.ADDRESS_FIELD)) {
       String address = parameters.get(HttpRequestBasedCallbackHandler.ADDRESS_FIELD).get(0);
 
-      if (address != null && address.startsWith(SessionManager.USER_ANONYMOUS_PREFIX)) {
+      if (address != null && address.equalsIgnoreCase(SessionManager.USER_ANONYMOUS)) {
         return true;
       }
     }

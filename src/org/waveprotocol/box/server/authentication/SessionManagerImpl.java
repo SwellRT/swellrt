@@ -71,7 +71,7 @@ public final class SessionManagerImpl implements SessionManager {
     ParticipantId user = getLoggedInUser(session);
     if (user != null) {
 
-      if (user.getName().startsWith(USER_ANONYMOUS_PREFIX)) {
+      if (user.getName().startsWith(USER_ANONYMOUS)) {
         // Set up a fake humman account for anonymous users
         return new HumanAccountDataImpl(user);
       }

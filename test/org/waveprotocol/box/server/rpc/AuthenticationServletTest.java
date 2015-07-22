@@ -180,7 +180,7 @@ public class AuthenticationServletTest extends TestCase {
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.
     if (expectSuccess) {
-      if (address.startsWith(SessionManager.USER_ANONYMOUS_PREFIX)) {
+      if (address.startsWith(SessionManager.USER_ANONYMOUS)) {
         when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(ANONYMOUS_USER);
         when(session.getAttribute("user")).thenReturn(ANONYMOUS_USER);
       } else {
@@ -190,7 +190,7 @@ public class AuthenticationServletTest extends TestCase {
     }
     servlet.doPost(req, resp);
     if (expectSuccess) {
-      if (address.startsWith(SessionManager.USER_ANONYMOUS_PREFIX))
+      if (address.startsWith(SessionManager.USER_ANONYMOUS))
         verify(manager).setLoggedInUser(session, ANONYMOUS_USER);
       else
         verify(manager).setLoggedInUser(session, USER);
