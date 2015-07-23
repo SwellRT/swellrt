@@ -507,6 +507,53 @@ editor.cleanUp();
 
 ```
 
+### Searching data models
+Users can query the server to look up data models following some conditions. Use the `SwellRT.query(query, onSuccess, onFailure)` method.
+The *query* parameter can be both a string or a JavaScript object standing for a MondoDB query expresion.
+
+
+```
+
+// Get all data models accesible for the logged in user
+
+SwellRT.query("{}",
+
+              function(response) {
+
+                // response.result is the array of data modeles
+
+              },
+
+              function(error) {
+
+                // handle the error
+
+              });
+
+```
+
+Data models are represented as JSON objects:
+
+```
+{"result":[
+
+ { "wave_id" : "local.net/s+SW-JnsVO14A" ,
+   "participants" : [ "tom@local.net" , "tim@local.net"] ,
+   "root" : {
+        "list" : [ "String one" , "String two"]
+            }
+ },
+
+ { "wave_id" : "local.net/s+Nfz-Pxo0e8A" ,
+   "participants" : [ "tom@local.net"] ,
+   "root" : {
+        "list" : [ "Hello World" , "This" , "is an" , "array"]
+            }
+  }
+
+```
+
+
 ### Checking object's data type
 
 Use the method *type()* to check object's type.

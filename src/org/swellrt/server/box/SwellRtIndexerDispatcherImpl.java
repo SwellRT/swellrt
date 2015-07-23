@@ -83,8 +83,14 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
   protected void store(ReadableWaveletData wavelet) {
     if (store == null) return;
     try {
-      store.insert(ModelToMongoVisitor.getDBObject(UnmutableModel.create(wavelet)));
-      LOG.info("Stored " + wavelet.getWaveId().toString() + " as SwellRT data model");
+      BasicDBObject keyObj = (BasicDBObject) store.findOne(new BasicDBObject("wave_id", wavelet.getWaveId().serialise()), new BasicDBObject("_id",1) );
+      if (keyObj == null || keyObj.isEmpty())
+        store.insert(ModelToMongoVisitor.getDBObject(UnmutableModel.create(wavelet)));
+      else
+        store.update(keyObj, ModelToMongoVisitor.getDBObject(UnmutableModel.create(wavelet)), true,
+          false);
+
+      LOG.info("Indexed " + wavelet.getWaveId().toString() + " as data model");
     } catch (Exception e) {
       LOG.warning("Error indexing " + wavelet.getWaveId().toString(), e);
     }
