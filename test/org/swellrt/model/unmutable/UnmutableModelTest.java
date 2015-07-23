@@ -6,7 +6,7 @@ import org.swellrt.model.ReadableList;
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableType;
-import org.swellrt.model.WaveletBasedAbstractTest;
+import org.swellrt.model.WaveletBasedTestBase;
 import org.swellrt.model.adt.UnmutableElementList;
 
 import java.util.Iterator;
@@ -17,7 +17,7 @@ import java.util.Iterator;
  * @author pablojan
  * 
  */
-public class UnmutableModelTest extends WaveletBasedAbstractTest {
+public class UnmutableModelTest extends WaveletBasedTestBase {
 
 
 

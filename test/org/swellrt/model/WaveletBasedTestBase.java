@@ -18,7 +18,7 @@ import java.util.Collections;
  * @author pablojan
  * 
  */
-public abstract class WaveletBasedAbstractTest extends TestCase {
+public abstract class WaveletBasedTestBase extends TestCase {
 
   /*
    * The Wavelet stores the following data model structure:
@@ -87,6 +87,7 @@ public abstract class WaveletBasedAbstractTest extends TestCase {
 
   private WaveletData waveletData;
 
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
 
@@ -122,5 +123,6 @@ public abstract class WaveletBasedAbstractTest extends TestCase {
   protected WaveletData getWaveletData() {
     return waveletData;
   }
+
 
 }

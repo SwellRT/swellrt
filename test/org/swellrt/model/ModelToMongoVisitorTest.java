@@ -6,7 +6,7 @@ import com.mongodb.BasicDBObject;
 import org.swellrt.model.unmutable.UnmutableModel;
 
 
-public class ModelToMongoVisitorTest extends WaveletBasedAbstractTest {
+public class ModelToMongoVisitorTest extends WaveletBasedTestBase {
 
   protected void setUp() throws Exception {
     super.setUp();
