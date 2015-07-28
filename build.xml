@@ -724,6 +724,7 @@
         <include name="org/xmpp/**/*" />
         <include name="cc/kune/initials/**/*" />
         <include name="org/swellrt/server/**/*" /><!-- SwellRT extensions -->
+        <include name="org/swellrt/model/**/*" /><!-- SwellRT extensions -->
         <exclude name="org/waveprotocol/box/webclient/**/*"/>
         <exclude name="org/waveprotocol/box/consoleclient/**/*"/>
         <exclude name="org/waveprotocol/box/expimp/**/*"/>
