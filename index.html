@@ -31,6 +31,7 @@
             color: #3C2F2F;
         }
 
+
         .baseline {
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             color: #20686E;
@@ -93,11 +94,6 @@
             font-weight: bold;
         }
 
-        .row-3-cols {
-            margin-right: 8em;
-            margin-left: 8em;
-        }
-
 
         .small-feature h3 {
             font-weight: bold;
@@ -106,7 +102,6 @@
         }
 
         .small-feature {
-            text-align: justify;
             padding-left: 1.5em;
             padding-right: 1.5em;
         }
@@ -147,6 +142,13 @@
         }
 
 
+        @media (min-width: 1024px) {
+            .row-3-features {
+                margin-right: 8em;
+                margin-left: 8em;
+            }
+        }
+        
 
     </style>
 </head>
@@ -154,7 +156,7 @@
 
 
     <nav class="navbar navbar-default">
-        <div class="container-fluid">
+        <div class="container-fluid container-limit">
 
             <!-- mobile -->
             <div class="navbar-header">
@@ -213,10 +215,10 @@
                 <pre class="code prettyprint lang-html">&lt;script src="http://localhost:9898/swellrt/swellrt.nocache.js"&gt;&lt;/script&gt;</pre>
 
                 <p class="roll-text"><strong>Step 2</strong>&nbsp;-&nbsp; Start an user session</p>
-                <pre class="code prettyprint lang-js">SwellRT.startSession("http://demo.swellrt.org", "_anonymous_", "");</pre>   
+                <pre class="code prettyprint lang-js">SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "");</pre>   
 
                 <p class="roll-text"><strong>Step 3</strong>&nbsp;-&nbsp; Open the shared document</p>
-                <pre class="code prettyprint lang-js">SwellRT.openModel("demo.swellrt.org/s+XXXXX",
+                <pre class="code prettyprint lang-js">SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
     function(dataModel) {
         SwellRT.doc = dataModel.root.get("doc");
 });</pre>   
@@ -234,8 +236,8 @@
    
 
         <!-- 4 4 4 -->
-        <div class="row row-bg-white row-3-cols row-bottom row-top">
-            <div class="col-md-4  small-feature">              
+        <div class="row row-bg-white row-3-features row-bottom row-top">
+            <div class="col-md-4 col-xs-12 small-feature">              
                 <h3 class="text-center">
                     Collaborative Data Models
                 </h3>
@@ -244,15 +246,15 @@
                 </p>
             </div>
 
-            <div class="col-md-4 small-feature">              
+            <div class="col-md-4 col-xs-12 small-feature">              
                 <h3 class="text-center">
-                    Open Source
+                    Open Source<br/>&nbsp;
                 </h3>
                 <p><strong>SwellRT</strong> is a free and Open Source project licensed under the Apache 2.0 license. You can just use it in your project or extend it and make contributions being part of the community. Source code for server and client is avaible on <a href="https://github.com/P2Pvalue/swellrt">GitHub repository</a>.
                 </p>                
             </div>
 
-            <div class="col-md-4 small-feature">              
+            <div class="col-md-4 col-xs-12 small-feature">              
                 <h3 class="text-center">
                     Federated Infrastructure
                 </h3>
@@ -267,8 +269,8 @@
 
 
         <!-- 4 4 4 -->
-        <div class="row row-bg-white row-padding-top  row-3-cols row-bottom center-block">
-            <div class="col-md-4 col-md-offset-2 small-feature">              
+        <div class="row row-bg-white row-padding-top  row-3-cols row-bottom">
+            <div class="col-md-4  col-xs-12 col-md-offset-2 small-feature">              
                 <h3 class="text-center">
                     Demo server
                 </h3>
@@ -279,7 +281,7 @@
             </div>
 
 
-            <div class="col-md-4 small-feature">              
+            <div class="col-md-4  col-xs-12 small-feature">              
                 <h3 class="text-center">
                     Documentation
                 </h3>
@@ -338,11 +340,13 @@
                 $("#online_msg").toggleClass("hidden",true);
             })
 
+
             SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "" , 
                 
                 function(session) {              
 
                         SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
+                            
                             function(model) {
                                 _model = model;
                                 _pad = SwellRT.editor("pad");
@@ -350,10 +354,10 @@
 
                                 $("#offline_msg").toggleClass("hidden",true);
                                 $("#online_msg").toggleClass("hidden",false);
-
                             });
 
                 });
+
         }
 
     </script>
