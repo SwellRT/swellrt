@@ -71,6 +71,9 @@ public class WaveClientJS extends JavaScriptObject {
            LIST: "ListType"
          },
 
+         user: {
+           ANONYMOUS: "_anonymous_"
+         },
 
          on: function(event, handler) {
 

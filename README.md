@@ -135,14 +135,14 @@ SwellRT.useWebSocket(false);
 
 ### Users
 
-Apps work with the SwellRT API in behalf of participants. Participants have an email-like address belonging to a specific server (*user@domain.com*).
-The default domain in SwellRT local servers is *local.net*. Please see the README.wave for more information.
+SwellRT apps will use the API in behalf of participants. Participants have an email-like address belonging to a specific server *e.g. @demo.swellrt.org*
+The default domain in SwellRT local servers is *@local.net*. Please see the README.wave and original [Wave protocol](https://people.apache.org/~al/wave_docs/ApacheWaveProtocol-0.4.pdf) for more information.
 
 Use the `registerUser()`method to create new accounts in a SwellRT server.
 
 
 ```
-SwellRT.registerUser("http://server.com","user@server.com","password",
+SwellRT.registerUser("http://demo.swellrt.org, "myuser", "password",
 
     function() {
 
@@ -161,8 +161,7 @@ SwellRT.registerUser("http://server.com","user@server.com","password",
     );
 ```
 
-By default, the server is assigned to the domain `local.net`.
-
+In that example, the whole user account name will be *mysuer@demo.swellrt.org*. The API appends automatically the server's domain to each new user name.
 
 ### Sessions
 
@@ -170,7 +169,7 @@ Sessions are user-authenticated connections to a SwellRT server. API operations 
 
 Start a session in the SwellRT Server providing the participant's credentials.
 ```
-  SwellRT.startSession("http://localhost:9898", "myuser@local.net", "mypassword",
+  SwellRT.startSession("http://demo.swellrt.org", "myuser", "password",
 
       function(sessionId) {
 
@@ -190,6 +189,16 @@ To stop the session and to get disconected from the server use the `stopSession(
 ```
  SwellRT.stopSession();
 ```
+
+### Anonymous Sessions
+
+To start an anonymous sessions use the user *SwellRT.user.ANONYMOUS" and empty password. The session will be valid during the browser session.
+
+```
+  SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "", ...
+
+```
+
 
 ### Handling Network Status
 
