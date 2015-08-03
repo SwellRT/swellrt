@@ -504,11 +504,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     return ww.getDocumentRegistry();
   }
 
-  @Deprecated
-  private static native void notifyLoaded() /*-{
-    if (typeof $wnd.onSwellRTReady === "function")
-      $wnd.onSwellRTReady();
-  }-*/;
 
   @Deprecated
   private static native void dirtyLog(String msg) /*-{
@@ -590,7 +585,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        notifyLoaded();
         if (listener != null) listener.onReady();
       }
     });

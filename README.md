@@ -192,7 +192,7 @@ To stop the session and to get disconected from the server use the `stopSession(
 
 ### Anonymous Sessions
 
-To start an anonymous sessions use the user *SwellRT.user.ANONYMOUS" and empty password. The session will be valid during the browser session.
+To start an anonymous sessions use the user *SwellRT.user.ANONYMOUS* and empty password. The session will be valid during the browser session.
 
 ```
   SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "", ...
