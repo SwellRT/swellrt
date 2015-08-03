@@ -40,7 +40,6 @@ import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -127,37 +126,17 @@ private final WelcomeRobot welcomeBot;
   }
 
   @SuppressWarnings("unchecked")
-  private LoginContext login(BufferedReader body) throws IOException, LoginException {
-    try {
-      Subject subject = new Subject();
+  private LoginContext login(MultiMap<String> parameters) throws IOException, LoginException {
+    Subject subject = new Subject();
 
-      String parametersLine = body.readLine();
-      // Throws UnsupportedEncodingException.
-      byte[] utf8Bytes = parametersLine.getBytes("UTF-8");
+    CallbackHandler callbackHandler = new HttpRequestBasedCallbackHandler(parameters);
 
-      CharsetDecoder utf8Decoder = Charset.forName("UTF-8").newDecoder();
-      utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
-      utf8Decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
+    LoginContext context = new LoginContext("Wave", subject, callbackHandler, configuration);
 
-      // Throws CharacterCodingException.
-      CharBuffer parsed = utf8Decoder.decode(ByteBuffer.wrap(utf8Bytes));
-      parametersLine = parsed.toString();
+    // If authentication fails, login() will throw a LoginException.
+    context.login();
+    return context;
 
-      MultiMap<String> parameters = new UrlEncoded(parametersLine);
-
-      CallbackHandler callbackHandler = new HttpRequestBasedCallbackHandler(parameters);
-
-      LoginContext context = new LoginContext("Wave", subject, callbackHandler, configuration);
-
-      // If authentication fails, login() will throw a LoginException.
-      context.login();
-      return context;
-    } catch (CharacterCodingException cce) {
-      throw new LoginException("Character coding exception (not utf-8): "
-          + cce.getLocalizedMessage());
-    } catch (UnsupportedEncodingException uee) {
-      throw new LoginException("ad character encoding specification: " + uee.getLocalizedMessage());
-    }
   }
 
   /**
@@ -206,51 +185,80 @@ private final WelcomeRobot welcomeBot;
 
     if (!isLoginPageDisabled && loggedInAddress == null) {
       try {
-        context = login(req.getReader());
-      } catch (LoginException e) {
-        String message = "The username or password you entered is incorrect.";
-        String responseType = RESPONSE_STATUS_FAILED;
-        LOG.info("User authentication failed: " + e.getLocalizedMessage());
-        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        resp.setContentType("text/html;charset=utf-8");
 
-        if (checkNoRedirect(req)) {
-          resp.setContentType("text/plain");
-          resp.getWriter().write("login forbidden");
-          resp.getWriter().close();
-          return;
-        }
+          MultiMap<String> parameters;
 
-        AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
-            responseType, isLoginPageDisabled, analyticsAccount);
-        return;
-      }
+          try {
+            parameters = getRequestParameters(req);
+          } catch (CharacterCodingException cce) {
+            throw new LoginException("Character coding exception (not utf-8): "
+                + cce.getLocalizedMessage());
+          } catch (UnsupportedEncodingException uee) {
+            throw new LoginException("Bad character encoding specification: "
+                + uee.getLocalizedMessage());
+          } catch (IOException e) {
+            throw new LoginException("Bad parameters: " + e.getLocalizedMessage());
+          }
 
-      subject = context.getSubject();
+          if (!isAnonymousCredentials(parameters)) {
 
-      try {
-        loggedInAddress = getLoggedInUser(subject);
-      } catch (InvalidParticipantAddress e1) {
-        throw new IllegalStateException(
-            "The user provided valid authentication information, but the username"
-                + " isn't a valid user address.");
-      }
+            context = login(parameters);
+            subject = context.getSubject();
 
-      if (loggedInAddress == null) {
-        try {
-          context.logout();
+            try {
+              loggedInAddress = getLoggedInUser(subject);
+            } catch (InvalidParticipantAddress e1) {
+              throw new IllegalStateException(
+                  "The user provided valid authentication information, but the username"
+                      + " isn't a valid user address.");
+            }
+
+            if (loggedInAddress == null) {
+              try {
+                context.logout();
+              } catch (LoginException e) {
+                // Logout failed. Absorb the error, since we're about to throw an
+                // illegal state exception anyway.
+              }
+
+              throw new IllegalStateException(
+                  "The user provided valid authentication information, but we don't "
+                      + "know how to map their identity to a wave user address.");
+            }
+
+          }
+
         } catch (LoginException e) {
-          // Logout failed. Absorb the error, since we're about to throw an
-          // illegal state exception anyway.
-        }
+          String message = "The username or password you entered is incorrect.";
+          String responseType = RESPONSE_STATUS_FAILED;
+          LOG.info("User authentication failed: " + e.getLocalizedMessage());
+          resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+          resp.setContentType("text/html;charset=utf-8");
 
-        throw new IllegalStateException(
-            "The user provided valid authentication information, but we don't "
-                + "know how to map their identity to a wave user address.");
+          if (checkNoRedirect(req)) {
+            resp.setContentType("text/plain");
+            resp.getWriter().write("login forbidden");
+            resp.getWriter().close();
+            return;
+          }
+
+          AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain,
+              message, responseType, isLoginPageDisabled, analyticsAccount);
+          return;
       }
+
     }
 
+
     HttpSession session = req.getSession(true);
+
+    // Anonymous log in
+    if (loggedInAddress == null) {
+      loggedInAddress =
+          ParticipantId.ofUnsafe(SessionManager.USER_ANONYMOUS + session.getId() + "@"
+              + domain);
+    }
+
     sessionManager.setLoggedInUser(session, loggedInAddress);
     LOG.info("Authenticated user " + loggedInAddress);
 
@@ -435,6 +443,42 @@ private final WelcomeRobot welcomeBot;
     String encoded_url = query.substring("r=".length());
     if (encoded_url == null) return false;
     return encoded_url.equalsIgnoreCase("none");
+  }
+
+  private MultiMap<String> getRequestParameters(HttpServletRequest req)
+      throws CharacterCodingException, UnsupportedEncodingException, IOException {
+
+    MultiMap<String> parameters = null;
+
+    String parametersLine = req.getReader().readLine();
+
+    // Throws UnsupportedEncodingException.
+    byte[] utf8Bytes = parametersLine.getBytes("UTF-8");
+
+    CharsetDecoder utf8Decoder = Charset.forName("UTF-8").newDecoder();
+    utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
+    utf8Decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
+
+    // Throws CharacterCodingException.
+    CharBuffer parsed = utf8Decoder.decode(ByteBuffer.wrap(utf8Bytes));
+    parametersLine = parsed.toString();
+
+    parameters = new UrlEncoded(parametersLine);
+
+    return parameters;
+  }
+
+  private boolean isAnonymousCredentials(MultiMap<String> parameters) {
+
+    if (parameters.containsKey(HttpRequestBasedCallbackHandler.ADDRESS_FIELD)) {
+      String address = parameters.get(HttpRequestBasedCallbackHandler.ADDRESS_FIELD).get(0);
+
+      if (address != null && address.equalsIgnoreCase(SessionManager.USER_ANONYMOUS)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }

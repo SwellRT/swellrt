@@ -24,6 +24,7 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -39,6 +40,7 @@ import javax.servlet.http.HttpSession;
  */
 public final class SessionManagerImpl implements SessionManager {
   private static final String USER_FIELD = "user";
+
 
   private final AccountStore accountStore;
   private final org.eclipse.jetty.server.SessionManager jettySessionManager;
@@ -68,6 +70,12 @@ public final class SessionManagerImpl implements SessionManager {
     // Consider caching the account data in the session object.
     ParticipantId user = getLoggedInUser(session);
     if (user != null) {
+
+      if (user.getName().startsWith(USER_ANONYMOUS)) {
+        // Set up a fake humman account for anonymous users
+        return new HumanAccountDataImpl(user);
+      }
+
       try {
         return accountStore.getAccount(user);
       } catch (PersistenceException e) {
