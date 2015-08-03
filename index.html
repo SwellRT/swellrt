@@ -1,1 +1,363 @@
-SwellRT Framework
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>SwellRT, real-time text editing and collaboration API for Web and Android</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+      <![endif]-->
+
+
+    <style type="text/css">
+
+        /* @import url(http://fonts.googleapis.com/css?family=Oswald); */
+        @import url(http://fonts.googleapis.com/css?family=Open+Sans);
+
+        @import url(http://fonts.googleapis.com/css?family=Raleway:500);
+
+        .body {
+            font-family: 'Raleway', sans-serif;
+            color: #3C2F2F;
+        }
+
+        .baseline {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: #20686E;
+        }
+
+        .roll-text {
+            font-size: 14pt;
+            color: #FFFFFF;
+        }
+
+        /*  #; */
+
+        .row-feature-title {
+            padding-top: 2em;
+            padding-bottom: 2em;
+        }
+
+        .row-logo {
+
+            padding-left: 5em;
+            padding-right: 5em;
+
+            margin-bottom: 3em;
+            margin-top: 5.5em;
+        }
+
+        .main-logo {
+            margin-bottom: 4em;     
+        }
+
+        .row-bg-blue {
+            background-color: #35B5C6;
+        }
+
+        .row-top {
+            padding-top: 5em;
+        }
+
+        .row-bottom {
+            padding-bottom: 4em;
+        }
+
+        .row-bg-white {
+            background-color: #FFFFFF;
+        }
+
+
+        .header-text {
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+        }
+
+        .row-bg-blue .header-text {
+            color: white;
+            font-weight: bold;
+        }
+
+        .row-bg-white .header-text {
+            color: #888888;
+            font-weight: bold;
+        }
+
+        .row-3-cols {
+            margin-right: 8em;
+            margin-left: 8em;
+        }
+
+
+        .small-feature h3 {
+            font-weight: bold;
+            color: #20686E;
+            margin-bottom: 1.5em;
+        }
+
+        .small-feature {
+            text-align: justify;
+            padding-left: 1.5em;
+            padding-right: 1.5em;
+        }
+
+
+        .pad {
+            background-color: #FFFFFF;
+            border: 2px solid #BBBBBB;
+            height: 482px;
+            box-shadow: 10px 10px 5px #888888;
+            padding: 1em;
+            margin-bottom: 2em;
+            margin-top: 1em;
+            overflow-y: scroll;
+        }
+
+        .steps {
+            margin-top: 2em;
+        }
+
+        .code {
+            margin-bottom: 1em;
+            background: #B9C6C8;
+        }
+
+        .bottom-info {
+           font-size: 14px;
+           padding-top: 0em;
+           padding-bottom: 1em;
+        }
+
+        .bottom-info a {
+           color: white;          
+        }
+
+        .bottom-info p {
+           margin-bottom: 1em;          
+        }
+
+
+
+    </style>
+</head>
+<body class="body">
+
+
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+
+            <!-- mobile -->
+            <div class="navbar-header">
+
+            </div>
+
+            <!-- desktop -->
+            <ul class="nav navbar-nav navbar-right row-3-cols">
+                <li><a href="https://github.com/P2Pvalue/swellrt/blob/master/README.md">Documentation</a></li>
+                <li><a href="https://github.com/P2Pvalue/swellrt">GitHub</a></li>
+                <li><a href="mailto:pablojan@ucm.es">Contact Us</a></li>
+            </ul>
+
+        </div>
+    </nav>
+
+
+    <div class="container-fluid">
+
+        <div class="row row-logo">
+            <div class="col-md-12">
+                <img class="img-responsive center-block main-logo"  src="images/logo-03-150.png" />
+                <h1 class="baseline text-center">
+                    Real-time text editing and collaboration API
+                </h1>
+
+                <h4 class="baseline text-center" style="margin-top: 1em;">
+                    for <strong>HTML</strong>/<strong>JavaScript</strong> and <strong>Android</strong>
+                </h4>                
+            </div>
+        </div>
+
+
+        <div class="row row-bg-blue row-feature-title">
+            <div class="col-md-10 col-md-offset-1 text-center">              
+                <p><span style="font-size: 22pt; color: #20686E">Featuring</span> <span class="header-text" style="font-size: 22pt;">Text Pads</span><span style="font-size: 22pt; color: #20686E"> in 4 steps</span></p>
+            </div>
+        </div>
+
+
+        <div class="row row-bg-blue row-bottom">
+            <div class="col-md-4 col-md-offset-1">
+                <div id="online_msg" class="hidden">
+                    You are <span class="badge">online</span> Share your ideas below with other visitors in real-time.
+                </div>
+                <div id="offline_msg" class="hidden">
+                    You are <span class="badge">offline</span> We apologize. Please refresh the page or try later.
+                </div>
+                <div id="pad" class="pad">
+                </div>                
+            </div>
+
+            <div class="col-md-6 steps">
+
+                <p class="roll-text"><strong>Step 1</strong>&nbsp;-&nbsp; Include the script tag in your Web document</p>
+                <pre class="code prettyprint lang-html">&lt;script src="http://localhost:9898/swellrt/swellrt.nocache.js"&gt;&lt;/script&gt;</pre>
+
+                <p class="roll-text"><strong>Step 2</strong>&nbsp;-&nbsp; Start an user session</p>
+                <pre class="code prettyprint lang-js">SwellRT.startSession("http://demo.swellrt.org", "_anonymous_", "");</pre>   
+
+                <p class="roll-text"><strong>Step 3</strong>&nbsp;-&nbsp; Open the shared document</p>
+                <pre class="code prettyprint lang-js">SwellRT.openModel("demo.swellrt.org/s+XXXXX",
+    function(dataModel) {
+        SwellRT.doc = dataModel.root.get("doc");
+});</pre>   
+
+                <p class="roll-text"><strong>Step 4</strong>&nbsp;-&nbsp; Set up and run the editor</p>
+                <pre class="code prettyprint lang-html">&lt;div id="editor-panel"/&gt;&lt;/div&gt;
+
+&lt;script&gt;
+    var editor = SwellRT.editor("editor-panel");
+    editor.edit(SwellRT.doc);
+&lt;/script&gt;</pre>   
+
+            </div>      
+        </div>
+   
+
+        <!-- 4 4 4 -->
+        <div class="row row-bg-white row-3-cols row-bottom row-top">
+            <div class="col-md-4  small-feature">              
+                <h3 class="text-center">
+                    Collaborative Data Models
+                </h3>
+                <p>
+                    Share arbitrary data structures composed by lists, maps, strings and rich-text. Data changes from one participant are notified to the rest of connected participants. Data models are edited and changed by their participants. They can add or remove other participants also.
+                </p>
+            </div>
+
+            <div class="col-md-4 small-feature">              
+                <h3 class="text-center">
+                    Open Source
+                </h3>
+                <p><strong>SwellRT</strong> is a free and Open Source project licensed under the Apache 2.0 license. You can just use it in your project or extend it and make contributions being part of the community. Source code for server and client is avaible on <a href="https://github.com/P2Pvalue/swellrt">GitHub repository</a>.
+                </p>                
+            </div>
+
+            <div class="col-md-4 small-feature">              
+                <h3 class="text-center">
+                    Federated Infrastructure
+                </h3>
+                <p>
+                    <strong>This is the only decentralized-federated framework to build collaborative applications.</strong> A Java server is provided. Different server instances can be interconnected via the XMPP protocol. Make your next app federated!
+                </p>
+            </div>
+
+        </div>
+
+
+
+
+        <!-- 4 4 4 -->
+        <div class="row row-bg-white row-padding-top  row-3-cols row-bottom center-block">
+            <div class="col-md-4 col-md-offset-2 small-feature">              
+                <h3 class="text-center">
+                    Demo server
+                </h3>
+                <p>
+                    We provide a public demo/test server to you to connect your apps and web sites. You could share your data across
+                    all the users in the server: <strong>http://demo.swellrt.org</strong>
+                </p>
+            </div>
+
+
+            <div class="col-md-4 small-feature">              
+                <h3 class="text-center">
+                    Documentation
+                </h3>
+                <p>
+                    Check out the <a href="https://github.com/P2Pvalue/swellrt/blob/master/README.md">API Documentation</a> or start playing with <a href="https://github.com/P2Pvalue/swellrt-showcase">some examples</a>.
+                </p> 
+            </div>
+
+        </div>        
+
+
+        <div class="row row-bg-blue bottom-info">
+            <div class="col-md-12">
+              <img src="images/logo-white.png" class="center-block" height="70px" style="margin-top: 3em; margin-bottom: 3em" />
+              <p class="text-center">
+                <strong>SwellRT</strong> is based on the <a href="https://incubator.apache.org/wave/">Apache Wave Project</a>. 
+                <br/>
+                Thanks to Apache Wave's contributors for their effort along the years!
+              </p>
+
+              <p class="text-center">
+                Copyright <a href="https://github.com/pablojan">@pablojan</a> and <a href="http://grasia.fdi.ucm.es/">University Complutense of Madrid</a>, 2014-2015
+                <br/>
+                 This work has been initially developed as part of the <a href="http://p2pvalue.eu">P2Pvalue project</a>                 
+              </p>
+
+              <p class="text-center">
+                 Source code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License v2.0</a>. 
+                 Documentation licensed under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
+              </p>              
+            </div>
+        </div>
+
+    </div>
+
+
+    <!--jquery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <!-- codify -->
+    <!--
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    -->
+
+    <!-- SwellRT API -->
+    <script src="http://demo.swellrt.org/swellrt/swellrt.nocache.js"></script>
+    <script>
+
+
+        function onSwellRTReady() {
+
+
+            SwellRT.on(SwellRT.events.NETWORK_CLOSED, function() {
+                $("#offline_msg").toggleClass("hidden",false);
+                $("#online_msg").toggleClass("hidden",true);
+            })
+
+            SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "" , 
+                
+                function(session) {              
+
+                        SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
+                            function(model) {
+                                _model = model;
+                                _pad = SwellRT.editor("pad");
+                                _pad.edit(_model.root.get("doc"));
+
+                                $("#offline_msg").toggleClass("hidden",true);
+                                $("#online_msg").toggleClass("hidden",false);
+
+                            });
+
+                });
+        }
+
+    </script>
+
+</body>
+
+</html>
