@@ -23,15 +23,22 @@ import com.google.gwt.event.shared.GwtEvent;
 
 public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
   public enum ConnectionStatus {
-    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED, SERVER_ERROR;
+    CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED, PROTOCOL_ERROR;
   }
 
   public static final Type<NetworkStatusEventHandler> TYPE = new Type<NetworkStatusEventHandler>();
 
   private final ConnectionStatus status;
+  private final Object payload;
+
+  public NetworkStatusEvent(ConnectionStatus status, Object payload) {
+    this.status = status;
+    this.payload = payload;
+  }
 
   public NetworkStatusEvent(ConnectionStatus status) {
     this.status = status;
+    this.payload = null;
   }
 
   @Override
@@ -41,6 +48,10 @@ public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
 
   public ConnectionStatus getStatus() {
     return status;
+  }
+
+  public Object getPayload() {
+    return payload;
   }
 
   @Override

@@ -50,6 +50,10 @@ import java.util.Queue;
 
 /**
  * Wrapper around WebSocket that handles the Wave client-server protocol.
+ *
+ * Catch exceptions on handling server messages and provide them to client as
+ * events.
+ *
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
@@ -111,10 +115,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final Queue<JsonMessage> messages = CollectionUtils.createQueue();
 
   private boolean connectedAtLeastOnce = false;
-  private final String urlBase;
+
 
   public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
-    this.urlBase = urlBase;
     submitRequestCallbacks = CollectionUtils.createIntMap();
     socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, this);
   }
@@ -147,31 +150,36 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     socket.disconnect();
     connectedAtLeastOnce = false;
     if (discardInFlightMessages) messages.clear();
+
   }
 
   @Override
   public void onConnect() {
-    connected = ConnectState.CONNECTED;
 
-
-    // Sends the session cookie to the server via an RPC to work around browser bugs.
-    // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
-    if (!connectedAtLeastOnce) {
-      // Send the auth message if is the first connection
-      String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
-      if (token != null) {
-        ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
-        auth.setToken(token);
-        send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
+    try {
+      // Sends the session cookie to the server via an RPC to work around
+      // browser bugs.
+      // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
+      if (!connectedAtLeastOnce) {
+        // Send the auth message if is the first connection
+        String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
+        if (token != null) {
+          ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
+          auth.setToken(token);
+          send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
+        }
       }
+      connectedAtLeastOnce = true;
+      // Flush queued messages.
+      while (!messages.isEmpty() && connected == ConnectState.CONNECTED) {
+        send(messages.poll());
+      }
+    } catch (Exception e) {
+      connected = ConnectState.DISCONNECTED;
+      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
     }
-    connectedAtLeastOnce = true;
 
-    // Flush queued messages.
-    while (!messages.isEmpty() && connected == ConnectState.CONNECTED) {
-      send(messages.poll());
-    }
-
+    connected = ConnectState.CONNECTED;
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.CONNECTED));
   }
 
@@ -181,14 +189,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.DISCONNECTED));
   }
 
-  @Override
-  public void onDisconnect(String reason) {
-    connected = ConnectState.DISCONNECTED;
-    if (!reason.equals("200"))
-      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.SERVER_ERROR));
-    else
-      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.DISCONNECTED));
-  }
+
 
   @Override
   public void onMessage(final String message) {
@@ -206,14 +207,27 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     String messageType = wrapper.getType();
     if ("ProtocolWaveletUpdate".equals(messageType)) {
       if (callback != null) {
-        callback.onWaveletUpdate(wrapper.<ProtocolWaveletUpdateJsoImpl>getPayload());
+
+        try {
+          callback.onWaveletUpdate(wrapper.<ProtocolWaveletUpdateJsoImpl> getPayload());
+        } catch (Exception e) {
+          ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
+        }
+
       }
     } else if ("ProtocolSubmitResponse".equals(messageType)) {
       int seqno = wrapper.getSequenceNumber();
       SubmitResponseCallback callback = submitRequestCallbacks.get(seqno);
       if (callback != null) {
-        submitRequestCallbacks.remove(seqno);
-        callback.run(wrapper.<ProtocolSubmitResponseJsoImpl>getPayload());
+
+        try {
+          submitRequestCallbacks.remove(seqno);
+          callback.run(wrapper.<ProtocolSubmitResponseJsoImpl> getPayload());
+        } catch (Exception e) {
+          connected = ConnectState.DISCONNECTED;
+          ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
+        }
+
       }
     }
   }

@@ -30,6 +30,7 @@ import org.waveprotocol.wave.client.events.NetworkStatusEvent;
 import org.waveprotocol.wave.client.events.NetworkStatusEventHandler;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
+import org.waveprotocol.wave.concurrencycontrol.common.CorruptionDetail;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -540,11 +541,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       @Override
       public void onUncaughtException(Throwable e) {
-        dirtyLog(e.toString());
-        notifyException(e);
-
+        log.log(Level.SEVERE, "Uncaught Exception: " + e.getMessage());
         GWT.log(e.getMessage(), e);
-        if (listener != null) listener.onException(e.getMessage());
+        if (listener != null) listener.onException("UNKNOWN_EXCEPTION");
       }
     });
 
@@ -570,8 +569,32 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           case RECONNECTING:
             listener.onNetworkDisconnected(null);
             break;
-          case SERVER_ERROR:
-            listener.onNetworkDisconnected("500");
+          case PROTOCOL_ERROR:
+
+            if (event.getPayload() != null) {
+
+              String message = event.getPayload().toString();
+
+              Object payload = event.getPayload();
+
+              if (payload instanceof RuntimeException) {
+                RuntimeException rtException = (RuntimeException) payload;
+                Throwable throwable = rtException.getCause();
+                if (throwable instanceof CorruptionDetail) {
+                  CorruptionDetail corruptionDetail = (CorruptionDetail) throwable;
+                  message = corruptionDetail.getErrorCode().name();
+
+                  // if (corruptionDetail.getCause() != null)
+                  // message += ", " + corruptionDetail.getCause().getMessage();
+                }
+              }
+
+              listener.onException(message);
+
+            } else {
+              listener.onException("PROTOCOL_EXCEPTION");
+            }
+
             break;
           default:
             break;

@@ -211,6 +211,13 @@ The API allows to set different event handlers to let apps control network issue
 SwellRT.on(SwellRT.events.<global_event>, <callback_function>(data));
 ```
 
+**SwellRT.events.NETWORK_CONNECTED**
+
+Event triggered on network new connection or reconnection. The client app can resume API operations.
+
+**SwellRT.events.NETWORK_DISCONNECTED**
+
+Event triggered on a temporary or total network disconnection. The app should prevent further calls to the API until a *NETWORK_CONNECTED* event is received.
 
 **SwellRT.events.DATA_STATUS_CHANGED**
 
@@ -220,37 +227,23 @@ Event triggered on data changes performed by your app. It provides three status 
 * Number of changes made in the current opened data model but **not sent** to the server yet.
 
 `data.uncommittedSize`:
-* Number of changes made in the current opened data model but **already sent** to the server ye but **not commited in the server** storage.
+* Number of changes made in the current opened data model, **already sent** to the server but **not commited in server storage** yet.
 
 
 `data.unacknowledgedSize`:
-* Number of changes made in the current opened data model **commited in the server without received acknowledge**.
+* Number of changes made in the current opened data model **commited in the server without acknowledge**.
 
 Any local changes should trigger eventually this event with all values equals to 0. This fact will confirm that all your changes are properly
 stored and distributed among other participants.
 
-Be aware of uncommited and unacknowledge changes if a non acceptable period of time has passed without an all zero-values event.
-
+Be aware of uncommited and unacknowledge changes: if a relative period of time goes by but a DATA_STATUS_CHANGED event with all values equals to zero doesn't occur,
+probably a communication problem exists and the app should prevent further use of the API.
 
 **SwellRT.events.FATAL_EXCEPTION**
 
-Event triggered on some unpected exception in the API. You should stop your app. You can check `data.cause` for more information.
-
+Event triggered on fatal exception in the client or server. You should stop your app. You can check `data.cause` for more information.
 The app should start a new session (and open a model) before resuming API operations.
 
-**SwellRT.events.NETWORK_CLOSED**
-
-Event triggered on a network closed event. The app should start a new session (and open a model) before resuming API operations.
-
-**SwellRT.events.NETWORK_DISCONNECTED**
-
-Event triggered on a temporary or total network disconnection. It will be fatal if the `data.cause` value is not *null*. In that case, the app should start a new session (and open a model) before resuming API operations.
-Otherwise, a *NETWORK_CONNECTED* event will be triggered on network reconnection.
-
-
-**SwellRT.events.NETWORK_CONNECTED**
-
-Event triggered on network new connection or reconnection. The client app can resume API operations.
 
 
 ## JavaScript API Guide

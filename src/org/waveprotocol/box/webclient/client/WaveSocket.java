@@ -29,7 +29,6 @@ public interface WaveSocket {
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
-    void onDisconnect(String reason);
     void onMessage(String message);
   }
 

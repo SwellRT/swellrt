@@ -22,13 +22,16 @@ package org.waveprotocol.box.webclient.client.atmosphere;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.ScriptInjector;
-import com.google.gwt.core.shared.GWT;
 
+import org.waveprotocol.wave.client.events.ClientEvents;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent.ConnectionStatus;
 import org.waveprotocol.wave.model.util.Base64DecoderException;
 import org.waveprotocol.wave.model.util.CharBase64;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A wrapper implementation of the atmosphere javascript client. Websocket
@@ -54,12 +57,11 @@ import java.util.List;
  * Both configurations will try to keep the communication alive ant to reconnect
  * if it's missed.
  *
- * AtmosphereConnectionListener.onDisconnect(reason != null) will be invoked on
- * unexpected situations, the app should stop using this connection.
+ * AtmosphereConnectionListener.onDisconnect() will be invoked when
+ * communications is stopped caused by an error or not.
  *
- * AtmosphereConnectionListener.onDisconnect() will be invoked on temporary
- * disconnections from the server, the app can resume work on an onConnect()
- * call.
+ * Exceptions handling server messages must be caught because JSNI code
+ * receiving messages is not wrapped with the $entry() method.
  *
  *
  * More info about Atmosphere:
@@ -78,6 +80,7 @@ import java.util.List;
  */
 public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
+  private static final Logger log = Logger.getLogger(AtmosphereConnectionImpl.class.getName());
 
       private static final class AtmosphereSocket extends JavaScriptObject {
 
@@ -156,7 +159,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           // CLOSE
           socket.request.onClose = function(response) {
             atmosphere.util.debug("Atmosphere Connection Close "+response.status);
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect(Ljava/lang/String;)(response.status);
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect()();
           };
 
           // TRANSPORT FAILURE
@@ -294,34 +297,35 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
     }
 
 
-  /**
-   * Atmosphere has detected a fatal error in the connection. Trigger a fallback
-   * connection with long-polling, trying to avoid unstable WebSocket
-   * connections.
-   */
-  @SuppressWarnings("unused")
-  private void onError(String error) {
-    listener.onDisconnect(error);
-  }
-
-  /**
-   * Notify the Wave's socket that connection is ready. It will be invoked in an
-   * Atmosphere's open or reconnect event.
-   *
-   */
+    /**
+     * Atmosphere has detected a fatal error in the connection. Trigger a fallback
+     * connection with long-polling, trying to avoid unstable WebSocket
+     * connections.
+     */
     @SuppressWarnings("unused")
-    private void onConnect() {
-      listener.onConnect();
+    private void onError(String error) {
+      log.severe(error);
+      listener.onDisconnect();
     }
 
-  /**
-   * Notify the Wave's socket that connection was closed. It will be invoked in
-   * an Atmosphere's onClose event.
-   *
-   */
+    /**
+     * Notify the Wave's socket that connection is ready. It will be invoked in an
+     * Atmosphere's open or reconnect event.
+     *
+     */
     @SuppressWarnings("unused")
-  private void onDisconnect(String statusCode) {
-    listener.onDisconnect(statusCode);
+    private void onConnect() {
+       listener.onConnect();
+    }
+
+    /**
+     * Notify the Wave's socket that connection was closed. It will be invoked in
+     * an Atmosphere's onClose event.
+     *
+     */
+      @SuppressWarnings("unused")
+    private void onDisconnect() {
+      listener.onDisconnect();
     }
 
     private boolean isPackedWaveMessage(String message) {
@@ -367,18 +371,21 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
             || decoded.startsWith("  ")) return;
 
 
-      if (isPackedWaveMessage(decoded)) {
-        List<String> unpacked = unpackWaveMessages(decoded);
-        for (String s : unpacked) {
-          listener.onMessage(s);
+        if (isPackedWaveMessage(decoded)) {
+          List<String> unpacked = unpackWaveMessages(decoded);
+          for (String s : unpacked) {
+            listener.onMessage(s);
+          }
+
+        } else {
+          listener.onMessage(decoded);
         }
 
-      } else {
-        listener.onMessage(decoded);
-      }
-
-      } catch (Base64DecoderException e) {
-        GWT.log("Error decoding Base64 message", e);
+    } catch (Base64DecoderException e) {
+        log.severe(e.getMessage());
+        // Errors here should passed to WaveWebSocket, instead of relaying on
+        // client events.
+        ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR));
       }
 
     }

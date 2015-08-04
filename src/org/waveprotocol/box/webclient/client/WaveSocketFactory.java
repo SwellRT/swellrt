@@ -61,10 +61,6 @@ public class WaveSocketFactory {
             callback.onMessage(message);
           }
 
-          @Override
-          public void onDisconnect(String reason) {
-            callback.onDisconnect(reason);
-            }
           }, urlBase, useWebSocketAlt);
 
         @Override
