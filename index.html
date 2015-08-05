@@ -202,8 +202,8 @@
                 <div id="online_msg" class="hidden">
                     You are <span class="badge">online</span> Share your ideas below with other visitors in real-time.
                 </div>
-                <div id="offline_msg" class="hidden">
-                    You are <span class="badge">offline</span> We apologize. Please refresh the page or try later.
+                <div id="offline_msg" class="">
+                    You are <span class="badge">offline</span> Ops! Please refresh the page or try later.
                 </div>
                 <div id="pad" class="pad">
                 </div>                
@@ -212,7 +212,7 @@
             <div class="col-md-6 steps">
 
                 <p class="roll-text"><strong>Step 1</strong>&nbsp;-&nbsp; Include the script tag in your Web document</p>
-                <pre class="code prettyprint lang-html">&lt;script src="http://localhost:9898/swellrt/swellrt.nocache.js"&gt;&lt;/script&gt;</pre>
+                <pre class="code prettyprint lang-html">&lt;script src="http://demo.swellrt.org/swellrt/swellrt.nocache.js"&gt;&lt;/script&gt;</pre>
 
                 <p class="roll-text"><strong>Step 2</strong>&nbsp;-&nbsp; Start an user session</p>
                 <pre class="code prettyprint lang-js">SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "");</pre>   
@@ -328,33 +328,57 @@
     -->
 
     <!-- SwellRT API -->
+    <!-- demo.swellrt.org -->
     <script src="http://demo.swellrt.org/swellrt/swellrt.nocache.js"></script>
     <script>
 
 
+        var connectedOnce = false;
+
         function onSwellRTReady() {
 
+            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {
+                
+                console.log("Network connected");
 
-            SwellRT.on(SwellRT.events.NETWORK_CLOSED, function() {
-                $("#offline_msg").toggleClass("hidden",false);
-                $("#online_msg").toggleClass("hidden",true);
-            })
+                $("#online_msg").toggleClass("hidden", false);
+                $("#offline_msg").toggleClass("hidden", true);
+
+
+                if (!connectedOnce) {
+
+                    connectedOnce = true;
+
+                    SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
+                        
+                        function(model) {
+                            _model = model;
+                            _pad = SwellRT.editor("pad");
+                            _pad.edit(_model.root.get("doc"));
+
+                        });
+
+                }   
+
+            });
+
+            SwellRT.on(SwellRT.events.NETWORK_DISCONNECTED, function(data)   {
+
+                console.log("Network disconnected "+data.cause);
+
+                $("#online_msg").toggleClass("hidden", true);
+                $("#offline_msg").toggleClass("hidden", false);
+
+            });
+
+
 
 
             SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "" , 
                 
-                function(session) {              
+               function(session) {              
 
-                        SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
-                            
-                            function(model) {
-                                _model = model;
-                                _pad = SwellRT.editor("pad");
-                                _pad.edit(_model.root.get("doc"));
-
-                                $("#offline_msg").toggleClass("hidden",true);
-                                $("#online_msg").toggleClass("hidden",false);
-                            });
+                        console.log("Session started");
 
                 });
 
