@@ -156,6 +156,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onConnect() {
 
+    connected = ConnectState.CONNECTED;
+
     try {
       // Sends the session cookie to the server via an RPC to work around
       // browser bugs.
@@ -179,7 +181,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
     }
 
-    connected = ConnectState.CONNECTED;
+
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.CONNECTED));
   }
 
