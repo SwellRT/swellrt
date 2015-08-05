@@ -280,7 +280,7 @@
       <arg line="-logLevel DEBUG"/>
       -->
       <!-- Assertions on. -->
-      <arg line="-ea"/>
+      <!--  <arg line="-ea"/> -->
       <arg line="${gwt.args}"/>
       <arg value="org.swellrt.api.SwellRT"/>
     </java>
