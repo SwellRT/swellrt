@@ -333,9 +333,12 @@
     <script>
 
 
-        var connectedOnce = false;
+        
 
         function onSwellRTReady() {
+
+
+            var connectedOnce = false;
 
             SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {
                 
@@ -347,14 +350,13 @@
 
                 if (!connectedOnce) {
 
-                    connectedOnce = true;
-
-
 
                     // demo.swellrt.org/s+mCDtyYi9oeA
                     SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
                         
                         function(model) {
+
+                            connectedOnce = true;
 
                             console.log("Data model opened");
 
