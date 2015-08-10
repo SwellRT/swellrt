@@ -328,7 +328,7 @@
     -->
 
     <!-- SwellRT API -->
-    <!-- demo.swellrt.org -->
+    <!-- http://demo.swellrt.org -->
     <script src="http://demo.swellrt.org/swellrt/swellrt.nocache.js"></script>
     <script>
 
@@ -349,13 +349,24 @@
 
                     connectedOnce = true;
 
+
+
+                    // demo.swellrt.org/s+mCDtyYi9oeA
                     SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
                         
                         function(model) {
+
+                            console.log("Data model opened");
+
                             _model = model;
                             _pad = SwellRT.editor("pad");
                             _pad.edit(_model.root.get("doc"));
 
+                        },
+
+                        function(error) {
+
+                            console.log("Data model error "+error);
                         });
 
                 }   
@@ -364,13 +375,17 @@
 
             SwellRT.on(SwellRT.events.NETWORK_DISCONNECTED, function(data)   {
 
-                console.log("Network disconnected "+data.cause);
+                console.log("Network disconnected ");
 
                 $("#online_msg").toggleClass("hidden", true);
                 $("#offline_msg").toggleClass("hidden", false);
 
             });
 
+
+            SwellRT.on(SwellRT.events.FATAL_EXCEPTION, function(data) {
+                console.log("Exception "+data.cause);
+            });
 
 
 
