@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.model.generic.TextType;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
+import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.Editor;
@@ -51,7 +52,7 @@ public class TextEditor {
   private static final EditorSettings EDITOR_SETTINGS = new EditorSettings()
       .setHasDebugDialog(true).setUndoEnabled(true).setUseFancyCursorBias(true)
       .setUseSemanticCopyPaste(false).setUseWhitelistInEditor(false)
-      .setUseWebkitCompositionEvents(false);
+      .setUseWebkitCompositionEvents(true);
 
   // Wave Editor specific
 
@@ -206,7 +207,8 @@ public class TextEditor {
         registries.getElementHandlerRegistry());
 
     StyleAnnotationHandler.register(registries);
-    // DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),registries.getPaintRegistry());
+    DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),
+        registries.getPaintRegistry());
 
     LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
       @Override
