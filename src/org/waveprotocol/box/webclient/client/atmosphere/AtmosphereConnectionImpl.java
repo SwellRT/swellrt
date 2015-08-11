@@ -193,7 +193,8 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
 
           // CLIENT TIMEOUT
           socket.request.onClientTimeout = function(request) {
-            atmosphere.util.debug("Atmosphere Client Timeout ");
+            atmosphere.util.debug("Atmosphere Client Timeout");
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect()();
           };
 
           socket.request.callback = function(response) {
