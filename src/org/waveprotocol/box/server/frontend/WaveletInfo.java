@@ -139,7 +139,9 @@ public class WaveletInfo {
   }
 
   /**
-   * Initializes front-end information from the wave store, if necessary.
+   * Initializes front-end information from the wave store. Anytime on open
+   * request to ensure that we hold in memory latest wavelet info. This avoid
+   * issues on server reboots and client reconnection.
    */
   public void initialiseWave(WaveId waveId) throws WaveServerException {
     if(LOG.isFineLoggable()) {
@@ -147,22 +149,23 @@ public class WaveletInfo {
     }
 
     try {
-      if (perWavelet.getIfPresent(waveId) == null) {
-        LoadingCache<WaveletId, PerWavelet> wavelets = perWavelet.get(waveId);
-        for (WaveletId waveletId : waveletProvider.getWaveletIds(waveId)) {
-          ReadableWaveletData wavelet =
-              waveletProvider.getSnapshot(WaveletName.of(waveId, waveletId)).snapshot;
-          // Wavelets is a computing map, so get() initializes the entry.
-          PerWavelet waveletInfo = wavelets.get(waveletId);
-          synchronized (waveletInfo) {
-            waveletInfo.currentVersion = wavelet.getHashedVersion();
-            if(LOG.isFineLoggable()) {
-              LOG.fine("frontend wavelet " + waveletId + " @" + wavelet.getHashedVersion().getVersion());
-            }
-            waveletInfo.explicitParticipants.addAll(wavelet.getParticipants());
+
+      LoadingCache<WaveletId, PerWavelet> wavelets = perWavelet.get(waveId);
+      for (WaveletId waveletId : waveletProvider.getWaveletIds(waveId)) {
+        ReadableWaveletData wavelet =
+            waveletProvider.getSnapshot(WaveletName.of(waveId, waveletId)).snapshot;
+        // Wavelets is a computing map, so get() initializes the entry.
+        PerWavelet waveletInfo = wavelets.get(waveletId);
+        synchronized (waveletInfo) {
+          waveletInfo.currentVersion = wavelet.getHashedVersion();
+          if (LOG.isFineLoggable()) {
+            LOG.fine("frontend wavelet " + waveletId + " @"
+                + wavelet.getHashedVersion().getVersion());
           }
+          waveletInfo.explicitParticipants.addAll(wavelet.getParticipants());
         }
       }
+
     } catch (ExecutionException ex) {
       throw new RuntimeException(ex);
     }
