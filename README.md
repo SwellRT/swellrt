@@ -564,7 +564,59 @@ Use the method *type()* to check object's type.
 SwellRT.model.root.type() == SwellRT.type.MAP;
 ```
 
+### Avatars
 
+A Gmail-like avatar generator is provided. It uses an array of user data to generate a list of HTML elements that can be added anywhere in the DOM.
+
+Set up an array with users information. Each object can contain following attributes:
+- **name**: string with the user name. The first letter will be used as default avatar.
+- **pictureUrl**: URL to a picture of the  user. If provided, it will be used instead of the name.
+- **additionalElement**: a DOM element to render as avatar. If provided, it will be used instead of others fields.
+
+```
+usersInfo = [
+    {
+        name: "first.user@demo.org",
+        pictureUrl: "http://www.gravatar.com/avatar/d49414ee9e531c69427baf0ba2b76191?s=40&d=identicon"
+    },
+    {
+        name: "second.user@demo.org",
+        pictureUrl: "http://www.gravatar.com/avatar/6950571d68e7a5a0a4ede1b4e742cc79?s=40&d=identicon"
+    },
+    {
+        name: "third.user@demo.org",
+        pictureUrl: "http://www.gravatar.com/avatar/e28316e4c10e90c342ae5d07522485a7?s=40&d=identicon"
+    },
+    {
+        name: "four.user@demo.org",
+        additionalElement: <a DOM Element>
+    },
+    {
+        name: "xive.user@demo.org",
+    },
+    {
+        name: "six.user@demo.org",
+    }
+];
+```
+
+Generate an array of avatars as DOM elements calling
+
+```
+SwellRT.utils.avatar(usersInfo, size, padding, numberOfItems, cssClass);
+```
+
+- **usersInfo**: the array of user information described before.
+- **size**: the size of the avatar box in pixels.
+- **padding**: the internal padding of each avatar if it's a multiple avatar, in pixels.
+- **numberOfItems**: number of avatars to be generated as DOM elements.
+- **cssClass**: a CSS class to add in generated DOM elements.
+
+The function generates  #*numberOfItems* avatars. If there are more users than items to generate,
+the last avatar will be multiple, showing up to 4 avatars in the same box.
+
+
+This feature is backed up by the Kune subproject https://github.com/comunes/gwt-initials-avatars.
 
 # Developing SwellRT
 

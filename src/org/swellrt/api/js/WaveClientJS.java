@@ -157,6 +157,11 @@ public class WaveClientJS extends JavaScriptObject {
             return delegate.@org.swellrt.api.WaveClient::query(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(stringExpr, callback);
          },
 
+
+         domain: function() {
+
+         },
+
          //
          // Editor
          //
@@ -172,8 +177,19 @@ public class WaveClientJS extends JavaScriptObject {
 
          useWebSocket: function(enabled) {
            delegate.@org.swellrt.api.WaveClient::useWebSocket(Z)(enabled);
-         }
+         },
 
+         //
+         // Utils
+         //
+
+         utils: {
+
+           avatar: function(parameters, size, padding, items, cssClass) {
+             return delegate.@org.swellrt.api.WaveClient::avatar(Lcom/google/gwt/core/client/JsArray;IIILjava/lang/String;)(parameters, size, padding, items, cssClass);
+           }
+
+         }
 
 
     }; // SwellRT

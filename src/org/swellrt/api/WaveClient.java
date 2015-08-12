@@ -3,6 +3,7 @@ package org.swellrt.api;
 import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Document;
 
@@ -270,6 +271,12 @@ public class WaveClient implements SwellRT.Listener {
       }
     });
   }
+
+
+  public JavaScriptObject avatar(JsArray<AvatarParameter> parameters, int size, int padding, int items, String cssClass) {
+    return AvatarService.getInstance().getAvatar(parameters, size, padding, items, cssClass);
+  }
+
 
   public TextEditorJS getTextEditor(String elementId) {
     Preconditions.checkArgument(Document.get().getElementById(elementId) != null,
