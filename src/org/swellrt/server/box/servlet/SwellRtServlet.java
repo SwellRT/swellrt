@@ -107,6 +107,11 @@ public class SwellRtServlet extends HttpServlet {
 
     if (projection != null) {
       objectProjection = parseParam(projection);
+
+      if (objectProjection == null) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
+        return;
+      }
     } else {
       objectProjection = new BasicDBObject();
     }
