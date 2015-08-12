@@ -53,6 +53,18 @@ public class SwellRtServlet extends HttpServlet {
     }
   }
 
+  private DBObject parseParam(String param) throws IOException {
+
+    param = URLDecoder.decode(param, "UTF-8");
+
+    DBObject objectQuery = null;
+    if (param == null || param.isEmpty()) {
+      objectQuery = new BasicDBObject();
+    } else {
+      objectQuery = (DBObject) JSON.parse(param);
+    }
+    return objectQuery;
+  }
   /**
    * Create an http response to the fetch query. Main entrypoint for this class.
    */
@@ -71,7 +83,7 @@ public class SwellRtServlet extends HttpServlet {
       return;
     }
 
-    // /rest/[api_version]/model?q={MongoDB query}
+    // /rest/[api_version]/model?q={MongoDB query}?p={MongoDB projection}
     String pathInfo = req.getPathInfo();
     String entity = pathInfo.substring(pathInfo.lastIndexOf("/") + 1, pathInfo.length());
 
@@ -81,22 +93,22 @@ public class SwellRtServlet extends HttpServlet {
       return;
     }
 
-    String query =
-        req.getQueryString().substring(req.getQueryString().lastIndexOf("q=") + 2,
-            req.getQueryString().length());
+    DBObject objectQuery = parseParam(req.getParameter("q"));
 
-    query = URLDecoder.decode(query, "UTF-8");
+    if (objectQuery == null) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
+      return;
+    }
 
-    DBObject objectQuery = null;
+    String projection = req.getParameter("p");
 
-    if (query == null || query.isEmpty()) {
-      objectQuery = new BasicDBObject();
+    DBObject objectProjection;
+
+
+    if (projection != null) {
+      objectProjection = parseParam(projection);
     } else {
-      objectQuery = (DBObject) JSON.parse(query);
-      if (objectQuery == null) {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
-        return;
-      }
+      objectProjection = new BasicDBObject();
     }
 
     BasicDBList limitPartQuery = new BasicDBList();
@@ -104,13 +116,16 @@ public class SwellRtServlet extends HttpServlet {
     limitPartQuery.add(new BasicDBObject("participants",user.getAddress()));
     // Get public models
     limitPartQuery.add(new BasicDBObject("participants","@"+user.getDomain()));
+
     objectQuery.put("$or",limitPartQuery);
 
-
     // exclude internal mongoDb _id
-    DBObject objectProjection = new BasicDBObject();
+
     objectProjection.put("_id", 0);
-    objectProjection.put("wavelet_id", 0);
+    // You cannot currently mix including and excluding fields
+    if (!objectProjection.toMap().containsValue(1)) {
+      objectProjection.put("wavelet_id", 0);
+    }
 
     DBCursor result = store.find(objectQuery, objectProjection);
 

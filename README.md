@@ -534,6 +534,14 @@ SwellRT.query("{}",
 
 ```
 
+To use a [MongoDB projection](http://docs.mongodb.org/manual/tutorial/project-fields-from-query-results/#projection) in the query, simply call SwellRT method with an object with the following structure as the query param:
+
+```
+{ _query : <the query object>,
+  _projecion: <the projection object>
+}
+```
+
 Data models are represented as JSON objects:
 
 ```
