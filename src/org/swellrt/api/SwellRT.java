@@ -629,11 +629,22 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public void query(String expr, String projExpr, final Callback<String, String> callback) {
+  public void query(String expr, String projExpr, String aggrExpr, final Callback<String, String> callback) {
 
-    String query = "q=" + URL.encodeQueryString(expr);
+    String query = "";
 
-    if (projExpr != null) query += "&p=" + URL.encodeQueryString(projExpr);
+    // query or query + projection case
+    if (expr != null) {
+      query += "q=" + URL.encodeQueryString(expr);
+      if (projExpr != null) query += "&p=" + URL.encodeQueryString(projExpr);
+    }
+
+    // aggregate case:
+
+    if (aggrExpr != null){
+      query += "&a=" + URL.encodeQueryString(aggrExpr);
+    }
+
 
     String url = waveServerURLSchema + waveServerURL + "/swell/model?" + query;
 

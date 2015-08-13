@@ -257,8 +257,8 @@ public class WaveClient implements SwellRT.Listener {
   }
 
 
-  public void query(String expr, String projExpr, final JavaScriptObject callback) {
-    coreClient.query(expr, projExpr, new Callback<String, String>() {
+  public void query(String expr, String projExpr, String aggrExpr, final JavaScriptObject callback) {
+    coreClient.query(expr, projExpr, aggrExpr, new Callback<String, String>() {
 
       @Override
       public void onFailure(String reason) {

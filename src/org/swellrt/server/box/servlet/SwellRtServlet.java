@@ -1,5 +1,6 @@
 package org.swellrt.server.box.servlet;
 
+import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -14,6 +15,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -62,6 +65,52 @@ public class SwellRtServlet extends HttpServlet {
     }
     return objectQuery;
   }
+
+  private DBCursor getQueryResult(DBObject objectQuery, DBObject objectProjection,
+      BasicDBList limitPartQuery) {
+
+    DBCursor result;
+
+    objectQuery.put("$or",limitPartQuery);
+
+    // exclude internal mongoDb _id
+
+    objectProjection.put("_id", 0);
+    // You cannot currently mix including and excluding fields
+    if (!objectProjection.toMap().containsValue(1)) {
+      objectProjection.put("wavelet_id", 0);
+    }
+
+    result = store.find(objectQuery, objectProjection);
+
+    return result;
+  }
+
+
+  private Iterable<DBObject> getAggregateResult(DBObject objectAggregate, BasicDBList limitPartQuery) {
+    Iterable<DBObject> result;
+
+    DBObject objectQuery = new BasicDBObject();
+    objectQuery.put("$or", limitPartQuery);
+    DBObject matchQuery = new BasicDBObject();
+    matchQuery.put("$match", objectQuery);
+
+    ArrayList<DBObject> args = new ArrayList<DBObject>();
+
+    Iterator<String> i = objectAggregate.keySet().iterator();
+    while (i.hasNext()) {
+      args.add((DBObject) objectAggregate.get(i.next()));
+    }
+
+    DBObject[] argsArray = new DBObject[args.size()];
+    args.toArray(argsArray);
+
+    AggregationOutput r = store.aggregate(matchQuery, argsArray);
+    result = r.results();
+    return result;
+  }
+
+
   /**
    * Create an http response to the fetch query. Main entrypoint for this class.
    */
@@ -80,21 +129,37 @@ public class SwellRtServlet extends HttpServlet {
       return;
     }
 
-    // /rest/[api_version]/model?q={MongoDB query}?p={MongoDB projection}
+    // Either... /rest/[api_version]/model?q={MongoDB query}?p={MongoDB
+    // projection}
+    // or... /rest/[api_version]/model?a={MongoDB aggregate query}
+
     String pathInfo = req.getPathInfo();
     String entity = pathInfo.substring(pathInfo.lastIndexOf("/") + 1, pathInfo.length());
-
 
     if (!entity.equals("model")) {
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
-    DBObject objectQuery = parseParam(req.getParameter("q"));
+    String aggregate = req.getParameter("a");
 
-    if (objectQuery == null) {
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
-      return;
+    DBObject objectAggregate = null;
+
+    if (aggregate != null) {
+      objectAggregate = parseParam(aggregate);
+
+      if (objectAggregate == null) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad aggregate JSON format");
+        return;
+      }
+    }
+
+    String query = req.getParameter("q");
+
+    DBObject objectQuery = null;
+
+    if (query != null) {
+      objectQuery = parseParam(query);
     }
 
     String projection = req.getParameter("p");
@@ -113,29 +178,36 @@ public class SwellRtServlet extends HttpServlet {
       objectProjection = new BasicDBObject();
     }
 
-    BasicDBList limitPartQuery = new BasicDBList();
-    // Get models where user is participant
-    limitPartQuery.add(new BasicDBObject("participants",user.getAddress()));
-    // Get public models
-    limitPartQuery.add(new BasicDBObject("participants","@"+user.getDomain()));
-
-    objectQuery.put("$or",limitPartQuery);
-
-    // exclude internal mongoDb _id
-
-    objectProjection.put("_id", 0);
-    // You cannot currently mix including and excluding fields
-    if (!objectProjection.toMap().containsValue(1)) {
-      objectProjection.put("wavelet_id", 0);
+    if (objectQuery == null && objectAggregate == null) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
+      return;
     }
 
-    DBCursor result = store.find(objectQuery, objectProjection);
 
+    BasicDBList limitPartQuery = new BasicDBList();
+    // Get models where user is participant
+    limitPartQuery.add(new BasicDBObject("participants", user.getAddress()));
+    // Get public models
+    limitPartQuery.add(new BasicDBObject("participants", "@" + user.getDomain()));
+
+    Iterable<DBObject> result;
+    // aggregate Case:
+    if (objectAggregate != null) {
+      result = getAggregateResult(objectAggregate, limitPartQuery);
+    }
+    // query (+ projection) Case:
+    else {
+      result = getQueryResult(objectQuery, objectProjection, limitPartQuery);
+    }
     StringBuilder JSONbuilder = new StringBuilder();
     JSONbuilder.append("{\"result\":[");
-    while (result.hasNext()) {
-      JSON.serialize(result.next(), JSONbuilder);
-      if (result.hasNext()) JSONbuilder.append(",");
+
+    Iterator<DBObject> it = result.iterator();
+
+    while (it.hasNext()) {
+
+      JSON.serialize(it.next(), JSONbuilder);
+      if (it.hasNext()) JSONbuilder.append(",");
     }
     JSONbuilder.append("]}");
 
@@ -146,6 +218,5 @@ public class SwellRtServlet extends HttpServlet {
     response.getWriter().append(JSONbuilder);
 
   }
-
 
 }

@@ -534,14 +534,6 @@ SwellRT.query("{}",
 
 ```
 
-To use a [MongoDB projection](http://docs.mongodb.org/manual/tutorial/project-fields-from-query-results/#projection) in the query, simply call SwellRT method with an object with the following structure as the query param:
-
-```
-{ _query : <the query object>,
-  _projecion: <the projection object>
-}
-```
-
 Data models are represented as JSON objects:
 
 ```
@@ -563,6 +555,26 @@ Data models are represented as JSON objects:
 
 ```
 
+#### MongoDB Projections
+To use a [MongoDB projection](http://docs.mongodb.org/manual/tutorial/project-fields-from-query-results/#projection) in the query, simply call SwellRT.query method with an object with the following structure as the query param:
+
+```
+SwellRT.query(
+  { _query : <the query object>,
+    _projecion: <the projection object>
+  }, function ...);
+```
+
+#### MongoDB Aggregates
+To use [MongoDB aggregates](http://docs.mongodb.org/manual/aggregation/), use an object with the aggregate expression in the ```_aggregate``` field as query parameter of the SwellRT.query method :
+
+```
+SwellRT.query(
+  { _aggregate: [
+       <aggregation stages expressions>
+    ]
+  }, function ...);
+```
 
 ### Checking object's data type
 

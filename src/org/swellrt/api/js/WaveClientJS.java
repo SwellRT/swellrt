@@ -158,11 +158,15 @@ public class WaveClientJS extends JavaScriptObject {
             if(expr._query){
               stringQueryExpr = JSON.stringify(expr._query);
               var stringProjExpr = JSON.stringify(expr._projection);
-            } else {
+            }
+            else if (expr._aggregate) {
+              var stringAggrExpr = JSON.stringify(expr._aggregate);
+            }
+            else {
               stringQueryExpr = JSON.stringify(expr);
             }
 
-           return delegate.@org.swellrt.api.WaveClient::query(Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(stringQueryExpr, stringProjExpr, callback);
+           return delegate.@org.swellrt.api.WaveClient::query(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(stringQueryExpr, stringProjExpr, stringAggrExpr, callback);
          },
 
 
