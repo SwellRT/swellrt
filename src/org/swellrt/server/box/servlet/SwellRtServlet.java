@@ -144,45 +144,8 @@ public class SwellRtServlet extends HttpServlet {
     String aggregate = req.getParameter("a");
 
     DBObject objectAggregate = null;
-
-    if (aggregate != null) {
-      objectAggregate = parseParam(aggregate);
-
-      if (objectAggregate == null) {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad aggregate JSON format");
-        return;
-      }
-    }
-
-    String query = req.getParameter("q");
-
     DBObject objectQuery = null;
-
-    if (query != null) {
-      objectQuery = parseParam(query);
-    }
-
-    String projection = req.getParameter("p");
-
-    DBObject objectProjection;
-
-
-    if (projection != null) {
-      objectProjection = parseParam(projection);
-
-      if (objectProjection == null) {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
-        return;
-      }
-    } else {
-      objectProjection = new BasicDBObject();
-    }
-
-    if (objectQuery == null && objectAggregate == null) {
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
-      return;
-    }
-
+    DBObject objectProjection = null;
 
     BasicDBList limitPartQuery = new BasicDBList();
     // Get models where user is participant
@@ -191,14 +154,44 @@ public class SwellRtServlet extends HttpServlet {
     limitPartQuery.add(new BasicDBObject("participants", "@" + user.getDomain()));
 
     Iterable<DBObject> result;
-    // aggregate Case:
-    if (objectAggregate != null) {
+
+    // Aggregate Case:
+    if (aggregate != null) {
+      objectAggregate = parseParam(aggregate);
+
+      if (objectAggregate == null) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad aggregate JSON format");
+        return;
+      }
       result = getAggregateResult(objectAggregate, limitPartQuery);
     }
-    // query (+ projection) Case:
+    // Query or Query + Projection Case:
     else {
+      String query = req.getParameter("q");
+
+      if (query != null) {
+        objectQuery = parseParam(query);
+        if (objectQuery == null) {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
+          return;
+        }
+      }
+
+      String projection = req.getParameter("p");
+
+      if (projection != null) {
+        objectProjection = parseParam(projection);
+
+        if (objectProjection == null) {
+          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad JSON format");
+          return;
+        }
+      } else {
+        objectProjection = new BasicDBObject();
+      }
       result = getQueryResult(objectQuery, objectProjection, limitPartQuery);
     }
+
     StringBuilder JSONbuilder = new StringBuilder();
     JSONbuilder.append("{\"result\":[");
 
