@@ -576,28 +576,28 @@ SwellRT.model.root.type() == SwellRT.type.MAP;
 
 A Gmail-like avatar generator is provided. It uses an array of user data to generate a list of HTML elements that can be added anywhere in the DOM.
 
-Set up an array with users information. Each object can contain following attributes:
+Set up an array of avatar's **parameters**. Each object can contain following attributes:
 - **name**: string with the user name. The first letter will be used as default avatar.
-- **pictureUrl**: URL to a picture of the  user. If provided, it will be used instead of the name.
-- **additionalElement**: a DOM element to render as avatar. If provided, it will be used instead of others fields.
+- **picture**: URL to a picture of the  user. If provided, it will be used instead of the name.
+- **element**: a DOM element to render as avatar. If provided, it will be used instead of others fields.
 
 ```
-usersInfo = [
+parameters = [
     {
         name: "first.user@demo.org",
-        pictureUrl: "http://www.gravatar.com/avatar/d49414ee9e531c69427baf0ba2b76191?s=40&d=identicon"
+        picture: "http://www.gravatar.com/avatar/d49414ee9e531c69427baf0ba2b76191?s=40&d=identicon"
     },
     {
         name: "second.user@demo.org",
-        pictureUrl: "http://www.gravatar.com/avatar/6950571d68e7a5a0a4ede1b4e742cc79?s=40&d=identicon"
+        picture: "http://www.gravatar.com/avatar/6950571d68e7a5a0a4ede1b4e742cc79?s=40&d=identicon"
     },
     {
         name: "third.user@demo.org",
-        pictureUrl: "http://www.gravatar.com/avatar/e28316e4c10e90c342ae5d07522485a7?s=40&d=identicon"
+        picture: "http://www.gravatar.com/avatar/e28316e4c10e90c342ae5d07522485a7?s=40&d=identicon"
     },
     {
         name: "four.user@demo.org",
-        additionalElement: <a DOM Element>
+        element: <a DOM Element>
     },
     {
         name: "xive.user@demo.org",
@@ -608,23 +608,24 @@ usersInfo = [
 ];
 ```
 
-Generate an array of avatars as DOM elements calling
+Generate an array of avatars as DOM elements calling to
 
 ```
-SwellRT.utils.avatar(usersInfo, size, padding, numberOfItems, cssClass);
+SwellRT.utils.avatar(parameters, options);
 ```
 
-- **usersInfo**: the array of user information described before.
-- **size**: the size of the avatar box in pixels.
-- **padding**: the internal padding of each avatar if it's a multiple avatar, in pixels.
-- **numberOfItems**: number of avatars to be generated as DOM elements.
-- **cssClass**: a CSS class to add in generated DOM elements.
+Where **options** is an object with optional following attributes:
 
-The function generates  #*numberOfItems* avatars. If there are more users than items to generate,
-the last avatar will be multiple, showing up to 4 avatars in the same box.
+- **size**: the size of the avatar box in pixels. Default is 40px;
+- **padding**: the internal padding of each avatar if it's a composite avatar, in pixels. Default is 1px;
+- **cssClass**: a CSS class to add in each generated DOM element. Default is empty.
+- **numberOfAvatars**: number of avatars to be generated. Default is 1.
 
 
-This feature is backed up by the Kune subproject https://github.com/comunes/gwt-initials-avatars.
+The function generates  #*numberOfAvatars* avatars. If there are more users than items to generate,
+the last avatar will be a composite, showing up to 4 avatars in the same box.
+
+This feature is backed up by the Kune's subproject https://github.com/comunes/gwt-initials-avatars.
 
 # Developing SwellRT
 

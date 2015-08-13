@@ -15,18 +15,31 @@ public class AvatarParameter extends JavaScriptObject {
     // Nothing to do
   }
 
+  /**
+   * Name of the avatar. First letter (as capital) will be rendered.
+   * 
+   * @return
+   */
   public final native String getName() /*-{
     return this.name;
   }-*/;
 
-
-  public final native String getPictureUrl() /*-{
-    return this.pictureUrl;
+  /**
+   * URL to a picture to use as avatar.
+   * 
+   * @return
+   */
+  public final native String getPicture() /*-{
+    return this.picture;
   }-*/;
 
-
-  public final native Element getAdditionalElement() /*-{
-    return this.additionalElement;
+  /**
+   * HTML DOM element to use as avatar.
+   * 
+   * @return
+   */
+  public final native Element getElement() /*-{
+    return this.element;
   }-*/;
 
 

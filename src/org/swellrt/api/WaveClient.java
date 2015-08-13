@@ -273,8 +273,8 @@ public class WaveClient implements SwellRT.Listener {
   }
 
 
-  public JavaScriptObject avatar(JsArray<AvatarParameter> parameters, int size, int padding, int items, String cssClass) {
-    return AvatarService.getInstance().getAvatar(parameters, size, padding, items, cssClass);
+  public JavaScriptObject avatar(JsArray<AvatarParameter> parameters, AvatarOptions options) {
+    return AvatarService.getInstance().getAvatar(parameters, options);
   }
 
 

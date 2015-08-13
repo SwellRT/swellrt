@@ -129,44 +129,64 @@ var SwellRT_Tester = {
 
         it("Avatar with images", function() {
 
-            var _avatar_parameters = [
+            var _parameters = [
             {
-              name : "first.user@demo.org",
-              pictureUrl : "http://www.gravatar.com/avatar/d49414ee9e531c69427baf0ba2b76191?s=40&d=identicon"
+              name: "first.user@demo.org",
+              picture: "http://www.gravatar.com/avatar/d49414ee9e531c69427baf0ba2b76191?s=40&d=identicon"
             },
             {
-              name : "second.user@demo.org",
-              pictureUrl : "http://www.gravatar.com/avatar/6950571d68e7a5a0a4ede1b4e742cc79?s=40&d=identicon"
+              name: "second.user@demo.org",
+              picture: "http://www.gravatar.com/avatar/6950571d68e7a5a0a4ede1b4e742cc79?s=40&d=identicon"
             },
             {
-              name : "third.user@demo.org",
-              pictureUrl : "http://www.gravatar.com/avatar/e28316e4c10e90c342ae5d07522485a7?s=40&d=identicon"
+              name: "third.user@demo.org",
+              picture: "http://www.gravatar.com/avatar/e28316e4c10e90c342ae5d07522485a7?s=40&d=identicon"
             },
             {
-              name : "four.user@demo.org",
+              name: "four.user@demo.org",
             },
             {
-              name : "xive.user@demo.org",
+              name: "xive.user@demo.org",
             },
             {
-              name : "six.user@demo.org",
+              name: "six.user@demo.org",
             }];
 
 
-            var _avatars = SwellRT.utils.avatar(_avatar_parameters, 40, 1, 1);
+            var _options = {
+              size: 40,
+              padding: 1,
+              numberOfAvatars: 1
+            };
+
+            var _avatars = SwellRT.utils.avatar(_parameters, _options);
             expect(_avatars.length).toBe(1);
             expect(_avatars[0].childNodes.length).toBe(5);
             expect(_avatars[0].getElementsByTagName("img").length).toBe(3);
 
 
-            var _avatars = SwellRT.utils.avatar(_avatar_parameters, 40, 1, 2);
+
+            _options = {
+                    size: 40,
+                    padding: 1,
+                    numberOfAvatars: 2
+                  };
+
+            var _avatars = SwellRT.utils.avatar(_parameters, _options);
             expect(_avatars.length).toBe(2);
             expect(_avatars[0].childNodes.length).toBe(2);
             expect(_avatars[0].getElementsByTagName("img").length).toBe(1);
             expect(_avatars[1].childNodes.length).toBe(5);
             expect(_avatars[1].getElementsByTagName("img").length).toBe(2);
 
-            var _avatars = SwellRT.utils.avatar(_avatar_parameters, 40, 1, 6);
+
+            _options = {
+                    size: 40,
+                    padding: 1,
+                    numberOfAvatars: 6
+                  };
+
+            var _avatars = SwellRT.utils.avatar(_parameters, _options);
             expect(_avatars.length).toBe(6);
 
         });

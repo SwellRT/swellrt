@@ -193,8 +193,15 @@ public class WaveClientJS extends JavaScriptObject {
 
          utils: {
 
-           avatar: function(parameters, size, padding, items, cssClass) {
-             return delegate.@org.swellrt.api.WaveClient::avatar(Lcom/google/gwt/core/client/JsArray;IIILjava/lang/String;)(parameters, size, padding, items, cssClass);
+           avatar: function(avatars, options) {
+
+             if (options === undefined)
+              options = new Object();
+
+             if (avatars === undefined)
+               return null;
+
+             return delegate.@org.swellrt.api.WaveClient::avatar(Lcom/google/gwt/core/client/JsArray;Lorg/swellrt/api/AvatarOptions;)(avatars, options);
            }
 
          }

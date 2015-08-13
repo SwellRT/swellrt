@@ -47,13 +47,13 @@ public class AvatarService {
 
     IsWidget widget = null;
 
-    if (parameter.getAdditionalElement() != null) {
+    if (parameter.getElement() != null) {
 
-      widget = HTMLPanel.wrap(parameter.getAdditionalElement());
+      widget = HTMLPanel.wrap(parameter.getElement());
 
-    } else if (parameter.getPictureUrl() != null) {
+    } else if (parameter.getPicture() != null) {
 
-      widget = new Image(parameter.getPictureUrl());
+      widget = new Image(parameter.getPicture());
 
     } else {
 
@@ -68,29 +68,27 @@ public class AvatarService {
   }
 
 
-  /**
-   * Generate a set of avatar HTML elements. It will create as avatars as
-   * numItems parameter, being the last avatar a multiple one.
-   * 
-   * To generate just a single multiple avatar use numItems equals to 1.
-   * 
-   * @param parameters content for each avatar
-   * @param fullSize avatar's box size in pixels
-   * @param padding avatar's box padding in pixels
-   * @param numItems number of avatars to be generated
-   * @param cssClass an optinal CSS class for custom style
-   * @return
-   */
-  public JsArray<Element> getAvatar(JsArray<AvatarParameter> parameters, int fullSize, int padding,
-      int numItems, String cssClass) {
 
-    Builder builder = new AvatarComposite.Builder(fullSize, padding);
+    /**
+   * Generate a set of avatars as HTML elements. There will be created
+   * options.numberOfAvatars elements, being the last avatar a multiple one if
+   * there are remaining parameters.
+   *
+   * To generate just a single multiple avatar use options.numberOfAvatars equals to 1.
+   *
+   * @param parameters parameters to generate each avatar
+   * @param options general options
+   * @return array of DOM elements
+   */
+  public JsArray<Element> getAvatar(JsArray<AvatarParameter> parameters, AvatarOptions options) {
+
+    Builder builder = new AvatarComposite.Builder(options.getSize(), options.getPadding());
 
     List<AvatarComposite> avatars = new ArrayList<AvatarComposite>();
 
     // single avatars
     int index = 0;
-    while (index < numItems - 1) {
+    while (index < options.getNumberOfAvatars() - 1) {
       avatars.add(builder.build(createAvatarWidget(parameters.get(index))));
       index++;
     }
@@ -109,7 +107,8 @@ public class AvatarService {
     JsArray<Element> elements = (JsArray<Element>) SwellRTUtils.createTypedJsArray();
 
     for (AvatarComposite av : avatars) {
-      if (cssClass != null && !cssClass.isEmpty()) av.getElement().addClassName(cssClass);
+      if (options.getCssClass() != null && !options.getCssClass().isEmpty())
+        av.getElement().addClassName(options.getCssClass());
       elements.push(av.getElement());
     }
 
