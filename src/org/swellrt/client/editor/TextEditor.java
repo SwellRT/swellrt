@@ -8,6 +8,7 @@ import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.model.generic.TextType;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
+import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.Editor;
@@ -207,8 +208,13 @@ public class TextEditor {
         registries.getElementHandlerRegistry());
 
     StyleAnnotationHandler.register(registries);
+
+    // Listen for Diff annotations to paint new content or to insert a
+    // delete-content tag
+    // to be rendered by the DiffDeleteRendere
     DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),
         registries.getPaintRegistry());
+    DiffDeleteRenderer.register(registries.getElementHandlerRegistry());
 
     LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
       @Override
