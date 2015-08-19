@@ -87,6 +87,7 @@
 	<classpathentry kind="lib" path="third_party/runtime/slf4j-simple-1.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar" sourcepath="/home/pablojan/.m2/repository/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1-sources.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-client-1.0-20140324.102819-16.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
