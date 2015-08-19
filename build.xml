@@ -500,6 +500,7 @@
       </classpath>
       <arg line="${gwt.args}"/>
       <arg line="-src src"/>
+      <arg line="-bindAddress 0.0.0.0"/>
       <arg value="org.waveprotocol.wave.client.editor.harness.EditorTest"/>
     </java>
   </target>
