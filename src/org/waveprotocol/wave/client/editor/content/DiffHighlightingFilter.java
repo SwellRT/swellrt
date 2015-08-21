@@ -80,9 +80,9 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    * TODO(pablojan) Integrate DiffManager with avatars generator, to sync
    * colors. A manager of Participants is needed, providing random colors.
    * Consider to extend ParticipantId?
-   * 
+   *
    * A random color provider for authors highlighting.
-   * 
+   *
    * @author vjrj@ourproject.org (Vicente J. Ruiz Jurado)
    */
   public static ColorProvider colorProvider = new ColorProvider() {
@@ -103,7 +103,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   /**
    * Removes the anonymous prefix to avoid duplicated colour highlighting.
-   * 
+   *
    * @param author
    * @return
    */
@@ -212,7 +212,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     operation = op;
 
     if (operationLog != null) {
-      author = operationLog.getCreatorAndRemove(op);
+      author = operationLog.getAuthorAndForget(op);
       if (author == null) {
         author = UKNOWN_PARTICIPANT;
       }

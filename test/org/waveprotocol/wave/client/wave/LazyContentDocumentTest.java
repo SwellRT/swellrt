@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.waveprotocol.wave.client.concurrencycontrol.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
@@ -44,6 +45,7 @@ public class LazyContentDocumentTest extends TestCase {
   private Registries registries;
   private LazyContentDocument document;
   private SimpleDiffDoc state;
+  private DocOperationLog operationLog;
 
   //
   //
@@ -76,13 +78,13 @@ public class LazyContentDocumentTest extends TestCase {
   private void startWithCompleteState() {
     state = SimpleDiffDoc.create(X, null);
     assert state.isCompleteState() : "invalid test assumptions";
-    document = LazyContentDocument.create(registries, state);
+    document = LazyContentDocument.create(registries, state, operationLog);
   }
 
   private void startWithStateAndDiff() {
     state = SimpleDiffDoc.create(X, D_X);
     assert !state.isCompleteDiff() && !state.isCompleteState() : "invalid test assumptions";
-    document = LazyContentDocument.create(registries, state);
+    document = LazyContentDocument.create(registries, state, operationLog);
   }
 
   public void testOpOnCompleteStateIsADiff() {

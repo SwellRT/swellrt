@@ -84,10 +84,6 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
     return new LazyContentDocument(base, initial, initial.isCompleteDiff(), operationLog);
   }
 
-  public static LazyContentDocument create(Registries base, SimpleDiffDoc initial) {
-    return new LazyContentDocument(base, initial, initial.isCompleteDiff(), null);
-  }
-
   /**
    * Loads the real document implementation with a particular set of registries.
    */

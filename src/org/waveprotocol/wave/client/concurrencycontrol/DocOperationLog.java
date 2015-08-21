@@ -35,7 +35,7 @@ public class DocOperationLog {
 
   }
 
-  public String getCreatorAndRemove(DocOp docOp) {
+  public String getAuthorAndForget(DocOp docOp) {
     String creator = docOpRegistry.get(docOp);
     if (creator != null) {
       docOpRegistry.remove(docOp);
