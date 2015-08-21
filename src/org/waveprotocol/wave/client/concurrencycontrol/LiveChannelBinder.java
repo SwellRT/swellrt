@@ -104,8 +104,9 @@ public final class LiveChannelBinder
       WaveDocuments<? extends CcDocument> docRegistry,
       OperationChannelMultiplexer mux,
       IdFilter filter,
-      Command whenOpened) {
-    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry);
+      Command whenOpened,
+      DocOperationLog operationLog) {
+    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry, operationLog);
     LiveChannelBinder liveBinder =
         new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened);
 

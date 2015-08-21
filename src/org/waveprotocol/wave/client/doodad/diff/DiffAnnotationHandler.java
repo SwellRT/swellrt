@@ -57,6 +57,7 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
     CollectionUtils.newStringSet(DiffHighlightingFilter.DIFF_DELETE_KEY);
 
   /** Map of annotations for the diff paint renderer. */
+  @Deprecated
   private final static Map<String, String> PAINT_PROPERTIES =
       Collections.singletonMap("backgroundColor", HILIGHT_COLOUR);
 
@@ -85,8 +86,10 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
    */
   private static final PaintFunction paintFunc = new PaintFunction() {
     public Map<String, String> apply(Map<String, Object> from, boolean isEditing) {
-      if (from.get(DiffHighlightingFilter.DIFF_INSERT_KEY) != null) {
-        return PAINT_PROPERTIES;
+      String author = (String) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
+      if (author != null) {
+        return Collections.singletonMap("backgroundColor", DiffHighlightingFilter.colorProvider
+            .getColor(DiffHighlightingFilter.wrapAnonymousAuthor(author)));
       } else {
         return Collections.emptyMap();
       }

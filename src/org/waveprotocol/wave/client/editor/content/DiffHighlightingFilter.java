@@ -19,11 +19,18 @@
 
 package org.waveprotocol.wave.client.editor.content;
 
+import cc.kune.initials.ColorHelper;
+import cc.kune.initials.ColorProvider;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
+import org.waveprotocol.wave.client.concurrencycontrol.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
@@ -32,7 +39,6 @@ import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
 import org.waveprotocol.wave.model.document.operation.Attributes;
 import org.waveprotocol.wave.model.document.operation.AttributesUpdate;
 import org.waveprotocol.wave.model.document.operation.DocOp;
-import org.waveprotocol.wave.model.document.operation.DocOpComponentType;
 import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.operation.ModifiableDocument;
 import org.waveprotocol.wave.model.document.util.Annotations;
@@ -44,6 +50,7 @@ import org.waveprotocol.wave.model.util.ReadableIntMap.ProcV;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A wrapper for a content document, for the purpose of displaying diffs.
@@ -66,6 +73,45 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     public List<Element> getDeletedHtmlElements() {
       return htmlElements;
     }
+  }
+
+
+  /**
+   * TODO(pablojan) Integrate DiffManager with avatars generator, to sync
+   * colors. A manager of Participants is needed, providing random colors.
+   * Consider to extend ParticipantId?
+   * 
+   * A random color provider for authors highlighting.
+   * 
+   * @author vjrj@ourproject.org (Vicente J. Ruiz Jurado)
+   */
+  public static ColorProvider colorProvider = new ColorProvider() {
+    @Override
+    public String getColor(final String key) {
+      return colorsCache.getUnchecked(key);
+    }
+  };
+
+  private static LoadingCache<String, String> colorsCache = CacheBuilder.newBuilder()
+      .maximumSize(500).expireAfterAccess(600, TimeUnit.SECONDS)
+      .build(new CacheLoader<String, String>() {
+        @Override
+        public String load(final String name) {
+          return ColorHelper.getRandomClearColor(name);
+        }
+      });
+
+  /**
+   * Removes the anonymous prefix to avoid duplicated colour highlighting.
+   * 
+   * @param author
+   * @return
+   */
+  public static String wrapAnonymousAuthor(String author) {
+    String wrappedAuthor = author;
+    if (wrappedAuthor.startsWith("_anonymous_"))
+      wrappedAuthor = wrappedAuthor.substring(11, wrappedAuthor.length());
+    return wrappedAuthor;
   }
 
   /**
@@ -116,15 +162,25 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    */
   public static final String DIFF_DELETE_KEY = DIFF_KEY + "/del";
 
-  private static final Object INSERT_MARKER = new Object();
+  @Deprecated
+  private static final Object INSERT_MARKER = new Object(); // Replaced by participantId
+
+  public static final String UKNOWN_PARTICIPANT = "Unknown";
 
   private final DiffHighlightTarget inner;
+
+  private final DocOperationLog operationLog; // To track op's owners
 
   // Munging to wrap the op
 
   private DocOpCursor target;
 
   private DocOp operation;
+
+  /**
+   * Participant who performs the op.
+   */
+  private String author;
 
   // Diff state
 
@@ -140,13 +196,28 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument) {
     this.inner = contentDocument;
+    this.operationLog = null;
   }
+
+  public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocOperationLog operationLog) {
+    this.inner = contentDocument;
+    this.operationLog = operationLog;
+  }
+
 
   @Override
   public void consume(DocOp op) throws OperationException {
     Preconditions.checkState(target == null, "Diff inner target not initialised");
 
     operation = op;
+
+    if (operationLog != null) {
+      author = operationLog.getCreatorAndRemove(op);
+      if (author == null) {
+        author = UKNOWN_PARTICIPANT;
+      }
+    }
+
     inner.consume(opWrapper);
 
     final int size = inner.size();
@@ -208,7 +279,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void elementStart(String tagName, Attributes attributes) {
       if (diffDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, INSERT_MARKER);
+        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
       diffDepth++;
@@ -232,7 +303,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void characters(String characters) {
       if (diffDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, INSERT_MARKER);
+        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
       target.characters(characters);
@@ -304,7 +375,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
         return;
       }
 
-      DiffManager.styleElement(element, DiffType.DELETE);
+      DiffManager.styleElement(element, DiffType.DELETE, author);
       DomHelper.makeUnselectable(element);
 
       for (Node n = element.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -338,7 +409,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
           int nextIndex = nextScanLocation - location;
 
           Element e = Document.get().createSpanElement();
-          DiffManager.styleElement(e, DiffType.DELETE);
+          DiffManager.styleElement(e, DiffType.DELETE, author);
           e.setInnerText(text.substring(index, nextIndex));
 
           currentDeleteInfo.htmlElements.add(e);
