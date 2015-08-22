@@ -34,6 +34,8 @@
 <inherits name="org.waveprotocol.wave.client.editor.selection.html.Html" />
 <inherits name="org.waveprotocol.wave.client.scheduler.Scheduler" />
 <inherits name="org.waveprotocol.wave.model.richtext.RichText" />
+<inherits name="org.waveprotocol.wave.model.richtext.RichText" />
+<inherits name='cc.kune.initials.InitialsAvatars'/>
 
  <source path="" includes="*"/>
  <source path="content" includes="*"/>
