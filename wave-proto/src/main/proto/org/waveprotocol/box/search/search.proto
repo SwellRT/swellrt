@@ -1,0 +1,68 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+// The search query and response.
+//
+// Author: vega113@gmail.com (Yuri Z.)
+
+syntax = "proto2";
+
+package search;
+
+option java_package = "org.waveprotocol.box.search";
+option java_outer_classname = "SearchProto";
+
+
+message SearchRequest {
+  // The query to execute.
+  required string query = 1;
+  // The index from which to return results.
+  required int32 index = 2;
+  // The number of results to return.
+  required int32 numResults = 3;
+}
+
+message SearchResponse {
+  // The wave list digest.
+  message Digest {
+    // The wave title.
+	required string title = 1;
+	// The text snippet.
+	required string snippet = 2;
+	// Serialized wave id
+	required string waveId = 3;
+	// Last modified time of the wave.
+	required int64 lastModified = 4;
+	// Unread count for the user.
+	required int32 unreadCount = 5;
+	// Number of blips in the wave.
+ 	required int32 blipCount = 6;
+	// Wave participants.
+	repeated string participants = 7;
+	// The wave author.
+	required string author = 8;
+  }
+
+  // The search query.
+  required string query = 1;
+  // The total number of results to the query (not necessarily all returned).
+  required int32 totalResults = 2;
+  // A list of digests, representing the segment [index, index + result_count] 
+  // from the query parameters.
+  repeated Digest digests = 3;
+}
+

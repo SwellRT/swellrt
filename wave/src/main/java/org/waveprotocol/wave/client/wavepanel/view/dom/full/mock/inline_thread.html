@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+  Author: hearnden@google.com (David Hearnden)
+-->
+<head>
+<link rel="stylesheet" type="text/css" href="inline_thread.css"/>
+<link rel="stylesheet" type="text/css" href="blip.css"/>
+<style type="text/css">
+body {
+  font-family: arial;
+  font-size: 13px;
+  line-height: 1.35;
+}
+</style>
+<script type="text/javascript">
+
+// Basic behaviour of toggling expanded state.
+
+var blip;
+var thread;
+var threadContents;
+var anchor;
+
+function lastChild(elem) {
+  return previousElementPre(elem.lastChild);
+}
+
+function firstChild(elem) {
+  return nextElementPre(elem.firstChild);
+}
+
+function nextElementPre(elem) {
+  var e = elem;
+  while (e && e.nodeType != 1)
+    e = e.nextSibling;
+  return e;
+}
+
+function previousElementPre(elem) {
+  var e = elem;
+  while (e && e.nodeType != 1)
+    e = e.previousSibling;
+  return e;
+}
+
+function save() {
+  blip = document.getElementById('blip');
+  anchor1 = document.getElementById('anchor1');
+  anchor2 = document.getElementById('anchor2');
+  thread = document.getElementById('thread');
+  threadContents = document.getElementById('threadContents');
+
+  anchor1.removeAttribute("id");
+  anchor2.removeAttribute("id");
+  blip.removeAttribute("id");
+  thread.removeAttribute("id");
+  threadContents.removeAttribute("id");
+  thread.parentNode.removeChild(thread);
+}
+
+function populate() {
+  var reply1 = blip.cloneNode(true);
+  var reply2 = blip.cloneNode(true);
+  threadContents.appendChild(reply1);
+  threadContents.appendChild(reply2);
+  makeFirst(reply1);
+
+  anchor1.appendChild(thread);
+  anchor2.appendChild(thread.cloneNode(true));
+
+  var toggle = firstChild(firstChild(anchor1));
+  var count = lastChild(toggle);
+  var image = firstChild(toggle);
+  toggle.setAttribute("r", "unread");
+  image.className = image.className.replace(/read/, "unread");
+  count.className = count.className.replace(/read/, "unread");
+}
+
+function show() {
+  document.getElementById('panel').style.display = '';
+}
+
+function toggle(e) {
+  var toggle = e;
+  var img = firstChild(toggle);
+  var chrome = nextElementPre(toggle.nextSibling);
+  var count = nextElementPre(img.nextSibling);
+  var dropContainer = lastChild(count);
+  var thread = toggle.parentNode;
+
+  if (toggle.getAttribute("c") == "expanded") {
+    img.className = img.className.replace(/expanded/, "collapsed");
+    chrome.className = chrome.className.replace(/expanded/, "collapsed");
+    count.className = count.className.replace(/expanded/, "collapsed");
+    dropContainer.className = dropContainer.className.replace(/expanded/, "collapsed");
+    toggle.setAttribute("c", "collapsed");
+
+    // Webkit hack, because their incremental layout is incorrect.
+    thread.style.display = 'inline-block';
+    var x = thread.offsetParent;
+    thread.style.display = '';
+  } else {
+    img.className = img.className.replace(/collapsed/, "expanded");
+    chrome.className = chrome.className.replace(/collapsed/, "expanded");
+    count.className = count.className.replace(/collapsed/, "expanded");
+    dropContainer.className = dropContainer.className.replace(/collapsed/, "expanded");
+    toggle.setAttribute("c", "expanded");
+  }
+}
+
+function makeFirst(blip) {
+  var divider = firstChild(firstChild(blip));
+  divider.className = divider.className + " first";
+}
+
+function init() {
+  save();
+  populate();
+  show();
+}
+</script>
+</head>
+<body onload='init();'>
+<h2>Mock harness for indented thread html.</h2>
+
+<p>Click to triangle to toggle expansion.</p>
+<div id='panel' style='display:none; height: 1200px; width:700px; margin-left: 100px;'>
+  <div class='blip' id='blip'>
+    <div class='meta' id='meta'>
+      <img class='avatar' src='unknown.jpg' alt='unknown.jpg'>
+      <div class='metabar read' onclick='toggleRead(this); return true;'>
+        <div class='options'>
+          <span class='time'>11:30pm</span>|<span class='edit'>Edit</span>|<span class='reply'>Reply</span>
+        </div>
+        <div class='metaline'>Bob and Nebuchadnezzar:</div>
+      </div>
+      <div class='contentContainer'>
+        <div class='document' contentEditable='true'>
+          <div><b>A wave is equal parts conversation and document.</b> People can communicate and work together with richly formatted text, photos, videos, maps, and more.<br/></div>
+          <div><b>A wave is shared.</b><div class='anchor' id='anchor1'></div>Any participant can reply anywhere in the message, edit the content and add participants at any point in the process. Then playback lets anyone rewind the wave to see who said what and when.<br/></div>
+          <div><b>A wave is live.</b> With live transmission as you type,<div class='anchor' id='anchor2'></div> participants on a wave can have faster conversations, see edits and interact with extensions in real-time.<br/></div>
+        </div>
+      </div>
+    </div>
+    <div class='replies'>
+    </div>
+  </div>
+</div>
+
+<!-- No whitespace inbetween spans (screws up Firefox.) -->
+  <div id='thread' class='thread' contentEditable='false'><span class='toggle' c='expanded' r='read' onmousedown='return false;' onclick='toggle(this); return false;'><span class='arrow read expanded'></span><span class='read count expanded'><span>124</span><div class='dropContainer expanded'><span class='drop'></span></div></span></span><div id='threadContents' class='chrome expanded'></div></div>
+
+<!--
+  Inline-block solution for posterity,
+    <span style='display: inline-block; vertical-align: top'>
+      <div class='count unread'>2234</div>
+      <div style='height: 0; text-align: center'>
+        <img src='expanded.png'>
+      </div>
+    </span>
+-->
+
+</body>
+</html>

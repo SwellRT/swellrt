@@ -1,0 +1,60 @@
+buildscript {
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.7.0'
+    }
+}
+
+plugins {
+    id "org.nosphere.apache.rat" version "0.1.3"
+}
+
+allprojects {
+    apply plugin: 'eclipse';
+    apply plugin: 'idea';
+    group = 'Apache-Wave'
+    version = '0.4'
+}
+
+// Repositories
+repositories {
+    mavenCentral()
+}
+
+subprojects {
+    apply plugin: 'java';
+    //apply plugin: 'scala';
+    //apply plugin: 'checkstyle'
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    compileJava{
+        options.incremental = true
+    }
+
+    test.ignoreFailures = true
+}
+
+project(':wave'){
+    dependencies {
+        compile project(':pst')
+    }
+}
+
+project(':pst'){
+    dependencies {
+        compile project(':wave-proto')
+    }
+}
+
+// Apache Rat Plugin
+rat {
+    // Input directory, defaults to '.'
+    inputDir = '.'
+    // XML and HTML reports directory, defaults to project.buildDir + '/reports/rat'
+    reportDir = project.file('reports/rat')
+    // List of exclude directives, defaults to ['**/.gradle/**']
+    excludes = ['**/build/**', 'reports/**', '.gradle/', '.idea/', '**/*.gradle',
+                '**/*.iml', '**/generated/**']
+    // Fail the build on rat errors, defaults to true
+    failOnError = false
+}

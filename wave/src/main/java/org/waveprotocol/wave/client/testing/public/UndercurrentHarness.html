@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <meta name="gwt:property" content="locale=en">
+    <title>Undercurrent Harness</title>
+    <style type='text/css'>
+      /* Full screen box. */
+      body {
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+
+        /*
+         * Arial seems to be the only non-ugly sans-serif font that renders roughly the same on both
+         * Chrome and Firefox.  e.g., 'sans-serif' on Firefox is a nicer mystery font, because it is
+         * wider, but Chrome binds 'sans-serif' to 'arial'.
+         */
+        font-family: arial;
+        font-size: small;
+      }
+
+      /* Fixed-width and horizontally centered, in a way that works on IE. */
+      #initialHtml {
+        position: absolute;
+        left: 50%;
+        right: 50%;
+        top: 4em;  /* Enough space for the header. */
+        bottom: 4em;
+        /* Expand out of the center line, aiming for ~70-75 character blip widths. */
+        margin-left: -250px;
+        margin-right: -250px;
+        border: 1px solid lightGray;
+      }
+
+      #info {
+        position: absolute;
+        z-index: 100;
+        right: 20px;
+        top: 20px;
+        padding: 0.2em;
+        width: 10em;
+        border: 1px solid black;
+        background-color: lightGray;
+      }
+
+      #timeline {
+        margin-left: 1em;
+      }
+
+    </style>
+  </head>
+  <body>
+    <h2>Undercurrent Test Harness</h2>
+    <div id='initialHtml'></div>
+    <div id='info'>
+      Active: <span id='active'></span><br/>
+      Timing:
+      <div id='timeline'></div>
+    </div>
+    <script type='text/javascript' src='waveharness.nocache.js'>
+    </script>
+  </body>
+</html>

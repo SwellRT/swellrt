@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+  Author: hearnden@google.com (David Hearnden)
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Inline thread mock harness</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="tmp_inline_thread.css"/>
+<link rel="stylesheet" type="text/css" href="blip.css"/>
+<link rel="stylesheet" type="text/css" href="focus.css"/>
+<style type="text/css">
+body {
+  font-family: arial;
+}
+
+#panel {
+  height: 100%;
+  max-width: 45em;
+  margin-left: 100px;
+}
+
+</style>
+<script type="text/javascript">
+
+// Basic behaviour of toggling expanded state.
+
+var frame;
+var blip;
+var thread;
+var threadContents;
+var anchor1, anchor2;
+
+function lastChild(elem) {
+  return previousElementPre(elem.lastChild);
+}
+
+function firstChild(elem) {
+  return nextElementPre(elem.firstChild);
+}
+
+function nextElementPre(elem) {
+  var e = elem;
+  while (e && e.nodeType != 1)
+    e = e.nextSibling;
+  return e;
+}
+
+function previousElementPre(elem) {
+  var e = elem;
+  while (e && e.nodeType != 1)
+    e = e.previousSibling;
+  return e;
+}
+
+function save() {
+  blip = document.getElementById('blip');
+  anchor1 = document.getElementById('anchor1');
+  anchor2 = document.getElementById('anchor2');
+  thread = document.getElementById('thread');
+  threadContents = document.getElementById('threadContents');
+  frame = document.getElementById('focus');
+
+  anchor1.removeAttribute("id");
+  anchor2.removeAttribute("id");
+  blip.removeAttribute("id");
+  thread.removeAttribute("id");
+  threadContents.removeAttribute("id");
+  thread.parentNode.removeChild(thread);
+  frame.parentNode.removeChild(frame);
+  frame.style.display = "";
+}
+
+function populate() {
+  var reply1 = blip.cloneNode(true);
+  var reply2 = blip.cloneNode(true);
+  threadContents.appendChild(reply1);
+  threadContents.appendChild(reply2);
+
+  anchor1.appendChild(thread);
+  anchor2.appendChild(thread.cloneNode(true));
+
+  var toggle = firstChild(firstChild(anchor1));
+  toggle.setAttribute("r", "unread");
+  toggle.className = toggle.className.replace(/read/, "unread");
+}
+
+function show() {
+  document.getElementById('panel').style.display = '';
+}
+
+function toggle(e) {
+  var toggle = e;
+  var chrome = nextElementPre(toggle.nextSibling);
+  var dropContainer = lastChild(toggle);
+  var thread = toggle.parentNode;
+
+  if (toggle.getAttribute("c") == "expanded") {
+    toggle.className = toggle.className.replace(/expanded/, "collapsed");
+    chrome.className = chrome.className.replace(/expanded/, "collapsed");
+    dropContainer.className
+       = dropContainer.className.replace(/expanded/, "collapsed");
+    toggle.setAttribute("c", "collapsed");
+
+    // Webkit hack, because their incremental layout is incorrect.
+    thread.style.display = 'inline-block';
+    var x = thread.offsetParent;
+    thread.style.display = '';
+  } else {
+    toggle.className = toggle.className.replace(/collapsed/, "expanded");
+    chrome.className = chrome.className.replace(/collapsed/, "expanded");
+    dropContainer.className
+        = dropContainer.className.replace(/collapsed/, "expanded");
+    toggle.setAttribute("c", "expanded");
+  }
+
+  return false; // preventDefault
+}
+
+function toggleFocus(event, elem) {
+  if (frame.parentNode == elem) {
+    frame.parentNode.removeChild(frame);
+  } else {
+    elem.appendChild(frame);
+  }
+
+  if (!event) var event = window.event;
+  event.cancelBubble = true;
+  if (event.stopPropagation) event.stopPropagation();
+  return true; // Do not preventDefault
+}
+
+function init() {
+  save();
+  populate();
+  show();
+}
+</script>
+</head>
+<body onload='init();'>
+<h2>Mock harness for indented thread html.</h2>
+
+<p>Click to triangle to toggle expansion.</p>
+<div id='panel' style='display:none;'>
+  <div id='blip' class='blip'>
+    <div class='meta' onclick='return toggleFocus(event, this.parentNode);'>
+      <img class='avatar' src='unknown.jpg' alt='unknown.jpg'></img>
+       <div class='metabar read'>
+        <div class='options'>
+          <span class='time'>11:30pm</span>|<span class='edit'>Edit</span>|<span class='reply'>Reply</span>
+        </div>
+        <div class='metaline'>Bob and Nebuchadnezzar:</div>
+      </div>
+      <div class='contentContainer'>
+        <div class='document' contentEditable='true'>
+          <div><b>A wave is equal parts conversation and document.</b>
+            People can communicate and work together with richly formatted
+            text, photos, videos, maps, and more.
+          </div>
+          <br/>
+          <div>
+            <b>A wave is shared.</b><div id='anchor1' class='anchor'></div>
+            Any participant can reply anywhere in the message, edit the
+            content and add participants at any point in  the process. Then
+            playback lets anyone rewind the wave to see who said what and
+            when.
+          </div>
+          <br/>
+          <div><b>A wave is live.</b> With live transmission as you 
+            type,<div id='anchor2' class='anchor'></div> participants on a
+            wave can have faster conversations, see edits and interact with
+            extensions in real-time.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='replies'></div>
+    <div class='privateReplies'></div>
+  </div>
+</div>
+
+<!-- No whitespace inbetween inline elements -->
+    <div id='thread' class='thread' contentEditable='false'><!--
+   --><div class='toggle read expanded' c='expanded' r='read'
+            onmousedown='return false;' onclick='return toggle(this);'><!--
+     --><div class='dropContainer expanded'><!--
+       --><div class='drop'></div><!--
+     --></div><!--
+   --></div><!--
+   --><div id='threadContents' class='chrome expanded'></div><!--
+ --></div>
+  <div id='focus' class='focus' style='display:none'></div>
+</body>
+</html>

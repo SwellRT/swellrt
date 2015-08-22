@@ -1,0 +1,43 @@
+// Plugins
+apply plugin: 'java'
+
+// Settings
+version = 0.1
+
+// Dependencies
+repositories {
+    mavenCentral()
+}
+
+// - Project - Compile
+dependencies {
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '2.6.1'
+    compile group: 'com.google.guava', name: 'guava', version: '15.0'
+    compile group: 'org.antlr', name: 'antlr', version: '3.2'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    compile fileTree(dir: '../wave-proto/build/libs', include: "**/*.jar")
+// - Project - Testing
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+// Source Sets
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            //srcDir '../wave-proto/build/classes/main/'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+
+    test {
+        java {
+            srcDir 'src/test/java'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}

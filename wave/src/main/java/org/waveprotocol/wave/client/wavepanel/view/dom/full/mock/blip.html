@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+  Author: hearnden@google.com (David Hearnden)
+-->
+<html>
+<head>
+<title>Blip mock harness</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="blip.css">
+<link rel="stylesheet" type="text/css" href="focus.css">
+<style type="text/css">
+body {
+  font-family: arial;
+}
+
+#panel {
+  max-width: 45em;
+  margin-left: 100px;
+}
+</style>
+<script type="text/javascript">
+
+// Basic behaviour of toggling the focus frame.
+var frame;
+
+function toggleFocus(e) {
+  if (frame.parentNode
+      /* IE bug: after detachment, frame.parentNode is still non-null. */
+      && frame.parentNode.nodeType == 1) {
+    frame.parentNode.removeChild(frame);
+  } else {
+    e.appendChild(frame);
+  }
+}
+
+function toggleRead(e) {
+  if (e.className.search(' read') != -1) {
+    e.className = e.className.replace('read', 'unread');
+  } else {
+    e.className = e.className.replace('unread', 'read');
+  }
+}
+
+function firstChild(elem) {
+  return nextElementPre(elem.firstChild);
+}
+
+function secondChild(elem) {
+  return nextElementPre(firstChild(elem).nextSibling);
+}
+
+function nextElementPre(elem) {
+  var e = elem;
+  while (e && e.nodeType != 1)
+    e = e.nextSibling;
+  return e;
+}
+
+function pullFocus() {
+  frame = document.getElementById('focus');
+  frame.parentNode.removeChild(frame);
+  frame.style.display = "";
+}
+
+function duplicate() {
+  var panel = document.getElementById('panel');
+  blip1 = firstChild(panel);
+  blip2 = blip1.cloneNode(true);
+
+  secondChild(firstChild(blip1)).className += ' read';
+  secondChild(firstChild(blip2)).className += ' unread';
+  panel.appendChild(blip2);
+}
+
+// body's onload attribtue does not work in IE.
+window.onload = function() {
+  pullFocus();
+  duplicate();
+};
+
+</script>
+</head>
+<body>
+<h2>Mock harness for blip html.</h2>
+<p>Tested in: Firefox 3.5+, Safari 4, Chrome, IE7+.</p>
+<p>Click to toggle focus.</p>
+<div id='panel'>
+  <div class='blip'>
+    <div class='meta' onclick='toggleFocus(this.parentNode);'>
+      <img class='avatar' src='unknown.jpg' alt='unknown.jpg'>
+      <div class='metabar' onclick='toggleRead(this); return true;'>
+        <div class='options'>
+          <span class='time'>11:30pm</span>|<span class='edit'>Edit</span>|<span class='reply'>Reply</span>
+        </div>
+        <div class='metaline'>Bob and Nebuchadnezzar:</div>
+      </div>
+      <div class='contentContainer'>
+        <div class='document'>
+          <div><b>A wave is equal parts conversation and document.</b>
+            People can communicate and work together with richly formatted
+            text, photos, videos, maps, and more.
+          </div>
+          <br/>
+          <div><b>A wave is shared.</b>
+            Any participant can reply anywhere in the message, edit the 
+            content and add participants at any point in  the process. Then
+            playback lets anyone rewind the wave to see who said what and
+            when.
+          </div>
+          <br/>
+          <div><b>A wave is live.</b> With live transmission as you type,
+            participants on a wave can have faster conversations, see edits and
+            interact with extensions in real-time.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='replies' style='height: 200px; background-color: #c0c0c0;'>
+      Replies
+    </div>
+    <div class='privateReplies'>
+    </div>
+  </div>
+</div>
+<div id='focus' class='focus' style='display:none'></div>
+</body>
+</html>

@@ -1,0 +1,268 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+// The wave client-server protocol.
+// See http://www.waveprotocol.org/protocol/design-proposals/clientserver-protocol
+//
+// Author: anorth@google.com (Alex North)
+
+syntax = "proto2";
+
+import "org/waveprotocol/box/server/rpc/rpc.proto";
+import "org/waveprotocol/wave/federation/federation.protodevel";
+
+package concurrencycontrol;
+
+option java_package = "org.waveprotocol.wave.concurrencycontrol";
+option java_outer_classname = "ClientServer";
+
+
+/*
+ *** Fetch service. ***
+ * Provides snapshots describing a client's view of a wave.
+ * As a bandwidth optimization, the client may specify that it already has
+ * snapshots of some wavelets at some version (such as from a previous fetch).
+ * If the server's current version matches the version the client provides
+ * then the snapshot is omitted from the response.
+ */
+service FetchService {
+  rpc Fetch(FetchWaveViewRequest) returns (FetchWaveViewResponse);
+}
+
+message FetchWaveViewRequest {
+  // Wave to open, URI path format.
+  required string waveId = 1;
+  // Wavelet versions the client already knows.
+  // At most one version per wavelet.
+  repeated WaveletVersion knownWavelet = 2;
+}
+
+message FetchWaveViewResponse {
+  required ResponseStatus status = 1;
+  
+  message Wavelet {
+    // The wavelet in view, URI path format.
+    required string waveletId = 1;
+    // Snapshot of the wavelet; omitted if the client already knew it.
+    optional WaveletSnapshot snapshot = 2;
+  }
+  repeated Wavelet wavelet = 2;
+}
+
+/* A wavelet with a known hashed version of that wavelet. */
+message WaveletVersion {
+  // Known wavelet, URI path format.
+  required string waveletId = 1;
+  // Known hashed version of the wavelet.
+  required federation.ProtocolHashedVersion version = 2;
+}
+
+/* A wavelet and associated metadata. */
+message WaveletSnapshot {
+  // Wavelet's id, URI path format.
+  required string waveletId = 1;
+  // Participants of this wavelet.
+  repeated string participant = 2;
+  // Snapshots of all the documents in the wavelet.
+  repeated DocumentSnapshot document = 3;
+
+  //// Metadata ////
+  // Current version and modification timestamp of the wavelet.
+  required federation.ProtocolHashedVersion version = 4;
+  required int64 lastModifiedTime = 5;
+  // Participant and time of creation for the wavelet.
+  required string creator = 6;
+  required int64 creationTime = 7;
+}
+
+/* A document and associated metadata. */
+message DocumentSnapshot {
+  // Id of the document.
+  required string documentId = 1;
+  // Operation that transforms an empty document the document state.
+  required federation.ProtocolDocumentOperation documentOperation = 2;
+
+  //// Metadata ////
+  // Participant who submitted the first operation to the document.
+  required string author = 3;
+  // All participants who have submitted operations to the document.
+  repeated string contributor = 4;
+  // Wavelet version and timestamp when the document was last modified.
+  required int64 lastModifiedVersion = 5;
+  required int64 lastModifiedTime = 6;
+}
+
+/*
+ *** Wavelet channel service. ***
+ * Provides a uni-directional stream of deltas for a single wavelet,
+ * beginning at the delta applying at a client-specified version.
+ * The stream continues until either the client requests the channel
+ * be closed or a terminating message is received. Deltas submitted
+ * with this channel's id are excluded from the stream. There is no
+ * ordering guarantee between this service and responses from the
+ * delta submission service.
+ */
+service WaveletChannelService {
+  rpc Open(OpenWaveletChannelRequest) returns (OpenWaveletChannelStream) {
+      option (rpc.is_streaming_rpc) = true;
+  };
+  rpc Close(CloseWaveletChannelRequest) returns (EmptyResponse);
+}
+
+message OpenWaveletChannelRequest {
+  // Wave id, URI path format.
+  required string waveId = 1;
+  // Wavelet id, URI path format.
+  required string waveletId = 2;
+  // Application version of first delta to return.
+  required federation.ProtocolHashedVersion beginVersion = 3;
+}
+
+/** Repeated message for a wavelet channel. */
+message OpenWaveletChannelStream {
+  // Identifies the channel, provided only in the first message.
+  optional string channelId = 1;
+
+  // Second and subsequent messages contain either or both a delta
+  // and commitVersion.
+  optional WaveletUpdate delta = 2;
+  optional federation.ProtocolHashedVersion commitVersion = 3;
+
+  // Last message contains only a terminator.
+  optional WaveletChannelTerminator terminator = 4;
+}
+
+message CloseWaveletChannelRequest {
+  // Channel to close.
+  required string channelId = 1;
+}
+
+/** A delta applied to a wavelet. */
+message WaveletUpdate {
+  // Transformed delta.
+  required federation.ProtocolWaveletDelta delta = 1;
+  // Wavelet hashed version after the delta.
+  required federation.ProtocolHashedVersion resultingVersion = 2;
+  // Timestamp of delta application.
+  required int64 applicationTimpstamp = 3;
+}
+
+/** Terminates a wavelet stream. */
+message WaveletChannelTerminator {
+  required ResponseStatus status = 1;
+}
+
+
+/*
+ *** Delta submission service. ***
+ * Receives deltas submitted against wavelets.
+ * Deltas are submitted in association with a wavelet channel (see
+ * WaveletChannelService).
+ */
+service DeltaSubmissionService {
+  rpc Submit(SubmitDeltaRequest) returns (SubmitDeltaResponse);
+}
+
+message SubmitDeltaRequest {
+  // Wave to submit to, URI path format.
+  required string waveId = 1;
+  // Wavelet to submit to, URI path format.
+  required string waveletId = 2;
+  // Delta to submit.
+  required federation.ProtocolWaveletDelta delta = 3;
+  // Wavelet channel associated with submission.
+  required string channelId = 4;
+}
+
+message SubmitDeltaResponse {
+  required ResponseStatus status = 1;
+
+  // Number of ops applied from the delta.
+  required int32 operationsApplied = 2;
+  // Wavelet hashed version after the delta.
+  optional federation.ProtocolHashedVersion hashedVersionAfterApplication = 3;
+  // Timestamp of delta application.
+  optional int64 timestampAfterApplication = 4;
+} 
+
+
+/*
+ *** Transport authentication service. ***
+ * Authenticates the underlying transport.
+ * This service is required only to work around a bug in some browsers'
+ * websocket implementations that fail to set cookies containing authentication
+ * tokens.
+ * If the client's authentication is invalid the server should close the
+ * transport.
+ * See: http://code.google.com/p/wave-protocol/issues/detail?id=119
+ */
+service TransportAuthenticationService {
+  rpc Authenticate (TransportAuthenticationRequest) returns (EmptyResponse);
+}
+
+message TransportAuthenticationRequest {
+  // Authentication token.
+  required string token = 1;
+}
+
+
+/*** An empty message for services which have no application-level result. ***/
+message EmptyResponse {
+}
+
+/*** Response status for all services ***/
+message ResponseStatus {
+  enum ResponseCode {
+  // All good.
+  OK = 0;
+
+  // Request was ill-formed.
+  BAD_REQUEST = 1;
+
+  // An unspecified internal error occurred.
+  INTERNAL_ERROR = 2;
+
+  // The request was not authorized.
+  NOT_AUTHORIZED = 3;
+
+  // Hashed version didn't match a point in history.
+  VERSION_ERROR = 4;
+
+  // A delta contained an invalid operation (before or after transformation).
+  INVALID_OPERATION = 5;
+
+  // An operation didn't preserve a document schema.
+  SCHEMA_VIOLATION = 6;
+
+  // A delta is too big or the resulting document count or size is too large.
+  SIZE_LIMIT_EXCEEDED = 7;
+
+  // An operation was rejected by a server policy.
+  POLICY_VIOLATION = 8;
+
+  // An object is unavailable because it has been quarantined.
+  QUARANTINED = 9;
+
+  // A request was made against a version older than the server was willing
+  // to satisfy. Transform and retry.
+  TOO_OLD = 10;
+  }
+  
+  required ResponseCode status = 1;
+  // Reason must be provided if status != OK.
+  optional string failureReason = 2; 
+}

@@ -15,14 +15,14 @@
 /dist
 /gen
 /bin
-/server.config
-/_sessions
-/_accounts
-/_deltas
-/_attachments
-/_certificates
-/_indexes
-/gwt-unitCache
+*/server.config
+*/_sessions
+*/_accounts
+*/_deltas
+*/_attachments
+*/_certificates
+*/_indexes
+*/gwt-unitCache
 war/WEB-INF
 *.old
 *.log*
@@ -33,5 +33,26 @@ war/WEB-INF
 .idea
 *.iml
 *.eml
+*.ipr
+*.iws
 .settings/
+
+### Gradle
+.gradle
+build/
+wave/build/
+wave/war/WEB-INF/
+wave/war/webclient/
+wave/war/org*
+pst/build/
+### Reports
+reports/
+### Generated Sources
+wave/src/generated/
+### Gwt Testing
+wave/gwt-unitCache
+### prodsody config
+wave/local.net.cfg.lua
+
+
 

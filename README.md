@@ -45,29 +45,29 @@ The web client will be accessible by default at http://localhost:9898/.
 Build
 ------
 
-Wave in a Box requires Java 7 & and uses Ant 1.9.3 (or higher) to build.
+Wave in a Box requires Java 7 & and uses Gradle 2.8 (or higher) to build.
 
 To run the tests (optional), run:   
-    ant get-third-party test
+    gradle testAll
 
 To build the client and server run:  
-    ant get-third-party compile-gwt dist-server  
-It will be created in dist/wave-in-a-box-server-X.Y-incubating.jar.  
+    gradle buildServerJar
+It will be created in wave/build/libs/wave-version.jar.  
 
 You need to configure your instance before you can use it. To create a default simple configuration run:  
-    ant -f server-config.xml  
+    gradle prosody-config  
 
 To override default values pass them to the ant script. 
 For example, to override wave\_server\_domain run:  
-ant -f server-config.xml -Dwave\_server\_domain=example.com  
+gradle prosody-config -Dwave\_server\_domain=example.com  
 Take a look at the server.config.example to learn about configuration and possible/default values.
 
 The server can be started (on Linux/MacOS) by running  
-    ./run-server.sh    
+    ./run-server.sh  (currently disabled please use gradle method)  
 Or on Windows by running  
-    run-server.bat  
+    run-server.bat  (currently disabled please use gradle method)
 Or, you can run the server from the compiled classes with ant:  
-    ant run-server  
+    gradle run  
 The web client will be accessible by default at http://localhost:9898/.
 
 
@@ -77,28 +77,6 @@ To learn more about Wave in a Box and Wave Federation Protocol:
 2. Visit the Apache Wave wiki at https://cwiki.apache.org/confluence/display/WAVE/Home.
 3. Look at the white papers folder - the information is a bit old but still usable.   
 4. Watch the Wave Summit videos on YouTube, find the links at: https://cwiki.apache.org/confluence/display/WAVE/Wave+Summit+Talks
-
-Protocol Buffers
---
-Wave Protocol communicates using Protocol Buffers <http://code.google.com/p/protobuf/>.
-
-Because of the difficulty of distributing binaries, we do not include the 
-protocol compiler in this distribution. Therefore, to rebuild updated 
-protocol buffer files, you will need to install the binary protoc 
-in your environment by fetching the protobuf code from the website 
-above.
-
-Additionally, you will have to update the build-proto.properties file to
-point to the unpacked source distribution of the protocol buffers release.
-
-Then, after updating a proto file, run  
-    ant -f build-proto.xml compile compile_json  
-
-Note: this generates files into proto_src. If files here exist without
-write permission, you will get permission denied errors from this step.
-
-Note also that you don't need protoc unless you want to change the proto
-files.
 
 
 To enable SSL:
@@ -133,7 +111,7 @@ In order to specify MongoDB in server.config as the storage option for storing d
 Or on Ubuntu Linux you can use the following command:  
     sudo apt-get install mongodb-org
 
-To enable Solr:
+To enable Solr (Currently Disabled):
 --
 In order to specify Solr in server.config as the search type - you need to install Solr according to instructions at: http://www.apache.org/dyn/closer.cgi/lucene/solr/4.9.1.  
 Or, you can use built in Ant script, i.e. run:  

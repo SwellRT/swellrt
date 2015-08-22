@@ -1,0 +1,46 @@
+// Plugins
+apply plugin: 'java'
+apply plugin: 'com.google.protobuf';
+
+/* - Plugin */
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.7.0'
+    }
+}
+
+protobuf {
+    // Configure the protoc executable
+    protoc {
+        // Download from repositories
+        artifact = 'com.google.protobuf:protoc:2.6.1'
+    }
+}
+
+/* Source Sets */
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        proto {
+            srcDir 'src/main/proto'
+            include '**/*.protodevel'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(
+            [group: "com.google.protobuf", name: "protobuf-java", version: "2.6.1"],
+            [group: "com.googlecode.protobuf-java-format", name: "protobuf-java-format", version: "1.2"]
+    )
+}
