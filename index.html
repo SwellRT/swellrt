@@ -108,7 +108,6 @@
 
 
         .pad {
-            background-color: #FFFFFF;
             border: 2px solid #BBBBBB;
             height: 482px;
             box-shadow: 10px 10px 5px #888888;
@@ -116,6 +115,28 @@
             margin-bottom: 2em;
             margin-top: 1em;
             overflow-y: scroll;
+        }
+
+        .pad-enabled {
+            color: #000000;
+            background-color: #FFFFFF;
+        }
+
+        .pad-disabled {
+            color: #BBBBBB;
+            background-color: #DCDCDC;            
+        }
+
+        .pad-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(41,128,185,0.9);
+            color: #fff;
+            padding: 50%;
+            padding: 50%;
         }
 
         .steps {
@@ -205,8 +226,8 @@
                 <div id="offline_msg" class="">
                     You are <span class="badge">offline</span> Ops! Please refresh the page or try later.
                 </div>
-                <div id="pad" class="pad">
-                </div>                
+                <div id="pad" class="pad pad-disabled">
+                </div>            
             </div>
 
             <div class="col-md-6 steps">
@@ -332,21 +353,57 @@
     <script src="http://demo.swellrt.org/swellrt/swellrt.nocache.js"></script>
     <script>
 
-
+        // Versions
+        console.log("v20150810.1 - Initial version");
+        console.log("v20150824.1 - Disable Pad on exceptions with UI effects");
         
+        function setPadEnabled(isEnabled) {
 
-        function onSwellRTReady() {
+            if (!isEnabled) {
+                // Disable Editor
 
+                $("#online_msg").toggleClass("hidden", true);
+                $("#offline_msg").toggleClass("hidden", false);
 
-            var connectedOnce = false;
+                $("#pad").removeClass("pad-enabled");
+                $("#pad").addClass("pad-disabled");
 
-            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {
-                
-                console.log("Network connected");
+                try {
+                    _pad.setEditing(false);
+                } catch (e) {
+
+                }
+
+            } else {
+                // Enable Editor
+
+                try {
+                    _pad.setEditing(true);
+                } catch (e) {
+
+                }
 
                 $("#online_msg").toggleClass("hidden", false);
                 $("#offline_msg").toggleClass("hidden", true);
 
+                $("#pad").removeClass("pad-disabled");
+                $("#pad").addClass("pad-enabled");
+
+            }
+        }
+
+
+        function onSwellRTReady() {
+
+            var connectedOnce = false;
+
+
+            SwellRT.useWebSocket(true);
+
+
+            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {
+                
+                console.log("Network connected");
 
                 if (!connectedOnce) {
 
@@ -364,6 +421,8 @@
                             _pad = SwellRT.editor("pad");
                             _pad.edit(_model.root.get("doc"));
 
+                            setPadEnabled(true);
+
                         },
 
                         function(error) {
@@ -371,22 +430,24 @@
                             console.log("Data model error "+error);
                         });
 
-                }   
+                } else {
+
+                    setPadEnabled(true);
+                }  
 
             });
 
             SwellRT.on(SwellRT.events.NETWORK_DISCONNECTED, function(data)   {
 
                 console.log("Network disconnected ");
-
-                $("#online_msg").toggleClass("hidden", true);
-                $("#offline_msg").toggleClass("hidden", false);
+                setPadEnabled(false);               
 
             });
 
 
             SwellRT.on(SwellRT.events.FATAL_EXCEPTION, function(data) {
                 console.log("Exception "+data.cause);
+                setPadEnabled(false);           
             });
 
 
