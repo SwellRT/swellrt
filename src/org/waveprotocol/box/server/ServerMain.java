@@ -21,7 +21,6 @@ package org.waveprotocol.box.server;
 
 import cc.kune.initials.InitialsAvatarsServlet;
 
-import com.google.gwt.logging.server.RemoteLoggingServiceImpl;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -33,6 +32,8 @@ import com.google.inject.name.Names;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.eclipse.jetty.proxy.ProxyServlet;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.swellrt.server.box.SwellRtIndexerDispatcher;
 import org.swellrt.server.box.SwellRtModule;
 import org.swellrt.server.box.servlet.SwellRtServlet;
@@ -51,14 +52,10 @@ import org.waveprotocol.box.server.persistence.PersistenceModule;
 import org.waveprotocol.box.server.persistence.SignerInfoStore;
 import org.waveprotocol.box.server.robots.ProfileFetcherModule;
 import org.waveprotocol.box.server.robots.RobotApiModule;
-import org.waveprotocol.box.server.robots.RobotRegistrationServlet;
-import org.waveprotocol.box.server.robots.active.ActiveApiServlet;
 import org.waveprotocol.box.server.robots.agent.passwd.PasswordAdminRobot;
 import org.waveprotocol.box.server.robots.agent.passwd.PasswordRobot;
 import org.waveprotocol.box.server.robots.agent.registration.RegistrationRobot;
 import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
-import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
-import org.waveprotocol.box.server.robots.dataapi.DataApiServlet;
 import org.waveprotocol.box.server.robots.passive.RobotsGateway;
 import org.waveprotocol.box.server.rpc.AttachmentInfoServlet;
 import org.waveprotocol.box.server.rpc.AttachmentServlet;
@@ -67,13 +64,9 @@ import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
 import org.waveprotocol.box.server.rpc.FetchServlet;
 import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
 import org.waveprotocol.box.server.rpc.LocaleServlet;
-import org.waveprotocol.box.server.rpc.NotificationServlet;
-import org.waveprotocol.box.server.rpc.SearchServlet;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.rpc.SignOutServlet;
 import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
-import org.waveprotocol.box.server.rpc.WaveClientServlet;
-import org.waveprotocol.box.server.rpc.WaveRefServlet;
 import org.waveprotocol.box.server.stat.RequestScopeFilter;
 import org.waveprotocol.box.server.stat.StatuszServlet;
 import org.waveprotocol.box.server.stat.TimingFilter;
@@ -247,18 +240,20 @@ public class ServerMain {
 
     server.addServlet("/locale/*", LocaleServlet.class);
     server.addServlet("/fetch/*", FetchServlet.class);
-    server.addServlet("/search/*", SearchServlet.class);
-    server.addServlet("/notification/*", NotificationServlet.class);
+    // server.addServlet("/search/*", SearchServlet.class);
+    // server.addServlet("/notification/*", NotificationServlet.class);
 
-    server.addServlet("/robot/dataapi", DataApiServlet.class);
-    server.addServlet(DataApiOAuthServlet.DATA_API_OAUTH_PATH + "/*", DataApiOAuthServlet.class);
-    server.addServlet("/robot/dataapi/rpc", DataApiServlet.class);
-    server.addServlet("/robot/register/*", RobotRegistrationServlet.class);
-    server.addServlet("/robot/rpc", ActiveApiServlet.class);
-    server.addServlet("/webclient/remote_logging", RemoteLoggingServiceImpl.class);
+    // server.addServlet("/robot/dataapi", DataApiServlet.class);
+    // server.addServlet(DataApiOAuthServlet.DATA_API_OAUTH_PATH + "/*",
+    // DataApiOAuthServlet.class);
+    // server.addServlet("/robot/dataapi/rpc", DataApiServlet.class);
+    // server.addServlet("/robot/register/*", RobotRegistrationServlet.class);
+    // server.addServlet("/robot/rpc", ActiveApiServlet.class);
+    // server.addServlet("/webclient/remote_logging",
+    // RemoteLoggingServiceImpl.class);
     server.addServlet("/profile/*", FetchProfilesServlet.class);
     server.addServlet("/iniavatars/*", InitialsAvatarsServlet.class);
-    server.addServlet("/waveref/*", WaveRefServlet.class);
+    // server.addServlet("/waveref/*", WaveRefServlet.class);
 
     String gadgetHostName =
         injector
@@ -269,7 +264,14 @@ public class ServerMain {
         Collections.singletonMap("hostHeader", gadgetHostName + ":" + port);
     server.addServlet("/gadgets/*", GadgetProxyServlet.class, initParams);
 
-    server.addServlet("/", WaveClientServlet.class);
+
+    // server.addServlet("/", WaveClientServlet.class);
+    // Root context is a static resource introducing SwellRT
+    ServletHolder staticHolder = server.addServlet("/static/*", DefaultServlet.class);
+    staticHolder.setInitParameter("dirAllowed", "false");
+    ServletHolder rootHolder = server.addServlet("/", DefaultServlet.class);
+    rootHolder.setInitParameter("dirAllowed", "false");
+
 
     // Profiling
     server.addFilter("/*", RequestScopeFilter.class);

@@ -51,7 +51,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
@@ -546,8 +545,8 @@ public class ServerRpcProvider {
 
     // Serve the static content and GWT web client with the default servlet
     // (acts like a standard file-based web server).
-    addServlet("/static/*", DefaultServlet.class);
-    addServlet("/webclient/*", DefaultServlet.class);
+    // addServlet("/static/*", DefaultServlet.class);
+    // addServlet("/webclient/*", DefaultServlet.class);
   }
 
   public ServletModule getServletModule(final Injector injector) {
