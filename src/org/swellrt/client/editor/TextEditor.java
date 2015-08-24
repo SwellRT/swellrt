@@ -184,7 +184,7 @@ public class TextEditor {
   }
 
   public void setEditing(boolean isEditing) {
-    if (editor.hasDocument()) {
+    if (editor != null && editor.hasDocument()) {
       if (editor.isEditing() != isEditing) editor.setEditing(isEditing);
     }
   }

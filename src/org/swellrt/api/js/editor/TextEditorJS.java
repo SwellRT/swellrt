@@ -26,8 +26,12 @@ public class TextEditorJS extends JavaScriptObject {
       cleanUp: function() {
         delegate.@org.swellrt.client.editor.TextEditor::cleanUp()();
         return this;
-      }
+      },
 
+      setEditing: function(editing) {
+        delegate.@org.swellrt.client.editor.TextEditor::setEditing(Z)(editing);
+        return this;
+      }
 
     }; // jsWrapper
 
