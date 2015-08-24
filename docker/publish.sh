@@ -10,7 +10,7 @@ if [ $? -ne 0 ]; then exit 1; fi
 
 echo "Publishing image.."
 
-docker push $NAME
+docker push $NAME:latest
 
 if [ $? -ne 0 ]; then exit 1; fi
 
