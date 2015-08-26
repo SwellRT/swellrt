@@ -361,6 +361,7 @@
         console.log("v20150824.2 - Changed logo baseline: editing -> editor");
         console.log("v20150825.1 - New links to wiki/doc and stackoverflow");
         console.log("v20150825.2 - Add link to logo");
+        console.log("v20150826.3 - Start Session and Open Model new callbacks");
         
         function setPadEnabled(isEnabled) {
 
@@ -400,50 +401,14 @@
 
         function onSwellRTReady() {
 
-            var connectedOnce = false;
-
-
             SwellRT.useWebSocket(true);
 
-
-            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {
-                
+            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {                
                 console.log("Network connected");
-
-                if (!connectedOnce) {
-
-
-                    // demo.swellrt.org/s+mCDtyYi9oeA
-                    SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
-                        
-                        function(model) {
-
-                            connectedOnce = true;
-
-                            console.log("Data model opened");
-
-                            _model = model;
-                            _pad = SwellRT.editor("pad");
-                            _pad.edit(_model.root.get("doc"));
-
-                            setPadEnabled(true);
-
-                        },
-
-                        function(error) {
-
-                            console.log("Data model error "+error);
-                        });
-
-                } else {
-
-                    setPadEnabled(true);
-                }  
-
+                setPadEnabled(true);
             });
 
             SwellRT.on(SwellRT.events.NETWORK_DISCONNECTED, function(data)   {
-
                 console.log("Network disconnected ");
                 setPadEnabled(false);               
 
@@ -461,7 +426,21 @@
                 
                function(session) {              
 
-                        console.log("Session started");
+                    console.log("Session started");
+
+                    SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
+                        
+                        function(model) {
+
+                            console.log("Data model opened");
+
+                            _model = model;
+                            _pad = SwellRT.editor("pad");
+                            _pad.edit(_model.root.get("doc"));
+
+                            // Let on SwellRT.events.NETWORK_CONNECTED to activate the pad
+
+                        });
 
                 });
 
