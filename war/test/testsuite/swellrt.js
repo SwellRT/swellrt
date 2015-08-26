@@ -374,32 +374,36 @@ var SwellRT_Tester = {
 
       var self = this;
 
-      modelA_id = SwellRT.createModel(
+      try {
 
-              function(model) {
-                console.log("Created new model A");
-                _modelA_callback = "A";
-               },
+        modelA_id = SwellRT.createModel(
 
-              function(error) {
-                  console.log("Error creating data model A: "+ error)
-                });
+                function(model) {
+                  console.log("Created new model A");
+                  _modelA_callback = "A";
+                 });
 
+      } catch (e) {
+        console.log(e);
+      }
 
-      modelB_id = SwellRT.createModel(
+      try {
 
-              function(model) {
-                console.log("Created new model B");
-                _modelB_callback = "B";
+        modelB_id = SwellRT.createModel(
 
-                // Use this model for testing
-                _model = model;
+                function(model) {
+                  console.log("Created new model B");
+                  _modelB_callback = "B";
 
-               },
+                  // Use this model for testing
+                  _model = model;
 
-              function(error) {
-                  console.log("Error creating data model B: "+ error)
-                });
+                 });
+
+      } catch (e) {
+        console.log(e);
+      }
+
 
       // A nasty sync method.
       runFlag = setInterval(function(){

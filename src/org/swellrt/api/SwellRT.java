@@ -22,6 +22,7 @@ import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.box.webclient.client.Session;
+import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
 import org.waveprotocol.box.webclient.search.SearchService;
@@ -98,6 +99,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private String waveServerURLSchema;
   private String waveServerURL;
   private WaveWebSocketClient websocket;
+  @Deprecated
   private SearchBuilder searchBuilder;
 
   /** List of living waves for the active session. */
@@ -135,9 +137,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    *
    * @param user name of the user with or without domain part
    * @param callback
+   * @throws RequestException
    */
   private void login(final String user, final String password,
-      final Callback<JavaScriptObject, String> callback) {
+      final Callback<JavaScriptObject, String> callback) throws RequestException {
 
 
     String query = URL.encodeQueryString("address") + "=" + user;
@@ -149,50 +152,47 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
-    try {
-      // Allow cookie headers, and so Wave session can be set
-      builder.setIncludeCredentials(true);
+    // Allow cookie headers, and so Wave session can be set
+    builder.setIncludeCredentials(true);
 
-      builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-      builder.sendRequest(query, new RequestCallback() {
+    builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+    builder.sendRequest(query, new RequestCallback() {
 
-        public void onError(Request request, Throwable exception) {
-          callback.onFailure(exception.getMessage());
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        // xmlHTTTPResquest object doesn't handle 302 properly
+        if (response.getStatusCode() == 200) {
+
+          // Get complete user address from the server
+          loggedInUser = ParticipantId.ofUnsafe(response.getText());
+
+          // This fakes the former Wave Client JS session object.
+          String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
+          // oh yes, Session doesn't work. Wiab implementation does the same.
+          String seed = SwellRTUtils.nextBase64(10);
+          waveDomain = loggedInUser.getDomain();
+          callback.onSuccess(createWebClientSession(loggedInUser.getDomain(),
+              loggedInUser.getAddress(), seed));
+
+        } else if (response.getStatusCode() == 403) {
+          loggedInUser = null;
+          log.log(Level.SEVERE, "Error Login Servlet: " + response.getStatusText());
+          callback.onFailure("ACCESS_FORBIDDEN_EXCEPTION");
+
+        } else {
+          loggedInUser = null;
+          log.log(Level.SEVERE, "Error Login Servlet: " + response.getStatusText());
+          callback.onFailure("SERVICE_EXCEPTION");
         }
 
-        @Override
-        public void onResponseReceived(Request request, Response response) {
+      }
 
-          // xmlHTTTPResquest object doesn't handle 302 properly
-          if (response.getStatusCode() == 200) {
-
-            // Get complete user address from the server
-            loggedInUser = ParticipantId.ofUnsafe(response.getText());
-
-            // This fakes the former Wave Client JS session object.
-            String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
-            // oh yes, Session doesn't work. Wiab implementation does the same.
-            String seed = SwellRTUtils.nextBase64(10);
-            waveDomain = loggedInUser.getDomain();
-            callback.onSuccess(createWebClientSession(loggedInUser.getDomain(),
-                loggedInUser.getAddress(), seed));
-
-          } else {
-
-            loggedInUser = null;
-
-            log.log(Level.SEVERE, "Error calling wave login servlet: " + response.getStatusText());
-            callback.onFailure("Error calling wave login servlet: " + response.getStatusText());
-          }
-
-        }
-
-      });
-
-    } catch (RequestException e) {
-      log.log(Level.SEVERE, "Error calling wave login servlet", e);
-      callback.onFailure(e.getMessage());
-    }
+    });
 
   }
 
@@ -218,7 +218,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * the logged in user. It seems we need a new Web socket client instance for
    * each user session. Not sure how to close a websocket.
    */
-  private void startComms() {
+  private void startComms(final Callback<Void, Void> callback) {
 
     assert (loggedInUser != null);
 
@@ -231,11 +231,24 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     webSocketURL += waveServerURL + "/";
 
     websocket = new WaveWebSocketClient(websocketNotAvailable() || !useWebSocket, webSocketURL);
-    websocket.connect();
+    websocket.connect(new WaveSocketStartCallback() {
 
-    channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
-    idGenerator = ClientIdGenerator.create();
-    seed = Session.get().getIdSeed();
+      @Override
+      public void onSuccess() {
+
+        channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
+        idGenerator = ClientIdGenerator.create();
+        seed = Session.get().getIdSeed();
+
+        callback.onSuccess((Void) null);
+      }
+
+      @Override
+      public void onFailure() {
+        callback.onFailure((Void) null);
+
+      }
+    });
 
 
   }
@@ -254,6 +267,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @param numResults
    * @param callback
    */
+  @Deprecated
   public void getWaves(int startIndex, int numResults,
       SearchService.Callback callback) {
 
@@ -272,6 +286,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
                                                           }-*/;
 
 
+  private boolean isSessionStarted() {
+    return loggedInUser != null;
+  }
+
   /*******************************************************************************************/
 
 
@@ -281,15 +299,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Create a new Wave user.
-   *
+   * 
    * @param host The server hosting the user: http(s)://server.com
-   * @param username user address including domain part: username@server.com
+   * @param username user address including domain part or not:
+   *        username@server.com
    * @param password the user password
    * @param callback
+   * @throws RequestException
    */
   public void registerUser(final String host, final String username, final String password,
-      final Callback<String, String> callback) {
-
+      final Callback<String, String> callback) throws RequestException {
 
     String urlStr = host.endsWith("/") ? host + REGISTER_CTX : host + "/" + REGISTER_CTX;
 
@@ -297,7 +316,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, urlStr);
 
-    try {
+
       // Allow cookie headers, and so Wave session can be set
       builder.setIncludeCredentials(true);
 
@@ -306,30 +325,29 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       builder.sendRequest(queryStr, new RequestCallback() {
 
-        public void onError(Request request, Throwable exception) {
-          callback.onFailure(exception.getMessage());
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        // xmlHTTTPResquest object doesn't handle 302 properly
+        if (response.getStatusCode() == 200) {
+          callback.onSuccess(response.getStatusText());
+        } else if (response.getStatusCode() == 403) {
+          log.log(Level.WARNING,
+              "Error registering new user " + username + ": " + response.getStatusText());
+          callback.onFailure("INVALID_USERNAME_EXCEPTION");
+        } else {
+          log.log(Level.WARNING,
+              "Error registering new user " + username + ": " + response.getStatusText());
+          callback.onFailure("SERVICE_EXCEPTION");
         }
 
-        @Override
-        public void onResponseReceived(Request request, Response response) {
+      }
 
-          // xmlHTTTPResquest object doesn't handle 302 properly
-          if (response.getStatusCode() == 200) {
-            callback.onSuccess(response.getStatusText());
-          } else {
-            log.log(Level.WARNING,
-                "Error registering new user " + username + ": " + response.getStatusText());
-            callback.onFailure(response.getStatusText());
-          }
-
-        }
-
-      });
-
-    } catch (RequestException e) {
-      log.log(Level.WARNING, "Error registering new user " + username, e);
-      callback.onFailure(e.getMessage());
-    }
+    });
 
 
   }
@@ -342,14 +360,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @param password
    * @param callback
    * @return
+   * @throws RequestException
+   * @throws InvalidUrlException
    */
-  public boolean startSession(String user, String password, final String url,
-      final Callback<JavaScriptObject, String> callback) {
+  public void startSession(String user, String password, final String url,
+      final Callback<JavaScriptObject, String> callback) throws RequestException {
 
-    // TODO validate url, if it fails return false
 
     waveServerURLSchema = url.startsWith("http://") ? "http://" : "https://";
     waveServerURL = url.replace(waveServerURLSchema, "");
+
 
     login(user, password, new Callback<JavaScriptObject, String>() {
 
@@ -359,17 +379,31 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       }
 
       @Override
-      public void onSuccess(JavaScriptObject result) {
+      public void onSuccess(final JavaScriptObject result) {
 
         searchBuilder =
             CustomJsoSearchBuilderImpl.create(waveServerURLSchema + waveServerURLSchema);
-        startComms();
-        callback.onSuccess(result);
+        startComms(new Callback<Void, Void>() {
+
+          @Override
+          public void onFailure(Void none) {
+            callback.onFailure("NETWORK_EXCEPTION");
+
+            // Clear user session
+            Cookies.removeCookie(SESSION_COOKIE_NAME);
+            loggedInUser = null;
+          }
+
+          @Override
+          public void onSuccess(Void none) {
+            callback.onSuccess(result);
+          }
+
+        });
+
 
       }
     });
-
-    return true;
 
   }
 
@@ -380,8 +414,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * Logout user and close communications with Wave provider
    *
    * @return
+   * @throws SessionNotStartedException
    */
-  public boolean stopSession() {
+  public void stopSession() throws SessionNotStartedException {
+
+    if (loggedInUser == null) throw new SessionNotStartedException();
 
     // Destroy all waves
     for (Entry<WaveId, WaveWrapper> entry : waveWrappers.entrySet())
@@ -397,7 +434,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     loggedInUser = null;
     searchBuilder = null;
 
-    return true;
   }
 
   protected WaveWrapper getWaveWrapper(WaveId waveId, boolean isNew) {
@@ -424,7 +460,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
   public String createWave(IdGeneratorGeneric idGenerator,
-      final Callback<WaveWrapper, String> callback) {
+      final OnLoadCallback<WaveWrapper> callback) throws NetworkException,
+      SessionNotStartedException {
+
+    if (!isSessionStarted()) {
+      throw new SessionNotStartedException();
+    }
+
+    if (!websocket.isConnected()) {
+      throw new NetworkException();
+    }
 
     idGenerator.initialize(this.idGenerator); // TODO what???
 
@@ -432,12 +477,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     final WaveWrapper waveWrapper = getWaveWrapper(waveId, true);
 
     if (waveWrapper.isLoaded()) {
-      callback.onSuccess(waveWrapper);
+      callback.onLoad(waveWrapper);
     } else {
       waveWrapper.load(new Command() {
         @Override
         public void execute() {
-          callback.onSuccess(waveWrapper);
+          callback.onLoad(waveWrapper);
         }
       });
     }
@@ -447,32 +492,41 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Open an existing wave.
-   *
+   * 
    * @param strWaveId WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
+   * @throws InvalidIdException
+   * @throws NetworkException
+   * @throws SessionNotStartedException
    */
-  public String openWave(final String strWaveId, final Callback<WaveWrapper, String> callback) {
+  public String openWave(final String strWaveId, final OnLoadCallback<WaveWrapper> callback)
+      throws InvalidIdException, NetworkException, SessionNotStartedException {
+
+    if (!isSessionStarted()) {
+      throw new SessionNotStartedException();
+    }
+
+    if (!websocket.isConnected()) {
+      throw new NetworkException();
+    }
 
     WaveId waveId = null;
     try {
-
       waveId = WaveId.deserialise(strWaveId);
-
     } catch (Exception e) {
-      callback.onFailure(e.getMessage());
-      return null;
+      throw new InvalidIdException();
     }
 
     final WaveWrapper waveWrapper = getWaveWrapper(waveId, false);
 
     if (waveWrapper.isLoaded()) {
-      callback.onSuccess(waveWrapper);
+      callback.onLoad(waveWrapper);
     } else {
       waveWrapper.load(new Command() {
         @Override
         public void execute() {
-          callback.onSuccess(waveWrapper);
+          callback.onLoad(waveWrapper);
         }
       });
 
@@ -483,18 +537,26 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
 
-  public boolean closeWave(String waveIdStr) {
+  public void closeWave(String waveIdStr) throws InvalidIdException, SessionNotStartedException {
 
-    WaveId waveId = WaveId.deserialise(waveIdStr);
+    if (!isSessionStarted()) {
+      throw new SessionNotStartedException();
+    }
+
+    WaveId waveId = null;
+
+    try {
+      waveId = WaveId.deserialise(waveIdStr);
+    } catch (Exception e) {
+      throw new InvalidIdException();
+    }
 
     WaveWrapper waveWrapper = waveWrappers.get(waveId);
 
-    if (waveWrapper == null) return false;
+    if (waveWrapper == null) throw new InvalidIdException();
 
     waveWrapper.destroy();
     waveWrappers.remove(waveId);
-
-    return true;
 
   }
 
@@ -536,16 +598,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     RootPanel.get();
     WaveClient.create(this); // Startup the SwellRT JS Client
 
-
-    GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
-
-      @Override
-      public void onUncaughtException(Throwable e) {
-        log.log(Level.SEVERE, "Uncaught Exception: " + e.getMessage());
-        GWT.log(e.getMessage(), e);
-        if (listener != null) listener.onException("UNKNOWN_EXCEPTION");
-      }
-    });
+    // Force to flow exceptions to the browser
+    // WaveClientJS and WaveClient must capture exceptions properly
+    GWT.setUncaughtExceptionHandler(null);
 
     // Capture and notify Network events. They are sent from
     // WaveWebSocketClient. We use the original Wave client event system.
@@ -629,7 +684,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public void query(String expr, String projExpr, String aggrExpr, final Callback<String, String> callback) {
+  public void query(String expr, String projExpr, String aggrExpr,
+      final Callback<String, String> callback) throws RequestException, SessionNotStartedException {
+
+    if (!isSessionStarted()) {
+      throw new SessionNotStartedException();
+    }
 
     String query = "";
 
@@ -650,32 +710,28 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
 
-    try {
-      // Allow cookie headers, and so Wave session can be set
-      builder.setIncludeCredentials(true);
+    // Allow cookie headers, and so Wave session can be set
+    builder.setIncludeCredentials(true);
 
-      builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-      builder.sendRequest(query, new RequestCallback() {
+    builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+    builder.sendRequest(query, new RequestCallback() {
 
-        public void onError(Request request, Throwable exception) {
-          callback.onFailure(exception.getMessage());
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() == 200) {
+          callback.onSuccess(response.getText());
+        } else {
+          callback.onFailure("SERVICE_EXCEPTION");
         }
+      }
 
-        @Override
-        public void onResponseReceived(Request request, Response response) {
+    });
 
-          if (response.getStatusCode() == 200) {
-            callback.onSuccess(response.getText());
-          } else {
-            callback.onFailure(response.getStatusText());
-          }
-        }
-
-      });
-
-    } catch (RequestException e) {
-      callback.onFailure(e.getMessage());
-    }
 
   }
 

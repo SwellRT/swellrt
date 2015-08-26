@@ -2,10 +2,13 @@ package org.swellrt.api;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.event.shared.UmbrellaException;
+import com.google.gwt.http.client.RequestException;
 
 import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.api.js.editor.TextEditorJS;
@@ -61,11 +64,11 @@ public class WaveClient implements SwellRT.Listener {
    * @param username user address including domain part: username@server.com
    * @param password the user password
    * @param callback
+   * @throws RequestException
    */
   public void registerUser(String host, String username, String password,
-      final JavaScriptObject callback) {
+      final JavaScriptObject callback) throws RequestException {
 
-    try {
 
       coreClient.registerUser(host, username, password, new Callback<String, String>() {
 
@@ -80,10 +83,6 @@ public class WaveClient implements SwellRT.Listener {
         }
       });
 
-    } catch (Exception e) {
-      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
-    }
-
   }
 
 
@@ -93,20 +92,16 @@ public class WaveClient implements SwellRT.Listener {
    * @param url
    * @param user
    * @param password
-   * @return
+   * @throws RequestException
    */
-  public boolean startSession(String url, String user, String password,
-      final JavaScriptObject callback) {
+  public void startSession(String url, String user, String password, final JavaScriptObject callback)
+      throws RequestException {
 
-    boolean startOk = false;
 
-    try {
-
-      startOk =
-          coreClient.startSession(user, password, url, new Callback<JavaScriptObject, String>() {
+    coreClient.startSession(user, password, url, new Callback<JavaScriptObject, String>() {
 
         @Override
-            public void onSuccess(JavaScriptObject result) {
+        public void onSuccess(JavaScriptObject result) {
           invoke(callback, WaveClientJS.SUCCESS, result);
         }
 
@@ -116,11 +111,6 @@ public class WaveClient implements SwellRT.Listener {
         }
       });
 
-    } catch (Exception e) {
-      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
-    }
-
-    return startOk;
   }
 
 
@@ -128,9 +118,10 @@ public class WaveClient implements SwellRT.Listener {
    * Stops the WaveSession. No callback needed.
    *
    * @return
+   * @throws SessionNotStartedException
    */
-  public boolean stopSession() {
-    return coreClient.stopSession();
+  public void stopSession() throws SessionNotStartedException {
+    coreClient.stopSession();
   }
 
   //
@@ -139,39 +130,36 @@ public class WaveClient implements SwellRT.Listener {
 
   /**
    * Close a data model. No callback needed.
-   *
+   * 
    * @param waveId
    * @return true for success
+   * @throws InvalidIdException
+   * @throws SessionNotStartedException
    */
-  public boolean closeModel(String waveId) {
-    return coreClient.closeWave(waveId);
+  public void closeModel(String waveId) throws InvalidIdException, SessionNotStartedException {
+    coreClient.closeWave(waveId);
   }
 
 
   /**
    * Create a new data model.
-   *
-   * TODO: check if try-catch blocks are necessary
-   *
+   * 
    * @return the new data model Id.
+   * @throws NetworkException
+   * @throws SessionNotStartedException
    */
-  public String createModel(final JavaScriptObject callback) {
+  public String createModel(final JavaScriptObject callback) throws NetworkException,
+      SessionNotStartedException {
 
     String waveId = null;
 
-    try {
-
-        waveId = coreClient.createWave(TypeIdGenerator.get(), new Callback<WaveWrapper, String>() {
-
+    waveId = coreClient.createWave(TypeIdGenerator.get(), new OnLoadCallback<WaveWrapper>() {
         @Override
-        public void onSuccess(WaveWrapper wrapper) {
-
+      public void onLoad(WaveWrapper wrapper) {
 
           ModelJS modelJS = null;
 
-          try {
-
-            Model model =
+          Model model =
                 Model.create(wrapper.getWave(), wrapper.getLocalDomain(),
                     wrapper.getLoggedInUser(),
                   wrapper.isNewWave(), wrapper.getIdGenerator());
@@ -179,26 +167,10 @@ public class WaveClient implements SwellRT.Listener {
             modelJS = ModelJS.create(model);
             model.addListener(modelJS);
 
-          } catch (Exception e) {
-            invoke(callback, WaveClientJS.FAILURE, e.getMessage());
-          }
 
-          invoke(callback, WaveClientJS.SUCCESS, modelJS);
-
+        invoke(callback, WaveClientJS.READY, modelJS);
         }
-
-        @Override
-        public void onFailure(String reason) {
-          invoke(callback, WaveClientJS.FAILURE, reason);
-        }
-
-
       });
-
-    } catch (Exception e) {
-      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
-    }
-
 
     return waveId;
 
@@ -206,58 +178,43 @@ public class WaveClient implements SwellRT.Listener {
 
   /**
    * Open a data model.
-   *
-   * TODO: check if try-catch blocks are necessary
-   *
+   * 
    * @return the new data model Id.
+   * @throws InvalidIdException
+   * @throws NetworkException
+   * @throws SessionNotStartedException
    */
-  public String openModel(String waveId, final JavaScriptObject callback) {
+  public String openModel(String waveId, final JavaScriptObject callback)
+      throws InvalidIdException, NetworkException, SessionNotStartedException {
 
     String modelId = null;
 
-    try {
-
-      modelId = coreClient.openWave(waveId, new Callback<WaveWrapper, String>() {
+    modelId = coreClient.openWave(waveId, new OnLoadCallback<WaveWrapper>() {
 
         @Override
-        public void onSuccess(WaveWrapper wrapper) {
+      public void onLoad(WaveWrapper wrapper) {
 
           ModelJS modelJS = null;
 
-          try {
-
-            Model model =
+          Model model =
                 Model.create(wrapper.getWave(), wrapper.getLocalDomain(),
                     wrapper.getLoggedInUser(), wrapper.isNewWave(), wrapper.getIdGenerator());
 
             modelJS = ModelJS.create(model);
             model.addListener(modelJS);
 
-          } catch (Exception e) {
-            invoke(callback, WaveClientJS.FAILURE, e.getMessage());
-          }
-
-          invoke(callback, WaveClientJS.SUCCESS, modelJS);
-        }
-
-        @Override
-        public void onFailure(String reason) {
-          invoke(callback, WaveClientJS.FAILURE, reason);
+            invoke(callback, WaveClientJS.READY, modelJS);
         }
 
       });
-
-    } catch (Exception e) {
-      invoke(callback, WaveClientJS.FAILURE, e.getMessage());
-    }
-
 
     return modelId;
 
   }
 
 
-  public void query(String expr, String projExpr, String aggrExpr, final JavaScriptObject callback) {
+  public void query(String expr, String projExpr, String aggrExpr, final JavaScriptObject callback)
+      throws RequestException, SessionNotStartedException {
     coreClient.query(expr, projExpr, aggrExpr, new Callback<String, String>() {
 
       @Override
@@ -367,6 +324,40 @@ public class WaveClient implements SwellRT.Listener {
   @Override
   public void onReady() {
     callOnSwellRTReady();
+  }
+
+  /**
+   * A central point to wrap Java exceptions and rethrow them as meaningful
+   * JavaScript exceptions for API clients.
+   *
+   * WaveClientJS must wrap all WaveClient calls in a try-catch block and
+   * capture and pass exceptions to this method.
+   *
+   *
+   * @param e The Java native exception
+   * @return the JavaScript exception as String code
+   */
+  public static final String wrapJavaException(Object e) {
+
+    if (e instanceof Throwable) {
+        GWT.log("Exception: " +  ((Throwable) e).getMessage());
+    }
+
+    String exceptionCode = "UNWRAPPED_EXCEPTION";
+
+    if (e instanceof InvalidIdException)
+      exceptionCode = "INVALID_ID_EXCEPTION";
+    else if (e instanceof SessionNotStartedException)
+      exceptionCode = "SESSION_NOT_STARTED_EXCEPTION";
+    else if (e instanceof RequestException)
+      exceptionCode = "REQUEST_EXCEPTION";
+    else if (e instanceof UmbrellaException) {
+      exceptionCode = "UMBRELLA_EXCEPTION";
+    }     else if (e instanceof NetworkException) {
+      exceptionCode = "NETWORK_EXCEPTION";
+    }
+
+    return exceptionCode;
   }
 
 }

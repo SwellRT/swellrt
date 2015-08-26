@@ -116,6 +116,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   private boolean connectedAtLeastOnce = false;
 
+  private WaveSocket.WaveSocketStartCallback onStartCallback = null;
 
   public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
     submitRequestCallbacks = CollectionUtils.createIntMap();
@@ -142,8 +143,18 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
   /**
+   * Opens this connection with a callback to know when actually websocket is
+   * opened. No NetworkStatusEvent events will be triggered.
+   */
+  public void connect(WaveSocket.WaveSocketStartCallback callback) {
+    onStartCallback = callback;
+    connected = ConnectState.CONNECTING;
+    socket.connect();
+  }
+
+  /**
    * Lets app to fully restart the connection.
-   *
+   * 
    */
   public void disconnect(boolean discardInFlightMessages) {
     connected = ConnectState.DISCONNECTED;
@@ -178,11 +189,29 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       }
     } catch (Exception e) {
       connected = ConnectState.DISCONNECTED;
-      ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
+
+      // Report connection error on connection started explicitly
+      if (onStartCallback != null) {
+        onStartCallback.onFailure();
+        onStartCallback = null;
+      } else {
+        // Trigger event on else block cause. onStartCallback is only set for
+        // the first time connection.
+        ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
+      }
+
+      return;
     }
 
+    // Report connection success on connection started explicitly
+    if (onStartCallback != null) {
+      onStartCallback.onSuccess();
+      onStartCallback = null;
+    }
 
+    // Trigger event anyway
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.CONNECTED));
+
   }
 
   @Override
@@ -262,6 +291,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     }
   }
 
-
+  public boolean isConnected() {
+    return connected == ConnectState.CONNECTED;
+  }
 
 }

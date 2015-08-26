@@ -8,6 +8,7 @@ public class WaveClientJS extends JavaScriptObject {
 
   public static final String SUCCESS = "success";
   public static final String FAILURE = "failure";
+  public static final String READY = "ready";
 
   public static final String ITEM_CHANGED = "item-changed";
   public static final String ITEM_ADDED = "item-added";
@@ -51,6 +52,7 @@ public class WaveClientJS extends JavaScriptObject {
 
            SUCCESS: "success",
            FAILURE: "failure",
+           READY: "ready",
 
            ITEM_CHANGED: "item-changed",
            ITEM_ADDED: "item-added",
@@ -92,7 +94,11 @@ public class WaveClientJS extends JavaScriptObject {
             callback.success =  onSuccess;
             callback.failure =  onFailure;
 
-            return delegate.@org.swellrt.api.WaveClient::registerUser(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(host, user, password, callback);
+            try {
+              return delegate.@org.swellrt.api.WaveClient::registerUser(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(host, user, password, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
          },
 
          //
@@ -105,12 +111,19 @@ public class WaveClientJS extends JavaScriptObject {
             callback.success =  onSuccess;
             callback.failure =  onFailure;
 
-            return delegate.@org.swellrt.api.WaveClient::startSession(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(url, user, password, callback);
+            try {
+              return delegate.@org.swellrt.api.WaveClient::startSession(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(url, user, password, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
          },
 
          stopSession: function() {
-
-            return delegate.@org.swellrt.api.WaveClient::stopSession()();
+            try {
+              return delegate.@org.swellrt.api.WaveClient::stopSession()();
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
          },
 
 
@@ -119,28 +132,36 @@ public class WaveClientJS extends JavaScriptObject {
          //
 
          closeModel: function(waveid) {
-
+          try {
              return delegate.@org.swellrt.api.WaveClient::closeModel(Ljava/lang/String;)(waveid);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
          },
 
-         createModel: function(onSuccess, onFailure) {
+         createModel: function(onReady) {
 
             var callback = new Object();
-            callback.success =  onSuccess;
-            callback.failure =  onFailure;
+            callback.ready =  onReady;
 
-            return delegate.@org.swellrt.api.WaveClient::createModel(Lcom/google/gwt/core/client/JavaScriptObject;)(callback);
-
+            try {
+              return delegate.@org.swellrt.api.WaveClient::createModel(Lcom/google/gwt/core/client/JavaScriptObject;)(callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
          },
 
 
-         openModel: function(waveId, onSuccess, onFailure) {
+         openModel: function(waveId, onReady) {
 
             var callback = new Object();
-            callback.success =  onSuccess;
-            callback.failure =  onFailure;
+            callback.ready =  onReady;
 
-            return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(waveId, callback);
+            try {
+              return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(waveId, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
 
          },
 
@@ -166,7 +187,12 @@ public class WaveClientJS extends JavaScriptObject {
               stringQueryExpr = JSON.stringify(expr);
             }
 
-           return delegate.@org.swellrt.api.WaveClient::query(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(stringQueryExpr, stringProjExpr, stringAggrExpr, callback);
+           try {
+             return delegate.@org.swellrt.api.WaveClient::query(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(stringQueryExpr, stringProjExpr, stringAggrExpr, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
+
          },
 
 
@@ -228,9 +254,6 @@ public class WaveClientJS extends JavaScriptObject {
   protected WaveClientJS() {
 
   }
-
-
-
 
   public final native void triggerEvent(String event, Object parameter) /*-{
 
