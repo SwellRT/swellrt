@@ -29,7 +29,8 @@ import com.google.inject.Singleton;
 public class SwellRtModule extends AbstractModule {
 
 
-  public static String MONGO_COLLECTION = "models";
+  public static String MONGO_COLLECTION_MODELS = "models";
+  public static String MONGO_COLLECTION_MODELS_LOG = "models_log";
 
   @Inject
   public SwellRtModule() {

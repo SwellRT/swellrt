@@ -12,6 +12,7 @@ import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Set;
 
@@ -23,6 +24,8 @@ import java.util.Set;
  * 
  */
 public class UnmutableModel implements ReadableModel {
+
+  private static final Log LOG = Log.get(UnmutableModel.class);
 
   private final static String ROOT_DOC = "model+root";
 
@@ -37,8 +40,15 @@ public class UnmutableModel implements ReadableModel {
 
 
   public static UnmutableModel create(ReadableWaveletData waveletData) {
+    // Avoid trouble with old swellrt wavelets
+    if (waveletData.getDocument(ROOT_DOC) == null
+        || waveletData.getDocument(ROOT_DOC).getContent() == null
+        || waveletData.getDocument(ROOT_DOC).getContent().getMutableDocument() == null)
+      return null;
+
     UnmutableModel model = new UnmutableModel(waveletData);
     model.load();
+
     return model;
   }
 
@@ -47,6 +57,7 @@ public class UnmutableModel implements ReadableModel {
     // Get wavelet and root document
     this.waveletData = waveletData;
     this.document = waveletData.getDocument(ROOT_DOC).getContent().getMutableDocument();
+
   }
 
   @SuppressWarnings("unchecked")

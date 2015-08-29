@@ -3,33 +3,60 @@ package org.swellrt.model;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
-import org.waveprotocol.wave.federation.xmpp.Base64Util;
+import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 
+/**
+ * Build a MongoDB document with the snapshot of a collaborative data model.
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
+ */
 public class ModelToMongoVisitor implements TypeVisitor {
 
 
-  private BasicDBObject document;
-  private Stack<Object> objects;
+  private final BasicDBObject document;
+  private final Stack<Object> objects;
+  protected final Stack<String> path;
+  protected final Map<String, String> blipIdToPathMap;
 
-  public static BasicDBObject getDBObject(ReadableModel model) {
+  /**
+   * Generate a BSON view of the Wave-based Data Model. Also return a map
+   * between collaborative data model objects' paths to the corresponding
+   * blip/document storing it.
+   * 
+   * @param model the Wave-based collaborative data model
+   * @return
+   */
+  public static Pair<BasicDBObject, Map<String, String>> run(ReadableModel model) {
 
     ModelToMongoVisitor visitor = new ModelToMongoVisitor();
     visitor.visit(model);
-    return visitor.getDBObject();
+    return Pair.<BasicDBObject, Map<String, String>> of(visitor.getDBObject(),
+        visitor.getblipIdToPathMap());
   }
 
   protected ModelToMongoVisitor() {
     this.document = new BasicDBObject();
     this.objects = new Stack<Object>();
+    this.path = new Stack<String>();
+    this.blipIdToPathMap = new HashMap<String, String>();
   }
 
   protected BasicDBObject getDBObject() {
     return document;
   }
+
+  protected Map<String, String> getblipIdToPathMap() {
+    return blipIdToPathMap;
+  }
+
 
   @Override
   public void visit(ReadableModel instance) {
@@ -45,8 +72,10 @@ public class ModelToMongoVisitor implements TypeVisitor {
     document.append("participants", participants);
 
     // Root map
+    path.push("root");
     instance.getRoot().accept(this);
     document.put("root", objects.pop());
+    path.pop();
 
 
   }
@@ -62,8 +91,10 @@ public class ModelToMongoVisitor implements TypeVisitor {
 
     BasicDBObject mapDBObject = new BasicDBObject();
     for (String k : instance.keySet()) {
+      path.push(k);
       instance.get(k).accept(this);
       mapDBObject.put(k, objects.pop());
+      path.pop();
     }
     objects.push(mapDBObject);
 
@@ -72,11 +103,16 @@ public class ModelToMongoVisitor implements TypeVisitor {
 
   @Override
   public void visit(ReadableList instance) {
+    // TODO(pablojan) add getDocumentedId to ReadableList
+    // pathToBlipMap.put(getStringPath(), instance.)
 
     BasicDBList listDBObject = new BasicDBList();
+    int i = 0;
     for (ReadableType t : instance.getValues()) {
+      path.push("" + (i++));
       t.accept(this);
       listDBObject.add(objects.pop());
+      path.pop();
     }
     objects.push(listDBObject);
 
@@ -85,13 +121,39 @@ public class ModelToMongoVisitor implements TypeVisitor {
   @Override
   public void visit(ReadableText instance) {
 
+    blipIdToPathMap.put(instance.getDocumentId(), getStringPath());
+
     // TODO (pablojan) serialize annotations
     BasicDBObject textDBObject = new BasicDBObject();
     textDBObject.append("annotations", "");
     // TODO (pablojan) add test case for Text objects
-    textDBObject.append("xml", Base64Util.encode(instance.getXml().getBytes()));
+    textDBObject.append("xml", instance.getXml());
+
+    textDBObject.append("author", instance.getAuthor().getAddress());
+    textDBObject.append("contributors", toDBList(instance.getContributors()));
+    textDBObject.append("lastmodtime", instance.getLastUpdateTime());
+
     objects.push(textDBObject);
 
+  }
+
+  protected String getStringPath() {
+    String strPath = "";
+    for (String e : path) {
+      if (!strPath.isEmpty()) strPath += ".";
+
+      strPath += e;
+    }
+
+    return strPath;
+  }
+
+  protected BasicDBList toDBList(Set<ParticipantId> participantSet) {
+    BasicDBList listDBObject = new BasicDBList();
+    for (ParticipantId p : participantSet)
+      listDBObject.add(p.getAddress());
+
+    return listDBObject;
   }
 
 }

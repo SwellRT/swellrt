@@ -48,7 +48,7 @@ public class SwellRtServlet extends HttpServlet {
   public SwellRtServlet(SessionManager sessionManager, MongoDbProvider mongoDbProvider) {
     this.sessionManager = sessionManager;
     try {
-      this.store = mongoDbProvider.getDBCollection(SwellRtModule.MONGO_COLLECTION);
+      this.store = mongoDbProvider.getDBCollection(SwellRtModule.MONGO_COLLECTION_MODELS);
     } catch (Exception e) {
       LOG.warning("Unable to get MongoDB collection. SwellRT servlet won't work!", e);
       this.store = null;

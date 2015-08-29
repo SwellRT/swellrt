@@ -4,6 +4,9 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
 import org.swellrt.model.unmutable.UnmutableModel;
+import org.waveprotocol.wave.model.util.Pair;
+
+import java.util.Map;
 
 
 public class ModelToMongoVisitorTest extends WaveletBasedTestBase {
@@ -17,7 +20,9 @@ public class ModelToMongoVisitorTest extends WaveletBasedTestBase {
 
     ReadableModel model = UnmutableModel.create(getWaveletData());
 
-    BasicDBObject mongoModel = ModelToMongoVisitor.getDBObject(model);
+    Pair<BasicDBObject, Map<String, String>> visitorResult = ModelToMongoVisitor.run(model);
+
+    BasicDBObject mongoModel = visitorResult.first;
 
     assertEquals("example.com/w+seedA", mongoModel.get("wave_id"));
     assertEquals("example.com/conv+seedB", mongoModel.get("wavelet_id"));

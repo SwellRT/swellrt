@@ -3,14 +3,17 @@ package org.swellrt.model.unmutable;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.TypeVisitor;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
-import org.waveprotocol.wave.model.document.Document;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
+
+import java.util.Set;
 
 public class UnmutableText implements ReadableText {
 
-  private Document document;
+  private final ReadableBlipData blipData;
 
-  protected UnmutableText(Document document) {
-    this.document = document;
+  protected UnmutableText(ReadableBlipData blipData) {
+    this.blipData = blipData;
   }
 
   @Override
@@ -20,22 +23,43 @@ public class UnmutableText implements ReadableText {
 
   @Override
   public int getSize() {
-    return document.size();
+    return blipData.getContent().getMutableDocument().size();
   }
 
   @Override
   public String getXml() {
-    return document.toXmlString();
+    return blipData.getContent().getMutableDocument().toXmlString();
   }
 
   @Override
   public Iterable<AnnotationInterval<String>> getAllAnnotations(int start, int end) {
-    return document.annotationIntervals(start, end, null);
+    return blipData.getContent().getMutableDocument().annotationIntervals(start, end, null);
   }
 
   @Override
   public String getAnnotation(int location, String key) {
-    return document.getAnnotation(location, key);
+    return blipData.getContent().getMutableDocument().getAnnotation(location, key);
   }
+
+  @Override
+  public String getDocumentId() {
+    return blipData.getId();
+  }
+
+  @Override
+  public ParticipantId getAuthor() {
+    return blipData.getAuthor();
+  }
+
+  @Override
+  public long getLastUpdateTime() {
+    return blipData.getLastModifiedTime();
+  }
+
+  @Override
+  public Set<ParticipantId> getContributors() {
+    return blipData.getContributors();
+  }
+
 
 }

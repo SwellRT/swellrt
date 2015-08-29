@@ -74,9 +74,7 @@ public class UnmutableTypeFactory implements ReadableTypeFactory {
       return UnmutableMap.create(this, document, parent);
 
     } else if (type.equals(TextType.PREFIX)) {
-
-      Document document = waveletData.getDocument(documentId).getContent().getMutableDocument();
-      return new UnmutableText(document);
+      return new UnmutableText(waveletData.getDocument(documentId));
     }
 
     return null;
