@@ -362,6 +362,7 @@
         console.log("v20150825.1 - New links to wiki/doc and stackoverflow");
         console.log("v20150825.2 - Add link to logo");
         console.log("v20150826.3 - Start Session and Open Model new callbacks");
+        console.log("v20150917.1 - Added piwik analytics");
         
         function setPadEnabled(isEnabled) {
 
@@ -446,7 +447,22 @@
 
         }
 
+          <!-- Piwik -->
+          var _paq = _paq || [];
+          _paq.push(["setDomains", ["*.swellrt.org","*.p2pvalue.github.io","*.swellrt.io","*.www.swellrt.io","*.www.swellrt.org"]]);
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function() {
+            var u="//stats.p2pvalue.eu/";
+            _paq.push(['setTrackerUrl', u+'piwik.php']);
+            _paq.push(['setSiteId', 4]);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+          })();
     </script>
+    <noscript><p><img src="//stats.p2pvalue.eu/piwik.php?idsite=4" style="border:0;" alt="" /></p></noscript>
+    <!-- End Piwik Code -->
+
 
 </body>
 
