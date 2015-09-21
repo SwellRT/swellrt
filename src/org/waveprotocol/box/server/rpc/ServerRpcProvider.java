@@ -171,6 +171,16 @@ public class ServerRpcProvider {
     }
   }
 
+  /**
+   * A Wave server's RPC connection with a remote client using the Atmosphere
+   * transport protocol.
+   *
+   * It wraps an underlying {@AtmosphereChannel} instance
+   * which is the actual Atmosphere's interface.
+   *
+   * @author pablojan@gmail.com (Pablo Ojanguren)
+   *
+   */
   static class AtmosphereConnection extends Connection {
 
     private final AtmosphereChannel atmosphereChannel;
@@ -782,7 +792,6 @@ public class ServerRpcProvider {
       if (resource.transport().equals(TRANSPORT.WEBSOCKET)) {
 
         if (!CONNECTIONS.containsKey(httpSession.getId())) {
-          LOG.fine("Creating connection for user " + loggedInUser.getAddress());
           connection = new AtmosphereConnection(loggedInUser, provider);
           CONNECTIONS.put(httpSession.getId(), connection);
         } else {
@@ -790,15 +799,7 @@ public class ServerRpcProvider {
         }
 
         if (!connection.getAtmosphereChannel().hasResources()) {
-          LOG.fine("Setting Connection's resource for user " + loggedInUser.getAddress() + " : "
-              + resource.uuid());
           connection.getAtmosphereChannel().onConnect(resource);
-        } else {
-          LOG.fine("Connection for user "
-              + loggedInUser.getAddress()
-              + " has resource "
-              + connection.getAtmosphereChannel().getBroadcaster().getAtmosphereResources()
-                  .iterator().next().uuid());
         }
 
       } else {
@@ -809,7 +810,6 @@ public class ServerRpcProvider {
         // Wave Connections are associated to the resource
 
         if (!CONNECTIONS.containsKey(resource.uuid())) {
-          LOG.fine("Creating connection for user " + loggedInUser.getAddress());
           connection = new AtmosphereConnection(loggedInUser, provider);
           CONNECTIONS.put(resource.uuid(), connection);
           connection.getAtmosphereChannel().onConnect(resource);
@@ -821,8 +821,9 @@ public class ServerRpcProvider {
 
       resource.setBroadcaster(connection.getAtmosphereChannel().getBroadcaster());
 
+
       if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
-        LOG.fine("Getting connection for " + loggedInUser.getAddress() + " by resource "
+        LOG.fine("Atmosphere suspending resource (" + resource.transport().name() + ") "
             + resource.uuid());
         // resource.suspend(20000); // use this to simulate network cuts
         resource.suspend();
@@ -830,8 +831,8 @@ public class ServerRpcProvider {
 
 
       if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
-        LOG.fine("Getting message for " + loggedInUser.getAddress() + " by resource "
-            + resource.uuid());
+        LOG.fine("Atmosphere processing message from resource (" + resource.transport().name()
+            + ") " + resource.uuid());
         StringBuilder b = IOUtils.readEntirely(resource);
         connection.getAtmosphereChannel().onMessage(b.toString());
       }
@@ -864,11 +865,14 @@ public class ServerRpcProvider {
     @Override
     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
 
-
       AtmosphereResponse response = event.getResource().getResponse();
       AtmosphereResource resource = event.getResource();
 
       if (event.isSuspended()) {
+
+        LOG.fine("Atmosphere response for suspended resource " + resource.uuid()
+            + " response is "
+            + event.getMessage() != null ? "not empty" : "EMPTY!");
 
         // Set content type before do response.getWriter()
         // http://docs.oracle.com/javaee/5/api/javax/servlet/ServletResponse.html#setContentType(java.lang.String)
@@ -889,9 +893,7 @@ public class ServerRpcProvider {
         } else if (event.getMessage() instanceof String) {
 
           String message = (String) event.getMessage();
-          LOG.fine("Sending Wave message: " + event.getMessage().toString());
           response.getOutputStream().write(message.getBytes(CHARSET));
-
         }
 
         try {
@@ -913,49 +915,46 @@ public class ServerRpcProvider {
               break;
           }
         } catch (IOException e) {
-          LOG.info("Error resuming resource response", e);
+          LOG.warning("Error resuming resource response", e);
         }
 
 
       } else if (event.isCancelled()) {
 
-        LOG.fine("Resource cancelled by remote client: " + event.getResource().uuid());
         HttpSession httpSession = getSession(resource);
         ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
+        LOG.info("Resource cancelled by remote client: " + event.getResource().uuid() + " / "
+            + loggedInUser.getAddress());
 
-        LOG.fine("Removing connection for user " + loggedInUser.getAddress());
-        CONNECTIONS.remove(httpSession.getId());
+      } else if (event.isResumedOnTimeout()) {
 
+        LOG.fine("Resource resumed on timeout: " + event.getResource().uuid());
+
+      } else if (event.isResuming()) {
+
+        LOG.fine("Resource resumed: " + event.getResource().uuid());
 
       } else {
 
         String eventStr = "None";
 
-
         if (event.isClosedByApplication())
           eventStr = "ClosedByApplication";
         else if (event.isClosedByClient())
           eventStr = "ClosedByClient";
-        else if (event.isResumedOnTimeout())
-          eventStr = "ResumedOnTimeout";
-        else if (event.isResuming()) eventStr = "Resuming";
-
-        LOG.fine("Resource " + eventStr + ": " + event.getResource().uuid());
 
         HttpSession httpSession = getSession(resource);
+        ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-        ParticipantId loggedInUser =
-            provider.sessionManager.getLoggedInUser(httpSession);
+        LOG.info("Resource " + eventStr + ": " + event.getResource().uuid() + " / "
+            + loggedInUser.getAddress());
 
         AtmosphereConnection connection =
             (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
 
-        if (connection != null) {
-          LOG.fine("Unsetting Connection's resource for user " + loggedInUser.getAddress() + " : "
-              + resource.uuid());
-
+        if (connection != null)
           connection.getAtmosphereChannel().onDisconnect(event.getResource());
-        }
+
       }
 
     }
