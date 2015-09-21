@@ -23,14 +23,8 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.ScriptInjector;
 
-import org.waveprotocol.wave.client.events.ClientEvents;
-import org.waveprotocol.wave.client.events.NetworkStatusEvent;
-import org.waveprotocol.wave.client.events.NetworkStatusEvent.ConnectionStatus;
-import org.waveprotocol.wave.model.util.Base64DecoderException;
-import org.waveprotocol.wave.model.util.CharBase64;
+import org.waveprotocol.box.webclient.client.WaveSocket;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -38,12 +32,6 @@ import java.util.logging.Logger;
  * transport will be used first by default. If not avaiable or a fatal error
  * occurs, long-polling will be tried.
  *
- *
- * Atmosphere server and client must support following features:
- * <ul>
- * <li>Heart beat messages</li>
- * <li>Track message size + Base64 message encoding</li>
- * </ul>
  *
  * The atmosphere client/server configuration avoids network issues with:
  *
@@ -54,7 +42,7 @@ import java.util.logging.Logger;
  * 15s.</li>
  * </ul>
  *
- * Both configurations will try to keep the communication alive ant to reconnect
+ * Both settings try to keep the communication alive ant to reconnect
  * if it's missed.
  *
  * AtmosphereConnectionListener.onDisconnect() will be invoked when
@@ -78,13 +66,13 @@ import java.util.logging.Logger;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class AtmosphereConnectionImpl implements AtmosphereConnection {
+public class WaveSocketAtmosphere implements WaveSocket {
 
-  private static final Logger log = Logger.getLogger(AtmosphereConnectionImpl.class.getName());
+      private static final Logger log = Logger.getLogger(WaveSocketAtmosphere.class.getName());
 
       private static final class AtmosphereSocket extends JavaScriptObject {
 
-        public static native AtmosphereSocket create(AtmosphereConnectionImpl impl, String urlBase, String transport, String fallback, int maxReconnect, int timeout) /*-{
+        public static native AtmosphereSocket create(WaveSocketAtmosphere impl, String urlBase, String transport, String fallback, int maxReconnect, int timeout) /*-{
 
           // Atmoshpere client
           var atmosphere = $wnd.atmosphere;
@@ -141,25 +129,25 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           // OPEN
           socket.request.onOpen = function() {
             atmosphere.util.debug("Atmosphere Connection Open");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onConnect()();
           };
 
           // REOPEN
           socket.request.onReopen = function() {
             atmosphere.util.debug("Atmosphere Connection ReOpen");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onConnect()();
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onConnect()();
           };
 
           // MESSAGE
           socket.request.onMessage = function(response) {
             //atmosphere.util.debug("Atmosphere Message received");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onMessage(Ljava/lang/String;)(response.responseBody);
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onMessage(Ljava/lang/String;)(response.responseBody);
           };
 
           // CLOSE
           socket.request.onClose = function(response) {
             atmosphere.util.debug("Atmosphere Connection Close "+response.status);
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect()();
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onDisconnect()();
           };
 
           // TRANSPORT FAILURE
@@ -188,13 +176,13 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
           // ERROR
           socket.request.onError = function(response) {
             atmosphere.util.debug("Atmosphere Connection Error "+response.status);
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onError(Ljava/lang/String;)(response.status);
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onError(Ljava/lang/String;)(response.status);
           };
 
           // CLIENT TIMEOUT
           socket.request.onClientTimeout = function(request) {
             atmosphere.util.debug("Atmosphere Client Timeout");
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl::onDisconnect()();
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onDisconnect()();
           };
 
           socket.request.callback = function(response) {
@@ -229,18 +217,14 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
     }
 
 
-    final static int WAVE_MESSAGE_SEPARATOR = '|';
-    final static String WAVE_MESSAGE_END_MARKER = "}|";
-
-
-    private final AtmosphereConnectionListener listener;
+    private final WaveSocketCallback listener;
     private final String urlBase;
     private AtmosphereSocket socket = null;
     private final boolean useWebSocket;
 
 
 
-    public AtmosphereConnectionImpl(AtmosphereConnectionListener listener,
+    public WaveSocketAtmosphere(WaveSocketCallback listener,
                String urlBase, boolean useWebSocketAlt) {
         this.listener = listener;
         this.urlBase = urlBase;
@@ -274,7 +258,7 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
               public void onSuccess(Void result) {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
-              AtmosphereSocket.create(AtmosphereConnectionImpl.this, scriptHost, useWebSocket
+              AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, useWebSocket
                   ? "websocket" : "long-polling", "long-polling", 25, 5000);
                 socket.connect();
               }
@@ -284,11 +268,6 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       } else {
         socket.connect();
       }
-    }
-
-    @Override
-    public void close() {
-      socket.close();
     }
 
 
@@ -329,66 +308,17 @@ public class AtmosphereConnectionImpl implements AtmosphereConnection {
       listener.onDisconnect();
     }
 
-    private boolean isPackedWaveMessage(String message) {
-      return message.indexOf(WAVE_MESSAGE_SEPARATOR) == 0;
-    }
-
-    private List<String> unpackWaveMessages(String packedMessage) {
-
-      List<String> messages = new ArrayList<String>();
-
-      if (isPackedWaveMessage(packedMessage)) {
-
-        while (packedMessage.indexOf(WAVE_MESSAGE_SEPARATOR) == 0 && packedMessage.length() > 1) {
-          packedMessage = packedMessage.substring(1);
-          int marker = packedMessage.indexOf(WAVE_MESSAGE_END_MARKER);
-          String splitMessage = packedMessage.substring(0, marker + 1);
-          messages.add(splitMessage);
-          packedMessage = packedMessage.substring(marker + 1);
-        }
-
-      }
-
-      return messages;
-
-    }
 
 
     @SuppressWarnings("unused")
     private void onMessage(String message) {
-
-      try {
-
-        // Decode from Base64 because of Atmosphere Track Message Lenght server
-        // feauture
-        // NOTE: no Charset is specified, so this relies on UTF-8 as default
-        // charset
-        String decoded = new String(CharBase64.decode(message));
+    listener.onMessage(message);
+  }
 
 
-        // Ignore heart-beat messages
-        // NOTE: is heart beat string always " "?
-        if (decoded == null || decoded.isEmpty() || decoded.startsWith(" ")
-            || decoded.startsWith("  ")) return;
-
-
-        if (isPackedWaveMessage(decoded)) {
-          List<String> unpacked = unpackWaveMessages(decoded);
-          for (String s : unpacked) {
-            listener.onMessage(s);
-          }
-
-        } else {
-          listener.onMessage(decoded);
-        }
-
-    } catch (Base64DecoderException e) {
-        log.severe(e.getMessage());
-        // Errors here should passed to WaveWebSocket, instead of relaying on
-        // client events.
-        ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR));
-      }
-
+  @Override
+  public void disconnect() {
+    socket.close();
     }
 
 

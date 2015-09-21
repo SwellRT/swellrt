@@ -19,9 +19,8 @@
 
 package org.waveprotocol.box.webclient.client;
 
-import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection;
-import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionImpl;
-import org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnectionListener;
+import org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere;
+import org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphereCallback;
 
 
 /**
@@ -41,46 +40,9 @@ public class WaveSocketFactory {
   public static WaveSocket create(final boolean useWebSocketAlt, final String urlBase,
       final WaveSocket.WaveSocketCallback callback) {
 
-      return new WaveSocket() {
+    // Handle special atmosphere features enabled in SwellRT
+    WaveSocketAtmosphereCallback swellRTCallbackSwellRT = new WaveSocketAtmosphereCallback(callback);
 
-        private final AtmosphereConnection socket
-        = new AtmosphereConnectionImpl(new AtmosphereConnectionListener() {
-
-          @Override
-          public void onConnect() {
-            callback.onConnect();
-          }
-
-          @Override
-          public void onDisconnect() {
-            callback.onDisconnect();
-          }
-
-          @Override
-          public void onMessage(String message) {
-            callback.onMessage(message);
-          }
-
-          }, urlBase, useWebSocketAlt);
-
-        @Override
-        public void connect() {
-          socket.connect();
-
-        }
-
-        @Override
-        public void disconnect() {
-          socket.close();
-        }
-
-        @Override
-        public void sendMessage(String message) {
-          socket.sendMessage(message);
-        }
-
-        };
-
-
+    return new WaveSocketAtmosphere(swellRTCallbackSwellRT, urlBase, useWebSocketAlt);
   }
 }
