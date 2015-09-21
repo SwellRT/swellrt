@@ -22,7 +22,7 @@ package org.waveprotocol.wave.client.wave;
 
 import com.google.common.base.Preconditions;
 
-import org.waveprotocol.wave.client.concurrencycontrol.DocOperationLog;
+import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;

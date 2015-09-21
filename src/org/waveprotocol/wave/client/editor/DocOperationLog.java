@@ -1,4 +1,4 @@
-package org.waveprotocol.wave.client.concurrencycontrol;
+package org.waveprotocol.wave.client.editor;
 
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.operation.wave.BlipContentOperation;

@@ -30,7 +30,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
-import org.waveprotocol.wave.client.concurrencycontrol.DocOperationLog;
+import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
