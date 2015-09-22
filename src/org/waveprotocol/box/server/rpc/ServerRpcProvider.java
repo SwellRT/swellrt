@@ -309,8 +309,6 @@ public class ServerRpcProvider {
         ParticipantId authenticatedAs = authenticate(authMessage.getToken());
 
         Preconditions.checkArgument(authenticatedAs != null, "Auth token invalid");
-        Preconditions.checkState(loggedInUser == null || loggedInUser.equals(authenticatedAs),
-            "Session already authenticated as a different user");
 
         loggedInUser = authenticatedAs;
         LOG.info("Session authenticated as " + loggedInUser);
