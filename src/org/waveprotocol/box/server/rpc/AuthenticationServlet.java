@@ -266,7 +266,10 @@ private final WelcomeRobot welcomeBot;
       resp.setStatus(HttpServletResponse.SC_OK);
       resp.setContentType("text/plain");
       // Return the address in case of auto completed domain
-      resp.getWriter().write(loggedInAddress.getAddress());
+      String jsonResponse =
+          "{ \"participantId\" : \"" + loggedInAddress.getAddress() + "\", "
+              + " \"sessionId\" : \"" + session.getId() + "\" }";
+      resp.getWriter().write(jsonResponse);
       resp.getWriter().close();
     } else
       redirectLoggedInUser(req, resp);

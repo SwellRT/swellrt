@@ -58,9 +58,6 @@ import java.util.Queue;
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
 
-  // Sets an specific session cookie name
-  // private static final String JETTY_SESSION_TOKEN_NAME = "JSESSIONID";
-  private static final String JETTY_SESSION_TOKEN_NAME = "WSESSIONID";
 
   /**
    * Envelope for delivering arbitrary messages. Each envelope has a sequence
@@ -154,7 +151,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   /**
    * Lets app to fully restart the connection.
-   * 
+   *
    */
   public void disconnect(boolean discardInFlightMessages) {
     connected = ConnectState.DISCONNECTED;
@@ -163,6 +160,10 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     if (discardInFlightMessages) messages.clear();
 
   }
+
+  private native String getSessionToken() /*-{
+    return $wnd.__session['id'];
+   }-*/;
 
   @Override
   public void onConnect() {
@@ -175,7 +176,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
       if (!connectedAtLeastOnce) {
         // Send the auth message if is the first connection
-        String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
+        // String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
+        String token = getSessionToken();
         if (token != null) {
           ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
           auth.setToken(token);

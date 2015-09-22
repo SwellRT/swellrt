@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -76,6 +77,23 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     public void onReady();
 
+
+  }
+
+  public static class LoginResponse extends JavaScriptObject {
+
+
+    protected LoginResponse() {
+
+    }
+
+    public final native String getSessionId() /*-{
+      return this.sessionId;
+    }-*/;
+
+    public final native String getParticipantId() /*-{
+      return this.participantId;
+    }-*/;
 
   }
 
@@ -152,8 +170,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
-    // Allow cookie headers, and so Wave session can be set
-    builder.setIncludeCredentials(true);
+    builder.setIncludeCredentials(false);
 
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
     builder.sendRequest(query, new RequestCallback() {
@@ -165,19 +182,20 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       @Override
       public void onResponseReceived(Request request, Response response) {
 
-        // xmlHTTTPResquest object doesn't handle 302 properly
+        // xmlHTTPResquest object doesn't handle 302 properly
         if (response.getStatusCode() == 200) {
 
-          // Get complete user address from the server
-          loggedInUser = ParticipantId.ofUnsafe(response.getText());
+          // Get full user address and session id from the server
+          LoginResponse responseData = JsonUtils.<LoginResponse> safeEval(response.getText());
+          loggedInUser = ParticipantId.ofUnsafe(responseData.getParticipantId());
+          String sessionId = responseData.getSessionId();
 
-          // This fakes the former Wave Client JS session object.
-          String sessionId = Cookies.getCookie(SESSION_COOKIE_NAME);
-          // oh yes, Session doesn't work. Wiab implementation does the same.
+
           String seed = SwellRTUtils.nextBase64(10);
           waveDomain = loggedInUser.getDomain();
+          // Use the browser __session object instead of setting cookie
           callback.onSuccess(createWebClientSession(loggedInUser.getDomain(),
-              loggedInUser.getAddress(), seed));
+              loggedInUser.getAddress(), seed, sessionId));
 
         } else if (response.getStatusCode() == 403) {
           loggedInUser = null;
@@ -204,10 +222,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @param sessionId
    */
   private native JavaScriptObject createWebClientSession(String localDomain, String userAddress,
-      String sessionId) /*-{
+      String seed, String sessionId) /*-{
     $wnd.__session = new Object();
     $wnd.__session['domain'] = localDomain;
     $wnd.__session['address'] = userAddress;
+    $wnd.__session['seed'] = seed;
     $wnd.__session['id'] = sessionId;
     return $wnd.__session;
   }-*/;
@@ -299,7 +318,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Create a new Wave user.
-   * 
+   *
    * @param host The server hosting the user: http(s)://server.com
    * @param username user address including domain part or not:
    *        username@server.com
@@ -444,13 +463,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           "Trying to create an existing Wave");
       WaveWrapper ww =
           new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveDomain,
-              Collections.EMPTY_SET, loggedInUser, isNew, this);
+              Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
       waveWrappers.put(waveId, ww);
     } else {
       if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
         WaveWrapper ww =
             new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveDomain,
-                Collections.EMPTY_SET, loggedInUser, isNew, this);
+                Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
         waveWrappers.put(waveId, ww);
       }
     }
@@ -492,7 +511,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Open an existing wave.
-   * 
+   *
    * @param strWaveId WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
