@@ -78,14 +78,10 @@ public final class JsIdentitySet<T> implements IdentitySet<T> {
 
   /**
    * Get the unique id for the object
-   *
-   * TODO(danilatos): See if just calling .hashCode() will "Just Work (TM)"
-   * both for jso and "real java" objects at the same time. Then we won't need
-   * to do it manually.
    */
-  private native int getId(T key) /*-{
-    return key.x$h || (key.x$h = @com.google.gwt.core.client.impl.Impl::getNextHashId()());
-  }-*/;
+  private int getId(T key) {
+    return key.hashCode();
+  }
 
   private final native void eachInner(IntMapJsoView<T> elements, Proc<? super T> proc) /*-{
     for (var k in elements) {
