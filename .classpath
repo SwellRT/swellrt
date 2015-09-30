@@ -64,7 +64,7 @@
 	<classpathentry kind="lib" path="third_party/runtime/xpp3_xpath-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="third_party/test/ant-junit-1.7.0.jar"/>
-	<classpathentry kind="lib" path="third_party/test/asm-3.2.jar"/>
+	<classpathentry kind="lib" path="third_party/test/asm-5.0.4.jar"/>
 	<classpathentry kind="lib" path="third_party/test/cglib-2.2.jar"/>
 	<classpathentry kind="lib" path="third_party/test/emma_ant-2.1.5320.jar"/>
 	<classpathentry kind="lib" path="third_party/test/emma-2.0.5312.jar"/>
@@ -84,9 +84,9 @@
 	<classpathentry kind="lib" path="third_party/runtime/atmosphere-runtime-2.1.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/slf4j-api-1.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/slf4j-simple-1.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.7.0.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.7.0.jar"/>
+	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.7.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/config-1.2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
