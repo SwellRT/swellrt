@@ -169,9 +169,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String url = waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-
-    builder.setIncludeCredentials(false);
-
+    builder.setIncludeCredentials(true);
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
     builder.sendRequest(query, new RequestCallback() {
 
@@ -402,6 +400,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
         searchBuilder =
             CustomJsoSearchBuilderImpl.create(waveServerURLSchema + waveServerURLSchema);
+
         startComms(new Callback<Void, Void>() {
 
           @Override
@@ -417,11 +416,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           public void onSuccess(Void none) {
             callback.onSuccess(result);
           }
-
         });
-
-
       }
+
     });
 
   }
