@@ -154,7 +154,9 @@ public class AuthenticationServletTest extends TestCase {
   public void testUserWithNoDomainReturnAddress() throws Exception {
     configureRedirectString("none");
     attemptLogin("frodo", "password", true);
-    verify(resp.getWriter()).write("frodo@example.com");
+    verify(resp.getWriter()).write(
+        "{ \"participantId\" : \"" + "frodo@example.com" + "\", " + " \"sessionId\" : \"" + "null"
+            + "\" }");
   }
 
   public void testAnonymousLogin() throws IOException {
