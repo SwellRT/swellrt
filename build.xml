@@ -183,6 +183,9 @@
       </fileset>
     </copy>
     <jar destfile="${dist.dir}/pst.jar" basedir="${build.dir}/pst"/>
+    <jar destfile="${dist.dir}/pst-src.jar" basedir="${src.dir}">
+      <patternset includes="org/waveprotocol/pst/**/*"/>
+    </jar>
     <touch file="${dep}/dist-pst"/>
   </target>
 
