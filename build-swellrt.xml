@@ -29,7 +29,7 @@
 
   <!-- Android's Wave dependecies  -->
 
-  <fileset dir="${build.src.dir}" id="android-wave-dep-fileset">
+  <fileset dir="${build.src.dir}" id="client-commons-fileset">
    <include name="org/waveprotocol/wave/model/**/*" />
    <include name="org/waveprotocol/wave/common/logging/*" />
    <include name="org/waveprotocol/wave/communication/**/*" />
@@ -50,12 +50,12 @@
    <exclude name="org/swellrt/model/**/*.xml" />
   </fileset>
 
-  <fileset dir="${build.messages.dir}" id="android-wave-msg-fileset">
+  <fileset dir="${build.messages.dir}" id="wave-msg-fileset">
       <include name="**/*" />
       <exclude name="**/jso/**" />
   </fileset>
 
-  <fileset dir="${build.proto.dir}" id="android-wave-proto-fileset" includes="**/*" />
+  <fileset dir="${build.proto.dir}" id="wave-proto-fileset" includes="**/*" />
 
 
   <!-- Android Targets -->
@@ -66,7 +66,6 @@
       <!-- Atmosphere & Http Client staff -->
       <url url="http://central.maven.org/maven2/com/ning/async-http-client/1.8.14/async-http-client-1.8.14.jar" />
       <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-framework/2.3.18/grizzly-framework-2.3.18.jar" />
-      <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.3.18/grizzly-http-2.3.18.jar" />
       <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-http/2.3.18/grizzly-http-2.3.18.jar" />
       <url url="http://central.maven.org/maven2/org/glassfish/grizzly/grizzly-websockets/2.3.18/grizzly-websockets-2.3.18.jar" />
       <url url="http://central.maven.org/maven2/org/atmosphere/wasync/1.4.3/wasync-1.4.3.jar" />
@@ -94,24 +93,28 @@
   </target>
 
 
-  <target name="dist-swellrt-android-dep"
-   description="Assembles JAR artifact containing classes shared with Wave"
+  <!--
+    mvn install:install-file -DgroupId=org.swellrt -DartifactId=swellrt-client-commons -Dversion=$VERSION -Dfile=$i.jar  -Dpackaging=jar
+  -->
+
+  <target name="dist-swellrt-client-commons"
+   description="Assembles JAR artifact containing classes shared with java/android clients"
    depends="compile, compile-messages">
 
-   <jar destfile="${swellrt.android.lib.dir}/swellrt-android-dep-${swellrt.version}.jar">
+   <jar destfile="${swellrt.build.dir}/swellrt-client-commons-${swellrt.version}.jar">
 
-    <fileset refid="android-wave-dep-fileset" />
-    <fileset refid="android-wave-msg-fileset" />
-    <fileset refid="android-wave-proto-fileset" />
+    <fileset refid="client-commons-fileset" />
+    <fileset refid="wave-msg-fileset" />
+    <fileset refid="wave-proto-fileset" />
 
     <manifest>
      <attribute name="Specification-Vendor" value="The SwellRT project" />
      <attribute name="Specification-Title"
-      value="Apache Wave shared components for SwellRT Android" />
+      value="Apache Wave shared components for SwellRT Java/Android clients" />
      <attribute name="Specification-Version" value="${swellrt.version}" />
      <attribute name="Implementation-Vendor" value="The SwellRT project" />
      <attribute name="Implementation-Title"
-      value="Apache Wave shared components for SwellRT Android" />
+      value="Apache Wave shared components for SwellRT Java/Android clients" />
      <attribute name="Implementation-Version" value="${swellrt.version}" />
      <attribute name="Built-By" value="${user.name}" />
     </manifest>
@@ -119,7 +122,37 @@
    </jar>
   </target>
 
+ <target name="swellrt-mvn-install-client-commons"
+    description="Install swellrt client commons as maven artifcat"
+    depends="dist-swellrt-client-commons">
+   <exec executable="mvn">
+     <arg value="install:install-file"/>
+     <arg value="-DgroupId=org.swellrt"/>
+     <arg value="-DartifactId=swellrt-client-commons"/>
+     <arg value="-Dversion=${swellrt.version}"/>
+     <arg value="-Dfile=${swellrt.build.dir}/swellrt-client-commons-${swellrt.version}.jar"/>
+     <arg value="-Dpackaging=jar"/>
+   </exec>
+ </target>
 
+
+  <target name="swellrt-mvn-deploy-client-commons"
+    description="Install swellrt client commons as maven artifcat"
+    depends="dist-swellrt-client-commons">
+   <exec executable="mvn">
+     <arg value="deploy:deploy-file"/>
+     <arg value="-DgroupId=org.swellrt"/>
+     <arg value="-DartifactId=swellrt-client-commons"/>
+     <arg value="-Dversion=${swellrt.version}"/>
+     <arg value="-Dfile=${swellrt.build.dir}/swellrt-client-commons-${swellrt.version}.jar"/>
+     <arg value="-Dpackaging=jar"/>
+     <arg value="-DrepositoryId=${swellrt.mvn.repository.id}"/>
+     <arg value="-Durl=${swellrt.mvn.repository.url}" />
+     <arg value="-DgeneratePom=false"/>
+   </exec>
+ </target>
+
+  <!--
   <target name="compile-swellrt-android"
     description="Compile SwellRT Android service classes"
     depends="get-third-party-swellrt-android, dist-swellrt-android-dep">
@@ -140,15 +173,19 @@
 
       <compilerarg value="-Xlint:all"/>
       <compilerarg value="-Xlint:-serial"/>
+      -->
       <!-- Deprecation warnings are generated for .class files for some
            compilers, e.g. org.hamcrest.Matcher -> org.hamcrest.BaseMatcher. -->
+<!--
       <compilerarg value="-Xlint:-deprecation"/>
       <compilerarg value="-Werror"/>
 
     </javac>
 
   </target>
+  -->
 
+<!--
   <target name="dist-swellrt-android"
    description="Assembles SwellRT JAR artifact all-in-one"
    depends="compile-swellrt-android">
@@ -180,7 +217,7 @@
    </jar>
 
   </target>
-
+ -->
 
 
   <!-- Web / JavaScript Targets -->
