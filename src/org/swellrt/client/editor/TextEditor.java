@@ -5,6 +5,10 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
 import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
+import org.swellrt.client.editor.doodad.WidgetController;
+import org.swellrt.client.editor.doodad.WidgetDoodad;
+import org.swellrt.client.editor.doodad.WidgetModelDoodad;
+import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
@@ -18,19 +22,22 @@ import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
-import org.waveprotocol.wave.client.editor.webdriver.EditorWebDriverUtil;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.client.wave.RegistriesHolder;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
 import org.waveprotocol.wave.model.document.util.LineContainers;
-import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
+import org.waveprotocol.wave.model.document.util.Point;
+import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -57,7 +64,7 @@ public class TextEditor {
 
   // Wave Editor specific
 
-  private final Registries registries = Editor.ROOT_REGISTRIES;
+  private final Registries registries = RegistriesHolder.get();
   private final KeyBindingRegistry KEY_REGISTRY = new KeyBindingRegistry();
 
 
@@ -71,7 +78,24 @@ public class TextEditor {
   private WaveDocuments<? extends InteractiveDocument> documentRegistry;
 
   private Editor editor;
-  private ContentDocument doc;
+  private TextType text;
+
+
+  /**
+   * Registry of JavaScript controllers for each Widget type
+   */
+  private final Map<String, WidgetController> widgetRegistry =
+      new HashMap<String, WidgetController>();
+
+
+  {
+    EditorStaticDeps.setPopupProvider(Popup.LIGHTWEIGHT_POPUP_PROVIDER);
+    EditorStaticDeps.setPopupChromeProvider(new PopupChromeProvider() {
+      public PopupChrome createPopupChrome() {
+        return null;
+      }
+    });
+  }
 
   public static TextEditor create() {
     TextEditor editor = new TextEditor();
@@ -91,33 +115,25 @@ public class TextEditor {
     this.documentRegistry = documentRegistry;
   }
 
-  private void launchEditor(ContentDocument doc) {
+  public void setModel(Model model) {
+    registerDoodads(model);
+  }
+
+
+  private void setEditor() {
+
+    ContentDocument doc = getContentDocument();
 
     if (editor == null) {
-
-      // First time - create and init new editor.
-      EditorWebDriverUtil.setDocumentSchema(ConversationSchemas.BLIP_SCHEMA_CONSTRAINTS);
-      registerDoodads();
-
-      EditorStaticDeps.setPopupProvider(Popup.LIGHTWEIGHT_POPUP_PROVIDER);
-      EditorStaticDeps.setPopupChromeProvider(new PopupChromeProvider() {
-        public PopupChrome createPopupChrome() {
-          return null;
-        }
-      });
-
       editor = Editors.attachTo(doc);
       editor.init(null, KEY_REGISTRY, EditorSettings.DEFAULT);
-
       editor.addUpdateListener(new EditorUpdateListener() {
         @Override
         public void onUpdate(EditorUpdateEvent event) {
 
         }
       });
-
     } else {
-
       // Reuse exsiting editor.
       // editor.removeContent();
       if (editor.hasDocument()) {
@@ -126,7 +142,6 @@ public class TextEditor {
       }
       editor.setContent(doc);
       editor.init(null, KEY_REGISTRY, EDITOR_SETTINGS);
-
     }
 
     // editor.getWidget().getElement().setId(id);
@@ -135,15 +150,18 @@ public class TextEditor {
 
   }
 
-  private void setText(TextType text) {
+  private ContentDocument getContentDocument() {
+    Preconditions.checkArgument(text != null,
+        "Unable to get ContentDocument from null TextType");
+    Preconditions.checkArgument(text != null,
+        "Unable to get ContentDocument from null DocumentRegistry");
 
-    Preconditions.checkNotNull(documentRegistry,
-        "A document registry must be provided before editing a text");
+    return documentRegistry.getBlipDocument(text.getModel().getWaveletIdString(),
+        text.getDocumentId()).getDocument();
+  }
 
-    doc =
-        documentRegistry
-            .getBlipDocument(text.getModel().getWaveletIdString(), text.getDocumentId())
-            .getDocument();
+  private void setDocument() {
+    ContentDocument doc = getContentDocument();
 
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
 
@@ -176,9 +194,12 @@ public class TextEditor {
 
   public void edit(TextType text) {
     Preconditions.checkNotNull(editorPanel, "Panel not set for TextEditor");
-    setText(text);
-    Preconditions.checkNotNull(this.doc, "ContentDocument can't be null");
-    launchEditor(doc);
+
+    this.text = text;
+
+    setDocument();
+    setEditor();
+
     editor.setEditing(true);
     editor.focus(true);
   }
@@ -192,15 +213,91 @@ public class TextEditor {
   public void cleanUp() {
     if (editor != null) {
       editor.setEditing(false);
-      doc = null;
+      text = null;
       editor.removeContentAndUnrender();
       editor.reset();
     }
   }
 
 
+  public void toggleDebug() {
+    editor.debugToggleDebugDialog();
+  }
 
-  private void registerDoodads() {
+  /**
+   * Register a Widget controller for this editor. Widgets must be registered
+   * BEFORE {@link TextEditor#edit(TextType)} is called.
+   *
+   *
+   * @param name
+   * @param controller
+   */
+  public void registerWidget(String name, WidgetController controller) {
+    widgetRegistry.put(name, controller);
+  }
+
+
+  /**
+   * Insert a Widget at the current cursor position or at the end iff the type
+   * is registered.
+   *
+   * @param type
+   * @param state
+   */
+  public void addWidget(String type, String state) {
+
+    if (!widgetRegistry.containsKey(type)) return;
+
+    Point<ContentNode> currentPoint = null;
+
+    if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
+      currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
+
+    XmlStringBuilder xml = XmlStringBuilder.createFromXmlString("<widget type='" + type + "' state='" + state
+        + "' />");
+
+    if (currentPoint != null) {
+      editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
+    } else {
+      editor.getContent().getMutableDoc().appendXml(xml);
+      editor.flushSaveSelection();
+    }
+
+  }
+
+  /**
+   * Insert a Model supported Widget at the current cursor position iff the type
+   * is registered.
+   *
+   * The state of the Widget is provided in a subtree of the collaborative data
+   * model containing the current text;
+   *
+   * @param type
+   * @param dataModelPath a path to object in the data model. e.g.
+   *        root.cities.newyork
+   */
+  public void addModelWidget(String type, String dataModelPath) {
+
+    if (!widgetRegistry.containsKey(type)) return;
+
+    Point<ContentNode> currentPoint = null;
+
+    if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
+      currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
+
+    XmlStringBuilder xml =
+        XmlStringBuilder.createFromXmlString("<widget-model type='" + type + "' path='"
+            + dataModelPath + "' />");
+
+    if (currentPoint != null) {
+      editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
+    } else {
+      editor.getContent().getMutableDoc().appendXml(xml);
+      editor.flushSaveSelection();
+    }
+  }
+
+  protected void registerDoodads(Model model) {
 
 
     // TOPLEVEL_CONTAINER_TAGNAME
@@ -227,6 +324,10 @@ public class TextEditor {
     ExternalAnnotationHandler.register(registries);
 
     // Add additional doodas here
+    WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);
+    WidgetModelDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry,
+        model);
+
   }
 
 

@@ -22,15 +22,19 @@ package org.swellrt.client;
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;
 
+import org.swellrt.model.ModelSchemas;
+import org.swellrt.model.generic.Model;
+import org.swellrt.model.generic.TextType;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.box.webclient.client.RemoteWaveViewService;
 import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
+import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
-import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.WaveViewData;
 import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
@@ -83,7 +87,19 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
 
   @Override
   protected SchemaProvider createSchemas() {
-    return new ConversationSchemas();
+    return new SchemaProvider() {
+
+      @Override
+      public DocumentSchema getSchemaForId(WaveletId waveletId, String documentId) {
+        if (Model.isModelWaveletId(waveletId)) {
+          if (TextType.isTextBlipId(documentId)) {
+            return ModelSchemas.TEXT_DOCUMENT_SCHEMA;
+          }
+          // TODO Add more schemas for List, Root, Map...
+        }
+        return DocumentSchema.NO_SCHEMA_CONSTRAINTS;
+      }
+    };
   }
 
   @Override

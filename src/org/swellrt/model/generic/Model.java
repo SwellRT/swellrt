@@ -114,7 +114,9 @@ public class Model implements SourcesEvents<Model.Listener> {
 
   private final MapSerializer typeSerializer;
 
-
+  public static boolean isModelWaveletId(WaveletId waveletId) {
+    return waveletId.getId().startsWith(WAVELET_ID_PREFIX);
+  }
 
   private static final Factory<Doc.E, ObservableBasicValue<String>, String> StringIndexFactory =
       new Factory<Doc.E, ObservableBasicValue<String>, String>() {
@@ -340,6 +342,55 @@ public class Model implements SourcesEvents<Model.Listener> {
     TextType tt = new TextType(this);
     if (textOrXml != null) tt.setInitContent(textOrXml);
     return tt;
+  }
+
+  public Type fromPath(String path) {
+    String[] pathKeys = path.split(".");
+
+    if (pathKeys == null || pathKeys.length == 0 || !pathKeys[0].equalsIgnoreCase("root")) {
+      return null;
+    }
+
+    Type currentObject = getRoot();
+    boolean isLeaf = false;
+
+    for (int i = 1; i < pathKeys.length; i++) {
+
+      // Unconsistencies on the path
+      if (currentObject == null) return null;
+      if (isLeaf) return null;
+
+      String key = pathKeys[i];
+
+      if (currentObject instanceof MapType) {
+
+        currentObject = ((MapType) currentObject).get(key);
+
+      } else if (currentObject instanceof ListType) {
+
+        int index = -1;
+        try {
+          index = Integer.parseInt(key);
+        } catch (NumberFormatException e) {
+          return null;
+        }
+
+        if (index < 0 || index >= ((ListType) currentObject).size()) return null;
+
+        currentObject = ((ListType) currentObject).get(index);
+
+      } else if (currentObject instanceof StringType) {
+
+        isLeaf = true;
+
+      } else if (currentObject instanceof TextType) {
+
+        isLeaf = true;
+      }
+
+    }
+
+    return currentObject;
   }
 
   /**

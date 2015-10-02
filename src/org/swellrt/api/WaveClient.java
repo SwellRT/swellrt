@@ -245,9 +245,9 @@ public class WaveClient implements SwellRT.Listener {
   }
 
   /**
-   * Set TextEditor dependencies. In particular, set the document registry
-   * associated with TextType's Model before editing.
-   *
+   * Set TextEditor dependencies from current wave/model. In particular, set the
+   * document registry associated with TextType's Model before editing.
+   * 
    * @param text
    */
   public void configureTextEditor(TextEditor editor, TextType text) {
@@ -255,6 +255,7 @@ public class WaveClient implements SwellRT.Listener {
         coreClient.getDocumentRegistry(text.getModel());
 
     editor.setDocumentRegistry(documentRegistry);
+    editor.setModel(text.getModel());
   }
 
   /**

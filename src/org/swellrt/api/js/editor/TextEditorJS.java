@@ -31,6 +31,26 @@ public class TextEditorJS extends JavaScriptObject {
       setEditing: function(editing) {
         delegate.@org.swellrt.client.editor.TextEditor::setEditing(Z)(editing);
         return this;
+      },
+
+      toggleDebug: function() {
+        delegate.@org.swellrt.client.editor.TextEditor::toggleDebug()();
+      },
+
+      registerWidget: function(name, widgetController) {
+        if (typeof widgetController == 'undefined')
+          return;
+
+        delegate.@org.swellrt.client.editor.TextEditor::registerWidget(Ljava/lang/String;Lorg/swellrt/client/editor/doodad/WidgetController;)(name, widgetController);
+        return widgetController;
+      },
+
+      addWidget: function(name, state) {
+        delegate.@org.swellrt.client.editor.TextEditor::addWidget(Ljava/lang/String;Ljava/lang/String;)(name,state);
+      },
+
+      addModelWidget: function(name, path) {
+        delegate.@org.swellrt.client.editor.TextEditor::addModelWidget(Ljava/lang/String;Ljava/lang/String;)(name, path);
       }
 
     }; // jsWrapper
