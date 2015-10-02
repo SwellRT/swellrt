@@ -40,6 +40,7 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
   }
 
+  public final static String TYPE_NAME = "MapString";
   public final static String ROOT_TAG = "map";
   public final static String PREFIX = "map";
 
@@ -254,7 +255,7 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
   @Override
   public String getType() {
-    return "MapType";
+    return TYPE_NAME;
   }
 
 

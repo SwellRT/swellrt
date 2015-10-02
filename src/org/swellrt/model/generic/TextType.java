@@ -28,6 +28,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   }
 
+  public final static String TYPE_NAME = "TextType";
   /** Keep old blip prefix to keep compatibility with document registry */
   public final static String PREFIX = "b";
   public final static String VALUE_ATTR = "t";
@@ -39,6 +40,11 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
   private boolean isAttached;
+
+
+  public static boolean isTextBlipId(String blipId) {
+    return blipId.startsWith(PREFIX);
+  }
 
   protected TextType(Model model) {
     this.model = model;
@@ -131,7 +137,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   @Override
   public String getType() {
-    return "TextType";
+    return TYPE_NAME;
   }
 
   public ObservableDocument getMutableDocument() {

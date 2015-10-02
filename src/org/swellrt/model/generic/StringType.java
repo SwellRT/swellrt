@@ -24,6 +24,7 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   }
 
+  public final static String TYPE_NAME = "StringType";
   public final static String PREFIX = "str";
   public final static String VALUE_ATTR = "v";
 
@@ -179,7 +180,7 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   @Override
   public String getType() {
-    return "StringType";
+    return TYPE_NAME;
   }
 
 
