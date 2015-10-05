@@ -170,6 +170,11 @@ public class WaveClient implements SwellRT.Listener {
 
         invoke(callback, WaveClientJS.READY, modelJS);
         }
+
+      @Override
+      public void onError(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
       });
 
     return waveId;
@@ -183,9 +188,10 @@ public class WaveClient implements SwellRT.Listener {
    * @throws InvalidIdException
    * @throws NetworkException
    * @throws SessionNotStartedException
+   * @throws RequestException
    */
   public String openModel(String waveId, final JavaScriptObject callback)
-      throws InvalidIdException, NetworkException, SessionNotStartedException {
+      throws InvalidIdException, NetworkException, SessionNotStartedException, RequestException {
 
     String modelId = null;
 
@@ -205,6 +211,11 @@ public class WaveClient implements SwellRT.Listener {
 
             invoke(callback, WaveClientJS.READY, modelJS);
         }
+
+      @Override
+      public void onError(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
 
       });
 

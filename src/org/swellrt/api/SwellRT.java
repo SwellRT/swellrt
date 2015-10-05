@@ -35,6 +35,7 @@ import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.CorruptionDetail;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
@@ -96,6 +97,23 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     }-*/;
 
   }
+
+  public static class RequestAccessResponse extends JavaScriptObject {
+
+    protected RequestAccessResponse() {
+
+    }
+
+    public final native boolean canRead() /*-{
+      return this.canRead;
+    }-*/;
+
+    public final native boolean canWrite() /*-{
+      return this.canWrite;
+    }-*/;
+
+  }
+
 
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
   private final static String REGISTER_CTX = "auth/register";
@@ -307,6 +325,57 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     return loggedInUser != null;
   }
 
+
+  /**
+   * Call this method before opening a Wave for writting. It ensures that
+   * current participant can write the wavelet, avoid issues when wave is public
+   * and the participant hasn't been added yet.
+   * 
+   * @throws RequestException
+   */
+  private void requestWriteAccess(WaveId waveId, ParticipantId participantId,
+      final Callback<RequestAccessResponse, String> callback) throws RequestException {
+
+    String pathArgs = ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId);
+    pathArgs += "/~/" + Model.WAVELET_ID;
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/access/write/" + pathArgs;
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    builder.sendRequest("", new RequestCallback() {
+
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+
+        if (response.getStatusCode() == 200) {
+
+          RequestAccessResponse responseData =
+              JsonUtils.<RequestAccessResponse> safeEval(response.getText());
+
+          callback.onSuccess(responseData);
+
+        } else if (response.getStatusCode() == 403) {
+          log.log(Level.SEVERE, "Error requesting write access: " + response.getStatusText());
+          callback.onFailure("ACCESS_FORBIDDEN_EXCEPTION");
+
+        } else {
+          log.log(Level.SEVERE, "Error requesting write access: " + response.getStatusText());
+          callback.onFailure("SERVICE_EXCEPTION");
+        }
+
+      }
+
+    });
+
+  }
+
   /*******************************************************************************************/
 
 
@@ -508,16 +577,19 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Open an existing wave.
-   *
+   * 
    * @param strWaveId WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.
    * @throws InvalidIdException
    * @throws NetworkException
    * @throws SessionNotStartedException
+   * @throws RequestException
    */
   public String openWave(final String strWaveId, final OnLoadCallback<WaveWrapper> callback)
-      throws InvalidIdException, NetworkException, SessionNotStartedException {
+      throws InvalidIdException, NetworkException, SessionNotStartedException, RequestException {
+
+    final WaveId waveId = WaveId.deserialise(strWaveId);
 
     if (!isSessionStarted()) {
       throw new SessionNotStartedException();
@@ -527,26 +599,45 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new NetworkException();
     }
 
-    WaveId waveId = null;
-    try {
-      waveId = WaveId.deserialise(strWaveId);
-    } catch (Exception e) {
-      throw new InvalidIdException();
-    }
 
-    final WaveWrapper waveWrapper = getWaveWrapper(waveId, false);
+    requestWriteAccess(waveId, loggedInUser, new Callback<SwellRT.RequestAccessResponse, String>() {
 
-    if (waveWrapper.isLoaded()) {
-      callback.onLoad(waveWrapper);
-    } else {
-      waveWrapper.load(new Command() {
-        @Override
-        public void execute() {
-          callback.onLoad(waveWrapper);
+      @Override
+      public void onFailure(String reason) {
+        callback.onError(reason);
+      }
+
+      @Override
+      public void onSuccess(RequestAccessResponse result) {
+
+        //
+        // For now, we always request write access before opening a
+        // wavelet
+        //
+        if (result.canWrite()) {
+
+          final WaveWrapper waveWrapper = getWaveWrapper(waveId, false);
+
+          if (waveWrapper.isLoaded()) {
+            callback.onLoad(waveWrapper);
+          } else {
+            waveWrapper.load(new Command() {
+              @Override
+              public void execute() {
+                callback.onLoad(waveWrapper);
+              }
+            });
+
+          }
+
+        } else {
+          callback.onError("ACCESS_RESTRICTED");
         }
-      });
+      }
 
-    }
+
+    });
+
     return strWaveId;
   }
 

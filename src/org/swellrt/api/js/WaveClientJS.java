@@ -139,10 +139,11 @@ public class WaveClientJS extends JavaScriptObject {
             }
          },
 
-         createModel: function(onReady) {
+         createModel: function(onReady, onFailure) {
 
             var callback = new Object();
             callback.ready =  onReady;
+            callback.failure =  onFailure;
 
             try {
               return delegate.@org.swellrt.api.WaveClient::createModel(Lcom/google/gwt/core/client/JavaScriptObject;)(callback);
@@ -152,10 +153,11 @@ public class WaveClientJS extends JavaScriptObject {
          },
 
 
-         openModel: function(waveId, onReady) {
+         openModel: function(waveId, onReady, onFailure) {
 
             var callback = new Object();
             callback.ready =  onReady;
+            callback.failure =  onFailure;
 
             try {
               return delegate.@org.swellrt.api.WaveClient::openModel(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(waveId, callback);
