@@ -17,12 +17,11 @@ import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import org.swellrt.client.WaveWrapper;
-import org.swellrt.model.IdGeneratorGeneric;
 import org.swellrt.model.generic.Model;
+import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
-import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.box.webclient.search.SearchBuilder;
@@ -34,7 +33,6 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.CorruptionDetail;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
-import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
@@ -120,11 +118,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private static String CHARSET = "utf-8";
 
   /* Components depending on the user session */
-  private String seed;
   private ParticipantId loggedInUser = null;
   private RemoteViewServiceMultiplexer channel;
-  private IdGenerator idGenerator;
-
 
 
   /* Components shared across sessions */
@@ -206,12 +201,17 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           loggedInUser = ParticipantId.ofUnsafe(responseData.getParticipantId());
           String sessionId = responseData.getSessionId();
 
-
           String seed = SwellRTUtils.nextBase64(10);
           waveDomain = loggedInUser.getDomain();
           // Use the browser __session object instead of setting cookie
-          callback.onSuccess(createWebClientSession(loggedInUser.getDomain(),
-              loggedInUser.getAddress(), seed, sessionId));
+          JavaScriptObject sessionWeb =
+              createWebClientSession(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+                  sessionId);
+
+          // Init Id generator
+          TypeIdGenerator.get().initialize(ClientIdGenerator.create());
+
+          callback.onSuccess(sessionWeb);
 
         } else if (response.getStatusCode() == 403) {
           loggedInUser = null;
@@ -242,9 +242,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     $wnd.__session = new Object();
     $wnd.__session['domain'] = localDomain;
     $wnd.__session['address'] = userAddress;
-    $wnd.__session['seed'] = seed;
-    $wnd.__session['id'] = sessionId;
+    $wnd.__session['id'] = seed; // 'id' is used in Session.java/ClientIdGenerator to get the seed
+    $wnd.__session['seed'] = sessionId; //
     return $wnd.__session;
+  }-*/;
+
+
+  private native void destroyWebClientSession() /*-{
+     $wnd.__session = null;
   }-*/;
 
 
@@ -272,9 +277,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       public void onSuccess() {
 
         channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
-        idGenerator = ClientIdGenerator.create();
-        seed = Session.get().getIdSeed();
-
         callback.onSuccess((Void) null);
       }
 
@@ -291,7 +293,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void stopComms() {
     websocket.disconnect(true);
     channel = null;
-    seed = null;
   }
 
   /**
@@ -313,12 +314,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
   private native boolean websocketNotAvailable() /*-{
-                                                 return !window.WebSocket;
-                                                 }-*/;
+   return !window.WebSocket;
+  }-*/;
 
   private native void setWebsocketAddress(String address) /*-{
-                                                          $wnd.__websocket_address = address;
-                                                          }-*/;
+    $wnd.__websocket_address = address;
+  }-*/;
 
 
   private boolean isSessionStarted() {
@@ -330,7 +331,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * Call this method before opening a Wave for writting. It ensures that
    * current participant can write the wavelet, avoid issues when wave is public
    * and the participant hasn't been added yet.
-   * 
+   *
    * @throws RequestException
    */
   private void requestWriteAccess(WaveId waveId, ParticipantId participantId,
@@ -517,6 +518,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     // Clear user session
     Cookies.removeCookie(SESSION_COOKIE_NAME);
     loggedInUser = null;
+    destroyWebClientSession();
     searchBuilder = null;
 
   }
@@ -528,13 +530,15 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       Preconditions.checkArgument(!waveWrappers.containsKey(waveId),
           "Trying to create an existing Wave");
       WaveWrapper ww =
-          new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveDomain,
+          new WaveWrapper(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+              .getUnderlyingGenerator(), waveDomain,
               Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
       waveWrappers.put(waveId, ww);
     } else {
       if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
         WaveWrapper ww =
-            new WaveWrapper(WaveRef.of(waveId), channel, idGenerator, waveDomain,
+            new WaveWrapper(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+                .getUnderlyingGenerator(), waveDomain,
                 Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
         waveWrappers.put(waveId, ww);
       }
@@ -544,8 +548,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public String createWave(IdGeneratorGeneric idGenerator,
-      final OnLoadCallback<WaveWrapper> callback) throws NetworkException,
+  public String createWave(final OnLoadCallback<WaveWrapper> callback) throws NetworkException,
       SessionNotStartedException {
 
     if (!isSessionStarted()) {
@@ -556,9 +559,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new NetworkException();
     }
 
-    idGenerator.initialize(this.idGenerator); // TODO what???
 
-    final WaveId waveId = idGenerator.newWaveId();
+
+    final WaveId waveId = TypeIdGenerator.get().newWaveId();
     final WaveWrapper waveWrapper = getWaveWrapper(waveId, true);
 
     if (waveWrapper.isLoaded()) {
@@ -577,7 +580,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /**
    * Open an existing wave.
-   * 
+   *
    * @param strWaveId WaveId
    * @param callback
    * @return null if wave is not a valid WaveId. The WaveId otherwise.

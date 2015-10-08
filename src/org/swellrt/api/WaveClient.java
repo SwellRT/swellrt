@@ -17,7 +17,6 @@ import org.swellrt.client.WaveWrapper;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
-import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener.UnsavedDataInfo;
@@ -153,7 +152,7 @@ public class WaveClient implements SwellRT.Listener {
 
     String waveId = null;
 
-    waveId = coreClient.createWave(TypeIdGenerator.get(), new OnLoadCallback<WaveWrapper>() {
+    waveId = coreClient.createWave(new OnLoadCallback<WaveWrapper>() {
         @Override
       public void onLoad(WaveWrapper wrapper) {
 
