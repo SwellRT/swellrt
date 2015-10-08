@@ -46,4 +46,9 @@ public class TypeIdGenerator implements IdGeneratorGeneric {
     return idGenerator.newId(prefix);
   }
 
+  public IdGenerator getUnderlyingGenerator() {
+    return idGenerator;
+  }
+
 }
+
