@@ -27,7 +27,6 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsOb
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
 
 import com.google.common.base.Preconditions;
-import com.google.gwt.user.client.Cookies;
 
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
@@ -162,7 +161,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
   private native String getSessionToken() /*-{
-    return $wnd.__session['id'];
+    return $wnd.__session['sessionid'];
    }-*/;
 
   @Override
