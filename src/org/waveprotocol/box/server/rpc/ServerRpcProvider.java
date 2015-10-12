@@ -255,6 +255,10 @@ public class ServerRpcProvider {
       return isStatusOk;
     }
 
+    public ParticipantId getParticipantId() {
+      return loggedInUser;
+    }
+
     @Override
     public void message(final int sequenceNo, Message message) {
       final String messageName = "/" + message.getClass().getSimpleName();
@@ -307,11 +311,10 @@ public class ServerRpcProvider {
 
         ProtocolAuthenticate authMessage = (ProtocolAuthenticate) message;
         ParticipantId authenticatedAs = authenticate(authMessage.getToken());
-
         Preconditions.checkArgument(authenticatedAs != null, "Auth token invalid");
-
-        loggedInUser = authenticatedAs;
-        LOG.info("Session authenticated as " + loggedInUser);
+        Preconditions.checkArgument(loggedInUser.equals(authenticatedAs),
+            "Protocol user doesn't match session user");
+        LOG.info("Protocol authenticated as " + loggedInUser);
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
@@ -794,6 +797,14 @@ public class ServerRpcProvider {
           CONNECTIONS.put(httpSession.getId(), connection);
         } else {
           connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+
+          // A connection exists for a different participant:
+          // This happens when different users shares the same browser session.
+          // Ensure that connections are cleaned up.
+          if (!connection.getParticipantId().equals(loggedInUser)) {
+            connection = new AtmosphereConnection(loggedInUser, provider);
+            CONNECTIONS.put(httpSession.getId(), connection);
+          }
         }
 
         if (!connection.getAtmosphereChannel().hasResources()) {
@@ -813,8 +824,15 @@ public class ServerRpcProvider {
           connection.getAtmosphereChannel().onConnect(resource);
         } else {
           connection = (AtmosphereConnection) CONNECTIONS.get(resource.uuid());
-        }
 
+          // A connection exists for a different participant:
+          // This happens when different users shares the same browser session.
+          // Ensure that connections are cleaned up.
+          if (!connection.getParticipantId().equals(loggedInUser)) {
+            connection = new AtmosphereConnection(loggedInUser, provider);
+            CONNECTIONS.put(httpSession.getId(), connection);
+          }
+        }
       }
 
       resource.setBroadcaster(connection.getAtmosphereChannel().getBroadcaster());
@@ -832,7 +850,11 @@ public class ServerRpcProvider {
         LOG.fine("Atmosphere processing message from resource (" + resource.transport().name()
             + ") " + resource.uuid());
         StringBuilder b = IOUtils.readEntirely(resource);
-        connection.getAtmosphereChannel().onMessage(b.toString());
+        try {
+          connection.getAtmosphereChannel().onMessage(b.toString());
+        } catch (RuntimeException e) {
+          LOG.info("Exception on channel.", e);
+        }
       }
 
     }

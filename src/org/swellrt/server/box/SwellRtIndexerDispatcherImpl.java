@@ -36,11 +36,11 @@ import javax.inject.Inject;
 
 /**
  * A simplistic implementation of SwellRT persistence to mongoDB.
- * 
+ *
  * TODO(pablojan) check multi thread behavior on data structures. *
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
 
@@ -124,7 +124,12 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
 
     if (wavelet != null) {
       uncommittedWavelet.remove(waveletName);
-      index(wavelet, committedDeltas);
+
+      try {
+        index(wavelet, committedDeltas);
+      } catch (RuntimeException e) {
+        LOG.info("Error indexing model " + waveletName.toString() + ", " + e.getMessage());
+      }
     } else {
       LOG.warning("Wavelet committed but data not found");
     }
@@ -364,6 +369,7 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
    */
   @Override
   public void initialize() throws WaveServerException {
+
     waveMap.loadAllWavelets();
 
     ExceptionalIterator<WaveId, WaveServerException> witr = waveletProvider.getWaveIds();
@@ -377,7 +383,14 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
             WaveletName waveletName = WaveletName.of(waveId, waveletId);
 
             if (!isModelStored(waveletName)) {
+
+              try {
                 index(waveletProvider.getSnapshot(waveletName).snapshot, null);
+              } catch (RuntimeException e) {
+                LOG.info("Error indexing model " + waveletName.toString(), e);
+              }
+
+
             }
           }
         }
