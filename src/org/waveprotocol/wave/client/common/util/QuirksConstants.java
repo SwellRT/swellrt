@@ -321,16 +321,17 @@ public final class QuirksConstants {
   /**
    * True if the browser supports composition events.
    *
-   * (This does not differentiate between the per-browser composition event quirks,
-   * such as whether they provide a text vs a compositionupdate event, or other
-   * glitches).
+   * (This does not differentiate between the per-browser composition event
+   * quirks, such as whether they provide a text vs a compositionupdate event,
+   * or other glitches).
    *
-   * Tested:
-   * Chrome 3.0, 4.0; Safari 4; FF 3.0, 3.5; IE 7,8
+   * (@pablojan) In mobile chromiun, composition events don't follow w3c.
+   *
+   * Tested: Chrome 3.0, 4.0; Safari 4; FF 3.0, 3.5; IE 7,8
    */
   public static final boolean SUPPORTS_COMPOSITION_EVENTS =
       UserAgent.isFirefox() || (UserAgent.isWebkit()
-          && UserAgent.isAtLeastVersion(532, 5));
+ && UserAgent.isAtLeastVersion(532, 5) && !UserAgent.isMobileWebkit());
 
   /**
    * True if the browser does an extra modification of the DOM after the
@@ -405,6 +406,24 @@ public final class QuirksConstants {
   private static native boolean checkGetElementsByClassNameSupport() /*-{
     return !!document.body.getElementsByClassName;
   }-*/;
+
+  /**
+   * Since Android >= 4.4 (KitKat) WebView is Chromium. In mobile chromiun,
+   * webkit composition events don't follow w3c. Use special hacky composition
+   * event handling.
+   *
+   * TODO test in iPhone devices
+   *
+   * @see http://jimbergman.net/webkit-version-in-android-version/
+   *
+   * @author pablojan
+   *
+   * Tested: Android 4.4.2, 5.0.2
+   *
+   */
+  public static final boolean MOBILE_CHROMIUN_HACK_COMPOSITION_EVENTS =
+      (UserAgent.isWebkit() && UserAgent.isMobileWebkit()
+          && UserAgent.isAtLeastVersion(537, 36));
 
   private QuirksConstants(){}
 }

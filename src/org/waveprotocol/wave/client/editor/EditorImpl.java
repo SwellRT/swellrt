@@ -1746,6 +1746,10 @@ public class EditorImpl extends LogicalPanel.Impl implements
       }
       docDiv.setAttribute(EDITABLE_DOC_MARKER, "true");
       DomHelper.setNativeSpellCheck(docDiv, false);
+      // TODO(pablojan) keep just in case!
+      docDiv.setAttribute("autocomplete", "off");
+      docDiv.setAttribute("autocorrect", "off");
+      docDiv.setAttribute("autocapitalize", "off");
 
       // setup event handling
       registerDomEventHandling();

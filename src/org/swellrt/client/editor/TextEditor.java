@@ -33,6 +33,9 @@ import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
+import org.waveprotocol.wave.common.logging.AbstractLogger;
+import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
+import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
@@ -49,11 +52,51 @@ import java.util.Map;
  */
 public class TextEditor {
 
+  public static class JSLogSink extends LogSink {
+
+    private native void console(String msg) /*-{
+      console.log(msg);
+    }-*/;
+
+    @Override
+    public void log(Level level, String message) {
+      console("[" + level.name() + "] " + message);
+    }
+
+    @Override
+    public void lazyLog(Level level, Object... messages) {
+      for (Object o : messages) {
+        log(level, o.toString());
+      }
+
+    }
+
+  }
+
+
+  public static class CustomLogger extends AbstractLogger {
+
+    public CustomLogger(LogSink sink) {
+      super(sink);
+    }
+
+    @Override
+    public boolean isModuleEnabled() {
+      return true;
+    }
+
+    @Override
+    protected boolean shouldLog(Level level) {
+      return true;
+    }
+  }
+
   private static final String TOPLEVEL_CONTAINER_TAGNAME = "body";
 
   static {
     Editors.initRootRegistries();
     LineContainers.setTopLevelContainerTagname(TOPLEVEL_CONTAINER_TAGNAME);
+    // EditorStaticDeps.logger = new CustomLogger(new JSLogSink());
   }
 
 
