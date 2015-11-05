@@ -52,6 +52,9 @@ then
 
       PUSH_TAG=1
     else
+      # Try to track bug in production
+      git show v$VERSION > /dev/null 2>&1
+      echo $?
       echo "  git tag does not exist yet!"
     fi
 else
