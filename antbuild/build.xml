@@ -183,6 +183,9 @@
       </fileset>
     </copy>
     <jar destfile="${dist.dir}/pst.jar" basedir="${build.dir}/pst"/>
+    <jar destfile="${dist.dir}/pst-src.jar" basedir="${src.dir}">
+      <patternset includes="org/waveprotocol/pst/**/*"/>
+    </jar>
     <touch file="${dep}/dist-pst"/>
   </target>
 
@@ -470,8 +473,8 @@
       description="Runs the superdev mode, for debugging the GWT client in a browser.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
       <classpath>
-        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
-        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-dev-2.7.0.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.7.0.jar" />
         <pathelement location="${src.dir}"/>
         <pathelement location="${gen.dir}/messages"/>
         <path refid="libpath"/>
@@ -500,8 +503,8 @@
   <target name="editor-superdev" depends="compile" description="Runs the editor harness through the GWT superdev mode server, for debugging in a browser.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
       <classpath>
-        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
-        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-dev-2.7.0.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.7.0.jar" />
         <pathelement location="${src.dir}"/>
         <path refid="libpath"/>
       </classpath>
@@ -529,8 +532,8 @@
   <target name="waveharness-superdev" depends="compile" description="Runs the wave panel harness through the GWT superdev mode server, for debugging in a browser.">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
       <classpath>
-        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
-        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-dev-2.7.0.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.7.0.jar" />
         <pathelement location="${src.dir}"/>
         <path refid="libpath"/>
       </classpath>
@@ -971,9 +974,9 @@
   <target name="get-third-party-codegen" description="Download code generating third party dependencies">
     <get dest="${lib.codegen}" usetimestamp="true" skipexisting="true">
       <url url="http://www.antlr3.org/download/antlr-3.2.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.6.1/gwt-dev-2.6.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1.jar" />
-      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.6.1/gwt-codeserver-2.6.1.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-dev/2.7.0/gwt-dev-2.7.0.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-user/2.7.0/gwt-user-2.7.0.jar" />
+      <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.7.0/gwt-codeserver-2.7.0.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final-sources.jar" />
       <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" />
@@ -1092,7 +1095,7 @@
   <target name="get-third-party-test" description="Download testing third party dependencies">
     <get dest="${lib.test}" usetimestamp="true" skipexisting="true">
       <url url="http://central.maven.org/maven2/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar" />
-      <url url="http://download.forge.objectweb.org/asm/asm-3.2.jar" />
+      <url url="http://download.forge.objectweb.org/asm/asm-5.0.4.jar" />
       <url url="http://central.maven.org/maven2/cglib/cglib/2.2/cglib-2.2.jar" />
       <url url="http://central.maven.org/maven2/emma/emma/2.0.5312/emma-2.0.5312.jar" />
       <url url="http://central.maven.org/maven2/emma/emma_ant/2.1.5320/emma_ant-2.1.5320.jar" />
