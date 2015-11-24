@@ -1,0 +1,52 @@
+<?xml version='1.0'?>
+<!--
+
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder" xmlns:g='urn:import:com.google.gwt.user.client.ui'
+  xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common">
+  <ui:with field='style'
+    type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget.Style' />
+  <ui:with field='res'
+    type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.AttachmentPopupWidget.Resources' />
+  <ui:with field='msg'
+    type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.attachment.i18n.AttachmentMessages' />
+  <g:HTMLPanel styleName="{res.style.self}">
+    <g:HorizontalPanel>
+      <g:HorizontalPanel horizontalAlignment="ALIGN_LEFT" width="150px;">
+        <g:Label styleName="{res.style.title}"><ui:text from="{msg.uploadAttachment}"/></g:Label>
+      </g:HorizontalPanel>
+      <g:HorizontalPanel horizontalAlignment="ALIGN_RIGHT" ui:field="spinnerPanel"
+        styleName="{res.style.spinnerPanel}">
+        <g:Image resource="{res.spinner}" title="Loading" styleName="{res.style.spinner}"
+          ui:field="spinnerImg" />
+        <g:Label ui:field="status" styleName="{res.style.status}"><ui:text from="{msg.loading}"/></g:Label>
+      </g:HorizontalPanel>
+    </g:HorizontalPanel>
+    <g:FormPanel ui:field="form">
+      <g:HorizontalPanel>
+        <g:FileUpload ui:field="fileUpload" name="uploadFormElement"></g:FileUpload>
+        <g:Button ui:field="uploadBtn"><ui:text from="{msg.uploadFile}"/></g:Button>
+        <g:Hidden ui:field="formAttachmentId" name="attachmentId"></g:Hidden>
+        <g:Hidden ui:field="formWaveRef" name="waveRef"></g:Hidden>
+      </g:HorizontalPanel>
+    </g:FormPanel>
+  </g:HTMLPanel>
+</ui:UiBinder>

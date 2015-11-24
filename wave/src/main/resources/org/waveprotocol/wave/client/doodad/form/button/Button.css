@@ -1,0 +1,73 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * StyleInjector CSS file for editor.content.Button.
+ *
+ * TODO(lars): make the button robust against font size changes
+ * Author: lars@google.com (Lars Rasmussen)
+ */
+
+/* TODO(lars,hearnden) move these rules to central place and use shared class name
+   for doodads with char-like behaviour (thumbnails, open/close, buttons, etc.)  */
+
+.button {
+  display: inline-block;
+  white-space: normal;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+@if user.agent gecko gecko1_8 {
+  .button {
+    position: relative;
+  }
+}
+
+@if user.agent ie6 {
+  .button {
+    display: inline;
+    position: relative;
+    zoom: 1;  /* Gives the .button element layout, to fix IE positioning bug. */
+  }
+}
+
+@if user.agent safari {
+  .button {
+    display: inline-table;
+    position: relative;
+  }
+}
+
+/* TODO(lars,hearnden) move this to central place and use shared class name
+   for nested contentEditable regions. */
+
+@if user.agent safari gecko1_8 {
+  /* Turns off ugly highlighting around focused editable regions. */
+  .button .w-caption:focus {
+    outline: 0;
+  }
+}
+
+/* In display mode make text unselectable */
+/* TODO(lars): can this be made to work in IE? Perhaps by catching a mode change event in code
+   and setting unselectable="on" thruout the caption dom... */
+
+.display .button {
+  \-moz-user-select: none;
+  \-khtml-user-select: none;
+}

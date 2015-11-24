@@ -51,8 +51,10 @@ To run the tests (optional), run:
     gradle testAll
 
 To build the client and server run:  
-    gradle buildServerJar
+    gradle jar
 It will be created in wave/build/libs/wave-version.jar.  
+
+Note if pst-version.jar is unable to be found run gradle pst:jar then run again
 
 You need to configure your instance before you can use it. To create a default simple configuration run:  
     gradle prosody-config  
@@ -66,7 +68,7 @@ The server can be started (on Linux/MacOS) by running
     ./run-server.sh  (currently disabled please use gradle method)  
 Or on Windows by running  
     run-server.bat  (currently disabled please use gradle method)
-Or, you can run the server from the compiled classes with ant:  
+Or, you can run the server from the compiled classes with Gradle:  
     gradle run  
 The web client will be accessible by default at http://localhost:9898/.
 

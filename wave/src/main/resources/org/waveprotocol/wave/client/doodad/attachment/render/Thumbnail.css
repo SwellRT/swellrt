@@ -1,0 +1,354 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS Stylesheet for image thumbnails
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+.imageThumbnail {
+  margin:5px 0 0 2px;
+  display: inline-block;
+}
+
+
+.wave-editor-off .thumbSizeButton {
+  display:none;
+}
+
+.wave-editor-on .thumbSizeButton {
+  display:block;
+}
+
+/** Yuck: 3 level trick to make sure nested editors work correctly */
+.wave-editor-on .wave-editor-off .thumbSizeButton {
+  display:none;
+}
+
+/*
+ * For some reason, the programmatic fixing of whitespace doesn't work for
+ * FF, need to figure out why...
+ */
+@if user.agent gecko1_8 {
+  .imageThumbnail {
+    white-space: normal;
+  }
+}
+
+.buttonContainer {
+  position: absolute;
+  z-index: 100;
+  top: 4px;
+  left: 14px;
+}
+
+.buttonContainer * {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.chromeContainer {
+  z-index: 10;
+}
+
+/*
+.imageThumbnail img {
+  max-width:120px;
+  max-height:120px;
+}*/
+
+@if !user.agent ie6 {
+  .imageThumbnail {
+    position: relative;
+  }
+
+  .imageThumbnail .w-caption {
+    outline: 0;
+  }
+}
+
+@if user.agent ie6 {
+  .imageThumbnail {
+    display: inline;
+    position: relative;
+    zoom: 1;  /* Gives the .imageThumbnail element layout, to fix IE positioning bug. */
+  }
+
+  .imageThumbnail .w-caption {
+    /* Prevents caption from vertically expanding when text is entered. */
+    min-height: 1.35em;
+  }
+}
+
+@if user.agent safari {
+  .imageThumbnail {
+    display: inline-table;
+  }
+}
+
+.image {
+  display: block;
+  /*max-width:120px;
+  max-height:120px;*/
+
+  z-index: 1;
+  /*position: absolute;*/
+}
+
+@if user.agent safari {
+  .image {
+    display: inline;
+  }
+}
+
+@sprite .itnw {
+  gwt-image: 'chromeNorthWest';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 90px;
+}
+
+@sprite .itnc {
+  gwt-image: 'chromeNorth';
+  position: absolute;
+  top: 0;
+  left: 6px;
+  right: 15px;
+  width: auto;
+  height: 6px;
+}
+
+@sprite .itne {
+  gwt-image: 'chromeNorthEast';
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 90px;
+  width: 15px;
+}
+
+@sprite .itcw {
+  gwt-image: 'chromeWest';
+  position: absolute;
+  top: 90px;
+  left: 0;
+  bottom: 4px;
+  width: 6px;
+  height: auto;
+}
+
+.ittt {
+  width: 1px;
+  margin: 6px 15px 4px 6px;
+}
+
+@if user.agent ie6 {
+  .ittt {
+    display: inline;
+  }
+}
+
+.itcc {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  height: auto;
+  width: auto;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/*
+ * Internet Explorer flickers if there's too much animation going on. So we
+ * need to provide an animated GIF with a lower frame rate.
+ */
+@if user.agent ie6 {
+  @url chromeLoadingSlowUrl chromeLoadingSlow;
+  .itcc {
+    background-image: chromeLoadingSlowUrl;
+  }
+}
+@else {
+  @url chromeLoadingFastUrl chromeLoadingFast;
+  .itcc {
+    background-image: chromeLoadingFastUrl;
+  }
+}
+
+@sprite .iterr {
+  gwt-image: 'errorAttachment';
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  height: auto;
+  width: auto;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.itci {
+  margin: auto auto;
+  position: relative;
+  min-height: 60px;
+}
+
+@sprite .itco {
+  gwt-image: 'chromeCenter';
+  /* these are set to auto to override the image dimensions inserted by style injector */
+  height: auto;
+  width: auto;
+}
+
+@sprite .itce {
+  gwt-image: 'chromeEast';
+  position: absolute;
+  top: 90px;
+  right: 0;
+  bottom: 4px;
+  width: 15px;
+  height: auto;
+}
+
+@sprite .itsw {
+  gwt-image: 'chromeSouthWest';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 6px;
+}
+
+@sprite .itsc {
+  gwt-image: 'chromeSouth';
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  right: 15px;
+  height: 4px;
+  width: auto;
+}
+
+@sprite .itse {
+  gwt-image: 'chromeSouthEast';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 4px;
+  width: 15px;
+}
+
+.itimg {
+  cursor: pointer;
+}
+
+/* Specialise the progress widget so that it float on top of the image with a white gap */
+.progress {
+  position: absolute;
+  height: 8px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 3;
+  background-color: white;
+}
+
+.imageThumbnail .w-caption {
+  text-align: center;
+  padding: 4px;
+  color: black;  /* Can't assume font color is not changed by the page theme. */
+  background-color: white;
+}
+
+/* Rules for Table-based thumbnails. */
+table.imageThumbnail td.ww {
+  width: 6px;
+}
+
+table.imageThumbnail td.ee {
+  width: 15px;
+}
+
+table.imageThumbnail td.nn {
+  height: 90px;
+}
+
+table.imageThumbnail td.ss {
+  height: 4px;
+}
+
+table.imageThumbnail td.m {
+  vertical-align: top;
+}
+
+@sprite table.imageThumbnail td.n {
+  gwt-image: 'chromeNorth';
+  height: 6px;
+}
+
+@sprite table.imageThumbnail td.nw {
+  gwt-image: 'chromeNorthWest';
+}
+
+@sprite table.imageThumbnail td.ne {
+  gwt-image: 'chromeNorthEast';
+}
+
+@sprite table.imageThumbnail td.w {
+  gwt-image: 'chromeWest';
+}
+
+@sprite table.imageThumbnail td.e {
+  gwt-image: 'chromeEast';
+}
+
+@sprite table.imageThumbnail td.sw {
+  gwt-image: 'chromeSouthWest';
+}
+
+@sprite table.imageThumbnail td.s {
+  gwt-image: 'chromeSouth';
+}
+
+@sprite table.imageThumbnail td.se {
+  gwt-image: 'chromeSouthEast';
+}
+
+@sprite table.imageThumbnail td.c {
+  gwt-image: 'chromeCenter';
+  text-align: center;
+}
+
+@url chromeLoadingAttachmentUrl chromeLoadingAttachment;
+table.imageThumbnail div.l {
+  margin: auto auto;
+  background-image: chromeLoadingAttachmentUrl;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+table.imageThumbnail table.inner {
+  table-layout: auto;
+  width: auto;
+}

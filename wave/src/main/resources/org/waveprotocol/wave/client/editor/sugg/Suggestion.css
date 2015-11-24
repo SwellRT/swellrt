@@ -1,0 +1,95 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS for spelly
+ *
+ * @author danilatos@google.com
+ */
+
+@url undo undoIcon;
+@url hoverUndo hoverUndoIcon;
+
+a.sugg, a.orig, a.cmd {
+  display: block;
+  color: #003ea8;
+  background-color: white;
+  cursor: pointer;
+  padding: 3px 20px 4px 20px;
+  margin: 0px -2px !important;
+  text-decoration: none;
+}
+
+/*
+ * .hover must always be followed by another class name to make sure we don't
+ * inject a css rule into the parent Css that we've inherited.
+ */
+.hover a.sugg, .hover a.orig, .hover a.cmd
+{
+  color: white;
+  background-color: #4086ff;
+  text-decoration: none;
+}
+
+.hover a.sugg label, .hover a.orig label
+{
+  color: #c0d4ff;
+}
+
+.sugg label, .orig label {
+  margin-right: 5px;
+  text-decoration: underline;
+  color: #7295cf;
+}
+
+.sugg span {
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.orig span {
+  font-style: italic;
+  text-decoration: none;
+}
+
+.orig {
+  background-image: undo;
+  background-repeat:  no-repeat;
+  background-position: 5px 50%;
+}
+
+.hover a.orig {
+  background-image: hoverUndo;
+  background-repeat:  no-repeat;
+  background-position: 5px 50%;
+}
+
+.cmd span {
+  margin-left: 12px;
+  text-decoration: none;
+}
+
+.sep {
+  width: 100%;
+  margin-top: 1px;
+  height: 1px;
+  border-top: 1px solid #e3e8f2;
+}
+
+.selected {
+  background: #d0e8ff;
+}

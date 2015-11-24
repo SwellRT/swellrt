@@ -1,0 +1,70 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS stylesheet for profile card popups.
+ */
+
+.self {
+  max-width: 40em;
+  overflow: hidden;  /* Expand to include floated content. */ 
+}
+
+.state {
+  margin: 0.5em;
+  overflow: hidden;  /* Expand to include floated content. */
+}
+
+.avatar {
+  float: left;
+  height: 100px;
+  width: 100px;
+  border: 1px solid gray;
+}
+
+.details {
+  margin-left: 102px;  /* = avatar pffset width. */
+  padding-left: 1em;
+}
+
+.name {
+  font-size: 20px;
+  height: 2em;
+}
+
+.extra {
+  font-size: small;
+}
+  
+.label {
+  color: gray;
+  padding-right: 1em;
+}
+
+.separator {
+  clear: both;
+  border-bottom: 1px solid #ccf;
+}
+
+.controls {
+  margin: 0.5em;
+  float: right;
+}
+
+.button {
+  margin: 0;  /* Override UA default. */
+}

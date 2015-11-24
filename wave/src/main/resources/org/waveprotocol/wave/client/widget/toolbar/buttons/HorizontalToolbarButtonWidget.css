@@ -1,0 +1,104 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS for HorizontalToolbarButtonWidget.
+ * Author: kalman@google.com (Benjamin Kalman)
+ */
+
+.self {
+  height: value('buttonDown.getHeight', 'px');
+  display: inline;
+  float: left;
+  font-size: 8pt;
+  /* For the divider. */
+  position: relative;
+  margin-right: -1px;
+  /* Disabled appearance by default. */
+  opacity: 0.5;
+}
+
+.self.wide {
+  padding: 0 12px;
+}
+
+.self.compact {
+  padding: 0 4px;
+}
+
+.self.enabled {
+  opacity: 1;
+  cursor: pointer;
+  cursor: hand;
+}
+
+@sprite .self.enabled:active, .self.enabled.down {
+  gwt-image: 'buttonDown';
+}
+
+@sprite .divider {
+  gwt-image: 'divider';
+  width: 1px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Position the button dividers underneath the buttons. */
+  z-index: -1;
+}
+
+.overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.enabled.down > .overlay {
+  border: 1px solid #aaaaaa;
+}
+
+.enabled > .overlay:hover {
+  border: 1px solid #7f7f7f;
+}
+
+.visualElement {
+  float: left;
+  margin-top: 1px;
+}
+
+.textElement {
+  float: left;
+  margin-top: 6px;
+}
+
+.textElementWithVisualElement {
+  margin-left: 4px;
+}
+
+@sprite .dropdownArrow {
+  gwt-image: 'dropdownArrow';
+  float: left;
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
+.hidden {
+  display: none;
+}

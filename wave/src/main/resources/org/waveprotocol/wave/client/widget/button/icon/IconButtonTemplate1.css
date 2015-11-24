@@ -1,0 +1,165 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS for buttons that are comprised of a simple icon.
+ *
+ * Each button has an associated classname (such as .panelRestore) which is
+ * used when the button is in its NORMAL state. When a button enters a
+ * different state (such as HOVER or DOWN) the widget will have the
+ * .hover/.down class added to it, which will have the effect of changing the
+ * gwt-image on that element.
+ *
+ * Therefore, .panelMinimize represents the minimize button when it is in its
+ * neutral state, .hover.panelMinimize represents the minimize button when it
+ * is in its hover state, and so forth.
+ *
+ * This is part 2 of the IconButtonTemplate.css file.  We need to split this
+ * file into 2 because chrome breaks with very large css files.
+ *
+ * @author koz@google.com (James Kozianski)
+ */
+
+@sprite .bluePlus {
+  gwt-image: 'bluePlus';
+}
+
+@sprite .folderExpand {
+  gwt-image: 'folderClosed';
+}
+
+@sprite .folderExpand.down {
+  gwt-image: 'folderOpen';
+}
+
+@sprite .alertClose {
+  gwt-image: 'alertClose';
+}
+
+@sprite .alertClose.down {
+  gwt-image: 'alertCloseDown';
+}
+
+@sprite .alertClose.hover {
+  gwt-image: 'alertCloseHover';
+}
+
+@sprite .popupButton {
+  gwt-image: 'popupButtonImage';
+}
+
+@sprite .viewSwitcherFeed {
+  gwt-image: 'viewSwitcherFeed';
+}
+
+@sprite .viewSwitcherFeed.down {
+  gwt-image: 'viewSwitcherFeedDown';
+}
+@sprite .viewSwitcherSingle {
+  gwt-image: 'viewSwitcherSingle';
+}
+
+@sprite .viewSwitcherSingle.down {
+  gwt-image: 'viewSwitcherSingleDown';
+}
+
+@sprite .viewSwitcherAvatar {
+  gwt-image: 'viewSwitcherAvatar';
+}
+
+@sprite .viewSwitcherAvatar.down {
+  gwt-image: 'viewSwitcherAvatarDown';
+}
+
+@sprite .spellyDropdown {
+  gwt-image: 'spellyDropdown';
+}
+@sprite .nextDigestPage {
+  gwt-image: 'nextDigestPage';
+}
+
+@sprite .nextDigestPage.down {
+  gwt-image: 'nextDigestPageDown';
+}
+
+@sprite .previousDigestPage {
+  gwt-image: 'previousDigestPage';
+}
+
+@sprite .previousDigestPage.down {
+  gwt-image: 'previousDigestPageDown';
+}
+
+@sprite .lightbulb {
+  gwt-image: 'lightbulb';
+}
+
+@sprite .add {
+  gwt-image: 'add';
+}
+
+@sprite .add.down {
+  gwt-image: 'addDown';
+}
+
+@sprite .addBig {
+  gwt-image: 'addBig';
+}
+
+@sprite .addBig.down {
+  gwt-image: 'addBigDown';
+}
+
+@sprite .addSmall {
+  gwt-image: 'addSmall';
+}
+
+@sprite .addSmall.down {
+  gwt-image: 'addSmallDown';
+}
+
+@sprite .removeTag {
+  gwt-image: 'removeTag';
+}
+
+@sprite .removeTag.down {
+  gwt-image: 'removeTagHover';
+}
+
+@sprite .removeTag.hover {
+  gwt-image: 'removeTagHover';
+}
+
+@sprite .splitButtonDropdown {
+  gwt-image: 'splitButtonDropdown';
+}
+
+@sprite .splitButtonDropdown.down {
+  gwt-image: 'splitButtonDropdownDown';
+}
+
+.disabled {
+  opacity: 0.35;
+}
+
+.cursorPointer {
+  cursor: pointer;
+}
+
+.cursorDefault {
+  cursor: default;
+}

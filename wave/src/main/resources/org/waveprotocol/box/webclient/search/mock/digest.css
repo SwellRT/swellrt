@@ -1,0 +1,99 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS for a digest.
+ *
+ * Author: hearnden@google.com (David Hearnden)
+ */
+
+/*
+ * Layout model:
+ *     ____________.digest______________________________________________
+ *    |  __________.inner______________4px___________________________   |
+ *    | |       | |       | |     | Lorem ipsum - blah |     | time  |  |
+ *    |4| 32x32 |4| 32x32 |4| 1em |____________________| 1em |_______|10|
+ *    | | avatar| | avatar| |     | blah blah blah     |     | msgs  |  |
+ *    | |_______|_|_______|_|_____|____________________|_____|_______|  |
+ *    |________________________________4px______________________________|
+ *    |=============(border)============================================|
+ */
+
+.digest {
+  min-width: 100px;
+  padding: 4px 10px 4px 4px; /* 4px padding, but a bit extra on the RHS. */
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  color: grey;
+}
+
+.digest:hover {
+  background-color: #eee;
+}
+
+.digest.selected {
+  background-color: #789e35;
+  color: white;  
+}
+
+.inner {
+  line-height: 16px;
+  height: 32px;  /* Exactly 2 lines of text. */
+  overflow: hidden;
+}
+
+.avatars {
+  float: left;
+  margin-right: 1em;
+  width: 108px;  /* (32 + 4) x 3. */
+}
+
+.avatar {
+  float: left;
+  height: 30px;
+  width: 30px;
+  margin-right: 4px;
+  border: 1px solid #b3b3b3;
+  border-radius: 1px;
+  -moz-border-radius: 1px;
+  -webkit-border-radius: 1px;
+}
+
+.unread {
+  font-weight: bold;
+  color: black;  
+}
+
+.selected .unread {
+  color: white;
+}
+
+.info {
+  float: right;
+  margin-left: 1em;
+}
+
+.unreadCount {
+  color: white;
+  background-color: #99bb00;
+
+  /* Make a bubble. Leading is 16px, so 8px border radius is a bubble. */
+  padding: 0 0.5em;
+  border-radius: 8px;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px; 
+}

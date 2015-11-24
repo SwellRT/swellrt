@@ -1,0 +1,237 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS Stylesheet for the blip focus frame.
+ *
+ * <div>
+ *   <div class='fs bfnw borderChrome'/>
+ *   <div class='xr bfn borderChrome'/>
+ *   ...
+ *   <div class='meta'>
+ *     ... meta buttons
+ *     <span class='metaText>...</span>
+ *   </div>
+ * </div>
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+/*
+ *
+ *  Blip frame around focused blip.
+ *
+ *  _________________________________________________________
+ * |     |                                             |     |
+ * | 5x5 |                                             | 5x5 |
+ * |_____|_____________________________________________|_____|
+ * |   |                                                 |   |
+ * |   |                                                 |   |
+ * |   |                                                 |   |
+ * | 2 |                                                 | 2 |
+ * |   |                                                 |   |
+ * |   |                                                 |   |
+ * |___|_________________________________________________|___|
+ * |     |                                             |     |
+ * | 5x5 |                                             | 5x5 |
+ * |_____|_____________________________________________|_____|
+ *
+ * Each sprite is given z-index 1, to obscure anything in normal layout beneath it.
+ * See BlipWidget.css for list of all z-indices relevant in the stacking
+ * context of a blip.
+ */
+
+.display {}
+.editing {}
+
+/*
+ * Chrome rules for all display states.
+ */
+
+.northWest {
+  position: absolute;
+  z-index: 1;
+  top: 0px;
+  left: 0px;
+}
+
+.northEast {
+  position: absolute;
+  z-index: 1;
+  top: 0px;
+  right: 0px;
+}
+
+.southWest {
+  position: absolute;
+  z-index: 1;
+  bottom: 0px;
+  left: 0px;
+}
+
+.southEast {
+  position: absolute;
+  z-index: 1;
+  right: 0px;
+  bottom: 0px;
+}
+
+.north {
+  position: absolute;
+  z-index: 1;
+  top: 0px;
+}
+
+.south {
+  position: absolute;
+  z-index: 1;
+  bottom: 0px;
+}
+
+.west {
+  position: absolute;
+  z-index: 1;
+  left: 0px;
+}
+
+.east {
+  position: absolute;
+  z-index: 1;
+  right: 0px;
+}
+
+/*
+ * Focused Display Chrome.
+ */
+
+@sprite .display .northWest {
+  gwt-image: 'chromeNorthWest';
+}
+
+@sprite .display .northEast {
+  gwt-image: 'chromeNorthEast';
+}
+
+@sprite .display .southWest {
+  gwt-image: 'chromeSouthWest';
+}
+
+@sprite .display .southEast {
+  gwt-image: 'chromeSouthEast';
+}
+
+@sprite .display .north {
+  gwt-image: 'chromeNorth';
+  left: value('chromeNorthWest.getWidth', 'px');
+  right: value('chromeNorthEast.getWidth', 'px');
+}
+
+@sprite .display .south {
+  gwt-image: 'chromeSouth';
+  left: value('chromeSouthWest.getWidth', 'px');
+  right: value('chromeSouthEast.getWidth', 'px');
+}
+
+@sprite .display .west {
+  gwt-image: 'chromeWest';
+  top: value('chromeNorthWest.getHeight', 'px');
+  bottom: value('chromeSouthWest.getHeight', 'px');
+}
+
+@sprite .display .east {
+  gwt-image: 'chromeEast';
+  top: value('chromeNorthEast.getHeight', 'px');
+  bottom: value('chromeSouthEast.getHeight', 'px');
+}
+
+/*
+ * Focused Edit Chrome.
+ */
+
+@sprite .editing .northWest {
+  gwt-image: 'chromeNorthWestEdit';
+}
+
+@sprite .editing .northEast {
+  gwt-image: 'chromeNorthEastEdit';
+}
+
+@sprite .editing .southWest {
+  gwt-image: 'chromeSouthWestEdit';
+}
+
+@sprite .editing .southEast {
+  gwt-image: 'chromeSouthEastEdit';
+}
+
+@sprite .editing .north {
+  gwt-image: 'chromeNorthEdit';
+  left: value('chromeNorthWestEdit.getWidth', 'px');
+  right: value('chromeNorthEastEdit.getWidth', 'px');
+}
+
+@sprite .editing .south {
+  gwt-image: 'chromeSouthEdit';
+  left: value('chromeSouthWestEdit.getWidth', 'px');
+  right: value('chromeSouthEastEdit.getWidth', 'px');
+}
+
+@sprite .editing .west {
+  gwt-image: 'chromeWestEdit';
+  top: value('chromeNorthWestEdit.getHeight', 'px');
+  bottom: value('chromeSouthWestEdit.getHeight', 'px');
+}
+
+@sprite .editing .east {
+  gwt-image: 'chromeEastEdit';
+  top: value('chromeNorthEastEdit.getHeight', 'px');
+  bottom: value('chromeSouthEastEdit.getHeight', 'px');
+}
+
+/* Labelled editor buttons in frame footer */
+
+.editorButton {
+  float: right;
+}
+
+.editorButton div {
+  color: black;
+}
+
+.doneButton {
+  padding-right: 0.5em;
+}
+
+/*
+ * Pushes the checkbox and label down to be vertically aligned with the
+ * edit buttons.
+ */
+.draftCheckbox {
+  margin-top: 5px;
+}
+
+.draftLabel {
+  padding-top: 5px;
+  padding-right: 4px;  /* A bit of aesthetic space between label and buttons. */
+  font-size: 8pt;
+  color: gray;
+}
+
+.shortcutButtonLabel {
+  color: gray;
+  font-weight: normal;
+}

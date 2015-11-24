@@ -1,0 +1,191 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS Stylesheet for blips.
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+/* Reset direction sensitive properties that get inherited by inline blips */
+@if (com.google.gwt.i18n.client.LocaleInfo.getCurrentLocale().isRTL()) {
+  .blip {
+    direction: rtl;
+    text-align: right;
+  }
+} @else {
+  .blip {
+    direction: ltr;
+    text-align: left;
+  }
+}
+
+/*
+ * Desired box layout.
+ *
+ *                                                                 >  < 3px
+ *  __________________________________________________________________   V
+ * |  ______________________________________________________________  |
+ * | |       A                                                      | |  A
+ * | |      1em                                                     | |
+ * | |      _V_____________    ___________________V___________      | |
+ * | |     |    <2.5em>    |  |  |______________0.3em______   |     | |
+ * | |     |               |  |  |                A        |  |     | |
+ * | |     | A             |  |  | Meta line.         Time |  |     | |
+ * | |<1em>| 2.5em         |  |  |_________________________|  |<1em>| |
+ * | |     | V             |  |__|____________________________|     | |
+ * | |     |               |     |                            |     | |
+ * | |     |_______________|<1em>|                            |     | |
+ * | |                           | Text text text.            |     | |
+ * | |<-------   4.5em   ------->|                            |     | |
+ * | |                           |____________________________|     | |
+ * | |                           |_Unanchored replies.________|     | |
+ * | |                           |_Private replies.___________|     | |
+ * | |                                             A                | |
+ * | |                                            1em               | |
+ * | |_____________________________________________V________________| |
+ * |__________________________________________________________________|
+ *
+ *
+ * The 3px surrounding the entire blip is placeholder space for the focus
+ * frame.  The inner element corresponds to the text frame, which has a 4.5em
+ * left indent.  The 2.5x2.5 avatar is positioned left by 2.5em, and the
+ * metabar element is positioned left by 0.3em with a 0.3em border.
+ */
+
+.blip {  
+  /* Positioned container for focus frame. */
+  position: relative;
+  padding: 3px;
+  /*
+   * The focus frame is positioned under the blip (z-index: -ve).  In
+   * Gecko, the origin index of the basis context must be set explicitly.
+   */
+  z-index: 0;
+}
+
+@if user.agent ie6 ie8 {
+  /* IE bug: negative margin on avatar does not work unless blip hasLayout. */
+  .blip {
+    zoom: 1;
+  }
+}
+
+.meta {
+  padding: 1em 1em 0em 4.5em;
+}
+
+.avatar {
+  height: 2.5em;
+  width: 2.5em;
+  float: left;
+  margin-left: -3.5em;
+
+  /*
+   * 1px border around the avatar.  This slightly misaligns the avatar,
+   * but since we can not specify a margin of -3.5em - 1px, this can not be
+   * rectified cheaply.  It is not worth worrying about.
+   */
+  border: 1px solid #b3b3b3;
+  border-radius: 1px;
+  -moz-border-radius: 1px;
+  -webkit-border-radius: 1px;
+}
+
+.metabar {
+  /* Add box around the whole thing. */
+  border-radius: 0.3em;
+  -moz-border-radius: 0.3em;
+  -webkit-border-radius: 0.3em;
+  padding: 0.3em;
+
+  margin-left: -0.3em;  /* Make the border not shift the content. */
+  margin-bottom: 0.7em; /* 2.5em - (1em + 0.3emx2) - (0.2em aesthetic) */
+
+  transition: all 300ms ease-in-out;
+  -moz-transition: all 300ms ease-in-out;
+  -webkit-transition: all 300ms ease-in-out;
+}
+
+.metabar.read {
+  color: gray;
+  background-color: #e5e5e5;  /* Light gray. */
+}
+
+.metabar.unread {
+  color: #43492A;             /* Dark green. */
+  background-color: #ccdd7f;  /* Light green. */
+}
+
+.metaline {
+  /*
+   * Truncate long lines.  Note that overflow:hidden and white-space: nowrap
+   * must be used for text-overflow to have effect.
+   */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.time {
+  float: right;
+  margin: 0 0.3em;          /* Aesthetic space. */
+}
+
+.menu {
+  float: right;
+  cursor: default;
+}
+
+.menuOption {
+  border-radius: 0.3em;
+  -moz-border-radius: 0.3em;
+  -webkit-border-radius: 0.3em;
+  cursor: pointer;
+  padding: 0.3em;     /* Matches metabar padding. */
+}
+
+.read .menuOption:hover {
+  background-color: white;
+}
+
+.unread .menuOption:hover {
+  background-color: #e6eebf;
+}
+
+/* Inverted colors. */
+.read .menuOptionSelected, .read .menuOptionSelected:hover {
+  background-color: #a0a0a0;
+  color: #e5e5e5;  /* Light gray. */
+}
+
+/*
+ * Nice big paragraphs for blip content.
+ */
+.contentContainer {
+  line-height: 1.35;
+}
+
+.replies {
+  margin: 0 1em 0 4.5em;
+}
+
+.privateReplies {
+  margin: 0 1em 1em 4.5em;  
+}
+
+.contentContainer, .replies, .privateReplies{word-wrap: break-word;}

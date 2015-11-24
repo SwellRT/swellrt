@@ -1,0 +1,140 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS Stylesheet for threads.
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+.anchor {
+  display: inline;
+}
+
+.thread {
+  display: inline;
+  cursor: pointer;
+}
+
+.toggle {
+  display: inline;
+  position: relative;
+  padding: 0 0.5em;
+}
+
+.chrome {
+  position: relative;
+  margin: 0.5em 1em 0.5em -2em;
+  z-index: -1; /* IE hack to make callout appear on top. */
+}
+
+.c {
+  position: absolute;
+}
+
+.nw, .sw, .ne, .se {
+  background-image: url(corners.png);
+  height: 6px;
+  width: 6px;
+}
+
+.nw {
+  top: 0;
+  left: 0;
+}
+
+.ne {
+  top: 0;
+  right: 0;
+  background-position: 6px 0;
+}
+
+.se {
+  right: 0;
+  bottom: 0;
+  background-position: 6px -6px;
+}
+
+.sw {
+  left: 0;
+  bottom: 0;
+  background-position: 0 -6px;
+}
+
+.n {
+  left: 6px;
+  right: 6px;
+  top: 0;
+  height: 3px;
+  background-image: url(xrepeat.png);
+  background-repeat: repeat-x;
+}
+
+.s {
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  height: 3px;
+  background-image: url(xrepeat.png);
+  background-repeat: repeat-x;
+  background-position: 0 -3px;
+}
+
+.w {
+  top: 6px;
+  bottom: 6px;
+  left: 0;
+  width: 3px;
+  background-image: url(yrepeat.png);
+  background-repeat: repeat-y;
+}
+
+.e {
+  top: 6px;
+  bottom: 6px;
+  right: 0;
+  width: 3px;
+  background-image: url(yrepeat.png);
+  background-repeat: repeat-y;
+  background-position: -3px 0;
+}
+
+.chrome.collapsed {
+  display: none;
+}
+
+.count.expanded {
+  position: relative;
+}
+
+.dropContainer.collapsed {
+  display: none;
+}
+
+.dropContainer.expanded {
+  position: absolute;
+  text-align: center;
+  left: 0;
+  right: 0;
+  bottom: -1em; /* Magic height. */
+  line-height: 0;  /* Height comes only from image. */
+}
+
+.drop {
+  background-color: white;
+  vertical-align: bottom;
+}

@@ -1,0 +1,86 @@
+<?xml version='1.0'?>
+<!--
+
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<!--
+  Template for ErrorIndicator.
+-->
+<ui:UiBinder
+    xmlns:ui="urn:ui:com.google.gwt.uibinder"
+    xmlns:gwt="urn:import:com.google.gwt.user.client.ui"
+>
+  <ui:with field='msg'
+         type='org.waveprotocol.box.webclient.widget.error.i18n.ErrorMessages' />
+
+  <ui:style type='org.waveprotocol.box.webclient.widget.error.ErrorIndicatorWidget.Style'>
+
+  .alert {
+    background-color: red;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    /* This padding is just aesthetic, to give some space for the rounded corners to show. */
+    padding: 2px 6px;
+  }
+  
+  .detail {
+    background-color: #eeeeee;
+    width: 50px;
+    height: 0;  /* Starts off collapsed */
+    overflow-y: auto;
+  
+    transition: height 300ms ease-in-out;
+    -moz-transition: height 300ms ease-in-out;
+    -webkit-transition: height 300ms ease-in-out;
+  
+    font-size: small;
+    line-height: 1;
+  }
+
+  .expanded {
+    width: 800px;
+    height: 500px;
+    padding: 5px;
+    border: 1px solid black;
+  }
+
+  .stack {
+    white-space: pre;
+  }
+
+  </ui:style>
+  <gwt:HTMLPanel>
+    <span class="{style.alert}">
+      <em><ui:text from="{msg.everythingShiny}"/></em>
+      <ui:text from="{msg.errorHasOccurred}"/>. <ui:text from="{msg.please}"/>
+      <a href="#" onclick="window.location.replace(window.location.href.replace(/#.*/, ''));">
+      <ui:text from="{msg.refreshPage}"/></a>.
+      <gwt:Anchor href="javascript:;" ui:field="showDetail" visible="false">
+        <ui:text from="{msg.showErrorDetail}"/>.
+      </gwt:Anchor>
+      </span>
+    <div ui:field="detail" class="{style.detail}">
+      <h3><ui:text from="{msg.stackTrace}"/></h3>
+      <span ui:field="stack" class="{style.stack}"></span>
+      <span ui:field="bug"></span>
+    </div>
+  </gwt:HTMLPanel>
+</ui:UiBinder>

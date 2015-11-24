@@ -1,0 +1,42 @@
+<?xml version='1.0'?>
+<!--
+
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<!--
+  Template for HorizontalToolbarButtonWidget.
+  Author: kalman@google.com (Benjamin Kalman)
+-->
+<ui:UiBinder
+    xmlns:ui='urn:ui:com.google.gwt.uibinder'
+    xmlns:gwt='urn:import:com.google.gwt.user.client.ui'
+    xmlns:wp='urn:import:org.waveprotocol.wave.client.widget.common'
+>
+  <ui:with field='res' type='org.waveprotocol.wave.client.widget.toolbar.buttons.HorizontalToolbarButtonWidget.Resources' />
+  <wp:ImplPanel ui:field='self' styleName='{res.css.self} {res.css.enabled}'>
+    <!-- All fields hidden by default and if/shown when set. -->
+    <div ui:field='visualElement' class='{res.css.visualElement} {res.css.hidden}' />
+    <span ui:field='textElement' class='{res.css.textElement} {res.css.hidden}' />
+    <div ui:field='dropdownArrow' class='{res.css.dropdownArrow} {res.css.hidden}' />
+    <div ui:field='divider' class='{res.css.divider} {res.css.hidden}' />
+    <div ui:field='overlay' class='{res.css.overlay}' />
+  </wp:ImplPanel>
+
+</ui:UiBinder>

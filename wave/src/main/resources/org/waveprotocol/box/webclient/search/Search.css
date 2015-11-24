@@ -1,0 +1,82 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS for search area.
+ *
+ * Author: hearnden@google.com (David Hearnden)
+ */
+@eval searchHeight org.waveprotocol.box.webclient.search.SearchPanelWidget.CssConstants.SEARCH_HEIGHT;
+
+.self {
+  height: searchHeight;
+  background-color: blue;
+  margin: auto;
+  position: relative;
+}
+
+.search {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+@if (org.waveprotocol.wave.client.common.util.QuirksConstants.SUPPORTS_SEARCH_INPUT) {
+ input.query {
+   -webkit-appearance: textfield;  /* Tell Mac not to use the Mac search widget. */
+   font-size: 13px;  /* Tell Mac not to use its own preference for font size. */
+ }
+}
+
+input.query {
+  height: 25px;
+  border-width: 1px;  /* Standardize (Webkit default is 2px, FF is 3). */
+  padding: 1px;
+  width: 100%;  /* Stretch to width of container. */
+}
+
+.searchButtonsPanel {
+  width: 190px;
+  margin: 13px 5px;
+  float: right;
+  font-family: verdana;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.searchButton {
+  margin: 0 3px;
+  text-align: center;
+  height: 25px;
+  width: 55px;
+  float: left;
+  cursor: pointer;
+}
+
+/* input elements only stretch width with a 100% width (block-model layout can
+ * not be used).  Therefore, we need a container element to house any insets
+ * and outsets, so that the input element is free to use 100% width.  It also
+ * helps buffer the surrounding elements from the broken layout model used for
+ * input elements.
+ */
+.searchboxContainer {
+  height: 25px;
+  margin: 13px 200px 13px 13px;  /* Right amount is button panel size. */
+  padding-right: 6px; /* Compensate for broken layout model for inputs. */
+}

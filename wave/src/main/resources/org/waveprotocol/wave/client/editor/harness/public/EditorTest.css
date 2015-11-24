@@ -1,0 +1,190 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+/* default font */
+body, td, a, div, textarea, input, pre, h3 {
+  font-family: arial, sans-serif;
+  font-size: small;
+  color: #000000;
+}
+
+a:link{color:#0000cc}
+a:visited{color:#551a8b}
+img{border:0}
+form{margin:0}
+td{padding:0}
+
+.main,body,html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.gwt-TabBarItem {
+  border-top: 2px solid #8af;
+  border-left: 2px solid #8af;
+  border-right: 2px solid #8af;
+  font-weight: bold;
+  padding: 3px 6px;
+  margin-right: 1px;
+  cursor: pointer;
+}
+
+.gwt-TabBarItem-selected {
+  background-color: #bcf;
+}
+
+.gwt-TabPanelBottom {
+  border: 2px solid #8af;
+  padding: 3px 6px;
+  margin-right: 5px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.editor {
+  width: 400px;
+  border: 1px solid silver;
+  overflow: auto;
+  margin: 0px 15px 0px 15px;
+  padding: 0 4px;
+}
+
+.editor.edit {
+  border: 2px solid blue;
+}
+
+.webkit div.editor:focus {
+  outline: 0;
+}
+
+#content-box {
+  margin: 0px;
+}
+
+.editor.edit {
+  border: 1px solid #27e;
+}
+
+.operation, .content, .html {
+  margin: 15px 15px 0 15px;
+  font-family: monospace;
+}
+
+#content1, #content2 {
+  width:300px;
+  overflow:hidden;
+  border:1px dotted silver;
+}
+
+.content {
+  overflow: auto;
+  white-space: pre;
+}
+
+.html {
+  overflow: auto;
+  white-space: pre;
+  margin-top:0;
+}
+
+.gwt-Button, .gwt-SuggestBox {
+  margin: 15px;
+}
+
+.gwt-SuggestBox, .gwt-SuggestBoxPopup {
+  width:300px;
+}
+
+.gwt-SuggestBoxPopup {
+  background:white;
+  border:1px solid blue;
+}
+
+.gwt-SuggestBoxPopup div {
+  overflow:hidden;
+}
+
+.gwt-SuggestBoxPopup .item-selected {
+  color:white;
+  background:highlight;
+}
+
+.gwt-CheckBox {
+  margin-left:15px;
+}
+
+.redIndicator {
+  color:red;
+  font-weight:bold;
+  margin:0 10px 0 10px;
+  padding:5px;
+}
+
+#log1 {
+  height: 500px;
+  border: 1px solid green;
+  overflow: auto;
+  margin:0 10px 0 10px;
+  padding:5px;
+}
+
+.log .entry {
+  border-bottom: 1px dotted silver;
+}
+
+.log .module {
+  font-weight: bold;
+}
+
+.log .error {
+  color: red;
+}
+
+.log .object {
+  font-family:monospace;
+}
+
+
+/* TODO: factor this out */
+
+.editor p {
+  margin:5px 0;
+}
+
+.webkit table.image-thumbnail {
+  position:relative;
+  left:4px;
+}
+
+/* Editor Popup */
+
+.editor-popup {
+  position:absolute;
+  border: 1px solid silver;
+  background: white;
+}
+
+.editor-popup div {
+  text-decoration: none;
+  cursor: pointer;
+}

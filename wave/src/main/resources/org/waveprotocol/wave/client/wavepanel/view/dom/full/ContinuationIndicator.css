@@ -1,0 +1,84 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS Stylesheet for the inline thread continuation indicator.
+ *
+ * author: michael.macfadden@gmail.com (Michael MacFadden)
+ */
+.indicator {
+  transition: opacity 0.1s linear;
+  -moz-transition: opacity 0.1s linear;
+  -webkit-transition: opacity 0.1s linear;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+@if user.agent ie6 ie8 {
+
+  /*
+   * When CssResource combines a literal string with other property values, it
+   * gets semicolon placement incorrect, resulting in malformed css.  To work
+   * around this, we use a different selector.
+   */
+  .indicator .bar, .indicator .icon {
+    filter: literal("alpha(opacity = 0)");
+  }
+} @else {
+  .indicator {
+    opacity: 0;
+  }
+}
+
+@if user.agent ie6 ie8 {
+  .indicator:hover .bar, .indicator:hover .icon {
+    filter: literal("alpha(opacity = 100)");
+  }
+} @else {
+  .indicator:hover {
+    opacity: 1.0;
+  }
+}
+
+@sprite .icon {
+  gwt-image: 'continuationIcon';
+  overflow: visible;
+  left: 13px;
+  overflow: visible;
+  position: absolute;
+  top: 2px;
+  z-index: 2;
+}
+
+.bar {
+  background-color: #EEE;
+  border: solid #5590D2;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: -15px;
+  height: 23px;
+  opacity: 0.8;
+  background-image: url('/static/images/unknown.jpg');
+  background-repeat: no-repeat;
+  background-position: 17px 1px;
+  background-size: 2.5em 2.5em;
+}

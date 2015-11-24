@@ -1,0 +1,157 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * StyleInjector CSS file for Gadget container.
+ * Author: vadimg@google.com (Vadim Gerasimov)
+ */
+
+.panel {
+  position: relative; /* Positioned container */
+  zoom: 1;            /* Fixes IE positioning bug. */
+  overflow: hidden;   /* Expand to size of floated contents. */
+  font-size: 0pt;
+  border: none;
+  clear: left;
+}
+
+.inline {
+  display: inline-block;
+  vertical-align: bottom;
+  width: 100%;
+}
+
+.title {
+  display: none;
+}
+
+.gadgetFrame {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 0pt;
+  display: block;
+  position: relative;
+}
+
+.gadgetIframe {
+  border: 0px solid transparent;
+}
+
+.loadingGadgetFrame {
+  border: 1px solid #b8c6d9;
+}
+
+.loadedGadgetFrame {
+  border: 0px solid transparent;
+}
+
+@sprite .loadingGadgetLargeThrobber {
+  gwt-image: 'loadingGadgetLarge';
+  background-color: #e6ebf2;
+  background-repeat: no-repeat;
+  line-height: value('loadingGadgetLarge.getHeight', 'px');
+  background-position: center center;
+  display: block;
+}
+
+@sprite .loadingGadgetSmallThrobber {
+  gwt-image: 'loadingGadgetSmall';
+  background-color: #e6ebf2;
+  background-repeat: no-repeat;
+  line-height: value('loadingGadgetSmall.getHeight', 'px');
+  background-position: center center;
+  display: block;
+}
+
+@url brokenGadgetUrl brokenGadget;
+.brokenGadgetIcon {
+  background-color: #e6ebf2;
+  background-image: brokenGadgetUrl;
+  background-repeat: no-repeat;
+  background-position: center center;
+  display: block;
+}
+
+.loadedGadget {
+  display: block;
+}
+
+.iframeDiv {
+  position: relative;
+  left: 0px;
+  top: 0px;
+}
+
+/* Buttons on each widget. */
+@eval metaButtonTransitionTime RESOURCES.FADE_DELAY_STRING;
+@sprite .metaButtons {
+  position: absolute;
+  right: 14px;
+  top: 6px;
+  z-index: 1;
+  gwt-image: 'metaMid';
+  overflow: visible;     /* GWT's sprite rules stick in an overflow:hidden which we don't want. */
+  font-size: 0pt;
+
+  /** animate fade-in and fade-out of the meta buttons */
+  \-webkit-transition: opacity metaButtonTransitionTime ease-in-out;
+  \-moz-transition: opacity metaButtonTransitionTime ease-in-out;
+  transition: opacity metaButtonTransitionTime ease-in-out;
+}
+
+/*
+ * The left and right
+ */
+
+@eval metaLeftMargin RESOURCES.META_LEFT_WIDTH;
+@eval metaRightMargin RESOURCES.META_RIGHT_WIDTH;
+
+@sprite .metaRight {
+  gwt-image: 'metaRightImage';
+  float: left;
+  margin-right: metaRightMargin;
+}
+
+@sprite .metaLeft {
+  gwt-image: 'metaLeftImage';
+  float: left;
+  margin-left: metaLeftMargin;
+}
+
+.metaButtonsPanel {
+  float: left;
+}
+
+.metaButton {
+  /* Push the buttons down to align nicely with the mid, right and left background images. */
+  margin-top: 3px;
+  float: left;
+}
+
+.metaButton.disabled {
+  opacity: 0.5;
+}
+
+@if user.agent ie6 {
+  .metaButton.disabled {
+    filter: "alpha(opacity = 50)";
+  }
+}
+
+@sprite .more {
+  gwt-image: 'moreImage';
+}

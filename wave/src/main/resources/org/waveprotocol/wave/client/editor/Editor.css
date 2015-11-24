@@ -1,0 +1,114 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ * CSS Stylesheet for editors.
+ *
+ * author: hearnden@google.com (David Hearnden)
+ */
+
+@noflip {
+  /* TODO(kalman/hearnden): Reconcile differences between .editor and .document. */
+
+  .editor {
+    position: relative;
+    line-height: 1.35;   /* Makes a default line height for rendered documents.
+                            Looks better than browser default. */
+    z-index: 0;          /* In some contexts, surrounding elements need to
+                          * specify if they are above or below an editor in a
+                          * stacking context.  Conventionally, editors default
+                          * to z-index 0.
+                          */
+    text-align: left;    /* Default alignment for text users enter without
+                          * specifying an alignment. This is needed so such text
+                          * will have the same alignment for LTR and RTL UIs.
+                          */
+    direction: ltr;      /* Same logic as text-align above */
+  }
+
+  .oldBlipUi.editor {
+    min-height: 33px;    /* Visually constructed to make contributor avatars
+                          * appear centred on 1-line blips.
+                          */
+  }
+
+  .newBlipUi.editor {
+    margin-left: 36px;
+    margin-top: 4px;
+  }
+
+  .document {
+    text-align: left;    /* Default alignment for text users enter without
+                          * specifying an alignment. This is needed so such text
+                          * will have the same alignment for LTR and RTL UIs.
+                          */
+    direction: ltr;      /* Same logic as text-align above */
+  }
+}
+
+
+.document {
+  /* Preserve whitespace in documents */
+  /* TODO(hearnden,danilatos): This does not work in IE. Investigate */
+  white-space: pre-wrap;
+  /* Not needed for now as we set margin of p to 0
+   * margin-bottom: -1.2em;  Counter bottom-margin of last p. */
+}
+
+/* TODO(danilatos): Use a className for title */
+.document p {
+  /* Note: the bottom-margin of one p will collapse with the top-margin of the
+   *       next p, so that the total margin between them is the maximum of the
+   *       two, not the sum.
+   */
+  /* Consider putting this back when we have separate br
+   * margin: 0 0 1.2em 0; */
+  margin: 0 0 0 0;
+}
+
+@if user.agent safari gecko1_8 {
+  /* Turns off ugly highlighting around focused editable regions. */
+  .document:focus {
+    outline: 0;
+  }
+}
+
+/*
+ * These attributes are required to make a paragraph look like a list-item
+ * across browsers.
+ */
+.simulated-li {
+  display: list-item;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.numbered {
+  list-style-type: decimal;
+}
+
+.bullet-type-0 {
+  list-style-type: disc;
+}
+
+.bullet-type-1 {
+  list-style-type: circle;
+}
+
+.bullet-type-2 {
+  list-style-type: square;
+}
