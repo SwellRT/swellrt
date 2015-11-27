@@ -24,22 +24,29 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
   }
 
+  /**
+   * Get an instance of ListType within the model backed by a document. This
+   * method is used for deserialization.
+   * 
+   * @param model
+   * @param substrateDocumentId
+   * @return
+   */
+  protected static ListType deserialize(Type parent, String substrateDocumentId) {
+    Preconditions.checkArgument(substrateDocumentId.startsWith(PREFIX),
+        "Not a document id for ListType");
 
-  protected static Type createAndAttach(Model model, String id) {
-
-    Preconditions.checkArgument(id.startsWith(PREFIX), "ListType.createAndAttach() not a list id");
-    ListType list = new ListType(model);
-    list.attach(id);
+    ListType list = new ListType(parent.getModel());
+    list.attach(parent, substrateDocumentId);
     return list;
-
   }
 
   public final static String TYPE_NAME = "ListType";
   public final static String PREFIX = "list";
 
 
-  public final static String ROOT_TAG = "list";
-  private final static String ITEM_TAG = "item";
+  public final static String TAG_LIST = "list";
+  private final static String TAG_LIST_ITEM = "item";
 
   private ObservableElementList<Type, ListElementInitializer> observableList;
   private ObservableElementList.Listener<Type> observableListListener;
@@ -51,9 +58,10 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   private ObservableDocument backendDocument;
   private Doc.E backendRootElement;
 
+  private MetadataContainer metadata;
+  private ValuesContainer values;
 
   private boolean isAttached;
-
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
@@ -90,43 +98,64 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   }
 
 
+  @Override
+  protected void attach(Type parent) {
+    Preconditions.checkArgument(!isAttached, "Already attached list type");
+    String substrateDocumentId = model.generateDocId(getPrefix());
+    attach(parent, substrateDocumentId);
+  }
 
   @Override
-  protected void attach(String docId) {
+  protected void attach(Type parent, String substrateDocumentId) {
+    Preconditions.checkArgument(!isAttached, "Already attached map type");
+    Preconditions.checkNotNull(substrateDocumentId, "Document id is null");
 
-    if (docId == null) {
+    backendDocumentId = substrateDocumentId;
 
-      docId = model.generateDocId(getPrefix());
-      backendDocument = model.createDocument(docId);
+    boolean isNew = false;
 
-    } else
-      backendDocument = model.getDocument(docId);
+    // Get or create substrate document
+    if (!model.getModelDocuments().contains(backendDocumentId)) {
+      backendDocument = model.createDocument(backendDocumentId);
+      isNew = true;
+    } else {
+      backendDocument = model.getDocument(backendDocumentId);
+    }
 
-    backendDocumentId = docId;
+    // Load metadata section
+    metadata = MetadataContainer.get(backendDocument);
 
-    // Create a root tag to ensure the document is persisted.
-    // If the doc is created empty and it's not populated with data it won't
-    // exist when the wavelet is open again.
-    backendRootElement = DocHelper.getElementWithTagName(backendDocument, ROOT_TAG);
-    if (backendRootElement == null)
+    if (isNew) {
+      metadata.setCreator(model.getCurrentParticipantId());
+    }
+
+    // Load list section
+    backendRootElement = DocHelper.getElementWithTagName(backendDocument, TAG_LIST);
+    if (backendRootElement == null) {
       backendRootElement =
-          backendDocument.createChildElement(backendDocument.getDocumentElement(), ROOT_TAG,
+          backendDocument.createChildElement(backendDocument.getDocumentElement(), TAG_LIST,
               Collections.<String, String> emptyMap());
+    }
 
+    // Initialize observable list
     DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
-
     this.observableList =
-        DocumentBasedElementList.create(router, backendRootElement, ITEM_TAG,
-            new ListElementFactory(model));
+        DocumentBasedElementList.create(router, backendRootElement, TAG_LIST_ITEM,
+            new ListElementFactory(this));
     this.observableList.addListener(observableListListener);
 
+    // Initialize values section
+    values = ValuesContainer.get(backendDocument, router, this);
+
+    // Attached!
     this.isAttached = true;
   }
 
-  protected void deattach() {
-    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
 
-    // nothing to do. wavelet doesn't provide doc deletion
+  protected void deattach() {
+    Preconditions.checkArgument(isAttached, "Unable to deatach an unattached MapType");
+    metadata.setDetachedPath();
+    isAttached = false;
   }
 
 
@@ -137,7 +166,7 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
 
   @Override
-  protected String serializeToModel() {
+  protected String serialize() {
     Preconditions.checkArgument(isAttached, "Unable to serialize an unattached ListType");
     return backendDocumentId;
   }
@@ -153,7 +182,7 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
       @Override
       public String getBackendId() {
-        return serializeToModel();
+        return serialize();
       }
 
     };
@@ -178,60 +207,68 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   //
 
   public Type add(Type value) {
-    Preconditions.checkArgument(isAttached, "ListType.add(): not attached to model");
+    Preconditions.checkArgument(isAttached, "Unable to add values to an unattached List");
     Preconditions.checkArgument(!value.isAttached(),
-        "ListType.add(): forbidden to add an already attached Type");
+        "Already attached Type instances can't be put into a List");
 
-    value.attach(null);
-    Type listValue = observableList.add(value.getListElementInitializer());
+    value.attach(this);
+    value = observableList.add(value.getListElementInitializer());
+    int index = observableList.indexOf(value);
+    value.setPath(getPath() + "." + index);
 
     // return the value generated from list to double check add() success
     // also it is the cached value in the observable list
-    return listValue;
+    return value;
   }
 
   public Type add(int index, Type value) {
 
     Preconditions.checkArgument(index >= 0 && index <= observableList.size(),
-        "ListType.add(): add to index out of bounds");
-    Preconditions.checkArgument(isAttached, "ListType.add(): not attached to model");
+        "Index out of list bounds");
+    Preconditions.checkArgument(isAttached, "Unable to add values to an unattached List");
     Preconditions.checkArgument(!value.isAttached(),
-        "ListType.add(): forbidden to add an already attached Type");
+        "Already attached Type instances can't be put into a List");
 
-    value.attach(null);
-    Type listValue = observableList.add(index, value.getListElementInitializer());
+    value.attach(this);
+    value = observableList.add(index, value.getListElementInitializer());
+    value.setPath(getPath() + "." + index);
 
     // return the value generated from list to double check add() success
     // also it is the cached value in the observable list
-    return listValue;
+    return value;
   }
 
 
   public Type remove(int index) {
-    if (observableList == null) return null;
+    Preconditions.checkArgument(isAttached, "Unable to remove values from an unattached List");
     Type removedInstance = observableList.get(index);
     if (!observableList.remove(removedInstance)) return null;
+
+    removedInstance.deattach();
     return removedInstance;
   }
 
 
   public Type get(int index) {
-    if (observableList == null) return null;
+    Preconditions.checkArgument(isAttached, "Unable to get values from an unattached List");
     Preconditions.checkArgument(index >= 0 && index < observableList.size(),
-        "ListType.get(): add to index out of bounds");
+        "Index out of list bounds");
     return observableList.get(index);
   }
 
   public int indexOf(Type type) {
-    return observableList != null ? observableList.indexOf(type) : -1;
+    Preconditions.checkArgument(isAttached, "Unable to get index from an unattached List");
+    return observableList.indexOf(type);
   }
 
   public int size() {
-    return observableList != null ? observableList.size() : 0;
+    Preconditions.checkArgument(isAttached, "Unable to get size from an unattached List");
+    return observableList.size();
   }
 
   public Iterable<Type> getValues() {
-    return observableList != null ? observableList.getValues() : Collections.<Type> emptyList();
+    Preconditions.checkArgument(isAttached, "Unable to get values from an unattached List");
+    return observableList.getValues();
   }
 
   @Override
@@ -248,5 +285,32 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   public String getType() {
     return TYPE_NAME;
   }
+
+  @Override
+  public String getPath() {
+    return metadata.getPath();
+  }
+
+  @Override
+  protected void setPath(String path) {
+    metadata.setPath(path);
+  }
+
+  @Override
+  protected boolean hasValuesContainer() {
+    return true;
+  }
+
+  @Override
+  protected ValuesContainer getValuesContainer() {
+    return values;
+  }
+
+  @Override
+  protected String getValueReference(Type value) {
+    int index = observableList.indexOf(value);
+    return index >= 0 ? "" + index : null;
+  }
+
 
 }

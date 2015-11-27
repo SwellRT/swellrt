@@ -1,5 +1,6 @@
 package org.swellrt.model.generic;
 
+
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -14,14 +15,17 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
   }
 
-  protected static Type createAndAttach(Model model, String id) {
-
-    Preconditions.checkArgument(id.startsWith(PREFIX),
-        "StringType.createAndAttach() not a string id");
-    StringType string = new StringType(model);
-    string.attach(id);
+  /**
+   * Get an instance of StringType. This method is used for deserialization.
+   *
+   * @param model
+   * @param id
+   * @return
+   */
+  protected static StringType deserialize(Type parent, String valueIndex) {
+    StringType string = new StringType();
+    string.attach(parent, valueIndex);
     return string;
-
   }
 
   public final static String TYPE_NAME = "StringType";
@@ -32,17 +36,21 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
   private ObservableBasicValue<String> observableValue;
   private ObservableBasicValue.Listener<String> observableValueListener;
 
-  private Model model;
-  private int indexStringPos; // Index in the String Index
+  private String path;
+
+  private Type parent;
+  private int valueRef; // the index of this value in the ValuesContainer
   private String initValue;
+
+
 
   private boolean isAttached;
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
-  protected StringType(Model model) {
 
-    this.model = model;
+  protected StringType() {
+
     this.initValue = null;
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
@@ -54,11 +62,9 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
     };
   }
 
-  public StringType(Model model, String value) {
+  public StringType(String initValue) {
 
-    this.model = model;
-    this.initValue = value != null ? value : ""; // null string is not valid
-
+    this.initValue = initValue != null ? initValue : "";
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
       @Override
@@ -76,33 +82,47 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
     return PREFIX;
   }
 
+  @Override
+  protected void attach(Type parent) {
+    Preconditions.checkArgument(parent.hasValuesContainer(),
+        "Invalid parent type for a primitive value");
+    this.parent = parent;
+    observableValue = parent.getValuesContainer().add(initValue);
+    observableValue.addListener(observableValueListener);
+    valueRef = parent.getValuesContainer().indexOf(observableValue);
+    isAttached = true;
+  }
 
   @Override
-  protected void attach(String stringId) {
+  protected void attach(Type parent, String valueIndex) {
+    Preconditions.checkArgument(parent.hasValuesContainer(),
+        "Invalid parent type for a primitive value");
 
-    if (stringId == null) {
+    this.parent = parent;
 
-      indexStringPos = model.getStringIndex().size();
-      observableValue = model.getStringIndex().add(indexStringPos, initValue);
-
-    } else {
-
-      indexStringPos = Integer.valueOf(stringId.split("\\+")[1]);
-      observableValue = model.getStringIndex().get(indexStringPos);
-      initValue = observableValue.get();
+    Integer index = null;
+    try {
+      index = Integer.valueOf(valueIndex);
+    } catch (NumberFormatException e) {
 
     }
 
-    observableValue.addListener(observableValueListener);
+    Preconditions.checkNotNull(index, "Value index is null");
 
-    this.isAttached = true;
+    observableValue = parent.getValuesContainer().get(index);
+    if (observableValue != null) {
+      valueRef = index;
+      observableValue.addListener(observableValueListener);
+    }
 
+    isAttached = true;
   }
 
   protected void deattach() {
     Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
-
-    // For now, we are not remove strings from index
+    observableValue.removeListener(this.observableValueListener);
+    observableValue = null;
+    isAttached = false;
   }
 
 
@@ -113,9 +133,9 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
 
 
   @Override
-  protected String serializeToModel() {
+  protected String serialize() {
     Preconditions.checkArgument(isAttached, "Unable to serialize an unattached StringType");
-    return PREFIX + "+" + Integer.toString(indexStringPos);
+    return PREFIX + "+" + Integer.toString(valueRef);
   }
 
   @Override
@@ -130,7 +150,7 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
       @Override
       public String getBackendId() {
         Preconditions.checkArgument(isAttached, "Unable to initialize an unattached StringType");
-        return serializeToModel();
+        return serialize();
       }
 
     };
@@ -173,10 +193,6 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
     return null;
   }
 
-  @Override
-  public Model getModel() {
-    return model;
-  }
 
   @Override
   public String getType() {
@@ -184,6 +200,38 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
   }
 
 
+  @Override
+  protected void setPath(String path) {
+    this.path = path;
+  }
+
+  @Override
+  public String getPath() {
+    if (path == null && parent != null && isAttached) {
+      path = parent.getPath() + "." + parent.getValueReference(this);
+    }
+    return path;
+  }
+
+  @Override
+  protected boolean hasValuesContainer() {
+    return false;
+  }
+
+  @Override
+  protected ValuesContainer getValuesContainer() {
+    return null;
+  }
+
+  @Override
+  protected String getValueReference(Type value) {
+    return null;
+  }
+
+  @Override
+  public Model getModel() {
+    return parent.getModel();
+  }
 
 
 }

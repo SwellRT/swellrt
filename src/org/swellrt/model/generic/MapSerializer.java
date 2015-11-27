@@ -2,39 +2,20 @@ package org.swellrt.model.generic;
 
 public class MapSerializer implements org.waveprotocol.wave.model.util.Serializer<Type> {
 
-  protected Model model;
+  private final MapType parent;
 
-  protected MapSerializer(Model model) {
-    this.model = model;
+  protected MapSerializer(MapType parent) {
+    this.parent = parent;
   }
 
   @Override
-  public String toString(Type x) {
-    return x.serializeToModel();
+  public String toString(Type v) {
+    return v.serialize();
   }
 
   @Override
-  public Type fromString(String s) {
-
-    if (s.startsWith(StringType.PREFIX)) {
-
-      return StringType.createAndAttach(model, s);
-
-    } else if (s.startsWith(MapType.PREFIX)) {
-
-      return MapType.createAndAttach(model, s);
-
-    } else if (s.startsWith(ListType.PREFIX)) {
-
-      return ListType.createAndAttach(model, s);
-
-    } else if (s.startsWith(TextType.PREFIX)) {
-
-      return TextType.createAndAttach(model, s);
-    }
-
-
-    return null;
+  public Type fromString(String ref) {
+    return Type.deserialize(parent, ref);
   }
 
   @Override

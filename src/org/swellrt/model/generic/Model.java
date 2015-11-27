@@ -2,31 +2,20 @@ package org.swellrt.model.generic;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.waveprotocol.wave.model.adt.ObservableBasicValue;
-import org.waveprotocol.wave.model.adt.ObservableElementList;
-import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicValue;
-import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
-import org.waveprotocol.wave.model.adt.docbased.Factory;
-import org.waveprotocol.wave.model.adt.docbased.Initializer;
 import org.waveprotocol.wave.model.document.Doc;
-import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.ObservableDocument;
-import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.parser.XmlParseException;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocProviders;
-import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.id.IdGenerator;
-import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
@@ -34,14 +23,13 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveletListener;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
+import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 /**
- * Main interface of the dynamic Wave's generic content model. See following
- * model version info:
+ * A model is a Wavelet wrapper storing a tree-like structure of data objects of
+ * the Type hierarchy.
  * 
  * <p>
  * [version not provided] <br/>
@@ -68,15 +56,51 @@ import java.util.Set;
  * Wavelet: swl+root <br/>
  * Root Document : model+root <br/>
  * 
+ * version 1.0 - Data model supporting access control and metadata per blip
+ * 
+ * Model metadata: model+root <br/>
+ * Root map: map+root <br/>
+ * Map blip: map+XXXX <br/>
+ * List blip: list+XXXX <br/>
+ * Text blip: b+XXXX <br/>
+ * 
+ * Metadata attributes for model; <br/>
+ * v = model version <br/>
+ * t = model type id (for custom data types) <br/>
+ * a = app id <br />
+ * 
+ * 
+ * Metadata attributes for types (Map, List and future containers): <br/>
+ * pc = participant creator <br/>
+ * tc = timestamp creation <br/>
+ * pm = participant lastmod <br/>
+ * tm = timestamp lastmod <br/>
+ * ap = access policy <br/>
+ * acl = access control list <br/>
+ * p = path of this object in the wavelet <br/>
+ * 
+ * Primitive values are stored in each container document. (Former string index
+ * is deprecated)
  * 
  */
 public class Model implements SourcesEvents<Model.Listener> {
 
   /**
-   * The model version of the current source code. In the future, code could
-   * support multiple model versions havinf backwards compatibility.
+   * The model version of the current source code. Check {@link ModelMigrator}
+   * for migration procedures.
    */
-  public static final String MODEL_VERSION = "0.2";
+  public static final String MODEL_VERSION = "1.0";
+
+  /**
+   * For future use.
+   */
+  public static final String MODEL_TYPE_DEFAULT = "default";
+
+  /**
+   * For future use.
+   */
+  public static final String MODEL_APP_DEFAULT = "default";
+
 
   public interface Listener {
 
@@ -86,126 +110,160 @@ public class Model implements SourcesEvents<Model.Listener> {
 
   }
 
-  public static final String WAVELET_ID_PREFIX = "swl";
-  public static final String WAVELET_ID = WAVELET_ID_PREFIX + IdUtil.TOKEN_SEPARATOR + "root";
+  /**
+   * A prefix for SwellRT wavelets.
+   */
+  public static final String WAVELET_SWELL_PREFIX = "swl";
 
   /**
-   * The root document of this model. It contains the root map and the string
-   * index
+   * Name of wavelet containing the public view (default) of a collaborative
+   * object.
    */
-  public static final String ROOT_DOC_PREFIX = "model";
-  private static final String ROOT_DOC_ID = ROOT_DOC_PREFIX + "+root";
-
-  private static final String METADATA_TAG = "model";
-  private static final String METADATA_ATTR_VERSION = "v";
-
-  // A strings index is stored in the root Document
-  //
-  // <strings>
-  // <s v="bla bla bla" />
-  // <s v="bla bla bla" />
-  // ...
-  // </strings>
-  //
-  private static final String STRING_INDEX_TAG = "strings";
-  private static final String STRING_ITEM_TAG = "s";
-  private static final String STRING_VALUE_ATTR = "v";
+  public static final String WAVELET_SWELL_ROOT = "swl+root";
 
 
-  private final MapSerializer typeSerializer;
+  /**
+   * Name of the blip/document storing collaborative object metadata
+   */
+  private static final String DOC_MODEL_ROOT = "model+root";
 
+
+  /**
+   * Name of substrate document for the root of the collaborative object.
+   */
+  private static final String DOC_MAP_ROOT = "map+root";
+
+  /**
+   * Tag name of the model section (metadata).
+   */
+  private static final String TAG_MODEL = "model";
+  private static final String ATTR_VERSION_METADATA = "v";
+  private static final String ATTR_TYPE_METADATA = "t";
+  private static final String ATTR_APP_METADATA = "a";
+
+
+
+  /**
+   * Utility method to check for swellrt wavelet id.
+   */
   public static boolean isModelWaveletId(WaveletId waveletId) {
-    return waveletId.getId().startsWith(WAVELET_ID_PREFIX);
+    return waveletId.getId().startsWith(WAVELET_SWELL_PREFIX);
   }
 
-  private static final Factory<Doc.E, ObservableBasicValue<String>, String> StringIndexFactory =
-      new Factory<Doc.E, ObservableBasicValue<String>, String>() {
-
-        @Override
-        public ObservableBasicValue<String> adapt(DocumentEventRouter<? super E, E, ?> router,
-            E element) {
-          return DocumentBasedBasicValue.create(router, element, Serializer.STRING,
-              STRING_VALUE_ATTR);
-        }
-
-        @Override
-        public Initializer createInitializer(final String initialState) {
-
-          return new Initializer() {
-
-            @Override
-            public void initialize(Map<String, String> target) {
-              target.put(STRING_VALUE_ATTR, initialState);
-            }
-
-          };
-        }
-      };
 
 
-  private final ObservableDocument rootModelDocument;
-  private final ObservableElementList<ObservableBasicValue<String>, String> stringIndex;
+  /**
+   * The Document substrate of this object, the model metadata info of the
+   * collaborative object.
+   */
+  private final ObservableDocument doc;
+
+  /**
+   * Wavelet supporting the whole collaborative object
+   */
   private final ObservableWavelet wavelet;
+
+  /**
+   * Wavelet supporting the whole collaborative object
+   */
   private final WaveletData waveletData;
+
+  /**
+   * An id generator for swellrt blips
+   */
   private final TypeIdGenerator idGenerator;
+
+  /**
+   * The current participant accesing the model
+   */
+  private final ParticipantId currentParticipant;
+
+  /**
+   * Reference to the root map
+   */
   private MapType rootMap = null;
+
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
-  public static Model create(WaveContext wave, String domain, ParticipantId loggedInUser,
+  /**
+   * Create or load a new collaborative object (aka model). Blip-based data will
+   * be migrated to the current model version.
+   *
+   * @param wave
+   * @param domain
+   * @param loggedInUser
+   * @param isNewWave
+   * @param idGenerator
+   * @return
+   */
+  public static Model create(ObservableWaveView wave, String domain, ParticipantId loggedInUser,
       boolean isNewWave, IdGenerator idGenerator) {
 
-    WaveletId waveletId = WaveletId.of(domain, WAVELET_ID);
-    ObservableWavelet wavelet = wave.getWave().getWavelet(waveletId);
+    WaveletId waveletId = WaveletId.of(domain, WAVELET_SWELL_ROOT);
+    ObservableWavelet wavelet = wave.getWavelet(waveletId);
 
+    // New
     if (wavelet == null) {
-      wavelet = wave.getWave().createWavelet(waveletId);
+      wavelet = wave.createWavelet(waveletId);
       wavelet.addParticipant(loggedInUser);
+    } else {
+
+      // Existing, check for migration
+
+      boolean wasOk = ModelMigrator.migrateIfNecessary(domain, wave);
+      // TODO Log migration result
+      if (!wasOk) return null;
     }
 
+    //
     // Set up the Root document
-    ObservableDocument modelDocument = wavelet.getDocument(ROOT_DOC_ID);
+    //
+    ObservableDocument modelDocument = wavelet.getDocument(DOC_MODEL_ROOT);
     DocEventRouter router = DefaultDocEventRouter.create(modelDocument);
 
-    // Get or create model version and additional metadata
-    Doc.E metadataElement = DocHelper.getElementWithTagName(modelDocument, METADATA_TAG);
+    //
+    //
+    // <model v="1.0" a="default" t="default"> </model>
+    //
+    Doc.E metadataElement = DocHelper.getElementWithTagName(modelDocument, TAG_MODEL);
     if (metadataElement == null) {
-      metadataElement = modelDocument.createChildElement(modelDocument.getDocumentElement(), METADATA_TAG,
-              ImmutableMap.of(METADATA_ATTR_VERSION, MODEL_VERSION));
-    }
 
-    // Create a String Index Tag in the Root Document
-    Doc.E strIndexElement = DocHelper.getElementWithTagName(modelDocument, STRING_INDEX_TAG);
-    if (strIndexElement == null) {
-      strIndexElement =
-          modelDocument.createChildElement(modelDocument.getDocumentElement(), STRING_INDEX_TAG,
-              Collections.<String, String> emptyMap());
+      metadataElement =
+          modelDocument.createChildElement(modelDocument.getDocumentElement(), TAG_MODEL,
+              ImmutableMap.of(ATTR_VERSION_METADATA, MODEL_VERSION, ATTR_TYPE_METADATA,
+                  MODEL_TYPE_DEFAULT, ATTR_APP_METADATA, MODEL_APP_DEFAULT));
     }
 
 
-    return new Model(wavelet, TypeIdGenerator.get(idGenerator), DocumentBasedElementList.create(
-        router, strIndexElement, STRING_ITEM_TAG, StringIndexFactory), modelDocument);
+
+    return new Model(wavelet, TypeIdGenerator.get(idGenerator), loggedInUser);
 
   }
 
 
+  /**
+   * Constructor.
+   *
+   * @param wavelet
+   * @param idGenerator
+   */
   protected Model(ObservableWavelet wavelet, TypeIdGenerator idGenerator,
-      ObservableElementList<ObservableBasicValue<String>, String> stringIndex,
-      ObservableDocument modelDocument) {
+      ParticipantId currentParticipant) {
 
     this.wavelet = wavelet;
     this.wavelet.addListener(waveletListener);
 
     this.waveletData = wavelet.getWaveletData();
-
     this.idGenerator = idGenerator;
-    this.stringIndex = stringIndex;
-    this.rootModelDocument = modelDocument;
-    this.typeSerializer = new MapSerializer(this);
+
+    this.doc = wavelet.getDocument(DOC_MODEL_ROOT);
+
+    this.currentParticipant = currentParticipant;
   }
 
-  protected ObservableElementList<ObservableBasicValue<String>, String> getStringIndex() {
-    return stringIndex;
+  public ParticipantId getCurrentParticipantId() {
+    return currentParticipant;
   }
 
   public WaveId getWaveId() {
@@ -226,7 +284,7 @@ public class Model implements SourcesEvents<Model.Listener> {
     return wavelet.getDocument(docId);
   }
 
-  protected DocInitialization getBlipDocInitialization(String text) {
+  protected DocInitialization getTextDocInitialization(String text) {
 
     DocInitialization op;
     String initContent = "<body><line/>" + text + "</body>";
@@ -275,11 +333,6 @@ public class Model implements SourcesEvents<Model.Listener> {
   }
 
 
-  protected MapSerializer getTypeSerializer() {
-    return typeSerializer;
-  }
-
-
   //
   // Listeners
   //
@@ -313,9 +366,9 @@ public class Model implements SourcesEvents<Model.Listener> {
 
   public MapType getRoot() {
 
-    // Delayed initialization of the Root Map
+    // Lazy initialization of the root map
     if (rootMap == null) {
-      rootMap = (MapType) MapType.createAndAttach(this, ROOT_DOC_ID);
+      rootMap = MapType.deserialize(this, DOC_MAP_ROOT);
     }
 
     return rootMap;
@@ -327,7 +380,7 @@ public class Model implements SourcesEvents<Model.Listener> {
   }
 
   public StringType createString(String value) {
-    return new StringType(this, value);
+    return new StringType(value);
   }
 
   public ListType createList() {
@@ -406,6 +459,9 @@ public class Model implements SourcesEvents<Model.Listener> {
   public String getModelDocument(String documentId) {
     return wavelet.getDocument(documentId).toDebugString();
   }
+
+
+
 
   //
   // Wavelet Listener

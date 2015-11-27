@@ -19,11 +19,11 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   }
 
-  protected static Type createAndAttach(Model model, String id) {
-
-    Preconditions.checkArgument(id.startsWith(PREFIX), "Not a TextType instance id");
-    TextType txt = new TextType(model);
-    txt.attach(id);
+  protected static Type deserialize(Type parent, String substrateDocumentId) {
+    Preconditions.checkArgument(substrateDocumentId.startsWith(PREFIX),
+        "Not a TextType instance id");
+    TextType txt = new TextType(parent.getModel());
+    txt.attach(parent, substrateDocumentId);
     return txt;
 
   }
@@ -39,6 +39,8 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
+  private Type parent;
+  private String path;
   private boolean isAttached;
 
 
@@ -55,32 +57,36 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
     this.initContent = textOrXml;
   }
 
+  @Override
+  protected void attach(Type parent) {
+    Preconditions.checkArgument(!isAttached, "Already attached text type");
+    String substrateDocumentId = model.generateDocId(PREFIX);
+    blip = model.createBlip(substrateDocumentId);
+    attach(parent, substrateDocumentId);
+
+    if (initContent == null)
+
+    initContent = "";
+    // Set the doc's body tag to displayed properly by editor.
+    XmlStringBuilder sb =
+        XmlStringBuilder.createFromXmlString("<body><line/>" + this.initContent + "</body>");
+    blip.getContent().appendXml(sb);
+
+    attach(parent, substrateDocumentId);
+
+  }
 
   @Override
-  protected void attach(String docId) {
-
-    if (docId == null) {
-      // Creating a new blip
-      docId = model.generateDocId(PREFIX);
-      blip = model.createBlip(docId);
-
-      if (initContent == null)
-        initContent = "";
-      // Set the doc's body tag to displayed properly by editor.
-      XmlStringBuilder sb = XmlStringBuilder.createFromXmlString("<body><line/>"+this.initContent+"</body>");
-      blip.getContent().appendXml(sb);
-
-    } else {
-      blip = model.getBlip(docId);
-    }
-    Preconditions.checkNotNull(blip, "Unable to attach TextType, couldn't create or get blip");
+  protected void attach(Type parent, String substrateDocumentId) {
+    this.parent = parent;
+    blip = model.getBlip(substrateDocumentId);
     isAttached = true;
   }
 
   @Override
   protected void deattach() {
     Preconditions.checkArgument(isAttached, "Unable to deattach an unattached TextType");
-    // nothing to do. wavelet doesn't provide doc deletion
+    isAttached = false;
   }
 
   @Override
@@ -94,7 +100,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
       @Override
       public String getBackendId() {
-        return serializeToModel();
+        return serialize();
       }
     };
   }
@@ -110,7 +116,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
   }
 
   @Override
-  protected String serializeToModel() {
+  protected String serialize() {
     Preconditions.checkArgument(isAttached, "Unable to serialize an unattached TextType");
     return blip.getId();
   }
@@ -143,6 +149,35 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
   public ObservableDocument getMutableDocument() {
     return blip.getWavelet().getDocument(blip.getId());
   }
+
+  @Override
+  protected void setPath(String path) {
+    this.path = path;
+  }
+
+  @Override
+  protected boolean hasValuesContainer() {
+    return false;
+  }
+
+  @Override
+  protected ValuesContainer getValuesContainer() {
+    return null;
+  }
+
+  @Override
+  protected String getValueReference(Type value) {
+    return null;
+  }
+
+  @Override
+  public String getPath() {
+    if (path == null && parent != null && isAttached) {
+      path = parent.getPath() + "." + parent.getValueReference(this);
+    }
+    return path;
+  }
+
 
   //
   // Text operations

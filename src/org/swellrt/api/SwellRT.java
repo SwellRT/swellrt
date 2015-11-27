@@ -243,7 +243,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     $wnd.__session['domain'] = localDomain;
     $wnd.__session['address'] = userAddress;
     $wnd.__session['id'] = seed; // 'id' is used in Session.java/ClientIdGenerator to get the seed
-    $wnd.__session['seed'] = sessionId; //
+    $wnd.__session['sessionid'] = sessionId; //
     return $wnd.__session;
   }-*/;
 
@@ -338,7 +338,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       final Callback<RequestAccessResponse, String> callback) throws RequestException {
 
     String pathArgs = ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId);
-    pathArgs += "/~/" + Model.WAVELET_ID;
+    pathArgs += "/~/" + Model.WAVELET_SWELL_ROOT;
 
     String url = waveServerURLSchema + waveServerURL + "/swell/access/write/" + pathArgs;
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);

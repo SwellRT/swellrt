@@ -13,6 +13,7 @@ import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +33,10 @@ public class ModelMigrator {
   public static final String TAG_STRINGS = "strings";
   public static final String TAG_MAP = "map";
   public static final String TAG_LIST = "list";
+  public static final String TAG_VALUES = "values";
+  public static final String TAG_VALUES_ITEM = "i";
+  public static final String ATTR_VALUE = "v";
+
 
 
   public static final VersionNumber LAST_VERSION = new VersionNumber(1, 0);
@@ -126,7 +131,7 @@ public class ModelMigrator {
   /**
    * Check if a Wave inner model needs to be migrated and execute incremental
    * migration process.
-   * 
+   *
    * @param domain Domain of this Wave
    * @param wave Wave to migrate
    * @throws NotModelWaveException
@@ -282,6 +287,22 @@ public class ModelMigrator {
         XmlStringBuilder.createFromXmlString(xml));
   }
 
+  private static int addValue(Document document, Doc.E elementValues, String value) {
+
+    // Get last <i v="" /> element
+    Doc.E item = DocHelper.getFirstChildElement(document, elementValues);
+    int index = -1;
+
+    while (item != null) {
+      index++;
+      item = DocHelper.getNextSiblingElement(document, item);
+    }
+
+    document.createChildElement(elementValues, TAG_VALUES_ITEM,
+        Collections.<String, String> singletonMap(ATTR_VALUE, value));
+
+    return index + 1;
+  }
 
   /**
    *
@@ -290,6 +311,14 @@ public class ModelMigrator {
   private static void processMap(String domain, List<String> values, Blip blip, String path,
       ObservableWavelet wavelet) {
 
+    // Create <values> container section
+    Doc.E eltValues =
+        blip.getContent().createChildElement(blip.getContent().getDocumentElement(), TAG_VALUES,
+        Collections.<String, String> emptyMap());
+
+
+
+    // The <map> container already exists
     Doc.E eltMap = DocHelper.getElementWithTagName(blip.getContent(), TAG_MAP);
     Doc.E eltMapEntry = DocHelper.getFirstChildElement(blip.getContent(), eltMap);
     while (eltMapEntry != null) {
@@ -298,9 +327,14 @@ public class ModelMigrator {
       String v = blip.getContent().getAttribute(eltMapEntry, "v");
       if (v.startsWith("str+")) {
         int index = Integer.valueOf(v.substring(4));
-        String value = "s:" + values.get(index); // we add a prefix to allow
-                                                 // future primitive types
-        blip.getContent().setElementAttribute(eltMapEntry, "v", value);
+        String value = values.get(index);
+
+        // Store value in the <values> section
+        int valueIndex = addValue(blip.getContent(), eltValues, value);
+
+        // Store value ref in the map
+        blip.getContent().setElementAttribute(eltMapEntry, "v", "str+" + valueIndex);
+
       } else {
         // go into
         String childPath = path + "." + k;
@@ -317,6 +351,11 @@ public class ModelMigrator {
   private static void processList(String domain, List<String> values, Blip blip, String path,
       ObservableWavelet wavelet) {
 
+    // Create <values> container section
+    Doc.E eltValues =
+        blip.getContent().createChildElement(blip.getContent().getDocumentElement(), TAG_VALUES,
+            Collections.<String, String> emptyMap());
+
     Doc.E eltList = DocHelper.getElementWithTagName(blip.getContent(), TAG_LIST);
     Doc.E eltListEntry = DocHelper.getFirstChildElement(blip.getContent(), eltList);
 
@@ -325,9 +364,15 @@ public class ModelMigrator {
       String r = blip.getContent().getAttribute(eltListEntry, "r");
       if (r.startsWith("str+")) {
         int index = Integer.valueOf(r.substring(4));
-        String value = "s:" + values.get(index); // we add a prefix to allow
-                                                 // future primitive types
-        blip.getContent().setElementAttribute(eltListEntry, "r", value);
+        String value = values.get(index);
+
+        // Store value in the <values> section
+        int valueIndex = addValue(blip.getContent(), eltValues, value);
+
+        // Store value ref in the list
+        blip.getContent().setElementAttribute(eltListEntry, "r", "str+" + valueIndex);
+        blip.getContent().setElementAttribute(eltListEntry, "t", "str");
+
       } else {
 
         // go into

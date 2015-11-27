@@ -11,10 +11,10 @@ public class ListElementFactory implements
     org.waveprotocol.wave.model.adt.docbased.Factory<Doc.E, Type, ListElementInitializer> {
 
 
-  private Model model;
+  private Type parent;
 
-  protected ListElementFactory(Model model) {
-    this.model = model;
+  protected ListElementFactory(Type parent) {
+    this.parent = parent;
   }
 
   @Override
@@ -28,12 +28,11 @@ public class ListElementFactory implements
     Preconditions.checkArgument(type != null,
         "Adapting a list element to Type but attribute for type not found");
 
-    String value = attributes.get("r");
-    Preconditions.checkArgument(value != null,
+    String ref = attributes.get("r");
+    Preconditions.checkArgument(ref != null,
         "Adapting a list element to Type but attribute for reference not found");
 
-    return Type.createInstance(type, value, model);
-
+    return Type.deserialize(parent, ref);
   }
 
   @Override

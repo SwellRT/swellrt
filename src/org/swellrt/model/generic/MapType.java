@@ -5,7 +5,6 @@ import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicMap;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
-import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -13,13 +12,14 @@ import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
 
+  /**
+   * Listener to map events.
+   */
   public interface Listener {
 
     void onValueChanged(String key, Type oldValue, Type newValue);
@@ -29,22 +29,36 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
 
-
-  protected static Type createAndAttach(Model model, String id) {
-    // Model Root Doc is a map and more... allow model+root as map doc
-    Preconditions.checkArgument(id.startsWith(PREFIX) || id.startsWith(Model.ROOT_DOC_PREFIX),
-        "MapType.fromString() not a map id");
-    MapType map = new MapType(model);
-    map.attach(id);
+  /**
+   * Get an instance of MapType within the model backed by a document. This
+   * method is used for deserialization.
+   * 
+   * @param model
+   * @param substrateDocumentId
+   * @return
+   */
+  protected static MapType deserialize(Type parent, String substrateDocumentId) {
+    Preconditions.checkArgument(substrateDocumentId.startsWith(PREFIX),
+        "Not a document id for MapType");
+    MapType map = new MapType(parent.getModel());
+    map.attach(parent, substrateDocumentId);
     return map;
-
   }
 
+  protected static MapType deserialize(Model model, String substrateDocumentId) {
+    Preconditions.checkArgument(substrateDocumentId.startsWith(PREFIX),
+        "Not a document id for MapType");
+    MapType map = new MapType(model);
+    map.attach(null, substrateDocumentId);
+    return map;
+  }
+
+
   public final static String TYPE_NAME = "MapType";
-  public final static String ROOT_TAG = "map";
   public final static String PREFIX = "map";
 
-  private final static String ENTRY_TAG_NAME = "entry";
+  private final static String TAG_MAP = "map";
+  private final static String TAG_ENTRY = "entry";
   private final static String KEY_ATTR_NAME = "k";
   private final static String VALUE_ATTR_NAME = "v";
 
@@ -55,19 +69,28 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
   private ObservableDocument backendDocument;
   private String backendDocumentId;
-  private Doc.E backendRootElement;
+
+  private MetadataContainer metadata;
+  private ValuesContainer values;
+
+  private Doc.E backendMapElement;
 
   private boolean isAttached;
 
-  private Map<String, Type> map;
-
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
-  public MapType(Model model) {
+  private DefaultDocEventRouter router;
+
+
+  /**
+   * Constructor for MapType instances.
+   *
+   * @param model The model metadata object where this instance belongs to.
+   */
+  protected MapType(Model model) {
 
     this.model = model;
     this.isAttached = false;
-    this.map = new HashMap<String, Type>();
 
     observableMapListener = new ObservableBasicMap.Listener<String, Type>() {
 
@@ -75,17 +98,12 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
       public void onEntrySet(String key, Type oldValue, Type newValue) {
 
         if (newValue == null) {
-
-          map.remove(key);
           for (Listener l : listeners)
             l.onValueRemoved(key, oldValue);
 
         } else {
-
-          map.put(key, newValue);
           for (Listener l : listeners)
             l.onValueChanged(key, oldValue, newValue);
-
         }
 
       }
@@ -97,43 +115,66 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   //
 
   @Override
-  protected void attach(String docId) {
+  protected void attach(Type parent) {
+    Preconditions.checkArgument(!isAttached, "Already attached map type");
+    String substrateDocumentId = model.generateDocId(getPrefix());
+    attach(parent, substrateDocumentId);
+  }
+
+  @Override
+  protected void attach(Type parent, String substrateDocumentId) {
+    Preconditions.checkArgument(!isAttached, "Already attached map type");
+    Preconditions.checkNotNull(substrateDocumentId, "Document id is null");
+
+    backendDocumentId = substrateDocumentId;
+
+    boolean isNew = false;
+
+    // Get or create substrate document
+    if (!model.getModelDocuments().contains(backendDocumentId)) {
+      backendDocument = model.createDocument(backendDocumentId);
+      isNew = true;
+    } else {
+      backendDocument = model.getDocument(backendDocumentId);
+    }
+
+    router = DefaultDocEventRouter.create(backendDocument);
+
+    // Metadata section
+    metadata = MetadataContainer.get(backendDocument);
+
+    if (isNew) {
+      metadata.setCreator(model.getCurrentParticipantId());
+    }
 
 
-    if (docId == null) {
+    // Map section
+    backendMapElement = DocHelper.getElementWithTagName(backendDocument, TAG_MAP);
+    if (backendMapElement == null) {
+      backendMapElement =
+          backendDocument.createChildElement(backendDocument.getDocumentElement(), TAG_MAP,
+          Collections.<String, String> emptyMap());
+    }
 
-      docId = model.generateDocId(getPrefix());
-      backendDocument = model.createDocument(docId);
-
-    } else
-      backendDocument = model.getDocument(docId);
-
-    backendDocumentId = docId;
-
-    // Create a root tag to ensure the document is persisted.
-    // If the doc is created empty and it's not populated with data it won't
-    // exist when the wavelet is open again.
-    backendRootElement = DocHelper.getElementWithTagName(backendDocument, ROOT_TAG);
-    if (backendRootElement == null)
-      backendRootElement =
-          backendDocument.createChildElement(backendDocument.getDocumentElement(), ROOT_TAG,
-              Collections.<String, String> emptyMap());
-
-    DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
-
+    // Initialize observable map
     this.observableMap =
-        DocumentBasedBasicMap.create(router, backendRootElement, Serializer.STRING,
-            model.getTypeSerializer(), ENTRY_TAG_NAME, KEY_ATTR_NAME, VALUE_ATTR_NAME);
+        DocumentBasedBasicMap.create(router, backendMapElement, Serializer.STRING,
+            new MapSerializer(this), TAG_ENTRY, KEY_ATTR_NAME, VALUE_ATTR_NAME);
 
     this.observableMap.addListener(observableMapListener);
 
+    // Initialize values section
+    values = ValuesContainer.get(backendDocument, router, this);
+
+    // Attached!
     this.isAttached = true;
 
   }
 
   protected void deattach() {
-    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached MapType");
-    // nothing to do. wavelet doesn't provide doc deletion
+    Preconditions.checkArgument(isAttached, "Unable to detach an unattached Map");
+    metadata.setDetachedPath();
+    isAttached = false;
   }
 
   @Override
@@ -148,8 +189,8 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
   @Override
-  protected String serializeToModel() {
-    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached MapType");
+  protected String serialize() {
+    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached Map");
     return backendDocumentId;
   }
 
@@ -164,7 +205,7 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
       @Override
       public String getBackendId() {
-        return serializeToModel();
+        return serialize();
       }
     };
   }
@@ -193,27 +234,35 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
 
   public Type get(String key) {
+    Preconditions.checkArgument(isAttached, "Unable to get values from an unattached Map");
 
-    if (!map.containsKey(key)) {
-      if (observableMap.keySet().contains(key)) {
-        map.put(key, observableMap.get(key));
-      } else
-        return null;
+    if (observableMap.keySet().contains(key)) {
+      return observableMap.get(key);
     }
 
-    return map.get(key);
+    return null;
   }
 
 
   public Type put(String key, Type value) {
-    Preconditions.checkArgument(isAttached, "MapType.put(): not attached to model");
+    Preconditions.checkArgument(isAttached, "Unable to put values into an unattached Map");
     Preconditions.checkArgument(!value.isAttached(),
-        "MapType.put(): forbidden to add an already attached Type");
+        "Already attached Type instances can't be put into a Map");
 
-    value.attach(null);
+    Type oldValue = observableMap.get(key);
+
+    // Attach to a new substrate document o to a values container
+    value.attach(this);
 
     if (!observableMap.put(key, value)) {
+      value.deattach();
       return null;
+    }
+
+    value.setPath(getPath() + "." + key);
+
+    if (oldValue != null) {
+      oldValue.deattach();
     }
 
     return value;
@@ -222,14 +271,10 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
 
 
   public StringType put(String key, String value) {
-    Preconditions.checkArgument(isAttached, "MapType.put(): not attached to model");
+    Preconditions.checkArgument(isAttached, "Unable to put values into an unattached Map");
 
-    StringType strValue = new StringType(model, value);
-    strValue.attach(null);
-
-    if (!observableMap.put(key, strValue)) {
-      return null;
-    }
+    StringType strValue = new StringType(value);
+    put(key, strValue);
 
     return strValue;
   }
@@ -239,8 +284,13 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
   public void remove(String key) {
-    Preconditions.checkArgument(isAttached, "MapType.remove(): not attached to model");
-    observableMap.remove(key);
+    Preconditions.checkArgument(isAttached, "Unable to remove values from an unattached Map");
+    Type removedValue = observableMap.get(key);
+    if (removedValue != null) {
+      observableMap.remove(key);
+      removedValue.deattach();
+    }
+
   }
 
   @Override
@@ -249,16 +299,42 @@ public class MapType extends Type implements SourcesEvents<MapType.Listener> {
   }
 
   @Override
-  public Model getModel() {
-    return model;
-  }
-
-  @Override
   public String getType() {
     return TYPE_NAME;
   }
 
+  @Override
+  public String getPath() {
+    return metadata.getPath();
+  }
 
+  @Override
+  protected void setPath(String path) {
+    metadata.setPath(path);
+  }
+
+  @Override
+  protected boolean hasValuesContainer() {
+    return true;
+  }
+
+  @Override
+  protected ValuesContainer getValuesContainer() {
+    return values;
+  }
+
+  @Override
+  protected String getValueReference(Type value) {
+    for (String key : observableMap.keySet()) {
+      if (observableMap.get(key).equals(value.serialize())) return key;
+    }
+    return null;
+  }
+
+  @Override
+  public Model getModel() {
+    return model;
+  }
 
 
 }

@@ -159,7 +159,7 @@ public class WaveClient implements SwellRT.Listener {
           ModelJS modelJS = null;
 
           Model model =
-                Model.create(wrapper.getWave(), wrapper.getLocalDomain(),
+            Model.create(wrapper.getWave().getWave(), wrapper.getLocalDomain(),
                     wrapper.getLoggedInUser(),
                   wrapper.isNewWave(), wrapper.getIdGenerator());
 
@@ -202,7 +202,7 @@ public class WaveClient implements SwellRT.Listener {
           ModelJS modelJS = null;
 
           Model model =
-                Model.create(wrapper.getWave(), wrapper.getLocalDomain(),
+            Model.create(wrapper.getWave().getWave(), wrapper.getLocalDomain(),
                     wrapper.getLoggedInUser(), wrapper.isNewWave(), wrapper.getIdGenerator());
 
             modelJS = ModelJS.create(model);
