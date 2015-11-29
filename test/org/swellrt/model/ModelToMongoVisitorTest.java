@@ -4,6 +4,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
 import org.swellrt.model.unmutable.UnmutableModel;
+import org.swellrt.server.box.ModelIndexerVisitor;
 import org.waveprotocol.wave.model.util.Pair;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ public class ModelToMongoVisitorTest extends WaveletBasedTestBase {
 
     ReadableModel model = UnmutableModel.create(getWaveletData());
 
-    Pair<BasicDBObject, Map<String, String>> visitorResult = ModelToMongoVisitor.run(model);
+    Pair<BasicDBObject, Map<String, String>> visitorResult = ModelIndexerVisitor.run(model);
 
     BasicDBObject mongoModel = visitorResult.first;
 
@@ -32,18 +33,17 @@ public class ModelToMongoVisitorTest extends WaveletBasedTestBase {
 
     BasicDBObject root = (BasicDBObject) mongoModel.get("root");
 
-    assertEquals("This is the string 0", root.get("keystring"));
+    assertEquals("This is string 0", root.get("key0"));
+    assertEquals("This is string 1", root.get("key3"));
 
-    BasicDBObject map = (BasicDBObject) root.get("keymap");
+    BasicDBObject map = (BasicDBObject) root.get("key1");
 
-    assertEquals("This is the string 1", map.get("keyone"));
-    assertEquals("This is the string 2", map.get("keytwo"));
+    assertEquals("This is string 2", map.get("key10"));
 
-    BasicDBList list = (BasicDBList) root.get("keylist");
+    BasicDBList list = (BasicDBList) root.get("key2");
 
-    assertEquals("This is the string 4", ((BasicDBObject) list.get(0)).get("keyone"));
-    assertEquals("This is the string 5", ((BasicDBList) list.get(1)).get(0));
-    assertEquals("This is the string 3", list.get(2));
+    assertEquals("This is string 4", list.get(0));
+    assertEquals("This is string 5", list.get(1));
 
   }
 

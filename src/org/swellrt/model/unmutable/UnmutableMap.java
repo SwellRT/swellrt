@@ -2,27 +2,39 @@ package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableType;
-import org.swellrt.model.ReadableTypeFactory;
-import org.swellrt.model.TypeVisitor;
+import org.swellrt.model.ReadableTypeVisitable;
+import org.swellrt.model.ReadableTypeVisitor;
 import org.swellrt.model.adt.UnmutableBasicMap;
+import org.swellrt.model.adt.UnmutableElementList;
+import org.swellrt.model.generic.MapType;
+import org.swellrt.model.generic.ValuesContainer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.Document;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class UnmutableMap implements ReadableMap {
+public class UnmutableMap implements ReadableMap, ReadableTypeVisitable {
 
   /**
    * Adapt doc-based map elements to ReadableType's
-   * 
+   *
    */
-  public class ReadableMapElementAdapter implements
+  public static class ReadableMapElementAdapter implements
       UnmutableBasicMap.ElementAdapter<String, ReadableType> {
 
-    public ReadableMapElementAdapter() {
+    private final Document document;
+    private final UnmutableElementList<String, Void> values;
+    private final UnmutableModel model;
+
+    public ReadableMapElementAdapter(UnmutableModel model, Document document,
+        UnmutableElementList<String, Void> values) {
+      this.document = document;
+      this.values = values;
+      this.model = model;
     }
 
     @Override
@@ -40,7 +52,7 @@ public class UnmutableMap implements ReadableMap {
 
         @Override
         public ReadableType getValue() {
-          return typeFactory.get(value);
+          return UnmutableTypeFactory.deserialize(model, values, value);
         }
 
         @Override
@@ -55,33 +67,49 @@ public class UnmutableMap implements ReadableMap {
 
   };
 
-  private UnmutableBasicMap<String, ReadableType> docBasedMap;
-  private final Document document;
-  private final Doc.E parent;
-  private final ReadableTypeFactory typeFactory;
+  public static UnmutableMap deserialize(UnmutableModel model, String substrateDocumentId) {
 
-  protected static UnmutableMap create(ReadableTypeFactory typeFactory, Document document,
-      Doc.E parent) {
-    UnmutableMap map = new UnmutableMap(typeFactory, document, parent);
-    map.load();
-    return map;
-  }
+    final Document document = model.getDocument(substrateDocumentId);
+    Doc.E eltMap = DocHelper.getElementWithTagName(document, MapType.TAG_MAP);
 
-  private UnmutableMap(ReadableTypeFactory typeFactory, Document document, Doc.E parent) {
-    this.typeFactory = typeFactory;
-    this.document = document;
-    this.parent = parent;
-  }
 
-  @SuppressWarnings("unchecked")
-  private void load() {
-    this.docBasedMap =
+
+    Doc.E eltValues = DocHelper.getElementWithTagName(document, ValuesContainer.TAG_VALUES);
+    @SuppressWarnings("unchecked")
+    UnmutableElementList<String, Void> values =
+        (UnmutableElementList<String, Void>) UnmutableElementList.create(
+            new UnmutableElementList.ElementAdapter<String>() {
+
+              @Override
+              public String fromElement(E element) {
+                return document.getAttribute(element, "v");
+              }
+
+            }, eltValues, document);
+
+
+    @SuppressWarnings("unchecked")
+    UnmutableBasicMap<String, ReadableType> map =
         (UnmutableBasicMap<String, ReadableType>) UnmutableBasicMap.create(
-            new ReadableMapElementAdapter(), parent, document);
+            new ReadableMapElementAdapter(model, document, values), eltMap, document);
+
+
+    return new UnmutableMap(map, values);
   }
+
+  private final UnmutableBasicMap<String, ReadableType> docBasedMap;
+  private final UnmutableElementList<String, Void> values;
+
+
+  private UnmutableMap(UnmutableBasicMap<String, ReadableType> map,
+      UnmutableElementList<String, Void> values) {
+    this.docBasedMap = map;
+    this.values = values;
+  }
+
 
   @Override
-  public void accept(TypeVisitor visitor) {
+  public void accept(ReadableTypeVisitor visitor) {
     visitor.visit(this);
   }
 

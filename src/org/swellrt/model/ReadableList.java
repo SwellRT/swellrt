@@ -1,10 +1,11 @@
 package org.swellrt.model;
 
-public interface ReadableList extends ReadableType {
 
-  ReadableType get(int index);
+public interface ReadableList<T> extends ReadableType {
+
+  T get(int index);
 
   int size();
 
-  Iterable<ReadableType> getValues();
+  Iterable<T> getValues();
 }

@@ -1,9 +1,10 @@
 package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableString;
-import org.swellrt.model.TypeVisitor;
+import org.swellrt.model.ReadableTypeVisitable;
+import org.swellrt.model.ReadableTypeVisitor;
 
-public class UnmutableString implements ReadableString {
+public class UnmutableString implements ReadableString, ReadableTypeVisitable {
 
 
   String value;
@@ -13,7 +14,7 @@ public class UnmutableString implements ReadableString {
   }
 
   @Override
-  public void accept(TypeVisitor visitor) {
+  public void accept(ReadableTypeVisitor visitor) {
     visitor.visit(this);
   }
 

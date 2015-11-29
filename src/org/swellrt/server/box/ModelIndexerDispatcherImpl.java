@@ -6,7 +6,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
 
-import org.swellrt.model.ModelToMongoVisitor;
 import org.swellrt.model.unmutable.UnmutableModel;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.ExceptionalIterator;
@@ -42,11 +41,11 @@ import javax.inject.Inject;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
+public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
 
 
 
-  private static final Log LOG = Log.get(SwellRtIndexerDispatcherImpl.class);
+  private static final Log LOG = Log.get(ModelIndexerDispatcherImpl.class);
 
   private final WaveMap waveMap;
   private final WaveletProvider waveletProvider;
@@ -56,13 +55,13 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
   private DBCollection modelLogStore;
 
   @Inject
-  public SwellRtIndexerDispatcherImpl(MongoDbProvider mongoDbProvider,
+  public ModelIndexerDispatcherImpl(MongoDbProvider mongoDbProvider,
  WaveMap waveMap,
       WaveletProvider waveletProvider) {
     try {
-      this.modelStore = mongoDbProvider.getDBCollection(SwellRtModule.MONGO_COLLECTION_MODELS);
+      this.modelStore = mongoDbProvider.getDBCollection(ModelIndexerModule.MONGO_COLLECTION_MODELS);
       this.modelLogStore =
-          mongoDbProvider.getDBCollection(SwellRtModule.MONGO_COLLECTION_MODELS_LOG);
+          mongoDbProvider.getDBCollection(ModelIndexerModule.MONGO_COLLECTION_MODELS_LOG);
     } catch (Exception e) {
       LOG.warning("Unable to get MongoDB collection. SwellRT indexing won't work!", e);
       this.modelStore = null;
@@ -88,7 +87,6 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
   public void waveletUpdate(ReadableWaveletData wavelet, DeltaSequence deltas) {
 
     WaveletName waveletName = WaveletName.of(wavelet.getWaveId(), wavelet.getWaveletId());
-
     /**
      * Wavelet views are updated.
      */
@@ -151,7 +149,7 @@ public class SwellRtIndexerDispatcherImpl implements SwellRtIndexerDispatcher {
     }
 
 
-    Pair<BasicDBObject, Map<String, String>> visitResult = ModelToMongoVisitor.run(model);
+    Pair<BasicDBObject, Map<String, String>> visitResult = ModelIndexerVisitor.run(model);
 
     storeDataModel(waveletName, visitResult.first);
 

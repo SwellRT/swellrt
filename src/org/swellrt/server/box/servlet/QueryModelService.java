@@ -8,7 +8,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
-import org.swellrt.server.box.SwellRtModule;
+import org.swellrt.server.box.ModelIndexerModule;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
@@ -41,7 +41,7 @@ public class QueryModelService implements SwellRTService {
     this.mongoDbProvider = mongoDbProvider;
 
     try {
-      this.store = mongoDbProvider.getDBCollection(SwellRtModule.MONGO_COLLECTION_MODELS);
+      this.store = mongoDbProvider.getDBCollection(ModelIndexerModule.MONGO_COLLECTION_MODELS);
     } catch (Exception e) {
       LOG.warning("Unable to get MongoDB collection. SwellRT servlet won't work!", e);
       this.store = null;

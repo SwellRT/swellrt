@@ -1,6 +1,8 @@
 package org.swellrt.model.generic;
 
 
+import org.swellrt.model.ReadableList;
+import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
 import org.waveprotocol.wave.model.document.Doc;
@@ -14,7 +16,7 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 import java.util.Collections;
 
-public class ListType extends Type implements SourcesEvents<ListType.Listener> {
+public class ListType extends Type implements ReadableList<Type>, SourcesEvents<ListType.Listener> {
 
   public interface Listener {
 
@@ -27,7 +29,7 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   /**
    * Get an instance of ListType within the model backed by a document. This
    * method is used for deserialization.
-   * 
+   *
    * @param model
    * @param substrateDocumentId
    * @return
@@ -114,6 +116,8 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
 
     boolean isNew = false;
 
+    // Be careful with order of following steps!
+
     // Get or create substrate document
     if (!model.getModelDocuments().contains(backendDocumentId)) {
       backendDocument = model.createDocument(backendDocumentId);
@@ -121,6 +125,7 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
     } else {
       backendDocument = model.getDocument(backendDocumentId);
     }
+    DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
 
     // Load metadata section
     metadata = MetadataContainer.get(backendDocument);
@@ -137,18 +142,20 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
               Collections.<String, String> emptyMap());
     }
 
+    // Initialize values section. Always before observable list
+    values = ValuesContainer.get(backendDocument, router, this);
+
+    // Attached! Before the observable list initialization to allow access
+    // during initialization
+    this.isAttached = true;
+
     // Initialize observable list
-    DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
     this.observableList =
         DocumentBasedElementList.create(router, backendRootElement, TAG_LIST_ITEM,
             new ListElementFactory(this));
     this.observableList.addListener(observableListListener);
 
-    // Initialize values section
-    values = ValuesContainer.get(backendDocument, router, this);
 
-    // Attached!
-    this.isAttached = true;
   }
 
 
@@ -267,8 +274,8 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
   }
 
   public Iterable<Type> getValues() {
-    Preconditions.checkArgument(isAttached, "Unable to get values from an unattached List");
-    return observableList.getValues();
+    // Don't check for isAttached to allow JS model wrapper to try to get values
+    return isAttached ? observableList.getValues() : null;
   }
 
   @Override
@@ -312,5 +319,29 @@ public class ListType extends Type implements SourcesEvents<ListType.Listener> {
     return index >= 0 ? "" + index : null;
   }
 
+  @Override
+  public void accept(ReadableTypeVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  @Override
+  public MapType asMap() {
+    return null;
+  }
+
+  @Override
+  public StringType asString() {
+    return null;
+  }
+
+  @Override
+  public ListType asList() {
+    return this;
+  }
+
+  @Override
+  public TextType asText() {
+    return null;
+  }
 
 }

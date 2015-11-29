@@ -2,6 +2,7 @@ package org.swellrt.model.generic;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.swellrt.model.ReadableModel;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
@@ -12,7 +13,6 @@ import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
-import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -39,7 +39,8 @@ import java.util.Set;
  * version 0.1 <br/>
  * 
  * Each <code>Type</code> instance stores values in a new <code>Document</code>
- * but strings, they are stored in a separated document storing a string index.<br/>
+ * but strings, they are stored in a separated document storing a string index.
+ * <br/>
  * 
  * Simplified <code>Type</code> interface, only one <code>attach()</code>
  * method. <br/>
@@ -83,7 +84,7 @@ import java.util.Set;
  * is deprecated)
  * 
  */
-public class Model implements SourcesEvents<Model.Listener> {
+public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
 
   /**
    * The model version of the current source code. Check {@link ModelMigrator}
@@ -125,13 +126,13 @@ public class Model implements SourcesEvents<Model.Listener> {
   /**
    * Name of the blip/document storing collaborative object metadata
    */
-  private static final String DOC_MODEL_ROOT = "model+root";
+  public static final String DOC_MODEL_ROOT = "model+root";
 
 
   /**
    * Name of substrate document for the root of the collaborative object.
    */
-  private static final String DOC_MAP_ROOT = "map+root";
+  public static final String DOC_MAP_ROOT = "map+root";
 
   /**
    * Tag name of the model section (metadata).
@@ -266,11 +267,11 @@ public class Model implements SourcesEvents<Model.Listener> {
     return currentParticipant;
   }
 
-  public WaveId getWaveId() {
-    return this.waveletData.getWaveId();
+  public String getWaveId() {
+    return ModernIdSerialiser.INSTANCE.serialiseWaveId(this.waveletData.getWaveId());
   }
 
-  public String getWaveletIdString() {
+  public String getWaveletId() {
     return ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId());
   }
 
@@ -369,6 +370,7 @@ public class Model implements SourcesEvents<Model.Listener> {
     // Lazy initialization of the root map
     if (rootMap == null) {
       rootMap = MapType.deserialize(this, DOC_MAP_ROOT);
+      if (rootMap.getPath().isEmpty()) rootMap.setPath("root");
     }
 
     return rootMap;

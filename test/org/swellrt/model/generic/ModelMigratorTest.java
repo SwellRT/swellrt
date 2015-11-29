@@ -194,8 +194,14 @@ public class ModelMigratorTest extends TestCase {
         DocHelper.getFirstChildElement(docMapRoot,
             DocHelper.getElementWithTagName(docMapRoot, "map"));
 
+    Doc.E elementValues =
+        DocHelper.getFirstChildElement(docMapRoot,
+            DocHelper.getElementWithTagName(docMapRoot, "values"));
+
     assertEquals("key0", docMapRoot.getAttribute(elementMap, "k"));
-    assertEquals("s:This is string 0", docMapRoot.getAttribute(elementMap, "v"));
+    assertEquals("str+0", docMapRoot.getAttribute(elementMap, "v"));
+    assertEquals("This is string 0", docMapRoot.getAttribute(elementValues, "v"));
+
 
     elementMap = DocHelper.getNextSiblingElement(docMapRoot, elementMap);
     assertEquals("key1", docMapRoot.getAttribute(elementMap, "k"));
@@ -207,7 +213,10 @@ public class ModelMigratorTest extends TestCase {
 
     elementMap = DocHelper.getNextSiblingElement(docMapRoot, elementMap);
     assertEquals("key3", docMapRoot.getAttribute(elementMap, "k"));
-    assertEquals("s:This is string 1", docMapRoot.getAttribute(elementMap, "v"));
+    assertEquals("str+1", docMapRoot.getAttribute(elementMap, "v"));
+
+    elementValues = DocHelper.getNextSiblingElement(docMapRoot, elementValues);
+    assertEquals("This is string 1", docMapRoot.getAttribute(elementValues, "v"));
 
     elementMap = DocHelper.getNextSiblingElement(docMapRoot, elementMap);
     assertEquals("key4", docMapRoot.getAttribute(elementMap, "k"));
@@ -221,12 +230,20 @@ public class ModelMigratorTest extends TestCase {
     Doc.E elementList =
         DocHelper.getFirstChildElement(docList1, DocHelper.getElementWithTagName(docList1, "list"));
 
+    elementValues =
+        DocHelper.getFirstChildElement(docList1,
+            DocHelper.getElementWithTagName(docList1, "values"));
+
     assertEquals("str", docList1.getAttribute(elementList, "t"));
-    assertEquals("s:This is string 4", docList1.getAttribute(elementList, "r"));
+    assertEquals("str+0", docList1.getAttribute(elementList, "r"));
+    assertEquals("This is string 4", docList1.getAttribute(elementValues, "v"));
 
     elementList = DocHelper.getNextSiblingElement(docList1, elementList);
     assertEquals("str", docList1.getAttribute(elementList, "t"));
-    assertEquals("s:This is string 5", docList1.getAttribute(elementList, "r"));
+    assertEquals("str+1", docList1.getAttribute(elementList, "r"));
+
+    elementValues = DocHelper.getNextSiblingElement(docList1, elementValues);
+    assertEquals("This is string 5", docList1.getAttribute(elementValues, "v"));
 
     elementList = DocHelper.getNextSiblingElement(docList1, elementList);
     assertEquals("map", docList1.getAttribute(elementList, "t"));

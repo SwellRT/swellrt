@@ -34,8 +34,8 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.swellrt.server.box.SwellRtIndexerDispatcher;
-import org.swellrt.server.box.SwellRtModule;
+import org.swellrt.server.box.ModelIndexerDispatcher;
+import org.swellrt.server.box.ModelIndexerModule;
 import org.swellrt.server.box.servlet.SwellRtServlet;
 import org.swellrt.server.ds.DSFileServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
@@ -172,7 +172,7 @@ public class ServerMain {
     Module robotApiModule = new RobotApiModule();
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
     Module searchModule = injector.getInstance(SearchModule.class);
-    Module swellRtModule = injector.getInstance(SwellRtModule.class); // SwellRT
+    Module swellRtModule = injector.getInstance(ModelIndexerModule.class); // SwellRT
     Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
     injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
             federationModule, searchModule, profileFetcherModule, swellRtModule);
@@ -332,8 +332,8 @@ public class ServerMain {
   }
 
   private static void initializeSwellRt(Injector injector, WaveBus waveBus) {
-    SwellRtIndexerDispatcher indexerDispatcher =
-        injector.getInstance(SwellRtIndexerDispatcher.class);
+    ModelIndexerDispatcher indexerDispatcher =
+        injector.getInstance(ModelIndexerDispatcher.class);
     try {
       indexerDispatcher.initialize();
     } catch (WaveServerException e) {

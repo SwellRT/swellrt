@@ -199,7 +199,7 @@ public class TextEditor {
     Preconditions.checkArgument(text != null,
         "Unable to get ContentDocument from null DocumentRegistry");
 
-    return documentRegistry.getBlipDocument(text.getModel().getWaveletIdString(),
+    return documentRegistry.getBlipDocument(text.getModel().getWaveletId(),
         text.getDocumentId()).getDocument();
   }
 

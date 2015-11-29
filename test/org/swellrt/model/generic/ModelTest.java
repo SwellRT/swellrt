@@ -52,6 +52,13 @@ public class ModelTest extends TestCase {
 
     assertTrue(root.get("r2") instanceof MapType);
 
+    // Test recursive access to an object
+    MapType map = (MapType) root.get("r2");
+    map.put("m0", "La La Lo");
+    assertEquals("La La Lo", ((StringType) ((MapType) root.get("r2")).get("m0")).getValue());
+
+    assertEquals("root.r2", map.getPath());
+
     assertTrue(root.get("r3") instanceof StringType);
     assertEquals("Hello World Two", ((StringType) root.get("r3")).getValue());
 
@@ -64,6 +71,8 @@ public class ModelTest extends TestCase {
     // List
 
     ListType list = (ListType) root.get("r1");
+
+    assertEquals("root.r1", list.getPath());
 
     list.add(model.createString("String 0"));
     list.add(model.createString("String 1"));
@@ -82,7 +91,11 @@ public class ModelTest extends TestCase {
     assertEquals("String 2", ((StringType) list.get(5)).getValue());
     assertEquals("String 3", ((StringType) list.get(6)).getValue());
 
+    // Test recursive access to an object
+    assertEquals("String 3", ((StringType) ((ListType) root.get("r1")).get(6)).getValue());
 
+    //
+    assertNotNull(((ListType) root.get("r1")).getValues());
   }
 
 

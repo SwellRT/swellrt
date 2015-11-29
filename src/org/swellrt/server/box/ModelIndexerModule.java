@@ -26,21 +26,21 @@ import com.google.inject.Singleton;
 /**
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-public class SwellRtModule extends AbstractModule {
+public class ModelIndexerModule extends AbstractModule {
 
 
   public static String MONGO_COLLECTION_MODELS = "models";
   public static String MONGO_COLLECTION_MODELS_LOG = "models_log";
 
   @Inject
-  public SwellRtModule() {
+  public ModelIndexerModule() {
 
   }
 
   @Override
   public void configure() {
 
-    bind(SwellRtIndexerDispatcher.class).to(SwellRtIndexerDispatcherImpl.class).in(Singleton.class);
+    bind(ModelIndexerDispatcher.class).to(ModelIndexerDispatcherImpl.class).in(Singleton.class);
   }
 
 }

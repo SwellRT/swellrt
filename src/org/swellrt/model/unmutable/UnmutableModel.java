@@ -2,15 +2,11 @@ package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableModel;
-import org.swellrt.model.ReadableTypeFactory;
-import org.swellrt.model.adt.UnmutableElementList;
-import org.swellrt.model.generic.MapType;
-import org.waveprotocol.wave.model.document.Doc;
-import org.waveprotocol.wave.model.document.Doc.E;
+import org.swellrt.model.generic.Model;
 import org.waveprotocol.wave.model.document.Document;
-import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -27,59 +23,40 @@ public class UnmutableModel implements ReadableModel {
 
   private static final Log LOG = Log.get(UnmutableModel.class);
 
-  private final static String ROOT_DOC = "model+root";
 
   private final ReadableWaveletData waveletData;
 
   private final Document document;
-  private UnmutableElementList<String, Void> strings;
-
-  private ReadableTypeFactory typeFactory = null;
 
   private ReadableMap root = null;
 
-
   public static UnmutableModel create(ReadableWaveletData waveletData) {
     // Avoid trouble with old swellrt wavelets
-    if (waveletData.getDocument(ROOT_DOC) == null
-        || waveletData.getDocument(ROOT_DOC).getContent() == null
-        || waveletData.getDocument(ROOT_DOC).getContent().getMutableDocument() == null)
+    if (waveletData.getDocument(Model.DOC_MODEL_ROOT) == null
+        || waveletData.getDocument(Model.DOC_MODEL_ROOT).getContent() == null
+        || waveletData.getDocument(Model.DOC_MODEL_ROOT).getContent().getMutableDocument() == null)
       return null;
 
-    UnmutableModel model = new UnmutableModel(waveletData);
-    model.load();
-
-    return model;
+    return new UnmutableModel(waveletData);
   }
 
   private UnmutableModel(ReadableWaveletData waveletData) {
 
     // Get wavelet and root document
     this.waveletData = waveletData;
-    this.document = waveletData.getDocument(ROOT_DOC).getContent().getMutableDocument();
+    this.document = waveletData.getDocument(Model.DOC_MODEL_ROOT).getContent().getMutableDocument();
 
   }
 
-  @SuppressWarnings("unchecked")
-  private void load() {
+  protected Document getDocument(String documentId) {
 
-    // Get the (doc-based) string list
-    Doc.E stringsElement = DocHelper.getElementWithTagName(this.document, "strings");
-    this.strings =
-        (UnmutableElementList<String, Void>) UnmutableElementList.create(
-            new UnmutableElementList.ElementAdapter<String>() {
-
-              @Override
-              public String fromElement(E element) {
-                return document.getAttribute(element, "v");
-              }
-
-            }, stringsElement, this.document);
+    return waveletData.getDocument(documentId).getContent().getMutableDocument();
   }
 
-  public UnmutableElementList<String, Void> strings() {
-    return strings;
+  protected ReadableBlipData getBlipData(String documentId) {
+    return waveletData.getDocument(documentId);
   }
+
 
   @Override
   public String getWaveId() {
@@ -100,19 +77,9 @@ public class UnmutableModel implements ReadableModel {
   public ReadableMap getRoot() {
 
     if (root == null)
-      root = (ReadableMap) getTypeFactory().get(ROOT_DOC, MapType.ROOT_TAG, MapType.PREFIX);
+      root = (ReadableMap) UnmutableTypeFactory.deserialize(this, null, Model.DOC_MAP_ROOT);
 
     return root;
-  }
-
-  @Override
-  public ReadableTypeFactory getTypeFactory() {
-
-    if (typeFactory == null) {
-      typeFactory = new UnmutableTypeFactory(waveletData, strings);
-    }
-
-    return typeFactory;
   }
 
 

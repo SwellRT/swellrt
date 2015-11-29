@@ -1,5 +1,7 @@
 package org.swellrt.model.generic;
 
+import org.swellrt.model.ReadableText;
+import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Document;
@@ -9,11 +11,13 @@ import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.Blip;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 import java.util.Collections;
+import java.util.Set;
 
-public class TextType extends Type implements SourcesEvents<TextType.Listener> {
+public class TextType extends Type implements ReadableText, SourcesEvents<TextType.Listener> {
 
   public interface Listener {
 
@@ -185,7 +189,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   /**
    * Insert a text in the doc's location. Text must not contain XML.
-   * 
+   *
    * @param location
    * @param text
    */
@@ -196,7 +200,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   /**
    * Insert a new line element in a doc's location.
-   * 
+   *
    * @param location
    */
   public void insertNewLine(int location) {
@@ -207,7 +211,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   /**
    * Delete text in the range.
-   * 
+   *
    * @param start
    * @param end
    */
@@ -218,7 +222,7 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
 
   /**
    * Returns the size of the document.
-   * 
+   *
    * @return
    */
   public int getSize() {
@@ -229,8 +233,8 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
   /**
    * Returns a XML string of the whole doc. This is function has moderate time
    * cost.
-   * 
-   * 
+   *
+   *
    * @return
    */
   public String getXml() {
@@ -254,6 +258,45 @@ public class TextType extends Type implements SourcesEvents<TextType.Listener> {
     return doc.annotationIntervals(start, end, null);
   }
 
+  @Override
+  public ParticipantId getAuthor() {
+    return blip.getAuthorId();
+  }
+
+  @Override
+  public long getLastUpdateTime() {
+    return blip.getLastModifiedTime();
+  }
+
+  @Override
+  public Set<ParticipantId> getContributors() {
+    return blip.getContributorIds();
+  }
+
+  @Override
+  public void accept(ReadableTypeVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  @Override
+  public MapType asMap() {
+    return null;
+  }
+
+  @Override
+  public StringType asString() {
+    return null;
+  }
+
+  @Override
+  public ListType asList() {
+    return null;
+  }
+
+  @Override
+  public TextType asText() {
+    return this;
+  }
 
 
 }

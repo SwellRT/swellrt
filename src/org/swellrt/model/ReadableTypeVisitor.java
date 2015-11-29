@@ -1,6 +1,7 @@
 package org.swellrt.model;
 
-public interface TypeVisitor {
+
+public interface ReadableTypeVisitor {
 
   void visit(ReadableModel instance);
 
@@ -8,7 +9,7 @@ public interface TypeVisitor {
 
   void visit(ReadableMap instance);
 
-  void visit(ReadableList instance);
+  void visit(ReadableList<? extends ReadableType> instance);
 
   void visit(ReadableText instance);
 

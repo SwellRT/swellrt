@@ -1,12 +1,14 @@
 package org.swellrt.model.generic;
 
 
+import org.swellrt.model.ReadableString;
+import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
-public class StringType extends Type implements SourcesEvents<StringType.Listener> {
+public class StringType extends Type implements ReadableString, SourcesEvents<StringType.Listener> {
 
 
   public interface Listener {
@@ -231,6 +233,31 @@ public class StringType extends Type implements SourcesEvents<StringType.Listene
   @Override
   public Model getModel() {
     return parent.getModel();
+  }
+
+  @Override
+  public void accept(ReadableTypeVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  @Override
+  public MapType asMap() {
+    return null;
+  }
+
+  @Override
+  public StringType asString() {
+    return this;
+  }
+
+  @Override
+  public ListType asList() {
+    return null;
+  }
+
+  @Override
+  public TextType asText() {
+    return null;
   }
 
 

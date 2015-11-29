@@ -14,78 +14,140 @@ import java.util.Collections;
 
 /**
  * Provides a Wavelet backing up a SwellRT data model
- * 
+ *
  * @author pablojan
- * 
+ *
  */
 public abstract class WaveletBasedTestBase extends TestCase {
 
   /*
    * The Wavelet stores the following data model structure:
    *
-   *  root (map)
+   *  (model+root)
+   *
+   *  root (map+root)
    *   |
-   *   |--- keymap (map)
+   *   |--- key0 (string) 'This is string 0'
+   *   |
+   *   |--- key1 (map+0001)
    *   |      |
-   *   |      |--- keyone (string)
+   *   |      |--- key10 (string) 'This is string 2'
    *   |      |
-   *   |      |--- keytwo (string)
+   *   |      |--- key11 (list+0002)
    *   |
    *   |
-   *   |--- keylist (list)
+   *   |--- key2 (list+0001)
    *   |      |
-   *   |      |--- 0 (map)
-   *   |      |    |
-   *   |      |    --- keyone (string)
+   *   |      |--- 0 (string) 'This is string 4'
    *   |      |
-   *   |      |--- 1 (list)
-   *   |      |    |
-   *   |      |    --- 0 (string)
    *   |      |
-   *   |      ---- 2 (string)
+   *   |      |--- 1 (string) 'This is string 5'
+   *   |      |
+   *   |      |
+   *   |      |--- 2 (map+0004)
+   *   |      |
+   *   |      |
+   *   |      |----3 (list+0003)
    *   |
-   *   ---- keystring (string)
+   *   |--- key3 (string) 'This is string 1'
+   *   |
+   *   |
+   *   |
+   *   |--- key4 (map+0002)
+   *   |      |
+   *   |      |--- key20 (string) 'This is string 3'
+   *   |      |
+   *   |      |--- key21 (map+0003)
+   *   |
+   *   |--- key5 (b+0001) '<body><line/>foo</body>'
    *
    */
 
-  static String MODEL_ROOT_DOC_CONTENT
- = "<model v='0.2'>" +
-      "<strings>"+
-          "<s v='This is the string 0'/>"+
-          "<s v='This is the string 1'/>"+
-          "<s v='This is the string 2'/>"+
-          "<s v='This is the string 3'/>"+
-          "<s v='This is the string 4'/>"+
-          "<s v='This is the string 5'/>"+
-      "</strings>"+
-      "<map>"+
-          "<entry k='keymap' v='map+MAP0001'/>"+
-          "<entry k='keylist' v='list+LIST0001' />"+
-          "<entry k='keystring' v='str+0' />"+
-      "</map>"+
-    "</model>";
+  static String MODEL = "<model a='default' t='default' v='1.0'/>";
+
+  // ROOT
+
+  static String MAP_ROOT =
+      "<metadata acl='' ap='default' p='root' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749565'/>"
+          + "<map>"
+          + "<entry k='key0' v='str+0'/>"
+          + "<entry k='key1' v='map+0001'/>"
+          + "<entry k='key2' v='list+0001'/>"
+          + "<entry k='key3' v='str+1'/>"
+          + "<entry k='key4' v='map+0002'/>"
+          + "<entry k='key5' v='b+0001'/>"
+          + "</map>"
+          + "<values>"
+          + "<i v='This is string 0'/>"
+          + "<i v='This is string 1'/>" + "</values>";
+
+  // LEVEL 1
+
+  static String MAP_0001
+ =
+      "<metadata acl='' ap='default' p='root.key1' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749575'/>"
+          + "<map>"
+          + "<entry k='key10' v='str+0'/>"
+          + "<entry k='key11' v='list+0002'/>"
+          + "</map>" + "<values>" + "<i v='This is string 2'/>" + "</values>";
 
 
-  static String MAP_01_DOC_CONTENT
-    = "<map>"+
-        "<entry k='keyone' v='str+1' />"+
-        "<entry k='keytwo' v='str+2' />"+
-    "</map>";
+  static String LIST_0001 =
+      "<metadata acl='' ap='default' p='root.key2' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448724445151'/>"
+          + "<list>"
+          + "<item r='str+0' t='str'/>"
+          + "<item r='str+1' t='str'/>"
+          + "<item r='map+0004' t='map'/>"
+          + "<item r='list+0003' t='list'/>"
+          + "</list>"
+          + "<values>" + "<i v='This is string 4'/>" + "<i v='This is string 5'/>" + "</values>";
 
-  static String LIST_01_DOC_CONTENT = "<list>"+
-        "<item r='map+MAP0002' t='map'/>"+
-        "<item r='list+LIST0002' t='list'/>"+
-        "<item r='str+3' t='str'/>"+
-    "</list>";
+  static String MAP_0002 =
+      "<metadata acl='' ap='default' p='root.key4' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749627'/>"
+          + "<map>"
+          + "<entry k='key20' v='str+0'/>"
+          + "<entry k='key21' v='map+0003'/>"
+          + "</map>"
+          + "<values>" + "<i v='This is string 3'/>" + "</values>";
 
-  static String MAP_02_DOC_CONTENT = "<map><entry k='keyone' v='str+4' /></map>";
+  static String B_0001 = "<body><line/>foo</body>";
 
-  static String LIST_02_DOC_CONTENT = "<list><item r='str+5' t='str'/></list>";
+  // LEVEL 2
+
+  static String LIST_0002 =
+      "<metadata acl='' ap='default' p='root.key1.key11' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749586'/>"
+          + "<list/><values/>";
+
+  static String MAP_0004 =
+      "<metadata acl='' ap='default' p='root.key2.2' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749608'/>"
+          + "<map/><values/>";
+
+  static String LIST_0003 =
+      "<metadata acl='' ap='default' p='root.key2.3' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749617'/>"
+          + "<list/><values/>";
+
+  static String MAP_0003 =
+      "<metadata acl='' ap='default' p='root.key4.key21' pc='fake@example.com' pm='_system_@local.net' tc='0' tm='1448723749638'/>"
+          + "<map/><values/>";
+
+
+  // LEVEL 3
+
 
   private final Factory<WaveletDataImpl> factory =
       WaveletDataFactory.of(BasicFactories.waveletDataImplFactory());
 
   private WaveletData waveletData;
+
+
+  protected void addDocumentFromXml(WaveletData wavelet, ParticipantId creator, String docId,
+      String xml) {
+
+    DocInitialization content = BasicFactories.documentProvider().parse(xml).toInitialization();
+    waveletData.createDocument(docId, creator, Collections.singleton(creator), content,
+        System.currentTimeMillis(), 0);
+
+  }
 
   @Override
   protected void setUp() throws Exception {
@@ -95,29 +157,21 @@ public abstract class WaveletBasedTestBase extends TestCase {
     waveletData.addParticipant(ParticipantId.of("tom@example.com"));
     waveletData.addParticipant(ParticipantId.of("tim@example.com"));
 
-    ParticipantId creator = ParticipantId.of("creator@example.com");
-    DocInitialization content = BasicFactories.documentProvider().parse(MODEL_ROOT_DOC_CONTENT).toInitialization();
+    ParticipantId creator = ParticipantId.of("fake@example.com");
 
-    waveletData.createDocument("model+root", creator, Collections.singleton(creator), content,
-        System.currentTimeMillis(), 0);
+    addDocumentFromXml(waveletData, creator, "model+root", MODEL);
+    addDocumentFromXml(waveletData, creator, "map+root", MAP_ROOT);
 
+    addDocumentFromXml(waveletData, creator, "map+0001", MAP_0001);
+    addDocumentFromXml(waveletData, creator, "list+0001", LIST_0001);
+    addDocumentFromXml(waveletData, creator, "map+0002", MAP_0002);
+    addDocumentFromXml(waveletData, creator, "b+0001", B_0001);
 
-    content = BasicFactories.documentProvider().parse(MAP_01_DOC_CONTENT).toInitialization();
-    waveletData.createDocument("map+MAP0001", creator, Collections.singleton(creator), content,
-        System.currentTimeMillis(), 0);
+    addDocumentFromXml(waveletData, creator, "list+0002", LIST_0002);
+    addDocumentFromXml(waveletData, creator, "map+0004", MAP_0004);
+    addDocumentFromXml(waveletData, creator, "list+0003", LIST_0003);
+    addDocumentFromXml(waveletData, creator, "map+0003", MAP_0003);
 
-    content = BasicFactories.documentProvider().parse(LIST_01_DOC_CONTENT).toInitialization();
-    waveletData.createDocument("list+LIST0001", creator, Collections.singleton(creator), content,
-        System.currentTimeMillis(), 0);
-
-    content = BasicFactories.documentProvider().parse(MAP_02_DOC_CONTENT).toInitialization();
-    waveletData.createDocument("map+MAP0002", creator, Collections.singleton(creator), content,
-        System.currentTimeMillis(), 0);
-
-
-    content = BasicFactories.documentProvider().parse(LIST_02_DOC_CONTENT).toInitialization();
-    waveletData.createDocument("list+LIST0002", creator, Collections.singleton(creator), content,
-        System.currentTimeMillis(), 0);
   }
 
   protected WaveletData getWaveletData() {

@@ -5,17 +5,15 @@ package org.swellrt.model.unmutable;
 import org.swellrt.model.ReadableList;
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableString;
+import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.WaveletBasedTestBase;
-import org.swellrt.model.adt.UnmutableElementList;
-
-import java.util.Iterator;
 
 /**
  * Test UnmutableModel hierarchy (org.swellrt.model.adt.unmutable.*)
- * 
+ *
  * @author pablojan
- * 
+ *
  */
 public class UnmutableModelTest extends WaveletBasedTestBase {
 
@@ -27,48 +25,41 @@ public class UnmutableModelTest extends WaveletBasedTestBase {
   }
 
 
+  @SuppressWarnings("rawtypes")
   public void testTypeFactory() {
 
     UnmutableModel umodel = UnmutableModel.create(getWaveletData());
 
-    // Testing Model
+    // ROOT
 
-    // Testing string list
-    UnmutableElementList<String, Void> strings = umodel.strings();
-    assertEquals(6, strings.size());
+    ReadableMap root = umodel.getRoot();
+    assertTrue(root.get("key0") instanceof ReadableString);
+    assertTrue(root.get("key1") instanceof ReadableMap);
+    assertTrue(root.get("key2") instanceof ReadableList);
+    assertTrue(root.get("key3") instanceof ReadableString);
+    assertTrue(root.get("key4") instanceof ReadableMap);
+    assertTrue(root.get("key5") instanceof ReadableText);
 
-    for (int i = 0; i < strings.size(); i++) {
-      assertEquals("This is the string " + i, strings.get(i));
-    }
+    assertEquals("This is string 0", ((ReadableString) root.get("key0")).getValue());
+    assertEquals("This is string 1", ((ReadableString) root.get("key3")).getValue());
 
-    // Testing Map
+    // LEVEL 1
 
-    ReadableMap rootMap = umodel.getRoot();
-    assertTrue(rootMap.keySet().contains("keymap"));
-    assertTrue(rootMap.keySet().contains("keylist"));
-    assertTrue(rootMap.keySet().contains("keystring"));
+    ReadableMap map1 = (ReadableMap) root.get("key1");
+    assertEquals("This is string 2", ((ReadableString) map1.get("key10")).getValue());
+    assertTrue(map1.get("key11") instanceof ReadableList);
+    assertEquals(0, ((ReadableList) map1.get("key11")).size());
 
-    // Testing List
+    @SuppressWarnings("unchecked")
+    ReadableList<ReadableType> list1 = (ReadableList<ReadableType>) root.get("key2");
+    assertEquals("This is string 4", ((ReadableString) list1.get(0)).getValue());
+    assertEquals("This is string 5", ((ReadableString) list1.get(1)).getValue());
+    assertEquals(0, ((ReadableMap) list1.get(2)).keySet().size());
+    assertEquals(0, ((ReadableList) list1.get(3)).size());
 
-    ReadableList list = (ReadableList) rootMap.get("keylist");
-    assertEquals(3, list.size());
+    ReadableMap map2 = (ReadableMap) root.get("key4");
 
-    Iterator<ReadableType> it = list.getValues().iterator();
-    assertTrue(it.hasNext());
-    assertTrue(it.next() instanceof ReadableMap);
-
-    assertTrue(it.hasNext());
-    assertTrue(it.next() instanceof ReadableList);
-
-    assertTrue(it.hasNext());
-    assertTrue(it.next() instanceof ReadableString);
-
-    assertFalse(it.hasNext());
-
-    // Test String
-
-    ReadableString str = (ReadableString) list.get(2);
-    assertEquals("This is the string 3", str.getValue());
-
+    ReadableText text1 = (ReadableText) root.get("key5");
+    assertEquals("<body><line/>foo</body>", text1.getXml());
   }
 }

@@ -1,20 +1,20 @@
 package org.swellrt.model.generic;
 
-
+import org.swellrt.model.ReadableType;
 
 /**
  * Parent abstract class for data types stored in a SwellRT wavelet.
- * 
- * 
+ *
+ *
  * @author pablojan@gmail (Pablo Ojanguren)
- * 
+ *
  */
-public abstract class Type {
+public abstract class Type implements ReadableType {
 
   /**
    * Deserialize a Type instance based on its parent instance a its substrate
    * document or primitive value reference.
-   * 
+   *
    * @param parent Parent type instance.
    * @param ref a substrate document id or reference of a primitive value
    * @return
@@ -92,5 +92,12 @@ public abstract class Type {
   /** Return this instance's Type as String */
   public abstract String getType();
 
+  public abstract MapType asMap();
+
+  public abstract StringType asString();
+
+  public abstract ListType asList();
+
+  public abstract TextType asText();
 
 }

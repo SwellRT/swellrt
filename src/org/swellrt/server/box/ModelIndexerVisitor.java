@@ -1,8 +1,15 @@
-package org.swellrt.model;
+package org.swellrt.server.box;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
+import org.swellrt.model.ReadableList;
+import org.swellrt.model.ReadableMap;
+import org.swellrt.model.ReadableModel;
+import org.swellrt.model.ReadableString;
+import org.swellrt.model.ReadableText;
+import org.swellrt.model.ReadableType;
+import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -14,11 +21,11 @@ import java.util.Stack;
 
 /**
  * Build a MongoDB document with the snapshot of a collaborative data model.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
-public class ModelToMongoVisitor implements TypeVisitor {
+public class ModelIndexerVisitor implements ReadableTypeVisitor {
 
 
   private final BasicDBObject document;
@@ -30,19 +37,19 @@ public class ModelToMongoVisitor implements TypeVisitor {
    * Generate a BSON view of the Wave-based Data Model. Also return a map
    * between collaborative data model objects' paths to the corresponding
    * blip/document storing it.
-   * 
+   *
    * @param model the Wave-based collaborative data model
    * @return
    */
   public static Pair<BasicDBObject, Map<String, String>> run(ReadableModel model) {
 
-    ModelToMongoVisitor visitor = new ModelToMongoVisitor();
+    ModelIndexerVisitor visitor = new ModelIndexerVisitor();
     visitor.visit(model);
     return Pair.<BasicDBObject, Map<String, String>> of(visitor.getDBObject(),
         visitor.getblipIdToPathMap());
   }
 
-  protected ModelToMongoVisitor() {
+  protected ModelIndexerVisitor() {
     this.document = new BasicDBObject();
     this.objects = new Stack<Object>();
     this.path = new Stack<String>();
@@ -102,7 +109,7 @@ public class ModelToMongoVisitor implements TypeVisitor {
   }
 
   @Override
-  public void visit(ReadableList instance) {
+  public void visit(ReadableList<? extends ReadableType> instance) {
     // TODO(pablojan) add getDocumentedId to ReadableList
     // pathToBlipMap.put(getStringPath(), instance.)
 

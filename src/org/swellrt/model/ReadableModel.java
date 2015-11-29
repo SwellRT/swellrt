@@ -14,5 +14,4 @@ public interface ReadableModel {
 
   public ReadableMap getRoot();
 
-  public ReadableTypeFactory getTypeFactory();
 }

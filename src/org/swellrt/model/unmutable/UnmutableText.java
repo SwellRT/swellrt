@@ -1,14 +1,15 @@
 package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableText;
-import org.swellrt.model.TypeVisitor;
+import org.swellrt.model.ReadableTypeVisitable;
+import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 
 import java.util.Set;
 
-public class UnmutableText implements ReadableText {
+public class UnmutableText implements ReadableText, ReadableTypeVisitable {
 
   private final ReadableBlipData blipData;
 
@@ -17,7 +18,7 @@ public class UnmutableText implements ReadableText {
   }
 
   @Override
-  public void accept(TypeVisitor visitor) {
+  public void accept(ReadableTypeVisitor visitor) {
     visitor.visit(this);
   }
 

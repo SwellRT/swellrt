@@ -1,6 +1,6 @@
 package org.swellrt.model.generic;
 
-import com.google.gxp.com.google.common.base.Preconditions;
+import com.google.common.base.Preconditions;
 
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
