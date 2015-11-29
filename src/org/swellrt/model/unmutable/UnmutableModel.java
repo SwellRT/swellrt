@@ -2,7 +2,9 @@ package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableModel;
+import org.swellrt.model.ReadableType;
 import org.swellrt.model.generic.Model;
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -80,6 +82,11 @@ public class UnmutableModel implements ReadableModel {
       root = (ReadableMap) UnmutableTypeFactory.deserialize(this, null, Model.DOC_MAP_ROOT);
 
     return root;
+  }
+
+  @Override
+  public ReadableType fromPath(String path) {
+    return ModelUtils.fromPath(this, path);
   }
 
 

@@ -3,6 +3,7 @@ package org.swellrt.model.generic;
 import com.google.common.collect.ImmutableMap;
 
 import org.swellrt.model.ReadableModel;
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
@@ -399,53 +400,9 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return tt;
   }
 
+  @Override
   public Type fromPath(String path) {
-    String[] pathKeys = path.split(".");
-
-    if (pathKeys == null || pathKeys.length == 0 || !pathKeys[0].equalsIgnoreCase("root")) {
-      return null;
-    }
-
-    Type currentObject = getRoot();
-    boolean isLeaf = false;
-
-    for (int i = 1; i < pathKeys.length; i++) {
-
-      // Unconsistencies on the path
-      if (currentObject == null) return null;
-      if (isLeaf) return null;
-
-      String key = pathKeys[i];
-
-      if (currentObject instanceof MapType) {
-
-        currentObject = ((MapType) currentObject).get(key);
-
-      } else if (currentObject instanceof ListType) {
-
-        int index = -1;
-        try {
-          index = Integer.parseInt(key);
-        } catch (NumberFormatException e) {
-          return null;
-        }
-
-        if (index < 0 || index >= ((ListType) currentObject).size()) return null;
-
-        currentObject = ((ListType) currentObject).get(index);
-
-      } else if (currentObject instanceof StringType) {
-
-        isLeaf = true;
-
-      } else if (currentObject instanceof TextType) {
-
-        isLeaf = true;
-      }
-
-    }
-
-    return currentObject;
+    return (Type) ModelUtils.fromPath(this, path);
   }
 
   /**

@@ -99,4 +99,28 @@ public class UnmutableList implements ReadableList<ReadableType>, ReadableTypeVi
     return docBasedList.getValues();
   }
 
+
+  @Override
+  public UnmutableMap asMap() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableString asString() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableList asList() {
+    return this;
+  }
+
+
+  @Override
+  public UnmutableText asText() {
+    return null;
+  }
+
 }

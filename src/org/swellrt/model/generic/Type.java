@@ -92,12 +92,4 @@ public abstract class Type implements ReadableType {
   /** Return this instance's Type as String */
   public abstract String getType();
 
-  public abstract MapType asMap();
-
-  public abstract StringType asString();
-
-  public abstract ListType asList();
-
-  public abstract TextType asText();
-
 }

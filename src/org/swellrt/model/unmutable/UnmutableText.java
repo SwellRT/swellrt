@@ -62,5 +62,27 @@ public class UnmutableText implements ReadableText, ReadableTypeVisitable {
     return blipData.getContributors();
   }
 
+  @Override
+  public UnmutableMap asMap() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableString asString() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableList asList() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableText asText() {
+    return this;
+  }
 
 }

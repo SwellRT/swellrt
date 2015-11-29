@@ -123,4 +123,27 @@ public class UnmutableMap implements ReadableMap, ReadableTypeVisitable {
     return docBasedMap.keySet();
   }
 
+  @Override
+  public UnmutableMap asMap() {
+    return this;
+  }
+
+
+  @Override
+  public UnmutableString asString() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableList asList() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableText asText() {
+    return null;
+  }
+
 }

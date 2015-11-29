@@ -28,4 +28,27 @@ public class UnmutableString implements ReadableString, ReadableTypeVisitable {
     return value;
   }
 
+  @Override
+  public UnmutableMap asMap() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableString asString() {
+    return this;
+  }
+
+
+  @Override
+  public UnmutableList asList() {
+    return null;
+  }
+
+
+  @Override
+  public UnmutableText asText() {
+    return null;
+  }
+
 }

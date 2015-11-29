@@ -14,4 +14,6 @@ public interface ReadableModel {
 
   public ReadableMap getRoot();
 
+  public ReadableType fromPath(String path);
+
 }
