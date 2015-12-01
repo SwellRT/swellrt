@@ -42,19 +42,62 @@ The latest officially released binaries can be downloaded from: https://dist.apa
 Extract the archive and execute run-server.sh for Linux/Mac or run-server.bat for Windows.   
 The web client will be accessible by default at http://localhost:9898/.
 
+Setup Dev
+---------
+
+Apache Wave can be setup for eclipse and intellij IDE's.
+
+Running `gradle eclipse` or `gradle idea` will generate all project files needed.
+In a situation where dependencies have changed or project structure has changed
+run `gradle cleanEclipse` or `gradle cleanIdea` depending on your IDE.
+
+
+Gradle Tasks
+------------
+
+Apache Wave requires Java 7 & Gradle 2.8+ to build.
+
+Gradle tasks can be run by `gradle [task name]`
+
+Test Tasks:
+
+- **test**: runs the standard unit tests.
+- **testMongo**: runs the mongodb tests.
+- **testLarge**: runs the more lengthy test cases.
+- **testGwt**: runs gwt specific tests (currently broken till gwt jetty conflict issue).
+- **testAll**: runs all the above tests.
+
+Compile Tasks:
+
+- **generateMessages**: Generates the message source files from the .st sources.
+- **generateGXP**: Compiles sources from the gxp files.
+- **compileJava**: Compiles all java sources.
+- **compileGwt**: Compiles all the Gwt sources.
+- **compileGwtDemo**: Compiles all the Gwt sources in Demo style.
+- **compileGwtDev**: Compiles all the Gwt sources in Dev style.
+
+Check Tasks:
+
+- **rat**: will run the apache rat tool to check all distribution files.
+
+Run Tasks:
+- **run**: runs the server with the default parameters and with gwt compiled normally.
+
+Distribution Tasks:
+- **jar**: builds jar file for the project.
+
 Build
-------
+-----
 
-Wave in a Box requires Java 7 & and uses Gradle 2.8 (or higher) to build.
-
-To run the tests (optional), run:   
-    gradle testAll
-
-To build the client and server run:  
+To build the client and server:
     gradle jar
-It will be created in wave/build/libs/wave-version.jar.  
+It will be created in wave/build/libs/wave-*version*.jar
 
-Note if pst-version.jar is unable to be found run gradle pst:jar then run again
+Note: 
+
+- if pst-`version`.jar is unable to be found run `gradle pst:jar` then retry.
+- if a jar is unable to be unzipped with wave:extractApi then delete the jar from your cache and try again. 
+    You may need to restart.
 
 You need to configure your instance before you can use it. To create a default simple configuration run:  
     gradle prosody-config  
