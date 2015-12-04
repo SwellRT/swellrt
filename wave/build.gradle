@@ -27,7 +27,7 @@ mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
         "-Dorg.eclipse.jetty.LEVEL=DEBUG",
-        "-Djava.security.auth.login.config=jaas.config"
+        "-Djava.security.auth.login.config=config/jaas.config"
 ]
 
 configurations {
@@ -322,6 +322,33 @@ extractApi.mustRunAfter compileJava
 
 compileJava.dependsOn = [generateMessages, generateGXP]
 
+/* Gwt Dev Tasks */
+
+task gwtDev {
+    description = 'Runs the hosted mode server, for debugging the Gwt client ' +
+            'in a JVM.'
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.DevMode"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt,
+                ]
+            }
+            args = [
+                    "-noserver",
+                    "-bindAddress", "127.0.0.1",
+                    "-startupUrl", "http://localhost:9898",
+                    "-logLevel", "DEBUG",
+                    "org.waveprotocol.box.webclient.WebClientDev",
+            ]
+        }
+    }
+}
+
 /* Test Tasks */
 
 test {
@@ -408,7 +435,7 @@ testGwt.mustRunAfter compileGwt, testLarge
 testMongo.mustRunAfter compileJava, test
 testLarge.mustRunAfter test
 
-ant.importBuild 'server-config.xml'
+ant.importBuild 'config/server-config.xml'
 
 
 jar {
@@ -494,3 +521,14 @@ jar {
 }
 
 jar.dependsOn compileJava, compileGwt, extractApi
+
+/* Distribution Tasks */
+
+task createPropertiesFile(type: Copy) {
+    from 'src/main/configs'
+    include 'wave.conf'
+    into 'config'
+    expand([
+            version: version
+    ])
+}

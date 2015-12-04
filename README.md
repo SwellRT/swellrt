@@ -81,7 +81,9 @@ Check Tasks:
 - **rat**: will run the apache rat tool to check all distribution files.
 
 Run Tasks:
+
 - **run**: runs the server with the default parameters and with gwt compiled normally.
+- **gwtDev**: runs the gwt development mode.
 
 Distribution Tasks:
 - **jar**: builds jar file for the project.
@@ -100,11 +102,11 @@ Note:
     You may need to restart.
 
 You need to configure your instance before you can use it. To create a default simple configuration run:  
-    gradle prosody-config  
+    `gradle prosody-config`  
 
 To override default values pass them to the ant script. 
 For example, to override wave\_server\_domain run:  
-gradle prosody-config -Dwave\_server\_domain=example.com  
+`gradle prosody-config -Dwave_server_domain=example.com`  
 Take a look at the server.config.example to learn about configuration and possible/default values.
 
 The server can be started (on Linux/MacOS) by running  

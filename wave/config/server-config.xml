@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  -->
-<project name="server config" basedir="." default="prosody-config">
+<project name="server config" basedir="../" default="prosody-config">
   <description>Creates the server configuration file.</description>
 
   <property name="wave_server_domain" value="local.net" />

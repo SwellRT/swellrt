@@ -116,8 +116,8 @@ public class ServerMain {
         protected void configure() {
           Config config =
               ConfigFactory.load().withFallback(
-                  ConfigFactory.parseFile(new File("application.conf")).withFallback(
-                      ConfigFactory.parseFile(new File("reference.conf"))));
+                  ConfigFactory.parseFile(new File("config/application.conf")).withFallback(
+                      ConfigFactory.parseFile(new File("config/reference.conf"))));
           bind(Config.class).toInstance(config);
           bind(Key.get(String.class, Names.named(CoreSettingsNames.WAVE_SERVER_DOMAIN)))
               .toInstance(config.getString("core.wave_server_domain"));

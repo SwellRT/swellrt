@@ -51,8 +51,8 @@ reports/
 wave/src/generated/
 ### Gwt Testing
 wave/gwt-unitCache
-### prodsody config
+### config
 wave/local.net.cfg.lua
-
+wave/config/wave.conf
 
 

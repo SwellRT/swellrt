@@ -22,11 +22,11 @@
 # public and private keys match, and that the whole certificate
 # chain can be verified up to the root certificate.
 
-srv_cfg=server.config
+srv_cfg=config/server.config
 if [ ! -f $srv_cfg ]; then
   echo "You need to generate a valid $srv_cfg file."; exit 1
 fi
-fed_cfg=server.federation.config
+fed_cfg=config/server.federation.config
 if [ ! -f $fed_cfg ]; then
   echo "You need to generate a valid $fed_cfg file."; exit 1
 fi
