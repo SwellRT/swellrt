@@ -22,7 +22,7 @@
 # Run "ant dist-server" before to use this script
 
 # The version of Wave in a Box, extracted from the build.properties file
-WAVEINABOX_VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" build.properties | grep ^waveinabox.version= | cut -f2 -d=`
+WAVEINABOX_VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" config/wave.conf | grep ^version= | cut -f2 -d=`
 echo wave-in-a-box-server-$WAVEINABOX_VERSION.jar
 
-exec java -cp dist/wave-in-a-box-server-$WAVEINABOX_VERSION.jar org.waveprotocol.box.server.DataMigrationTool $*
+exec java -cp dist/wave-$WAVEINABOX_VERSION.jar org.waveprotocol.box.server.DataMigrationTool $*

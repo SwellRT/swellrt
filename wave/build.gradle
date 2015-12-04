@@ -532,3 +532,49 @@ task createPropertiesFile(type: Copy) {
             version: version
     ])
 }
+
+task createDistZip(type: Zip) {
+    from(jar) {
+        into 'apache-wave/bin'
+    }
+    from('dist') {
+        into 'apache-wave'
+    }
+    from('config') {
+        into 'apache-wave/config'
+    }
+    from('war') {
+        into 'apache-wave/war'
+    }
+}
+
+task createDistTar(type: Tar) {
+    from(jar) {
+        into 'apache-wave/bin'
+    }
+    from('dist') {
+        into 'apache-wave'
+    }
+    from('config') {
+        into 'apache-wave/config'
+    }
+    from('war') {
+        into 'apache-wave/war'
+    }
+}
+
+createDistZip.dependsOn jar, createPropertiesFile
+createDistTar.dependsOn jar, createPropertiesFile
+
+task createDist() {
+    doFirst {
+        println ''
+        println '----------------------------------------------'
+        println '              Creating Deployment             '
+        println 'Zip and Tar files available in wave/build/dist'
+        println '----------------------------------------------'
+        println ''
+    }
+}
+
+createDist.dependsOn createDistZip, createDistTar
