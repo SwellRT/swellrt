@@ -104,6 +104,7 @@ dependencies {
             [group: "com.typesafe", name: "config", version: "1.2.1"],
             [group: "xerces", name: "xerces", version: "2.4.0"],
             [group: "org.slf4j", name: "slf4j-api", version: "1.6.1"],
+            [group: "org.slf4j", name: "slf4j-simple", version: "1.6.1"],
             [group: "org.eclipse.jetty", name: "jetty-annotations", version: "9.1.1.v20140108"],
             [group: "org.eclipse.jetty", name: "jetty-client", version: "9.1.1.v20140108"],
             [group: "org.eclipse.jetty", name: "jetty-continuation", version: "9.1.1.v20140108"],
