@@ -87,6 +87,9 @@ Run Tasks:
 
 Distribution Tasks:
 - **jar**: builds jar file for the project.
+- **createDist**: builds the zip and tar file for distribution.
+- **createDistZip**: builds the zip for distribution.
+- **createDistTar**: builds the tar for distribution.
 
 Build
 -----
