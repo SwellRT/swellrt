@@ -35,6 +35,10 @@ import org.waveprotocol.box.server.persistence.memory.MemoryStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.wave.crypto.CertPathStore;
+import org.waveprotocol.wave.notification.DeviceStore;
+import org.waveprotocol.wave.notification.DeviceStoreFake;
+import org.waveprotocol.wave.notification.NotificationRegisterStore;
+import org.waveprotocol.wave.notification.NotificationRegisterStoreFake;
 
 /**
  * Module for setting up the different persistence stores.
@@ -103,6 +107,7 @@ public class PersistenceModule extends AbstractModule {
     bindAttachmentStore();
     bindAccountStore();
     bindDeltaStore();
+    bindNotification();
   }
 
   /**
@@ -160,6 +165,12 @@ public class PersistenceModule extends AbstractModule {
     } else {
       throw new RuntimeException("Invalid delta store type: '" + deltaStoreType + "'");
     }
+  }
+
+  private void bindNotification() {
+    bind(NotificationRegisterStore.class).to(NotificationRegisterStoreFake.class).in(Singleton.class);
+    bind(DeviceStore.class).to(DeviceStoreFake.class).in(Singleton.class);
+    // TODO Real persistence and persistence type choice in config files
   }
 
 }

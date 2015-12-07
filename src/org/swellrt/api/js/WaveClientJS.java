@@ -220,6 +220,29 @@ public class WaveClientJS extends JavaScriptObject {
          },
 
          //
+         // Notifications
+         //
+
+         notifications: {
+
+           register: function(deviceId){
+             delegate.@org.swellrt.api.WaveClient::notificationRegister(Ljava/lang/String;)(deviceId);
+           },
+
+           unregister: function(deviceId){
+             delegate.@org.swellrt.api.WaveClient::notificationUnregister(Ljava/lang/String;)(deviceId);
+           },
+
+           subscribe: function(deviceId){
+             delegate.@org.swellrt.api.WaveClient::notificationSubscribe(Ljava/lang/String;)(deviceId);
+           },
+
+           unsubscribe: function(deviceId){
+             delegate.@org.swellrt.api.WaveClient::notificationUnsubscribe(Ljava/lang/String;)(deviceId);
+           },
+         },
+
+         //
          // Utils
          //
 

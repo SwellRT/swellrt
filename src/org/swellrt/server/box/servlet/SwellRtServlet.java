@@ -16,14 +16,14 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * A Servlet providing SwellRT REST operations on /swell context
- * 
- * 
- * 
+ *
+ *
+ *
  * TODO: to use a "cool" REST framework
- * 
- * 
+ *
+ *
  * @author pablojan@gmail.com
- * 
+ *
  */
 @Singleton
 @SuppressWarnings("serial")
@@ -44,7 +44,6 @@ public class SwellRtServlet extends HttpServlet {
     this.mongoDbProvider = mongoDbProvider;
     this.waveletProvider = waveletProvider;
   }
-
 
 
   /**
@@ -70,13 +69,16 @@ public class SwellRtServlet extends HttpServlet {
 
       AccessModelService.get(participantId, waveletProvider).execute(req, response);
 
+    } else if (entity.equals("notification")) {
+
+      NotificationService.get(participantId).execute(req, response);
+
     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
       return;
 
     }
-
 
   }
 

@@ -129,7 +129,7 @@ public class WaveClient implements SwellRT.Listener {
 
   /**
    * Close a data model. No callback needed.
-   * 
+   *
    * @param waveId
    * @return true for success
    * @throws InvalidIdException
@@ -142,7 +142,7 @@ public class WaveClient implements SwellRT.Listener {
 
   /**
    * Create a new data model.
-   * 
+   *
    * @return the new data model Id.
    * @throws NetworkException
    * @throws SessionNotStartedException
@@ -182,7 +182,7 @@ public class WaveClient implements SwellRT.Listener {
 
   /**
    * Open a data model.
-   * 
+   *
    * @return the new data model Id.
    * @throws InvalidIdException
    * @throws NetworkException
@@ -257,7 +257,7 @@ public class WaveClient implements SwellRT.Listener {
   /**
    * Set TextEditor dependencies from current wave/model. In particular, set the
    * document registry associated with TextType's Model before editing.
-   * 
+   *
    * @param text
    */
   public void configureTextEditor(TextEditor editor, TextType text) {
@@ -266,6 +266,45 @@ public class WaveClient implements SwellRT.Listener {
 
     editor.setDocumentRegistry(documentRegistry);
     editor.setModel(text.getModel());
+  }
+
+  /**
+   * Register a {@paramref deviceId} where the current user will receive
+   * notifications
+   *
+   * @param deviceId
+   */
+  public void notificationRegister(String deviceId) {
+
+  }
+
+  /**
+   * Unregister the {@paramref deviceId} from current user's notifications
+   *
+   * @param deviceId
+   */
+  public void notificationUnregister(String deviceId) {
+
+  }
+
+  /**
+   * Subscribe current user to notifications of the wave identified by
+   * {@paramref waveId}
+   *
+   * @param waveId
+   */
+  public void notificationSubscribe(String waveId) {
+
+  }
+
+  /**
+   * Unubscribe current user from notifications of the wave identified by
+   * {@paramref waveId}
+   *
+   * @param waveId
+   */
+  public void notificationUnsubscribe(String waveId) {
+
   }
 
   /**
