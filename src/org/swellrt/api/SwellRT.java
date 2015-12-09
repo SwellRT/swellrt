@@ -875,9 +875,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       @Override
       public void onResponseReceived(Request request, Response response) {
-
-        if (response.getStatusCode() == 200) {
-          callback.onSuccess(response.getText());
+        int status = response.getStatusCode();
+        System.out.println("Response" + response.toString());
+        if (200 <= status && status < 300) {
+          String responseText = response.getText();
+          if (responseText == null) {
+            responseText = "";
+          }
+          callback.onSuccess(responseText);
         } else {
           callback.onFailure("SERVICE_EXCEPTION");
         }

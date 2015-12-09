@@ -52,6 +52,9 @@ public class WaveClient implements SwellRT.Listener {
      object[method](arg);
   }-*/;
 
+  private native void invoke(JavaScriptObject object, String method) /*-{
+     object[method]();
+  }-*/;
   //
   // Session
   //
@@ -287,7 +290,7 @@ public class WaveClient implements SwellRT.Listener {
 
       @Override
       public void onSuccess(String result) {
-        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+        invoke(callback, WaveClientJS.SUCCESS);
       }
     });
   }
@@ -310,7 +313,7 @@ public class WaveClient implements SwellRT.Listener {
 
       @Override
       public void onSuccess(String result) {
-        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+        invoke(callback, WaveClientJS.SUCCESS);
       }
     });
   }
@@ -334,7 +337,7 @@ public class WaveClient implements SwellRT.Listener {
 
       @Override
       public void onSuccess(String result) {
-        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+        invoke(callback, WaveClientJS.SUCCESS);
       }
     });
   }
@@ -358,7 +361,7 @@ public class WaveClient implements SwellRT.Listener {
 
       @Override
       public void onSuccess(String result) {
-        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+        invoke(callback, WaveClientJS.SUCCESS);
       }
     });
   }
