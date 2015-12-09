@@ -23,6 +23,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.authentication.SessionManagerImpl;
+
 /**
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
@@ -41,6 +44,7 @@ public class ModelIndexerModule extends AbstractModule {
   public void configure() {
 
     bind(ModelIndexerDispatcher.class).to(ModelIndexerDispatcherImpl.class).in(Singleton.class);
+    bind(SessionManager.class).to(SessionManagerImpl.class).in(Singleton.class);
   }
 
 }

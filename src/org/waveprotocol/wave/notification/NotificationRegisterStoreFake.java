@@ -1,35 +1,47 @@
 package org.waveprotocol.wave.notification;
 
-import org.waveprotocol.box.server.account.AccountData;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class NotificationRegisterStoreFake implements NotificationRegisterStore {
 
-  HashMap<String, List<AccountData>> notificationStore;
+  HashMap<String, List<String>> notificationStore;
 
   public NotificationRegisterStoreFake() {
-    notificationStore = new HashMap<String, List<AccountData>>();
+    notificationStore = new HashMap<String, List<String>>();
   }
 
   @Override
-  public List<AccountData> getSubscriptors(String waveId) {
+  public List<String> getSubscriptors(String waveId) {
     return notificationStore.get(waveId);
   }
 
   @Override
-  public void addSubscriptor(String waveId, AccountData user) {
-    List<AccountData> subscriptors = notificationStore.get(waveId);
-    if (subscriptors.indexOf(user) == -1) {
-      subscriptors.add(user);
+  public void addSubscriptor(String waveId, String userId) {
+
+    List<String> subscriptors = notificationStore.get(waveId);
+
+    if (subscriptors == null) {
+      subscriptors = new ArrayList<String>();
+      notificationStore.put(waveId, subscriptors);
     }
+
+    if (subscriptors.indexOf(userId) == -1) {
+      subscriptors.add(userId);
+    }
+    System.out.println(subscriptors.toString());
   }
 
   @Override
-  public void removeSubscriptor(String waveId, AccountData user) {
-    List<AccountData> subscriptors = notificationStore.get(waveId);
-    subscriptors.remove(user);
+  public void removeSubscriptor(String waveId, String userId) {
+
+    List<String> subscriptors = notificationStore.get(waveId);
+
+    if (subscriptors != null) {
+      subscriptors.remove(userId);
+      System.out.println(subscriptors.toString());
+    }
   }
 
 }

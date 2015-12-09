@@ -1,5 +1,7 @@
 package org.swellrt.server.box.servlet;
 
+import com.google.inject.Injector;
+
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
@@ -36,13 +38,15 @@ public class SwellRtServlet extends HttpServlet {
   // TODO pass dependencies to each Service by injection
   private MongoDbProvider mongoDbProvider;
   private WaveletProvider waveletProvider;
+  private Injector injector;
 
   @Inject
   public SwellRtServlet(SessionManager sessionManager, MongoDbProvider mongoDbProvider,
-      WaveletProvider waveletProvider) {
+      WaveletProvider waveletProvider, Injector injector) {
     this.sessionManager = sessionManager;
     this.mongoDbProvider = mongoDbProvider;
     this.waveletProvider = waveletProvider;
+    this.injector = injector;
   }
 
 
@@ -69,9 +73,10 @@ public class SwellRtServlet extends HttpServlet {
 
       AccessModelService.get(participantId, waveletProvider).execute(req, response);
 
+      // TODO doPost
     } else if (entity.equals("notification")) {
 
-      NotificationService.get(participantId).execute(req, response);
+      injector.getInstance(NotificationService.class).execute(req, response);
 
     } else {
 

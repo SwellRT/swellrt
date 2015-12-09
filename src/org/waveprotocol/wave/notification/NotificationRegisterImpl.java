@@ -1,16 +1,14 @@
 package org.waveprotocol.wave.notification;
 
-import org.waveprotocol.box.server.account.AccountData;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class NotificationRegisterImpl {
+public class NotificationRegisterImpl implements NotificationRegister {
 
   private NotificationRegisterStore notificationStore;
   private DeviceStore deviceStore;
 
-  private List<AccountData> getSubscriptors(String waveId) {
+  private List<String> getSubscriptors(String waveId) {
     return notificationStore.getSubscriptors(waveId);
   }
 
@@ -30,16 +28,17 @@ public class NotificationRegisterImpl {
   // deviceStore.unregister(user, deviceId);
   // }
   //
-  private List<String> getUserDevices(AccountData user) {
+  private List<String> getUserDevices(String user) {
     return deviceStore.getUserDevices(user);
   }
 
+  @Override
   public List<String> getSubscriptorsDevices(String waveId) {
 
-    List<AccountData> subscriptors = getSubscriptors(waveId);
+    List<String> subscriptors = getSubscriptors(waveId);
     List<String> subscDevices = new ArrayList<String>();
 
-    for (AccountData s : subscriptors) {
+    for (String s : subscriptors) {
       subscDevices.addAll(getUserDevices(s));
     }
 

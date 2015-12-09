@@ -186,6 +186,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
     builder.sendRequest(query, new RequestCallback() {
 
+      @Override
       public void onError(Request request, Throwable exception) {
         callback.onFailure(exception.getMessage());
       }
@@ -347,6 +348,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     builder.sendRequest("", new RequestCallback() {
 
+      @Override
       public void onError(Request request, Throwable exception) {
         callback.onFailure(exception.getMessage());
       }
@@ -412,6 +414,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       builder.sendRequest(queryStr, new RequestCallback() {
 
+      @Override
       public void onError(Request request, Throwable exception) {
         callback.onFailure(exception.getMessage());
       }
@@ -704,6 +707,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }-*/;
 
 
+  @Override
   public void onModuleLoad() {
 
     RootPanel.get();
@@ -827,6 +831,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
     builder.sendRequest(query, new RequestCallback() {
 
+      @Override
       public void onError(Request request, Throwable exception) {
         callback.onFailure(exception.getMessage());
       }
@@ -843,6 +848,42 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     });
 
+
+  }
+
+  public void notificationRequest(String method, String param,
+      final Callback<String, String> callback) throws RequestException, SessionNotStartedException {
+    if (!isSessionStarted()) {
+      throw new SessionNotStartedException();
+    }
+
+    String query = method + "=" + param;
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/notification?" + query;
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+
+    // Allow cookie headers, and so Wave session can be set
+    builder.setIncludeCredentials(true);
+
+    builder.sendRequest(query, new RequestCallback() {
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() == 200) {
+          callback.onSuccess(response.getText());
+        } else {
+          callback.onFailure("SERVICE_EXCEPTION");
+        }
+      }
+
+    });
 
   }
 

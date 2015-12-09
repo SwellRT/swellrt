@@ -1,7 +1,5 @@
 package org.waveprotocol.wave.notification;
 
-import org.waveprotocol.box.server.account.AccountData;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,13 +13,13 @@ public class DeviceStoreFake implements DeviceStore {
   }
 
   @Override
-  public void register(AccountData user, String deviceId) {
+  public void register(String userId, String deviceId) {
 
-    String userId = user.getId().toString();
     List<String> deviceList = store.get(userId);
 
     if (deviceList == null) {
       deviceList = new ArrayList<String>();
+      store.put(userId, deviceList);
     }
 
     if (deviceList.indexOf(deviceId) == -1) {
@@ -31,22 +29,19 @@ public class DeviceStoreFake implements DeviceStore {
   }
 
   @Override
-  public void unregister(AccountData user, String deviceId) {
+  public void unregister(String userId, String deviceId) {
 
-    String userId = user.getId().toString();
     List<String> deviceList = store.get(userId);
 
-    int index = deviceList.indexOf(deviceId);
-
-    if (deviceList != null && index > -1) {
+    if (deviceList != null) {
+      int index = deviceList.indexOf(deviceId);
       deviceList.remove(index);
     }
-
   }
 
   @Override
-  public List<String> getUserDevices(AccountData user) {
-    return store.get(user);
+  public List<String> getUserDevices(String userId) {
+    return store.get(userId);
   }
 
 }

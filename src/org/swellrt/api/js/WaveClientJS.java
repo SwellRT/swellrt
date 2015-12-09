@@ -225,20 +225,51 @@ public class WaveClientJS extends JavaScriptObject {
 
          notifications: {
 
-           register: function(deviceId){
-             delegate.@org.swellrt.api.WaveClient::notificationRegister(Ljava/lang/String;)(deviceId);
+           register: function(deviceId, onSuccess, onFailure){
+             var callback = new Object();
+             callback.success =  onSuccess;
+             callback.failure =  onFailure;
+
+             try {
+               delegate.@org.swellrt.api.WaveClient::notificationRegister(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(deviceId, callback);
+             } catch (e) {
+               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
            },
 
-           unregister: function(deviceId){
-             delegate.@org.swellrt.api.WaveClient::notificationUnregister(Ljava/lang/String;)(deviceId);
+           unregister: function(deviceId, onSuccess, onFailure){
+             var callback = new Object();
+             callback.success =  onSuccess;
+             callback.failure =  onFailure;
+             
+             try {
+               delegate.@org.swellrt.api.WaveClient::notificationUnregister(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(deviceId, callback);
+             } catch (e) {
+               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+             }
            },
 
-           subscribe: function(deviceId){
-             delegate.@org.swellrt.api.WaveClient::notificationSubscribe(Ljava/lang/String;)(deviceId);
+           subscribe: function(waveId, onSuccess, onFailure){
+             var callback = new Object();
+             callback.success =  onSuccess;
+             callback.failure =  onFailure;
+             try {
+               delegate.@org.swellrt.api.WaveClient::notificationSubscribe(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(waveId, callback);
+             } catch (e) {
+               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+             }
            },
 
-           unsubscribe: function(deviceId){
-             delegate.@org.swellrt.api.WaveClient::notificationUnsubscribe(Ljava/lang/String;)(deviceId);
+           unsubscribe: function(waveId, onSuccess, onFailure){
+             var callback = new Object();
+             callback.success =  onSuccess;
+             callback.failure =  onFailure;
+             
+             try {
+               delegate.@org.swellrt.api.WaveClient::notificationUnsubscribe(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(waveId, callback);
+             } catch (e) {
+               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+             }
            },
          },
 

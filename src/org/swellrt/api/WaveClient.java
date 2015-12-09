@@ -273,18 +273,46 @@ public class WaveClient implements SwellRT.Listener {
    * notifications
    *
    * @param deviceId
+   * @throws SessionNotStartedException
+   * @throws RequestException
    */
-  public void notificationRegister(String deviceId) {
+  public void notificationRegister(String deviceId, final JavaScriptObject callback)
+      throws RequestException, SessionNotStartedException {
+    coreClient.notificationRequest("registerDevice", deviceId, new Callback<String, String>() {
 
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+      }
+    });
   }
 
   /**
    * Unregister the {@paramref deviceId} from current user's notifications
    *
    * @param deviceId
+   * @throws SessionNotStartedException
+   * @throws RequestException
    */
-  public void notificationUnregister(String deviceId) {
+  public void notificationUnregister(String deviceId, final JavaScriptObject callback)
+      throws RequestException, SessionNotStartedException {
+    coreClient.notificationRequest("unregisterDevice", deviceId, new Callback<String, String>() {
 
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+      }
+    });
   }
 
   /**
@@ -292,9 +320,23 @@ public class WaveClient implements SwellRT.Listener {
    * {@paramref waveId}
    *
    * @param waveId
+   * @throws SessionNotStartedException
+   * @throws RequestException
    */
-  public void notificationSubscribe(String waveId) {
+  public void notificationSubscribe(String waveId, final JavaScriptObject callback)
+      throws RequestException, SessionNotStartedException {
+    coreClient.notificationRequest("subscribe", waveId, new Callback<String, String>() {
 
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+      }
+    });
   }
 
   /**
@@ -302,9 +344,23 @@ public class WaveClient implements SwellRT.Listener {
    * {@paramref waveId}
    *
    * @param waveId
+   * @throws SessionNotStartedException
+   * @throws RequestException
    */
-  public void notificationUnsubscribe(String waveId) {
+  public void notificationUnsubscribe(String waveId, final JavaScriptObject callback)
+      throws RequestException, SessionNotStartedException {
+    coreClient.notificationRequest("unsubscribe", waveId, new Callback<String, String>() {
 
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, JsonUtils.unsafeEval(result));
+      }
+    });
   }
 
   /**
