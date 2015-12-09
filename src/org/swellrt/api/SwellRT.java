@@ -861,7 +861,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String url = waveServerURLSchema + waveServerURL + "/swell/notification?" + query;
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
     // Allow cookie headers, and so Wave session can be set
     builder.setIncludeCredentials(true);

@@ -49,25 +49,25 @@ public class NotificationService implements SwellRTService {
 
         case "registerDevice":
           deviceStore.register(account, value);
-          response.setStatus(HttpServletResponse.SC_OK);
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           System.out.println(deviceStore.getUserDevices(account));
           break;
 
         case "unregisterDevice":
           deviceStore.unregister(account, value);
-          response.setStatus(HttpServletResponse.SC_OK);
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           System.out.println(deviceStore.getUserDevices(account));
           break;
 
         case "subscribe":
           notificationStore.addSubscriptor(value, account);
-          response.setStatus(HttpServletResponse.SC_OK);
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           System.out.println(notificationStore.getSubscriptors(value));
           break;
 
         case "unsubscribe":
           notificationStore.removeSubscriptor(value, account);
-          response.setStatus(HttpServletResponse.SC_OK);
+          response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           System.out.println(notificationStore.getSubscriptors(value));
           break;
 

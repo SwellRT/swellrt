@@ -73,11 +73,6 @@ public class SwellRtServlet extends HttpServlet {
 
       AccessModelService.get(participantId, waveletProvider).execute(req, response);
 
-      // TODO doPost
-    } else if (entity.equals("notification")) {
-
-      injector.getInstance(NotificationService.class).execute(req, response);
-
     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -87,4 +82,27 @@ public class SwellRtServlet extends HttpServlet {
 
   }
 
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
+
+    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+
+    if (participantId == null) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
+    String[] pathTokens = req.getPathInfo().split("/");
+    String entity = pathTokens[1];
+
+    if (entity.equals("notification")) {
+
+      injector.getInstance(NotificationService.class).execute(req, response);
+
+    } else {
+
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+
+    }
+  }
 }
