@@ -4,7 +4,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
 import org.swellrt.model.unmutable.UnmutableModel;
-import org.swellrt.server.box.ModelIndexerVisitor;
+import org.swellrt.server.box.index.ModelIndexerVisitor;
 import org.waveprotocol.wave.model.util.Pair;
 
 import java.util.Map;

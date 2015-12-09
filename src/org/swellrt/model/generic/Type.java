@@ -80,6 +80,14 @@ public abstract class Type implements ReadableType {
   /** Get the reference string of the value stored in this instance. */
   protected abstract String getValueReference(Type value);
 
+  /**
+   * Used to mark updates of a primitive value in the container, in order to
+   * generate a convinient sequence of DocOps.
+   */
+  protected void markValueUpdate(Type value) {
+    // Default no-op
+  }
+
   /** Get the path of this instance in a collaborative object model */
   public abstract String getPath();
 

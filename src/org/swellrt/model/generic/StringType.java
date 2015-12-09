@@ -187,7 +187,12 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
 
   public void setValue(String value) {
-    if (isAttached()) observableValue.set(value);
+    if (isAttached()) {
+      if (!value.equals(observableValue.get())) {
+        observableValue.set(value);
+        parent.markValueUpdate(this);
+      }
+    }
   }
 
   @Override
@@ -260,5 +265,17 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
     return null;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+
+    if (obj instanceof StringType) {
+      StringType other = (StringType) obj;
+      // It's suppossed comparasion between types in the same container
+      return (other.valueRef == this.valueRef);
+    }
+
+
+    return false;
+  }
 
 }

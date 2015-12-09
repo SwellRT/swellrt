@@ -62,9 +62,9 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   public final static String PREFIX = "map";
 
   public final static String TAG_MAP = "map";
-  private final static String TAG_ENTRY = "entry";
-  private final static String KEY_ATTR_NAME = "k";
-  private final static String VALUE_ATTR_NAME = "v";
+  public final static String TAG_ENTRY = "entry";
+  public final static String KEY_ATTR_NAME = "k";
+  public final static String VALUE_ATTR_NAME = "v";
 
   private ObservableBasicMap<String, Type> observableMap;
   private ObservableBasicMap.Listener<String, Type> observableMapListener;
@@ -263,6 +263,9 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     // Attach to a new substrate document o to a values container
     value.attach(this);
 
+    // This should be always a new put, otherwise the !value.isAttached
+    // precondition
+    // would be false
     if (!observableMap.put(key, value)) {
       value.deattach();
       return null;
@@ -285,6 +288,16 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
   public StringType put(String key, String value) {
     Preconditions.checkArgument(isAttached, "Unable to put values into an unattached Map");
+
+    // if key exists, change primitive directly
+    if (keySet().contains(key)) {
+      Type existingValue = observableMap.get(key);
+      if (existingValue.getType().equals(StringType.TYPE_NAME)) {
+        StringType existingStringValue = (StringType) existingValue;
+        existingStringValue.setValue(value);
+        return existingStringValue;
+      }
+    }
 
     StringType strValue = new StringType(value);
     put(key, strValue);
@@ -340,7 +353,7 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   @Override
   protected String getValueReference(Type value) {
     for (String key : observableMap.keySet()) {
-      if (observableMap.get(key).equals(value.serialize())) return key;
+      if (observableMap.get(key).equals(value)) return key;
     }
     return null;
   }
@@ -373,6 +386,14 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   @Override
   public TextType asText() {
     return null;
+  }
+
+  @Override
+  protected void markValueUpdate(Type value) {
+    // Force a redundant put to trigger a convinient DocOp
+    // for a primitive value update.
+    String key = getValueReference(value);
+    if (key != null) observableMap.put(key, value);
   }
 
 

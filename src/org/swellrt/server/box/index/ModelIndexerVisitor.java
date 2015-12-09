@@ -1,4 +1,4 @@
-package org.swellrt.server.box;
+package org.swellrt.server.box.index;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;

@@ -1,4 +1,4 @@
-package org.swellrt.server.box;
+package org.swellrt.server.box.index;
 
 import org.waveprotocol.box.server.waveserver.WaveBus.Subscriber;
 import org.waveprotocol.box.server.waveserver.WaveServerException;

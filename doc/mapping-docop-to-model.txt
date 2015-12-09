@@ -1,0 +1,99 @@
+
+local.net/s+iVuczl_0yBA
+
+
+Events
+List: item added, item remove
+Maps: entry removed, entry changed (primitive or container)
+
+
+
+List add item
+---------------------------------------
+
+    _model.root.get("k3").add(_model.createString("primer valor"));    
+
+    __3; << item { r="str+0", t="str" }; >>; __5; 
+
+
+List remove value
+---------------------------------------
+
+    _model.root.get("k3").remove(1);
+
+     __5; x< item { r="str+0", t="str" }; x>; __7;
+
+
+Map create non primitive value
+---------------------------------------
+
+    _model.root.put("k2",_model.createMap());
+
+    blipId=map+L8ETGIixIkA; 
+
+        << metadata { acl="", ap="default", p="", pc="", pm="1448986467778", tc="" }; >>; 
+
+    blipId=map+L8ETGIixIkA; 
+
+        u@ { pc: "" -> "tom@local.net", tc: "" -> "1448986467798" }; 
+        __1; << map {}; >>; << values {}; >>;  
+
+    blipId=map+root; 
+
+        __3; << entry { k="k2", v="map+L8ETGIixIkA" }; >>; __13;  
+
+
+    blipId=map+L8ETGIixIkA; 
+
+        u@ { p: "" -> "root.k2" }; __5;  
+
+
+
+
+Map update non primitive value:   
+---------------------------------------
+
+
+blipId=map+L8ETGIixIkB; u@ { pc: "" -> "tom@local.net", tc: "" -> "1448987293654" }; __1; << map {}; >>; << values {}; >>;  \ndelta 
+
+    blipId=map+root; 
+
+    __3; x< entry { k="k2", v="map+L8ETGIixIkA" }; x>; << entry { k="k2", v="map+L8ETGIixIkB" }; >>; __13;
+
+
+
+
+Map create primitive value 
+---------------------------------------
+
+     _model.root.put("k1","primer valor");
+
+    __11; << i { v="primer valor" }; >>; __1;  
+    __3; << entry { k="k1", v="str+2" }; >>; __11; 
+
+
+Map update primitive value (using value object)
+---------------------------------------
+
+
+    _model.root.get("k1").setValue("segundo valor");
+
+    __3; x< entry { k="k1", v="str+2" }; x>; << entry { k="k1", v="str+2" }; >>; __11
+
+
+Map update primitive value (using map syntax)
+---------------------------------------
+
+    _model.root.put("k1","tercer valor");
+
+     __3; x< entry { k="k1", v="str+2" }; x>; << entry { k="k1", v="str+2" }; >>; __11;
+
+
+
+Map remove value
+---------------------------------------
+
+    _model.root.remove("k0");
+
+    x< entry { k="k0", v="str+1" }; x>
+

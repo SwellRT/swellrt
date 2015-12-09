@@ -30,7 +30,7 @@ public class MetadataContainer {
   protected static final String ATTR_ACCESS_POLICY = "ap";
   protected static final String ATTR_ACCESS_CONTROL_LIST = "acl";
 
-  protected static final String ATTR_PATH = "p";
+  public static final String ATTR_PATH = "p";
 
   /**
    * Create or load a metadata section from a document

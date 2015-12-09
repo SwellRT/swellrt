@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.server.box;
+package org.swellrt.server.box.index;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;

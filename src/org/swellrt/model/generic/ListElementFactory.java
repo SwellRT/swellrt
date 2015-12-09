@@ -24,11 +24,11 @@ public class ListElementFactory implements
     Preconditions.checkArgument(attributes != null,
         "Adapting a list element to Type but attributes not found");
 
-    String type = attributes.get("t");
+    String type = attributes.get(ListType.ATTR_LIST_ITEM_TYPE);
     Preconditions.checkArgument(type != null,
         "Adapting a list element to Type but attribute for type not found");
 
-    String ref = attributes.get("r");
+    String ref = attributes.get(ListType.ATTR_LIST_ITEM_REF);
     Preconditions.checkArgument(ref != null,
         "Adapting a list element to Type but attribute for reference not found");
 

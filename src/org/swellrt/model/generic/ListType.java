@@ -48,7 +48,10 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
 
 
   public final static String TAG_LIST = "list";
-  private final static String TAG_LIST_ITEM = "item";
+  public final static String TAG_LIST_ITEM = "item";
+  public final static String ATTR_LIST_ITEM_REF = "r";
+  public final static String ATTR_LIST_ITEM_TYPE = "t";
+
 
   private ObservableElementList<Type, ListElementInitializer> observableList;
   private ObservableElementList.Listener<Type> observableListListener;

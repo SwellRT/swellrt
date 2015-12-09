@@ -138,10 +138,10 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
   /**
    * Tag name of the model section (metadata).
    */
-  private static final String TAG_MODEL = "model";
-  private static final String ATTR_VERSION_METADATA = "v";
-  private static final String ATTR_TYPE_METADATA = "t";
-  private static final String ATTR_APP_METADATA = "a";
+  public static final String TAG_MODEL = "model";
+  public static final String ATTR_VERSION_METADATA = "v";
+  public static final String ATTR_TYPE_METADATA = "t";
+  public static final String ATTR_APP_METADATA = "a";
 
 
 

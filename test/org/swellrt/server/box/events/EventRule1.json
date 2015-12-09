@@ -1,0 +1,31 @@
+{
+
+    "id":"event_rule_01",
+    "app":"default_app",
+    "dataType":"default_type",
+    "conditions":[
+        {
+            "root.field1":"value1"
+        },
+        {
+            "root.field2":"value2"
+        }
+    ],
+    "type":"MAP_ENTRY_UPDATED",
+    "path":"root.map.flag",
+    "targets":{
+        "gcm":{
+            "none":"A static value $timestamp",
+            "data1":"A value at the end ${root.field1}",
+            "data2":"A value ${root.field2} in between",
+            "data3":"${root.field2} at the $author beginning"
+        },
+        "email":{
+            "none":"A static value $timestamp",
+            "data1":"A value at the end ${root.field1}",
+            "data2":"A value ${root.field2} in between",
+            "data3":"${root.field2} at the $author beginning"
+        }
+    }
+
+}
