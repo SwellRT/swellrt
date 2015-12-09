@@ -2,9 +2,9 @@ package org.swellrt.server.box.servlet;
 
 import com.google.inject.Inject;
 
+import org.swellrt.server.box.notification.DeviceStore;
+import org.swellrt.server.box.notification.NotificationRegisterStore;
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.wave.notification.DeviceStore;
-import org.waveprotocol.wave.notification.NotificationRegisterStore;
 
 import java.io.IOException;
 import java.util.Enumeration;

@@ -1,4 +1,4 @@
-package org.waveprotocol.wave.notification;
+package org.swellrt.server.box.notification;
 
 import java.util.ArrayList;
 import java.util.HashMap;
