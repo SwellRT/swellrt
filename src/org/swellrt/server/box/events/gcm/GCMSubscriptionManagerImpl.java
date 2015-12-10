@@ -1,12 +1,12 @@
-package org.swellrt.server.box.notification;
+package org.swellrt.server.box.events.gcm;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NotificationRegisterImpl implements NotificationRegister {
+public class GCMSubscriptionManagerImpl implements GCMSubscriptionManager {
 
-  private NotificationRegisterStore notificationStore;
-  private DeviceStore deviceStore;
+  private GCMSubscriptionStore notificationStore;
+  private GCMDeviceStore deviceStore;
 
   private List<String> getSubscriptors(String waveId) {
     return notificationStore.getSubscriptors(waveId);

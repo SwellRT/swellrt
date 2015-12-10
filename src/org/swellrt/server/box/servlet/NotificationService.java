@@ -2,8 +2,8 @@ package org.swellrt.server.box.servlet;
 
 import com.google.inject.Inject;
 
-import org.swellrt.server.box.notification.DeviceStore;
-import org.swellrt.server.box.notification.NotificationRegisterStore;
+import org.swellrt.server.box.events.gcm.GCMDeviceStore;
+import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.waveprotocol.box.server.authentication.SessionManager;
 
 import java.io.IOException;
@@ -16,9 +16,9 @@ import javax.servlet.http.HttpSession;
 public class NotificationService implements SwellRTService {
 
   @Inject
-  private DeviceStore deviceStore;
+  private GCMDeviceStore deviceStore;
   @Inject
-  private NotificationRegisterStore notificationStore;
+  private GCMSubscriptionStore notificationStore;
   @Inject
   private SessionManager sessionManager;
 

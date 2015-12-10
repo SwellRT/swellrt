@@ -1,14 +1,14 @@
-package org.swellrt.server.box.notification;
+package org.swellrt.server.box.events.gcm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class NotificationRegisterStoreFake implements NotificationRegisterStore {
+public class GCMSubscriptionStoreFake implements GCMSubscriptionStore {
 
   HashMap<String, List<String>> notificationStore;
 
-  public NotificationRegisterStoreFake() {
+  public GCMSubscriptionStoreFake() {
     notificationStore = new HashMap<String, List<String>>();
   }
 

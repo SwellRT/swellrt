@@ -23,10 +23,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.swellrt.server.box.notification.DeviceStore;
-import org.swellrt.server.box.notification.DeviceStoreFake;
-import org.swellrt.server.box.notification.NotificationRegisterStore;
-import org.swellrt.server.box.notification.NotificationRegisterStoreFake;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.authentication.SessionManagerImpl;
 
@@ -49,9 +45,7 @@ public class ModelIndexerModule extends AbstractModule {
 
     bind(ModelIndexerDispatcher.class).to(ModelIndexerDispatcherImpl.class).in(Singleton.class);
     bind(SessionManager.class).to(SessionManagerImpl.class).in(Singleton.class);
-    bind(NotificationRegisterStore.class).to(NotificationRegisterStoreFake.class)
-        .in(Singleton.class);
-    bind(DeviceStore.class).to(DeviceStoreFake.class).in(Singleton.class);
+
   }
 
 }
