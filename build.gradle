@@ -79,3 +79,58 @@ rat.doFirst {
     println '----------------------------------------------'
     println ''
 }
+
+task createDistSourceZip(type: Zip) {
+    baseName = "apache-wave-source"
+    from('./') {
+        into ''
+    }
+    excludes = [
+            'apache-wave-source.zip',
+            'apache-wave-source.tar',
+            '.gradle/',
+            '.git/',
+            '.vagrant/',
+            '*/build/*',
+            '*/_*',
+            '*/gwt-unitCache/',
+            '*/*.iml',
+            '*/*.iws',
+            '*/*.ipr',
+            'reports/',
+    ]
+}
+
+task createDistSourceTar(type: Tar) {
+    baseName = "apache-wave-source"
+    from('./') {
+        into ''
+    }
+    excludes = [
+            'apache-wave-source.zip',
+            'apache-wave-source.tar',
+            '.gradle/',
+            '.git/',
+            '.vagrant/',
+            '*/build/*',
+            '*/_*',
+            '*/gwt-unitCache/',
+            '*/*.iml',
+            '*/*.iws',
+            '*/*.ipr',
+            'reports/',
+    ]
+}
+
+task createDistSource() {
+    doFirst {
+        println ''
+        println '--------------------------------------------------------'
+        println '             Creating Deployment Source                 '
+        println '    Zip and Tar files available in root directory.      '
+        println '--------------------------------------------------------'
+        println ''
+    }
+}
+
+createDistSource.dependsOn createDistSourceZip, createDistSourceTar

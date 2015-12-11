@@ -45,6 +45,8 @@ wave/war/WEB-INF/
 wave/war/webclient/
 wave/war/org*
 pst/build/
+apache-wave-source.zip
+apache-wave-source.tar
 ### Reports
 reports/
 ### Generated Sources
