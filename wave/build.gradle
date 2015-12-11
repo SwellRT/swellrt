@@ -255,6 +255,9 @@ task compileGwt {
                         configurations.gwt
                 ]
             }
+            jvmArgs = [
+                    "-Xmx1024M"
+            ]
             args = [
                     "-style", "OBFUSCATED",
                     "-XdisableClassMetadata",
@@ -313,8 +316,9 @@ task compileGwtDev {
 }
 
 task extractApi(type: Copy) {
-    from {
-        configurations.compile.collect { zipTree(it) }
+    from (configurations.compile.collect { zipTree(it) }) {
+        //Note: readonly files which get overwritten crash windows.
+        exclude "LICENSE"
     } into "$buildDir/api"
 }
 
