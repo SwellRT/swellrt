@@ -331,6 +331,14 @@ compileJava.dependsOn = [generateMessages, generateGXP]
 task gwtDev {
     description = 'Runs the hosted mode server, for debugging the Gwt client ' +
             'in a JVM.'
+    doFirst {
+        println ''
+        println '----------------------------------------------'
+        println '           Running Gwt Dev mode.              '
+        println 'Note: This currently has a classpath conflict.'
+        println '----------------------------------------------'
+        println ''
+    }
     doLast {
         javaexec {
             main = "com.google.gwt.dev.DevMode"

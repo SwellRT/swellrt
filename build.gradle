@@ -53,8 +53,16 @@ rat {
     // XML and HTML reports directory, defaults to project.buildDir + '/reports/rat'
     reportDir = project.file('reports/rat')
     // List of exclude directives, defaults to ['**/.gradle/**']
-    excludes = ['**/build/**', 'reports/**', '.gradle/', '.idea/', '**/*.gradle',
-                '**/*.iml', '**/generated/**']
+    excludes = [
+            '**/build/**',
+            'reports/**',
+            '.gradle/',
+            '.idea/',
+            '.vagrant/',
+            '**/*.gradle',
+            '**/*.iml',
+            '**/generated/**'
+    ]
     // Fail the build on rat errors, defaults to true
     failOnError = false
 }
