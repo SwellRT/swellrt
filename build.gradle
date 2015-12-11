@@ -58,3 +58,12 @@ rat {
     // Fail the build on rat errors, defaults to true
     failOnError = false
 }
+
+rat.doFirst {
+    println ''
+    println '----------------------------------------------'
+    println '             Checking Licenses                '
+    println ' This task can take between 10 to 20 minutes. '
+    println '----------------------------------------------'
+    println ''
+}
