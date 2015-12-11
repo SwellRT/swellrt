@@ -26,12 +26,16 @@ subprojects {
     //apply plugin: 'checkstyle'
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
+    test.ignoreFailures = true
 
     compileJava{
         options.incremental = true
     }
 
-    test.ignoreFailures = true
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
 }
 
 project(':wave'){

@@ -581,10 +581,10 @@ createDistTar.dependsOn jar, createPropertiesFile
 task createDist() {
     doFirst {
         println ''
-        println '----------------------------------------------'
-        println '              Creating Deployment             '
-        println 'Zip and Tar files available in wave/build/dist'
-        println '----------------------------------------------'
+        println '--------------------------------------------------------'
+        println '                 Creating Deployment                    '
+        println 'Zip and Tar files available in wave/build/distributions.'
+        println '--------------------------------------------------------'
         println ''
     }
 }

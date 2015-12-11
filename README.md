@@ -87,6 +87,7 @@ Run Tasks:
 
 Distribution Tasks:
 - **jar**: builds jar file for the project.
+- **sourcesJar**: builds a source jar file for each project.
 - **createDist**: builds the zip and tar file for distribution.
 - **createDistZip**: builds the zip for distribution.
 - **createDistTar**: builds the tar for distribution.
@@ -95,8 +96,12 @@ Build
 -----
 
 To build the client and server:
-    gradle jar
+    `gradle jar`
 It will be created in wave/build/libs/wave-*version*.jar
+
+The sources can also be packaged into a jar by doing
+    `gradle sourcesJar`
+This will create a `project name`-sources.jar in each projects build/libs directory.
 
 Note: 
 
