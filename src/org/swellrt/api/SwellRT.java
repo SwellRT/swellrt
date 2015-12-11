@@ -671,10 +671,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
   protected WaveDocuments<? extends InteractiveDocument> getDocumentRegistry(Model model) {
+    Preconditions.checkArgument(model != null,
+        "Unable to get document registry from a null data model");
     Preconditions.checkArgument(waveWrappers.containsKey(model.getWaveId()),
-        "Wave wrapper is not aviable for the model");
-    WaveWrapper ww = waveWrappers.get(model.getWaveId());
-    return ww.getDocumentRegistry();
+        "Wave wrapper is not avaiable for the model");
+    return waveWrappers.get(model.getWaveId()).getDocumentRegistry();
   }
 
 

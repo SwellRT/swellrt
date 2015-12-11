@@ -10,9 +10,20 @@ import org.swellrt.model.generic.ValuesContainer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 
 public class ModelUtils {
+
+  public static String serialize(WaveId waveId) {
+    return ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId);
+  }
+
+  public static String serialize(WaveletId waveletId) {
+    return ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId);
+  }
 
   public static boolean isMapBlip(String blipId) {
     return (blipId != null) && (blipId.startsWith(MapType.PREFIX));

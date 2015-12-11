@@ -13,7 +13,7 @@ import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.id.IdGenerator;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -268,12 +268,12 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return currentParticipant;
   }
 
-  public String getWaveId() {
-    return ModernIdSerialiser.INSTANCE.serialiseWaveId(this.waveletData.getWaveId());
+  public WaveId getWaveId() {
+    return this.waveletData.getWaveId();
   }
 
-  public String getWaveletId() {
-    return ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId());
+  public WaveletId getWaveletId() {
+    return wavelet.getId();
   }
 
   protected String generateDocId(String prefix) {

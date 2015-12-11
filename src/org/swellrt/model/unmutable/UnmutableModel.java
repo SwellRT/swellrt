@@ -6,7 +6,8 @@ import org.swellrt.model.ReadableType;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.document.Document;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
@@ -61,13 +62,13 @@ public class UnmutableModel implements ReadableModel {
 
 
   @Override
-  public String getWaveId() {
-    return ModernIdSerialiser.INSTANCE.serialiseWaveId(waveletData.getWaveId());
+  public WaveId getWaveId() {
+    return waveletData.getWaveId();
   }
 
   @Override
-  public String getWaveletId() {
-    return ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletData.getWaveletId());
+  public WaveletId getWaveletId() {
+    return waveletData.getWaveletId();
   }
 
   @Override

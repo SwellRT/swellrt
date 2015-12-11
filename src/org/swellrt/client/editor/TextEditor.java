@@ -10,6 +10,7 @@ import org.swellrt.client.editor.doodad.WidgetDoodad;
 import org.swellrt.client.editor.doodad.WidgetModelDoodad;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
@@ -199,7 +200,7 @@ public class TextEditor {
     Preconditions.checkArgument(text != null,
         "Unable to get ContentDocument from null DocumentRegistry");
 
-    return documentRegistry.getBlipDocument(text.getModel().getWaveletId(),
+    return documentRegistry.getBlipDocument(ModelUtils.serialize(text.getModel().getWaveletId()),
         text.getDocumentId()).getDocument();
   }
 

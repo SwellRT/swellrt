@@ -10,6 +10,7 @@ import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.ReadableTypeVisitor;
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -68,8 +69,8 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
   @Override
   public void visit(ReadableModel instance) {
 
-    document.append("wave_id", instance.getWaveId());
-    document.append("wavelet_id", instance.getWaveletId());
+    document.append("wave_id", ModelUtils.serialize(instance.getWaveId()));
+    document.append("wavelet_id", ModelUtils.serialize(instance.getWaveletId()));
 
     // Add participants
     BasicDBList participants = new BasicDBList();
