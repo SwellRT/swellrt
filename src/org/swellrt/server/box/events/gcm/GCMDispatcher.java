@@ -3,13 +3,19 @@ package org.swellrt.server.box.events.gcm;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestException;
+import com.google.inject.Inject;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.swellrt.server.box.events.Event;
 import org.swellrt.server.box.events.EventDispatcherTarget;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.List;
 
 public class GCMDispatcher implements EventDispatcherTarget {
 
@@ -18,12 +24,19 @@ public class GCMDispatcher implements EventDispatcherTarget {
 
   public final static String NAME = "gcm";
 
+
+  private static final String REGISTRATION_IDS = "registration_Ids";
+
+
+  private static final String DATA = "data";
+
   private String authKey;
   private String sendUrl;
+  private GCMSubscriptionManager subscriptionManager;
 
-
-  public GCMDispatcher() {
-
+  @Inject
+  public GCMDispatcher(GCMSubscriptionManager subscriptionManager) {
+    this.subscriptionManager = subscriptionManager;
   }
 
   public void initialize(String confFilePath) {
@@ -68,10 +81,48 @@ public class GCMDispatcher implements EventDispatcherTarget {
     return NAME;
   }
 
-
   @Override
   public void dispatch(Event event, String payload) {
     LOG.info("Event dispatched by GCM: " + event.getWaveletId() + " -> " + payload);
+    event.getWaveId();
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, this.sendUrl);
+
+    builder.setHeader("Content-Type", "application/json");
+    builder.setHeader("Authorization", this.authKey);
+
+    try {
+
+      JSONObject dataPayload = new JSONObject(payload);
+
+      JSONObject completePayload = new JSONObject();
+
+      String waveId = event.getWaveId().toString();
+      List<String> subscriptors = subscriptionManager.getSubscriptorsDevices(waveId);
+
+      if (subscriptors.isEmpty()) {
+        return;
+      }
+
+      completePayload.put(REGISTRATION_IDS, subscriptors);
+
+      completePayload.put(DATA, dataPayload);
+
+      builder.setRequestData(completePayload.toString());
+
+      builder.send();
+
+      LOG.info("Sending payload: " + completePayload);
+
+    } catch (JSONException e) {
+
+      e.printStackTrace();
+      LOG.severe(e.getMessage());
+
+    } catch (RequestException e) {
+      e.printStackTrace();
+      LOG.severe(e.getMessage());
+    }
   }
 
 }
