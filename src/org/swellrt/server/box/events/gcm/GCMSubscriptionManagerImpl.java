@@ -1,5 +1,7 @@
 package org.swellrt.server.box.events.gcm;
 
+import com.google.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +9,13 @@ public class GCMSubscriptionManagerImpl implements GCMSubscriptionManager {
 
   private GCMSubscriptionStore notificationStore;
   private GCMDeviceStore deviceStore;
+
+  @Inject
+  public GCMSubscriptionManagerImpl(GCMSubscriptionStore notificationStore,
+      GCMDeviceStore deviceStore) {
+    this.notificationStore = notificationStore;
+    this.deviceStore = deviceStore;
+  }
 
   private List<String> getSubscriptors(String waveId) {
     return notificationStore.getSubscriptors(waveId);
@@ -37,6 +46,10 @@ public class GCMSubscriptionManagerImpl implements GCMSubscriptionManager {
 
     List<String> subscriptors = getSubscriptors(waveId);
     List<String> subscDevices = new ArrayList<String>();
+
+    if (subscriptors == null) {
+      return new ArrayList<String>();
+    }
 
     for (String s : subscriptors) {
       subscDevices.addAll(getUserDevices(s));
