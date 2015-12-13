@@ -1,7 +1,5 @@
 package org.swellrt.server.box.events;
 
-import org.waveprotocol.wave.model.util.Pair;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,9 +11,6 @@ public class EventQueueImpl implements EventQueue {
 
   private List<EventQueueListener> listeners = new ArrayList<EventQueueListener>();
 
-  /**
-   * Pair<App,DataType> = Set<Expression>
-   */
   private Map<EventRuleClass, Set<String>> expressions =
  new HashMap<EventRuleClass, Set<String>>();
 
@@ -32,12 +27,12 @@ public class EventQueueImpl implements EventQueue {
 
   @Override
   public boolean hasEvents(String app, String dataType) {
-    return expressions.containsKey(Pair.of(app, dataType));
+    return expressions.containsKey(new EventRuleClass(app, dataType));
   }
 
   @Override
   public Set<String> getExpressionPaths(String app, String dataType) {
-    return expressions.get(Pair.of(app, dataType));
+    return expressions.get(new EventRuleClass(app, dataType));
   }
 
   @Override
