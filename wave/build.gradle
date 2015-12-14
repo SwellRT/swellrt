@@ -558,6 +558,18 @@ task createDistZip(type: Zip) {
     from('war') {
         into 'apache-wave/war'
     }
+    from('../THANKS') {
+        into 'apache-wave'
+    }
+    from('../RELEASE-NOTES') {
+        into 'apache-wave'
+    }
+    from('../KEYS') {
+        into 'apache-wave'
+    }
+    from('../DISCLAIMER') {
+        into 'apache-wave'
+    }
 }
 
 task createDistTar(type: Tar) {
@@ -572,6 +584,18 @@ task createDistTar(type: Tar) {
     }
     from('war') {
         into 'apache-wave/war'
+    }
+    from('../THANKS') {
+        into 'apache-wave'
+    }
+    from('../RELEASE-NOTES') {
+        into 'apache-wave'
+    }
+    from('../KEYS') {
+        into 'apache-wave'
+    }
+    from('../DISCLAIMER') {
+        into 'apache-wave'
     }
 }
 

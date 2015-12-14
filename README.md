@@ -127,9 +127,10 @@ For example, to override wave\_server\_domain run:
 Take a look at the reference.conf to learn about configuration and possible/default values.
 
 The server can be started (on Linux/MacOS) by running  
-    ./run-server.sh  (currently disabled please use gradle method)  
+    ./run-server.sh 
 Or on Windows by running  
-    run-server.bat  (currently disabled please use gradle method)
+    run-server.bat
+    Note: must be cd'ed into the root directory
 Or, you can run the server from the compiled classes with Gradle:  
     gradle run  
 The web client will be accessible by default at http://localhost:9898/.

@@ -83,11 +83,11 @@ rat.doFirst {
 task createDistSourceZip(type: Zip) {
     baseName = "apache-wave-source"
     from('./') {
-        into ''
+        into 'apache-wave-src'
     }
     excludes = [
-            'apache-wave-source.zip',
-            'apache-wave-source.tar',
+            'apache-wave-src.zip',
+            'apache-wave-src.tar',
             '.gradle/',
             '.git/',
             '.vagrant/',
@@ -104,11 +104,11 @@ task createDistSourceZip(type: Zip) {
 task createDistSourceTar(type: Tar) {
     baseName = "apache-wave-source"
     from('./') {
-        into ''
+        into 'apache-wave-src'
     }
     excludes = [
-            'apache-wave-source.zip',
-            'apache-wave-source.tar',
+            'apache-wave-src.zip',
+            'apache-wave-src.tar',
             '.gradle/',
             '.git/',
             '.vagrant/',
