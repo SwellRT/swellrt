@@ -58,7 +58,9 @@ dependencies {
 
     gwt(
             [group: "org.antlr", name: "antlr", version: "3.2"],
-            [group: "org.apache.velocity", name: "velocity", version: "1.6.3"]
+            [group: "org.apache.velocity", name: "velocity", version: "1.6.3"],
+            [group: "javax.validation", name: "validation-api", version: "1.1.0.Final"],
+            [group: "javax.validation", name: "validation-api", version: "1.1.0.Final", classifier: "sources"]
     )
     // compile
     compile (
@@ -281,6 +283,7 @@ task compileGwtDemo {
                 [
                         sourceSets.main.java.srcDirs,
                         sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
                         configurations.gwt
                 ]
             }
@@ -302,6 +305,7 @@ task compileGwtDev {
                 [
                         sourceSets.main.java.srcDirs,
                         sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
                         configurations.gwt
                 ]
             }
@@ -309,6 +313,7 @@ task compileGwtDev {
                     "-style", "PRETTY",
                     "-draftCompile",
                     "-ea",
+                    "-strict",
                     "org.waveprotocol.box.webclient.WebClientDev"
             ]
         }
