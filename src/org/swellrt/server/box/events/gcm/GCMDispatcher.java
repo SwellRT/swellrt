@@ -3,10 +3,14 @@ package org.swellrt.server.box.events.gcm;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestException;
 import com.google.inject.Inject;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.swellrt.server.box.events.Event;
@@ -15,6 +19,8 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
 
 public class GCMDispatcher implements EventDispatcherTarget {
@@ -33,6 +39,10 @@ public class GCMDispatcher implements EventDispatcherTarget {
   private String authKey;
   private String sendUrl;
   private GCMSubscriptionStore subscriptionManager;
+
+
+  private HttpClient httpClient;
+
 
   @Inject
   public GCMDispatcher(GCMSubscriptionStore subscriptionManager) {
@@ -73,6 +83,8 @@ public class GCMDispatcher implements EventDispatcherTarget {
     this.authKey = authKey;
     this.sendUrl = sendUrl;
 
+    this.httpClient = new HttpClient();
+
     LOG.warning("GCM event dispatcher succesfully configured");
   }
 
@@ -84,17 +96,17 @@ public class GCMDispatcher implements EventDispatcherTarget {
   @Override
   public void dispatch(Event event, String payload) {
     LOG.info("Event dispatched by GCM: " + event.getWaveletId() + " -> " + payload);
-    event.getWaveId();
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, this.sendUrl);
 
-    builder.setHeader("Content-Type", "application/json");
-    builder.setHeader("Authorization", this.authKey);
+    PostMethod postMethod = new PostMethod(sendUrl);
+
+
+    postMethod.setRequestHeader("Content-Type", "application/json");
+    postMethod.setRequestHeader("Authorization", this.authKey);
 
     try {
 
       JSONObject dataPayload = new JSONObject(payload);
-
       JSONObject completePayload = new JSONObject();
 
       String waveId = event.getWaveId().toString();
@@ -105,23 +117,30 @@ public class GCMDispatcher implements EventDispatcherTarget {
       }
 
       completePayload.put(REGISTRATION_IDS, subscriptors);
-
       completePayload.put(DATA, dataPayload);
 
-      builder.setRequestData(completePayload.toString());
+      String stringPayload = completePayload.toString();
+      RequestEntity requestData = new ByteArrayRequestEntity(stringPayload.getBytes(Charset.forName("UTF-8")));
 
-      builder.send();
+      postMethod.setRequestEntity(requestData);
 
-      LOG.info("Sending payload: " + completePayload);
+      int resultCode = httpClient.executeMethod(postMethod);
+
+      if (resultCode != HttpStatus.SC_OK) {
+        throw new IOException("HTTP response code " + resultCode);
+      }
 
     } catch (JSONException e) {
+      LOG.severe("Error sending GCM request", e);
 
-      e.printStackTrace();
-      LOG.severe(e.getMessage());
+    } catch (HttpException e) {
+      LOG.severe("Error sending GCM request", e);
 
-    } catch (RequestException e) {
-      e.printStackTrace();
-      LOG.severe(e.getMessage());
+    } catch (IOException e) {
+      LOG.severe("Error sending GCM request", e);
+
+    } finally {
+      postMethod.releaseConnection();
     }
   }
 
