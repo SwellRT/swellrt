@@ -10,6 +10,10 @@ public class EventRuleClass {
     return new EventRuleClass(r.getApp(), r.getDataType());
   }
 
+  public static EventRuleClass of(String app, String dataType) {
+    return new EventRuleClass(app, dataType);
+  }
+
   String app;
   String dataType;
 

@@ -11,6 +11,7 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,8 +34,10 @@ public class EventRule {
   private static final Log LOG = Log.get(EventRule.class);
 
 
+
   public static Collection<EventRule> fromFile(String confFilePath) {
 
+    LOG.warning("Loading event rules definitions from " + confFilePath);
 
     FileReader fr;
     try {
@@ -43,11 +46,17 @@ public class EventRule {
       LOG.warning("Event rules definition's file not found: " + confFilePath);
       return Collections.<EventRule> emptyList();
     }
+
+    return fromReader(fr);
+  }
+
+  public static Collection<EventRule> fromReader(Reader r) {
+
     JsonParser jsonParser = new JsonParser();
-    JsonElement jsonElement = jsonParser.parse(fr);
+    JsonElement jsonElement = jsonParser.parse(r);
 
     if (!jsonElement.isJsonArray()) {
-      LOG.warning("Event rules definition's file json array not found: " + confFilePath);
+      LOG.warning("Event rules definition's file json array not found");
       return Collections.<EventRule> emptyList();
     }
 
@@ -66,7 +75,7 @@ public class EventRule {
         }
 
       } catch (RuntimeException e) {
-        LOG.warning("Event rule #" + i + " parsing error" + confFilePath);
+        LOG.warning("Event rule #" + i + " parsing error");
       }
     }
 

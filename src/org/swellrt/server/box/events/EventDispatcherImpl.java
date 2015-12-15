@@ -65,6 +65,8 @@ public class EventDispatcherImpl implements EventDispatcher {
   @Override
   public void onEvent(Event event) {
 
+    if (!rules.containsKey(EventRuleClass.ofEvent(event))) return;
+
     for (EventRule rule : rules.get(EventRuleClass.ofEvent(event))) {
 
       if (rule.match(event)) {
@@ -87,5 +89,8 @@ public class EventDispatcherImpl implements EventDispatcher {
     return rulesExpressionsPath.get(ruleClass);
   }
 
+  protected Map<String, EventDispatcherTarget> getTargets() {
+    return targets;
+  }
 
 }

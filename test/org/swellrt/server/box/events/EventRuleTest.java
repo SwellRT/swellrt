@@ -26,7 +26,8 @@ public class EventRuleTest extends TestCase {
 
 
       InputStreamReader isr = new InputStreamReader(this.getClass().getClassLoader()
-              .getResourceAsStream("org/swellrt/server/box/events/EventRule1.json"), "UTF-8");
+            .getResourceAsStream("org/swellrt/server/box/events/EventRuleTest_Rule_1.json"),
+            "UTF-8");
 
 
       JsonParser jsonParser = new JsonParser();
@@ -39,7 +40,8 @@ public class EventRuleTest extends TestCase {
   protected String getExpectedGcmPayload() throws IOException {
     InputStreamReader isr =
         new InputStreamReader(this.getClass().getClassLoader()
-            .getResourceAsStream("org/swellrt/server/box/events/EventRule1Payload_gcm.json"),
+            .getResourceAsStream(
+                "org/swellrt/server/box/events/EventRuleTest_Rule_1_payload_gcm.json"),
             "UTF-8");
 
     return IOUtils.toString(isr);
@@ -77,8 +79,8 @@ public class EventRuleTest extends TestCase {
     EventRule rule = createEventRule();
 
     assertEquals("event_rule_01", rule.getId());
-    assertEquals("default_type", rule.getDataType());
-    assertEquals("default_app", rule.getApp());
+    assertEquals("default", rule.getDataType());
+    assertEquals("default", rule.getApp());
     assertEquals(Event.Type.MAP_ENTRY_UPDATED, rule.getType());
     assertEquals("root.map.flag", rule.getPath());
 
@@ -101,7 +103,7 @@ public class EventRuleTest extends TestCase {
     contextData.put("root.list.?.field2", "value2");
 
     Event.Builder b = new Event.Builder();
-    b.app("default_app").author("dummy@example.com").blipId("").dataType("default_type")
+    b.app("default").author("dummy@example.com").blipId("").dataType("default")
         .timestamp(9999L)
         .contextData(contextData);
 

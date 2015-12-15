@@ -124,11 +124,14 @@ public class GCMDispatcher implements EventDispatcherTarget {
 
       postMethod.setRequestEntity(requestData);
 
+      LOG.info("POST: " + postMethod.toString());
+
       int resultCode = httpClient.executeMethod(postMethod);
 
       if (resultCode != HttpStatus.SC_OK) {
         throw new IOException("HTTP response code " + resultCode);
       }
+
 
     } catch (JSONException e) {
       LOG.severe("Error sending GCM request", e);

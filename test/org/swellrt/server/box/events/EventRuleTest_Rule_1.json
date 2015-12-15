@@ -1,8 +1,8 @@
 {
 
     "id":"event_rule_01",
-    "app":"default_app",
-    "dataType":"default_type",
+    "app":"default",
+    "dataType":"default",
     "conditions":[
         {
             "root.field1":"value1"

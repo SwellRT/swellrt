@@ -12,10 +12,10 @@ public class Event {
 
   public enum Type {
 
-    DOC_CHANGE("DOC_CHANGE"),
-    MAP_ENTRY_UPDATED("MAP_ENTRY_UPDATED"), // includes creation
+    DOC_CHANGE("DOC_CHANGE"), // It includes text changes
+    MAP_ENTRY_UPDATED("MAP_ENTRY_UPDATED"), // Includes creation
     MAP_ENTRY_REMOVED("MAP_ENTRY_REMOVED"),
-    LIST_ITEM_ADDED("LIST_ITEM_ADDED"),
+    LIST_ITEM_ADDED("LIST_ITEM_ADDED"),  // It includes values in the new item path
     LIST_ITEM_REMOVED("LIST_ITEM_REMOVED"),
     ADD_PARTICIPANT("ADD_PARTICIPANT"),
     REMOVE_PARTICIPANT("REMOVE_PARTICIPANT");
