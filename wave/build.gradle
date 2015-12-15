@@ -550,7 +550,9 @@ task createPropertiesFile(type: Copy) {
     ])
 }
 
-task createDistZip(type: Zip) {
+task createDistBinZip(type: Zip) {
+    baseName = this.group + "-bin-"
+    destinationDir = file('../distributions')
     from(jar) {
         into 'apache-wave/bin'
     }
@@ -577,7 +579,9 @@ task createDistZip(type: Zip) {
     }
 }
 
-task createDistTar(type: Tar) {
+task createDistBinTar(type: Tar) {
+    baseName = this.group + "-bin-"
+    destinationDir = file('../distributions')
     from(jar) {
         into 'apache-wave/bin'
     }
@@ -604,18 +608,17 @@ task createDistTar(type: Tar) {
     }
 }
 
-createDistZip.dependsOn jar, createPropertiesFile
-createDistTar.dependsOn jar, createPropertiesFile
+createDistBinZip.dependsOn jar, createPropertiesFile
+createDistBinTar.dependsOn jar, createPropertiesFile
 
-task createDist() {
+task createDistBin() {
     doFirst {
         println ''
         println '--------------------------------------------------------'
         println '                 Creating Deployment                    '
-        println 'Zip and Tar files available in wave/build/distributions.'
         println '--------------------------------------------------------'
         println ''
     }
 }
 
-createDist.dependsOn createDistZip, createDistTar
+createDistBin.dependsOn createDistBinZip, createDistBinTar

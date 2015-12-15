@@ -11,7 +11,7 @@ plugins {
 allprojects {
     apply plugin: 'eclipse';
     apply plugin: 'idea';
-    group = 'Apache-Wave'
+    group = 'apache-wave'
     version = '0.4'
 }
 
@@ -81,13 +81,13 @@ rat.doFirst {
 }
 
 task createDistSourceZip(type: Zip) {
-    baseName = "apache-wave-source"
+    baseName = this.group + "-src-" + this.version
+    destinationDir = file('distributions')
     from('./') {
         into 'apache-wave-src'
     }
     excludes = [
-            'apache-wave-src.zip',
-            'apache-wave-src.tar',
+            'distributions/',
             '.gradle/',
             '.git/',
             '.vagrant/',
@@ -98,27 +98,32 @@ task createDistSourceZip(type: Zip) {
             '*/*.iws',
             '*/*.ipr',
             'reports/',
+            'wave/war/WEB-INF',
+            'wave/war/webclient'
     ]
 }
 
 task createDistSourceTar(type: Tar) {
-    baseName = "apache-wave-source"
+    baseName = this.group + "-src-" + this.version
+    destinationDir = file('distributions')
     from('./') {
         into 'apache-wave-src'
     }
     excludes = [
-            'apache-wave-src.zip',
-            'apache-wave-src.tar',
+            'distributions/',
             '.gradle/',
             '.git/',
             '.vagrant/',
             '*/build/*',
             '*/_*',
             '*/gwt-unitCache/',
+            '*.iml',
             '*/*.iml',
-            '*/*.iws',
-            '*/*.ipr',
+            '*.iws',
+            '*.ipr',
             'reports/',
+            'wave/war/WEB-INF',
+            'wave/war/webclient'
     ]
 }
 
@@ -127,10 +132,22 @@ task createDistSource() {
         println ''
         println '--------------------------------------------------------'
         println '             Creating Deployment Source                 '
-        println '    Zip and Tar files available in root directory.      '
         println '--------------------------------------------------------'
         println ''
     }
 }
 
 createDistSource.dependsOn createDistSourceZip, createDistSourceTar
+
+task createDist() {
+    doFirst {
+        println ''
+        println '--------------------------------------------------------'
+        println '        Creating Deployment Source & Binary             '
+        println '    Zip and Tar files available in distributions.       '
+        println '--------------------------------------------------------'
+        println ''
+    }
+}
+
+createDist.dependsOn createDistSource, ":wave:createDistBin"

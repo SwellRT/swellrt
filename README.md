@@ -88,9 +88,10 @@ Run Tasks:
 Distribution Tasks:
 - **jar**: builds jar file for the project.
 - **sourcesJar**: builds a source jar file for each project.
-- **createDist**: builds the zip and tar file for distribution.
-- **createDistZip**: builds the zip for distribution.
-- **createDistTar**: builds the tar for distribution.
+- **createDist**: builds the zip and tar file for bin and source.
+- **createDistBin**: builds the zip for distribution.
+- **createDistBinZip**: builds the zip for distribution.
+- **createDistBinTar**: builds the tar for distribution.
 - **createDistSource**: builds the zip and tar file for distributing the source.
 - **createDistSourceZip**: builds the zip for distributing the source.
 - **createDistSourceTar**: builds the tar for distributing the source.
