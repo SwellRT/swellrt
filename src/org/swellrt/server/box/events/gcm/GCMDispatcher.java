@@ -32,10 +32,10 @@ public class GCMDispatcher implements EventDispatcherTarget {
 
   private String authKey;
   private String sendUrl;
-  private GCMSubscriptionManager subscriptionManager;
+  private GCMSubscriptionStore subscriptionManager;
 
   @Inject
-  public GCMDispatcher(GCMSubscriptionManager subscriptionManager) {
+  public GCMDispatcher(GCMSubscriptionStore subscriptionManager) {
     this.subscriptionManager = subscriptionManager;
   }
 

@@ -2,7 +2,6 @@ package org.swellrt.server.box.servlet;
 
 import com.google.inject.Inject;
 
-import org.swellrt.server.box.events.gcm.GCMDeviceStore;
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.waveprotocol.box.server.authentication.SessionManager;
 
@@ -16,9 +15,7 @@ import javax.servlet.http.HttpSession;
 public class NotificationService implements SwellRTService {
 
   @Inject
-  private GCMDeviceStore deviceStore;
-  @Inject
-  private GCMSubscriptionStore notificationStore;
+  private GCMSubscriptionStore subscriptionStore;
   @Inject
   private SessionManager sessionManager;
 
@@ -48,27 +45,23 @@ public class NotificationService implements SwellRTService {
       switch (name) {
 
         case "registerDevice":
-          deviceStore.register(account, value);
+          subscriptionStore.register(account, value);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-          System.out.println(deviceStore.getUserDevices(account));
           break;
 
         case "unregisterDevice":
-          deviceStore.unregister(account, value);
+          subscriptionStore.unregister(account, value);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-          System.out.println(deviceStore.getUserDevices(account));
           break;
 
         case "subscribe":
-          notificationStore.addSubscriptor(value, account);
+          subscriptionStore.addSubscriptor(value, account);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-          System.out.println(notificationStore.getSubscriptors(value));
           break;
 
         case "unsubscribe":
-          notificationStore.removeSubscriptor(value, account);
+          subscriptionStore.removeSubscriptor(value, account);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-          System.out.println(notificationStore.getSubscriptors(value));
           break;
 
         default:
