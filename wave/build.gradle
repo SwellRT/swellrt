@@ -621,4 +621,12 @@ task createDistBin() {
     }
 }
 
-createDistBin.dependsOn createDistBinZip, createDistBinTar
+createDistBin.dependsOn createDistBinZip,
+
+// Additional Clean
+clean {
+    delete "war/WEB-INF"
+    delete "war/webclient"
+    delete "src/generated"
+    delete "gwt-unitCache"
+}
