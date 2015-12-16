@@ -10,11 +10,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-/build
-/test_out
-/dist
-/gen
-/bin
 */server.config
 */_sessions
 */_accounts
@@ -26,16 +21,20 @@
 war/WEB-INF
 *.old
 *.log*
-/third_party/
-/src/org/waveprotocol/box/server/rpc/atmosphere/atmosphere-min.js
-/src/org/waveprotocol/box/server/rpc/atmosphere/atmosphere.js
 .DS_Store
+
+### IntelliJ Idea
 .idea
 *.iml
 *.eml
 *.ipr
 *.iws
 .settings/
+
+### Eclipse
+*.project
+*.classpath
+*/.settings/
 
 ### Gradle
 .gradle
