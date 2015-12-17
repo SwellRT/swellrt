@@ -3,6 +3,7 @@ package org.swellrt.server.box.events;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 
+import org.swellrt.server.box.events.dummy.DummyDispatcher;
 import org.swellrt.server.box.events.gcm.GCMDispatcher;
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStoreMongoDb;
@@ -25,6 +26,7 @@ public class EventsModule extends AbstractModule {
     bind(DeltaBasedEventSource.class).in(Singleton.class);
     bind(EventDispatcher.class).to(EventDispatcherImpl.class).in(Singleton.class);
     bind(GCMDispatcher.class).in(Singleton.class);
+    bind(DummyDispatcher.class).in(Singleton.class);
     bind(GCMSubscriptionStore.class).to(GCMSubscriptionStoreMongoDb.class).in(Singleton.class);
   }
 

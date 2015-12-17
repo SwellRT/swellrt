@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -13,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 public class NotificationService implements SwellRTService {
+
+  private static final Log LOG = Log.get(NotificationService.class);
 
   @Inject
   private GCMSubscriptionStore subscriptionStore;
@@ -46,21 +49,25 @@ public class NotificationService implements SwellRTService {
 
         case "registerDevice":
           subscriptionStore.register(account, value);
+          LOG.info("Device <" + value + "> registered for account " + account);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           break;
 
         case "unregisterDevice":
           subscriptionStore.unregister(account, value);
+          LOG.info("Device <" + value + "> unregistered for account " + account);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           break;
 
         case "subscribe":
           subscriptionStore.addSubscriptor(value, account);
+          LOG.info("Account " + account + " subscribed to wave id " + value);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           break;
 
         case "unsubscribe":
           subscriptionStore.removeSubscriptor(value, account);
+          LOG.info("Account " + account + " unsubscribed to wave id " + value);
           response.setStatus(HttpServletResponse.SC_NO_CONTENT);
           break;
 

@@ -93,6 +93,11 @@ public class ExpressionParser {
    * @return
    */
   protected static boolean comparePaths(String expr, String actual) {
+
+    if (expr == null && actual == null) return true;
+
+    if (expr.equals(actual)) return true;
+
     Preconditions.checkNotNull(expr);
     Preconditions.checkNotNull(actual);
 
@@ -198,10 +203,18 @@ public class ExpressionParser {
         int endMark = rstring.indexOf("}", exprMark);
 
         if (exprMark < startMark && startMark < endMark) {
-          String replacement =
-              escapeInsecureChars(op.onExpression(rstring.substring(exprMark, endMark + 1)));
+
+          // We must avoid exceptions if expressions can't be evaluated in the
+          // model
+          String value = op.onExpression(rstring.substring(exprMark, endMark + 1));
+
+          if (value == null) value = "<missing value>";
+
           // An effective way to replace the expression
-          rstring = rstring.substring(0, exprMark) + replacement + rstring.substring(endMark + 1);
+          rstring =
+              rstring.substring(0, exprMark) + escapeInsecureChars(value)
+                  + rstring.substring(endMark + 1);
+
         }
 
       } else {
@@ -212,11 +225,10 @@ public class ExpressionParser {
           String replacement =
               escapeInsecureChars(op.onExpression(rstring.substring(exprMark, endExprPos)));
           rstring = rstring.substring(0, exprMark) + replacement + rstring.substring(endExprPos);
-          // go to next $
-          exprMark = endExprPos;
         }
       }
 
+      // go to next $
       exprMark = rstring.indexOf("$");
     }
 

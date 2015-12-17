@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.swellrt.server.box.events.Event;
 import org.swellrt.server.box.events.EventDispatcherTarget;
+import org.swellrt.server.box.events.EventRule;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.FileNotFoundException;
@@ -39,7 +40,7 @@ public class GCMDispatcher implements EventDispatcherTarget {
   private String authKey;
   private String sendUrl;
   private GCMSubscriptionStore subscriptionManager;
-
+  private boolean isReady = false;
 
   private HttpClient httpClient;
 
@@ -55,7 +56,8 @@ public class GCMDispatcher implements EventDispatcherTarget {
     try {
       fr = new FileReader(confFilePath);
     } catch (FileNotFoundException e) {
-      LOG.warning("GCM dispatcher configuration file not found: " + confFilePath);
+      LOG.warning("GCM dispatcher configuration file not found: " + confFilePath
+          + ". GCM module initialization aborted.");
       return;
     }
     JsonParser jsonParser = new JsonParser();
@@ -64,14 +66,16 @@ public class GCMDispatcher implements EventDispatcherTarget {
     JsonElement gcmElement = jsonObject.get(NAME);
 
     if (gcmElement == null) {
-      LOG.warning("GCM dispatcher configuration error: gcm section not found in " + confFilePath);
+      LOG.warning("GCM dispatcher configuration error: gcm section not found in " + confFilePath
+          + ". GCM module initialization aborted.");
       return;
     }
 
     JsonObject gcmObject = gcmElement.getAsJsonObject();
 
     if (!(gcmObject.has("authKey")) || !(gcmObject.has("url"))) {
-      LOG.warning("GCM dispatcher configuration error: config keys not found " + confFilePath);
+      LOG.warning("GCM dispatcher configuration error: config keys not found " + confFilePath
+          + ". GCM module initialization aborted.");
       return;
     }
 
@@ -86,6 +90,7 @@ public class GCMDispatcher implements EventDispatcherTarget {
     this.httpClient = new HttpClient();
 
     LOG.warning("GCM event dispatcher succesfully configured");
+    isReady = true;
   }
 
   @Override
@@ -94,8 +99,11 @@ public class GCMDispatcher implements EventDispatcherTarget {
   }
 
   @Override
-  public void dispatch(Event event, String payload) {
-    LOG.info("Event dispatched by GCM: " + event.getWaveletId() + " -> " + payload);
+  public void dispatch(EventRule rule, Event event, String payload) {
+
+    if (!isReady) return;
+
+    LOG.fine("Event dispatched to GCM: " + rule + " on " + event + " with payload " + payload);
 
 
     PostMethod postMethod = new PostMethod(sendUrl);
@@ -123,8 +131,6 @@ public class GCMDispatcher implements EventDispatcherTarget {
       RequestEntity requestData = new ByteArrayRequestEntity(stringPayload.getBytes(Charset.forName("UTF-8")));
 
       postMethod.setRequestEntity(requestData);
-
-      LOG.info("POST: " + postMethod.toString());
 
       int resultCode = httpClient.executeMethod(postMethod);
 

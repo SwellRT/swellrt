@@ -65,7 +65,7 @@ public class EventDispatcherImplTest extends TestCase {
           }
 
           @Override
-          public void dispatch(Event event, String payload) {
+      public void dispatch(EventRule rule, Event event, String payload) {
 
           }
 
@@ -124,7 +124,7 @@ public class EventDispatcherImplTest extends TestCase {
       }
 
       @Override
-      public void dispatch(Event event, String payload) {
+      public void dispatch(EventRule rule, Event event, String payload) {
         dispatchedEvents.add(event);
       }
 

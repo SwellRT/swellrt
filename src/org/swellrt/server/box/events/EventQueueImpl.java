@@ -1,5 +1,7 @@
 package org.swellrt.server.box.events;
 
+import org.waveprotocol.wave.util.logging.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +11,8 @@ import java.util.Set;
 
 public class EventQueueImpl implements EventQueue {
 
+  private static final Log LOG = Log.get(EventQueueImpl.class);
+
   private List<EventQueueListener> listeners = new ArrayList<EventQueueListener>();
 
   private Map<EventRuleClass, Set<String>> expressions =
@@ -16,6 +20,9 @@ public class EventQueueImpl implements EventQueue {
 
   @Override
   public void add(Event event) {
+
+    LOG.info("Added new event to queue: " + event);
+
     for (EventQueueListener l : listeners)
       l.onEvent(event);
   }
@@ -41,10 +48,12 @@ public class EventQueueImpl implements EventQueue {
     for (EventRuleClass appAndType : configurator.getEventRuleClasses()) {
 
       Set<String> paths = expressions.get(appAndType);
-      if (paths == null) paths = new HashSet<String>();
-
+      if (paths == null) {
+        paths = new HashSet<String>();
+        expressions.put(appAndType, paths);
+      }
       paths.addAll(configurator.getExpressionPaths(appAndType));
-      expressions.put(appAndType, paths);
+
     }
 
   }

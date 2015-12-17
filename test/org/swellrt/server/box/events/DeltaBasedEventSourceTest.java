@@ -35,9 +35,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class DeltaToEventProcessorTest extends TestCase {
+public class DeltaBasedEventSourceTest extends TestCase {
 
-  private static final Log LOG = Log.get(DeltaToEventProcessorTest.class);
+  private static final Log LOG = Log.get(DeltaBasedEventSourceTest.class);
 
   static String fakeDomain = "example.com";
   static ParticipantId fakeAuthor = ParticipantId.ofUnsafe("nobody@example.com");

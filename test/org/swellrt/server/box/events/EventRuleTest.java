@@ -49,7 +49,7 @@ public class EventRuleTest extends TestCase {
 
   public void testComparePaths() {
     assertTrue(ExpressionParser.comparePaths("root.field.subfield", "root.field.subfield"));
-    assertFalse(ExpressionParser.comparePaths("root", "root"));
+    assertTrue(ExpressionParser.comparePaths("root", "root"));
     assertFalse(ExpressionParser.comparePaths("root", "root.field"));
     assertTrue(ExpressionParser.comparePaths("root.list.?.field", "root.list.5.field"));
   }

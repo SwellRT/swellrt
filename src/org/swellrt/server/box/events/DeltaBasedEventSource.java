@@ -48,8 +48,7 @@ import java.util.Map;
  * Generated events can include context data from the mutated model according a
  * set of provided paths by an event processor configurator.
  * 
- * TODO generate just one MAP_ENTRY_UPDATE on several updates for the same
- * entry.
+ * 
  * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
  * 
@@ -62,24 +61,22 @@ public class DeltaBasedEventSource implements Subscriber {
   /**
    * A DocOp cursor that generates data model events. The same cursor must be
    * used to process all the ops in the same delta.
-   * 
+   *
    * For now this cursor is used to generate events for maps, lists and docs but
    * it might be clearer to have separated cursor by data type according the
    * blip id.
-   * 
+   *
    * @author pablojan@gmail.com (Pablo Ojanguren)
-   * 
+   *
    */
   private class DocOpToEventCursor implements DocOpCursor {
 
-    /** Internal state to distinguish map updates from map deletes */
-    boolean wasDeleteElement = false;
+    static final String CREATE_ELEMENT = "create";
+    static final String DELETE_ELEMENT = "delete";
 
-    /** Internal state to distinguish map updates from map deletes */
-    String lastDeleteKey = "";
-
-    /** Internal state to distinguish map updates from map deletes */
-    String lastDeleteValue = "";
+    String lastMapDocOp = null;
+    String lastMapDocOpKey = null;
+    String lastMapDocOpValue = null;
 
     /** The context of this op */
     ReadableWaveletData wavelet;
@@ -94,6 +91,91 @@ public class DeltaBasedEventSource implements Subscriber {
     String path;
 
 
+    public void flushPendingOps() {
+      if (lastMapDocOp != null) triggerLastMapDocOp();
+    }
+
+    protected void setLastMapDocOp(String op, String key, String value) {
+
+      lastMapDocOp = op;
+      lastMapDocOpKey = key;
+      lastMapDocOpValue = value;
+
+    }
+
+    protected void triggerLastMapDocOp() {
+
+      if (lastMapDocOp.equals(CREATE_ELEMENT)) {
+
+        // TODO support new MAP_ENTRY_CREATED
+        eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + lastMapDocOpKey));
+
+      } else if (lastMapDocOp.equals(DELETE_ELEMENT)) {
+
+        eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_REMOVED, path + "." + lastMapDocOpKey));
+
+      }
+
+      setLastMapDocOp(null, null, null);
+
+    }
+
+    protected void triggerLastMapDocOpUpdate() {
+
+      eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + lastMapDocOpKey));
+
+      setLastMapDocOp(null, null, null);
+
+    }
+
+    /**
+     * For map operations we need to check previous doc op to distiguish between
+     * new, update or remove map ops.
+     * 
+     * @param op
+     * @param key
+     * @param value
+     */
+    protected void processMapDocOp(String op, String key, String value) {
+
+      // LOG.info("Map DocOp = [" + op + ":" + key + "]");
+
+      // buffer op
+      if (lastMapDocOp == null) {
+
+        setLastMapDocOp(op, key, value);
+
+      } else {
+
+        if (lastMapDocOpKey.equals(key)) {
+
+          // a map update is a sequence of startElement - endElement or
+          // viceversa
+          if (!lastMapDocOp.equals(op)) {
+
+            triggerLastMapDocOpUpdate();
+
+          } else {
+
+            triggerLastMapDocOp();
+            setLastMapDocOp(op, key, value);
+
+          }
+
+
+        } else {
+
+          triggerLastMapDocOp();
+          setLastMapDocOp(op, key, value);
+
+        }
+
+
+      }
+
+    }
+
+
     public DocOpToEventCursor(ReadableWaveletData wavelet, UnmutableModel dataModel,
         Builder eventBuilder) {
       super();
@@ -104,23 +186,6 @@ public class DeltaBasedEventSource implements Subscriber {
 
     public void setDocOpContext(String path) {
       this.path = path;
-    }
-
-    protected void confirmLastDeleteElement() {
-
-      if (wasDeleteElement) {
-        eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_REMOVED, path + "." + lastDeleteKey));
-
-        wasDeleteElement = false;
-        lastDeleteKey = "";
-        lastDeleteValue = "";
-      }
-    }
-
-    protected void discardLastDeleteElement() {
-      wasDeleteElement = false;
-      lastDeleteKey = "";
-      lastDeleteValue = "";
     }
 
 
@@ -144,30 +209,23 @@ public class DeltaBasedEventSource implements Subscriber {
 
       String blipId = eventBuilder.getBlipId();
 
+      //
+      // Map Op
+      //
       if (ModelUtils.isMapBlip(blipId) && type.equals(MapType.TAG_ENTRY)) {
 
-        String key = attrs.get(MapType.KEY_ATTR_NAME);
-        String value = attrs.get(MapType.VALUE_ATTR_NAME);
+        processMapDocOp(CREATE_ELEMENT, attrs.get(MapType.KEY_ATTR_NAME),
+            attrs.get(MapType.VALUE_ATTR_NAME));
 
-        if (wasDeleteElement) {
-          if (key.equals(lastDeleteKey) && value.equals(lastDeleteValue)) {
-            eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + key));
-            discardLastDeleteElement();
-          } else {
-            confirmLastDeleteElement();
-            eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + key));
-          }
+        return;
+      }
 
-        } else {
-          eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + key));
-        }
-
-      } else if (ModelUtils.isListBlip(blipId) && type.equals(ListType.TAG_LIST_ITEM)) {
+      //
+      // List Op
+      //
+      if (ModelUtils.isListBlip(blipId) && type.equals(ListType.TAG_LIST_ITEM)) {
 
         String ref = attrs.get(ListType.ATTR_LIST_ITEM_REF);
-
-        // On new list item added, create a context data map including values
-        // of this new item (if it is requested by context data)
 
         // Look up context data in added containers
         if (ModelUtils.isContainerId(ref)) {
@@ -182,13 +240,14 @@ public class DeltaBasedEventSource implements Subscriber {
                 evaluateContextData(dataModel, refPath, eventBuilder.getContextData())));
           }
 
-          // just get the primitive value added to the list
         } else {
+
+          // Just get the primitive value added to the list
           eventQueue.add(eventBuilder.build(Type.LIST_ITEM_ADDED, path,
               evaluateContextData(wavelet.getDocument(eventBuilder.getBlipId()), path, ref)));
         }
-      }
 
+      }
     }
 
 
@@ -214,15 +273,22 @@ public class DeltaBasedEventSource implements Subscriber {
 
       String blipId = eventBuilder.getBlipId();
 
+      //
+      // Map Op
+      //
       if (ModelUtils.isMapBlip(blipId) && type.equals(MapType.TAG_ENTRY)) {
 
-        if (wasDeleteElement) confirmLastDeleteElement();
+        String key = attrs.get(MapType.KEY_ATTR_NAME);
+        String value = attrs.get(MapType.VALUE_ATTR_NAME);
 
-        wasDeleteElement = true;
-        lastDeleteKey = attrs.get(MapType.KEY_ATTR_NAME);
-        lastDeleteValue = attrs.get(MapType.VALUE_ATTR_NAME);
+        processMapDocOp(DELETE_ELEMENT, key, value);
+        return;
+      }
 
-      } else if (type.equals(ListType.TAG_LIST_ITEM)) {
+      //
+      // List Op
+      //
+      if (type.equals(ListType.TAG_LIST_ITEM)) {
         eventQueue.add(eventBuilder.build(Type.LIST_ITEM_REMOVED, path));
       }
 
@@ -425,7 +491,15 @@ public class DeltaBasedEventSource implements Subscriber {
           BlipOperation bop = wbop.getBlipOp();
 
           ReadableBlipData blipData = wavelet.getDocument(wbop.getBlipId());
-          String path = ModelUtils.getMetadataPath(blipData.getContent().getMutableDocument());
+
+          String path = "";
+          if (ModelUtils.isTextBlip(wbop.getBlipId())) {
+            // TODO get path of text objects from a suitable metadata attribute
+            // on <body> tag ?
+          } else {
+            path = ModelUtils.getMetadataPath(blipData.getContent().getMutableDocument());
+          }
+
 
           eventBuilder.blipId(blipData.getId());
 
@@ -441,9 +515,9 @@ public class DeltaBasedEventSource implements Subscriber {
           }
 
         }
-
-
       }
+      // Remove pending deletion events
+      cursor.flushPendingOps();
     }
 
   }

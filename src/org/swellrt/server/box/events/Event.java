@@ -5,6 +5,7 @@ import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -107,6 +108,14 @@ public class Event {
           contextData);
     }
 
+    private Map<String, String> mergeContextData(Map<String, String> original,
+        Map<String, String> specific) {
+      Map<String, String> merged = new HashMap<String, String>();
+      merged.putAll(original);
+      merged.putAll(specific);
+      return merged;
+    }
+
     /**
      * Create a new event. Values of arguments overwrite existing values of the
      * builder.
@@ -118,8 +127,7 @@ public class Event {
      */
     public Event build(Type type, String path, Map<String, String> specificContextData) {
       return new Event(timestamp, author, waveId, waveletId, app, dataType, deltaVersion, blipId,
-          path, type,
-          specificContextData);
+          path, type, mergeContextData(contextData, specificContextData));
     }
 
     public Event build(Type type, String path) {
@@ -217,6 +225,7 @@ public class Event {
     this.deltaVersion = deltaVersion;
     this.type = type;
     this.contextData = contextData;
+    this.path = "";
   }
 
 
@@ -235,6 +244,7 @@ public class Event {
     this.type = type;
     this.contextData = contextData;
     this.participant = participantId.getAddress();
+    this.path = "";
   }
 
   public Map<String, String> getContextData() {
@@ -289,5 +299,8 @@ public class Event {
     return characters;
   }
 
-
+  @Override
+  public String toString() {
+    return "Event [" + getWaveId().serialise() + " op=" + getType() + " path=" + getPath() + "]";
+  }
 }

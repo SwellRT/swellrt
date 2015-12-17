@@ -5,6 +5,6 @@ public interface EventDispatcherTarget {
 
   public String getName();
 
-  public void dispatch(Event event, String payload);
+  public void dispatch(EventRule rule, Event event, String payload);
 
 }

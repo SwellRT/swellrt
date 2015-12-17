@@ -39,6 +39,7 @@ import org.swellrt.server.box.events.EventDispatcher;
 import org.swellrt.server.box.events.EventDispatcherTarget;
 import org.swellrt.server.box.events.EventRule;
 import org.swellrt.server.box.events.EventsModule;
+import org.swellrt.server.box.events.dummy.DummyDispatcher;
 import org.swellrt.server.box.events.gcm.GCMDispatcher;
 import org.swellrt.server.box.index.ModelIndexerDispatcher;
 import org.swellrt.server.box.index.ModelIndexerModule;
@@ -359,12 +360,14 @@ public class ServerMain {
     GCMDispatcher gcmDispatcher = injector.getInstance(GCMDispatcher.class);
     gcmDispatcher.initialize(System.getProperty("event.dispatch.config.file", "event.dispatch.config"));
 
+    DummyDispatcher dummyDispatcher = injector.getInstance(DummyDispatcher.class);
+
     Collection<EventRule> rules =
         EventRule.fromFile(System.getProperty("event.rules.config.file", "event.rules.config"));
 
     EventDispatcher eventDispatcher = injector.getInstance(EventDispatcher.class);
     eventDispatcher.initialize(CollectionUtils.<String, EventDispatcherTarget> immutableMap(
-        GCMDispatcher.NAME, gcmDispatcher), rules);
+        GCMDispatcher.NAME, gcmDispatcher, DummyDispatcher.NAME, dummyDispatcher), rules);
 
 
     DeltaBasedEventSource eventSource = injector.getInstance(DeltaBasedEventSource.class);

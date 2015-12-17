@@ -1,31 +1,51 @@
 [
     {
 
-        "id":"event_rule_01",
+        "id":"rule_map_entry_create",
         "app":"default",
         "dataType":"default",
         "conditions":[
             {
-                "root.field1":"value1"
+                "root.cond1":"yes"
             },
             {
-                "root.field2":"value2"
+                "root.cond2":"yes"
             }
         ],
         "type":"MAP_ENTRY_UPDATED",
-        "path":"root.map.flag",
+        "path":"root.map.fieldtestnew",
         "targets":{
-            "gcm":{
+            "dummy":{
                 "none":"A static value $timestamp",
-                "data1":"A value at the end ${root.field1}",
-                "data2":"A value ${root.field2} in between",
-                "data3":"${root.field2} at the $author beginning"
+                "data1":"A value at the end ${root.map.field1}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_map_entry_update",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
             },
-            "email":{
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"MAP_ENTRY_UPDATED",
+        "path":"root.map.fieldtestupdate",
+        "targets":{
+            "dummy":{
                 "none":"A static value $timestamp",
-                "data1":"A value at the end ${root.field1}",
-                "data2":"A value ${root.field2} in between",
-                "data3":"${root.field2} at the $author beginning"
+                "data1":"A value at the end ${root.map.field1}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
             }
         }
 
@@ -33,33 +53,156 @@
 
     {
 
-        "id":"event_rule_02",
+        "id":"rule_map_entry_removed",
         "app":"default",
         "dataType":"default",
         "conditions":[
             {
-                "root.field1":"value1"
+                "root.cond1":"yes"
             },
             {
-                "root.field2":"value2"
+                "root.cond2":"yes"
             }
         ],
-        "type":"MAP_ENTRY_UPDATED",
-        "path":"root.map.flag",
+        "type":"MAP_ENTRY_REMOVED",
+        "path":"root.map.fieldtestremove",
         "targets":{
-            "gcm":{
+            "dummy":{
                 "none":"A static value $timestamp",
-                "data1":"A value at the end ${root.field1}",
-                "data2":"A value ${root.field2} in between",
-                "data3":"${root.field2} at the $author beginning"
+                "data1":"A value at the end ${root.map.field1}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_list_item_added",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
             },
-            "email":{
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"LIST_ITEM_ADDED",
+        "path":"root.list",
+        "targets":{
+            "dummy":{
                 "none":"A static value $timestamp",
-                "data1":"A value at the end ${root.field1}",
-                "data2":"A value ${root.field2} in between",
-                "data3":"${root.field2} at the $author beginning"
+                "data1":"A value at the end ${root.list.?.value}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_list_item_removed",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"LIST_ITEM_REMOVED",
+        "path":"root.list",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_doc_change",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"DOC_CHANGE",
+        "path":"root.doc",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_add_participant",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"ADD_PARTICIPANT",
+        "path":"",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"${participant} was added",
+                "data3":"${root.map.field3} at the $author beginning"
+
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_remove_participant",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"ADD_PARTICIPANT",
+        "path":"",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"${participant} was removed",
+                "data3":"${root.map.field3} at the $author beginning"
+
             }
         }
 
     }
+
 ]

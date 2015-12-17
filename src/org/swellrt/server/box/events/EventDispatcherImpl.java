@@ -2,6 +2,8 @@ package org.swellrt.server.box.events;
 
 import com.google.inject.Inject;
 
+import org.waveprotocol.wave.util.logging.Log;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class EventDispatcherImpl implements EventDispatcher {
+
+  private static final Log LOG = Log.get(EventDispatcherImpl.class);
 
   private final EventQueue queue;
 
@@ -71,7 +75,11 @@ public class EventDispatcherImpl implements EventDispatcher {
 
       if (rule.match(event)) {
         for (String t : rule.getTargets()) {
-          targets.get(t).dispatch(event, rule.getEventPayload(t, event));
+
+          if (targets.containsKey(t))
+            targets.get(t).dispatch(rule, event, rule.getEventPayload(t, event));
+          else
+            LOG.warning("Event rule has a not registered target " + t);
         }
       }
     }

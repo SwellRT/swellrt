@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 import org.swellrt.server.box.events.Event.Type;
@@ -53,10 +54,18 @@ public class EventRule {
   public static Collection<EventRule> fromReader(Reader r) {
 
     JsonParser jsonParser = new JsonParser();
-    JsonElement jsonElement = jsonParser.parse(r);
+    JsonElement jsonElement = null;
+    try {
+
+      jsonElement = jsonParser.parse(r);
+
+    } catch (JsonParseException e) {
+      LOG.warning("Error parsing event rules definition file.", e);
+      return Collections.<EventRule> emptyList();
+    }
 
     if (!jsonElement.isJsonArray()) {
-      LOG.warning("Event rules definition's file json array not found");
+      LOG.warning("Event rules definition's file syntax is incorrect, json root array not found.");
       return Collections.<EventRule> emptyList();
     }
 
@@ -247,12 +256,17 @@ public class EventRule {
    */
   protected boolean matchPreconditions(Event event) {
 
+    if (conditions == null) return true;
+
+    if (event.getContextData() == null) return false;
+
     boolean doesItMatch = true;
 
     for (Entry<String, String> c : conditions.entrySet()) {
-      doesItMatch =
-          event.getContextData().containsKey(c.getKey())
-              && event.getContextData().get(c.getKey()).equals(c.getValue());
+
+      String dataValue = event.getContextData().get(c.getKey());
+      doesItMatch = (dataValue != null) && (dataValue.equals(c.getValue()));
+
       if (!doesItMatch) break;
     }
 
@@ -285,8 +299,10 @@ public class EventRule {
   }
 
   public Set<String> getExpressionsPaths() {
-    // TODO include all expressions
-    return conditions.keySet();
+    HashSet<String> expressions = new HashSet<String>();
+    expressions.addAll(conditions.keySet());
+    expressions.addAll(expressionsPaths);
+    return expressions;
   }
 
 
@@ -347,6 +363,11 @@ public class EventRule {
 
     return payload;
 
+  }
+
+  @Override
+  public String toString() {
+    return id;
   }
 
 }

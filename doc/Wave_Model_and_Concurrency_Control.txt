@@ -11,7 +11,7 @@ Wave Document Model Implementation
            SilentOperationSink 
                      A
                      |
-[IndexedDocument]    |             [MutableDocument]
+[IndexedDocument]    |             [MutableDocument (DocumentImpl)]
             \        |                /
              <--[OperationSequencer]-->         
               \                     /
@@ -247,11 +247,71 @@ BlipData.getContent() is a DocumentOperationSink which is implemented actually b
 
 
 
-          
-                 
-                 
+OpBasedXXX Hierarchy 
+------------------------------------
+
+They are the implementation classes behind the Wavelet/ObservableWavelet, Blip and Document (MutableDocument) types.
 
 
+
+The collaborative structure of the sinks in a set of wave, blip and document adapters is as
+follows:
+
+                                document
+:OpBasedDocument - - - - - - > :DocumentOperationSink
+          |
+          V outputSink
+          0 fromDocument
+          |                      blip
+  :OpBasedBlip - - - - - - - > :BlipData
+          |
+          V outputSink
+          0 fromBlip
+          |                      wave
+  :OpBasedWavelet  - - - - - - - > :WaveletData
+          |
+          V
+          0 outputSink
+          |
+          V (outgoing client ops)
+ 
+where  -0 x  represents a sink called x
+      ---->  represents flow of operations
+      - - >  represents operation application, either full (apply()) or partial (update()).
+
+
+The operation sinks associated with the OpBasedXXX are only for applying and passing around
+locally-sourced operations.  The structure of each OpBasedXXX is as follows.   Each OpBasedXXX
+<em>is</em> sink for operations it produces directly.  These operations are applied to the
+adapted target, then sent to an output sink:
+
+
+  self.consume(op) =
+    op.apply(target);
+    outputSink.consume(op);
+
+
+Each OpBasedXXX with sub-OpBasedXXX has a sink for operations produced by those sub-OpBasedXXX
+(fromDocument and fromBlip).  Operations received through such a sink are boxed, partially
+applied to the target (just the update() method, since the sub-operation has already been applied
+to the sub-component), then sent down to the output sink.
+
+
+  fromSub.consume(op) =
+    op' = box(op);
+    op'.update(target);
+    outputSink.consume(op');
+
+
+Note that operations arriving from elsewhere are applied top-down through the WaveletData
+implementation, and do not flow through these adapters.  The collaboration between the adapters
+appears as follows:
+
+
+
+
+Handling Documents for the text editor
+---------------------------------------
 
 
 

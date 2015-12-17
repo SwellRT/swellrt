@@ -2,8 +2,8 @@ package org.swellrt.model.generic;
 
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableTypeVisitor;
+import org.swellrt.model.adt.DocumentBasedBasicRMap;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
-import org.waveprotocol.wave.model.adt.docbased.DocumentBasedBasicMap;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
@@ -171,7 +171,7 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
     // Initialize observable map
     this.observableMap =
-        DocumentBasedBasicMap.create(router, backendMapElement, Serializer.STRING,
+        DocumentBasedBasicRMap.create(router, backendMapElement, Serializer.STRING,
             new MapSerializer(this), TAG_ENTRY, KEY_ATTR_NAME, VALUE_ATTR_NAME);
 
     this.observableMap.addListener(observableMapListener);
