@@ -2,6 +2,10 @@ package org.swellrt.server.box.events;
 
 import com.google.common.base.Preconditions;
 
+import org.waveprotocol.wave.federation.xmpp.Base64Util;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,14 +14,22 @@ public class ExpressionParser {
 
   public final static String EXP_OP_VALUE = "$";
   public final static String EXP_OP_HASH = "$hash";
+
+
   public final static String EXP_OP_AUTHOR = "$author";
   public final static String EXP_OP_TIMESTAMP = "$timestamp";
   public final static String EXP_OP_PARTICIPANT = "$participant";
+  public final static String EXP_OP_OBJECT_ID = "$objectId";
+  public final static String EXP_OP_OBJECT_TYPE = "$objectType";
+  public final static String EXP_OP_APP = "$app";
+  public final static String EXP_OP_PATH = "$path";
 
+  public final static String[] EXP_NON_PATH = {EXP_OP_AUTHOR, EXP_OP_TIMESTAMP, EXP_OP_PARTICIPANT,
+      EXP_OP_OBJECT_ID, EXP_OP_OBJECT_TYPE, EXP_OP_APP, EXP_OP_PATH};
 
   // The reg exp for expresion
   private static final Pattern EXP_PATTERN = Pattern
-      .compile("(\\$|\\$hash)\\{(([a-zA-Z0-9_]*|\\?)\\.)*(([a-zA-Z0-9_]*|\\?)*)\\}");
+      .compile("(\\$||\\$hash)\\{(([a-zA-Z0-9_]*|\\?)\\.)*(([a-zA-Z0-9_]*|\\?)*)\\}");
 
 
   protected static String extractExpressionPath(String expresion)
@@ -35,13 +47,16 @@ public class ExpressionParser {
 
       } else if (m.group(1).equals(EXP_OP_HASH)) {
         return expresion.substring(EXP_OP_HASH.length() + 1, expresion.length() - 1);
-
       }
 
     }
 
     throw new InvalidEventExpressionException("Expresion has wrong syntax");
 
+  }
+
+  protected static String base64ToIntString(String s) {
+    return (new BigInteger(Base64Util.decodeFromArray(s))).toString();
   }
 
   protected static String evaluateExpression(Event event, String expression)
@@ -51,21 +66,41 @@ public class ExpressionParser {
 
     if (expression.equals(EXP_OP_AUTHOR)) {
       return event.getAuthor();
+
     } else if (expression.equals(EXP_OP_PARTICIPANT)) {
       return event.getParticipant();
+
     } else if (expression.equals(EXP_OP_TIMESTAMP)) {
-      // TODO provide formatted dates
       return String.valueOf(event.getTimestamp());
+
+    } else if (expression.equals(EXP_OP_APP)) {
+      return event.getApp() != null ? event.getApp() : "<null>";
+
+    } else if (expression.equals(EXP_OP_OBJECT_ID)) {
+      return ModernIdSerialiser.INSTANCE.serialiseWaveId(event.getWaveId());
+
+    } else if (expression.equals(EXP_OP_OBJECT_TYPE)) {
+      return event.getDataType() != null ? event.getDataType() : "<null>";
+
+    } else if (expression.equals(EXP_OP_PATH)) {
+      return event.getPath() != null ? event.getPath() : "<null>";
+
     }
+
 
     // Path-based expresions
 
     String path = extractExpressionPath(expression);
     String value = event.getContextData().get(path);
 
+    if (value == null) return "<null>";
+
     if (expression.startsWith(EXP_OP_HASH)) {
-      // TODO calculate a hash
-      return value;
+
+      // A hack to auto convert wave id's ignoring domain part and
+      if (value.contains("+")) value = value.substring(value.indexOf("+") + 1, value.length());
+
+      value = base64ToIntString(value);
     }
 
     return value;
@@ -73,36 +108,42 @@ public class ExpressionParser {
 
 
   public static boolean isNonPathExpresion(String expresion) {
-    return (expresion.equals(EXP_OP_AUTHOR)) || (expresion.equals(EXP_OP_PARTICIPANT))
-        || (expresion.equals(EXP_OP_TIMESTAMP));
+    for (String exp : EXP_NON_PATH) {
+      if (expresion.equals(exp)) return true;
+    }
+    return false;
   }
 
   public static boolean isPathExpresion(String expresion) {
-    return (expresion.startsWith((EXP_OP_VALUE + "{")) || (expresion.startsWith(EXP_OP_HASH + "{")));
+    return (expresion.startsWith((EXP_OP_VALUE + "{")) || expresion.startsWith((EXP_OP_HASH + "{")));
   }
 
+  protected boolean isPathExpStart(String s, int pos) {
+    String n = s.substring(pos);
+    return n.startsWith(EXP_OP_VALUE + "{") || n.startsWith(EXP_OP_HASH + "{");
+  }
 
   /**
-   * Expresions are like this: root.list.?.field Path are like this:
-   * root.list.2.field
+   * Expresions are like this: root.list.?.field
+   * Paths are like this: root.list.2.field
    *
    * The only supported wildcard is ?
    *
    * @param expr
-   * @param actual
+   * @param path
    * @return
    */
-  protected static boolean comparePaths(String expr, String actual) {
+  protected static boolean comparePaths(String expr, String path) {
 
-    if (expr == null && actual == null) return true;
-
-    if (expr.equals(actual)) return true;
+    if (expr == null && path == null) return true;
+    if (expr == null || path == null) return false;
+    if (expr.equals(path)) return true;
 
     Preconditions.checkNotNull(expr);
-    Preconditions.checkNotNull(actual);
+    Preconditions.checkNotNull(path);
 
     String[] exprParts = expr.split("\\.");
-    String[] actualParts = actual.split("\\.");
+    String[] actualParts = path.split("\\.");
 
     if (exprParts.length != actualParts.length) return false;
 
@@ -121,6 +162,78 @@ public class ExpressionParser {
   }
 
 
+
+    /**
+   * Create a new path replacing part of an expression with a provided path
+   * part.
+   *
+   *
+   * if
+   *
+   * expr = root.list.?.array.?.field path = root.list.2.array.5
+   *
+   * then
+   *
+   * return root.list.2.array.5.field
+   *
+   *
+   * @param expr
+   * @param path
+   * @return
+   */
+  protected static String matchSubpath(String expr, String path) {
+
+    if (expr == null || path == null) return null;
+
+    String[] exprParts = expr.split("\\.");
+    String[] pathParts = path.split("\\.");
+
+    if (pathParts.length > exprParts.length) return null;
+
+    boolean isMatch = true;
+    String newPath = "";
+
+    for (int i = 0; i < exprParts.length; i++) {
+
+      if (i < pathParts.length) {
+
+        if (!pathParts[i].equals(exprParts[i])) {
+          if (exprParts[i].equals("?")) {
+
+            if (newPath.length() == 0)
+              newPath = pathParts[i];
+            else
+              newPath += "." + pathParts[i];
+
+          } else {
+            isMatch = false;
+            break;
+          }
+        } else {
+
+          if (newPath.length() == 0)
+            newPath = exprParts[i];
+          else
+            newPath += "." + exprParts[i];
+        }
+
+      } else {
+
+        if (newPath.length() == 0)
+          newPath = exprParts[i];
+        else
+          newPath += "." + exprParts[i];
+      }
+    }
+
+
+    if (!isMatch) return null;
+
+    return newPath;
+  }
+
+
+
   public interface Operation {
 
     public String onExpression(String expression);
@@ -137,22 +250,15 @@ public class ExpressionParser {
     this.op = op;
   }
 
-  protected boolean isPathExpStart(String s, int pos) {
-    String n = s.substring(pos);
-    return n.startsWith(EXP_OP_VALUE + "{") || n.startsWith(EXP_OP_HASH + "{");
-  }
-
   protected int extractNonPathExp(String s, int pos) {
     String n = s.substring(pos);
-    if (n.startsWith(EXP_OP_AUTHOR)) {
-      return pos + EXP_OP_AUTHOR.length();
 
-    } else if (n.startsWith(EXP_OP_PARTICIPANT)) {
-      return pos + EXP_OP_PARTICIPANT.length();
-
-    } else if (n.startsWith(EXP_OP_TIMESTAMP)) {
-      return pos + EXP_OP_TIMESTAMP.length();
+    for (String exp : EXP_NON_PATH) {
+      if (n.startsWith(exp)) {
+        return pos + exp.length();
+      }
     }
+
 
     return -1;
   }
@@ -229,7 +335,7 @@ public class ExpressionParser {
       }
 
       // go to next $
-      exprMark = rstring.indexOf("$");
+      exprMark = rstring.indexOf("$", exprMark + 1);
     }
 
     return rstring;

@@ -203,6 +203,27 @@
             }
         }
 
-    }
+    },
+
+{
+
+        "id":"rule_list_item_added_nested",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[],
+        "type":"LIST_ITEM_ADDED",
+        "path":"root.list.?.nested",
+        "targets":{
+            "dummy":{
+                "waveid": "$objectId",
+                "type": "$objectType",
+                "app": "$app",
+                "path": "$path",
+                "hash":"A value hashed $hash{root.map.field2} as decimal int",
+                "item":"A value in the list ${root.list.?.nested.?.value} with author $author"
+            }
+        }
+
+}
 
 ]

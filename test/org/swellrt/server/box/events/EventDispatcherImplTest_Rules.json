@@ -95,5 +95,32 @@
         }
     }
 
+},
+
+{
+
+    "id":"EVENT_05",
+    "app":"APP_01",
+    "dataType":"DATATYPE_01",
+    "conditions":[
+        {
+            "root.condition_one":"pickme"
+        },
+        {
+            "root.condition_two":"pickme"
+        }
+    ],
+    "type":"LIST_ITEM_ADDED",
+    "path":"root.data.list.?.list",
+    "targets":{
+        "test_dispatcher":{
+            "data_one":"A dummy data expression $timestamp",
+            "data_two":"A dummy data expression ${root.info.fieldtwo}",
+            "data_three":"A dummy data expression ${root.info.fieldthree}",
+            "data_four":"A dummy data expression ${root.data.fieldtwo}",
+            "data_five":"A dummy data expression ${root.data.fieldthree}"
+        }
+    }
+
 }
 ]

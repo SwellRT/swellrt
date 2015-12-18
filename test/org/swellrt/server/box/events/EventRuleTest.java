@@ -52,6 +52,7 @@ public class EventRuleTest extends TestCase {
     assertTrue(ExpressionParser.comparePaths("root", "root"));
     assertFalse(ExpressionParser.comparePaths("root", "root.field"));
     assertTrue(ExpressionParser.comparePaths("root.list.?.field", "root.list.5.field"));
+    assertTrue(ExpressionParser.comparePaths("root.list.?.list.?", "root.list.2.list.?"));
   }
 
   public void testExtractExpressionPath() throws InvalidEventExpressionException {
@@ -61,9 +62,6 @@ public class EventRuleTest extends TestCase {
 
     String exp2 = "${root.map.?.field}";
     assertEquals("root.map.?.field", ExpressionParser.extractExpressionPath(exp2));
-
-    String exp3 = "$hash{root.map.list.?.field}";
-    assertEquals("root.map.list.?.field", ExpressionParser.extractExpressionPath(exp3));
 
     String exp4 = "${root.field1}";
     assertEquals("root.field1", ExpressionParser.extractExpressionPath(exp4));

@@ -207,6 +207,28 @@ public class EventDispatcherImplTest extends TestCase {
     assertEquals(event04, dispatchedEvents.get(3));
 
 
+    // EVENT 05
+
+    eventContextData = new HashMap<String, String>();
+    eventContextData.put("root.condition_one", "pickme");
+    eventContextData.put("root.condition_two", "pickme");
+    eventContextData.put("root.info.fieldtwo", "AAAA");
+    eventContextData.put("root.info.fieldthree", "BBBB");
+    eventContextData.put("root.data.fieldtwo", "CCCC");
+    eventContextData.put("root.data.fieldthree", "DDDD");
+
+    builder = new Event.Builder();
+    builder.app("APP_01").dataType("DATATYPE_01").contextData(eventContextData);
+
+    Event event05 = builder.build(Event.Type.LIST_ITEM_ADDED, "root.data.list.3.list");
+    dispatcher.onEvent(event05);
+
+    assertEquals(5, dispatchedEvents.size());
+    assertEquals(event05, dispatchedEvents.get(4));
+
+
+    int total_dispatched_events = 5;
+
     // EVENT 01 - Conditions doesn't match
 
     eventContextData = new HashMap<String, String>();
@@ -223,7 +245,7 @@ public class EventDispatcherImplTest extends TestCase {
     Event event01bad = builder.build(Event.Type.LIST_ITEM_ADDED, "root.data.list");
     dispatcher.onEvent(event01bad);
 
-    assertEquals(4, dispatchedEvents.size());
+    assertEquals(total_dispatched_events, dispatchedEvents.size());
 
     // EVENT 02- App doesn't match
 
@@ -241,7 +263,7 @@ public class EventDispatcherImplTest extends TestCase {
     Event event02bad = builder.build(Event.Type.LIST_ITEM_ADDED, "root.data.list");
     dispatcher.onEvent(event02bad);
 
-    assertEquals(4, dispatchedEvents.size());
+    assertEquals(total_dispatched_events, dispatchedEvents.size());
 
     // EVENT 03- DataType doesn't match
 
@@ -259,7 +281,7 @@ public class EventDispatcherImplTest extends TestCase {
     Event event03bad = builder.build(Event.Type.LIST_ITEM_ADDED, "root.data.list");
     dispatcher.onEvent(event03bad);
 
-    assertEquals(4, dispatchedEvents.size());
+    assertEquals(total_dispatched_events, dispatchedEvents.size());
 
   }
 
