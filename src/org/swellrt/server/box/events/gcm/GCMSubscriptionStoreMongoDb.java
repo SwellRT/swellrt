@@ -1,6 +1,7 @@
 package org.swellrt.server.box.events.gcm;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -8,10 +9,12 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
 
@@ -28,10 +31,20 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
   private DBCollection accountStore;
   private DBCollection modelStore;
 
+  private static final Logger LOG = Logger.getLogger(GCMSubscriptionStoreMongoDb.class.getName());
+
+
   @Inject
-  public GCMSubscriptionStoreMongoDb(MongoDbProvider mongoDbProvider) {
-    this.accountStore = mongoDbProvider.getDBCollection("account");
-    this.modelStore = mongoDbProvider.getDBCollection("models");
+  public GCMSubscriptionStoreMongoDb(MongoDbProvider mongoDbProvider,
+      @Named(CoreSettings.ACCOUNT_STORE_TYPE) String accountStoreType) {
+    if (accountStoreType.equalsIgnoreCase("mongodb")) {
+      this.accountStore = mongoDbProvider.getDBCollection("account");
+      this.modelStore = mongoDbProvider.getDBCollection("models");
+    } else {
+      LOG.warning("Account store type is: \"" + accountStoreType
+          + "\" instead of \"mongodb\". GCM Notifications will not work");
+    }
+
   }
 
   @Override

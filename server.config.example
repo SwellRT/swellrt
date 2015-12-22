@@ -72,7 +72,7 @@ attachment_store_type = @ATTACHMENT_STORE_TYPE@
 attachment_store_directory = @ATTACHMENT_STORE_DIRECTORY@
 
 # Currently supported account store types: fake, memory, file, mongodb
-# Default value: memory
+# Default value: mongodb
 account_store_type = @ACCOUNT_STORE_TYPE@
 
 # The location where accounts are stored on disk. This should be changed.
