@@ -32,7 +32,7 @@ public class GCMDispatcher implements EventDispatcherTarget {
   public final static String NAME = "gcm";
 
 
-  private static final String REGISTRATION_IDS = "registration_Ids";
+  private static final String REGISTRATION_IDS = "registration_ids";
 
 
   private static final String DATA = "data";
@@ -110,7 +110,7 @@ public class GCMDispatcher implements EventDispatcherTarget {
 
 
     postMethod.setRequestHeader("Content-Type", "application/json");
-    postMethod.setRequestHeader("Authorization", this.authKey);
+    postMethod.setRequestHeader("Authorization", "key=" + this.authKey);
 
     try {
 
