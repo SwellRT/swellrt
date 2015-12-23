@@ -56,7 +56,8 @@ public class ExpressionParser {
   }
 
   protected static String base64ToIntString(String s) {
-    return (new BigInteger(Base64Util.decodeFromArray(s))).toString();
+    return (new BigInteger(Base64Util.decodeFromArray(s)).mod(new BigInteger("1000000000")))
+        .toString();
   }
 
   protected static String evaluateExpression(Event event, String expression)
