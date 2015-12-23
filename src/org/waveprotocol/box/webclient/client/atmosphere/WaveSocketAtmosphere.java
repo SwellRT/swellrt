@@ -23,7 +23,6 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.ScriptInjector;
 
-import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.webclient.client.WaveSocket;
 
 import java.util.logging.Logger;
@@ -295,7 +294,8 @@ public class WaveSocketAtmosphere implements WaveSocket {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
               AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, useWebSocket
-                  ? "websocket" : "long-polling", "long-polling", Model.MODEL_VERSION);
+                  ? "websocket" : "long-polling", "long-polling", "1.0");
+              // Check version value in Model.MODEL_VERSION
                 socket.connect();
               }
 
