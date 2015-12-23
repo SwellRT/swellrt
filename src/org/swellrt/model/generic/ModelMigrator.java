@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
+import org.waveprotocol.wave.model.document.operation.impl.AttributesImpl;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -253,6 +254,8 @@ public class ModelMigrator {
       addMetadata(domain, blip, path);
       processList(domain, values, blip, path, wavelet);
 
+    } else if (blip.getId().startsWith("b")) {
+      addMetadataDoc(blip, path);
     }
 
 
@@ -285,6 +288,14 @@ public class ModelMigrator {
 
     blip.getContent().insertXml(blip.getContent().locate(0),
         XmlStringBuilder.createFromXmlString(xml));
+  }
+
+  private static void addMetadataDoc(Blip blip, String path) {
+    Doc.E bodyElement = DocHelper.getElementWithTagName(blip.getContent(), "body");
+    if (bodyElement != null) {
+      blip.getContent().setElementAttributes(bodyElement,
+          AttributesImpl.fromUnsortedPairsUnchecked("p", path, "acl", "", "ap", "default"));
+    }
   }
 
   private static int addValue(Document document, Doc.E elementValues, String value) {
