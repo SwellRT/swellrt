@@ -23,9 +23,10 @@ public class ExpressionParser {
   public final static String EXP_OP_OBJECT_TYPE = "$objectType";
   public final static String EXP_OP_APP = "$app";
   public final static String EXP_OP_PATH = "$path";
+  private static final String EXP_OP_NUM = "$num";
 
   public final static String[] EXP_NON_PATH = {EXP_OP_AUTHOR, EXP_OP_TIMESTAMP, EXP_OP_PARTICIPANT,
-      EXP_OP_OBJECT_ID, EXP_OP_OBJECT_TYPE, EXP_OP_APP, EXP_OP_PATH};
+      EXP_OP_OBJECT_ID, EXP_OP_OBJECT_TYPE, EXP_OP_APP, EXP_OP_PATH, EXP_OP_NUM};
 
   // The reg exp for expresion
   private static final Pattern EXP_PATTERN = Pattern
@@ -55,8 +56,22 @@ public class ExpressionParser {
 
   }
 
+  protected static String extractNumExpression(String expresion)
+      throws InvalidEventExpressionException {
+
+
+    if (expresion == null)
+      throw new InvalidEventExpressionException("Unable to extract path from a null expression.");
+
+    if (expresion.startsWith(EXP_OP_NUM + "{") && expresion.endsWith("}")) {
+      return expresion.substring(EXP_OP_NUM.length() + 1, expresion.length() - 1);
+    } else {
+      throw new InvalidEventExpressionException("Expresion has wrong syntax");
+    }
+  }
+
   protected static String base64ToIntString(String s) {
-    return (new BigInteger(Base64Util.decodeFromArray(s))).toString();
+    return (new BigInteger(Base64Util.decodeFromArray(s)).abs()).toString();
   }
 
   protected static String evaluateExpression(Event event, String expression)
@@ -87,7 +102,9 @@ public class ExpressionParser {
 
     }
 
-
+    if (expression.startsWith(EXP_OP_NUM)) {
+      return evaluateExpression(event, extractNumExpression(expression));
+    }
     // Path-based expresions
 
     String path = extractExpressionPath(expression);
@@ -118,9 +135,14 @@ public class ExpressionParser {
     return (expresion.startsWith((EXP_OP_VALUE + "{")) || expresion.startsWith((EXP_OP_HASH + "{")));
   }
 
+  public static boolean isNumExpresion(String expresion) {
+    return expresion.startsWith(EXP_OP_NUM + "{");
+  }
+
   protected boolean isPathExpStart(String s, int pos) {
     String n = s.substring(pos);
-    return n.startsWith(EXP_OP_VALUE + "{") || n.startsWith(EXP_OP_HASH + "{");
+    return n.startsWith(EXP_OP_VALUE + "{") || n.startsWith(EXP_OP_HASH + "{")
+        || n.startsWith(EXP_OP_NUM + "{");
   }
 
   /**
@@ -263,6 +285,13 @@ public class ExpressionParser {
     return -1;
   }
 
+  protected int extractNumExp(String s, int pos) {
+    String n = s.substring(pos);
+
+    assert n.startsWith(EXP_OP_NUM);
+    return pos + EXP_OP_NUM.length();
+  }
+
   protected String escapeInsecureChars(String s) {
     s = s.replace('\"', '\0');
     s = s.replace('\'', '\0');
@@ -277,13 +306,13 @@ public class ExpressionParser {
       if (isPathExpStart(string, exprMark)) {
         int startMark = string.indexOf("{", exprMark);
         int endMark = string.indexOf("}", exprMark);
-
         if (exprMark < startMark && startMark < endMark) {
           op.onExpression(string.substring(exprMark, endMark + 1));
         }
       } else {
 
         int endExprPos = extractNonPathExp(string, exprMark);
+
 
         if (endExprPos > 0) {
           op.onExpression(string.substring(exprMark, endExprPos));
@@ -294,9 +323,7 @@ public class ExpressionParser {
 
       exprMark = string.indexOf("$", exprMark + 1);
     }
-
   }
-
 
   public String replaceParse() {
     // Looks for expressions in the value
@@ -306,7 +333,25 @@ public class ExpressionParser {
       if (isPathExpStart(rstring, exprMark)) {
 
         int startMark = rstring.indexOf("{", exprMark);
-        int endMark = rstring.indexOf("}", exprMark);
+        int endMark = -1;
+        int startMarkStackSize = 1;
+
+        for (int i = startMark + 1; i < rstring.length() && endMark < 0; i++) {
+          if (rstring.charAt(i) == '{') {
+
+            startMarkStackSize += 1;
+
+          } else if (rstring.charAt(i) == '}') {
+
+            startMarkStackSize -= 1;
+
+            if (startMarkStackSize == 0) {
+
+              endMark = i;
+
+            }
+          }
+        }
 
         if (exprMark < startMark && startMark < endMark) {
 
@@ -316,11 +361,17 @@ public class ExpressionParser {
 
           if (value == null) value = "<missing value>";
 
+          if (isNumExpresion(rstring.substring(exprMark, endMark + 1))
+              && rstring.charAt(exprMark - 1) == '"' && rstring.charAt(endMark + 1) == '"') {
+            // An effective way to replace the expression removing quote marks
+            rstring = rstring.substring(0, exprMark - 1) + escapeInsecureChars(value)
+                + rstring.substring(endMark + 2);
+          } else {
           // An effective way to replace the expression
           rstring =
               rstring.substring(0, exprMark) + escapeInsecureChars(value)
                   + rstring.substring(endMark + 1);
-
+          }
         }
 
       } else {
