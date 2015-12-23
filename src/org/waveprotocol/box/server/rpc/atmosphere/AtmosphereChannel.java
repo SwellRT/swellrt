@@ -39,8 +39,7 @@ public class AtmosphereChannel extends WebSocketChannel  {
 
   private static final Log LOG = Log.get(AtmosphereChannel.class);
 
-  /* The object needed to send messages out */
-  private Broadcaster broadcaster;
+  private final Broadcaster broadcaster;
   private AtmosphereResource resource;
 
   private boolean isValid = true;
@@ -51,10 +50,9 @@ public class AtmosphereChannel extends WebSocketChannel  {
    *
    * @param callback A ProtoCallback instance called with incoming messages.
    */
-  public AtmosphereChannel(ProtoCallback callback) {
+  public AtmosphereChannel(ProtoCallback callback, String id) {
     super(callback);
-    broadcaster = BroadcasterFactory.getDefault().get();
-
+    this.broadcaster = BroadcasterFactory.getDefault().get(id);
   }
 
   /**
@@ -62,11 +60,10 @@ public class AtmosphereChannel extends WebSocketChannel  {
    * this channel
    * @param resource the Atmosphere resource object
    */
-  public void setResource(AtmosphereResource resource) {
-
-    // Create a new broadcaster to publish to this resource
-    this.resource = resource;
+  public void bindResource(AtmosphereResource resource) {
+    this.broadcaster.removeAtmosphereResource(this.resource);
     this.broadcaster.addAtmosphereResource(resource);
+    this.resource = resource;
   }
 
 
@@ -86,9 +83,9 @@ public class AtmosphereChannel extends WebSocketChannel  {
   /**
    * The atmosphere resource has been closed
    */
-  public void onDisconnect(AtmosphereResource resource) {
-
-    broadcaster.removeAtmosphereResource(resource);
+  public void unbindResource() {
+    broadcaster.removeAtmosphereResource(this.resource);
+    this.resource = null;
   }
 
 
@@ -99,8 +96,8 @@ public class AtmosphereChannel extends WebSocketChannel  {
   public void onClientNeedUpgrade() {
 
     broadcaster.broadcast("X-response:upgrade");
-    String resourceUUID = resource != null ? resource.uuid() : "unknown";
-    LOG.info("Sending client need upgrade response for " + resourceUUID);
+    LOG.info("Sending upgrade response to client " + resource != null ? resource.uuid()
+        : "unknown.");
 
     isValid = false;
   }

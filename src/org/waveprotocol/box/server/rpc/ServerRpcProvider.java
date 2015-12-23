@@ -185,11 +185,14 @@ public class ServerRpcProvider {
   static class AtmosphereConnection extends Connection {
 
     private final AtmosphereChannel atmosphereChannel;
+    private final String sessionId;
 
-    public AtmosphereConnection(ParticipantId loggedInUser, ServerRpcProvider provider) {
+    public AtmosphereConnection(String sessionId, ParticipantId loggedInUser,
+        ServerRpcProvider provider) {
       super(loggedInUser, provider);
 
-      atmosphereChannel = new AtmosphereChannel(this);
+      this.sessionId = sessionId;
+      atmosphereChannel = new AtmosphereChannel(this, sessionId);
       expectMessages(atmosphereChannel);
 
     }
@@ -432,7 +435,6 @@ public class ServerRpcProvider {
       // see: http://stackoverflow.com/questions/7727534/how-do-you-disable-jsessionid-for-jetty-running-with-the-eclipse-jetty-maven-plu
       // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
       jettySessionManager.setSessionIdPathParameterName(null);
-
       context.getSessionHandler().setSessionManager(jettySessionManager);
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
@@ -786,7 +788,7 @@ public class ServerRpcProvider {
 
       // If it's the old client then force the connection close
       if (!resource.getRequest().headersMap().containsKey("X-client-version")) {
-        resource.getResponse().sendError(500, "client_upgrade");
+        resource.getResponse().sendError(500, "client needs upgrade");
         resource.close();
         return;
       }
@@ -799,14 +801,28 @@ public class ServerRpcProvider {
       HttpSession httpSession = getSession(resource);
 
       if (httpSession == null) {
-        // Session has expired, close the connection,
+        resource.getResponse().sendError(500, "session has expired");
         resource.close();
         return;
       }
 
       ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-      AtmosphereConnection connection = null;
+
+      if (!CONNECTIONS.containsKey(httpSession.getId()))
+        CONNECTIONS.put(httpSession.getId(), new AtmosphereConnection(httpSession.getId(),
+            loggedInUser, provider));
+
+      AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+
+      // A connection exists for a different participant:
+      // This happens when different users shares the same browser session.
+      // Ensure that connections are cleaned up.
+      if (!connection.getParticipantId().equals(loggedInUser)) {
+        connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
+        CONNECTIONS.put(httpSession.getId(), connection);
+      }
+
 
       // WebSocket Transport:
       //
@@ -817,68 +833,66 @@ public class ServerRpcProvider {
 
       if (resource.transport().equals(TRANSPORT.WEBSOCKET)) {
 
-        if (!CONNECTIONS.containsKey(httpSession.getId())) {
-          connection = new AtmosphereConnection(loggedInUser, provider);
-          CONNECTIONS.put(httpSession.getId(), connection);
-        } else {
-          connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+        connection.getAtmosphereChannel().bindResource(resource);
 
-          // A connection exists for a different participant:
-          // This happens when different users shares the same browser session.
-          // Ensure that connections are cleaned up.
-          if (!connection.getParticipantId().equals(loggedInUser)) {
-            connection = new AtmosphereConnection(loggedInUser, provider);
-            CONNECTIONS.put(httpSession.getId(), connection);
+        if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
+
+          // LOG.info("Websocket suspending request " + resource.uuid());
+
+          resource.suspend();
+
+          if (needClientUpgrade) {
+            connection.getAtmosphereChannel().onClientNeedUpgrade();
+            connection.getAtmosphereChannel().unbindResource();
+            return;
           }
-        }
-      } else {
 
-        // Long-polling transport:
-        //
-        // Each client request shares the same resource
-        // Wave Connections are associated to the resource
 
-        if (!CONNECTIONS.containsKey(resource.uuid())) {
-          connection = new AtmosphereConnection(loggedInUser, provider);
-          CONNECTIONS.put(resource.uuid(), connection);
-        } else {
-          connection = (AtmosphereConnection) CONNECTIONS.get(resource.uuid());
+        } else if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
 
-          // A connection exists for a different participant:
-          // This happens when different users shares the same browser session.
-          // Ensure that connections are cleaned up.
-          if (!connection.getParticipantId().equals(loggedInUser)) {
-            connection = new AtmosphereConnection(loggedInUser, provider);
-            CONNECTIONS.put(httpSession.getId(), connection);
+          // LOG.info("Websocket proccessing request " + resource.uuid());
+
+          StringBuilder b = IOUtils.readEntirely(resource);
+          try {
+            connection.getAtmosphereChannel().onMessage(b.toString());
+          } catch (RuntimeException e) {
+            LOG.info("Exception on channel.", e);
           }
+
         }
-      }
 
-      if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
-        LOG.fine("Atmosphere suspending resource (" + resource.transport().name() + ") "
-            + resource.uuid()); //
-        resource.suspend(20000); // use this to simulate network cuts
-      }
+      } else if (resource.transport().equals(TRANSPORT.LONG_POLLING)
+          || resource.transport().equals(TRANSPORT.POLLING)) {
 
-      connection.getAtmosphereChannel().setResource(resource);
+        if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
 
-      if (needClientUpgrade) {
-        connection.getAtmosphereChannel().onClientNeedUpgrade();
-        connection.getAtmosphereChannel().onDisconnect(resource);
-        return;
-      }
+          // LOG.info("Long-polling suspending request " + resource.uuid());
 
+          resource.suspend();
+          connection.getAtmosphereChannel().bindResource(resource);
 
-      if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
-        LOG.fine("Atmosphere processing message from resource (" + resource.transport().name()
-            + ") " + resource.uuid());
-        StringBuilder b = IOUtils.readEntirely(resource);
-        try {
-          connection.getAtmosphereChannel().onMessage(b.toString());
-        } catch (RuntimeException e) {
-          LOG.info("Exception on channel.", e);
+          if (needClientUpgrade) {
+            connection.getAtmosphereChannel().onClientNeedUpgrade();
+            connection.getAtmosphereChannel().unbindResource();
+            return;
+          }
+
+        } else if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
+
+          // LOG.info("Long-polling proccessing request " + resource.uuid());
+
+          StringBuilder b = IOUtils.readEntirely(resource);
+          try {
+            connection.getAtmosphereChannel().onMessage(b.toString());
+            resource.resume();
+          } catch (RuntimeException e) {
+            LOG.info("Exception on channel.", e);
+          }
+
         }
+
       }
+
 
 
     }
@@ -955,8 +969,7 @@ public class ServerRpcProvider {
         AtmosphereConnection connection =
             (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
 
-        if (connection != null)
-          connection.getAtmosphereChannel().onDisconnect(event.getResource());
+        if (connection != null) connection.getAtmosphereChannel().unbindResource();
 
       } else if (event.isResumedOnTimeout()) {
 
@@ -974,8 +987,7 @@ public class ServerRpcProvider {
         AtmosphereConnection connection =
             (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
 
-        if (connection != null)
-          connection.getAtmosphereChannel().onDisconnect(event.getResource());
+        if (connection != null) connection.getAtmosphereChannel().unbindResource();
 
       } else if (event.isResuming()) {
 
