@@ -1,6 +1,7 @@
 package org.swellrt.server.box.events.gcm;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -8,10 +9,12 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
 
@@ -19,19 +22,48 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
   private static final String TARGETS_KEY = "targets";
   private static final String GCM_KEY = "gcm";
   private static final String DEVICES_ID = "devices";
-  private static final String SOURCES_KEY = "sources";
+  private static final String UNSUBSCRIBED_SOURCES_KEY = "unsubscribed_sources";
   private static final String WAVE_ID = "waveId";
-  private static final BasicDBObject subscribedGCMevicesProjection = new BasicDBObject(
+  private static final String WAVE_ID_KEY = "wave_id";
+  private static final BasicDBObject gcmDevicesProjection = new BasicDBObject(
       SUBSCRIPTIONS_KEY + "." + TARGETS_KEY + "." + GCM_KEY + "." + DEVICES_ID, 1);
+  private static final String PARTICIPANTS_KEY = "participants";
   private DBCollection accountStore;
+  private DBCollection modelStore;
+
+  private static final Logger LOG = Logger.getLogger(GCMSubscriptionStoreMongoDb.class.getName());
+
 
   @Inject
-  public GCMSubscriptionStoreMongoDb(MongoDbProvider mongoDbProvider) {
-    this.accountStore = mongoDbProvider.getDBCollection("account");
+  public GCMSubscriptionStoreMongoDb(MongoDbProvider mongoDbProvider,
+      @Named(CoreSettings.ACCOUNT_STORE_TYPE) String accountStoreType) {
+    if (accountStoreType.equalsIgnoreCase("mongodb")) {
+      this.accountStore = mongoDbProvider.getDBCollection("account");
+      this.modelStore = mongoDbProvider.getDBCollection("models");
+    } else {
+      LOG.warning("Account store type is: \"" + accountStoreType
+          + "\" instead of \"mongodb\". GCM Notifications will not work");
+    }
+
   }
 
   @Override
   public void addSubscriptor(String waveId, String userId) {
+
+    BasicDBList sources = getSources(userId);
+
+    BasicDBObject s = new BasicDBObject(WAVE_ID, waveId);
+
+    sources.remove(s);
+
+    assert (!sources.contains(s));
+
+    setSources(userId, sources);
+
+  }
+
+  @Override
+  public void removeSubscriptor(String waveId, String userId) {
     BasicDBList sources = getSources(userId);
 
     BasicDBObject s = new BasicDBObject(WAVE_ID, waveId);
@@ -43,26 +75,12 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
       sources.add(s);
       setSources(userId, sources);
     }
-
-
-  }
-
-  @Override
-  public void removeSubscriptor(String waveId, String userId) {
-    BasicDBList sources = getSources(userId);
-
-    BasicDBObject s = new BasicDBObject(WAVE_ID, waveId);
-
-    sources.remove(s);
-
-    assert (!sources.contains(s));
-
-    setSources(userId, sources);
   }
 
   private void setSources(String userId, BasicDBList sources) {
 
-    BasicDBObject o = new BasicDBObject(SUBSCRIPTIONS_KEY + "." + SOURCES_KEY, sources);
+    BasicDBObject o =
+        new BasicDBObject(SUBSCRIPTIONS_KEY + "." + UNSUBSCRIBED_SOURCES_KEY, sources);
 
     BasicDBObject q = new BasicDBObject();
     q.append("_id", userId);
@@ -77,13 +95,14 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
     query.append("_id", userId);
 
     DBObject found =
-        accountStore.findOne(query, new BasicDBObject(SUBSCRIPTIONS_KEY + "." + SOURCES_KEY, 1));
+ accountStore.findOne(query,
+        new BasicDBObject(SUBSCRIPTIONS_KEY + "." + UNSUBSCRIBED_SOURCES_KEY, 1));
 
     BasicDBList s;
 
     try {
       DBObject subs = (DBObject) found.get(SUBSCRIPTIONS_KEY);
-      s = (BasicDBList) subs.get(SOURCES_KEY);
+      s = (BasicDBList) subs.get(UNSUBSCRIBED_SOURCES_KEY);
     } catch (NullPointerException e) {
       s = new BasicDBList();
     } catch (ClassCastException e) {
@@ -99,16 +118,32 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
   @Override
   public List<String> getSubscriptorsDevices(String waveId) {
 
-    BasicDBObject query = new BasicDBObject();
+    BasicDBObject participantsProjection = new BasicDBObject(PARTICIPANTS_KEY, 1);
+    BasicDBObject waveIdQuery = new BasicDBObject(WAVE_ID_KEY, waveId);
 
-    query.append(SUBSCRIPTIONS_KEY,
-        new BasicDBObject(SOURCES_KEY, new BasicDBObject(WAVE_ID, waveId)));
-    DBCursor subscribedAccounts = accountStore.find(query, subscribedGCMevicesProjection);
+    DBObject waveData = modelStore.findOne(waveIdQuery, participantsProjection);
+
+    BasicDBList participantAccounts = (BasicDBList) waveData.get(PARTICIPANTS_KEY);
+
+    BasicDBObject inPraticipantsQuery = new BasicDBObject("$in", participantAccounts);
+
+    BasicDBObject subscribedQuery = new BasicDBObject(
+SUBSCRIPTIONS_KEY + "." + UNSUBSCRIBED_SOURCES_KEY + "." + WAVE_ID,
+            new BasicDBObject("$ne", waveId));
+
+    subscribedQuery.append("_id", inPraticipantsQuery);
+
+    subscribedQuery.append(SUBSCRIPTIONS_KEY + "." + TARGETS_KEY + "." + GCM_KEY + "." + DEVICES_ID,
+        new BasicDBObject("$exists", true));
+
+    DBCursor subscribedAccounts =
+        accountStore.find(subscribedQuery, gcmDevicesProjection);
 
     List<String> result = new ArrayList<String>();
 
-    for (DBObject devs : subscribedAccounts) {
-      BasicDBList devices = (BasicDBList) devs;
+    for (DBObject acc : subscribedAccounts) {
+      BasicDBList devices = (BasicDBList) ((BasicDBObject) ((BasicDBObject) ((BasicDBObject) acc
+          .get(SUBSCRIPTIONS_KEY)).get(TARGETS_KEY)).get(GCM_KEY)).get(DEVICES_ID);
       for (Object d : devices) {
         result.add((String) d);
       }
@@ -157,7 +192,7 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
     BasicDBObject query = new BasicDBObject();
     query.append("_id", userId);
 
-    DBObject o = accountStore.findOne(query, subscribedGCMevicesProjection);
+    DBObject o = accountStore.findOne(query, gcmDevicesProjection);
 
     BasicDBList devs;
 

@@ -857,7 +857,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new SessionNotStartedException();
     }
 
-    String query = method + "=" + param;
+    String query;
+    query = method + "=" + URL.encode(param);
 
     String url = waveServerURLSchema + waveServerURL + "/swell/notification?" + query;
 
