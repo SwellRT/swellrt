@@ -833,13 +833,15 @@ public class ServerRpcProvider {
 
       if (resource.transport().equals(TRANSPORT.WEBSOCKET)) {
 
-        connection.getAtmosphereChannel().bindResource(resource);
+
 
         if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
 
           // LOG.info("Websocket suspending request " + resource.uuid());
 
           resource.suspend();
+          connection.getAtmosphereChannel().bindResource(resource);
+
 
           if (needClientUpgrade) {
             connection.getAtmosphereChannel().onClientNeedUpgrade();
