@@ -41,7 +41,9 @@ public class AtmosphereChannel extends WebSocketChannel  {
 
   /* The object needed to send messages out */
   private Broadcaster broadcaster;
+  private AtmosphereResource resource;
 
+  private boolean isValid = true;
 
 
   /**
@@ -60,10 +62,11 @@ public class AtmosphereChannel extends WebSocketChannel  {
    * this channel
    * @param resource the Atmosphere resource object
    */
-  public void onConnect(AtmosphereResource resource) {
+  public void setResource(AtmosphereResource resource) {
 
     // Create a new broadcaster to publish to this resource
-    broadcaster.addAtmosphereResource(resource);
+    this.resource = resource;
+    this.broadcaster.addAtmosphereResource(resource);
   }
 
 
@@ -77,7 +80,7 @@ public class AtmosphereChannel extends WebSocketChannel  {
    */
   public void onMessage(String message) {
 
-    handleMessageString(message);
+    if (isValid) handleMessageString(message);
   }
 
   /**
@@ -93,6 +96,15 @@ public class AtmosphereChannel extends WebSocketChannel  {
     return broadcaster.getAtmosphereResources().size() > 0;
   }
 
+  public void onClientNeedUpgrade() {
+
+    broadcaster.broadcast("X-response:upgrade");
+    String resourceUUID = resource != null ? resource.uuid() : "unknown";
+    LOG.info("Sending client need upgrade response for " + resourceUUID);
+
+    isValid = false;
+  }
+
   /**
    * Send the given data String
    *
@@ -102,14 +114,16 @@ public class AtmosphereChannel extends WebSocketChannel  {
   @Override
   protected void sendMessageString(String data) throws IOException {
 
-      if (broadcaster == null || broadcaster.isDestroyed()) {
-        // Just drop the message. It's rude to throw an exception since the
-        // caller had no way of knowing.
-        LOG.warning("Atmosphere Channel is not connected");
-      } else {
+    if (!isValid) throw new IOException("Channel is no longer valid. Does client need upgrade?");
 
-       LOG.fine("BROADCAST "+data);
-       broadcaster.broadcast(data);
+    if (broadcaster == null || broadcaster.isDestroyed()) {
+      // Just drop the message. It's rude to throw an exception since the
+      // caller had no way of knowing.
+      LOG.warning("Atmosphere Channel is not connected");
+    } else {
+
+      LOG.fine("BROADCAST " + data);
+      broadcaster.broadcast(data);
     }
   }
 

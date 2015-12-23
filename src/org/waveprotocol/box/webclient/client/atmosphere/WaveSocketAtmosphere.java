@@ -23,6 +23,7 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.ScriptInjector;
 
+import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.webclient.client.WaveSocket;
 
 import java.util.logging.Logger;
@@ -36,14 +37,13 @@ import java.util.logging.Logger;
  * The atmosphere client/server configuration avoids network issues with:
  *
  * <ul>
- * <li>Server Heartbeat frecuency t = 10s. Greater values didn't avoid cuts in
+ * <li>Server Heartbeat frecuency t = 60s. Greater values didn't avoid cuts in
  * some environments</li>
- * <li>Client will raise a reconnection by timeout if no data is received in t <
- * 15s.</li>
+ * <li>Client will start reconnection if no data is received in t = 70s
+ * (timeout)</li>
  * </ul>
  *
- * Both settings try to keep the communication alive ant to reconnect
- * if it's missed.
+ * Both settings try to keep the communication alive.
  *
  * AtmosphereConnectionListener.onDisconnect() will be invoked when
  * communications is stopped caused by an error or not.
@@ -72,7 +72,8 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
       private static final class AtmosphereSocket extends JavaScriptObject {
 
-        public static native AtmosphereSocket create(WaveSocketAtmosphere impl, String urlBase, String transport, String fallback, int maxReconnect, int timeout) /*-{
+        public static native AtmosphereSocket create(WaveSocketAtmosphere impl, String urlBase, String transport, String fallback, String clientVersion) /*-{
+
 
           // Atmoshpere client
           var atmosphere = $wnd.atmosphere;
@@ -101,9 +102,9 @@ public class WaveSocketAtmosphere implements WaveSocket {
           socket.request.url = socketURL;
           socket.request.contenType = 'text/plain;charset=UTF-8';
 
-          //socket.request.logLevel = 'debug';
+          socket.request.logLevel = 'debug';
 
-          socket.request.connectTimeout = timeout;
+
           socket.request.transport = transport;
           socket.request.fallbackTransport = fallback;
 
@@ -115,38 +116,50 @@ public class WaveSocketAtmosphere implements WaveSocket {
           socket.request.enableXDR = true;
           socket.request.readResponsesHeaders = false;
           socket.request.withCredentials = true;
+          socket.request.dropHeaders = true;
 
-          // This value assumes that server sends hearbeat messages each t < 15s
-          // This way we can detect network cut issues
-          socket.request.timeout = 15000;
+          // This value assumes that server sends hearbeat messages in less than 70s (timeout value)
+          // This allows to detect network cuts
+          socket.request.timeout = 70000;
 
           // Reconnection policy
-          socket.request.reconnectInterval = timeout;  // Time between reconnection attempts
-          socket.request.maxReconnectOnClose = maxReconnect; // Number of reconnect attempts before throw an error
-          socket.request.reconnectOnServerError = true; // Try to reconnect on server's errors
+
+          // The connect timeout. If the client fails to connect, the fallbackTransport will be used
+          socket.request.connectTimeout = -1;
+
+          // Time between reconnection attempts
+          socket.request.reconnectInterval = 5000;
+
+          // Number of reconnect attempts before throw an error
+          socket.request.maxReconnectOnClose = 5;
+
+          // Try to reconnect on server's errors
+          socket.request.reconnectOnServerError = true;
+
+          // Server<->client version control
+          socket.request.headers = {
+            'X-client-version' : clientVersion
+          };
 
 
           // OPEN
-          socket.request.onOpen = function() {
-            atmosphere.util.debug("Atmosphere Connection Open");
+          socket.request.onOpen = function(response) {
             impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onConnect()();
           };
 
           // REOPEN
           socket.request.onReopen = function() {
-            atmosphere.util.debug("Atmosphere Connection ReOpen");
             impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onConnect()();
           };
 
           // MESSAGE
           socket.request.onMessage = function(response) {
-            //atmosphere.util.debug("Atmosphere Message received");
             impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onMessage(Ljava/lang/String;)(response.responseBody);
+
           };
 
           // CLOSE
           socket.request.onClose = function(response) {
-            atmosphere.util.debug("Atmosphere Connection Close "+response.status);
             impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onDisconnect()();
           };
 
@@ -156,32 +169,55 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
             request.contenType = 'text/plain;charset=UTF-8';
 
+            // The long polling wait time
+            request.timeout = 70000;
+
             request.transport = fallback;
-            request.fallbackTransport = fallback;
+            request.fallbackTransport = null;
 
             request.trackMessageLength = true;
+
+            request.uuid = 0;
 
             // CORS
             request.enableXDR = true;
             request.readResponsesHeaders = false;
             request.withCredentials = true;
+
+
+            // Reconnection policy
+
+            // The connect timeout. If the client fails to connect, the fallbackTransport will be used
+            request.connectTimeout = -1;
+
+            // Time between reconnection attempts
+            request.reconnectInterval = 5000;
+
+            // Number of reconnect attempts before throw an error
+            request.maxReconnectOnClose = 5;
+
+            // Try to reconnect on server's errors
+            request.reconnectOnServerError = true;
+
+            // Server<->client version control
+            request.headers = {
+              'X-client-version' : clientVersion
+            };
+
           };
 
           //  RECONNECT
           socket.request.onReconnect = function(request, response) {
-             atmosphere.util.debug("Atmosphere Connection Reconnect");
              request.uuid = 0;
           };
 
           // ERROR
           socket.request.onError = function(response) {
-            atmosphere.util.debug("Atmosphere Connection Error "+response.status);
             impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onError(Ljava/lang/String;)(response.status);
           };
 
           // CLIENT TIMEOUT
           socket.request.onClientTimeout = function(request) {
-            atmosphere.util.debug("Atmosphere Client Timeout");
             impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onDisconnect()();
           };
 
@@ -259,7 +295,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
               AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, useWebSocket
-                  ? "websocket" : "long-polling", "long-polling", 25, 5000);
+                  ? "websocket" : "long-polling", "long-polling", Model.MODEL_VERSION);
                 socket.connect();
               }
 

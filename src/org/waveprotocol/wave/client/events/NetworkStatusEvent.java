@@ -22,6 +22,9 @@ package org.waveprotocol.wave.client.events;
 import com.google.gwt.event.shared.GwtEvent;
 
 public class NetworkStatusEvent extends GwtEvent<NetworkStatusEventHandler> {
+
+  public static final String PAYLOAD_CLIENT_UPGRADE = "CLIENT_UPGRADE";
+
   public enum ConnectionStatus {
     CONNECTED, DISCONNECTED, NEVER_CONNECTED, RECONNECTING, RECONNECTED, PROTOCOL_ERROR;
   }

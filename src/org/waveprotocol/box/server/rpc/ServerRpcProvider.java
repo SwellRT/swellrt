@@ -63,6 +63,7 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.CoreSettings;
@@ -513,7 +514,7 @@ public class ServerRpcProvider {
     // Setting a low HeartBeat frequency to avoid network issues. Let clients to
     // set a hihger value.
     atholder.setInitParameter(
-        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "10");
+        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "60");
 
 
     // Enable guice. See
@@ -527,29 +528,12 @@ public class ServerRpcProvider {
 
       @Override
       public void sessionCreated(HttpSessionEvent arg0) {
-        LOG.info("Sessiong created " + arg0.getSession().getId());
-
-        // Remove previously existing connections for the session
-        if (CONNECTIONS.containsKey(arg0.getSession().getId())) {
-          LOG.info("Creating session and removing old conection " + arg0.getSession().getId());
-          CONNECTIONS.remove(arg0.getSession().getId());
-        }
+        // No op
       }
 
       @Override
       public void sessionDestroyed(HttpSessionEvent arg0) {
-
-        // Forget connections when they are destroyed
-//        if (CONNECTIONS.containsKey(arg0.getSession().getId())) {
-//          LOG.info("Destroying session and removing conection " + arg0.getSession().getId());
-//
-//          Connection conn = CONNECTIONS.get(arg0.getSession().getId());
-//          if (conn instanceof AtmosphereConnection) {
-//            AtmosphereConnection atmosphereConn = (AtmosphereConnection) conn;
-//            atmosphereConn.getAtmosphereChannel().getBroadcaster().broadcast("ERROR=403=Session expired");
-//          }
-//          CONNECTIONS.remove(arg0.getSession().getId());
-//        }
+        LOG.info("Session destroyed: " + arg0.getSession().getId());
       }
 
     });
@@ -768,14 +752,55 @@ public class ServerRpcProvider {
       return session;
     }
 
+
+    protected void flushResponse(AtmosphereResource resource) {
+
+      try {
+
+        resource.getResponse().flushBuffer();
+
+        switch (resource.transport()) {
+          case JSONP:
+          case LONG_POLLING:
+            resource.resume();
+            break;
+          case WEBSOCKET:
+          case STREAMING:
+          case SSE:
+            resource.getResponse().getOutputStream().flush();
+            break;
+          default:
+            LOG.info("Unknown transport");
+            break;
+        }
+      } catch (IOException e) {
+        LOG.warning("Error resuming resource response", e);
+      }
+    }
+
+
     @Override
     public void onRequest(AtmosphereResource resource) throws IOException {
+
+
+
+      // If it's the old client then force the connection close
+      if (!resource.getRequest().headersMap().containsKey("X-client-version")) {
+        resource.getResponse().sendError(500, "client_upgrade");
+        resource.close();
+        return;
+      }
+
+      String clientVersionHeader = resource.getRequest().getHeader("X-client-version");
+      boolean needClientUpgrade =
+          (clientVersionHeader == null) || (!clientVersionHeader.equals(Model.MODEL_VERSION));
+
 
       HttpSession httpSession = getSession(resource);
 
       if (httpSession == null) {
         // Session has expired, close the connection,
-        resource.getResponse().close();
+        resource.close();
         return;
       }
 
@@ -806,11 +831,6 @@ public class ServerRpcProvider {
             CONNECTIONS.put(httpSession.getId(), connection);
           }
         }
-
-        if (!connection.getAtmosphereChannel().hasResources()) {
-          connection.getAtmosphereChannel().onConnect(resource);
-        }
-
       } else {
 
         // Long-polling transport:
@@ -821,7 +841,6 @@ public class ServerRpcProvider {
         if (!CONNECTIONS.containsKey(resource.uuid())) {
           connection = new AtmosphereConnection(loggedInUser, provider);
           CONNECTIONS.put(resource.uuid(), connection);
-          connection.getAtmosphereChannel().onConnect(resource);
         } else {
           connection = (AtmosphereConnection) CONNECTIONS.get(resource.uuid());
 
@@ -835,14 +854,18 @@ public class ServerRpcProvider {
         }
       }
 
-      resource.setBroadcaster(connection.getAtmosphereChannel().getBroadcaster());
-
-
       if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
         LOG.fine("Atmosphere suspending resource (" + resource.transport().name() + ") "
-            + resource.uuid());
-        // resource.suspend(20000); // use this to simulate network cuts
-        resource.suspend();
+            + resource.uuid()); //
+        resource.suspend(20000); // use this to simulate network cuts
+      }
+
+      connection.getAtmosphereChannel().setResource(resource);
+
+      if (needClientUpgrade) {
+        connection.getAtmosphereChannel().onClientNeedUpgrade();
+        connection.getAtmosphereChannel().onDisconnect(resource);
+        return;
       }
 
 
@@ -856,6 +879,7 @@ public class ServerRpcProvider {
           LOG.info("Exception on channel.", e);
         }
       }
+
 
     }
 
@@ -888,6 +912,9 @@ public class ServerRpcProvider {
       AtmosphereResponse response = event.getResource().getResponse();
       AtmosphereResource resource = event.getResource();
 
+      HttpSession httpSession = getSession(resource);
+      ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
+
       if (event.isSuspended()) {
 
         LOG.fine("Atmosphere response for suspended resource " + resource.uuid()
@@ -916,35 +943,20 @@ public class ServerRpcProvider {
           response.getOutputStream().write(message.getBytes(CHARSET));
         }
 
-        try {
 
-          response.flushBuffer();
-
-          switch (resource.transport()) {
-            case JSONP:
-            case LONG_POLLING:
-              event.getResource().resume();
-              break;
-            case WEBSOCKET:
-            case STREAMING:
-            case SSE:
-              response.getOutputStream().flush();
-              break;
-            default:
-              LOG.info("Unknown transport");
-              break;
-          }
-        } catch (IOException e) {
-          LOG.warning("Error resuming resource response", e);
-        }
+        flushResponse(resource);
 
 
       } else if (event.isCancelled()) {
 
-        HttpSession httpSession = getSession(resource);
-        ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
         LOG.info("Resource cancelled by remote client: " + event.getResource().uuid() + " / "
             + loggedInUser.getAddress());
+
+        AtmosphereConnection connection =
+            (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+
+        if (connection != null)
+          connection.getAtmosphereChannel().onDisconnect(event.getResource());
 
       } else if (event.isResumedOnTimeout()) {
 
@@ -954,19 +966,9 @@ public class ServerRpcProvider {
 
         LOG.fine("Resource resumed: " + event.getResource().uuid());
 
-      } else {
+      } else if (event.isClosedByApplication() || event.isClosedByClient()) {
 
-        String eventStr = "None";
-
-        if (event.isClosedByApplication())
-          eventStr = "ClosedByApplication";
-        else if (event.isClosedByClient())
-          eventStr = "ClosedByClient";
-
-        HttpSession httpSession = getSession(resource);
-        ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
-
-        LOG.info("Resource " + eventStr + ": " + event.getResource().uuid() + " / "
+        LOG.info("Resource closed " + ": " + event.getResource().uuid() + " / "
             + loggedInUser.getAddress());
 
         AtmosphereConnection connection =
@@ -975,6 +977,20 @@ public class ServerRpcProvider {
         if (connection != null)
           connection.getAtmosphereChannel().onDisconnect(event.getResource());
 
+      } else if (event.isResuming()) {
+
+        LOG.info("Resuming resource " + event.getResource().uuid() + " / "
+            + loggedInUser.getAddress());
+
+      } else if (event.isResumedOnTimeout()) {
+
+        LOG.info("Resuming resource in Timeout " + event.getResource().uuid() + " / "
+            + loggedInUser.getAddress());
+
+      } else {
+
+        LOG.info("Unknown atmosphere event for resource " + event.getResource().uuid() + " / "
+            + loggedInUser.getAddress());
       }
 
     }

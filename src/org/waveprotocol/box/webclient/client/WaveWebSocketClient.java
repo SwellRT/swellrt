@@ -222,9 +222,32 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
 
+  public static native void log(String s) /*-{
+                                          console.log(s);
+                                          }-*/;
+
 
   @Override
   public void onMessage(final String message) {
+
+    log(message);
+
+    if (connected == ConnectState.DISCONNECTED) return;
+
+    if (message.startsWith("X-response:")) {
+      String response = message.split(":")[1];
+      if (response.equals("upgrade")) {
+        LOG.info("Client requires upgrade!");
+        connected = ConnectState.DISCONNECTED;
+        // TODO change to other event
+        ClientEvents.get().fireEvent(
+            new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR,
+                NetworkStatusEvent.PAYLOAD_CLIENT_UPGRADE));
+        disconnect(true);
+        return;
+      }
+    }
+
     LOG.info("received JSON message " + message);
     Timer timer = Timing.start("deserialize message");
     MessageWrapper wrapper;
