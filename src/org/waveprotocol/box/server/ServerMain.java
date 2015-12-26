@@ -80,7 +80,6 @@ import org.waveprotocol.box.server.stat.TimingFilter;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
-import org.waveprotocol.box.server.waveserver.WaveIndexer;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.box.server.waveserver.WaveletStateException;
@@ -337,8 +336,8 @@ public class ServerMain {
     waveViewDistpatcher.addListener(listener);
     waveBus.subscribe(waveViewDistpatcher);
 
-    WaveIndexer waveIndexer = injector.getInstance(WaveIndexer.class);
-    waveIndexer.remakeIndex();
+    // WaveIndexer waveIndexer = injector.getInstance(WaveIndexer.class);
+    // waveIndexer.remakeIndex();
   }
 
   private static void initializeSwellRt(Injector injector, WaveBus waveBus) {
@@ -348,11 +347,11 @@ public class ServerMain {
     ModelIndexerDispatcher indexerDispatcher =
         injector.getInstance(ModelIndexerDispatcher.class);
 
-    try {
-      indexerDispatcher.initialize();
-    } catch (WaveServerException e) {
-      LOG.warning("Error initializating SwellRtIndexerDispatcher", e);
-    }
+//    try {
+//      indexerDispatcher.initialize();
+//    } catch (WaveServerException e) {
+//      LOG.warning("Error initializating SwellRtIndexerDispatcher", e);
+    // }
     waveBus.subscribe(indexerDispatcher);
 
 
