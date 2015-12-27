@@ -2,6 +2,7 @@ package org.swellrt.model.generic;
 
 import com.google.common.base.Preconditions;
 
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
@@ -17,8 +18,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ModelMigrator {
+
+  private static final Logger LOG = Logger.getLogger(ModelMigrator.class.getName());
 
   public static final String PARTICIPANT_SYSTEM = "_system_";
 
@@ -229,12 +233,16 @@ public class ModelMigrator {
       valueIndexItem = DocHelper.getNextSiblingElement(docModelRoot, valueIndexItem); // Next
     }
 
+    LOG.info("Start migration - wave " + ModelUtils.serialize(wave.getWaveId()));
+
     // Go into the tree
     processBlip(domain, blipMapRoot, values, "root", rootWavelet);
 
 
     // Delete old string index
     docModelRoot.deleteNode(eltValuesList);
+
+    LOG.info("Stop migration - wave " + ModelUtils.serialize(wave.getWaveId()));
   }
 
   /**
@@ -243,6 +251,8 @@ public class ModelMigrator {
    */
   private static void processBlip(String domain, Blip blip, List<String> values, String path,
       ObservableWavelet wavelet) {
+
+    LOG.info("Processing blip " + blip.getId() + " with path " + path);
 
     if (blip.getId().startsWith("map")) {
 
@@ -257,7 +267,6 @@ public class ModelMigrator {
     } else if (blip.getId().startsWith("b")) {
       addMetadataDoc(blip, path);
     }
-
 
   }
 
@@ -375,7 +384,13 @@ public class ModelMigrator {
       String r = blip.getContent().getAttribute(eltListEntry, "r");
       if (r.startsWith("str+")) {
         int index = Integer.valueOf(r.substring(4));
-        String value = values.get(index);
+
+        String value = "null";
+        // Check index range to avoid inconsistency
+        if (0 <= index && index < values.size())
+          value = values.get(index);
+        else
+          LOG.info("Index out of bounds " + index + " in blip " + blip.getId());
 
         // Store value in the <values> section
         int valueIndex = addValue(blip.getContent(), eltValues, value);
