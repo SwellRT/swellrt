@@ -458,6 +458,8 @@ public class DeltaBasedEventSource implements Subscriber {
   @Override
   public void waveletUpdate(ReadableWaveletData wavelet, DeltaSequence deltas) {
 
+    try {
+
     // This only applies to SwellRT data model wavelets
     if (!wavelet.getWaveletId().getId().equals(Model.WAVELET_SWELL_ROOT)) return;
 
@@ -535,6 +537,9 @@ public class DeltaBasedEventSource implements Subscriber {
       cursor.flushPendingOps();
     }
 
+    } catch (Exception e) {
+      LOG.info("Error generating event on delta received: " + e.getMessage());
+    }
   }
 
   @Override
