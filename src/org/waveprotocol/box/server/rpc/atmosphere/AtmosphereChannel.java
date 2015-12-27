@@ -52,7 +52,7 @@ public class AtmosphereChannel extends WebSocketChannel  {
    */
   public AtmosphereChannel(ProtoCallback callback, String id) {
     super(callback);
-    this.broadcaster = BroadcasterFactory.getDefault().get(id);
+    this.broadcaster = BroadcasterFactory.getDefault().get();
   }
 
   /**

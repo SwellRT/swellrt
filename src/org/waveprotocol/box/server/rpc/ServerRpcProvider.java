@@ -114,7 +114,7 @@ public class ServerRpcProvider {
    * The buffer size is passed to implementations of {@link WaveWebSocketServlet} as init
    * param. It defines the response buffer size.
    */
-  private static final int BUFFER_SIZE = 1024 * 1024;
+  private static final int BUFFER_SIZE = 1024 * 1024 * 2;
 
   private final InetSocketAddress[] httpAddresses;
   private final Executor threadPool;
@@ -518,6 +518,10 @@ public class ServerRpcProvider {
     atholder.setInitParameter(
         "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "60");
 
+    // Setting all buffers to 2MB
+    atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", "2097152");
+    atholder.setInitParameter("org.atmosphere.websocket.maxBinaryMessageSize", "2097152");
+    atholder.setInitParameter("org.atmosphere.websocket.webSocketBufferingMaxSize", "2097152");
 
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
@@ -809,20 +813,6 @@ public class ServerRpcProvider {
       ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
 
-      if (!CONNECTIONS.containsKey(httpSession.getId()))
-        CONNECTIONS.put(httpSession.getId(), new AtmosphereConnection(httpSession.getId(),
-            loggedInUser, provider));
-
-      AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
-
-      // A connection exists for a different participant:
-      // This happens when different users shares the same browser session.
-      // Ensure that connections are cleaned up.
-      if (!connection.getParticipantId().equals(loggedInUser)) {
-        connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
-        CONNECTIONS.put(httpSession.getId(), connection);
-      }
-
 
       // WebSocket Transport:
       //
@@ -833,6 +823,25 @@ public class ServerRpcProvider {
 
       if (resource.transport().equals(TRANSPORT.WEBSOCKET)) {
 
+        // Cache connectios by session id and transport to allow reconnections
+        // of the same user with different transport
+        String key = httpSession.getId() + ":WS";
+
+        if (!CONNECTIONS.containsKey(key))
+          CONNECTIONS.put(key,
+              new AtmosphereConnection(httpSession.getId(),
+              loggedInUser, provider));
+
+        AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(key);
+
+        // A connection exists for a different participant:
+        // This happens when different users shares the same browser session.
+        // Ensure that connections are cleaned up.
+        if (!connection.getParticipantId().equals(loggedInUser)) {
+          connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
+          CONNECTIONS.put(key, connection);
+        }
+
 
 
         if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
@@ -840,7 +849,10 @@ public class ServerRpcProvider {
           // LOG.info("Websocket suspending request " + resource.uuid());
 
           resource.suspend();
-          connection.getAtmosphereChannel().bindResource(resource);
+
+          if (!connection.getAtmosphereChannel().hasResources()) {
+            connection.getAtmosphereChannel().bindResource(resource);
+          }
 
 
           if (needClientUpgrade) {
@@ -866,12 +878,37 @@ public class ServerRpcProvider {
       } else if (resource.transport().equals(TRANSPORT.LONG_POLLING)
           || resource.transport().equals(TRANSPORT.POLLING)) {
 
+        // Cache connectios by session id and transport to allow reconnections
+        // of the same user with different transport
+        String key = httpSession.getId() + ":LP";
+
+        if (!CONNECTIONS.containsKey(key))
+          CONNECTIONS.put(key,
+              new AtmosphereConnection(httpSession.getId(),
+              loggedInUser, provider));
+
+        AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(key);
+
+        // A connection exists for a different participant:
+        // This happens when different users shares the same browser session.
+        // Ensure that connections are cleaned up.
+        if (!connection.getParticipantId().equals(loggedInUser)) {
+          connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
+          CONNECTIONS.put(key, connection);
+        }
+
+
+
+
+
         if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
 
           // LOG.info("Long-polling suspending request " + resource.uuid());
 
           resource.suspend();
+          // In long polling we bind any new resource to the channel
           connection.getAtmosphereChannel().bindResource(resource);
+
 
           if (needClientUpgrade) {
             connection.getAtmosphereChannel().onClientNeedUpgrade();
