@@ -43,6 +43,10 @@ public class UnmutableList implements ReadableList<ReadableType>, ReadableTypeVi
   public static UnmutableList deserialize(UnmutableModel model, String substrateDocumentId) {
 
     final Document document = model.getDocument(substrateDocumentId);
+
+    // Ignore on blips with no content
+    if (document == null) return null;
+
     Doc.E eltlist = DocHelper.getElementWithTagName(document, ListType.TAG_LIST);
 
 

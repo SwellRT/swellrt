@@ -18,9 +18,9 @@ import java.util.Set;
 /**
  * An unmutable SwellRT data model that parse all Document's into Java objects
  * at construction time.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class UnmutableModel implements ReadableModel {
 
@@ -52,6 +52,13 @@ public class UnmutableModel implements ReadableModel {
   }
 
   protected Document getDocument(String documentId) {
+
+    if (waveletData.getDocument(documentId) == null
+        || waveletData.getDocument(documentId).getContent() == null) {
+      LOG.info(ModelUtils.serialize(this.getWaveId())
+          + " wavelet doesn't have content document for blip " + documentId);
+      return null;
+    }
 
     return waveletData.getDocument(documentId).getContent().getMutableDocument();
   }

@@ -70,6 +70,10 @@ public class UnmutableMap implements ReadableMap, ReadableTypeVisitable {
   public static UnmutableMap deserialize(UnmutableModel model, String substrateDocumentId) {
 
     final Document document = model.getDocument(substrateDocumentId);
+
+    // Ignore on blips with no content
+    if (document == null) return null;
+
     Doc.E eltMap = DocHelper.getElementWithTagName(document, MapType.TAG_MAP);
 
 
