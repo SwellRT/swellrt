@@ -58,11 +58,6 @@ import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
@@ -114,7 +109,7 @@ public class ServerRpcProvider {
    * The buffer size is passed to implementations of {@link WaveWebSocketServlet} as init
    * param. It defines the response buffer size.
    */
-  private static final int BUFFER_SIZE = 1024 * 1024 * 2;
+  private static final int BUFFER_SIZE = 1024 * 1024;
 
   private final InetSocketAddress[] httpAddresses;
   private final Executor threadPool;
@@ -124,6 +119,7 @@ public class ServerRpcProvider {
   private final boolean sslEnabled;
   private final String sslKeystorePath;
   private final String sslKeystorePassword;
+
 
 
   private static ConcurrentHashMap<String, Connection> CONNECTIONS =
@@ -436,6 +432,7 @@ public class ServerRpcProvider {
       // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
       jettySessionManager.setSessionIdPathParameterName(null);
       context.getSessionHandler().setSessionManager(jettySessionManager);
+      context.getSessionHandler().getSessionManager().setMaxInactiveInterval(48 * 60 * 60);
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
@@ -503,9 +500,10 @@ public class ServerRpcProvider {
   }
   public void addWebSocketServlets() {
     // Servlet where the websocket connection is served from.
-    ServletHolder wsholder = addServlet("/socket", WaveWebSocketServlet.class);
+    // ServletHolder wsholder = addServlet("/socket",
+    // WaveWebSocketServlet.class);
     // TODO(zamfi): fix to let messages span frames.
-    wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
+    // wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
     // Atmosphere framework. Replacement of Socket.IO
     // See https://issues.apache.org/jira/browse/WAVE-405
@@ -518,10 +516,20 @@ public class ServerRpcProvider {
     atholder.setInitParameter(
         "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "60");
 
-    // Setting all buffers to 2MB
-    atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", "2097152");
-    atholder.setInitParameter("org.atmosphere.websocket.maxBinaryMessageSize", "2097152");
-    atholder.setInitParameter("org.atmosphere.websocket.webSocketBufferingMaxSize", "2097152");
+
+    // TODO: use config parameters
+    // @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME)
+    // int websocketMaxIdleTime;
+    // @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE)
+    // int websocketMaxMessageSize;
+
+    // Setting all buffers at least to 2MB
+    atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", ""
+        + (BUFFER_SIZE * 2));
+    atholder.setInitParameter("org.atmosphere.websocket.maxBinaryMessageSize", ""
+        + (BUFFER_SIZE * 2));
+    atholder.setInitParameter("org.atmosphere.websocket.webSocketBufferingMaxSize", ""
+        + (BUFFER_SIZE * 2));
 
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
@@ -534,7 +542,8 @@ public class ServerRpcProvider {
 
       @Override
       public void sessionCreated(HttpSessionEvent arg0) {
-        // No op
+        LOG.info("Session created: " + arg0.getSession().getId());
+        arg0.getSession().setMaxInactiveInterval(48 * 60 * 60);
       }
 
       @Override
@@ -653,45 +662,45 @@ public class ServerRpcProvider {
     return list;
   }
 
-  @SuppressWarnings("serial")
-  @Singleton
-  public static class WaveWebSocketServlet extends WebSocketServlet {
-
-    final ServerRpcProvider provider;
-    final int websocketMaxIdleTime;
-    final int websocketMaxMessageSize;
-
-    @Inject
-    public WaveWebSocketServlet(ServerRpcProvider provider,
-        @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int websocketMaxIdleTime,
-        @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int websocketMaxMessageSize) {
-      super();
-      this.provider = provider;
-      this.websocketMaxIdleTime= websocketMaxIdleTime;
-      this.websocketMaxMessageSize = websocketMaxMessageSize;
-    }
-
-    @SuppressWarnings("cast")
-    @Override
-    public void configure(WebSocketServletFactory factory) {
-      if (websocketMaxIdleTime == 0) {
-        // Jetty does not allow to set infinite timeout.
-        factory.getPolicy().setIdleTimeout(Integer.MAX_VALUE);
-      } else {
-        factory.getPolicy().setIdleTimeout(websocketMaxIdleTime);
-      }
-      factory.getPolicy().setMaxTextMessageSize(websocketMaxMessageSize * 1024 * 1024);
-      factory.setCreator(new WebSocketCreator() {
-        @Override
-        public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
-          ParticipantId loggedInUser =
-              provider.sessionManager.getLoggedInUser((HttpSession)req.getSession());
-
-          return new WebSocketConnection(loggedInUser, provider).getWebSocketServerChannel();
-        }
-      });
-    }
-  }
+//  @SuppressWarnings("serial")
+//  @Singleton
+//  public static class WaveWebSocketServlet extends WebSocketServlet {
+//
+//    final ServerRpcProvider provider;
+//    final int websocketMaxIdleTime;
+//    final int websocketMaxMessageSize;
+//
+//    @Inject
+//    public WaveWebSocketServlet(ServerRpcProvider provider,
+//        @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int websocketMaxIdleTime,
+//        @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int websocketMaxMessageSize) {
+//      super();
+//      this.provider = provider;
+//      this.websocketMaxIdleTime= websocketMaxIdleTime;
+//      this.websocketMaxMessageSize = websocketMaxMessageSize;
+//    }
+//
+//    @SuppressWarnings("cast")
+//    @Override
+//    public void configure(WebSocketServletFactory factory) {
+//      if (websocketMaxIdleTime == 0) {
+//        // Jetty does not allow to set infinite timeout.
+//        factory.getPolicy().setIdleTimeout(Integer.MAX_VALUE);
+//      } else {
+//        factory.getPolicy().setIdleTimeout(websocketMaxIdleTime);
+//      }
+//      factory.getPolicy().setMaxTextMessageSize(websocketMaxMessageSize * 1024 * 1024);
+//      factory.setCreator(new WebSocketCreator() {
+//        @Override
+//        public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
+//          ParticipantId loggedInUser =
+//              provider.sessionManager.getLoggedInUser((HttpSession)req.getSession());
+//
+//          return new WebSocketConnection(loggedInUser, provider).getWebSocketServerChannel();
+//        }
+//      });
+//    }
+//  }
 
   /**
    * Manange atmosphere connections and dispatch messages to wave channels.

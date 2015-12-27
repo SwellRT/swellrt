@@ -130,8 +130,6 @@ public class ServerModule extends AbstractModule {
       @Named(CoreSettings.SESSION_COOKIE_MAX_AGE) int sessionCookieMaxAge) {
     HashSessionManager sessionManager = new HashSessionManager();
     sessionManager.getSessionCookieConfig().setMaxAge(sessionCookieMaxAge);
-    // Server side session expiration time
-    sessionManager.setMaxInactiveInterval(sessionCookieMaxAge);
     return sessionManager;
   }
 }
