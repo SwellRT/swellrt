@@ -100,8 +100,14 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
     BasicDBObject mapDBObject = new BasicDBObject();
     for (String k : instance.keySet()) {
       path.push(k);
-      instance.get(k).accept(this);
-      mapDBObject.put(k, objects.pop());
+
+      // Avoid issues on non initialized blips (blips with no content)
+      ReadableType t = instance.get(k);
+      if (t != null) {
+        instance.get(k).accept(this);
+        mapDBObject.put(k, objects.pop());
+      }
+
       path.pop();
     }
     objects.push(mapDBObject);
