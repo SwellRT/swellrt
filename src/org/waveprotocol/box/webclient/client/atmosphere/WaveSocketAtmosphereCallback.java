@@ -75,14 +75,17 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
   }
 
   /**
-   * Decode Base64 string using browser native functions to avoid
-   * issues on large encoded strings.
-   *
+   * Decode Base64 string using browser native functions to avoid issues on
+   * large encoded strings.
+   * 
+   * It expects an UTF-8 string.
+   * 
    * @param m
    * @return
    */
   protected native String decodeBase64(String m) /*-{
-    return $wnd.atob(m);
+    var decoded = $wnd.atob( m );
+    return decodeURIComponent( escape( decoded ) );
   }-*/;
 
 
