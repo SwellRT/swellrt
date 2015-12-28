@@ -221,6 +221,8 @@ task generateMessages {
     }
 }
 
+generateMessages.dependsOn ":pst:jar"
+
 task generateGXP {
     description = 'Generate source files from GXP prototypes'
     FileTree inputFiles = fileTree(dir: 'src/main/gxp', include: '**/*.gxp')
@@ -551,7 +553,7 @@ task createPropertiesFile(type: Copy) {
 }
 
 task createDistBinZip(type: Zip) {
-    baseName = this.group + "-bin-"
+    baseName = this.group + "-bin"
     destinationDir = file('../distributions')
     from(jar) {
         into 'apache-wave/bin'
@@ -580,7 +582,7 @@ task createDistBinZip(type: Zip) {
 }
 
 task createDistBinTar(type: Tar) {
-    baseName = this.group + "-bin-"
+    baseName = this.group + "-bin"
     destinationDir = file('../distributions')
     from(jar) {
         into 'apache-wave/bin'
@@ -621,7 +623,7 @@ task createDistBin() {
     }
 }
 
-createDistBin.dependsOn createDistBinZip,
+createDistBin.dependsOn createDistBinZip, createDistBinTar
 
 // Additional Clean
 clean {

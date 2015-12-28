@@ -54,5 +54,7 @@ wave/gwt-unitCache
 ### config
 wave/local.net.cfg.lua
 wave/config/wave.conf
+### Vagrant
+.vagrant/
 
 
