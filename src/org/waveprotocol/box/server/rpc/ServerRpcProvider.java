@@ -139,6 +139,10 @@ public class ServerRpcProvider {
 
   private final String sessionStoreDir;
 
+  private int webSocketMaxIdleTime;
+  private int webSocketMaxMessageSize;
+  private int websocketHeartbeat;
+
   /**
    * Internal, static container class for any specific registered service
    * method.
@@ -374,7 +378,8 @@ public class ServerRpcProvider {
   public ServerRpcProvider(InetSocketAddress[] httpAddresses,
       String[] resourceBases, Executor threadPool, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
-      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword) {
+      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
+      int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat) {
     this.httpAddresses = httpAddresses;
     this.resourceBases = resourceBases;
     this.threadPool = threadPool;
@@ -384,19 +389,22 @@ public class ServerRpcProvider {
     this.sslEnabled = sslEnabled;
     this.sslKeystorePath = sslKeystorePath;
     this.sslKeystorePassword = sslKeystorePassword;
+    this.webSocketMaxIdleTime = webSocketMaxIdleTime;
+    this.webSocketMaxMessageSize = webSocketMaxMessageSize;
+    this.websocketHeartbeat = websocketHeartbeat;
   }
 
   /**
    * Constructs a new ServerRpcProvider with a default ExecutorService.
    */
-  public ServerRpcProvider(InetSocketAddress[] httpAddresses,
-      String[] resourceBases, SessionManager sessionManager,
-      org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
-      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
-      Executor executor) {
-    this(httpAddresses, resourceBases, executor,
-        sessionManager, jettySessionManager, sessionStoreDir, sslEnabled, sslKeystorePath,
-        sslKeystorePassword);
+  public ServerRpcProvider(InetSocketAddress[] httpAddresses, String[] resourceBases,
+      SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
+      String sessionStoreDir, boolean sslEnabled, String sslKeystorePath,
+      String sslKeystorePassword, Executor executor, int webSocketMaxIdleTime,
+      int webSocketMaxMessageSize, int websocketHeartbeat) {
+    this(httpAddresses, resourceBases, executor, sessionManager, jettySessionManager,
+        sessionStoreDir, sslEnabled, sslKeystorePath, sslKeystorePassword, webSocketMaxIdleTime,
+        webSocketMaxMessageSize, websocketHeartbeat);
   }
 
   @Inject
@@ -408,10 +416,15 @@ public class ServerRpcProvider {
       @Named(CoreSettings.ENABLE_SSL) boolean sslEnabled,
       @Named(CoreSettings.SSL_KEYSTORE_PATH) String sslKeystorePath,
       @Named(CoreSettings.SSL_KEYSTORE_PASSWORD) String sslKeystorePassword,
-      @ClientServerExecutor Executor executorService) {
+      @ClientServerExecutor Executor executorService,
+      @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int webSocketMaxIdleTime,
+      @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int webSocketMaxMessageSize,
+      @Named(CoreSettings.WEBSOCKET_HEARTBEAT) int websocketHeartbeat) {
     this(parseAddressList(httpAddresses, websocketAddress), resourceBases
         .toArray(new String[0]), sessionManager, jettySessionManager, sessionStoreDir,
-        sslEnabled, sslKeystorePath, sslKeystorePassword, executorService);
+ sslEnabled, sslKeystorePath,
+        sslKeystorePassword, executorService, webSocketMaxIdleTime, webSocketMaxMessageSize,
+        websocketHeartbeat);
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -518,7 +531,8 @@ public class ServerRpcProvider {
     // Setting a low HeartBeat frequency to avoid network issues. Let clients to
     // set a hihger value.
     atholder.setInitParameter(
-        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", "60");
+        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", ""
+            + websocketHeartbeat);
 
 
     // TODO: use config parameters
@@ -529,11 +543,11 @@ public class ServerRpcProvider {
 
     // Setting all buffers at least to 2MB
     atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", ""
-        + (BUFFER_SIZE * 2));
+        + (BUFFER_SIZE * webSocketMaxMessageSize));
     atholder.setInitParameter("org.atmosphere.websocket.maxBinaryMessageSize", ""
-        + (BUFFER_SIZE * 2));
+        + (BUFFER_SIZE * webSocketMaxMessageSize));
     atholder.setInitParameter("org.atmosphere.websocket.webSocketBufferingMaxSize", ""
-        + (BUFFER_SIZE * 2));
+        + (BUFFER_SIZE * webSocketMaxMessageSize));
 
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection

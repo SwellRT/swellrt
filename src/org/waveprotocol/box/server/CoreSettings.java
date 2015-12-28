@@ -78,6 +78,10 @@ public class CoreSettings {
   public static final String MONGODB_PORT = "mongodb_port";
   public static final String MONGODB_DATABASE = "mongodb_database";
 
+  public static final String WEBSOCKET_HEARTBEAT = "websocket_heartbeat";
+  public static final String SESSION_SERVER_MAX_INACTIVE_TIME = "session_server_max_inactive_time";
+
+
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
 
@@ -290,4 +294,15 @@ public class CoreSettings {
   @Setting(name = MONGODB_DATABASE, description = "The database name used in the MongoDB server",
       defaultValue = "wiab")
   private static String mongoDBdatabase;
+
+  @Setting(name = WEBSOCKET_HEARTBEAT,
+      description = "Time interval between hearbeat marks sent to clients, in seconds", defaultValue = "10")
+  private static int websocketHeartbeat;
+
+  @Setting(name = SESSION_SERVER_MAX_INACTIVE_TIME,
+      description = "Max intactive time before deletion of server's session, in seconds",
+      defaultValue = "172800")
+  private static int sessionServerMaxInterval;
+
+
 }
