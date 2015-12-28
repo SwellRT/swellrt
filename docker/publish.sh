@@ -42,7 +42,7 @@ docker inspect $NAME:$VERSION > /dev/null 2>&1
 if [ $? -eq 1 ]
 then
   echo "  Mmm, there is not a docker image with this version. Is it already git-tagged?"
-    git show v$VERSION > /dev/null 2>&1
+    git show v$VERSION -- > /dev/null 2>&1
 
     if [ $? -eq 0 ]
     then
@@ -53,7 +53,7 @@ then
       PUSH_TAG=1
     else
       # Try to track bug in production
-      git show v$VERSION
+      git show v$VERSION --
       echo $?
       echo "  git tag does not exist yet!"
     fi
