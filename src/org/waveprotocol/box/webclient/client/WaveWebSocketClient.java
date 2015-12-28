@@ -222,15 +222,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
 
-  public static native void log(String s) /*-{
-                                          console.log(s);
-                                          }-*/;
-
-
   @Override
   public void onMessage(final String message) {
 
-    log(message);
 
     if (connected == ConnectState.DISCONNECTED) return;
 
