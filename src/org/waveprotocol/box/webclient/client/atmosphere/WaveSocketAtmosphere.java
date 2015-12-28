@@ -73,8 +73,20 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
         public static native AtmosphereSocket create(WaveSocketAtmosphere impl, String urlBase, String transport, String fallback, String clientVersion) /*-{
 
+          if ($wnd.__atmosphere_config === undefined) {
+              $wnd.__atmosphere_config = {};
+            }
 
-          // Atmoshpere client
+          var getAtmosphereProperty = function(property, defaultValue) {
+
+            if ($wnd.__atmosphere_config[property] === undefined)
+              return defaultValue;
+            else
+              return $wnd.__atmosphere_config[property];
+
+          };
+
+           // Atmoshpere client
           var atmosphere = $wnd.atmosphere;
 
           // Atmosphere socket
@@ -82,8 +94,6 @@ public class WaveSocketAtmosphere implements WaveSocket {
             request: null,
             socket: null
           };
-
-          $wnd.responses = new Array();
 
           var socketURL = urlBase;
           if (socketURL.charAt(socketURL.length-1) != "/")
@@ -95,49 +105,51 @@ public class WaveSocketAtmosphere implements WaveSocket {
           socket.request.uuid = 0;
 
           // It's true by default. Just a reminder.
-          socket.request.enableProtocol = true;
-          socket.request.async = true;
+          socket.request.enableProtocol = getAtmosphereProperty("enableProtocol", true);
+          socket.request.async = getAtmosphereProperty("async", true);
 
           socket.request.url = socketURL;
-          socket.request.contenType = 'text/plain;charset=UTF-8';
+          socket.request.contentType = getAtmosphereProperty("contentType", "text/plain;charset=UTF-8");
 
-          socket.request.logLevel = 'debug';
+          socket.request.logLevel = getAtmosphereProperty("logLevel", "info");
 
 
-          socket.request.transport = transport;
-          socket.request.fallbackTransport = fallback;
+          socket.request.transport = getAtmosphereProperty("transport", transport);
+          socket.request.fallbackTransport = getAtmosphereProperty("fallbackTransport", fallback);
+
+          socket.request.pollingInterval = getAtmosphereProperty("pollingInterval", 0);
 
           // Track Message Lenght
           // Used with the server's TrackMessageSizeB64Interceptor
-          socket.request.trackMessageLength = true;
+          socket.request.trackMessageLength = getAtmosphereProperty("trackMessageLength", true);
 
           // CORS
-          socket.request.enableXDR = true;
-          socket.request.readResponsesHeaders = false;
-          socket.request.withCredentials = true;
-          socket.request.dropHeaders = true;
+          socket.request.enableXDR = getAtmosphereProperty("enableXDR", true);
+          socket.request.readResponsesHeaders = getAtmosphereProperty("readResponsesHeaders", false);
+          socket.request.withCredentials = getAtmosphereProperty("withCredentials", true);
+          socket.request.dropHeaders = getAtmosphereProperty("dropHeaders", true);
 
           // This value assumes that server sends hearbeat messages in less than 70s (timeout value)
           // This allows to detect network cuts
-          socket.request.timeout = 70000;
+          socket.request.timeout = getAtmosphereProperty("timeout", 70000);
 
           // Reconnection policy
 
           // The connect timeout. If the client fails to connect, the fallbackTransport will be used
-          socket.request.connectTimeout = -1;
+          socket.request.connectTimeout = getAtmosphereProperty("connectTimeout", -1);
 
           // Time between reconnection attempts
-          socket.request.reconnectInterval = 5000;
+          socket.request.reconnectInterval = getAtmosphereProperty("reconnectInterval", 5000);
 
           // Number of reconnect attempts before throw an error
-          socket.request.maxReconnectOnClose = 5;
+          socket.request.maxReconnectOnClose = getAtmosphereProperty("maxReconnectOnClose", 5);
 
           // Try to reconnect on server's errors
-          socket.request.reconnectOnServerError = true;
+          socket.request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
           // Server<->client version control
           socket.request.headers = {
-            'X-client-version' : clientVersion
+            'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
           };
 
 
@@ -166,41 +178,44 @@ public class WaveSocketAtmosphere implements WaveSocket {
           socket.request.onTransportFailure = function(error, request) {
             atmosphere.util.debug("Atmosphere Connection Transport Failure "+error);
 
-            request.contenType = 'text/plain;charset=UTF-8';
+            request.contentType = getAtmosphereProperty("contentType", "text/plain;charset=UTF-8");
 
             // The long polling wait time
-            request.timeout = 70000;
+            request.timeout = getAtmosphereProperty("timeout", 70000);
 
             request.transport = fallback;
             request.fallbackTransport = null;
 
-            request.trackMessageLength = true;
+            request.pollingInterval = getAtmosphereProperty("pollingInterval", 0);
+
+            request.trackMessageLength = getAtmosphereProperty("trackMessageLength", true);
 
             request.uuid = 0;
 
             // CORS
-            request.enableXDR = true;
-            request.readResponsesHeaders = false;
-            request.withCredentials = true;
+            request.enableXDR = getAtmosphereProperty("enableXDR", true);
+            request.readResponsesHeaders = getAtmosphereProperty("readResponsesHeaders", false);
+            request.withCredentials = getAtmosphereProperty("withCredentials", true);
+            request.dropHeaders = getAtmosphereProperty("dropHeaders", true);
 
 
             // Reconnection policy
 
             // The connect timeout. If the client fails to connect, the fallbackTransport will be used
-            request.connectTimeout = -1;
+            request.connectTimeout = getAtmosphereProperty("connectTimeout", -1);
 
             // Time between reconnection attempts
-            request.reconnectInterval = 5000;
+            request.reconnectInterval = getAtmosphereProperty("reconnectInterval", 5000);
 
             // Number of reconnect attempts before throw an error
-            request.maxReconnectOnClose = 5;
+            request.maxReconnectOnClose = getAtmosphereProperty("maxReconnectOnClose", 5);
 
             // Try to reconnect on server's errors
-            request.reconnectOnServerError = true;
+            request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
             // Server<->client version control
             request.headers = {
-              'X-client-version' : clientVersion
+              'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
             };
 
           };
