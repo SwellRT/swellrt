@@ -42,7 +42,11 @@ configurations {
     }
 }
 
-
+sonarqube {
+    properties {
+        property "sonar.exclusions", "src/generated/**/*.java"
+    }
+}
 
 /* Project Dependencies */
 dependencies {

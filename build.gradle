@@ -6,11 +6,13 @@ buildscript {
 
 plugins {
     id "org.nosphere.apache.rat" version "0.2.0"
+    id "org.sonarqube" version "1.1"
 }
 
 allprojects {
     apply plugin: 'eclipse';
     apply plugin: 'idea';
+    apply plugin: 'jacoco'
     group = 'apache-wave'
     version = '0.4'
 }
