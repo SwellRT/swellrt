@@ -1,3 +1,5 @@
+[![Build Status](https://builds.apache.org/buildStatus/icon?job=wave-small_tests)](https://builds.apache.org/job/wave-small_tests)   
+
 # Apache Wave
 
 The Apache Wave project is a stand alone wave server and rich web client
