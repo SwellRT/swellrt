@@ -1,1 +1,1 @@
-include "wave", "pst"
+include "wave", "pst", "wave-proto"

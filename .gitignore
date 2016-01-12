@@ -48,7 +48,7 @@ distributions/
 ### Reports
 reports/
 ### Generated Sources
-**/generated/
+wave/src/generated/
 ### Gwt Testing
 wave/gwt-unitCache
 ### config

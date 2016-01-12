@@ -1,52 +1,64 @@
-// Licensed to the Apache Software Foundation (ASF) under one
-// or more contributor license agreements.  See the NOTICE file
-// distributed with this work for additional information
-// regarding copyright ownership.  The ASF licenses this file
-// to you under the Apache License, Version 2.0 (the
-// "License"); you may not use this file except in compliance
-// with the License.  You may obtain a copy of the License at
-//
-//   http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing,
-// software distributed under the License is distributed on an
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-// KIND, either express or implied.  See the License for the
-// specific language governing permissions and limitations
-// under the License.
-
-//=============================================================================
-// Plugins
-//=============================================================================
 buildscript {
-    repositories {
-        mavenCentral()
-    }
     dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.7.3'
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.7.0'
     }
 }
+
 plugins {
     id "org.nosphere.apache.rat" version "0.2.0"
+    id "org.sonarqube" version "1.1"
 }
+
 allprojects {
     apply plugin: 'eclipse';
     apply plugin: 'idea';
     apply plugin: 'jacoco'
     group = 'apache-wave'
+    version = '0.4'
 }
 
-//=============================================================================
-// Project Level Settings
-//=============================================================================
-version = 0.4 //only applies to the wave server & client, should be changed once split
+// Repositories
+repositories {
+    mavenCentral()
+}
 
-//=============================================================================
-// Apache Rat Configuration
-//=============================================================================
+subprojects {
+    apply plugin: 'java';
+    //apply plugin: 'scala';
+    //apply plugin: 'checkstyle'
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+    test.ignoreFailures = true
+
+    compileJava{
+        options.incremental = true
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+}
+
+project(':wave'){
+    dependencies {
+        compile project(':pst')
+    }
+}
+
+project(':pst'){
+    dependencies {
+        compile project(':wave-proto')
+    }
+}
+
+// Apache Rat Plugin
 rat {
+    // Input directory, defaults to '.'
     inputDir = '.'
+    // XML and HTML reports directory, defaults to project.buildDir + '/reports/rat'
     reportDir = project.file('reports/rat')
+    // List of exclude directives, defaults to ['**/.gradle/**']
     excludes = [
             '**/build/**',
             'reports/**',
@@ -57,8 +69,10 @@ rat {
             '**/*.iml',
             '**/generated/**'
     ]
+    // Fail the build on rat errors, defaults to true
     failOnError = false
 }
+
 rat.doFirst {
     println ''
     println '----------------------------------------------'
@@ -68,51 +82,62 @@ rat.doFirst {
     println ''
 }
 
-//=============================================================================
-// Source Distribution
-//=============================================================================
-
-def srcName = this.group + "-src-" + this.version
-def srcExcludes = [
-        'distributions/',
-        '.gradle/',
-        '.git/',
-        '.vagrant/',
-        '*/build/*',
-        '*/_*',
-        '*/gwt-unitCache/',
-        '*.iml',
-        '*/*.iml',
-        '*.iws',
-        '*.ipr',
-        '*.project',
-        '*/*.project',
-        '*/*.classpath',
-        '*/.settings/',
-        '*/*.log*',
-        'reports/',
-        'wave/war/WEB-INF',
-        'wave/war/webclient'
-]
-
 task createDistSourceZip(type: Zip) {
-    baseName = srcName
+    baseName = this.group + "-src-" + this.version
     destinationDir = file('distributions')
     from('./') {
         into 'apache-wave-src'
     }
-    excludes = srcExcludes
+    excludes = [
+            'distributions/',
+            '.gradle/',
+            '.git/',
+            '.vagrant/',
+            '*/build/*',
+            '*/_*',
+            '*/gwt-unitCache/',
+            '*.iml',
+            '*/*.iml',
+            '*.iws',
+            '*.ipr',
+            '*.project',
+            '*/*.project',
+            '*/*.classpath',
+            '*/.settings/',
+            '*/*.log*',
+            'reports/',
+            'wave/war/WEB-INF',
+            'wave/war/webclient'
+    ]
 }
 
 task createDistSourceTar(type: Tar) {
-    compression = Compression.GZIP
-    extension = 'tar.gz'
-    baseName = srcName
+    baseName = this.group + "-src-" + this.version
     destinationDir = file('distributions')
     from('./') {
         into 'apache-wave-src'
     }
-    excludes = srcExcludes
+    excludes = [
+            'distributions/',
+            '.gradle/',
+            '.git/',
+            '.vagrant/',
+            '*/build/*',
+            '*/_*',
+            '*/gwt-unitCache/',
+            '*.iml',
+            '*/*.iml',
+            '*.iws',
+            '*.ipr',
+            '*.project',
+            '*/*.project',
+            '*/*.classpath',
+            '*/.settings/',
+            '*/*.log*',
+            'reports/',
+            'wave/war/WEB-INF',
+            'wave/war/webclient'
+    ]
 }
 
 task createDistSource() {
@@ -125,11 +150,8 @@ task createDistSource() {
     }
 }
 
-createDistSource.dependsOn createDistSourceZip, createDistSourceTar, ":pst:createDistSource"
+createDistSource.dependsOn createDistSourceZip, createDistSourceTar
 
-//=============================================================================
-// Distribution's
-//=============================================================================
 task createDist() {
     doFirst {
         println ''
@@ -141,4 +163,4 @@ task createDist() {
     }
 }
 
-createDist.dependsOn createDistSource, ":wave:createDistBin", ":pst:createDist"
+createDist.dependsOn createDistSource, ":wave:createDistBin"
