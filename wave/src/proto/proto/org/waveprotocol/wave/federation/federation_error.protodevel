@@ -1,0 +1,81 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+//
+// Google Wave Federation Protocol error codes.
+//
+// Author: kalman@google.com (Benjamin Kalman)
+
+syntax = "proto2";
+
+option java_package = "org.waveprotocol.wave.federation";
+option java_outer_classname = "FederationErrorProto";
+
+package federation;
+
+/**
+ * Container for a Federation error, containing the error code (as per the
+ * specification) and an optional description for debugging etc.
+ *
+ * The internal enum has codes which must map directly to XMPP error stanzas,
+ * as defined in RFC 3920 (9.3.3).
+ *
+ * TODO(arb): Once the error codes have been audited and standardised, merge into federation.proto.
+ */
+message FederationError {
+  enum Code {
+    // Should only be used for internal success.
+    OK = 0;
+
+    // Response for a completely broken request.
+    BAD_REQUEST = 1;
+
+    // Either the wavelet does not exist, or the request is not authorised and
+    // thus should not reveal the existence of the target wavelet.
+    ITEM_NOT_FOUND = 2;
+
+    // Revealable error conditions; including, but not limited to:
+    //  + submit failed due to invalid delta
+    //  + invalid signer info post
+    NOT_ACCEPTABLE = 3;
+
+    // Signer info not available for delta submit.
+    NOT_AUTHORIZED = 4;
+
+    // Generic 'back-off' message.
+    RESOURCE_CONSTRAINT = 5;
+
+    // Undefined condition. This error will be generated if an error condition
+    // not otherwise contained within this protobuf is received over-the-wire.
+    UNDEFINED_CONDITION = 6;
+
+    // Timeout error condition. Note that this may be generated internally
+    // as well as being valid on-the-wire.
+    REMOTE_SERVER_TIMEOUT = 7;
+
+    // Request unexpected, wait requested. Note that this may be generated
+    // internally, notably if an in-flight ID is re-used.
+    UNEXPECTED_REQUEST = 8;
+
+    // Internal server error, wait requested.
+    INTERNAL_SERVER_ERROR = 9;
+  }
+
+  required Code error_code = 1;
+  optional string error_message = 2;
+
+  // TODO(thorogood): Optional source of message field (i.e. wire/internal) for internal use?
+}
