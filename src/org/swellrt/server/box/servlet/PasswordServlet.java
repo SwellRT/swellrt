@@ -2,11 +2,11 @@ package org.swellrt.server.box.servlet;
 
 import com.google.inject.Inject;
 
+import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.account.SecretToken;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
-import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -26,8 +26,6 @@ public class PasswordServlet implements SwellRTService {
 
   public static final String NEW_PASSWORD = "new-password";
 
-  @Inject
-  private SessionManager sessionManager;
   @Inject
   private AccountStore accountStore;
 
@@ -52,24 +50,25 @@ public class PasswordServlet implements SwellRTService {
     try {
 
       ParticipantId pId = new ParticipantId(id);
-      HumanAccountData account = accountStore.getAccount(pId).asHuman();
+      AccountData a = accountStore.getAccount(pId);
+      if (a != null) {
+        HumanAccountData account = a.asHuman();
+        SecretToken storedToken = account.getRecoveryToken();
 
-      SecretToken storedToken = account.getRecoveryToken();
+        if (storedToken.getToken().equals(tokenOrPassword)
+            && storedToken.getExpirationDate().after(new Date())) {
+          HumanAccountDataImpl newAccount =
+              new HumanAccountDataImpl(pId, new PasswordDigest(newPassword.toCharArray()));
 
-      if (storedToken.getToken().equals(tokenOrPassword)
-          && storedToken.getExpirationDate().after(new Date())) {
-        HumanAccountDataImpl newAccount =
-            new HumanAccountDataImpl(pId, new PasswordDigest(newPassword.toCharArray()));
+          if (account.getEmail() != null) {
+            newAccount.setEmail(account.getEmail());
+          }
 
-        if (account.getEmail() != null) {
-          newAccount.setEmail(account.getEmail());
+          accountStore.putAccount(newAccount);
+          response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+          response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
-
-        accountStore.putAccount(account);
-        response.setStatus(HttpServletResponse.SC_OK);
-
-      } else {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN);
       }
 
     } catch (PersistenceException e) {

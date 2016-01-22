@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -56,8 +55,6 @@ public class EmailServlet implements SwellRTService {
   @Inject
   @Named(CoreSettings.EMAIL_FROM_ADDRESS)
   String from;
-
-  private static final Logger LOG = Logger.getLogger(EmailServlet.class.getName());
 
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
@@ -129,7 +126,8 @@ public class EmailServlet implements SwellRTService {
 
                 double random = Math.random();
 
-                String token = Base64.encodeBase64String((String.valueOf(random)).getBytes());
+                String token =
+                    Base64.encodeBase64URLSafeString((String.valueOf(random)).getBytes());
 
                 a.asHuman().setRecoveryToken(token);
                 accountStore.putAccount(a);

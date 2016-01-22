@@ -341,9 +341,11 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       byte[] salt = (byte[]) digestObj.get(PASSWORD_SALT_FIELD);
       byte[] digest = (byte[]) digestObj.get(PASSWORD_DIGEST_FIELD);
       passwordDigest = PasswordDigest.from(salt, digest);
-      email = (String) digestObj.get(EMAIL_FIELD);
-      token = (SecretToken) digestObj.get(TOKEN_FIELD);
     }
+    email = (String) object.get(EMAIL_FIELD);
+    token = new SecretToken((String) object.get(TOKEN_FIELD),
+        (java.util.Date) object.get(TOKEN_DATE_FIELD));
+
 
     return new HumanAccountDataImpl(id, passwordDigest, email, token);
   }

@@ -23,6 +23,11 @@ public class SecretToken {
 
   }
 
+  public SecretToken(String token, Date expirationDate) {
+    this.token = token;
+    this.expirationDate = expirationDate;
+  }
+
   public String getToken() {
     return this.token;
   }
