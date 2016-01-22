@@ -101,6 +101,44 @@ public class WaveClientJS extends JavaScriptObject {
             }
          },
 
+         setUserEmail: function(email, onSuccess, onFailure) {
+
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
+
+            try {
+              return delegate.@org.swellrt.api.WaveClient::setUserEmail(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(email, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
+         },
+
+         setPassword: function(id, token, newPassword, onSuccess, onFailure) {
+
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
+
+            try {
+              return delegate.@org.swellrt.api.WaveClient::setPassword(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(id, token, newPassword, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
+
+         },
+
+         recoverPassword: function(idOrEmail, recoverUrl, onSuccess, onFailure){
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
+            try {
+              return delegate.@org.swellrt.api.WaveClient::recoverPassword(Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(idOrEmail, recoverUrl, callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
+
+         },
          //
          // Session
          //

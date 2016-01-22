@@ -123,6 +123,14 @@ public class SwellRtServlet extends HttpServlet {
 
       injector.getInstance(NotificationService.class).execute(req, response);
 
+    } else if (entity.equals("email")) {
+
+      injector.getInstance(EmailServlet.class).execute(req, response);
+
+    } else if (entity.equals("password")) {
+
+      injector.getInstance(PasswordServlet.class).execute(req, response);
+
     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);

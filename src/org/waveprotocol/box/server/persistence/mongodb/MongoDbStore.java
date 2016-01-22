@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
+import com.google.common.base.Preconditions;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.wave.api.Context;
 import com.google.wave.api.ProtocolVersion;
@@ -28,12 +29,14 @@ import com.google.wave.api.robot.Capability;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.bson.types.BasicBSONList;
 import org.waveprotocol.box.attachment.AttachmentMetadata;
 import org.waveprotocol.box.server.account.AccountData;
@@ -41,6 +44,7 @@ import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.account.RobotAccountData;
 import org.waveprotocol.box.server.account.RobotAccountDataImpl;
+import org.waveprotocol.box.server.account.SecretToken;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
@@ -56,6 +60,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -99,6 +104,9 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private static final String CAPABILITY_FILTER_FIELD = "filter";
 
   private static final Logger LOG = Logger.getLogger(MongoDbStore.class.getName());
+  private static final String EMAIL_FIELD = "email";
+  private static final String TOKEN_FIELD = "token";
+  private static final String TOKEN_DATE_FIELD = "token_date";
 
   private final DB database;
 
@@ -263,17 +271,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       return null;
     }
 
-    DBObject human = (DBObject) result.get(ACCOUNT_HUMAN_DATA_FIELD);
-    if (human != null) {
-      return objectToHuman(id, human);
-    }
-
-    DBObject robot = (DBObject) result.get(ACCOUNT_ROBOT_DATA_FIELD);
-    if (robot != null) {
-      return objectToRobot(id, robot);
-    }
-
-    throw new IllegalStateException("DB object contains neither a human nor a robot");
+    return accountFromQueryResult(result, id);
   }
 
   @Override
@@ -321,20 +319,33 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       object.put(HUMAN_PASSWORD_FIELD, digestObj);
     }
 
+    if (account.getEmail() != null) {
+      object.put(EMAIL_FIELD, account.getEmail());
+    }
+
+    if (account.getRecoveryToken() != null) {
+      object.put(TOKEN_FIELD, account.getRecoveryToken().getToken());
+      object.put(TOKEN_DATE_FIELD, account.getRecoveryToken().getExpirationDate());
+    }
+
     return object;
   }
 
   private HumanAccountData objectToHuman(ParticipantId id, DBObject object) {
     PasswordDigest passwordDigest = null;
+    String email = null;
+    SecretToken token = null;
 
     DBObject digestObj = (DBObject) object.get(HUMAN_PASSWORD_FIELD);
     if (digestObj != null) {
       byte[] salt = (byte[]) digestObj.get(PASSWORD_SALT_FIELD);
       byte[] digest = (byte[]) digestObj.get(PASSWORD_DIGEST_FIELD);
       passwordDigest = PasswordDigest.from(salt, digest);
+      email = (String) digestObj.get(EMAIL_FIELD);
+      token = (SecretToken) digestObj.get(TOKEN_FIELD);
     }
 
-    return new HumanAccountDataImpl(id, passwordDigest);
+    return new HumanAccountDataImpl(id, passwordDigest, email, token);
   }
 
   // ****** RobotAccountData serialization
@@ -411,4 +422,50 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
 
     return new RobotCapabilities(capabilities, capabilitiesHash, version);
   }
+
+  @Override
+  public List<AccountData> getAccountByEmail(String email) throws PersistenceException {
+
+    if (email == null) {
+      return null;
+    }
+
+    Preconditions.checkArgument(EmailValidator.getInstance().isValid(email));
+
+
+    DBObject query = new BasicDBObject();
+
+    query.put(ACCOUNT_HUMAN_DATA_FIELD + "." + EMAIL_FIELD, email);
+
+    DBCursor result = getAccountCollection().find(query);
+
+    ArrayList<AccountData> accounts = new ArrayList<AccountData>();
+
+    for (DBObject r : result) {
+      accounts.add(accountFromQueryResult(r, null));
+    }
+
+    return accounts;
+
+  }
+
+  private AccountData accountFromQueryResult(DBObject result, ParticipantId id) {
+
+    if (id == null) {
+      id = new ParticipantId((String) result.get("_id"));
+    }
+
+    DBObject human = (DBObject) result.get(ACCOUNT_HUMAN_DATA_FIELD);
+    if (human != null) {
+      return objectToHuman(id, human);
+    }
+
+    DBObject robot = (DBObject) result.get(ACCOUNT_ROBOT_DATA_FIELD);
+    if (robot != null) {
+      return objectToRobot(id, robot);
+    }
+
+    throw new IllegalStateException("DB object contains neither a human nor a robot");
+
+  };
 }

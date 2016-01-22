@@ -22,5 +22,6 @@
 
 <module>
   <inherits name="org.waveprotocol.wave.communication.json.Json" />
+  <inherits name="net.lightoze.gwt.i18n.GwtI18nServer"/>
   <source path=""/>
 </module>

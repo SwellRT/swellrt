@@ -215,3 +215,9 @@ mongodb_port = @MONGODB_PORT@
 
 # Database's name. Default name: wiab
 mongodb_database = @MONGODB_DATABASE@
+
+# SMTP server host name
+email_host = @EMAIL_HOST@
+
+# Email address from which the system emails are sent
+email_from_address = @EMAIL_FROM_ADDRESS@

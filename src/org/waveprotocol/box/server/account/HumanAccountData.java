@@ -55,4 +55,42 @@ public interface HumanAccountData extends AccountData {
    *
    */
   void setLocale(String locale);
+
+  /**
+   * Sets the user's email.
+   *
+   * @param email
+   * @throws InvalidEmailException
+   */
+  void setEmail(String email);
+
+  /**
+   * Get the user's email
+   *
+   * @return the user's email or null if not set.
+   */
+  String getEmail();
+
+  /**
+   * Sets the recovery secret token for password restore
+   *
+   * @param token
+   */
+  void setRecoveryToken(String token);
+
+  /**
+   * Sets the recovery secret token for password restore
+   *
+   * @param token
+   */
+  void setRecoveryToken(SecretToken token);
+
+
+  /**
+   * Gets the recovery secret token for password restore
+   *
+   * @return
+   */
+  SecretToken getRecoveryToken();
+
 }
