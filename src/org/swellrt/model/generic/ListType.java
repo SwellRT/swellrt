@@ -128,6 +128,24 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
     } else {
       backendDocument = model.getDocument(backendDocumentId);
     }
+
+    // To debug doc operations
+    /*
+    backendDocument.addListener(new DocumentHandler<Doc.N, Doc.E, Doc.T>() {
+
+      @Override
+      public void onDocumentEvents(
+          org.waveprotocol.wave.model.document.indexed.DocumentHandler.EventBundle<N, E, T> event) {
+
+        for (DocumentEvent<Doc.N, Doc.E, Doc.T> e : event.getEventComponents()) {
+          ListType.this.trace("(" + backendDocumentId + ") Doc Event " + e.toString());
+        }
+
+      }
+
+    });
+    */
+
     DocEventRouter router = DefaultDocEventRouter.create(backendDocument);
 
     // Load metadata section

@@ -80,6 +80,11 @@ public abstract class Type implements ReadableType {
   /** Get the reference string of the value stored in this instance. */
   protected abstract String getValueReference(Type value);
 
+  /** Get the reference string of this value. For primitive values only. */
+  protected Integer getValueRefefence() {
+    return null;
+  }
+
   /**
    * Used to mark updates of a primitive value in the container, in order to
    * generate a convinient sequence of DocOps.
@@ -99,5 +104,27 @@ public abstract class Type implements ReadableType {
 
   /** Return this instance's Type as String */
   public abstract String getType();
+
+
+//  private static native void jsLog(String m) /*-{
+//    console.log(m);
+//  }-*/;
+
+  /** Log a trace message, don't use in prod. Only for low-level debug **/
+  /*
+  protected void trace(String m) {
+    if (GWT.isScript()) {
+
+      if (GWT.isProdMode()) {
+        jsLog(m);
+      } else {
+        GWT.log(m);
+      }
+
+    } else {
+      System.out.println(m);
+    }
+  }
+  */
 
 }

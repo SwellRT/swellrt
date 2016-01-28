@@ -36,7 +36,7 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   /**
    * Get an instance of MapType within the model backed by a document. This
    * method is used for deserialization.
-   * 
+   *
    * @param model
    * @param substrateDocumentId
    * @return
@@ -100,18 +100,45 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     observableMapListener = new ObservableBasicMap.Listener<String, Type>() {
 
       @Override
-      public void onEntrySet(String key, Type oldValue, Type newValue) {
+      public void onEntrySet(final String key, final Type oldValue, final Type newValue) {
 
         if (newValue == null) {
+
           for (Listener l : listeners)
             l.onValueRemoved(key, oldValue);
 
-        } else {
-          for (Listener l : listeners)
-            l.onValueChanged(key, oldValue, newValue);
-        }
 
-      }
+        } else {
+
+          // Under some circunstances, value's update will reach after map entry
+          // update so the new value is not attached.
+          // To avoid the issue, we wait for the value's update and then
+          // trigger again the event.
+
+          if (newValue.isAttached()) {
+
+            for (Listener l : listeners)
+              l.onValueChanged(key, oldValue, newValue);
+
+          } else {
+
+            final Integer index = newValue.getValueRefefence();
+            if (index != null)
+              values.registerEventHandler(index, new ValuesContainer.EventHandler() {
+
+                @Override
+                public void run(String value) {
+
+                  newValue.attach(MapType.this, "" + index.intValue());
+
+                  for (Listener l : listeners)
+                    l.onValueChanged(key, oldValue, newValue);
+
+                }
+              });
+            }
+          }
+        }
     };
   }
 
@@ -144,6 +171,24 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     } else {
       backendDocument = model.getDocument(backendDocumentId);
     }
+
+    // To debug doc operations
+    /*
+    backendDocument.addListener(new DocumentHandler<Doc.N, Doc.E, Doc.T>() {
+
+      @Override
+      public void onDocumentEvents(
+          org.waveprotocol.wave.model.document.indexed.DocumentHandler.EventBundle<N, E, T> event) {
+
+        for (DocumentEvent<Doc.N, Doc.E, Doc.T> e : event.getEventComponents()) {
+          trace("(" + backendDocumentId + ") Doc Event " + e.toString());
+        }
+
+      }
+
+    });
+    */
+
     router = DefaultDocEventRouter.create(backendDocument);
 
     // Metadata section
