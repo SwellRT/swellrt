@@ -36,3 +36,4 @@ war/WEB-INF
 /selenium/*.class
 /selenium/.settings
 **/*swp
+/trash.txt
