@@ -143,6 +143,8 @@ public class ServerRpcProvider {
   private int webSocketMaxMessageSize;
   private int websocketHeartbeat;
 
+  private final int sessionMaxInactiveTime;
+
   /**
    * Internal, static container class for any specific registered service
    * method.
@@ -379,7 +381,8 @@ public class ServerRpcProvider {
       String[] resourceBases, Executor threadPool, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
-      int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat) {
+      int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
+      int sessionMaxInactiveTime) {
     this.httpAddresses = httpAddresses;
     this.resourceBases = resourceBases;
     this.threadPool = threadPool;
@@ -392,6 +395,7 @@ public class ServerRpcProvider {
     this.webSocketMaxIdleTime = webSocketMaxIdleTime;
     this.webSocketMaxMessageSize = webSocketMaxMessageSize;
     this.websocketHeartbeat = websocketHeartbeat;
+    this.sessionMaxInactiveTime = sessionMaxInactiveTime;
   }
 
   /**
@@ -401,10 +405,10 @@ public class ServerRpcProvider {
       SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
       String sessionStoreDir, boolean sslEnabled, String sslKeystorePath,
       String sslKeystorePassword, Executor executor, int webSocketMaxIdleTime,
-      int webSocketMaxMessageSize, int websocketHeartbeat) {
+      int webSocketMaxMessageSize, int websocketHeartbeat, int sessionMaxInactiveTime) {
     this(httpAddresses, resourceBases, executor, sessionManager, jettySessionManager,
         sessionStoreDir, sslEnabled, sslKeystorePath, sslKeystorePassword, webSocketMaxIdleTime,
-        webSocketMaxMessageSize, websocketHeartbeat);
+        webSocketMaxMessageSize, websocketHeartbeat, sessionMaxInactiveTime);
   }
 
   @Inject
@@ -419,12 +423,13 @@ public class ServerRpcProvider {
       @ClientServerExecutor Executor executorService,
       @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int webSocketMaxIdleTime,
       @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int webSocketMaxMessageSize,
-      @Named(CoreSettings.WEBSOCKET_HEARTBEAT) int websocketHeartbeat) {
+      @Named(CoreSettings.WEBSOCKET_HEARTBEAT) int websocketHeartbeat,
+      @Named(CoreSettings.SESSION_SERVER_MAX_INACTIVE_TIME) int sessionMaxInactiveTime) {
     this(parseAddressList(httpAddresses, websocketAddress), resourceBases
         .toArray(new String[0]), sessionManager, jettySessionManager, sessionStoreDir,
  sslEnabled, sslKeystorePath,
         sslKeystorePassword, executorService, webSocketMaxIdleTime, webSocketMaxMessageSize,
-        websocketHeartbeat);
+        websocketHeartbeat, sessionMaxInactiveTime);
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -450,7 +455,8 @@ public class ServerRpcProvider {
       // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
       jettySessionManager.setSessionIdPathParameterName(null);
       context.getSessionHandler().setSessionManager(jettySessionManager);
-      context.getSessionHandler().getSessionManager().setMaxInactiveInterval(48 * 60 * 60);
+      context.getSessionHandler().getSessionManager()
+          .setMaxInactiveInterval(sessionMaxInactiveTime);
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
@@ -534,13 +540,6 @@ public class ServerRpcProvider {
         "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", ""
             + websocketHeartbeat);
 
-
-    // TODO: use config parameters
-    // @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME)
-    // int websocketMaxIdleTime;
-    // @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE)
-    // int websocketMaxMessageSize;
-
     // Setting all buffers at least to 2MB
     atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", ""
         + (BUFFER_SIZE * webSocketMaxMessageSize));
@@ -561,7 +560,7 @@ public class ServerRpcProvider {
       @Override
       public void sessionCreated(HttpSessionEvent arg0) {
         LOG.info("Session created: " + arg0.getSession().getId());
-        arg0.getSession().setMaxInactiveInterval(48 * 60 * 60);
+        arg0.getSession().setMaxInactiveInterval(sessionMaxInactiveTime);
       }
 
       @Override
