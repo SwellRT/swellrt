@@ -76,7 +76,7 @@ public final class PstFileDescriptor {
     if (path.endsWith(".class")) {
       clazz = fromPathToClass(path);
     } else if (path.endsWith(".java")) {
-      clazz = fromPathToJava(path);
+      clazz = fromPathToJava(path, intermediateJavaDir);
     } else if (path.endsWith(".proto")) {
       clazz = fromPathToProto(path, intermediateJavaDir, protoPath);
     } else {
@@ -134,9 +134,9 @@ public final class PstFileDescriptor {
     return path.replace(File.separatorChar, '.').substring(0, path.length() - ".class".length());
   }
 
-  private Class<?> fromPathToJava(String pathToJava) {
+  private Class<?> fromPathToJava(String pathToJava, File intermediateJavaDir) {
     try {
-      File dir = Files.createTempDir();
+      File dir = intermediateJavaDir;
       String[] javacCommand = new String[] {
           "javac", pathToJava, "-d", dir.getAbsolutePath(), "-verbose",
           "-cp", determineClasspath(pathToJava) + ":" + determineSystemClasspath()
@@ -267,7 +267,7 @@ public final class PstFileDescriptor {
           System.err.println("ERROR: couldn't find result of protoc in " + intermediateJavaDir);
           return null;
         }
-        return fromPathToJava(maybeJavaFilePath);
+        return fromPathToJava(maybeJavaFilePath, intermediateJavaDir);
       }
     } catch (Exception e) {
       System.err.println("WARNING: exception while processing " + pathToProto + ": "
