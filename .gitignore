@@ -57,4 +57,5 @@ wave/config/wave.conf
 ### Vagrant
 .vagrant/
 
-
+### Backup files
+*~
