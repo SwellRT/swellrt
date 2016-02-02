@@ -155,7 +155,14 @@ public final class PstFileDescriptor {
         return null;
       } else {
         // Compiled the file!  Now to determine where javac put it.
-        Pattern pattern = Pattern.compile("\\[wrote ([^\\]]*)\\]");
+        Pattern pattern;
+        if (Integer.parseInt(System.getProperty("java.version").split("\\.")[1]) <= 6) {
+            // JDK 6 or lower
+            pattern = Pattern.compile("\\[wrote ([^\\]]*)\\]");
+        } else {
+            // JDK 7 or higher
+            pattern = Pattern.compile("\\[wrote RegularFileObject\\[([^\\]]*)\\]\\]");
+        }
         String pathToClass = null;
         for (String line : stdErr) {
           Matcher lineMatcher = pattern.matcher(line);
