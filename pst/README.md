@@ -52,7 +52,3 @@ Templates as per http://www.stringtemplate.org/ to Java Classes.
 
 A quick introduction to String Templates can be found under
 https://theantlrguy.atlassian.net/wiki/display/ST/Five+minute+Introduction
-
-execve("/usr/bin/java", ["java", "-jar", "build/libs/wave-pst-0.1.jar", "-d", "example", "-f", "example/example.proto", "example/example.st"], [/* 32 vars */]) = 0
-[pid 12254] execve("/usr/bin/protoc", ["protoc", "example/example.proto", "-I.", "--java_out", "/tmp/1454436070071-0"], [/* 34 vars */]) = 0
-[pid 12259] execve("/usr/bin/javac", ["javac", "/tmp/1454436070071-0/com/example/Example.java", "-d", "/tmp/1454436070071-0", "-verbose", "-cp", "//tmp/1454436070071-0/:/home/count/repos/github-berlincount-incubator-wave/pst/build/libs/wave-pst-0.1.jar"], [/* 34 vars */]) = 0
