@@ -31,39 +31,42 @@ import java.util.logging.Logger;
  * A wrapper implementation of the atmosphere javascript client. Websocket
  * transport will be used first by default. If not avaiable or a fatal error
  * occurs, long-polling will be tried.
- *
- *
+ * 
+ * 
  * The atmosphere client/server configuration avoids network issues with:
- *
+ * 
  * <ul>
  * <li>Server Heartbeat frecuency t = 60s. Greater values didn't avoid cuts in
  * some environments</li>
  * <li>Client will start reconnection if no data is received in t = 70s
  * (timeout)</li>
  * </ul>
- *
+ * 
  * Both settings try to keep the communication alive.
- *
+ * 
  * AtmosphereConnectionListener.onDisconnect() will be invoked when
  * communications is stopped caused by an error or not.
- *
+ * 
  * Exceptions handling server messages must be caught because JSNI code
  * receiving messages is not wrapped with the $entry() method.
- *
- *
+ * 
+ * 
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- *
+ * 
  * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- *
- *
- *
- *
+ * 
+ * 
+ * About session tracking: The session token is expected to be stored as a
+ * cookie by default. In some cases where cookies are not available (Browser
+ * previnting 3rd party cookies,...) the session token can be propagated as a
+ * path element /atmosphere/sessionId.
+ * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
- *
+ * 
  */
 public class WaveSocketAtmosphere implements WaveSocket {
 
@@ -71,7 +74,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
       private static final class AtmosphereSocket extends JavaScriptObject {
 
-        public static native AtmosphereSocket create(WaveSocketAtmosphere impl, String urlBase, String transport, String fallback, String clientVersion) /*-{
+        public static native AtmosphereSocket create(WaveSocketAtmosphere impl, String urlBase, String transport, String fallback, String clientVersion, String sessionId) /*-{
 
           if ($wnd.__atmosphere_config === undefined) {
               $wnd.__atmosphere_config = {};
@@ -99,6 +102,10 @@ public class WaveSocketAtmosphere implements WaveSocket {
           if (socketURL.charAt(socketURL.length-1) != "/")
             socketURL+="/";
           socketURL += 'atmosphere';
+
+          // Add the session id in the URL
+          if (sessionId != null)
+            socketURL+="/"+sessionId;
 
           // Set up atmosphere connection properties
           socket.request = new atmosphere.AtmosphereRequest();
@@ -271,14 +278,15 @@ public class WaveSocketAtmosphere implements WaveSocket {
     private final String urlBase;
     private AtmosphereSocket socket = null;
     private final boolean useWebSocket;
-
+    private final String sessionId;
 
 
     public WaveSocketAtmosphere(WaveSocketCallback listener,
-               String urlBase, boolean useWebSocketAlt) {
+               String urlBase, boolean useWebSocketAlt, String sessionId) {
         this.listener = listener;
         this.urlBase = urlBase;
         this.useWebSocket = !useWebSocketAlt;
+        this.sessionId = sessionId;
     }
 
 
@@ -309,7 +317,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
               AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, useWebSocket
-                  ? "websocket" : "long-polling", "long-polling", "1.0");
+                  ? "websocket" : "long-polling", "long-polling", "1.0", sessionId);
               // Check version value in Model.MODEL_VERSION
                 socket.connect();
               }

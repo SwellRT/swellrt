@@ -31,6 +31,8 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
 
   private static final long serialVersionUID = -1465142562958113670L;
 
+  public static final String ANONYMOUS_NAME = "_anonymous_";
+
   /** The prefix of a domain in the ParticpantId */
   public static final String DOMAIN_PREFIX = "@";
 
@@ -131,6 +133,10 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
     return getAddress();
   }
 
+  public boolean isAnonymous() {
+    return getName().startsWith(ANONYMOUS_NAME);
+  }
+
   /**
    * Constructs a {@link ParticipantId} with the supplied name and domain.
    *
@@ -175,6 +181,20 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
       throw new IllegalArgumentException(e);
     }
   }
+
+
+  public static ParticipantId anonymousOfUnsafe(String id, String domain) {
+    return ofUnsafe(ANONYMOUS_NAME + id + DOMAIN_PREFIX + domain);
+  }
+
+  public static ParticipantId anonymousOfUnsafe(String domain) {
+    return ofUnsafe(ANONYMOUS_NAME + DOMAIN_PREFIX + domain);
+  }
+
+  public static boolean isAnonymousName(String name) {
+    return name != null && name.equals(ANONYMOUS_NAME);
+  }
+
 
   /**
    * Compare two {@link ParticipantId}s, name first, then domain.

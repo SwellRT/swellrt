@@ -160,7 +160,7 @@ public class AuthenticationServletTest extends TestCase {
   }
 
   public void testAnonymousLogin() throws IOException {
-    attemptLogin("_anonymous_", "", true);
+    attemptLogin(ParticipantId.ANONYMOUS_NAME, "", true);
   }
 
   // *** Utility methods
@@ -189,7 +189,7 @@ public class AuthenticationServletTest extends TestCase {
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.
     if (expectSuccess) {
-      if (address.startsWith(SessionManager.USER_ANONYMOUS)) {
+      if (ParticipantId.isAnonymousName(address)) {
         when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(ANONYMOUS_USER);
         when(session.getAttribute("user")).thenReturn(ANONYMOUS_USER);
       } else {
@@ -199,7 +199,7 @@ public class AuthenticationServletTest extends TestCase {
     }
     servlet.doPost(req, resp);
     if (expectSuccess) {
-      if (address.startsWith(SessionManager.USER_ANONYMOUS))
+      if (ParticipantId.isAnonymousName(address))
         verify(manager).setLoggedInUser(session, ANONYMOUS_USER);
       else
         verify(manager).setLoggedInUser(session, USER);

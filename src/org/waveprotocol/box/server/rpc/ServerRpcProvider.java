@@ -86,6 +86,7 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +97,7 @@ import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
+import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
@@ -144,6 +146,9 @@ public class ServerRpcProvider {
   private int websocketHeartbeat;
 
   private final int sessionMaxInactiveTime;
+
+  private final static String SESSION_URL_PARAM = "sid";
+  private final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
   /**
    * Internal, static container class for any specific registered service
@@ -450,19 +455,22 @@ public class ServerRpcProvider {
     context.setParentLoaderPriority(true);
 
     if (jettySessionManager != null) {
-      // This disables JSessionIDs in URLs redirects
-      // see: http://stackoverflow.com/questions/7727534/how-do-you-disable-jsessionid-for-jetty-running-with-the-eclipse-jetty-maven-plu
-      // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
-      jettySessionManager.setSessionIdPathParameterName(null);
       context.getSessionHandler().setSessionManager(jettySessionManager);
       context.getSessionHandler().getSessionManager()
           .setMaxInactiveInterval(sessionMaxInactiveTime);
+
+      Set<SessionTrackingMode> sessionTrackingModes = new HashSet<SessionTrackingMode>();
+      sessionTrackingModes.add(SessionTrackingMode.URL);
+      sessionTrackingModes.add(SessionTrackingMode.COOKIE);
+      context.getSessionHandler().getSessionManager().setSessionTrackingModes(sessionTrackingModes);
+      context.getSessionHandler().getSessionManager()
+          .setSessionIdPathParameterName(SESSION_URL_PARAM);
+
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
 
-    // Sets an specific session cookie name
-    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", "WSESSIONID");
+    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", SESSION_COOKIE_NAME);
 
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
     corsFilterHolder.setInitParameter("allowedOrigins", "*");
@@ -721,10 +729,10 @@ public class ServerRpcProvider {
 
   /**
    * Manange atmosphere connections and dispatch messages to wave channels.
-   *
+   * 
    * This Atmosphere handler supports both WebSocket and Long-polling
    * connections with the following features:
-   *
+   * 
    * <ul>
    * <li>Detect session expiration and close remote clients properly.</li>
    * <li>Detect server reboot refusing further operations. Close remote clientes
@@ -735,13 +743,18 @@ public class ServerRpcProvider {
    * <li>Remote clients reconnection on timeout to avoid silent network
    * failures.</li>
    * </ul>
-   *
+   * 
    * Atmosphere interceptors are set manually here, to avoid duplicated CORS
    * response headers.
-   *
-   *
+   * 
+   * About session tracking: The session token is expected to be stored as a
+   * cookie by default. In some cases where cookies are not available (Browser
+   * previnting 3rd party cookies,...) the session token can be propagated as a
+   * path element /atmosphere/sessionId.
+   * 
+   * 
    * @author pablojan@gmail.com <Pablo Ojanguren>
-   *
+   * 
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
@@ -777,9 +790,19 @@ public class ServerRpcProvider {
 
       if (cookies != null)
         for (Cookie c : cookies) {
-          if (c.getName().equals("WSESSIONID"))
+          if (c.getName().equals(SESSION_COOKIE_NAME))
             session = provider.sessionManager.getSessionFromToken(c.getValue());
         }
+
+      // Try with the session URL path /atmosphere/<sessionId>
+      if (session == null) {
+        int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
+        if (lastPathSeparatorIndex >= 0) {
+          String sessionToken =
+              resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
+          session = provider.sessionManager.getSessionFromToken(sessionToken);
+        }
+      }
 
       return session;
     }
@@ -922,9 +945,6 @@ public class ServerRpcProvider {
           connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
           CONNECTIONS.put(key, connection);
         }
-
-
-
 
 
         if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {

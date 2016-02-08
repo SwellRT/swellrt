@@ -114,11 +114,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
+  private final static String SESSION_PATH_PARAM = "sid";
   private final static String REGISTER_CTX = "auth/register";
   private static String CHARSET = "utf-8";
 
   /* Components depending on the user session */
   private ParticipantId loggedInUser = null;
+  private String sessionId = null;
   private RemoteViewServiceMultiplexer channel;
 
 
@@ -200,7 +202,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           // Get full user address and session id from the server
           LoginResponse responseData = JsonUtils.<LoginResponse> safeEval(response.getText());
           loggedInUser = ParticipantId.ofUnsafe(responseData.getParticipantId());
-          String sessionId = responseData.getSessionId();
+          sessionId = responseData.getSessionId();
 
           String seed = SwellRTUtils.nextBase64(10);
           waveDomain = loggedInUser.getDomain();
@@ -327,6 +329,19 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     return loggedInUser != null;
   }
 
+  /**
+   * Add an extra path token with the session id in case of session cookie is
+   * not available. The format is specific for the Jetty server.
+   * 
+   * @param url The url where to add the session id
+   * @return
+   */
+  private String addSessionToUrl(String url) {
+    if (Cookies.getCookie(SESSION_COOKIE_NAME) == null && sessionId != null) {
+      url += ";" + SESSION_PATH_PARAM + "=" + sessionId;
+    }
+    return url;
+  }
 
   /**
    * Call this method before opening a Wave for writting. It ensures that
@@ -340,8 +355,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String pathArgs = ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId);
     pathArgs += "/~/" + Model.WAVELET_SWELL_ROOT;
-
     String url = waveServerURLSchema + waveServerURL + "/swell/access/write/" + pathArgs;
+    url = addSessionToUrl(url);
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
     builder.setIncludeCredentials(true);
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -399,11 +414,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void registerUser(final String host, final String username, final String password,
       final Callback<String, String> callback) throws RequestException {
 
-    String urlStr = host.endsWith("/") ? host + REGISTER_CTX : host + "/" + REGISTER_CTX;
-
+    String url = host.endsWith("/") ? host + REGISTER_CTX : host + "/" + REGISTER_CTX;
+    url = addSessionToUrl(url);
     String queryStr = "address=" + URL.encode(username) + "&password=" + URL.encode(password);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, urlStr);
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
 
       // Allow cookie headers, and so Wave session can be set
@@ -483,6 +498,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
             // Clear user session
             Cookies.removeCookie(SESSION_COOKIE_NAME);
             loggedInUser = null;
+            sessionId = null;
           }
 
           @Override
@@ -520,6 +536,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     // Clear user session
     Cookies.removeCookie(SESSION_COOKIE_NAME);
+    sessionId = null;
     loggedInUser = null;
     destroyWebClientSession();
     searchBuilder = null;
@@ -821,8 +838,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     }
 
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/model?" + query;
-
+    String url = waveServerURLSchema + waveServerURL + "/swell/model";
+    url = addSessionToUrl(url);
+    url += "?" + query;
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
 
     // Allow cookie headers, and so Wave session can be set
@@ -860,8 +878,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String query;
     query = method + "=" + URL.encode(param);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/notification?" + query;
-
+    String url = waveServerURLSchema + waveServerURL + "/swell/notification";
+    url = addSessionToUrl(url);
+    url += "?" + query;
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
     // Allow cookie headers, and so Wave session can be set

@@ -244,8 +244,8 @@ public class ServerMain {
     server.addServlet(AttachmentInfoServlet.ATTACHMENTS_INFO_URL, AttachmentInfoServlet.class);
 
     server.addServlet(SessionManager.SIGN_IN_URL, AuthenticationServlet.class);
-    server.addServlet("/auth/signout", SignOutServlet.class);
-    server.addServlet("/auth/register", UserRegistrationServlet.class);
+    server.addServlet("/auth/signout*", SignOutServlet.class);
+    server.addServlet("/auth/register*", UserRegistrationServlet.class);
 
     server.addServlet("/locale/*", LocaleServlet.class);
     server.addServlet("/fetch/*", FetchServlet.class);

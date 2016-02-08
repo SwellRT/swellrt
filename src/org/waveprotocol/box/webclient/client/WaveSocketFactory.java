@@ -38,11 +38,12 @@ public class WaveSocketFactory {
    * wrapped.
    */
   public static WaveSocket create(final boolean useWebSocketAlt, final String urlBase,
+      final String sessionId,
       final WaveSocket.WaveSocketCallback callback) {
 
     // Handle special atmosphere features enabled in SwellRT
     WaveSocketAtmosphereCallback swellRTCallbackSwellRT = new WaveSocketAtmosphereCallback(callback);
 
-    return new WaveSocketAtmosphere(swellRTCallbackSwellRT, urlBase, useWebSocketAlt);
+    return new WaveSocketAtmosphere(swellRTCallbackSwellRT, urlBase, useWebSocketAlt, sessionId);
   }
 }

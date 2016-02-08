@@ -127,8 +127,9 @@ public class AccessModelService implements SwellRTService {
     // <mode> = write | read
 
     // get start position of args string, stripping of first / : <mode>/<waveletid>
-    int p = req.getPathInfo().indexOf("access")+"access".length()+1;
-    String args = req.getPathInfo().substring(p);
+    String pathInfo = SwellRtServlet.getCleanPathInfo(req);
+    int p = pathInfo.indexOf("access") + "access".length() + 1;
+    String args = pathInfo.substring(p);
 
 
     // extract wavelet id

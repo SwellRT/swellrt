@@ -116,7 +116,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
     submitRequestCallbacks = CollectionUtils.createIntMap();
-    socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, this);
+    socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, getSessionToken(), this);
   }
 
   /**

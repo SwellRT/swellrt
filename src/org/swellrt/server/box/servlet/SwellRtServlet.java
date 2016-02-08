@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
  * A Servlet providing SwellRT REST operations on /swell context
  *
  *
- *
  * TODO: to use a "cool" REST framework
  *
  *
@@ -40,6 +39,7 @@ public class SwellRtServlet extends HttpServlet {
   private WaveletProvider waveletProvider;
   private Injector injector;
 
+
   @Inject
   public SwellRtServlet(SessionManager sessionManager, MongoDbProvider mongoDbProvider,
       WaveletProvider waveletProvider, Injector injector) {
@@ -47,6 +47,30 @@ public class SwellRtServlet extends HttpServlet {
     this.mongoDbProvider = mongoDbProvider;
     this.waveletProvider = waveletProvider;
     this.injector = injector;
+  }
+
+
+  /**
+   * Do some clean up in query string to remove URL session param. This is a
+   * workaround for for the jetty's session URL rewriting.
+   * 
+   * @param req HttpServletRequest the servlet request
+   * @return the Path info without jetty's extra session parameter
+   */
+  public static String getCleanPathInfo(HttpServletRequest req) {
+
+    String path = req.getPathInfo();
+
+    if (path == null) return "";
+
+    // The ';sid=' syntax is jetty specific.
+    int indexOfSessionParam = path.indexOf(";sid=");
+
+    if (indexOfSessionParam >= 0) {
+      return path.substring(0, indexOfSessionParam);
+    }
+
+    return path;
   }
 
 
@@ -62,7 +86,8 @@ public class SwellRtServlet extends HttpServlet {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-    String[] pathTokens = req.getPathInfo().split("/");
+
+    String[] pathTokens = getCleanPathInfo(req).split("/");
     String entity = pathTokens[1];
 
     if (entity.equals("model")) {
@@ -91,7 +116,7 @@ public class SwellRtServlet extends HttpServlet {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-    String[] pathTokens = req.getPathInfo().split("/");
+    String[] pathTokens = getCleanPathInfo(req).split("/");
     String entity = pathTokens[1];
 
     if (entity.equals("notification")) {

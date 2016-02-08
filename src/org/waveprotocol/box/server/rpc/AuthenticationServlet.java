@@ -254,9 +254,7 @@ private final WelcomeRobot welcomeBot;
 
     // Anonymous log in
     if (loggedInAddress == null) {
-      loggedInAddress =
-          ParticipantId.ofUnsafe(SessionManager.USER_ANONYMOUS + session.getId() + "@"
-              + domain);
+      loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
     }
 
     sessionManager.setLoggedInUser(session, loggedInAddress);
@@ -476,9 +474,7 @@ private final WelcomeRobot welcomeBot;
     if (parameters.containsKey(HttpRequestBasedCallbackHandler.ADDRESS_FIELD)) {
       String address = parameters.get(HttpRequestBasedCallbackHandler.ADDRESS_FIELD).get(0);
 
-      if (address != null && address.equalsIgnoreCase(SessionManager.USER_ANONYMOUS)) {
-        return true;
-      }
+      return ParticipantId.isAnonymousName(address);
     }
 
     return false;
