@@ -14,7 +14,8 @@ RUN adduser --system --home $home swellrt \
 WORKDIR $home
 
 RUN mkdir config log \
-    && for i in $config_files ; do ln -s $home/config/$i . ; done
+    && for i in $config_files ; do ln -s $home/config/$i . ; done \
+    && ln -s $home/_sessions $home/sessions
 
 # I could not find a dawn way to set this in an ENV variable
 # TODO: unify with config files
@@ -31,7 +32,7 @@ ADD dist/wave-in-a-box-server*jar $home/wave.jar
 
 RUN chown -R swellrt:swellrt $home
 
-VOLUME $home/config $home/log
+VOLUME $home/config $home/log $home/sessions
 
 USER swellrt
 
