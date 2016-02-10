@@ -55,8 +55,9 @@ public class PasswordServlet implements SwellRTService {
         HumanAccountData account = a.asHuman();
         SecretToken storedToken = account.getRecoveryToken();
 
-        if (storedToken.getToken().equals(tokenOrPassword)
-            && storedToken.getExpirationDate().after(new Date())) {
+        if ((storedToken != null && storedToken.getToken().equals(tokenOrPassword)
+            && storedToken.getExpirationDate().after(new Date()))
+            || account.getPasswordDigest().verify(tokenOrPassword.toCharArray())) {
           HumanAccountDataImpl newAccount =
               new HumanAccountDataImpl(pId, new PasswordDigest(newPassword.toCharArray()));
 
