@@ -134,6 +134,10 @@ public class EmailServlet implements SwellRTService {
 
                 String urlWithToken = null;
 
+                if (recoverUrl.contains("$user-id")) {
+                  urlWithToken = recoverUrl.replaceAll("\\$user-id", userAddress);
+                }
+
                 if (recoverUrl.contains("$token")) {
                   urlWithToken = recoverUrl.replaceAll("\\$token", token);
 
