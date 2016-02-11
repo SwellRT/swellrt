@@ -44,8 +44,15 @@ public interface HumanAccountData extends AccountData {
   PasswordDigest getPasswordDigest();
 
   /**
+   * Enable password changes for the account.
+   * 
+   * @param digest
+   */
+  void setPasswordDigest(PasswordDigest digest);
+
+  /**
    * Gets user's locale.
-   *
+   * 
    * @return The user's locale.
    */
   String getLocale();

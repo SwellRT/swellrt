@@ -125,11 +125,11 @@ public class SwellRtServlet extends HttpServlet {
 
     } else if (entity.equals("email")) {
 
-      injector.getInstance(EmailServlet.class).execute(req, response);
+      injector.getInstance(EmailService.class).execute(req, response);
 
     } else if (entity.equals("password")) {
 
-      injector.getInstance(PasswordServlet.class).execute(req, response);
+      injector.getInstance(PasswordService.class).execute(req, response);
 
     } else {
 

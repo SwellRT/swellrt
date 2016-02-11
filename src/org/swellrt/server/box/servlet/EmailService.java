@@ -1,5 +1,6 @@
 package org.swellrt.server.box.servlet;
 
+
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -17,6 +18,7 @@ import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-public class EmailServlet implements SwellRTService {
+public class EmailService implements SwellRTService {
 
   public static final String EMAIL = "email";
 
@@ -73,8 +75,12 @@ public class EmailServlet implements SwellRTService {
 
         case SET:
           HttpSession session = req.getSession(false);
-
           HumanAccountData account = sessionManager.getLoggedInAccount(session).asHuman();
+
+          if (account != null && account.getId().isAnonymous()) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "User is anonymous");
+            return;
+          }
 
           try {
 
@@ -96,8 +102,8 @@ public class EmailServlet implements SwellRTService {
 
         case PASSWORD_RESET:
 
-          String recoverUrl = req.getParameter(RECOVER_URL);
-          String idOrEmail = req.getParameter("id-or-email");
+          String recoverUrl = URLDecoder.decode(req.getParameter(RECOVER_URL), "UTF-8");
+          String idOrEmail = URLDecoder.decode(req.getParameter("id-or-email"), "UTF-8");
 
           try {
 
@@ -111,7 +117,8 @@ public class EmailServlet implements SwellRTService {
             // try to find by username if not found by email
             if (accounts == null || accounts.isEmpty()) {
               AccountData acc = accountStore.getAccount(new ParticipantId(idOrEmail));
-              if (acc != null) {
+
+              if (acc != null && !acc.getId().isAnonymous()) {
                 accounts.add(acc);
               }
             }
@@ -132,17 +139,16 @@ public class EmailServlet implements SwellRTService {
                 a.asHuman().setRecoveryToken(token);
                 accountStore.putAccount(a);
 
-                String urlWithToken = null;
 
                 if (recoverUrl.contains("$user-id")) {
-                  urlWithToken = recoverUrl.replaceAll("\\$user-id", userAddress);
+                  recoverUrl = recoverUrl.replaceAll("\\$user-id", userAddress);
                 }
 
                 if (recoverUrl.contains("$token")) {
-                  urlWithToken = recoverUrl.replaceAll("\\$token", token);
+                  recoverUrl = recoverUrl.replaceAll("\\$token", token);
 
                 } else {
-                  urlWithToken = recoverUrl + token;
+                  recoverUrl = recoverUrl + token;
                 }
 
                 Properties properties = new Properties();
@@ -161,7 +167,7 @@ public class EmailServlet implements SwellRTService {
 
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(idOrEmail));
                 message.setSubject(messages.emailSubject(userAddress));
-                message.setText(messages.restoreEmailBody(userAddress, urlWithToken));
+                message.setText(messages.restoreEmailBody(userAddress, recoverUrl));
 
                 // Send message
                 Transport.send(message);

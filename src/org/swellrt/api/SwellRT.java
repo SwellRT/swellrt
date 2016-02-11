@@ -999,8 +999,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void recoverPassword(String idOrEmail, String recoverUrl,
       final Callback<String, String> callback) throws RequestException {
 
-    String query = "method=password-reset" + "&id-or-email=" + URL.encode(idOrEmail)
-        + "&recover-url=" + URL.encode(recoverUrl);
+    String query =
+        "method=password-reset" + "&id-or-email=" + URL.encodeQueryString(idOrEmail)
+            + "&recover-url=" + URL.encodeQueryString(recoverUrl);
+
     String url = waveServerURLSchema + waveServerURL + "/swell/email?" + query;
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);

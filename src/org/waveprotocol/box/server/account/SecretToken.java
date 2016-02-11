@@ -36,4 +36,8 @@ public class SecretToken {
     return this.expirationDate;
   }
 
+  public boolean isActive() {
+    return token != null && expirationDate != null && expirationDate.after(new Date());
+  }
+
 }

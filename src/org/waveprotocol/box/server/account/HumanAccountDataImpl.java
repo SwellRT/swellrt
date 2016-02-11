@@ -35,7 +35,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 public final class HumanAccountDataImpl implements HumanAccountData {
 
   private final ParticipantId id;
-  private final PasswordDigest passwordDigest;
+  private PasswordDigest passwordDigest;
   private String locale;
   private String email;
   private SecretToken recoveryToken;
@@ -174,6 +174,11 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   @Override
   public SecretToken getRecoveryToken() {
     return this.recoveryToken;
+  }
+
+  @Override
+  public void setPasswordDigest(PasswordDigest digest) {
+    if (digest != null) passwordDigest = digest;
   }
 
 }
