@@ -81,6 +81,8 @@ public class CoreSettings {
   public static final String WEBSOCKET_HEARTBEAT = "websocket_heartbeat";
   public static final String SESSION_SERVER_MAX_INACTIVE_TIME = "session_server_max_inactive_time";
 
+  public static final String EMAIL_HOST = "email_host";
+  public static final String EMAIL_FROM_ADDRESS = "email_from_address";
 
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
@@ -304,5 +306,11 @@ public class CoreSettings {
       defaultValue = "172800")
   private static int sessionServerMaxInterval;
 
+  @Setting(name = EMAIL_HOST, description = "SMTP server host name")
+  public String email_host;
+
+  @Setting(name = EMAIL_FROM_ADDRESS,
+      description = "Email address from which the system emails are sent")
+  public static String email_from_address;
 
 }

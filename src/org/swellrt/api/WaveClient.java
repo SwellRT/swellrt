@@ -87,7 +87,64 @@ public class WaveClient implements SwellRT.Listener {
 
   }
 
+  /**
+   * Set the user email.
+   *
+   * @param email user email
+   * @param callback
+   * @throws SessionNotStartedException
+   * @throwa RequestException
+   */
+  public void setUserEmail(String email, final JavaScriptObject callback)
+      throws RequestException, SessionNotStartedException {
 
+    coreClient.setUserEmail(email, new Callback<String, String>() {
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, result);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+    });
+  }
+
+  public void setPassword(String id, String tokenOrPassword, String newPassword,
+      final JavaScriptObject callback) throws RequestException {
+
+    coreClient.setPassword(id, tokenOrPassword, newPassword, new Callback<String, String>() {
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, result);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+    });
+  }
+
+  public void recoverPassword(String idOrEmail, String recoverUrl, final JavaScriptObject callback)
+      throws RequestException {
+
+    coreClient.recoverPassword(idOrEmail, recoverUrl, new Callback<String, String>() {
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS, result);
+      }
+
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+    });
+  }
   /**
    * Start a Wave session
    *

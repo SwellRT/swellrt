@@ -1076,7 +1076,10 @@
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-server/1.0-SNAPSHOT/gwt-initials-avatars-server-1.0-20140324.102825-10.jar" />
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-client/1.0-SNAPSHOT/gwt-initials-avatars-client-1.0-20140324.102819-16.jar" />
       <url url="http://archiva.comunes.org/repository/comunes-snapshots/cc/kune/gwt-initials-avatars-client/1.0-SNAPSHOT/gwt-initials-avatars-client-1.0-20140324.102819-16-sources.jar" />
-    </get>
+      <url url="http://central.maven.org/maven2/commons-validator/commons-validator/1.5.0/commons-validator-1.5.0.jar" />
+      <url url="http://central.maven.org/maven2/javax/mail/mail/1.4.7/mail-1.4.7.jar" />
+      <url url="https://oss.sonatype.org/content/groups/public/net/lightoze/gwt-i18n-server/gwt-i18n-server/0.23/gwt-i18n-server-0.23.jar" />
+     </get>
   </target>
 
   <target name="get-third-party-test" description="Download testing third party dependencies">

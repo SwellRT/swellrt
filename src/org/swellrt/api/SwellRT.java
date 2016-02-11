@@ -912,4 +912,128 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
+  public void setUserEmail(String email, final Callback<String, String> callback)
+      throws SessionNotStartedException, RequestException {
+
+    if (!isSessionStarted()) {
+      throw new SessionNotStartedException();
+    }
+
+    String query = "method=set&email=" + URL.encode(email);
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/email?" + query;
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+
+    // Allow cookie headers
+    builder.setIncludeCredentials(true);
+
+    builder.sendRequest(query, new RequestCallback() {
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        int status = response.getStatusCode();
+
+        if (200 <= status && status < 300) {
+          String responseText = response.getText();
+          if (responseText == null) {
+            responseText = "";
+          }
+          callback.onSuccess(responseText);
+        } else {
+          callback.onFailure("SERVICE_EXCEPTION");
+        }
+      }
+
+    });
+  }
+
+  public void setPassword(String id, String token, String newPassword,
+      final Callback<String, String> callback) throws RequestException {
+
+
+    String query = "id=" + URL.encode(id) + "&token-or-password="
+        + URL.encode(token)
+        + "&new-password=" + URL.encode(newPassword);
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/password?" + query;
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+
+    // Allow cookie headers
+    builder.setIncludeCredentials(true);
+
+    builder.sendRequest(query, new RequestCallback() {
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        int status = response.getStatusCode();
+
+        if (200 <= status && status < 300) {
+          String responseText = response.getText();
+          if (responseText == null) {
+            responseText = "";
+          }
+          callback.onSuccess(responseText);
+        } else {
+          callback.onFailure("SERVICE_EXCEPTION");
+        }
+      }
+
+    });
+
+  }
+
+  public void recoverPassword(String idOrEmail, String recoverUrl,
+      final Callback<String, String> callback) throws RequestException {
+
+    String query =
+        "method=password-reset" + "&id-or-email=" + URL.encodeQueryString(idOrEmail)
+            + "&recover-url=" + URL.encodeQueryString(recoverUrl);
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/email?" + query;
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+
+    // Allow cookie headers
+    builder.setIncludeCredentials(true);
+
+    builder.sendRequest(query, new RequestCallback() {
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure(exception.getMessage());
+      }
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        int status = response.getStatusCode();
+
+        if (200 <= status && status < 300) {
+          String responseText = response.getText();
+          if (responseText == null) {
+            responseText = "";
+          }
+          callback.onSuccess(responseText);
+        } else {
+          callback.onFailure("SERVICE_EXCEPTION " + response.getText());
+        }
+      }
+
+    });
+
+  }
 }

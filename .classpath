@@ -89,5 +89,8 @@
 	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar" sourcepath="/home/pablojan/.m2/repository/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-client-1.0-20140324.102819-16.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/commons-validator-1.5.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/mail-1.4.7.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/gwt-i18n-server-0.23.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

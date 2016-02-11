@@ -1,3 +1,4 @@
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +22,7 @@ package org.waveprotocol.box.server.account;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -31,9 +33,12 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * @author akaplanov@gmail.com (Andrew kaplanov)
  */
 public final class HumanAccountDataImpl implements HumanAccountData {
+
   private final ParticipantId id;
-  private final PasswordDigest passwordDigest;
+  private PasswordDigest passwordDigest;
   private String locale;
+  private String email;
+  private SecretToken recoveryToken;
 
   /**
    * Creates an {@link HumanAccountData} for the given username, with no
@@ -62,6 +67,13 @@ public final class HumanAccountDataImpl implements HumanAccountData {
     this.passwordDigest = passwordDigest;
   }
 
+  public HumanAccountDataImpl(ParticipantId id, PasswordDigest passwordDigest, String email,
+      SecretToken token) {
+    this(id, passwordDigest);
+    this.setEmail(email);
+    this.setRecoveryToken(token);
+  }
+
   @Override
   public ParticipantId getId() {
     return id;
@@ -80,6 +92,25 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   @Override
   public void setLocale(String locale) {
     this.locale = locale;
+  }
+
+  @Override
+  public String getEmail() {
+    return this.email;
+  }
+
+  @Override
+  public void setEmail(String email) {
+
+    if (email == null) {
+      return;
+    }
+
+    Preconditions.checkArgument(EmailValidator.getInstance().isValid(email),
+        "Invalid email address: %s");
+
+      this.email = email;
+
   }
 
   @Override
@@ -129,4 +160,25 @@ public final class HumanAccountDataImpl implements HumanAccountData {
     } else if (!locale.equals(other.locale)) return false;
     return true;
   }
+
+  @Override
+  public void setRecoveryToken(String token) {
+    this.recoveryToken = new SecretToken(token);
+  }
+
+  @Override
+  public void setRecoveryToken(SecretToken token) {
+    this.recoveryToken = token;
+  }
+
+  @Override
+  public SecretToken getRecoveryToken() {
+    return this.recoveryToken;
+  }
+
+  @Override
+  public void setPasswordDigest(PasswordDigest digest) {
+    if (digest != null) passwordDigest = digest;
+  }
+
 }

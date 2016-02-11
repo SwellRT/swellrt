@@ -24,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.persistence.AccountStore;
@@ -38,6 +39,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -138,5 +140,11 @@ public class FileAccountStore implements AccountStore {
     } finally {
       FileUtils.closeAndIgnoreException(file, accountFile, LOG);
     }
+  }
+
+  @Override
+  public List<AccountData> getAccountByEmail(String email) throws PersistenceException {
+    LOG.warning("getAccountByEmail is not supported by MemoryStore current implementation");
+    throw new NotImplementedException();
   }
 }
