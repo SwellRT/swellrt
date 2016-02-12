@@ -15,4 +15,13 @@ public interface GCMSubscriptionStore {
 
   void unregister(String userId, String deviceId);
 
+  /**
+   *
+   * @param waveId
+   * @param userId
+   * @return the devices subscribed to the wave that are not subscribed by
+   *         userId
+   */
+  public List<String> getSubscriptorsDevicesExcludingUser(String waveId, String userId);
+
 }

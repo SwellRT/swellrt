@@ -208,4 +208,15 @@ SUBSCRIPTIONS_KEY + "." + UNSUBSCRIBED_SOURCES_KEY + "." + WAVE_ID,
     return devs;
   }
 
+  @Override
+  public List<String> getSubscriptorsDevicesExcludingUser(String waveId, String userId) {
+
+    BasicDBList devs = getGCMDevices(userId);
+
+    List<String> allDevs = getSubscriptorsDevices(waveId);
+    allDevs.removeAll(devs);
+
+    return allDevs;
+  }
+
 }

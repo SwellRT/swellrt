@@ -117,8 +117,11 @@ public class GCMDispatcher implements EventDispatcherTarget {
       JSONObject dataPayload = new JSONObject(payload);
       JSONObject completePayload = new JSONObject();
 
+
       String waveId = event.getWaveId().serialise();
-      List<String> subscriptors = subscriptionManager.getSubscriptorsDevices(waveId);
+
+      List<String> subscriptors =
+          subscriptionManager.getSubscriptorsDevicesExcludingUser(waveId, event.getAuthor());
 
       if (subscriptors.isEmpty()) {
         return;
