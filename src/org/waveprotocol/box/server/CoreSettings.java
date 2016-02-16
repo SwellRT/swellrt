@@ -84,6 +84,9 @@ public class CoreSettings {
   public static final String EMAIL_HOST = "email_host";
   public static final String EMAIL_FROM_ADDRESS = "email_from_address";
 
+  public static final String ACCOUNT_ATTACHMENT_STORE_DIRECTORY =
+      "account_attachment_store_directory";
+
   @Setting(name = WAVE_SERVER_DOMAIN)
   private static String waveServerDomain;
 
@@ -312,5 +315,11 @@ public class CoreSettings {
   @Setting(name = EMAIL_FROM_ADDRESS,
       description = "Email address from which the system emails are sent")
   public static String email_from_address;
+
+  @Setting(name = ACCOUNT_ATTACHMENT_STORE_DIRECTORY,
+      description = "Location on disk where account avatar files, and other resources are stored",
+      defaultValue = "_account_attachments")
+  public static String accountAttachmentStoreDirectory;
+
 
 }

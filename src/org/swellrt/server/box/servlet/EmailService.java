@@ -61,6 +61,13 @@ public class EmailService implements SwellRTService {
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
+    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+
+    if (participantId == null) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
+
     Enumeration<String> paramNames = req.getParameterNames();
 
     if (!paramNames.hasMoreElements()) {

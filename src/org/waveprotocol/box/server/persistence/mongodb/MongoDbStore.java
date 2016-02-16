@@ -46,6 +46,7 @@ import org.waveprotocol.box.server.account.RobotAccountData;
 import org.waveprotocol.box.server.account.RobotAccountDataImpl;
 import org.waveprotocol.box.server.account.SecretToken;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
+import org.waveprotocol.box.server.persistence.AccountAttachmentStore;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -108,10 +109,19 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private static final String TOKEN_FIELD = "token";
   private static final String TOKEN_DATE_FIELD = "token_date";
 
+  private static final String ACCOUNT_AVATAR_FILE = "avatarFile";
+  private static final String ACCOUNT_LOCALE = "locale";
+
   private final DB database;
+  private AccountAttachmentStore attachmentStore = null;
 
   MongoDbStore(DB database) {
     this.database = database;
+  }
+
+
+  public void setAccountAttachmentStore(AccountAttachmentStore accountAttachmentStore) {
+    this.attachmentStore = accountAttachmentStore;
   }
 
   @Override
@@ -328,6 +338,14 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       object.put(TOKEN_DATE_FIELD, account.getRecoveryToken().getExpirationDate());
     }
 
+    if (account.getLocale() != null) {
+      object.put(ACCOUNT_LOCALE, account.getLocale());
+    }
+
+    if (account.getAvatarFileName() != null) {
+      object.put(ACCOUNT_AVATAR_FILE, account.getAvatarFileId());
+    }
+
     return object;
   }
 
@@ -335,6 +353,8 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     PasswordDigest passwordDigest = null;
     String email = null;
     SecretToken token = null;
+    String locale = null;
+    String avatarFileName = null;
 
     DBObject digestObj = (DBObject) object.get(HUMAN_PASSWORD_FIELD);
     if (digestObj != null) {
@@ -347,7 +367,10 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
         (java.util.Date) object.get(TOKEN_DATE_FIELD));
 
 
-    return new HumanAccountDataImpl(id, passwordDigest, email, token);
+    locale = (String) object.get(ACCOUNT_LOCALE);
+    avatarFileName = (String) object.get(ACCOUNT_AVATAR_FILE);
+
+    return new HumanAccountDataImpl(id, passwordDigest, email, token, locale, avatarFileName);
   }
 
   // ****** RobotAccountData serialization
@@ -402,7 +425,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     }
 
     Map<String, Object> capabilitiesObj =
-	(Map<String, Object>) object.get(CAPABILITIES_CAPABILITIES_FIELD);
+  (Map<String, Object>) object.get(CAPABILITIES_CAPABILITIES_FIELD);
     Map<EventType, Capability> capabilities = CollectionUtils.newHashMap();
 
     for (Entry<String, Object> capability : capabilitiesObj.entrySet()) {

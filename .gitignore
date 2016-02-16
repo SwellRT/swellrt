@@ -20,6 +20,7 @@
 /_accounts
 /_deltas
 /_attachments
+/_account_attachments
 /_certificates
 /_indexes
 /gwt-unitCache

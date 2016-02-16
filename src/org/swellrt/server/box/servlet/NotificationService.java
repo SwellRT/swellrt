@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
@@ -28,6 +29,13 @@ public class NotificationService implements SwellRTService {
 
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
+
+    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+
+    if (participantId == null) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
 
     Enumeration<String> paramNames = req.getParameterNames();
 

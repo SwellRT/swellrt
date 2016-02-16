@@ -32,6 +32,8 @@ public class SwellRtServlet extends HttpServlet {
 
   private static final Log LOG = Log.get(SwellRtServlet.class);
 
+  public final static String SERVLET_CONTEXT = "/swell";
+
   private final SessionManager sessionManager;
 
   // TODO pass dependencies to each Service by injection
@@ -53,7 +55,7 @@ public class SwellRtServlet extends HttpServlet {
   /**
    * Do some clean up in query string to remove URL session param. This is a
    * workaround for for the jetty's session URL rewriting.
-   * 
+   *
    * @param req HttpServletRequest the servlet request
    * @return the Path info without jetty's extra session parameter
    */
@@ -74,6 +76,7 @@ public class SwellRtServlet extends HttpServlet {
   }
 
 
+
   /**
    * Create an http response to the fetch query. Main entrypoint for this class.
    */
@@ -82,21 +85,30 @@ public class SwellRtServlet extends HttpServlet {
 
     ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
 
-    if (participantId == null) {
-      response.sendError(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
-
     String[] pathTokens = getCleanPathInfo(req).split("/");
     String entity = pathTokens[1];
 
     if (entity.equals("model")) {
 
+      if (participantId == null) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return;
+      }
+
       QueryModelService.get(participantId, mongoDbProvider).execute(req, response);
 
     } else if (entity.equals("access")) {
 
+      if (participantId == null) {
+        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        return;
+      }
+
       AccessModelService.get(participantId, waveletProvider).execute(req, response);
+
+    } else if (entity.equals("account")) {
+
+      injector.getInstance(AccountService.class).execute(req, response);
 
     } else {
 
@@ -110,14 +122,10 @@ public class SwellRtServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
-    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
 
-    if (participantId == null) {
-      response.sendError(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
     String[] pathTokens = getCleanPathInfo(req).split("/");
     String entity = pathTokens[1];
+
 
     if (entity.equals("notification")) {
 
@@ -131,11 +139,17 @@ public class SwellRtServlet extends HttpServlet {
 
       injector.getInstance(PasswordService.class).execute(req, response);
 
+    } else if (entity.equals("account")) {
+
+      injector.getInstance(AccountService.class).execute(req, response);
+
     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
       return;
 
     }
+
+
   }
 }

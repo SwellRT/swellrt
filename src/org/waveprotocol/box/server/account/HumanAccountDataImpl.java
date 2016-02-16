@@ -28,9 +28,10 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * Human Account. Expected to be expanded when authentication is implemented.
- *
+ * 
  * @author ljvderijk@google.com (Lennard de Rijk)
  * @author akaplanov@gmail.com (Andrew kaplanov)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public final class HumanAccountDataImpl implements HumanAccountData {
 
@@ -39,6 +40,7 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   private String locale;
   private String email;
   private SecretToken recoveryToken;
+  private String avatarFileId;
 
   /**
    * Creates an {@link HumanAccountData} for the given username, with no
@@ -72,6 +74,13 @@ public final class HumanAccountDataImpl implements HumanAccountData {
     this(id, passwordDigest);
     this.setEmail(email);
     this.setRecoveryToken(token);
+  }
+
+  public HumanAccountDataImpl(ParticipantId id, PasswordDigest passwordDigest, String email,
+      SecretToken token, String locale, String avatarFileId) {
+    this(id, passwordDigest, email, token);
+    this.locale = locale;
+    this.avatarFileId = avatarFileId;
   }
 
   @Override
@@ -180,5 +189,29 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   public void setPasswordDigest(PasswordDigest digest) {
     if (digest != null) passwordDigest = digest;
   }
+
+  @Override
+  public void setAvatarFileId(String fileId) {
+    this.avatarFileId = fileId;
+
+  }
+
+  @Override
+  public String getAvatarFileId() {
+    return this.avatarFileId;
+  }
+
+  @Override
+  public String getAvatarFileName() {
+    String[] parts = avatarFileId.split(";");
+    return parts != null && parts.length >= 2 ? parts[1] : null;
+  }
+
+  @Override
+  public String getAvatarMimeType() {
+    String[] parts = avatarFileId.split(";");
+    return parts != null && parts.length >= 1 ? parts[0] : null;
+  }
+
 
 }

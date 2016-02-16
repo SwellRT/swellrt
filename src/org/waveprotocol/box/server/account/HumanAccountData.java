@@ -45,14 +45,14 @@ public interface HumanAccountData extends AccountData {
 
   /**
    * Enable password changes for the account.
-   * 
+   *
    * @param digest
    */
   void setPasswordDigest(PasswordDigest digest);
 
   /**
    * Gets user's locale.
-   * 
+   *
    * @return The user's locale.
    */
   String getLocale();
@@ -99,5 +99,32 @@ public interface HumanAccountData extends AccountData {
    * @return
    */
   SecretToken getRecoveryToken();
+
+
+  /**
+   * Sets the name of the avatar's image file including its mime type:
+   * 
+   * image/png;02DE23425235SDFED2341A.png
+   * 
+   * @param the mime type and the file name separated by a ;
+   */
+  void setAvatarFileId(String fileName);
+
+
+  /**
+   * Gets the name of the avatar's image file
+   * 
+   */
+  String getAvatarFileName();
+
+
+  /**
+   * Gets the avatar's file mime type
+   * 
+   * @return
+   */
+  String getAvatarMimeType();
+
+  String getAvatarFileId();
 
 }

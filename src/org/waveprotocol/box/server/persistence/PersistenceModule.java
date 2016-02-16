@@ -26,6 +26,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.persistence.file.FileAccountAttachmentStore;
 import org.waveprotocol.box.server.persistence.file.FileAccountStore;
 import org.waveprotocol.box.server.persistence.file.FileAttachmentStore;
 import org.waveprotocol.box.server.persistence.file.FileDeltaStore;
@@ -147,6 +148,8 @@ public class PersistenceModule extends AbstractModule {
     } else {
       throw new RuntimeException("Invalid account store type: '" + accountStoreType + "'");
     }
+
+    bind(AccountAttachmentStore.class).to(FileAccountAttachmentStore.class).in(Singleton.class);
   }
 
   private void bindDeltaStore() {

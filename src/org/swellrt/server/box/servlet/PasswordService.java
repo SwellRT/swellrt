@@ -6,6 +6,7 @@ import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.SecretToken;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
+import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -27,8 +28,18 @@ public class PasswordService implements SwellRTService {
   @Inject
   private AccountStore accountStore;
 
+  @Inject
+  private SessionManager sessionManager;
+
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
+
+    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+
+    if (participantId == null) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
 
     Enumeration<String> paramNames = req.getParameterNames();
 
