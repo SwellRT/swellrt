@@ -17,15 +17,18 @@ public class ExpressionParser {
 
 
   public final static String EXP_OP_AUTHOR = "$author";
+  public final static String EXP_OP_AUTHOR_ID = "$author_id";
   public final static String EXP_OP_TIMESTAMP = "$timestamp";
   public final static String EXP_OP_PARTICIPANT = "$participant";
+  public final static String EXP_OP_PARTICIPANT_ID = "$participant_id";
   public final static String EXP_OP_OBJECT_ID = "$objectId";
   public final static String EXP_OP_OBJECT_TYPE = "$objectType";
   public final static String EXP_OP_APP = "$app";
   public final static String EXP_OP_PATH = "$path";
 
-  public final static String[] EXP_NON_PATH = {EXP_OP_AUTHOR, EXP_OP_TIMESTAMP, EXP_OP_PARTICIPANT,
-      EXP_OP_OBJECT_ID, EXP_OP_OBJECT_TYPE, EXP_OP_APP, EXP_OP_PATH};
+  public final static String[] EXP_NON_PATH = {EXP_OP_AUTHOR, EXP_OP_AUTHOR_ID, EXP_OP_TIMESTAMP,
+      EXP_OP_PARTICIPANT, EXP_OP_PARTICIPANT_ID, EXP_OP_OBJECT_ID, EXP_OP_OBJECT_TYPE, EXP_OP_APP,
+      EXP_OP_PATH};
 
   // The reg exp for expresion
   private static final Pattern EXP_PATTERN = Pattern
@@ -60,15 +63,29 @@ public class ExpressionParser {
         .toString();
   }
 
+  protected static String getParticipantAddress(String participant) {
+    int separatorIndex = participant.indexOf("@");
+    if (separatorIndex != -1)
+      return participant.substring(0, separatorIndex);
+    else
+      return participant;
+  }
+
   protected static String evaluateExpression(Event event, String expression)
       throws InvalidEventExpressionException {
 
     // No path-based expresions
 
     if (expression.equals(EXP_OP_AUTHOR)) {
+      return getParticipantAddress(event.getAuthor());
+
+    } else if (expression.equals(EXP_OP_AUTHOR_ID)) {
       return event.getAuthor();
 
     } else if (expression.equals(EXP_OP_PARTICIPANT)) {
+      return getParticipantAddress(event.getParticipant());
+
+    } else if (expression.equals(EXP_OP_PARTICIPANT_ID)) {
       return event.getParticipant();
 
     } else if (expression.equals(EXP_OP_TIMESTAMP)) {

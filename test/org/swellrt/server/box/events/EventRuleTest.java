@@ -109,14 +109,17 @@ public class EventRuleTest extends TestCase {
 
     assertEquals("value1", ExpressionParser.evaluateExpression(e, "${root.field1}"));
     assertEquals("value2", ExpressionParser.evaluateExpression(e, "${root.list.?.field2}"));
-    assertEquals("dummy@example.com", ExpressionParser.evaluateExpression(e, "$author"));
+    assertEquals("dummy@example.com", ExpressionParser.evaluateExpression(e, "$author_id"));
+    assertEquals("dummy", ExpressionParser.evaluateExpression(e, "$author"));
     assertEquals("9999", ExpressionParser.evaluateExpression(e, "$timestamp"));
 
     e = b.buildAddParticipant(ParticipantId.of("joe@example.com"));
-    assertEquals("joe@example.com", ExpressionParser.evaluateExpression(e, "$participant"));
+    assertEquals("joe", ExpressionParser.evaluateExpression(e, "$participant"));
+    assertEquals("joe@example.com", ExpressionParser.evaluateExpression(e, "$participant_id"));
 
     e = b.buildRemoveParticipant(ParticipantId.of("joe@example.com"));
-    assertEquals("joe@example.com", ExpressionParser.evaluateExpression(e, "$participant"));
+    assertEquals("joe", ExpressionParser.evaluateExpression(e, "$participant"));
+    assertEquals("joe@example.com", ExpressionParser.evaluateExpression(e, "$participant_id"));
 
   }
 
