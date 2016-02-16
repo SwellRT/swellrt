@@ -332,7 +332,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   /**
    * Add an extra path token with the session id in case of session cookie is
    * not available. The format is specific for the Jetty server.
-   * 
+   *
    * @param url The url where to add the session id
    * @return
    */
@@ -987,6 +987,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
             responseText = "";
           }
           callback.onSuccess(responseText);
+        } else if (response.getStatusCode() == 403) {
+          log.log(Level.SEVERE, "Error requesting write access: " + response.getStatusText());
+          callback.onFailure("ACCESS_FORBIDDEN_EXCEPTION");
+
         } else {
           callback.onFailure("SERVICE_EXCEPTION");
         }
