@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
@@ -142,9 +143,15 @@ public class AccountService implements SwellRTService {
           new HumanAccountDataImpl(participantId, new PasswordDigest(
               userData.password.toCharArray()));
 
-      // TODO validate email
 
-      if (userData.email != null) account.setEmail(userData.email);
+      if (userData.email != null) {
+        if (!EmailValidator.getInstance().isValid(userData.email)) {
+          sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+          return;
+        }
+
+        account.setEmail(userData.email);
+      }
 
       if (userData.locale != null) account.setLocale(userData.locale);
 
@@ -216,8 +223,15 @@ public class AccountService implements SwellRTService {
 
       HumanAccountData account = accountData.asHuman();
 
-      if (userData.email != null)
+      if (userData.email != null) {
+        if (!EmailValidator.getInstance().isValid(userData.email)) {
+          sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+          return;
+        }
+
         account.setEmail(userData.email);
+
+      }
 
       if (userData.locale != null) account.setLocale(userData.locale);
 

@@ -203,13 +203,13 @@ public final class HumanAccountDataImpl implements HumanAccountData {
 
   @Override
   public String getAvatarFileName() {
-    String[] parts = avatarFileId.split(";");
+    String[] parts = avatarFileId != null ? avatarFileId.split(";") : null;
     return parts != null && parts.length >= 2 ? parts[1] : null;
   }
 
   @Override
   public String getAvatarMimeType() {
-    String[] parts = avatarFileId.split(";");
+    String[] parts = avatarFileId != null ? avatarFileId.split(";") : null;
     return parts != null && parts.length >= 1 ? parts[0] : null;
   }
 
