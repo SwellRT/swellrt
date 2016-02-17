@@ -216,6 +216,15 @@ mongodb_port = @MONGODB_PORT@
 # Database's name. Default name: wiab
 mongodb_database = @MONGODB_DATABASE@
 
+# Time interval between hearbeat marks sent to clients, in seconds
+websocket_heartbeat = @WEBSOCKET_HEARTBEAT@
+
+# Max intactive time before deletion of server's session, in seconds
+session_server_max_inactive_time = @SESSION_SERVER_MAX_INACTIVE_TIME@
+
+# Location on disk where account avatar files, and other resources are stored
+account_attachment_store_directory = @ACCOUNT_ATTACHMENT_STORE_DIRECTORY@
+
 # SMTP server host name
 email_host = @EMAIL_HOST@
 

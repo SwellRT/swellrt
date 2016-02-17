@@ -52,7 +52,7 @@
   <property name="enable_clientauth" value="false" />
   <property name="clientauth_cert_domain" value="" />
   <property name="disable_loginpage" value="false" />
-  <property name="search_type" value="lucene" />
+  <property name="search_type" value="memory" />
   <property name="index_directory" value="_indexes" />
   <property name="thumbnail_patterns_directory" value="thumbnail_patterns" />
   <property name="analytics_account" value="" />
