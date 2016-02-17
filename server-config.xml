@@ -21,15 +21,15 @@
 
   <!-- Properties for server.config -->
   <property name="wave_server_domain" value="local.net" />
-  <property name="http_frontend_public_address" value="localhost:9898" />
+  <property name="http_frontend_public_address" value="0.0.0.0:9898" />
   <property name="http_websocket_public_address" value="${http_frontend_public_address}" />
   <property name="http_websocket_presented_address" value="${http_frontend_public_address}" />
   <property name="http_frontend_addresses" value="${http_frontend_public_address}" />
   <property name="resource_bases" value="./war" />
   <property name="signer_info_store_type" value="file" />
   <property name="attachment_store_type" value="disk" />
-  <property name="account_store_type" value="file" />
-  <property name="delta_store_type" value="file" />
+  <property name="account_store_type" value="mongodb" />
+  <property name="delta_store_type" value="mongodb" />
   <property name="signer_info_store_directory" value="_certificates" />
   <property name="attachment_store_directory" value="_attachments" />
   <property name="account_store_directory" value="_accounts" />
@@ -60,6 +60,9 @@
   <property name="mongodb_host" value="127.0.0.1" />
   <property name="mongodb_port" value="27017" />
   <property name="mongodb_database" value="wiab" />
+  <property name="session_server_max_inactive_time" value="172800" />
+  <property name="websocket_heartbeat" value="10" />
+  <property name="account_attachment_store_directory" value="_account_attachments" />
   <property name="email_host" value="${wave_server_domain}" />
   <property name="email_from_address" value="no-reply@${wave_server_domain}" />
 
@@ -148,6 +151,9 @@
           <token key="MONGODB_DATABASE" value="${mongodb_database}" />
           <token key="EMAIL_HOST" value="${email_host}" />
           <token key="EMAIL_FROM_ADDRESS" value="${email_from_address}" />
+          <token key="ACCOUNT_ATTACHMENT_STORE_DIRECTORY" value="${account_attachment_store_directory}" />
+          <token key="WEBSOCKET_HEARTBEAT" value="${websocket_heartbeat}" />
+          <token key="SESSION_SERVER_MAX_INACTIVE_TIME" value="${session_server_max_inactive_time}" />
         </replacetokens>
       </filterchain>
     </copy>
