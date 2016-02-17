@@ -1040,4 +1040,99 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     });
 
   }
+
+
+
+  public void createUser(String serverUrl, JavaScriptObject parameters, final ServiceCallback callback) throws RequestException {
+
+    String url = serverUrl + "/swell/account";
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "application/json; charset=utf-8");
+    builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else
+          callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+
+
+  }
+
+  public void updateUserProfile(JavaScriptObject parameters, final ServiceCallback callback)
+      throws RequestException {
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/account/" + loggedInUser.getName();
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+    builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else
+          callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+
+  }
+
+
+  public void getUserProfile(final ServiceCallback callback)
+      throws RequestException {
+
+    String url = waveServerURLSchema + waveServerURL + "/swell/account/" + loggedInUser.getName();
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    builder.setIncludeCredentials(true);
+    builder.sendRequest(null, new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else
+          callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+
+
+  }
+
+
 }

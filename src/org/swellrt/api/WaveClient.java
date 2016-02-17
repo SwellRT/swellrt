@@ -87,6 +87,29 @@ public class WaveClient implements SwellRT.Listener {
 
   }
 
+  public void createUser(String serverUrl, JavaScriptObject parameters,
+ ServiceCallback onComplete)
+      throws RequestException {
+
+    coreClient.createUser(serverUrl, parameters, onComplete);
+
+  }
+
+  public void updateUserProfile(JavaScriptObject parameters, ServiceCallback onComplete)
+      throws RequestException {
+
+    coreClient.updateUserProfile(parameters, onComplete);
+
+  }
+
+  public void getUserProfile(ServiceCallback onComplete)
+      throws RequestException {
+
+    coreClient.getUserProfile(onComplete);
+
+  }
+
+
   /**
    * Set the user email.
    *
