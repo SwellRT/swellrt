@@ -28,7 +28,7 @@
   <property name="resource_bases" value="./war" />
   <property name="signer_info_store_type" value="file" />
   <property name="attachment_store_type" value="disk" />
-  <property name="account_store_type" value="mongodb" />
+  <property name="account_store_type" value="memory" />
   <property name="delta_store_type" value="memory" />
   <property name="signer_info_store_directory" value="_certificates" />
   <property name="attachment_store_directory" value="_attachments" />
