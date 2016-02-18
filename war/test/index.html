@@ -155,6 +155,20 @@
 
     function onSwellRTReady() {
 
+        // Let's create a default user for testing
+        SwellRT.createUser("http://localhost:9898",
+         {
+          id : "test",
+          password : "test"
+          },
+          function(res) {
+            if (res.error)
+              console.log(res.error);
+            else if (res.data)
+              console.log("Default test user created");
+
+          });
+
     };
 
 </script>
