@@ -316,8 +316,8 @@ public class ServerMain {
 
     WaveletProvider provider = injector.getInstance(WaveletProvider.class);
     WaveletInfo waveletInfo = WaveletInfo.create(hashFactory, provider);
-    ClientFrontend frontend =
-        ClientFrontendImpl.create(provider, waveBus, waveletInfo);
+    String waveDomain = injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WAVE_SERVER_DOMAIN)));
+    ClientFrontend frontend = ClientFrontendImpl.create(provider, waveBus, waveletInfo, waveDomain);
 
     ProtocolWaveClientRpc.Interface rpcImpl = WaveClientRpcImpl.create(frontend, false);
     server.registerService(ProtocolWaveClientRpc.newReflectiveService(rpcImpl));
