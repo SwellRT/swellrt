@@ -684,7 +684,7 @@
         <include name="META-INF/services/*" />
         <include name="com/mongodb/**/*" />
         <include name="org/slf4j/**/*" />
-      <include name="org/atmosphere/**/*" />
+        <include name="org/atmosphere/**/*" />
         <include name="com/google/common/**/*" />
         <include name="com/google/gson/**/*" />
         <include name="com/google/gxp/**/*" />
@@ -712,6 +712,7 @@
         <include name="org/apache/commons/logging/**/*" />
         <include name="org/apache/lucene/**/*" />
         <include name="org/apache/commons/io/**/*" />
+        <include name="org/apache/commons/validator/**/*" />
         <include name="org/apache/xerces/**/*" />
         <include name="org/bson/**/*" />
         <include name="org/dom4j/**/*" />
