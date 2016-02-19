@@ -97,15 +97,6 @@ public class SwellRtServlet extends HttpServlet {
 
       QueryModelService.get(participantId, mongoDbProvider).execute(req, response);
 
-    } else if (entity.equals("access")) {
-
-      if (participantId == null) {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN);
-        return;
-      }
-
-      AccessModelService.get(participantId, waveletProvider).execute(req, response);
-
     } else if (entity.equals("account")) {
 
       injector.getInstance(AccountService.class).execute(req, response);
