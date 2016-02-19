@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-public class NotificationService implements SwellRTService {
+public class NotificationService extends SwellRTService {
 
   private static final Log LOG = Log.get(NotificationService.class);
 

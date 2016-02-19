@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
-public class QueryModelService implements SwellRTService {
+public class QueryModelService extends SwellRTService {
 
   private static final Log LOG = Log.get(QueryModelService.class);
 
