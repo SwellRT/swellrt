@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AccountService extends SwellRTService {
 
 
-  public static class ServiceData {
+  public static class AccountServiceData {
 
     public String id;
     public String name; // For future use
@@ -49,9 +49,17 @@ public class AccountService extends SwellRTService {
     public String avatar_url;
     public String locale;
 
-    public static ServiceData fromJson(String json) {
+    public AccountServiceData() {
+
+    }
+
+    public AccountServiceData(String id) {
+      this.id = id;
+    }
+
+    public static AccountServiceData fromJson(String json) {
       Gson gson = new Gson();
-      return gson.fromJson(json, ServiceData.class);
+      return gson.fromJson(json, AccountServiceData.class);
     }
 
     public String toJson() {
@@ -100,7 +108,7 @@ public class AccountService extends SwellRTService {
 
       // POST /account create user's profile
 
-      ServiceData userData = getRequestUserData(req);
+      AccountServiceData userData = getRequestServiceData(req);
 
       ParticipantId participantId = null;
 
@@ -211,7 +219,7 @@ public class AccountService extends SwellRTService {
 
       // Modify
 
-      ServiceData userData = getRequestUserData(req);
+      AccountServiceData userData = getRequestServiceData(req);
 
       HumanAccountData account = accountData.asHuman();
 
@@ -341,14 +349,14 @@ public class AccountService extends SwellRTService {
 
   }
 
-  protected ServiceData getRequestUserData(HttpServletRequest request) throws IOException {
+  protected AccountServiceData getRequestServiceData(HttpServletRequest request) throws IOException {
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
 
     // Deserialize data
     Gson gson = new Gson();
-    return gson.fromJson(writer.toString(), ServiceData.class);
+    return gson.fromJson(writer.toString(), AccountServiceData.class);
   }
 
 
@@ -357,14 +365,17 @@ public class AccountService extends SwellRTService {
 
 
   protected static String getAvatarUrl(HumanAccountData account) {
+    if (account.getAvatarFileName() == null) return null;
+
     return SwellRtServlet.SERVLET_CONTEXT + "/account/" + account.getId().getName() + "/avatar/"
         + account.getAvatarFileName();
   }
 
-  protected ServiceData toServiceData(HumanAccountData account) {
+  protected static AccountServiceData toServiceData(HumanAccountData account) {
 
-    ServiceData data = new ServiceData();
+    AccountServiceData data = new AccountServiceData();
 
+    data.id = account.getId().getAddress();
     data.email = account.getEmail();
     data.avatar_url = getAvatarUrl(account);
     data.locale = account.getLocale();

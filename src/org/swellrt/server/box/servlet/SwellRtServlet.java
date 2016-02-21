@@ -101,6 +101,10 @@ public class SwellRtServlet extends HttpServlet {
 
       injector.getInstance(AccountService.class).execute(req, response);
 
+    } else if (entity.equals("auth")) {
+
+      injector.getInstance(AuthenticationService.class).execute(req, response);
+
     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -133,6 +137,10 @@ public class SwellRtServlet extends HttpServlet {
     } else if (entity.equals("account")) {
 
       injector.getInstance(AccountService.class).execute(req, response);
+
+    } else if (entity.equals("auth")) {
+
+      injector.getInstance(AuthenticationService.class).execute(req, response);
 
     } else {
 

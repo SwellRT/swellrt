@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import junit.framework.TestCase;
 
-import org.swellrt.server.box.servlet.AccountService.ServiceData;
+import org.swellrt.server.box.servlet.AccountService.AccountServiceData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -87,7 +87,7 @@ public class AccountServiceTest extends TestCase {
     };
   }
 
-  public void executeService(String path, String method, ServiceData requestData,
+  public void executeService(String path, String method, AccountServiceData requestData,
       ByteArrayOutputStream responseStream, int expectedHttpResponseCode) throws IOException {
 
     HttpServletRequest request = mock(HttpServletRequest.class);
@@ -116,7 +116,7 @@ public class AccountServiceTest extends TestCase {
 
     // Test
 
-    ServiceData requestData = new ServiceData();
+    AccountServiceData requestData = new AccountServiceData();
     requestData.id = "joe";
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
@@ -127,7 +127,7 @@ public class AccountServiceTest extends TestCase {
 
     executeService("/account", "POST", requestData, responseStream, HttpServletResponse.SC_OK);
 
-    ServiceData responseData = ServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
     assertEquals(requestData.email, responseData.email);
     assertEquals(requestData.locale, responseData.locale);
     assertTrue(responseData.avatar_url.contains("image.png"));
@@ -144,7 +144,7 @@ public class AccountServiceTest extends TestCase {
 
     // Test
 
-    ServiceData requestData = new ServiceData();
+    AccountServiceData requestData = new AccountServiceData();
     requestData.id = "joe";
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
@@ -177,7 +177,7 @@ public class AccountServiceTest extends TestCase {
 
     // Test
 
-    ServiceData requestData = new ServiceData();
+    AccountServiceData requestData = new AccountServiceData();
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
     requestData.password = "_password_";
@@ -188,7 +188,7 @@ public class AccountServiceTest extends TestCase {
     executeService("/account/joe", "POST", requestData, responseStream,
         HttpServletResponse.SC_OK);
 
-    ServiceData responseData = ServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
     assertEquals(requestData.email, responseData.email);
     assertEquals(requestData.locale, responseData.locale);
     assertTrue(responseData.avatar_url.contains("image.png"));
@@ -213,7 +213,7 @@ public class AccountServiceTest extends TestCase {
 
     // Test
 
-    ServiceData requestData = new ServiceData();
+    AccountServiceData requestData = new AccountServiceData();
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
     requestData.password = "_password_";
@@ -243,14 +243,14 @@ public class AccountServiceTest extends TestCase {
 
     // Test
 
-    ServiceData requestData = new ServiceData();
+    AccountServiceData requestData = new AccountServiceData();
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
     executeService("/account/joe", "GET", requestData, responseStream,
         HttpServletResponse.SC_OK);
 
-    ServiceData responseData = ServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
     assertEquals("joe@email.example.com", responseData.email);
     assertEquals("en_EN", responseData.locale);
     assertTrue(responseData.avatar_url.contains("image.png"));
@@ -275,14 +275,14 @@ public class AccountServiceTest extends TestCase {
 
     // Test
 
-    ServiceData requestData = new ServiceData();
+    AccountServiceData requestData = new AccountServiceData();
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
     executeService("/account/joe", "GET", requestData, responseStream,
         HttpServletResponse.SC_OK);
 
-    ServiceData responseData = ServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
     assertEquals("joe@email.example.com", responseData.email);
     assertEquals("en_EN", responseData.locale);
     assertTrue(responseData.avatar_url.contains("image.png"));
