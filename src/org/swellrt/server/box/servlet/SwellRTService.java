@@ -9,6 +9,18 @@ import javax.servlet.http.HttpServletResponse;
 
 public abstract class SwellRTService {
 
+
+  protected static final String RC_ACCOUNT_ALREADY_EXISTS = "ACCOUNT_ALREADY_EXISTS";
+  protected static final String RC_INVALID_EMAIL_ADDRESS = "INVALID_EMAIL_ADDRESS";
+  protected static final String RC_INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
+  protected static final String RC_INVALID_ACCOUNT_ID_SYNTAX = "INVALID_ACCOUNT_ID_SYNTAX";
+  protected static final String RC_INVALID_JSON_SYNTAX = "INVALID_JSON_SYNTAX";
+  protected static final String RC_ACCOUNT_NOT_FOUND = "ACCOUNT_NOT_FOUND";
+  protected static final String RC_ACCOUNT_NOT_LOGGED_IN = "ACCOUNT_NOT_LOGGED_IN";
+  protected static final String RC_LOGIN_FAILED = "LOGIN_FAILED";
+  protected static final String RC_MISSING_PARAMETER = "MISSING_PARAMETER";
+
+
   public static class ServiceError {
 
     public String error;

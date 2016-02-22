@@ -85,9 +85,6 @@ public class AuthenticationService extends SwellRTService {
 
   }
 
-  public static final String RESPONSE_LOGIN_FAILED = "LOGIN_FAILED";
-  public static final String RESPONSE_INVALID_ADDRESS = "INVALID_ACCOUNT_ID_SYNTAX";
-  public static final String RESPONSE_MISSING_PARAMETERS = "MISSING_PARAMETERS";
 
   // The Object ID of the PKCS #9 email address stored in the client
   // certificate.
@@ -134,7 +131,7 @@ public class AuthenticationService extends SwellRTService {
 
     } catch (PersistenceException e) {
       sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          "INTERNAL_SERVER_ERROR");
+          RC_INTERNAL_SERVER_ERROR);
       LOG.warning(e.getMessage(), e);
     }
 
@@ -188,7 +185,7 @@ public class AuthenticationService extends SwellRTService {
           loggedInAddress = getLoggedInUser(subject);
         }
       } catch (InvalidParticipantAddress e1) {
-        sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RESPONSE_INVALID_ADDRESS);
+        sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
       }
     }
@@ -202,7 +199,7 @@ public class AuthenticationService extends SwellRTService {
       try {
         authData = getRequestServiceData(req);
       } catch (JsonSyntaxException e) {
-        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, "INVALID_JSON_SYNTAX");
+        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
         return;
       }
 
@@ -221,12 +218,12 @@ public class AuthenticationService extends SwellRTService {
 
           } catch (LoginException e) {
 
-            sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RESPONSE_LOGIN_FAILED);
+            sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
             return;
 
           } catch (InvalidParticipantAddress e1) {
 
-            sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RESPONSE_INVALID_ADDRESS);
+            sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_INVALID_ACCOUNT_ID_SYNTAX);
             return;
 
           }
@@ -242,7 +239,7 @@ public class AuthenticationService extends SwellRTService {
       } else if (!authData.isParsedField("id") || !authData.isParsedField("password")) {
         // Don't throw error, close the current session if it exists
       } else {
-        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RESPONSE_MISSING_PARAMETERS);
+        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_MISSING_PARAMETER);
         return;
       }
 
@@ -419,7 +416,7 @@ public class AuthenticationService extends SwellRTService {
       }
 
       // Login is required
-      sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RESPONSE_LOGIN_FAILED);
+      sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
     }
   }
 

@@ -120,7 +120,7 @@ public class AccountService extends SwellRTService {
 
 
         if (accountData != null) {
-          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_ALREADY_EXISTS");
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_ALREADY_EXISTS);
           return;
         }
 
@@ -135,7 +135,8 @@ public class AccountService extends SwellRTService {
 
         if (userData.email != null) {
           if (!EmailValidator.getInstance().isValid(userData.email)) {
-            sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+            sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST,
+                RC_INVALID_EMAIL_ADDRESS);
             return;
           }
 
@@ -161,22 +162,23 @@ public class AccountService extends SwellRTService {
       } catch (IOException e) {
 
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
+            RC_INTERNAL_SERVER_ERROR);
         LOG.warning(e.getMessage(), e);
         return;
 
       } catch (PersistenceException e) {
 
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
+            RC_INTERNAL_SERVER_ERROR);
         LOG.warning(e.getMessage(), e);
         return;
 
       } catch (InvalidParticipantAddress e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_ACCOUNT_ID_SYNTAX");
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST,
+            RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
       } catch (JsonSyntaxException e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_JSON_SYNTAX");
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
         return;
       }
 
@@ -190,13 +192,13 @@ public class AccountService extends SwellRTService {
         AccountData accountData = accountStore.getAccount(participantId);
 
         if (accountData == null) {
-          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_FOUND");
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_FOUND);
           return;
         }
 
         // if the account exists, only the user can modify the profile
         if (!participantId.equals(loggedInUser)) {
-          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_LOGGED_IN");
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
           return;
         }
 
@@ -214,7 +216,8 @@ public class AccountService extends SwellRTService {
             else
               account.setEmail(userData.email);
           } catch (IllegalArgumentException e) {
-            sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+            sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST,
+                RC_INVALID_EMAIL_ADDRESS);
             return;
           }
         }
@@ -246,24 +249,25 @@ public class AccountService extends SwellRTService {
       } catch (PersistenceException e) {
 
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
+            RC_INTERNAL_SERVER_ERROR);
         LOG.warning(e.getMessage(), e);
         return;
 
       } catch (IOException e) {
 
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
+            RC_INTERNAL_SERVER_ERROR);
         LOG.warning(e.getMessage(), e);
         return;
 
       } catch (InvalidParticipantAddress e) {
 
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_ACCOUNT_ID_SYNTAX");
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST,
+            RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
 
       } catch (JsonSyntaxException e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_JSON_SYNTAX");
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
         return;
       }
 
@@ -276,7 +280,7 @@ public class AccountService extends SwellRTService {
         AccountData accountData = accountStore.getAccount(participantId);
 
         if (accountData == null) {
-          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_FOUND");
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_FOUND);
           return;
         }
 
@@ -306,7 +310,7 @@ public class AccountService extends SwellRTService {
 
 
         if (!participantId.equals(loggedInUser)) {
-          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_LOGGED_IN");
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
           return;
         }
 
@@ -318,12 +322,13 @@ public class AccountService extends SwellRTService {
       } catch (PersistenceException e) {
 
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
+            RC_INTERNAL_SERVER_ERROR);
         LOG.warning(e.getMessage(), e);
         return;
 
       } catch (InvalidParticipantAddress e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_ACCOUNT_ID_SYNTAX");
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST,
+            RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
       }
 
