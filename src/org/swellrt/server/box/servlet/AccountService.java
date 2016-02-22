@@ -61,6 +61,7 @@ public class AccountService extends SwellRTService {
     public String avatarData;
     public String avatarUrl;
     public String locale;
+    public String sessionId;
 
     public AccountServiceData() {
 

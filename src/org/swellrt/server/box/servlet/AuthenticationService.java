@@ -74,6 +74,7 @@ public class AuthenticationService extends SwellRTService {
     public String id;
     public String password;
     public String status;
+    public String sessionId;
 
     public AuthenticationServiceData() {
 
@@ -277,6 +278,8 @@ public class AuthenticationService extends SwellRTService {
     else
       accountData = new AccountService.AccountServiceData(loggedInAddress.getAddress());
 
+    accountData.sessionId = req.getSession().getId();
+
     sendResponse(resp, accountData);
 
   }
@@ -400,6 +403,8 @@ public class AuthenticationService extends SwellRTService {
                 accountStore.getAccount(user).asHuman());
       else
         accountData = new AccountService.AccountServiceData(user.getAddress());
+
+      accountData.sessionId = req.getSession().getId();
 
       // Resuming the session
       LOG.info("Resuming Authenticated user " + user);
