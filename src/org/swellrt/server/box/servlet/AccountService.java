@@ -1,6 +1,6 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -62,6 +62,7 @@ public class AccountService extends SwellRTService {
     public String avatarUrl;
     public String locale;
     public String sessionId;
+    public String domain;
 
     public AccountServiceData() {
 
@@ -178,7 +179,7 @@ public class AccountService extends SwellRTService {
         sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST,
             RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
-      } catch (JsonSyntaxException e) {
+      } catch (JsonParseException e) {
         sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
         return;
       }
@@ -267,7 +268,7 @@ public class AccountService extends SwellRTService {
             RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
 
-      } catch (JsonSyntaxException e) {
+      } catch (JsonParseException e) {
         sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
         return;
       }
@@ -365,11 +366,15 @@ public class AccountService extends SwellRTService {
   }
 
   protected AccountServiceData getRequestServiceData(HttpServletRequest request)
-      throws JsonSyntaxException, IOException {
+      throws JsonParseException, IOException {
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
 
-    return (AccountServiceData) ServiceData.fromJson(writer.toString(), AccountServiceData.class);
+    String json = writer.toString();
+
+    if (json == null) throw new JsonParseException("Null JSON message");
+
+    return (AccountServiceData) ServiceData.fromJson(json, AccountServiceData.class);
   }
 
 

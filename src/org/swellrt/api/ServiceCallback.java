@@ -35,6 +35,10 @@ public class ServiceCallback extends JavaScriptObject {
       return r;
     }-*/;
 
+    public final native String getValue(String field) /*-{
+      return this.data[field];
+    }-*/;
+
     protected JavaScriptResponse() {}
 
 
@@ -48,5 +52,8 @@ public class ServiceCallback extends JavaScriptObject {
   public final native void onComplete(JavaScriptResponse response) /*-{
     this(response);
   }-*/;
+
+
+
 
 }

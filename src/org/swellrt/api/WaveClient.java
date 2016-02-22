@@ -87,11 +87,11 @@ public class WaveClient implements SwellRT.Listener {
 
   }
 
-  public void createUser(String serverUrl, JavaScriptObject parameters,
+  public void createUser(JavaScriptObject parameters,
  ServiceCallback onComplete)
       throws RequestException {
 
-    coreClient.createUser(serverUrl, parameters, onComplete);
+    coreClient.createUser(parameters, onComplete);
 
   }
 
@@ -106,6 +106,30 @@ public class WaveClient implements SwellRT.Listener {
       throws RequestException {
 
     coreClient.getUserProfile(onComplete);
+
+  }
+
+  public void login(JavaScriptObject parameters, ServiceCallback onComplete)
+      throws RequestException {
+    coreClient.login(parameters, onComplete);
+  }
+
+  public void resume(ServiceCallback onComplete)
+      throws RequestException {
+    coreClient.resume(onComplete);
+  }
+
+
+  public void logout(ServiceCallback onComplete)
+      throws RequestException {
+    coreClient.logout(onComplete);
+  }
+
+  public void openChannel() {
+
+  }
+
+  public void closeChannel() {
 
   }
 
@@ -501,7 +525,6 @@ public class WaveClient implements SwellRT.Listener {
 
     jsClient.triggerEvent(WaveClientJS.FATAL_EXCEPTION, payload);
   }
-
 
   private static native void callOnSwellRTReady() /*-{
 

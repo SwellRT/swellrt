@@ -1,5 +1,6 @@
 package org.swellrt.api;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
@@ -130,6 +131,26 @@ public class SwellRTUtils {
       bitCount -= 6;
     }
     return result.toString();
+  }
+
+  /**
+   * Get the URL with only protocol and server parts of the server. The URL
+   * doesn't end with /
+   * 
+   * @return the base URL of the SwellRT server
+   */
+  public static String getBaseUrl() {
+    String u = GWT.getModuleBaseURL();
+
+    int last = -1;
+    for (int i = 0; i < 3; i++) {
+      last = u.indexOf("/", last + 1);
+    }
+
+    if (last != -1)
+      u = u.substring(0, last);
+
+    return u;
   }
 
 }

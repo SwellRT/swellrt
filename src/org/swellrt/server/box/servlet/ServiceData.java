@@ -3,6 +3,7 @@ package org.swellrt.server.box.servlet;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
@@ -14,7 +15,7 @@ public abstract class ServiceData {
 
 
   public static ServiceData fromJson(String json, Class<? extends ServiceData> classOf)
-      throws JsonSyntaxException {
+      throws JsonSyntaxException, JsonParseException {
 
     ServiceData object = null;
 

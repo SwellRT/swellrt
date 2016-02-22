@@ -1,7 +1,7 @@
 package org.swellrt.server.box.servlet;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -74,7 +74,6 @@ public class AuthenticationService extends SwellRTService {
     public String id;
     public String password;
     public String status;
-    public String sessionId;
 
     public AuthenticationServiceData() {
 
@@ -199,7 +198,7 @@ public class AuthenticationService extends SwellRTService {
 
       try {
         authData = getRequestServiceData(req);
-      } catch (JsonSyntaxException e) {
+      } catch (JsonParseException e) {
         sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
         return;
       }
@@ -279,6 +278,7 @@ public class AuthenticationService extends SwellRTService {
       accountData = new AccountService.AccountServiceData(loggedInAddress.getAddress());
 
     accountData.sessionId = req.getSession().getId();
+    accountData.domain = domain;
 
     sendResponse(resp, accountData);
 
@@ -405,6 +405,7 @@ public class AuthenticationService extends SwellRTService {
         accountData = new AccountService.AccountServiceData(user.getAddress());
 
       accountData.sessionId = req.getSession().getId();
+      accountData.domain = domain;
 
       // Resuming the session
       LOG.info("Resuming Authenticated user " + user);
@@ -426,12 +427,17 @@ public class AuthenticationService extends SwellRTService {
   }
 
   protected AuthenticationServiceData getRequestServiceData(HttpServletRequest request)
-      throws IOException, JsonSyntaxException {
+      throws IOException, JsonParseException {
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
 
-    return (AuthenticationServiceData) ServiceData.fromJson(writer.toString(),
+    String json = writer.toString();
+
+    if (json == null)
+ throw new JsonParseException("Null JSON message");
+
+    return (AuthenticationServiceData) ServiceData.fromJson(json,
         AuthenticationServiceData.class);
 
   }

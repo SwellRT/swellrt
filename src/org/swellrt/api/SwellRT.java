@@ -16,6 +16,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import org.swellrt.api.ServiceCallback.JavaScriptResponse;
 import org.swellrt.client.WaveWrapper;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
@@ -24,8 +25,6 @@ import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
-import org.waveprotocol.box.webclient.search.SearchBuilder;
-import org.waveprotocol.box.webclient.search.SearchService;
 import org.waveprotocol.wave.client.events.ClientEvents;
 import org.waveprotocol.wave.client.events.NetworkStatusEvent;
 import org.waveprotocol.wave.client.events.NetworkStatusEventHandler;
@@ -111,28 +110,29 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
-
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
   private final static String SESSION_PATH_PARAM = "sid";
-  private final static String REGISTER_CTX = "auth/register";
-  private static String CHARSET = "utf-8";
 
-  /* Components depending on the user session */
-  private ParticipantId loggedInUser = null;
-  private String sessionId = null;
-  private RemoteViewServiceMultiplexer channel;
+  private static String CHARSET = "utf-8";
 
 
   /* Components shared across sessions */
   private final SchemaProvider schemaProvider;
 
+  /* Objects depending on the user session */
+  private ParticipantId loggedInUser = null;
+  private String sessionId = null;
+  private String seed = null;
+  private RemoteViewServiceMultiplexer channel;
 
   private String waveDomain;
   private String waveServerURLSchema;
   private String waveServerURL;
+
+  private String baseServerUrl = SwellRTUtils.getBaseUrl();
+
   private WaveWebSocketClient websocket;
-  @Deprecated
-  private SearchBuilder searchBuilder;
+
 
   /** List of living waves for the active session. */
   private Map<WaveId, WaveWrapper> waveWrappers = CollectionUtils.newHashMap();;
@@ -159,6 +159,159 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     this.listener = listener;
   }
 
+
+  protected void cleanSessionData() {
+    Cookies.removeCookie(SESSION_COOKIE_NAME);
+    sessionId = null;
+    loggedInUser = null;
+    destroyWebClientSession();
+  }
+
+  protected void cleanChannelData() {
+    // Destroy all waves
+    for (Entry<WaveId, WaveWrapper> entry : waveWrappers.entrySet())
+      entry.getValue().destroy();
+
+    waveWrappers.clear();
+    websocket.disconnect(true);
+    channel = null;
+  }
+
+  public void login(JavaScriptObject parameters, final ServiceCallback callback)
+      throws RequestException {
+
+
+    String url = baseServerUrl + "/swell/auth";
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+    builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else {
+
+          // Clean everything before setting new session
+          cleanChannelData();
+          cleanSessionData();
+
+          JavaScriptResponse responseData =
+              ServiceCallback.JavaScriptResponse.success(response.getText());
+
+          loggedInUser = ParticipantId.ofUnsafe(responseData.getValue("id"));
+          sessionId = responseData.getValue("sessionId");
+          waveDomain = responseData.getValue("domain");
+          seed = SwellRTUtils.nextBase64(10);
+
+          // Use the browser __session object instead of setting cookie
+          createWebClientSession(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+                  sessionId);
+
+          // Init Id generator
+          TypeIdGenerator.get().initialize(ClientIdGenerator.create());
+
+          callback.onComplete(responseData);
+        }
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+
+  }
+
+  public void resume(final ServiceCallback callback)
+      throws RequestException {
+
+    String url = baseServerUrl + "/swell/auth";
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+    builder.sendRequest("{}", new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else {
+
+          // Clean everything before setting new session
+          cleanChannelData();
+          cleanSessionData();
+
+          JavaScriptResponse responseData =
+              ServiceCallback.JavaScriptResponse.success(response.getText());
+
+          loggedInUser = ParticipantId.ofUnsafe(responseData.getValue("id"));
+          sessionId = responseData.getValue("sessionId");
+          waveDomain = responseData.getValue("domain");
+          seed = SwellRTUtils.nextBase64(10);
+
+          // Use the browser __session object instead of setting cookie
+          createWebClientSession(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+              sessionId);
+
+          // Init Id generator
+          TypeIdGenerator.get().initialize(ClientIdGenerator.create());
+
+          callback.onComplete(responseData);
+        }
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+
+  }
+
+
+  public void logout(final ServiceCallback callback) throws RequestException {
+
+    // Clean up session data
+    cleanChannelData();
+    cleanSessionData();
+
+    String url = baseServerUrl + "/swell/auth";
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+    builder.sendRequest("{}", new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else {
+          callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+        }
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+
+  }
+
   /**
    * Performs a login against Wave's /auth servlet. This method doesn't start a
    * web socket session. Wave server will set a session cookie.
@@ -171,6 +324,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @param callback
    * @throws RequestException
    */
+  @Deprecated
   private void login(final String user, final String password,
       final Callback<JavaScriptObject, String> callback) throws RequestException {
 
@@ -297,23 +451,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     channel = null;
   }
 
-  /**
-   * Retrieves a list of wave digests for the user logged in the wave server.
-   *
-   * @param userName
-   * @param startIndex
-   * @param numResults
-   * @param callback
-   */
-  @Deprecated
-  public void getWaves(int startIndex, int numResults,
-      SearchService.Callback callback) {
-
-    searchBuilder.newSearch().setQuery("").setIndex(startIndex).setNumResults(numResults)
-        .search(callback);
-
-  }
-
 
   private native boolean websocketNotAvailable() /*-{
    return !window.WebSocket;
@@ -362,7 +499,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void registerUser(final String host, final String username, final String password,
       final Callback<String, String> callback) throws RequestException {
 
-    String url = host.endsWith("/") ? host + REGISTER_CTX : host + "/" + REGISTER_CTX;
+    String url = host.endsWith("/") ? host + "auth" : host + "/" + "auth";
     url = addSessionToUrl(url);
     String queryStr = "address=" + URL.encode(username) + "&password=" + URL.encode(password);
 
@@ -416,6 +553,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @throws RequestException
    * @throws InvalidUrlException
    */
+  @Deprecated
   public void startSession(String user, String password, final String url,
       final Callback<JavaScriptObject, String> callback) throws RequestException {
 
@@ -433,9 +571,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       @Override
       public void onSuccess(final JavaScriptObject result) {
-
-        searchBuilder =
-            CustomJsoSearchBuilderImpl.create(waveServerURLSchema + waveServerURLSchema);
 
         startComms(new Callback<Void, Void>() {
 
@@ -469,6 +604,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @return
    * @throws SessionNotStartedException
    */
+  @Deprecated
   public void stopSession() throws SessionNotStartedException {
 
     if (loggedInUser == null) throw new SessionNotStartedException();
@@ -487,8 +623,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     sessionId = null;
     loggedInUser = null;
     destroyWebClientSession();
-    searchBuilder = null;
-
   }
 
   protected WaveWrapper getWaveWrapper(WaveId waveId, boolean isNew) {
@@ -968,9 +1102,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
 
-  public void createUser(String serverUrl, JavaScriptObject parameters, final ServiceCallback callback) throws RequestException {
+  public void createUser(JavaScriptObject parameters, final ServiceCallback callback)
+      throws RequestException {
 
-    String url = serverUrl + "/swell/account";
+
+    String url = baseServerUrl + "swell/account";
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
     builder.setIncludeCredentials(true);
@@ -1001,7 +1137,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void updateUserProfile(JavaScriptObject parameters, final ServiceCallback callback)
       throws RequestException {
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/account/" + loggedInUser.getName();
+    String url = baseServerUrl + "swell/account/" + loggedInUser.getName();
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
     builder.setIncludeCredentials(true);
@@ -1032,7 +1168,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void getUserProfile(final ServiceCallback callback)
       throws RequestException {
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/account/" + loggedInUser.getName();
+    String url = baseServerUrl + "swell/account/" + loggedInUser.getName();
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
     builder.setIncludeCredentials(true);
@@ -1055,8 +1191,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
             exception.getMessage()));
       }
     });
-
-
   }
 
 
