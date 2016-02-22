@@ -1,7 +1,7 @@
 package org.swellrt.server.box.servlet;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -42,34 +42,34 @@ import javax.servlet.http.HttpSession;
 /**
  * A servlet for authenticating a user's password and giving them a token via a
  * cookie.
- * 
+ *
  * Login
- * 
+ *
  * POST /auth { id : <ParticipantId> password : <Password> }
- * 
+ *
  * Login (Anonymous)
- * 
+ *
  * POST /auth { id : "_anonymous_" password : "_anonymous_" }
- * 
+ *
  * Resume existing session
- * 
+ *
  * GET /auth { }
- * 
+ *
  * Close session
- * 
+ *
  * POST /auth { }
- * 
+ *
  * Original code taken from {@AuthenticationServlet}.
- * 
+ *
  * @author Pablo Ojanguren (pablojan@gmail.com)
- * 
+ *
  */
 @Singleton
 public class AuthenticationService extends SwellRTService {
 
 
 
-  public static class AuthenticationServiceData {
+  public static class AuthenticationServiceData extends ServiceData {
 
     public String id;
     public String password;
@@ -83,20 +83,10 @@ public class AuthenticationService extends SwellRTService {
       this.status = status;
     }
 
-    public static AuthenticationServiceData fromJson(String json) {
-      Gson gson = new Gson();
-      return gson.fromJson(json, AuthenticationServiceData.class);
-    }
-
-    public String toJson() {
-      Gson gson = new Gson();
-      return gson.toJson(this);
-    }
-
   }
 
   public static final String RESPONSE_LOGIN_FAILED = "LOGIN_FAILED";
-  public static final String RESPONSE_INVALID_ADDRESS = "ACCOUNT_ID_WRONG_SYNTAX";
+  public static final String RESPONSE_INVALID_ADDRESS = "INVALID_ACCOUNT_ID_SYNTAX";
   public static final String RESPONSE_MISSING_PARAMETERS = "MISSING_PARAMETERS";
 
   // The Object ID of the PKCS #9 email address stored in the client
@@ -207,11 +197,18 @@ public class AuthenticationService extends SwellRTService {
 
     if (loggedInAddress == null) {
 
-      AuthenticationServiceData authData = getRequestServiceData(req);
+      AuthenticationServiceData authData = null;
 
-      if (authData == null) authData = new AuthenticationServiceData();
+      try {
+        authData = getRequestServiceData(req);
+      } catch (JsonSyntaxException e) {
+        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, "INVALID_JSON_SYNTAX");
+        return;
+      }
 
-      if (authData.id != null && authData.password != null) {
+
+      if (authData.isParsedField("id") && authData.id != null && authData.isParsedField("password")
+          && authData.password != null) {
 
         if (!ParticipantId.isAnonymousName(authData.id)) {
 
@@ -242,16 +239,11 @@ public class AuthenticationService extends SwellRTService {
         }
 
 
-      } else if (authData.id == null && authData.password == null) {
-
+      } else if (!authData.isParsedField("id") || !authData.isParsedField("password")) {
         // Don't throw error, close the current session if it exists
-
-
       } else {
-
         sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RESPONSE_MISSING_PARAMETERS);
         return;
-
       }
 
 
@@ -282,7 +274,9 @@ public class AuthenticationService extends SwellRTService {
     AccountService.AccountServiceData accountData;
 
     if (!loggedInAddress.isAnonymous())
-      accountData = AccountService.toServiceData(accountStore.getAccount(loggedInAddress).asHuman());
+      accountData =
+          AccountService.toServiceData(req.getRequestURL().toString(),
+              accountStore.getAccount(loggedInAddress).asHuman());
     else
       accountData = new AccountService.AccountServiceData(loggedInAddress.getAddress());
 
@@ -404,7 +398,9 @@ public class AuthenticationService extends SwellRTService {
       AccountService.AccountServiceData accountData;
 
       if (!user.isAnonymous())
-        accountData = AccountService.toServiceData(accountStore.getAccount(user).asHuman());
+        accountData =
+            AccountService.toServiceData(req.getRequestURL().toString(),
+                accountStore.getAccount(user).asHuman());
       else
         accountData = new AccountService.AccountServiceData(user.getAddress());
 
@@ -428,14 +424,14 @@ public class AuthenticationService extends SwellRTService {
   }
 
   protected AuthenticationServiceData getRequestServiceData(HttpServletRequest request)
-      throws IOException {
+      throws IOException, JsonSyntaxException {
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
 
-    // Deserialize data
-    Gson gson = new Gson();
-    return gson.fromJson(writer.toString(), AuthenticationServiceData.class);
+    return (AuthenticationServiceData) ServiceData.fromJson(writer.toString(),
+        AuthenticationServiceData.class);
+
   }
 
 

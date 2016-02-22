@@ -1,6 +1,6 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -35,18 +35,31 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
+ * Create new account
+ *
+ * POST /account { id : <ParticipantId>, password : <String>, ... }
+ *
+ *
+ * Edit accound profile (empty values are deleted)
+ *
+ * POST /account/{ParticipantId.name} { ... }
+ *
+
+ * Get account profile
+ *
+ * GET /account/{ParticipantId.name}
  */
 public class AccountService extends SwellRTService {
 
 
-  public static class AccountServiceData {
+  public static class AccountServiceData extends ServiceData {
 
     public String id;
     public String name; // For future use
     public String password;
     public String email;
-    public String avatar_data;
-    public String avatar_url;
+    public String avatarData;
+    public String avatarUrl;
     public String locale;
 
     public AccountServiceData() {
@@ -55,16 +68,6 @@ public class AccountService extends SwellRTService {
 
     public AccountServiceData(String id) {
       this.id = id;
-    }
-
-    public static AccountServiceData fromJson(String json) {
-      Gson gson = new Gson();
-      return gson.fromJson(json, AccountServiceData.class);
-    }
-
-    public String toJson() {
-      Gson gson = new Gson();
-      return gson.toJson(this);
     }
 
   }
@@ -105,227 +108,228 @@ public class AccountService extends SwellRTService {
 
     if (req.getMethod().equals("POST") && participantToken == null) {
 
-
       // POST /account create user's profile
 
-      AccountServiceData userData = getRequestServiceData(req);
-
-      ParticipantId participantId = null;
-
       try {
-        participantId = ParticipantId.of(userData.id + "@" + domain);
-      } catch (InvalidParticipantAddress e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "ACCOUNT_ID_WRONG_SYNTAX");
-        return;
-      }
 
-      AccountData accountData = null;
+        AccountServiceData userData = getRequestServiceData(req);
 
-      try {
-        accountData = accountStore.getAccount(participantId);
-      } catch (PersistenceException e) {
-        sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
-        LOG.warning(e.getMessage(), e);
-        return;
-      }
+        ParticipantId participantId = ParticipantId.of(userData.id + "@" + domain);
 
-      if (accountData != null) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_ALREADY_EXISTS");
-        return;
-      }
-
-      if (userData.password == null) {
-        userData.password = "";
-      }
-
-      HumanAccountDataImpl account =
-          new HumanAccountDataImpl(participantId, new PasswordDigest(
-              userData.password.toCharArray()));
+        AccountData accountData = accountStore.getAccount(participantId);
 
 
-      if (userData.email != null) {
-        if (!EmailValidator.getInstance().isValid(userData.email)) {
-          sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+        if (accountData != null) {
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_ALREADY_EXISTS");
           return;
         }
 
-        account.setEmail(userData.email);
-      }
-
-      if (userData.locale != null) account.setLocale(userData.locale);
-
-      if (userData.avatar_data != null) {
-        try {
-          String avatarFileId = storeAvatar(participantId, userData.avatar_data,
-              null);
-          account.setAvatarFileId(avatarFileId);
-        } catch (IOException e) {
-          sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-              "INTERNAL_SERVER_ERROR");
-          LOG.warning(e.getMessage(), e);
-          return;
+        if (userData.password == null) {
+          userData.password = "";
         }
-      }
 
-      try {
+        HumanAccountDataImpl account =
+            new HumanAccountDataImpl(participantId, new PasswordDigest(
+                userData.password.toCharArray()));
+
+
+        if (userData.email != null) {
+          if (!EmailValidator.getInstance().isValid(userData.email)) {
+            sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+            return;
+          }
+
+          account.setEmail(userData.email);
+        }
+
+        if (userData.locale != null) account.setLocale(userData.locale);
+
+        if (userData.avatarData != null) {
+            // Store avatar
+            String avatarFileId = storeAvatar(participantId, userData.avatarData, null);
+            account.setAvatarFileId(avatarFileId);
+        }
+
+
         accountStore.putAccount(account);
-      } catch (PersistenceException e) {
+
+
+        sendResponse(response, toServiceData(req.getRequestURL().toString(), account));
+        return;
+
+
+      } catch (IOException e) {
+
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             "INTERNAL_SERVER_ERROR");
         LOG.warning(e.getMessage(), e);
         return;
+
+      } catch (PersistenceException e) {
+
+        sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            "INTERNAL_SERVER_ERROR");
+        LOG.warning(e.getMessage(), e);
+        return;
+
+      } catch (InvalidParticipantAddress e) {
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_ACCOUNT_ID_SYNTAX");
+        return;
+      } catch (JsonSyntaxException e) {
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_JSON_SYNTAX");
+        return;
       }
-
-      sendResponse(response, toServiceData(account));
-      return;
-
 
     } else if (req.getMethod().equals("POST") && participantToken != null) {
 
       // POST /account/joe update user's account
 
-
-      ParticipantId participantId = null;
-
       try {
-        participantId = ParticipantId.of(participantToken + "@" + domain);
-      } catch (InvalidParticipantAddress e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "ACCOUNT_ID_WRONG_SYNTAX");
-        return;
-      }
 
-      AccountData accountData = null;
+        ParticipantId participantId = ParticipantId.of(participantToken + "@" + domain);
+        AccountData accountData = accountStore.getAccount(participantId);
 
-      try {
-        accountData = accountStore.getAccount(participantId);
-      } catch (PersistenceException e) {
-        sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "INTERNAL_SERVER_ERROR");
-        LOG.warning(e.getMessage(), e);
-        return;
-      }
-
-      if (accountData == null) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_FOUND");
-        return;
-      }
-
-      // if the account exists, only the user can modify the profile
-      if (!participantId.equals(loggedInUser)) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_LOGGED_ID");
-        return;
-      }
-
-      // Modify
-
-      AccountServiceData userData = getRequestServiceData(req);
-
-      HumanAccountData account = accountData.asHuman();
-
-      if (userData.email != null) {
-        if (!EmailValidator.getInstance().isValid(userData.email)) {
-          sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+        if (accountData == null) {
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_FOUND");
           return;
         }
 
-        account.setEmail(userData.email);
-
-      }
-
-      if (userData.locale != null) account.setLocale(userData.locale);
-
-      if (userData.avatar_data != null) {
-        try {
-          String avatarFileId =
-              storeAvatar(participantId, userData.avatar_data, account.getAvatarFileName());
-          account.setAvatarFileId(avatarFileId);
-        } catch (IOException e) {
-          sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-              "INTERNAL_SERVER_ERROR");
-          LOG.warning(e.getMessage(), e);
+        // if the account exists, only the user can modify the profile
+        if (!participantId.equals(loggedInUser)) {
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_LOGGED_IN");
           return;
         }
-      }
 
-      try {
+        // Modify
+
+        AccountServiceData userData = getRequestServiceData(req);
+
+        HumanAccountData account = accountData.asHuman();
+
+
+        if (userData.isParsedField("email")) {
+          try {
+            if (userData.email.isEmpty())
+              account.setEmail(null);
+            else
+              account.setEmail(userData.email);
+          } catch (IllegalArgumentException e) {
+            sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_EMAIL_ADDRESS");
+            return;
+          }
+        }
+
+        if (userData.isParsedField("locale"))
+          account.setLocale(userData.locale);
+
+
+        if (userData.isParsedField("avatarData")) {
+          if (userData.avatarData == null || userData.avatarData.isEmpty()
+              || "data:".equals(userData.avatarData)) {
+            // Delete avatar
+            deleteAvatar(account.getAvatarFileId());
+            account.setAvatarFileId(null);
+          } else {
+            String avatarFileId =
+                storeAvatar(participantId, userData.avatarData, account.getAvatarFileName());
+            account.setAvatarFileId(avatarFileId);
+          }
+        }
+
         accountStore.putAccount(account);
+
+
+        sendResponse(response, toServiceData(req.getRequestURL().toString(), account));
+        return;
+
+
       } catch (PersistenceException e) {
+
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             "INTERNAL_SERVER_ERROR");
         LOG.warning(e.getMessage(), e);
         return;
+
+      } catch (IOException e) {
+
+        sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            "INTERNAL_SERVER_ERROR");
+        LOG.warning(e.getMessage(), e);
+        return;
+
+      } catch (InvalidParticipantAddress e) {
+
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_ACCOUNT_ID_SYNTAX");
+        return;
+
+      } catch (JsonSyntaxException e) {
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_JSON_SYNTAX");
+        return;
       }
-
-
-      sendResponse(response, toServiceData(account));
-      return;
 
 
     } else if (req.getMethod().equals("GET")) {
 
-      ParticipantId participantId = null;
-
       try {
-        participantId = ParticipantId.of(participantToken + "@" + domain);
-      } catch (InvalidParticipantAddress e) {
-        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "ACCOUNT_ID_WRONG_SYNTAX");
+
+        ParticipantId participantId = ParticipantId.of(participantToken + "@" + domain);
+        AccountData accountData = accountStore.getAccount(participantId);
+
+        if (accountData == null) {
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_FOUND");
+          return;
+        }
+
+        if (opToken != null && opToken.equalsIgnoreCase("avatar")) {
+
+          // GET /account/joe/avatar/[filename]
+
+          String fileName = paramToken;
+
+          if (fileName == null || !accountData.asHuman().getAvatarFileName().equals(fileName)) {
+            sendResponseError(response, HttpServletResponse.SC_NOT_FOUND,
+                "ACCOUNT_ATTACHMENT_NOT_FOUND");
+            return;
+          }
+
+          Attachment avatar = attachmentAccountStore.getAvatar(fileName);
+
+          response.setContentType(accountData.asHuman().getAvatarMimeType());
+          response.setContentLength((int) avatar.getSize());
+          response.setStatus(HttpServletResponse.SC_OK);
+          response.setDateHeader("Last-Modified", Calendar.getInstance().getTimeInMillis());
+          AttachmentUtil.writeTo(avatar.getInputStream(), response.getOutputStream());
+
+          return;
+
+        }
+
+
+        if (!participantId.equals(loggedInUser)) {
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_LOGGED_IN");
+          return;
+        }
+
+
+        // GET /account/joe retrieve user's account data
+        sendResponse(response, toServiceData(req.getRequestURL().toString(), accountData.asHuman()));
         return;
-      }
 
-
-      AccountData accountData = null;
-
-      try {
-        accountData = accountStore.getAccount(participantId);
       } catch (PersistenceException e) {
+
         sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             "INTERNAL_SERVER_ERROR");
         LOG.warning(e.getMessage(), e);
         return;
-      }
 
-      if (accountData == null) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_FOUND");
+      } catch (InvalidParticipantAddress e) {
+        sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, "INVALID_ACCOUNT_ID_SYNTAX");
         return;
       }
 
-      if (opToken != null && opToken.equalsIgnoreCase("avatar")) {
-
-        // GET /account/joe/avatar/[filename]
-
-        String fileName = paramToken;
-
-        if (fileName == null || !accountData.asHuman().getAvatarFileName().equals(fileName)) {
-          sendResponseError(response, HttpServletResponse.SC_NOT_FOUND,
-              "ACCOUNT_ATTACHMENT_NOT_FOUND");
-          return;
-        }
-
-        Attachment avatar = attachmentAccountStore.getAvatar(fileName);
-
-        response.setContentType(accountData.asHuman().getAvatarMimeType());
-        response.setContentLength((int) avatar.getSize());
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setDateHeader("Last-Modified", Calendar.getInstance().getTimeInMillis());
-        AttachmentUtil.writeTo(avatar.getInputStream(), response.getOutputStream());
-
-        return;
-
-      }
-
-
-      if (!participantId.equals(loggedInUser)) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, "ACCOUNT_NOT_LOGGED_ID");
-        return;
-      }
-
-
-      // GET /account/joe retrieve user's account data
-      sendResponse(response, toServiceData(accountData.asHuman()));
-      return;
 
     }
+
 
 
   }
@@ -349,14 +353,17 @@ public class AccountService extends SwellRTService {
 
   }
 
-  protected AccountServiceData getRequestServiceData(HttpServletRequest request) throws IOException {
+  protected void deleteAvatar(String avatarFileId) {
 
+
+  }
+
+  protected AccountServiceData getRequestServiceData(HttpServletRequest request)
+      throws JsonSyntaxException, IOException {
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
 
-    // Deserialize data
-    Gson gson = new Gson();
-    return gson.fromJson(writer.toString(), AccountServiceData.class);
+    return (AccountServiceData) ServiceData.fromJson(writer.toString(), AccountServiceData.class);
   }
 
 
@@ -364,21 +371,23 @@ public class AccountService extends SwellRTService {
 
 
 
-  protected static String getAvatarUrl(HumanAccountData account) {
+  protected static String getAvatarUrl(String serverBaseUrl, HumanAccountData account) {
     if (account.getAvatarFileName() == null) return null;
 
-    return SwellRtServlet.SERVLET_CONTEXT + "/account/" + account.getId().getName() + "/avatar/"
+    return serverBaseUrl + SwellRtServlet.SERVLET_CONTEXT + "/account/" + account.getId().getName()
+        + "/avatar/"
         + account.getAvatarFileName();
   }
 
-  protected static AccountServiceData toServiceData(HumanAccountData account) {
+  protected static AccountServiceData toServiceData(String serverBaseUrl, HumanAccountData account) {
 
     AccountServiceData data = new AccountServiceData();
 
     data.id = account.getId().getAddress();
-    data.email = account.getEmail();
-    data.avatar_url = getAvatarUrl(account);
-    data.locale = account.getLocale();
+    data.email = account.getEmail() == null ? "" : account.getEmail();
+    String avatarUrl = getAvatarUrl(serverBaseUrl, account);
+    data.avatarUrl = avatarUrl == null ? "" : avatarUrl;
+    data.locale = account.getLocale() == null ? "" : account.getLocale();
 
     return data;
 

@@ -91,6 +91,7 @@ public class AccountServiceTest extends TestCase {
       ByteArrayOutputStream responseStream, int expectedHttpResponseCode) throws IOException {
 
     HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:9898"));
     HttpServletResponse response = mock(HttpServletResponse.class);
 
     when(request.getPathInfo()).thenReturn(path);
@@ -121,16 +122,18 @@ public class AccountServiceTest extends TestCase {
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
     requestData.password = "_password_";
-    requestData.avatar_data = IMAGE_BASE64;
+    requestData.avatarData = IMAGE_BASE64;
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
     executeService("/account", "POST", requestData, responseStream, HttpServletResponse.SC_OK);
 
-    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData =
+        (AccountServiceData) ServiceData.fromJson(responseStream.toString("UTF-8"),
+            AccountServiceData.class);
     assertEquals(requestData.email, responseData.email);
     assertEquals(requestData.locale, responseData.locale);
-    assertTrue(responseData.avatar_url.contains("image.png"));
+    assertTrue(responseData.avatarUrl.contains("image.png"));
 
   }
 
@@ -149,7 +152,7 @@ public class AccountServiceTest extends TestCase {
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
     requestData.password = "_password_";
-    requestData.avatar_data = IMAGE_BASE64;
+    requestData.avatarData = IMAGE_BASE64;
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
@@ -181,17 +184,19 @@ public class AccountServiceTest extends TestCase {
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
     requestData.password = "_password_";
-    requestData.avatar_data = IMAGE_BASE64;
+    requestData.avatarData = IMAGE_BASE64;
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
     executeService("/account/joe", "POST", requestData, responseStream,
         HttpServletResponse.SC_OK);
 
-    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData =
+        (AccountServiceData) ServiceData.fromJson(responseStream.toString("UTF-8"),
+            AccountServiceData.class);
     assertEquals(requestData.email, responseData.email);
     assertEquals(requestData.locale, responseData.locale);
-    assertTrue(responseData.avatar_url.contains("image.png"));
+    assertTrue(responseData.avatarUrl.contains("image.png"));
 
 
   }
@@ -217,7 +222,7 @@ public class AccountServiceTest extends TestCase {
     requestData.email = "joe@email.example.com";
     requestData.locale = "en_EN";
     requestData.password = "_password_";
-    requestData.avatar_data = IMAGE_BASE64;
+    requestData.avatarData = IMAGE_BASE64;
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
 
@@ -250,10 +255,12 @@ public class AccountServiceTest extends TestCase {
     executeService("/account/joe", "GET", requestData, responseStream,
         HttpServletResponse.SC_OK);
 
-    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData =
+        (AccountServiceData) ServiceData.fromJson(responseStream.toString("UTF-8"),
+            AccountServiceData.class);
     assertEquals("joe@email.example.com", responseData.email);
     assertEquals("en_EN", responseData.locale);
-    assertTrue(responseData.avatar_url.contains("image.png"));
+    assertTrue(responseData.avatarUrl.contains("image.png"));
 
   }
 
@@ -282,10 +289,12 @@ public class AccountServiceTest extends TestCase {
     executeService("/account/joe", "GET", requestData, responseStream,
         HttpServletResponse.SC_OK);
 
-    AccountServiceData responseData = AccountServiceData.fromJson(responseStream.toString("UTF-8"));
+    AccountServiceData responseData =
+        (AccountServiceData) ServiceData.fromJson(responseStream.toString("UTF-8"),
+            AccountServiceData.class);
     assertEquals("joe@email.example.com", responseData.email);
     assertEquals("en_EN", responseData.locale);
-    assertTrue(responseData.avatar_url.contains("image.png"));
+    assertTrue(responseData.avatarUrl.contains("image.png"));
 
   }
 
