@@ -230,6 +230,26 @@ public class WaveClient implements SwellRT.Listener {
     coreClient.stopSession();
   }
 
+
+  public void resumeSession(final JavaScriptObject callback)
+      throws RequestException {
+
+
+    coreClient.resumeSession(new Callback<JavaScriptObject, String>() {
+
+        @Override
+        public void onSuccess(JavaScriptObject result) {
+          invoke(callback, WaveClientJS.SUCCESS, result);
+        }
+
+        @Override
+        public void onFailure(String reason) {
+          invoke(callback, WaveClientJS.FAILURE, reason);
+        }
+      });
+
+  }
+
   //
   // Data model
   //

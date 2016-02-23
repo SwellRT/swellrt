@@ -129,6 +129,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private String waveServerURLSchema;
   private String waveServerURL;
 
+  /**
+   * This URL doesn't end with "/". Example: http://localhost:9898
+   */
   private String baseServerUrl = SwellRTUtils.getBaseUrl();
 
   private WaveWebSocketClient websocket;
@@ -232,6 +235,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throws RequestException {
 
     String url = baseServerUrl + "/swell/auth";
+    url = addSessionToUrl(url);
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
     builder.setIncludeCredentials(true);
@@ -286,6 +290,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     cleanSessionData();
 
     String url = baseServerUrl + "/swell/auth";
+    url = addSessionToUrl(url);
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
     builder.setIncludeCredentials(true);
@@ -595,8 +600,77 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
+  /**
+   * A temporary method to resume sessions. StartSession, StopSession and
+   * ResumeSession methods will be replaced by login(), resume() and logut()
+   * 
+   * 
+   * @param callback
+   * @throws RequestException
+   */
+  @Deprecated
+  public void resumeSession(final Callback<JavaScriptObject, String> callback)
+      throws RequestException {
+
+    waveServerURLSchema = baseServerUrl.startsWith("http://") ? "http://" : "https://";
+    waveServerURL = baseServerUrl.replace(waveServerURLSchema, "");
 
 
+    String url = baseServerUrl + "/swell/auth";
+    url = addSessionToUrl(url);
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    builder.setIncludeCredentials(true);
+    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+    builder.sendRequest("{}", new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, final Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onFailure("ACCESS_FORBIDDEN_EXCEPTION");
+        else {
+
+          final JavaScriptResponse responseData =
+              ServiceCallback.JavaScriptResponse.success(response.getText());
+
+          loggedInUser = ParticipantId.ofUnsafe(responseData.getValue("id"));
+          sessionId = responseData.getValue("sessionId");
+          waveDomain = responseData.getValue("domain");
+          seed = SwellRTUtils.nextBase64(10);
+
+          // Use the browser __session object instead of setting cookie
+          createWebClientSession(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+              sessionId);
+
+          // Init Id generator
+          TypeIdGenerator.get().initialize(ClientIdGenerator.create());
+
+          startComms(new Callback<Void, Void>() {
+
+            @Override
+            public void onFailure(Void none) {
+              callback.onFailure("SERVICE_EXCEPTION");
+
+              cleanChannelData();
+              cleanSessionData();
+            }
+
+            @Override
+            public void onSuccess(Void none) {
+              callback.onSuccess(responseData);
+            }
+          });
+        }
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure("SERVICE_EXCEPTION");
+      }
+    });
+
+  }
 
   /**
    * Logout user and close communications with Wave provider
@@ -980,7 +1054,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String query = "method=set&email=" + URL.encode(email);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/email?" + query;
+    String url = waveServerURLSchema + waveServerURL + "/swell/email";
+    url = addSessionToUrl(url);
+    url += "?" + query;
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
@@ -1021,7 +1097,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         + URL.encode(token)
         + "&new-password=" + URL.encode(newPassword);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/password?" + query;
+    String url = waveServerURLSchema + waveServerURL + "/swell/password";
+    url = addSessionToUrl(url);
+    url += "?" + query;
+
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
@@ -1066,7 +1145,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         "method=password-reset" + "&id-or-email=" + URL.encodeQueryString(idOrEmail)
             + "&recover-url=" + URL.encodeQueryString(recoverUrl);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/email?" + query;
+    String url = waveServerURLSchema + waveServerURL + "/swell/email";
+    url = addSessionToUrl(url);
+    url += "?" + query;
+
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 
@@ -1106,7 +1188,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throws RequestException {
 
 
-    String url = baseServerUrl + "swell/account";
+    String url = baseServerUrl + "/swell/account";
+    url = addSessionToUrl(url);
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
     builder.setIncludeCredentials(true);
@@ -1137,7 +1220,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void updateUserProfile(JavaScriptObject parameters, final ServiceCallback callback)
       throws RequestException {
 
-    String url = baseServerUrl + "swell/account/" + loggedInUser.getName();
+    String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
+    url = addSessionToUrl(url);
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
     builder.setIncludeCredentials(true);
@@ -1168,7 +1252,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   public void getUserProfile(final ServiceCallback callback)
       throws RequestException {
 
-    String url = baseServerUrl + "swell/account/" + loggedInUser.getName();
+    String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
+    url = addSessionToUrl(url);
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
     builder.setIncludeCredentials(true);

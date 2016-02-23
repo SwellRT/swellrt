@@ -225,6 +225,19 @@ public class WaveClientJS extends JavaScriptObject {
             }
          },
 
+         resumeSession: function(onSuccess, onFailure) {
+
+            var callback = new Object();
+            callback.success =  onSuccess;
+            callback.failure =  onFailure;
+
+            try {
+              return delegate.@org.swellrt.api.WaveClient::resumeSession(Lcom/google/gwt/core/client/JavaScriptObject;)(callback);
+            } catch (e) {
+              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+            }
+         },
+
 
          //
          // Data Model
