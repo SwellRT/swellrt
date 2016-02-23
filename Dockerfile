@@ -13,9 +13,9 @@ RUN adduser --system --home $home swellrt \
 
 WORKDIR $home
 
-RUN mkdir config log \
+RUN mkdir config log sessions \
     && for i in $config_files ; do ln -s $home/config/$i . ; done \
-    && ln -s $home/_sessions $home/sessions
+    && ln -s $home/sessions $home/_sessions
 
 # I could not find a dawn way to set this in an ENV variable
 # TODO: unify with config files
