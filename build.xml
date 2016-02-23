@@ -700,6 +700,8 @@
         <include name="javax/inject/**/*" />
         <include name="javax/servlet/**/*" />
         <include name="javax/xml/**/*" />
+        <include name="javax/mail/**/*" />
+        <include name="com/sun/mail/**/*" />
         <include name="net/oauth/**/*" />
         <include name="org/aopalliance/**/*" />
         <include name="org/apache/commons/cli/**/*" />
