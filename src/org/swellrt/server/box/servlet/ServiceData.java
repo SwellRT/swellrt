@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
 
 
 public abstract class ServiceData {
@@ -15,17 +14,17 @@ public abstract class ServiceData {
 
 
   public static ServiceData fromJson(String json, Class<? extends ServiceData> classOf)
-      throws JsonSyntaxException, JsonParseException {
+      throws JsonParseException {
 
     ServiceData object = null;
 
 
     JsonElement element = jsonParser.parse(json);
 
-    if (element == null) return null;
+    if (element == null) throw new JsonParseException("Element is null");
 
     object = gson.fromJson(element, classOf);
-    object.set(element.getAsJsonObject());
+    if (element.isJsonObject()) object.set(element.getAsJsonObject());
 
 
     return object;

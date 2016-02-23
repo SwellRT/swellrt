@@ -194,7 +194,7 @@ public class AuthenticationService extends SwellRTService {
 
     if (loggedInAddress == null) {
 
-      AuthenticationServiceData authData = null;
+      AuthenticationServiceData authData = new AuthenticationServiceData();
 
       try {
         authData = getRequestServiceData(req);
@@ -272,7 +272,7 @@ public class AuthenticationService extends SwellRTService {
 
     if (!loggedInAddress.isAnonymous())
       accountData =
-          AccountService.toServiceData(req.getRequestURL().toString(),
+          AccountService.toServiceData(getBaseUrl(req),
               accountStore.getAccount(loggedInAddress).asHuman());
     else
       accountData = new AccountService.AccountServiceData(loggedInAddress.getAddress());
@@ -399,7 +399,7 @@ public class AuthenticationService extends SwellRTService {
 
       if (!user.isAnonymous())
         accountData =
-            AccountService.toServiceData(req.getRequestURL().toString(),
+            AccountService.toServiceData(getBaseUrl(req),
                 accountStore.getAccount(user).asHuman());
       else
         accountData = new AccountService.AccountServiceData(user.getAddress());
@@ -435,7 +435,7 @@ public class AuthenticationService extends SwellRTService {
     String json = writer.toString();
 
     if (json == null)
- throw new JsonParseException("Null JSON message");
+       throw new JsonParseException("Null JSON message");
 
     return (AuthenticationServiceData) ServiceData.fromJson(json,
         AuthenticationServiceData.class);

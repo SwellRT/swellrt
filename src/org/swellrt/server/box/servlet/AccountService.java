@@ -157,7 +157,7 @@ public class AccountService extends SwellRTService {
         accountStore.putAccount(account);
 
 
-        sendResponse(response, toServiceData(req.getRequestURL().toString(), account));
+        sendResponse(response, toServiceData(getBaseUrl(req), account));
         return;
 
 

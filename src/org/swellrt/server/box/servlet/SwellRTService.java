@@ -60,4 +60,8 @@ public abstract class SwellRTService {
   }
 
 
+  protected String getBaseUrl(HttpServletRequest req) {
+    return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+  }
+
 }
