@@ -21,41 +21,41 @@ package org.waveprotocol.box.server.rpc;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.logging.Level;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
+import org.waveprotocol.box.attachment.AttachmentMetadata;
+import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.attachment.AttachmentService;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AttachmentStore.AttachmentData;
+import org.waveprotocol.box.server.persistence.AttachmentUtil;
+import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
+import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
-import com.google.inject.name.Named;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.waveprotocol.box.attachment.AttachmentMetadata;
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.attachment.AttachmentService;
-import org.waveprotocol.box.server.persistence.AttachmentStore.AttachmentData;
-import org.waveprotocol.box.server.persistence.AttachmentUtil;
-import org.waveprotocol.box.server.waveserver.WaveServerException;
-import org.waveprotocol.wave.media.model.AttachmentId;
 
 /**
  * Serves attachments from a provided store.
@@ -262,7 +262,9 @@ public class AttachmentServlet extends HttpServlet {
 
   private static String getAttachmentIdStringFromRequest(HttpServletRequest request) {
     // Discard the leading '/' in the pathinfo.
-    return request.getPathInfo().substring(1);
+    String path = request.getPathInfo().substring(1);
+    // Remove session parameter
+    return path.substring(0, path.indexOf(";"));
   }
 
   private AttachmentData getThumbnailByContentType(String contentType) throws IOException {
