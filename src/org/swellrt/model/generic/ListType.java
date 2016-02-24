@@ -365,4 +365,9 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
     return null;
   }
 
+  @Override
+  public FileType asFile() {
+    return null;
+  }
+
 }

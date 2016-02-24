@@ -127,4 +127,9 @@ public class UnmutableList implements ReadableList<ReadableType>, ReadableTypeVi
     return null;
   }
 
+  @Override
+  public UnmutableFile asFile() {
+    return null;
+  }
+
 }

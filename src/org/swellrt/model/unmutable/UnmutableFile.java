@@ -1,15 +1,16 @@
 package org.swellrt.model.unmutable;
 
-import org.swellrt.model.ReadableString;
+import org.swellrt.model.ReadableFile;
 import org.swellrt.model.ReadableTypeVisitable;
 import org.swellrt.model.ReadableTypeVisitor;
+import org.waveprotocol.wave.media.model.AttachmentId;
 
-public class UnmutableString implements ReadableString, ReadableTypeVisitable {
+public class UnmutableFile implements ReadableFile, ReadableTypeVisitable {
 
 
-  String value;
+  AttachmentId value;
 
-  protected UnmutableString(String value) {
+  protected UnmutableFile(AttachmentId value) {
     this.value = value;
   }
 
@@ -19,13 +20,13 @@ public class UnmutableString implements ReadableString, ReadableTypeVisitable {
   }
 
   @Override
-  public String getValue() {
+  public AttachmentId getValue() {
     return value;
   }
 
   @Override
   public String toString() {
-    return value;
+    return value.serialise();
   }
 
   @Override
@@ -36,7 +37,7 @@ public class UnmutableString implements ReadableString, ReadableTypeVisitable {
 
   @Override
   public UnmutableString asString() {
-    return this;
+    return null;
   }
 
 
@@ -53,7 +54,7 @@ public class UnmutableString implements ReadableString, ReadableTypeVisitable {
 
   @Override
   public UnmutableFile asFile() {
-    return null;
+    return this;
   }
 
 }

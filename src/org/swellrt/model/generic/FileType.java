@@ -1,80 +1,83 @@
 package org.swellrt.model.generic;
 
 
-import org.swellrt.model.ReadableString;
+import org.swellrt.model.ReadableFile;
 import org.swellrt.model.ReadableTypeVisitor;
+import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
+import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
-public class StringType extends Type implements ReadableString, SourcesEvents<StringType.Listener> {
+public class FileType extends Type implements ReadableFile, SourcesEvents<FileType.Listener> {
 
 
   public interface Listener {
 
-    void onValueChanged(String oldValue, String newValue);
+    void onValueChanged(AttachmentId oldValue, AttachmentId newValue);
 
   }
 
   /**
-   * Get an instance of StringType. This method is used for deserialization.
-   * 
+   * Get an instance of FileType. This method is used for deserialization.
+   *
    * @param parent the parent Type instance of this string
    * @param valueIndex the index of the value in the parent's value container
    * @return
    */
-  protected static StringType deserialize(Type parent, String valueIndex) {
-    StringType string = new StringType();
-    string.attach(parent, valueIndex);
-    return string;
+  protected static FileType deserialize(Type parent, String valueIndex) {
+    FileType f = new FileType();
+    f.attach(parent, valueIndex);
+    return f;
   }
 
-  public final static String TYPE_NAME = "StringType";
-  public final static String PREFIX = "str";
+  public final static String TYPE_NAME = "FileType";
+  public final static String PREFIX = "f";
   public final static String VALUE_ATTR = "v";
 
 
   private ObservableBasicValue<String> observableValue;
-  private ObservableBasicValue.Listener<String> observableValueListener;
+  private ObservableBasicValue.Listener<String> observableValueListener =
+      new ObservableBasicValue.Listener<String>() {
+
+        @Override
+        public void onValueChanged(String oldValue, String newValue) {
+          for (Listener l : listeners)
+            try {
+              l.onValueChanged(AttachmentId.deserialise(oldValue),
+                  AttachmentId.deserialise(newValue));
+            } catch (InvalidIdException e) {
+              // TODO handle exception
+            }
+        }
+      };
+
 
   private String path;
 
   private Type parent;
   private int valueRef; // the index of this value in the ValuesContainer
-  private String initValue;
+  private AttachmentId initValue;
 
-
+  /**
+   * The model owning this object. Despite other Types, FileType needs to know
+   * its model before be attached in order to generate URL
+   */
+  private Model model;
 
   private boolean isAttached;
 
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
 
-  protected StringType() {
-
+  protected FileType() {
     this.initValue = null;
-    this.observableValueListener = new ObservableBasicValue.Listener<String>() {
-
-      @Override
-      public void onValueChanged(String oldValue, String newValue) {
-        for (Listener l : listeners)
-          l.onValueChanged(oldValue, newValue);
-      }
-    };
   }
 
-  public StringType(String initValue) {
-
-    this.initValue = initValue != null ? initValue : "";
-    this.observableValueListener = new ObservableBasicValue.Listener<String>() {
-
-      @Override
-      public void onValueChanged(String oldValue, String newValue) {
-        for (Listener l: listeners)
-          l.onValueChanged(oldValue, newValue);
-      }
-    };
+  public FileType(AttachmentId initValue, Model model) {
+    this.initValue = initValue != null ? initValue : null;
+    this.model = model;
   }
 
 
@@ -89,7 +92,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
     Preconditions.checkArgument(parent.hasValuesContainer(),
         "Invalid parent type for a primitive value");
     this.parent = parent;
-    observableValue = parent.getValuesContainer().add(initValue);
+    observableValue = parent.getValuesContainer().add(initValue.serialise());
     observableValue.addListener(observableValueListener);
     valueRef = parent.getValuesContainer().indexOf(observableValue);
     isAttached = true;
@@ -127,7 +130,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   }
 
   protected void deattach() {
-    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached StringType");
+    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached FileType");
     observableValue.removeListener(this.observableValueListener);
     observableValue = null;
     isAttached = false;
@@ -142,7 +145,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   protected String serialize() {
-    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached StringType");
+    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached FileType");
     return PREFIX + "+" + Integer.toString(valueRef);
   }
 
@@ -157,7 +160,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
       @Override
       public String getBackendId() {
-        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached StringType");
+        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached FileType");
         return serialize();
       }
 
@@ -181,22 +184,33 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
 
   //
-  // String operations
+  // File operations
   //
 
-  public String getValue() {
+  public AttachmentId getValue() {
     if (!isAttached())
       return initValue;
-    else
-      return observableValue.get();
+    else {
+      try {
+        return AttachmentId.deserialise(observableValue.get());
+      } catch (InvalidIdException e) {
+        return null;
+      }
+    }
+
   }
 
 
-  public void setValue(String value) {
+  public void setValue(AttachmentId value) {
     if (isAttached()) {
-      if (!value.equals(observableValue.get())) {
-        observableValue.set(value);
-        parent.markValueUpdate(this);
+      try {
+        if (!value.equals(AttachmentId.deserialise(observableValue.get()))) {
+          observableValue.set(value.serialise());
+          parent.markValueUpdate(this);
+        }
+      } catch (InvalidIdException e) {
+        // TODO handle exception
+        return;
       }
     }
   }
@@ -247,7 +261,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public Model getModel() {
-    return parent.getModel();
+    return model == null ? parent.getModel() : model;
   }
 
   @Override
@@ -262,7 +276,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public StringType asString() {
-    return this;
+    return null;
   }
 
   @Override
@@ -277,14 +291,14 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public FileType asFile() {
-    return null;
+    return this;
   }
 
   @Override
   public boolean equals(Object obj) {
 
-    if (obj instanceof StringType) {
-      StringType other = (StringType) obj;
+    if (obj instanceof FileType) {
+      FileType other = (FileType) obj;
       // It's suppossed comparasion between types in the same container
       return (other.valueRef == this.valueRef);
     }

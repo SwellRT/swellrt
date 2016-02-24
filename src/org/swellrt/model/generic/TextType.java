@@ -298,5 +298,9 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
     return this;
   }
 
+  @Override
+  public FileType asFile() {
+    return null;
+  }
 
 }

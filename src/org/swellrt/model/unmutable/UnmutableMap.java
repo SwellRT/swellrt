@@ -150,4 +150,9 @@ public class UnmutableMap implements ReadableMap, ReadableTypeVisitable {
     return null;
   }
 
+  @Override
+  public UnmutableFile asFile() {
+    return null;
+  }
+
 }

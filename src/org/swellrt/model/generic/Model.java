@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableMap;
 
 import org.swellrt.model.ReadableModel;
 import org.swellrt.model.shared.ModelUtils;
+import org.waveprotocol.wave.media.model.AttachmentId;
+import org.waveprotocol.wave.media.model.AttachmentIdGenerator;
+import org.waveprotocol.wave.media.model.AttachmentIdGeneratorImpl;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
@@ -25,53 +28,54 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveletListener;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
+import org.waveprotocol.wave.model.waveref.WaveRef;
 
 import java.util.Set;
 
 /**
  * A model is a Wavelet wrapper storing a tree-like structure of data objects of
  * the Type hierarchy.
- * 
+ *
  * <p>
  * [version not provided] <br/>
  * The original very buggy implementation. No longer supported.
- * 
+ *
  * <p>
  * version 0.1 <br/>
- * 
+ *
  * Each <code>Type</code> instance stores values in a new <code>Document</code>
  * but strings, they are stored in a separated document storing a string index.
  * <br/>
- * 
+ *
  * Simplified <code>Type</code> interface, only one <code>attach()</code>
  * method. <br/>
- * 
+ *
  * Improved class names to distinguish List and Map inner tools:
  * ListElementFactory...<br/>
- * 
+ *
  * The main document is now "map+root", supporting metadata, index of string and
  * the root map.<br/>
- * 
+ *
  * version 0.2 - SwellRT branding and new TextType<br/>
- * 
+ *
  * Wave: s+XXXXXX <br/>
  * Wavelet: swl+root <br/>
  * Root Document : model+root <br/>
- * 
+ *
  * version 1.0 - Data model supporting access control and metadata per blip
- * 
+ *
  * Model metadata: model+root <br/>
  * Root map: map+root <br/>
  * Map blip: map+XXXX <br/>
  * List blip: list+XXXX <br/>
  * Text blip: b+XXXX <br/>
- * 
+ *
  * Metadata attributes for model; <br/>
  * v = model version <br/>
  * t = model type id (for custom data types) <br/>
  * a = app id <br />
- * 
- * 
+ *
+ *
  * Metadata attributes for types (Map, List and future containers): <br/>
  * pc = participant creator <br/>
  * tc = timestamp creation <br/>
@@ -80,10 +84,10 @@ import java.util.Set;
  * ap = access policy <br/>
  * acl = access control list <br/>
  * p = path of this object in the wavelet <br/>
- * 
+ *
  * Primitive values are stored in each container document. (Former string index
  * is deprecated)
- * 
+ *
  */
 public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
 
@@ -176,6 +180,11 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
   private final TypeIdGenerator idGenerator;
 
   /**
+   * An id generattor for attachments
+   */
+  private final AttachmentIdGenerator attachmentIdGenerator;
+
+  /**
    * The current participant accesing the model
    */
   private final ParticipantId currentParticipant;
@@ -258,6 +267,8 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
 
     this.waveletData = wavelet.getWaveletData();
     this.idGenerator = idGenerator;
+    this.attachmentIdGenerator =
+        new AttachmentIdGeneratorImpl(idGenerator.getUnderlyingGenerator());
 
     this.doc = wavelet.getDocument(DOC_MODEL_ROOT);
 
@@ -276,8 +287,16 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return wavelet.getId();
   }
 
+  public WaveRef getWaveRef() {
+    return WaveRef.of(getWaveId(), getWaveletId());
+  }
+
   protected String generateDocId(String prefix) {
     return idGenerator.newDocumentId(prefix);
+  }
+
+  public AttachmentId generateAttachmentId() {
+    return attachmentIdGenerator.newAttachmentId();
   }
 
   protected ObservableDocument createDocument(String docId) {
@@ -400,10 +419,16 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return tt;
   }
 
+  public FileType createFile(AttachmentId attachmentId) {
+    return new FileType(attachmentId, this);
+  }
+
+
   @Override
   public Type fromPath(String path) {
     return (Type) ModelUtils.fromPath(this, path);
   }
+
 
   /**
    * For debug purposes only

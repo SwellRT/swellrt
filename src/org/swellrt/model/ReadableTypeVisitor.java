@@ -13,5 +13,7 @@ public interface ReadableTypeVisitor {
 
   void visit(ReadableText instance);
 
+  void visit(ReadableFile instance);
+
 
 }

@@ -434,6 +434,11 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   }
 
   @Override
+  public FileType asFile() {
+    return null;
+  }
+
+  @Override
   protected void markValueUpdate(Type value) {
     // Force a redundant put to trigger a convinient DocOp
     // for a primitive value update.

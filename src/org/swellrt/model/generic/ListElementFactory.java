@@ -43,9 +43,9 @@ public class ListElementFactory implements
 
       @Override
       public void initialize(Map<String, String> target) {
-        target.put("t", initialState.getType());
+        target.put(ListType.ATTR_LIST_ITEM_TYPE, initialState.getType());
         if (initialState.getBackendId() != null) {
-          target.put("r", initialState.getBackendId());
+          target.put(ListType.ATTR_LIST_ITEM_REF, initialState.getBackendId());
         }
       }
 

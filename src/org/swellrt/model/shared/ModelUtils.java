@@ -110,6 +110,10 @@ public class ModelUtils {
       } else if (currentObject.asText() != null) {
 
         isLeaf = true;
+
+      } else if (currentObject.asFile() != null) {
+
+        isLeaf = true;
       }
 
     }

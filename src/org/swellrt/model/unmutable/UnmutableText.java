@@ -85,4 +85,9 @@ public class UnmutableText implements ReadableText, ReadableTypeVisitable {
     return this;
   }
 
+  @Override
+  public UnmutableFile asFile() {
+    return null;
+  }
+
 }

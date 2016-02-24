@@ -19,4 +19,6 @@ public interface ReadableType extends ReadableTypeVisitable {
 
   public abstract ReadableText asText();
 
+  public abstract ReadableFile asFile();
+
 }
