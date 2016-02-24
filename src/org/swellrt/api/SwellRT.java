@@ -110,8 +110,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
-  private final static String SESSION_COOKIE_NAME = "WSESSIONID";
-  private final static String SESSION_PATH_PARAM = "sid";
+  protected final static String SESSION_COOKIE_NAME = "WSESSIONID";
+  protected final static String SESSION_PATH_PARAM = "sid";
 
   private static String CHARSET = "utf-8";
 

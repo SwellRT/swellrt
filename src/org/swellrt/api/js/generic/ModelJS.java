@@ -67,6 +67,57 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
        return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_txt);
      },
 
+     createFile: function(file, onComplete, progressListener) {
+
+
+        if (!file instanceof File) {
+          throw "INVALID_ARGUMENT";
+        }
+
+        if (typeof onComplete !== "function") {
+          throw "INVALID_ARGUMENT";
+        }
+
+        if (progressListener && typeof progressListener !== "function") {
+          throw "INVALID_ARGUMENT";
+        }
+
+
+        var attachmentId = delegate.@org.swellrt.model.generic.Model::generateAttachmentId()();
+        var id = attachmentId.@org.waveprotocol.wave.media.model.AttachmentId::getId()();
+
+        var waveRef = @org.swellrt.api.SwellRTUtils::encodeWaveRefUri(Lorg/swellrt/model/generic/Model;)(delegate);
+        var url = @org.swellrt.api.SwellRTUtils::buildAttachmentUploadUrl(Ljava/lang/String;)(id);
+
+        var formData = new FormData();
+
+        formData.append("attachmentId", id);
+        formData.append("waveRef", waveRef);
+        formData.append("uploadFormElement", file, file.name);
+
+        var request = new XMLHttpRequest();
+
+        request.withCredentials = true;
+        request.onload = function(event) {
+          if (request.status == 201) {
+            var _file = delegate.@org.swellrt.model.generic.Model::createFile(Lorg/waveprotocol/wave/media/model/AttachmentId;)(attachmentId);
+            onComplete(@org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_file));
+          } else {
+            onComplete({ error : "SERVICE_EXCEPTION" });
+          }
+        };
+
+        if (progressListener) {
+          request.addEventListener("progress", progressListener);
+        }
+
+        request.open("POST", url);
+        request.setRequestHeader("Accept", "text/plain");
+        request.send(formData);
+
+        return true;
+     },
+
      // For debug purpose only
      getModelDocuments: function() {
        var _docs = delegate.@org.swellrt.model.generic.Model::getModelDocuments()();

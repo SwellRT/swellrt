@@ -2,6 +2,7 @@ package org.swellrt.api.js.generic;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import org.swellrt.model.generic.FileType;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.StringType;
@@ -42,6 +43,13 @@ public class AdapterTypeJS {
       txt.addListener(txtJs);
 
       return txtJs;
+
+    } else if (instance instanceof FileType) {
+      FileType file = (FileType) instance;
+      FileTypeJS fileJs = FileTypeJS.create(file);
+      file.addListener(fileJs);
+
+      return fileJs;
     }
 
 
