@@ -548,6 +548,8 @@ public class WaveClient implements SwellRT.Listener {
 
   private static native void callOnSwellRTReady() /*-{
 
+    $wnd.SwellRT.ready = true;
+
     if (typeof $wnd.onSwellRTReady === "function")
     $wnd.onSwellRTReady();
 
