@@ -9,6 +9,7 @@ import com.mongodb.WriteConcern;
 import org.swellrt.model.unmutable.UnmutableModel;
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.ExceptionalIterator;
+import org.waveprotocol.box.server.attachment.AttachmentService;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.WaveMap;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
@@ -49,15 +50,15 @@ public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
 
   private final WaveMap waveMap;
   private final WaveletProvider waveletProvider;
+  private final AttachmentService attachmentService;
   /** Store snaphots of whole models */
   private DBCollection modelStore;
   /** Store change log of model's documents */
   private DBCollection modelLogStore;
 
   @Inject
-  public ModelIndexerDispatcherImpl(MongoDbProvider mongoDbProvider,
- WaveMap waveMap,
-      WaveletProvider waveletProvider) {
+  public ModelIndexerDispatcherImpl(MongoDbProvider mongoDbProvider, WaveMap waveMap,
+      WaveletProvider waveletProvider, AttachmentService attachmentService) {
     try {
       this.modelStore = mongoDbProvider.getDBCollection(ModelIndexerModule.MONGO_COLLECTION_MODELS);
       this.modelLogStore =
@@ -68,6 +69,7 @@ public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
     }
     this.waveletProvider = waveletProvider;
     this.waveMap = waveMap;
+    this.attachmentService = attachmentService;
   }
 
   /**
@@ -149,7 +151,8 @@ public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
     }
 
 
-    Pair<BasicDBObject, Map<String, String>> visitResult = ModelIndexerVisitor.run(model);
+    Pair<BasicDBObject, Map<String, String>> visitResult =
+        ModelIndexerVisitor.run(model, attachmentService);
 
     storeDataModel(waveletName, visitResult.first);
 

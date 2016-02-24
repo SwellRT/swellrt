@@ -12,9 +12,14 @@ import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.swellrt.model.shared.ModelUtils;
+import org.waveprotocol.box.attachment.AttachmentMetadata;
+import org.waveprotocol.box.server.attachment.AttachmentService;
+import org.waveprotocol.wave.media.model.AttachmentId;
+import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +39,7 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
   private final Stack<Object> objects;
   protected final Stack<String> path;
   protected final Map<String, String> blipIdToPathMap;
+  private final AttachmentService attachmentService;
 
   /**
    * Generate a BSON view of the Wave-based Data Model. Also return a map
@@ -43,19 +49,21 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
    * @param model the Wave-based collaborative data model
    * @return
    */
-  public static Pair<BasicDBObject, Map<String, String>> run(ReadableModel model) {
+  public static Pair<BasicDBObject, Map<String, String>> run(ReadableModel model,
+      AttachmentService attachmentService) {
 
-    ModelIndexerVisitor visitor = new ModelIndexerVisitor();
+    ModelIndexerVisitor visitor = new ModelIndexerVisitor(attachmentService);
     visitor.visit(model);
     return Pair.<BasicDBObject, Map<String, String>> of(visitor.getDBObject(),
         visitor.getblipIdToPathMap());
   }
 
-  protected ModelIndexerVisitor() {
+  protected ModelIndexerVisitor(AttachmentService attachmentService) {
     this.document = new BasicDBObject();
     this.objects = new Stack<Object>();
     this.path = new Stack<String>();
     this.blipIdToPathMap = new HashMap<String, String>();
+    this.attachmentService = attachmentService;
   }
 
   protected BasicDBObject getDBObject() {
@@ -155,8 +163,34 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
 
   @Override
   public void visit(ReadableFile instance) {
-    // TODO Auto-generated method stub
 
+    AttachmentMetadata metadata = null;
+
+    try {
+      if (attachmentService != null)
+        metadata =
+            attachmentService.getMetadata(AttachmentId.deserialise(instance.getValue().getId()));
+    } catch (IOException e) {
+      // TODO handle exception
+    } catch (InvalidIdException e) {
+      // TODO handle exception
+    }
+
+    BasicDBObject fileDBObject = new BasicDBObject();
+
+
+    if (metadata != null) {
+      fileDBObject.append("id", metadata.getAttachmentId());
+      fileDBObject.append("filename", metadata.getFileName());
+      fileDBObject.append("url", metadata.getAttachmentUrl());
+      fileDBObject.append("mimetype", metadata.getMimeType());
+      fileDBObject.append("size", metadata.getSize());
+      fileDBObject.append("thumbnail", metadata.getThumbnailUrl());
+    } else {
+      fileDBObject.append("id", instance.getValue());
+    }
+
+    objects.add(fileDBObject);
   }
 
 

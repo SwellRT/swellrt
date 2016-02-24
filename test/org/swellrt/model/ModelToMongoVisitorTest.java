@@ -21,7 +21,7 @@ public class ModelToMongoVisitorTest extends WaveletBasedTestBase {
 
     ReadableModel model = UnmutableModel.create(getWaveletData());
 
-    Pair<BasicDBObject, Map<String, String>> visitorResult = ModelIndexerVisitor.run(model);
+    Pair<BasicDBObject, Map<String, String>> visitorResult = ModelIndexerVisitor.run(model, null);
 
     BasicDBObject mongoModel = visitorResult.first;
 
