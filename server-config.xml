@@ -57,13 +57,13 @@
   <property name="thumbnail_patterns_directory" value="thumbnail_patterns" />
   <property name="analytics_account" value="" />
   <property name="profile_fetcher_type" value="gravatar" />
-  <property name="mongodb_host" value="127.0.0.1" />
+  <property name="mongodb_host" value="localhost" />
   <property name="mongodb_port" value="27017" />
   <property name="mongodb_database" value="wiab" />
   <property name="session_server_max_inactive_time" value="172800" />
   <property name="websocket_heartbeat" value="10" />
   <property name="account_attachment_store_directory" value="_account_attachments" />
-  <property name="email_host" value="${wave_server_domain}" />
+  <property name="email_host" value="localhost" />
   <property name="email_from_address" value="no-reply@${wave_server_domain}" />
 
   <!-- Properties for server.federation.config -->
