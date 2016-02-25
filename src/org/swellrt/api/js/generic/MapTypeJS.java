@@ -16,81 +16,102 @@ public class MapTypeJS extends JavaScriptObject implements MapType.Listener {
 
   public native static MapTypeJS create(MapType delegate) /*-{
 
-                                                          var jso = {
+      var jso = {
 
-                                                          _delegate: delegate,
+        _delegate: delegate,
 
-                                                          callbackMap: new Object(),
+        callbackMap: new Object(),
 
-                                                          eventHandlers: new Object(),
+        eventHandlers: new Object(),
 
-                                                          registerEventHandler: function(event, handler) {
-                                                          this.eventHandlers[event] = handler;
-                                                          },
+        registerEventHandler: function(event, handler) {
+          this.eventHandlers[event] = handler;
+        },
 
-                                                          unregisterEventHandler: function(event, handler) {
-                                                          this.eventHandlers[event] = null;
-                                                          },
+        unregisterEventHandler: function(event, handler) {
+          this.eventHandlers[event] = null;
+        },
 
-                                                          getDelegate: function() {
-                                                          return this._delegate;
-                                                          },
+        getDelegate: function() {
+          return this._delegate;
+        },
 
-                                                          get: function(key) {
+        get: function(key) {
 
-                                                          var _value = delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(key);
-                                                          if (_value == null)
-                                                          return undefined;
+          var _value = delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(key);
+          if (_value == null)
+            return undefined;
 
-                                                          return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
-                                                          },
+          return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
+        },
 
-                                                          put: function(key, value) {
+        put: function(key, value) {
 
-                                                          // Direct String creation
-                                                          if (typeof value === "string")  {
+          var result = false;
+          var oldValue = this.get(key);
 
-                                                          var _value = delegate.@org.swellrt.model.generic.MapType::put(Ljava/lang/String;Ljava/lang/String;)(key, value);
-                                                          if (_value == null)
-                                                          return undefined;
+          // Direct String creation
+          if (typeof value === "string")  {
 
-                                                          return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
+            var _value = delegate.@org.swellrt.model.generic.MapType::put(Ljava/lang/String;Ljava/lang/String;)(key, value);
+              if (_value == null)
+                return undefined;
 
-                                                          } else {
+            result = @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
 
-                                                          var _value = value.getDelegate();
+          } else {
 
-                                                          if (_value === "undefined" || _value == null)
-                                                          return undefined;
+            var _value = value.getDelegate();
 
-                                                          _value = delegate.@org.swellrt.model.generic.MapType::put(Ljava/lang/String;Lorg/swellrt/model/generic/Type;)(key, _value);
+            if (_value === "undefined" || _value == null)
+              return undefined;
 
-                                                          return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
+            _value = delegate.@org.swellrt.model.generic.MapType::put(Ljava/lang/String;Lorg/swellrt/model/generic/Type;)(key, _value);
 
-                                                          }
-                                                          },
-                                                          
+            result = @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
 
-                                                          keySet: function() {
-                                                          var _keyset = delegate.@org.swellrt.model.generic.MapType::keySet()();
-                                                          return @org.swellrt.api.SwellRTUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset);
-                                                          },
+          }
 
-                                                          remove: function(key) {
-                                                          delegate.@org.swellrt.model.generic.MapType::remove(Ljava/lang/String;)(key);
-                                                          },
+          if (oldValue && oldValue.type() == "FileType") {
+            oldValue.clear();
+          }
 
-                                                          type: function() {
-                                                          return delegate.@org.swellrt.model.generic.MapType::getType()();
-                                                          }
+          return result;
+
+        },
 
 
-                                                          }; // jso
+        keySet: function() {
+          return this.keys();
+        },
+
+        keys: function() {
+          var _keyset = delegate.@org.swellrt.model.generic.MapType::keySet()();
+          return @org.swellrt.api.SwellRTUtils::stringIterableToJs(Ljava/lang/Iterable;)(_keyset);
+        },
+
+        remove: function(key) {
+
+          var oldValue = this.get(key);
+
+          delegate.@org.swellrt.model.generic.MapType::remove(Ljava/lang/String;)(key);
+
+          if (oldValue && oldValue.type() == "FileType") {
+            oldValue.clear();
+          }
+        },
+
+        type: function() {
+          return delegate.@org.swellrt.model.generic.MapType::getType()();
+        }
 
 
-                                                          return jso;
+      }; // jso
 
-                                                          }-*/;
+
+      return jso;
+
+      }-*/;
 
 
   protected MapTypeJS() {

@@ -37,18 +37,55 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
         },
 
         getValue: function() {
+          return this.value();
+        },
+
+        value: function() {
           return delegate.@org.swellrt.model.generic.FileType::getValue()();
         },
 
-        getUrl: function() {
+        url: function() {
           return @org.swellrt.api.SwellRTUtils::buildAttachmentUrl(Lorg/swellrt/model/generic/FileType;)(this._delegate);
         },
 
-        setValue: function(file) {
-          if (!file || !file.type || file.type() != "FileType")
-          return false;
+        getUrl: function() {
+          return this.url();
+        },
 
-          delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(file.getValue());
+        setValue: function(file) {
+          this.set(file);
+        },
+
+        set: function(file) {
+          if (file && file.type && file.type()== "FileType")
+            delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(file.getValue());
+        },
+
+        clearValue: function() {
+          this.clear();
+        },
+
+        clear: function() {
+
+          var url = this.url();
+
+          delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(null);
+
+          var request = new XMLHttpRequest();
+
+          request.withCredentials = true;
+          request.onload = function(event) {
+            if (request.status == 200) {
+             console.log("Attachment delete from server");
+            } else {
+             console.log("Error, attachment not delete from server");
+            }
+          };
+
+
+          request.open("DELETE", url);
+          request.send();
+
         },
 
         type: function() {

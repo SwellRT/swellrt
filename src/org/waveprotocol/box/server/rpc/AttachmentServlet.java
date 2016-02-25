@@ -247,6 +247,54 @@ public class AttachmentServlet extends HttpServlet {
     }
   }
 
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    AttachmentId attachmentId = getAttachmentIdFromRequest(request);
+
+    if (attachmentId == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+      return;
+    }
+
+    String waveRefStr = getWaveRefFromRequest(request);
+
+    AttachmentMetadata metadata = service.getMetadata(attachmentId);
+    WaveletName waveletName;
+
+    if (metadata == null) {
+      // Old attachments does not have metainfo.
+      if (waveRefStr != null) {
+        waveletName = AttachmentUtil.waveRef2WaveletName(waveRefStr);
+      } else {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
+    } else {
+      waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
+    }
+
+
+    ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
+    boolean isAuthorized = false;
+    try {
+      isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
+    } catch (WaveServerException e) {
+      LOG.warning("Problem while authorizing user: " + user + " for wavelet: " + waveletName, e);
+    }
+    if (!isAuthorized) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
+
+    service.deleteAttachment(attachmentId);
+
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.getWriter().print("OK");
+    response.flushBuffer();
+  };
+
   private static AttachmentId getAttachmentIdFromRequest(HttpServletRequest request) {
     if (request.getPathInfo().length() == 0) {
       return null;

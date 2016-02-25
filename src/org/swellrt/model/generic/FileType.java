@@ -204,10 +204,17 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
   public void setValue(AttachmentId value) {
     if (isAttached()) {
       try {
-        if (!value.equals(AttachmentId.deserialise(observableValue.get()))) {
+
+        if (value == null) {
+          observableValue.set("");
+          parent.markValueUpdate(this);
+
+        } else if (!value.equals(AttachmentId.deserialise(observableValue.get()))) {
           observableValue.set(value.serialise());
           parent.markValueUpdate(this);
         }
+
+
       } catch (InvalidIdException e) {
         // TODO handle exception
         return;

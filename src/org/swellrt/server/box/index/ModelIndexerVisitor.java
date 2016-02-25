@@ -168,7 +168,8 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
 
     try {
       if (attachmentService != null)
-        metadata =
+        if (instance.getValue().getId() != null && !instance.getValue().getId().isEmpty())
+          metadata =
             attachmentService.getMetadata(AttachmentId.deserialise(instance.getValue().getId()));
     } catch (IOException e) {
       // TODO handle exception
@@ -187,7 +188,7 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
       fileDBObject.append("size", metadata.getSize());
       fileDBObject.append("thumbnail", metadata.getThumbnailUrl());
     } else {
-      fileDBObject.append("id", instance.getValue());
+      fileDBObject.append("id", instance.getValue().serialise());
     }
 
     objects.add(fileDBObject);
