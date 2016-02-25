@@ -186,13 +186,12 @@ public class EmailService extends SwellRTService {
                 message.setSubject(subject);
                 message.setText(body);
 
+                LOG.info("Sending email:" + "\n  Subject: " + subject + "\n  Message body: " + body);
                 // Send message
                 Transport.send(message);
 
               }
             }
-
-            LOG.info("Email sent:" + "\n  Message subject:" + subject + "\n  Message body:" + body);
 
             response.setStatus(HttpServletResponse.SC_OK);
 
