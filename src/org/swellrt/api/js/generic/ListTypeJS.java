@@ -42,17 +42,32 @@ public class ListTypeJS extends JavaScriptObject implements ListType.Listener {
 
            var _value = value.getDelegate();
 
-           if ((index !== undefined) && (typeof index == "number"))
-              _value = delegate.@org.swellrt.model.generic.ListType::add(ILorg/swellrt/model/generic/Type;)(index, _value);
-           else
+           if ((index !== undefined) && (typeof index == "number")) {
+
+             var oldValue = this.get(index);
+
+             _value = delegate.@org.swellrt.model.generic.ListType::add(ILorg/swellrt/model/generic/Type;)(index, _value);
+
+             if (oldValue && oldValue.type() == "FileType") {
+               oldValue.clear();
+             }
+
+           } else
              _value = delegate.@org.swellrt.model.generic.ListType::add(Lorg/swellrt/model/generic/Type;)(_value);
 
            return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
         },
 
         remove: function(index) {
+
+           var oldValue = this.get(index);
+
            var _value = delegate.@org.swellrt.model.generic.ListType::remove(I)(index);
            return @org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_value);
+
+           if (oldValue && oldValue.type() == "FileType") {
+               oldValue.clear();
+           }
         },
 
         get: function(index) {
