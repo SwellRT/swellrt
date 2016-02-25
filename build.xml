@@ -704,6 +704,7 @@
         <include name="javax/mail/**/*" />
         <include name="com/sun/mail/**/*" />
         <include name="net/oauth/**/*" />
+        <include name="net/lightoze/gwt/i18n/**/*" />
         <include name="org/aopalliance/**/*" />
         <include name="org/apache/commons/cli/**/*" />
         <include name="org/apache/commons/codec/**/*" />
