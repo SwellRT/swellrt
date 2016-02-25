@@ -16,6 +16,7 @@ import org.waveprotocol.box.server.authentication.i18n.PasswordRestoreMessages;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -44,6 +45,8 @@ public class EmailService extends SwellRTService {
   private static final String PASSWORD_RESET = "password-reset";
 
   private static final String RECOVER_URL = "recover-url";
+
+  private static final Log LOG = Log.get(EmailService.class);
 
   @Inject
   private SessionManager sessionManager;
@@ -112,6 +115,9 @@ public class EmailService extends SwellRTService {
           String recoverUrl = URLDecoder.decode(req.getParameter(RECOVER_URL), "UTF-8");
           String idOrEmail = URLDecoder.decode(req.getParameter("id-or-email"), "UTF-8");
 
+          String body = null;
+          String subject = null;
+
           try {
 
             List<AccountData> accounts = null;
@@ -173,8 +179,12 @@ public class EmailService extends SwellRTService {
                 message.setFrom(new InternetAddress(from));
 
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(idOrEmail));
-                message.setSubject(messages.emailSubject(userAddress));
-                message.setText(messages.restoreEmailBody(userAddress, recoverUrl));
+
+                subject = messages.emailSubject(userAddress);
+                body = messages.restoreEmailBody(userAddress, recoverUrl);
+
+                message.setSubject(subject);
+                message.setText(body);
 
                 // Send message
                 Transport.send(message);
@@ -182,6 +192,7 @@ public class EmailService extends SwellRTService {
               }
             }
 
+            LOG.info("Email sent:" + "\n  Message subject:" + subject + "\n  Message body:" + body);
 
             response.setStatus(HttpServletResponse.SC_OK);
 
