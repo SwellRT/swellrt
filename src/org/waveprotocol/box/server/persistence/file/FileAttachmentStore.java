@@ -22,8 +22,12 @@ package org.waveprotocol.box.server.persistence.file;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import org.waveprotocol.box.attachment.AttachmentMetadata;
+import org.waveprotocol.box.attachment.AttachmentProto;
+import org.waveprotocol.box.attachment.proto.AttachmentMetadataProtoImpl;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
+import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.util.CharBase64;
 
 import java.io.File;
@@ -33,10 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import org.waveprotocol.box.attachment.AttachmentMetadata;
-import org.waveprotocol.box.attachment.AttachmentProto;
-import org.waveprotocol.box.attachment.proto.AttachmentMetadataProtoImpl;
-import org.waveprotocol.wave.media.model.AttachmentId;
+import java.util.logging.Logger;
 
 /**
  * An implementation of AttachmentStore which uses files on disk
@@ -45,6 +46,8 @@ import org.waveprotocol.wave.media.model.AttachmentId;
  * @author akaplanov@gmail.com (A. Kaplanov)
  */
 public class FileAttachmentStore implements AttachmentStore {
+
+  private static final Logger LOG = Logger.getLogger(FileAttachmentStore.class.getName());
 
   private final String META_EXT = ".meta";
   private final String THUMBNAIL_EXT = ".thumbnail";
@@ -147,9 +150,22 @@ public class FileAttachmentStore implements AttachmentStore {
 
   @Override
   public void deleteAttachment(AttachmentId attachmentId) {
-    File file = new File(getAttachmentPath(attachmentId));
-    if (file.exists()) {
-      file.delete();
+    String attachmentPath = getAttachmentPath(attachmentId);
+    try {
+      File file = new File(attachmentPath);
+      if (file.exists()) {
+        file.delete();
+        LOG.info("Delete attachment " + attachmentPath);
+      }
+
+      String thumbnailPath = getThumbnailPath(attachmentId);
+      file = new File(thumbnailPath);
+      if (file.exists()) {
+        file.delete();
+        LOG.info("Delete attachment thumbnail " + thumbnailPath);
+      }
+    } catch (RuntimeException e) {
+      LOG.warning("Error deleting attachment " + attachmentPath);
     }
   }
 

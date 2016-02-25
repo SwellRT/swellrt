@@ -474,7 +474,8 @@ public class ServerRpcProvider {
 
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
     corsFilterHolder.setInitParameter("allowedOrigins", "*");
-    corsFilterHolder.setInitParameter("allowedMethods", "*");
+    // Set explicit methods to allow CORS with DELETE
+    corsFilterHolder.setInitParameter("allowedMethods", "GET,POST,DELETE,PUT,HEAD");
     corsFilterHolder.setInitParameter("allowedHeaders", "*");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
