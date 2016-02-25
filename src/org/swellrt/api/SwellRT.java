@@ -126,8 +126,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private RemoteViewServiceMultiplexer channel;
 
   private String waveDomain;
-  private String waveServerURLSchema;
-  private String waveServerURL;
 
   /**
    * This URL doesn't end with "/". Example: http://localhost:9898
@@ -340,7 +338,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     // redirect to the profile servlet (json output)
     // query += "&r=" + URL.encodeQueryString("/profile/?adresses=");
 
-    String url = waveServerURLSchema + waveServerURL + "/auth/signin?r=none";
+    String url = baseServerUrl + "/auth/signin?r=none";
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
     builder.setIncludeCredentials(true);
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -426,10 +424,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     log.log(Level.INFO, "Starting wave session...");
 
     // this is needed to atmosphere to work
-    setWebsocketAddress(this.waveServerURL);
+    setWebsocketAddress(this.baseServerUrl);
 
-    String webSocketURL = waveServerURLSchema.equals("http://") ? "ws://" : "wss://";
-    webSocketURL += waveServerURL + "/";
+
+    String webSocketURL = baseServerUrl + "/";
+
+    if (webSocketURL.startsWith("http://"))
+      webSocketURL = webSocketURL.replace("http://", "ws://");
+    else if (webSocketURL.startsWith("https://"))
+      webSocketURL = webSocketURL.replace("https://", "wss://");
+
 
     websocket = new WaveWebSocketClient(websocketNotAvailable() || !useWebSocket, webSocketURL);
     websocket.connect(new WaveSocketStartCallback() {
@@ -563,10 +567,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       final Callback<JavaScriptObject, String> callback) throws RequestException {
 
 
-    waveServerURLSchema = url.startsWith("http://") ? "http://" : "https://";
-    waveServerURL = url.replace(waveServerURLSchema, "");
-
-
     login(user, password, new Callback<JavaScriptObject, String>() {
 
       @Override
@@ -611,10 +611,6 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   @Deprecated
   public void resumeSession(final Callback<JavaScriptObject, String> callback)
       throws RequestException {
-
-    waveServerURLSchema = baseServerUrl.startsWith("http://") ? "http://" : "https://";
-    waveServerURL = baseServerUrl.replace(waveServerURLSchema, "");
-
 
     String url = baseServerUrl + "/swell/auth";
     url = addSessionToUrl(url);
@@ -971,7 +967,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     }
 
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/model";
+    String url = baseServerUrl + "/swell/model";
     url = addSessionToUrl(url);
     url += "?" + query;
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
@@ -1011,7 +1007,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String query;
     query = method + "=" + URL.encode(param);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/notification";
+    String url = baseServerUrl + "/swell/notification";
     url = addSessionToUrl(url);
     url += "?" + query;
     RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
@@ -1054,7 +1050,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String query = "method=set&email=" + URL.encode(email);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/email";
+    String url = baseServerUrl + "/swell/email";
     url = addSessionToUrl(url);
     url += "?" + query;
 
@@ -1097,7 +1093,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         + URL.encode(token)
         + "&new-password=" + URL.encode(newPassword);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/password";
+    String url = baseServerUrl + "/swell/password";
     url = addSessionToUrl(url);
     url += "?" + query;
 
@@ -1145,7 +1141,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         "method=password-reset" + "&id-or-email=" + URL.encodeQueryString(idOrEmail)
             + "&recover-url=" + URL.encodeQueryString(recoverUrl);
 
-    String url = waveServerURLSchema + waveServerURL + "/swell/email";
+    String url = baseServerUrl + "/swell/email";
     url = addSessionToUrl(url);
     url += "?" + query;
 
