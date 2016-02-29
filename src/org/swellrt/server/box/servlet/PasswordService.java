@@ -81,6 +81,8 @@ public class PasswordService extends SwellRTService {
           // Change the original account object to preserve all acount data
           // during DB update.
           account.setPasswordDigest(new PasswordDigest(newPassword.toCharArray()));
+          // Reset the token anyway
+          account.setRecoveryToken((String) null);
 
           accountStore.putAccount(account);
           response.setStatus(HttpServletResponse.SC_OK);
