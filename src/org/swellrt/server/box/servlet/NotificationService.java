@@ -18,13 +18,12 @@ public class NotificationService extends SwellRTService {
 
   private static final Log LOG = Log.get(NotificationService.class);
 
-  @Inject
-  private GCMSubscriptionStore subscriptionStore;
-  @Inject
-  private SessionManager sessionManager;
+  private final GCMSubscriptionStore subscriptionStore;
 
-  public NotificationService() {
-
+  @Inject
+  public NotificationService(SessionManager sessionManager, GCMSubscriptionStore subscriptionStore) {
+    super(sessionManager);
+    this.subscriptionStore = subscriptionStore;
   }
 
   @Override

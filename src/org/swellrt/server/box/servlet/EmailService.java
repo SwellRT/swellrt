@@ -48,18 +48,20 @@ public class EmailService extends SwellRTService {
 
   private static final Log LOG = Log.get(EmailService.class);
 
-  @Inject
-  private SessionManager sessionManager;
-  @Inject
-  private AccountStore accountStore;
+
+  private final AccountStore accountStore;
+  private final String host;
+  private final String from;
 
   @Inject
-  @Named(CoreSettings.EMAIL_HOST)
-  String host;
-
-  @Inject
-  @Named(CoreSettings.EMAIL_FROM_ADDRESS)
-  String from;
+  public EmailService(SessionManager sessionManager, AccountStore accountStore,
+      @Named(CoreSettings.EMAIL_HOST) String host,
+      @Named(CoreSettings.EMAIL_FROM_ADDRESS) String from) {
+    super(sessionManager);
+    this.accountStore = accountStore;
+    this.host = host;
+    this.from = from;
+  }
 
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {

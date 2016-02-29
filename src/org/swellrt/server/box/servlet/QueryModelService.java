@@ -1,5 +1,7 @@
 package org.swellrt.server.box.servlet;
 
+import com.google.inject.Inject;
+
 import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -9,6 +11,7 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
 import org.swellrt.server.box.index.ModelIndexerModule;
+import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
@@ -25,20 +28,15 @@ public class QueryModelService extends SwellRTService {
 
   private static final Log LOG = Log.get(QueryModelService.class);
 
-  public static QueryModelService get(ParticipantId participantId, MongoDbProvider mongoDbProvider) {
-    return new QueryModelService(participantId, mongoDbProvider);
-  }
 
 
-  private final ParticipantId participantId;
-  private final MongoDbProvider mongoDbProvider;
+  private ParticipantId participantId;
   private DBCollection store;
 
 
-  public QueryModelService(ParticipantId participantId, MongoDbProvider mongoDbProvider) {
-
-    this.participantId = participantId;
-    this.mongoDbProvider = mongoDbProvider;
+  @Inject
+  public QueryModelService(SessionManager sessionManager, MongoDbProvider mongoDbProvider) {
+    super(sessionManager);
 
     try {
       this.store = mongoDbProvider.getDBCollection(ModelIndexerModule.MONGO_COLLECTION_MODELS);
@@ -114,6 +112,7 @@ public class QueryModelService extends SwellRTService {
       return;
     }
 
+    if ((participantId = checkForLoggedInUser(req, response)) != null) return;
 
     // Either... /rest/[api_version]/model?q={MongoDB query}&p={MongoDB
     // projection}

@@ -1,6 +1,7 @@
 package org.swellrt.server.box.servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -25,6 +26,27 @@ public abstract class ServiceData {
 
     object = gson.fromJson(element, classOf);
     if (element.isJsonObject()) object.set(element.getAsJsonObject());
+
+
+    return object;
+  }
+
+
+  public static ServiceData[] arrayFromJson(String json, Class<? extends ServiceData[]> classOf)
+      throws JsonParseException {
+
+    ServiceData[] object = null;
+
+
+    JsonElement element = jsonParser.parse(json);
+
+    if (element == null) throw new JsonParseException("Element is null");
+
+    object = gson.fromJson(element, classOf);
+    JsonArray array = element.getAsJsonArray();
+    for (int i = 0; i < object.length && i < array.size(); i++) {
+      object[i].set(array.get(i).getAsJsonObject());
+    }
 
 
     return object;

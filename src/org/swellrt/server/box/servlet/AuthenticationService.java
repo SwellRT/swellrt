@@ -96,7 +96,6 @@ public class AuthenticationService extends SwellRTService {
 
   private final AccountStore accountStore;
   private final Configuration configuration;
-  private final SessionManager sessionManager;
   private final String domain;
   private final boolean isClientAuthEnabled;
   private final String clientAuthCertDomain;
@@ -110,9 +109,9 @@ public class AuthenticationService extends SwellRTService {
       @Named(CoreSettings.ENABLE_CLIENTAUTH) boolean isClientAuthEnabled,
       @Named(CoreSettings.CLIENTAUTH_CERT_DOMAIN) String clientAuthCertDomain) {
 
+    super(sessionManager);
     this.accountStore = accountStore;
     this.configuration = configuration;
-    this.sessionManager = sessionManager;
     this.domain = domain.toLowerCase();
     this.isClientAuthEnabled = isClientAuthEnabled;
     this.clientAuthCertDomain = clientAuthCertDomain.toLowerCase();

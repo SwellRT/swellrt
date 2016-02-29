@@ -2,9 +2,12 @@ package org.swellrt.server.box.servlet;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.google.common.collect.ImmutableMap;
 
 import junit.framework.TestCase;
 
@@ -24,6 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -37,10 +42,32 @@ public class AccountServiceTest extends TestCase {
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAZCAYAAAAv3j5gAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQZJREFUeNrsle0NgyAQhqHpf92gjuAIHcFuwAgdoSN0BN3AETqCI3QEN7hy5kguiHgF2vRHL3kT0YPnPgAVAKhSstZaPULfjqqQaa0XiFUVdCiYyYzLkbqVzwcgQOO2GGgDwmEmG2StiUC4DPkvg9GqTsgGhDI44cpTxUgji9fkf6NnI4bRAuMb0TlNDBzzwwQ6HilkwHr2DoN++i1xIJMI4rA7ivfQK7t498TUCzbPcm1ArvZAmhyzzS6mY98P6ku2dXtfqG9nOpioU9btHijdYMtgAr+BhkFdAJW0dCpwuOqUK2jP3+8RnoNZ2PwpuXSS9L1yws/tuj8oCzS485MwXzz3JcAARxWLH4IZZWIAAAAASUVORK5CYII=";
 
 
+  protected static HumanAccountData createHumanAccount(ParticipantId pid, String email,
+      String avatarFileId, String locale) {
+    HumanAccountData account = new HumanAccountDataImpl(pid);
+    account.setAvatarFileId(avatarFileId);
+    account.setEmail(email);
+    account.setLocale(locale);
+    return account;
+  }
+
+  protected static HumanAccountData ACCOUNT_JOE = createHumanAccount(
+      ParticipantId.ofUnsafe("joe@example.com"), "joe@mail.example.com", "image/png;image.png",
+      "en_GB");
+
+  protected static HumanAccountData ACCOUNT_TOM = createHumanAccount(
+      ParticipantId.ofUnsafe("tom@example.com"), "tom@mailexample.com", "image/png;image.png",
+      "en_US");
+
+  protected static HumanAccountData ACCOUNT_MAT = createHumanAccount(
+      ParticipantId.ofUnsafe("mat@example.com"), "mat@mail.example.com", "image/png;image.png",
+      "es_ES");
+
   AccountStore accountStore;
   AccountAttachmentStore accountAttachmentStore;
   AccountService service;
   SessionManager sessionManager;
+
 
   protected void setUp() throws Exception {
 
@@ -90,12 +117,26 @@ public class AccountServiceTest extends TestCase {
   public void executeService(String path, String method, AccountServiceData requestData,
       ByteArrayOutputStream responseStream, int expectedHttpResponseCode) throws IOException {
 
+    executeService(path, method, requestData, responseStream, expectedHttpResponseCode, null);
+
+  }
+
+  public void executeService(String path, String method, AccountServiceData requestData,
+      ByteArrayOutputStream responseStream, int expectedHttpResponseCode,
+      Map<String, String> parameters) throws IOException {
+
     HttpServletRequest request = mock(HttpServletRequest.class);
     when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:9898"));
     HttpServletResponse response = mock(HttpServletResponse.class);
 
     when(request.getPathInfo()).thenReturn(path);
     when(request.getMethod()).thenReturn(method);
+
+    if (parameters != null) {
+      for (Entry<String, String> p : parameters.entrySet()) {
+        when(request.getParameter(eq(p.getKey()))).thenReturn(p.getValue());
+      }
+    }
 
     when(request.getInputStream()).thenReturn(asServletInputStream(requestData.toJson()));
     when(response.getCharacterEncoding()).thenReturn("UTF-8");
@@ -142,15 +183,14 @@ public class AccountServiceTest extends TestCase {
 
     // Mock data
 
-    ParticipantId p = ParticipantId.of("joe", "example.com");
-    accountStore.putAccount(new HumanAccountDataImpl(p));
+    accountStore.putAccount(ACCOUNT_JOE);
 
     // Test
 
     AccountServiceData requestData = new AccountServiceData();
     requestData.id = "joe";
-    requestData.email = "joe@email.example.com";
-    requestData.locale = "en_EN";
+    requestData.email = "joe@example.com";
+    requestData.locale = "en_GB";
     requestData.password = "_password_";
     requestData.avatarData = IMAGE_BASE64;
 
@@ -166,23 +206,15 @@ public class AccountServiceTest extends TestCase {
       IOException {
 
     // Mock data
+    accountStore.putAccount(ACCOUNT_JOE);
 
-    ParticipantId p = ParticipantId.of("joe", "example.com");
-
-    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(p);
-
-    HumanAccountData account = new HumanAccountDataImpl(p);
-    account.setAvatarFileId("image/png;old_image.png");
-    account.setEmail("oldjoe@email.example.com");
-    account.setLocale("es_ES");
-
-    accountStore.putAccount(account);
+    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_JOE.getId());
 
     // Test
 
     AccountServiceData requestData = new AccountServiceData();
     requestData.email = "joe@email.example.com";
-    requestData.locale = "en_EN";
+    requestData.locale = "es_ES";
     requestData.password = "_password_";
     requestData.avatarData = IMAGE_BASE64;
 
@@ -207,20 +239,16 @@ public class AccountServiceTest extends TestCase {
 
     // Mock data
 
-    ParticipantId p = ParticipantId.of("joe", "example.com");
+    accountStore.putAccount(ACCOUNT_JOE);
 
-    HumanAccountData account = new HumanAccountDataImpl(p);
-    account.setAvatarFileId("image/png;old_image.png");
-    account.setEmail("oldjoe@email.example.com");
-    account.setLocale("es_ES");
+    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(null);
 
-    accountStore.putAccount(account);
 
     // Test
 
     AccountServiceData requestData = new AccountServiceData();
     requestData.email = "joe@email.example.com";
-    requestData.locale = "en_EN";
+    requestData.locale = "es_ES";
     requestData.password = "_password_";
     requestData.avatarData = IMAGE_BASE64;
 
@@ -235,16 +263,9 @@ public class AccountServiceTest extends TestCase {
 
     // Mock data
 
-    ParticipantId p = ParticipantId.of("joe", "example.com");
+    accountStore.putAccount(ACCOUNT_JOE);
 
-    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(p);
-
-    HumanAccountData account = new HumanAccountDataImpl(p);
-    account.setAvatarFileId("image/png;image.png");
-    account.setEmail("joe@email.example.com");
-    account.setLocale("en_EN");
-
-    accountStore.putAccount(account);
+    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_JOE.getId());
 
     // Test
 
@@ -258,8 +279,8 @@ public class AccountServiceTest extends TestCase {
     AccountServiceData responseData =
         (AccountServiceData) ServiceData.fromJson(responseStream.toString("UTF-8"),
             AccountServiceData.class);
-    assertEquals("joe@email.example.com", responseData.email);
-    assertEquals("en_EN", responseData.locale);
+    assertEquals(ACCOUNT_JOE.getEmail(), responseData.email);
+    assertEquals(ACCOUNT_JOE.getLocale(), responseData.locale);
     assertTrue(responseData.avatarUrl.contains("image.png"));
 
   }
@@ -269,16 +290,9 @@ public class AccountServiceTest extends TestCase {
 
     // Mock data
 
-    ParticipantId p = ParticipantId.of("joe", "example.com");
+    accountStore.putAccount(ACCOUNT_JOE);
 
-    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(p);
-
-    HumanAccountData account = new HumanAccountDataImpl(p);
-    account.setAvatarFileId("image/png;image.png");
-    account.setEmail("joe@email.example.com");
-    account.setLocale("en_EN");
-
-    accountStore.putAccount(account);
+    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_MAT.getId());
 
     // Test
 
@@ -292,8 +306,8 @@ public class AccountServiceTest extends TestCase {
     AccountServiceData responseData =
         (AccountServiceData) ServiceData.fromJson(responseStream.toString("UTF-8"),
             AccountServiceData.class);
-    assertEquals("joe@email.example.com", responseData.email);
-    assertEquals("en_EN", responseData.locale);
+    assertNull(responseData.email);
+    assertEquals(ACCOUNT_JOE.getLocale(), responseData.locale);
     assertTrue(responseData.avatarUrl.contains("image.png"));
 
   }
@@ -301,5 +315,41 @@ public class AccountServiceTest extends TestCase {
   public void testGetAccountAvatar() {
 
   }
+
+
+  public void testQueryAccounts() throws PersistenceException, IOException {
+
+    // Mock data
+
+    accountStore.putAccount(ACCOUNT_JOE);
+    accountStore.putAccount(ACCOUNT_TOM);
+    accountStore.putAccount(ACCOUNT_MAT);
+
+    when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_MAT.getId());
+
+    // Test
+    AccountServiceData requestData = new AccountServiceData();
+
+    ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
+
+    executeService("/account", "GET", requestData, responseStream, HttpServletResponse.SC_OK,
+        ImmutableMap.<String, String> of("p",
+            "joe@example.com;tom@example.com;mike@example.com;mat@example.com"));
+
+    AccountServiceData[] responseData =
+        (AccountServiceData[]) ServiceData.arrayFromJson(responseStream.toString("UTF-8"),
+            AccountServiceData[].class);
+
+    assertEquals(3, responseData.length);
+    // We expect results in the same order as query
+    assertEqualsAccount(ACCOUNT_JOE, responseData[0]);
+    assertEqualsAccount(ACCOUNT_TOM, responseData[1]);
+    assertEqualsAccount(ACCOUNT_MAT, responseData[2]);
+  }
+
+  protected void assertEqualsAccount(HumanAccountData expected, AccountServiceData actual) {
+    assertEquals(expected.getId().getAddress(), actual.id);
+  }
+
 
 }

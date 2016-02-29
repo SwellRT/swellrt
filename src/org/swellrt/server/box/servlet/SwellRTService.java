@@ -2,6 +2,9 @@ package org.swellrt.server.box.servlet;
 
 import com.google.gson.Gson;
 
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +32,12 @@ public abstract class SwellRTService {
       this.error = error;
     }
 
+  }
+
+  protected final SessionManager sessionManager;
+
+  public SwellRTService(SessionManager sessionManager) {
+    this.sessionManager = sessionManager;
   }
 
   public abstract void execute(HttpServletRequest req, HttpServletResponse response)
@@ -62,6 +71,16 @@ public abstract class SwellRTService {
 
   protected String getBaseUrl(HttpServletRequest req) {
     return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+  }
+
+  protected ParticipantId checkForLoggedInUser(HttpServletRequest req, HttpServletResponse response)
+      throws IOException {
+    ParticipantId pid = sessionManager.getLoggedInUser(req.getSession(false));
+    if (pid == null) {
+      sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
+    }
+    return pid;
+
   }
 
 }

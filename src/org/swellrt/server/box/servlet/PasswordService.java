@@ -25,11 +25,14 @@ public class PasswordService extends SwellRTService {
 
   public static final String NEW_PASSWORD = "new-password";
 
-  @Inject
-  private AccountStore accountStore;
+
+  private final AccountStore accountStore;
 
   @Inject
-  private SessionManager sessionManager;
+  public PasswordService(SessionManager sessionManager, AccountStore accountStore) {
+    super(sessionManager);
+    this.accountStore = accountStore;
+  }
 
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
