@@ -5,6 +5,7 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.shared.UmbrellaException;
@@ -106,6 +107,13 @@ public class WaveClient implements SwellRT.Listener {
       throws RequestException {
 
     coreClient.getUserProfile(onComplete);
+
+  }
+
+  public void getUserProfile(JsArrayString participants, ServiceCallback onComplete)
+      throws RequestException {
+
+    coreClient.getUserProfile(participants, onComplete);
 
   }
 

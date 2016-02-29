@@ -121,10 +121,16 @@ public class WaveClientJS extends JavaScriptObject {
 
           },
 
-          getUserProfile: function(onComplete) {
+          getUserProfile: function(arg0, arg1) {
 
             try {
-              return delegate.@org.swellrt.api.WaveClient::getUserProfile(Lorg/swellrt/api/ServiceCallback;)(onComplete);
+
+              if (arg1 === undefined) {
+                return delegate.@org.swellrt.api.WaveClient::getUserProfile(Lorg/swellrt/api/ServiceCallback;)(arg0);
+              } else {
+                return delegate.@org.swellrt.api.WaveClient::getUserProfile(Lcom/google/gwt/core/client/JsArrayString;Lorg/swellrt/api/ServiceCallback;)(arg0, arg1);
+              }
+
             } catch (e) {
               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
             }

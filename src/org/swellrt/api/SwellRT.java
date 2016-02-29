@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.http.client.Request;
@@ -603,8 +604,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   /**
    * A temporary method to resume sessions. StartSession, StopSession and
    * ResumeSession methods will be replaced by login(), resume() and logut()
-   * 
-   * 
+   *
+   *
    * @param callback
    * @throws RequestException
    */
@@ -1250,6 +1251,45 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
     url = addSessionToUrl(url);
+
+    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    builder.setIncludeCredentials(true);
+    builder.sendRequest(null, new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+        else
+          callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+
+
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+            exception.getMessage()));
+      }
+    });
+  }
+
+  public void getUserProfile(JsArrayString participants, final ServiceCallback callback)
+      throws RequestException {
+
+    String url = baseServerUrl + "/swell/account/";
+    url = addSessionToUrl(url);
+
+    String query = "";
+    for (int i = 0; i < participants.length(); i++) {
+      if (!query.isEmpty()) query += ";";
+
+      query += participants.get(i);
+    }
+
+    query = "p=" + URL.encode(query);
+    url += "?" + query;
 
     RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
     builder.setIncludeCredentials(true);
