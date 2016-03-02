@@ -48,6 +48,10 @@ public class TextTypeJS extends JavaScriptObject implements TextType.Listener {
           return delegate.@org.swellrt.model.generic.TextType::getXml()();
        },
 
+       text: function(start, end) {
+         return delegate.@org.swellrt.model.generic.TextType::getText(II)(start, end);
+       },
+
        setAnnotation: function(start, end, key, value) {
           delegate.@org.swellrt.model.generic.TextType::setAnnotation(IILjava/lang/String;Ljava/lang/String;)(start, end, key, value);
        },

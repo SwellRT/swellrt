@@ -6,6 +6,7 @@ import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
@@ -242,6 +243,17 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
     return doc.toXmlString();
   }
 
+  /**
+   * Returns text between two positions of the text document.
+   * 
+   * @param start initial character position
+   * @param end final character position
+   * @return the text with no markup tags
+   */
+  public String getText(int start, int end) {
+    Document doc = blip.getContent();
+    return DocHelper.getText(doc, start, end);
+  }
 
   public void setAnnotation(int start, int end, String key, String value) {
     Document doc = blip.getContent();
