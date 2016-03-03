@@ -28,7 +28,7 @@
   <property name="resource_bases" value="./war" />
   <property name="signer_info_store_type" value="file" />
   <property name="attachment_store_type" value="disk" />
-  <property name="account_store_type" value="memory" />
+  <property name="account_store_type" value="mongodb" />
   <property name="delta_store_type" value="memory" />
   <property name="signer_info_store_directory" value="_certificates" />
   <property name="attachment_store_directory" value="_attachments" />
@@ -65,6 +65,7 @@
   <property name="account_attachment_store_directory" value="_account_attachments" />
   <property name="email_host" value="localhost" />
   <property name="email_from_address" value="no-reply@${wave_server_domain}" />
+  <property name="velocity_path" value="src/org/swellrt/server/velocity/" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
@@ -154,6 +155,7 @@
           <token key="ACCOUNT_ATTACHMENT_STORE_DIRECTORY" value="${account_attachment_store_directory}" />
           <token key="WEBSOCKET_HEARTBEAT" value="${websocket_heartbeat}" />
           <token key="SESSION_SERVER_MAX_INACTIVE_TIME" value="${session_server_max_inactive_time}" />
+          <token key="VELOCITY_PATH" value="${velocity_path}" />
         </replacetokens>
       </filterchain>
     </copy>

@@ -707,6 +707,7 @@
         <include name="net/oauth/**/*" />
         <include name="net/lightoze/gwt/i18n/**/*" />
         <include name="org/aopalliance/**/*" />
+        <include name="org/apache/commons/beanutils/**/*" />
         <include name="org/apache/commons/cli/**/*" />
         <include name="org/apache/commons/codec/**/*" />
         <include name="org/apache/commons/collections/**/*" />
@@ -718,6 +719,8 @@
         <include name="org/apache/lucene/**/*" />
         <include name="org/apache/commons/io/**/*" />
         <include name="org/apache/commons/validator/**/*" />
+        <include name="org/apache/commons/digester/**/*" />
+        <include name="org/apache/velocity/**/*" />
         <include name="org/apache/xerces/**/*" />
         <include name="org/bson/**/*" />
         <include name="org/dom4j/**/*" />
@@ -910,6 +913,7 @@
         <include name="server.federation.config" />
         <include name="server.federation.config.example" />
         <include name="wiab-logging.conf" />
+        <include name="velocity-tools-config.xml" />
       </tarfileset>
       <!-- Helper scripts -->
       <tarfileset dir="${basedir}" prefix="${release.bin.path}" filemode="755">
@@ -977,8 +981,6 @@
       <url url="http://central.maven.org/maven2/com/google/gwt/gwt-codeserver/2.6.1/gwt-codeserver-2.6.1.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar" />
       <url url="http://repo1.maven.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final-sources.jar" />
-      <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3.jar" />
-      <url url="https://archive.apache.org/dist/velocity/engine/1.6.3/velocity-1.6.3-dep.jar" />
     </get>
   </target>
 
@@ -1060,7 +1062,6 @@
       <url url="http://people.apache.org/repo/m1-ibiblio-rsync-repository/javax.jdo/jars/jdo2-api-2.2.jar" />
       <url url="http://central.maven.org/maven2/org/jdom/jdom/1.1.3/jdom-1.1.3.jar" />
       <url url="http://central.maven.org/maven2/com/google/code/findbugs/jsr305/2.0.1/jsr305-2.0.1.jar" />
-
       <url url="http://central.maven.org/maven2/jline/jline/0.9.94/jline-0.9.94.jar" />
       <url url="http://central.maven.org/maven2/joda-time/joda-time/1.6/joda-time-1.6.jar" />
       <url url="http://central.maven.org/maven2/org/apache/lucene/lucene-core/3.5.0/lucene-core-3.5.0.jar" />
@@ -1085,7 +1086,12 @@
       <url url="http://central.maven.org/maven2/commons-validator/commons-validator/1.5.0/commons-validator-1.5.0.jar" />
       <url url="http://central.maven.org/maven2/javax/mail/mail/1.4.7/mail-1.4.7.jar" />
       <url url="https://oss.sonatype.org/content/groups/public/net/lightoze/gwt-i18n-server/gwt-i18n-server/0.23/gwt-i18n-server-0.23.jar" />
-     </get>
+      <url url="https://archive.apache.org/dist/velocity/engine/1.7/velocity-1.7.jar" />
+      <url url="https://archive.apache.org/dist/velocity/engine/1.7/velocity-1.7-dep.jar" />
+      <url url="https://archive.apache.org/dist/velocity/tools/2.0/velocity-tools-2.0.jar" />
+      <url url="http://central.maven.org/maven2/commons-digester/commons-digester/1.8.1/commons-digester-1.8.1.jar" />
+      <url url="http://central.maven.org/maven2/commons-beanutils/commons-beanutils/1.7.0/commons-beanutils-1.7.0.jar" />
+    </get>
   </target>
 
   <target name="get-third-party-test" description="Download testing third party dependencies">

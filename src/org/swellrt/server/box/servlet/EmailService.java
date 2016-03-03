@@ -4,25 +4,38 @@ package org.swellrt.server.box.servlet;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import net.lightoze.gwt.i18n.client.LocaleFactory;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.velocity.Template;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.context.Context;
+import org.apache.velocity.exception.ResourceNotFoundException;
+import org.apache.velocity.tools.ConversionUtils;
+import org.apache.velocity.tools.ToolManager;
+import org.swellrt.server.velocity.CustomResourceTool;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.authentication.i18n.PasswordRestoreMessages;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.text.MessageFormat;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -62,6 +75,10 @@ public class EmailService extends SwellRTService {
     this.host = host;
     this.from = from;
   }
+
+  @Inject
+  @Named(CoreSettings.VELOCITY_PATH)
+  String velocityPath;
 
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
@@ -117,8 +134,9 @@ public class EmailService extends SwellRTService {
           String recoverUrl = URLDecoder.decode(req.getParameter(RECOVER_URL), "UTF-8");
           String idOrEmail = URLDecoder.decode(req.getParameter("id-or-email"), "UTF-8");
 
-          String body = null;
           String subject = null;
+
+          String htmlBody = null;
 
           try {
 
@@ -137,8 +155,6 @@ public class EmailService extends SwellRTService {
                 accounts.add(acc);
               }
             }
-
-            PasswordRestoreMessages messages = LocaleFactory.get(PasswordRestoreMessages.class);
 
             if (accounts != null && !accounts.isEmpty()) {
 
@@ -178,17 +194,94 @@ public class EmailService extends SwellRTService {
 
                 MimeMessage message = new MimeMessage(mailSession);
 
+                try {
+                  Properties p = new Properties();
+                  p.put("resource.loader", "file, url");
+                  p.put("file.resource.loader.class",
+                      "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
+                  p.put("file.resource.loader.path", "./" + velocityPath + ", " + velocityPath);
+                  p.put("url.resource.loader.class",
+                      "org.apache.velocity.runtime.resource.loader.URLResourceLoader");
+                  p.put("url.resource.loader.root", "file://" + velocityPath);
+
+                  VelocityEngine ve = new VelocityEngine();
+
+                  ve.init(p);
+
+                  ToolManager manager = new ToolManager(false);
+
+                  manager.setVelocityEngine(ve);
+
+                  manager.configure("velocity-tools-config.xml");
+
+                  Map<String, Object> ctx = new HashMap<String, Object>();
+
+                  // based on http://stackoverflow.com/a/15654598/4928558
+                  File file = new File(velocityPath);
+                  URL[] urls = {file.toURI().toURL()};
+                  ClassLoader loader = new URLClassLoader(urls);
+
+                  ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
+
+                  String loc = a.asHuman().getLocale();
+
+                  Locale locale = null;
+
+                  if (loc == null) {
+                    locale = Locale.getDefault();
+                  } else {
+                    locale = ConversionUtils.toLocale(loc);
+                  }
+
+                  ctx.put("locale", locale);
+
+
+                  Context context = manager.createContext(ctx);
+
+                  context.put("recoverUrl", recoverUrl);
+                  context.put("userName", userAddress);
+
+
+                  Template template = null;
+
+                  try {
+
+                    template = ve.getTemplate("RecoverPassword.vm");
+
+                    StringWriter sw = new StringWriter();
+
+                    template.merge(context, sw);
+
+                    sw.flush();
+
+                    htmlBody = sw.toString();
+
+                    ResourceBundle bundle =
+                        ResourceBundle.getBundle("PasswordRestoreMessages", locale, loader);
+
+                    subject = MessageFormat.format(bundle.getString("emailSubject"), userAddress);
+
+                  } catch (ResourceNotFoundException rnfe) {
+                    // couldn't find the template
+                    LOG.warning("velocity template not fould");
+                    return;
+                  }
+                } catch (Exception e) {
+                  LOG.severe(
+                      "Unexpected error while composing email with velocity. The email was not sent. "
+                          + e.toString());
+                  return;
+                }
+
                 message.setFrom(new InternetAddress(from));
 
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(idOrEmail));
 
-                subject = messages.emailSubject(userAddress);
-                body = messages.restoreEmailBody(userAddress, recoverUrl);
-
                 message.setSubject(subject);
-                message.setText(body);
+                message.setText(htmlBody, "UTF-8", "html");
 
-                LOG.info("Sending email:" + "\n  Subject: " + subject + "\n  Message body: " + body);
+                LOG.info(
+                    "Sending email:" + "\n  Subject: " + subject + "\n  Message body: " + htmlBody);
                 // Send message
                 Transport.send(message);
 

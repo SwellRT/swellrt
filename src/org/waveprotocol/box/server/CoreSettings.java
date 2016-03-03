@@ -83,6 +83,7 @@ public class CoreSettings {
 
   public static final String EMAIL_HOST = "email_host";
   public static final String EMAIL_FROM_ADDRESS = "email_from_address";
+  public static final String VELOCITY_PATH = "velocity_path";
 
   public static final String ACCOUNT_ATTACHMENT_STORE_DIRECTORY =
       "account_attachment_store_directory";
@@ -142,7 +143,7 @@ public class CoreSettings {
   private static String attachmentStoreDirectory;
 
   @Setting(name = ACCOUNT_STORE_TYPE,
-      description = "Type of persistence to use for the accounts", defaultValue = "memory")
+      description = "Type of persistence to use for the accounts", defaultValue = "mongodb")
   private static String accountStoreType;
 
   @Setting(name = ACCOUNT_STORE_DIRECTORY,
@@ -321,5 +322,8 @@ public class CoreSettings {
       defaultValue = "_account_attachments")
   public static String accountAttachmentStoreDirectory;
 
-
+  @Setting(name = VELOCITY_PATH,
+      description = "Location on disk where velocity templates are stored",
+      defaultValue = "src/org/swellrt/server/velocity/")
+  public static String velocityPath;
 }

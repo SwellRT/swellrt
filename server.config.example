@@ -230,3 +230,6 @@ email_host = @EMAIL_HOST@
 
 # Email address from which the system emails are sent
 email_from_address = @EMAIL_FROM_ADDRESS@
+
+# Path where email velocity templates are stored
+velocity_path = @VELOCITY_PATH@

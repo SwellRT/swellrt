@@ -154,7 +154,6 @@ public class AccountService extends SwellRTService {
   protected void createAccount(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
 
-    // POST /account create user's profile
 
     try {
 
@@ -196,6 +195,9 @@ public class AccountService extends SwellRTService {
       }
 
       if (userData.locale != null) account.setLocale(userData.locale);
+      else {
+        account.setLocale(req.getLocale().toString());
+      }
 
       if (userData.avatarData != null) {
         // Store avatar
