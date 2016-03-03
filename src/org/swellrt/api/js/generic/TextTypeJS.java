@@ -49,7 +49,25 @@ public class TextTypeJS extends JavaScriptObject implements TextType.Listener {
        },
 
        text: function(start, end) {
-         return delegate.@org.swellrt.model.generic.TextType::getText(II)(start, end);
+         var _start;
+         var _end;
+         if (!start && !end) {
+           _start = 0;
+           _end = this.size();
+         } else if (!end) {
+           _start = 0;
+           _end = start > this.size() ? this.size() : start;
+         } else {
+
+           if (start < 0 || start > end || start > this.size())
+            throw "BAD_ARGUMENT";
+
+           _start = start;
+           _end = end > this.size() ? this.size() : end;
+         }
+
+
+         return delegate.@org.swellrt.model.generic.TextType::getText(II)(_start, _end);
        },
 
        setAnnotation: function(start, end, key, value) {
