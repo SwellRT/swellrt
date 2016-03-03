@@ -29,8 +29,6 @@ public class QueryModelService extends SwellRTService {
   private static final Log LOG = Log.get(QueryModelService.class);
 
 
-
-  private ParticipantId participantId;
   private DBCollection store;
 
 
@@ -112,7 +110,9 @@ public class QueryModelService extends SwellRTService {
       return;
     }
 
-    if ((participantId = checkForLoggedInUser(req, response)) != null) return;
+    ParticipantId participantId;
+
+    if ((participantId = checkForLoggedInUser(req, response)) == null) return;
 
     // Either... /rest/[api_version]/model?q={MongoDB query}&p={MongoDB
     // projection}
