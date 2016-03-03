@@ -735,6 +735,7 @@
         <include name="cc/kune/initials/**/*" />
         <include name="org/swellrt/server/**/*" /><!-- SwellRT extensions -->
         <include name="org/swellrt/model/**/*" /><!-- SwellRT extensions -->
+        <include name="velocity-tools-config.xml" />
         <exclude name="org/waveprotocol/box/webclient/**/*"/>
         <exclude name="org/waveprotocol/box/consoleclient/**/*"/>
         <exclude name="org/waveprotocol/box/expimp/**/*"/>
