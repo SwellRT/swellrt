@@ -260,6 +260,7 @@
         <include name="**/*.html"/>
         <include name="**/*.properties"/>
         <include name="**/*.proto"/>
+        <include name="**/*.vm"/>
       </fileset>
     </copy>
 

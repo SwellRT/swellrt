@@ -12,6 +12,7 @@ import org.apache.velocity.context.Context;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.tools.ConversionUtils;
 import org.apache.velocity.tools.ToolManager;
+import org.apache.velocity.tools.generic.ResourceTool;
 import org.swellrt.server.velocity.CustomResourceTool;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
@@ -25,6 +26,7 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -59,26 +61,89 @@ public class EmailService extends SwellRTService {
 
   private static final String RECOVER_URL = "recover-url";
 
+  /*
+   * Path that has the default templates and translations inside the classpath
+   */
+  private static final String CLASSPATH_VELOCITY_PATH = "org/swellrt/server/velocity/";
+
+  private static final String RECOVER_PASSWORD_TEMPLATE = "RecoverPassword.vm";
+
   private static final Log LOG = Log.get(EmailService.class);
+
+  private static final String RECOVER_PASSWORD_BUNDLE = "PasswordRestoreMessages";
 
 
   private final AccountStore accountStore;
   private final String host;
   private final String from;
+  private final String recoverPasswordTemplateName;
+  private final VelocityEngine ve;
+  private URLClassLoader loader;
+  private Session mailSession;
+  private ToolManager manager;
+
+  private String recoverPasswordMessages;
 
   @Inject
   public EmailService(SessionManager sessionManager, AccountStore accountStore,
       @Named(CoreSettings.EMAIL_HOST) String host,
-      @Named(CoreSettings.EMAIL_FROM_ADDRESS) String from) {
+      @Named(CoreSettings.EMAIL_FROM_ADDRESS) String from,
+      @Named(CoreSettings.VELOCITY_PATH) String velocityPath) {
     super(sessionManager);
     this.accountStore = accountStore;
     this.host = host;
     this.from = from;
+
+
+    Properties p = new Properties();
+    p.put("resource.loader", "file, class");
+    p.put("file.resource.loader.class",
+        "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
+    p.put("file.resource.loader.path", velocityPath);
+    p.put("class.resource.loader.class",
+        "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+
+    ve = new VelocityEngine();
+
+    ve.init(p);
+
+    this.recoverPasswordTemplateName = ve.resourceExists("RecoverPassword.vm")
+        ? RECOVER_PASSWORD_TEMPLATE : CLASSPATH_VELOCITY_PATH + RECOVER_PASSWORD_TEMPLATE;
+
+    this.recoverPasswordMessages =
+        new File(velocityPath + RECOVER_PASSWORD_BUNDLE + ".properties").exists()
+            ? RECOVER_PASSWORD_BUNDLE
+            : CLASSPATH_VELOCITY_PATH.replace("/", ".") + RECOVER_PASSWORD_BUNDLE;
+
+
+    try {
+      // based on http://stackoverflow.com/a/15654598/4928558
+      File file = new File(velocityPath);
+      URL[] urls = {file.toURI().toURL()};
+      loader = new URLClassLoader(urls);
+    } catch (MalformedURLException e) {
+      LOG.warning("Error constructing classLoader for velocity internationalization resources:"
+          + e.getMessage());
+    }
+
+    Properties properties = new Properties();
+
+
+    // Get the default Session object.
+    mailSession = Session.getDefaultInstance(properties, null);
+
+    // Setup mail server
+    properties.setProperty("mail.smtp.host", host);
+    properties.setProperty("mail.smtp.from", from);
+
+    manager = new ToolManager(false);
+
+    manager.setVelocityEngine(ve);
+
+    manager.configure("velocity-tools-config.xml");
+
   }
 
-  @Inject
-  @Named(CoreSettings.VELOCITY_PATH)
-  String velocityPath;
 
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
@@ -182,46 +247,11 @@ public class EmailService extends SwellRTService {
                   recoverUrl = recoverUrl + token;
                 }
 
-                Properties properties = new Properties();
-
-
-                // Get the default Session object.
-                Session mailSession = Session.getDefaultInstance(properties, null);
-
-                // Setup mail server
-                properties.setProperty("mail.smtp.host", host);
-
-
                 MimeMessage message = new MimeMessage(mailSession);
 
                 try {
-                  Properties p = new Properties();
-                  p.put("resource.loader", "file, url");
-                  p.put("file.resource.loader.class",
-                      "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
-                  p.put("file.resource.loader.path", "./" + velocityPath + ", " + velocityPath);
-                  p.put("url.resource.loader.class",
-                      "org.apache.velocity.runtime.resource.loader.URLResourceLoader");
-                  p.put("url.resource.loader.root", "file://" + velocityPath);
-
-                  VelocityEngine ve = new VelocityEngine();
-
-                  ve.init(p);
-
-                  ToolManager manager = new ToolManager(false);
-
-                  manager.setVelocityEngine(ve);
-
-                  manager.configure("velocity-tools-config.xml");
 
                   Map<String, Object> ctx = new HashMap<String, Object>();
-
-                  // based on http://stackoverflow.com/a/15654598/4928558
-                  File file = new File(velocityPath);
-                  URL[] urls = {file.toURI().toURL()};
-                  ClassLoader loader = new URLClassLoader(urls);
-
-                  ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
 
                   String loc = a.asHuman().getLocale();
 
@@ -235,6 +265,9 @@ public class EmailService extends SwellRTService {
 
                   ctx.put("locale", locale);
 
+                  ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
+
+                  ctx.put(ResourceTool.BUNDLES_KEY, recoverPasswordMessages);
 
                   Context context = manager.createContext(ctx);
 
@@ -246,7 +279,7 @@ public class EmailService extends SwellRTService {
 
                   try {
 
-                    template = ve.getTemplate("RecoverPassword.vm");
+                    template = ve.getTemplate(recoverPasswordTemplateName);
 
                     StringWriter sw = new StringWriter();
 
@@ -257,7 +290,7 @@ public class EmailService extends SwellRTService {
                     htmlBody = sw.toString();
 
                     ResourceBundle bundle =
-                        ResourceBundle.getBundle("PasswordRestoreMessages", locale, loader);
+                        ResourceBundle.getBundle(recoverPasswordMessages, locale, loader);
 
                     subject = MessageFormat.format(bundle.getString("emailSubject"), userAddress);
 
