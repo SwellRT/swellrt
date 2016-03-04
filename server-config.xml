@@ -65,7 +65,7 @@
   <property name="account_attachment_store_directory" value="_account_attachments" />
   <property name="email_host" value="localhost" />
   <property name="email_from_address" value="no-reply@${wave_server_domain}" />
-  <property name="velocity_path" value="src/org/swellrt/server/velocity/" />
+  <property name="velocity_path" value="templates/" />
 
   <!-- Properties for server.federation.config -->
   <property name="xmpp_server_secret" value="opensesame" />
