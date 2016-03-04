@@ -384,8 +384,7 @@ public class WaveClient implements SwellRT.Listener {
     Preconditions.checkArgument(Document.get().getElementById(elementId) != null,
         "Element id is not provided");
 
-    TextEditor textEditor = TextEditor.create();
-    textEditor.setElement(elementId);
+    TextEditor textEditor = TextEditor.create(elementId);
     return TextEditorJS.create(textEditor, this);
   }
 
@@ -400,7 +399,6 @@ public class WaveClient implements SwellRT.Listener {
         coreClient.getDocumentRegistry(text.getModel());
 
     editor.setDocumentRegistry(documentRegistry);
-    editor.setModel(text.getModel());
   }
 
   /**

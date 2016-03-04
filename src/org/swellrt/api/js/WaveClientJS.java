@@ -3,6 +3,7 @@ package org.swellrt.api.js;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import org.swellrt.api.WaveClient;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 
 public class WaveClientJS extends JavaScriptObject {
 
@@ -71,6 +72,23 @@ public class WaveClientJS extends JavaScriptObject {
            STRING: "StringType",
            TEXT: "TextType",
            LIST: "ListType"
+         },
+
+
+
+         annotation : {
+
+            BG_COLOR : "style/backgroundColor",
+            COLOR : "style/color",
+            FONT_FAMILY : "style/fontFamily",
+            FONT_SIZE : "style/fontSize",
+            FONT_STYLE : "style/fontStyle",
+            FONT_WEIGHT : "style/fontWeight",
+            TEXT_DECORATION : "style/textDecoration",
+            VERTICAL_ALIGN : "style/verticalAlign",
+            LINK_AUTO : "link/auto",
+            LINK_MANUAL : "link/manual"
+
          },
 
          user: {

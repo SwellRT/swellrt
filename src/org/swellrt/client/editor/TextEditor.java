@@ -11,6 +11,7 @@ import org.swellrt.client.editor.doodad.WidgetModelDoodad;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
+import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
@@ -28,6 +29,7 @@ import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
+import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.RegistriesHolder;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
@@ -37,9 +39,14 @@ import org.waveprotocol.wave.client.widget.popup.simple.Popup;
 import org.waveprotocol.wave.common.logging.AbstractLogger;
 import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
+import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
+import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +58,8 @@ import java.util.Map;
  * @author pablojan
  *
  */
-public class TextEditor {
+public class TextEditor implements EditorUpdateListener {
+
 
   public static class JSLogSink extends LogSink {
 
@@ -97,6 +105,7 @@ public class TextEditor {
   static {
     Editors.initRootRegistries();
     LineContainers.setTopLevelContainerTagname(TOPLEVEL_CONTAINER_TAGNAME);
+    // Uncomment to show logs in browser's console
     // EditorStaticDeps.logger = new CustomLogger(new JSLogSink());
   }
 
@@ -112,8 +121,10 @@ public class TextEditor {
   private final KeyBindingRegistry KEY_REGISTRY = new KeyBindingRegistry();
 
 
-  private LogicalPanel.Impl editorPanel;
+  private final LogicalPanel.Impl editorPanel;
   private LogicalPanel.Impl docPanel;
+  private ContentDocument doc;
+
 
   /**
    * The gateway to get UI-versions of Blips. Registry is GWT related, so must
@@ -122,8 +133,21 @@ public class TextEditor {
   private WaveDocuments<? extends InteractiveDocument> documentRegistry;
 
   private Editor editor;
-  private TextType text;
 
+  private static final ReadableStringSet ANNOTATIONS = CollectionUtils.newStringSet(
+      AnnotationConstants.STYLE_BG_COLOR,
+      AnnotationConstants.STYLE_COLOR,
+      AnnotationConstants.STYLE_FONT_FAMILY,
+      AnnotationConstants.STYLE_FONT_SIZE,
+      AnnotationConstants.STYLE_FONT_STYLE,
+      AnnotationConstants.STYLE_FONT_WEIGHT,
+      AnnotationConstants.STYLE_TEXT_DECORATION,
+      AnnotationConstants.STYLE_VERTICAL_ALIGN,
+      AnnotationConstants.LINK_AUTO,
+      AnnotationConstants.LINK_MANUAL
+    );
+
+  private TextEditorListener listener;
 
   /**
    * Registry of JavaScript controllers for each Widget type
@@ -139,15 +163,29 @@ public class TextEditor {
         return null;
       }
     });
+
+
   }
 
-  public static TextEditor create() {
-    TextEditor editor = new TextEditor();
+  public static TextEditor create(String containerElementId) {
+
+    Element e = Document.get().getElementById(containerElementId);
+
+    Preconditions.checkNotNull(e, "Editor's parent element doesn't exist");
+
+    TextEditor editor = new TextEditor(e);
     return editor;
   }
 
-  protected TextEditor() {
+  protected TextEditor(final Element containerElement) {
+    this.editorPanel = new LogicalPanel.Impl() {
+      {
+        setElement(containerElement);
+      }
+    };
   }
+
+
 
   /**
    * Inject document registry which manages UI versions of blips. Registry must
@@ -159,27 +197,39 @@ public class TextEditor {
     this.documentRegistry = documentRegistry;
   }
 
-  public void setModel(Model model) {
-    registerDoodads(model);
-  }
+
+  public void edit(TextType text) {
+    Preconditions.checkNotNull(text, "Text object is null");
+    Preconditions.checkNotNull(documentRegistry, "Document registry hasn't been initialized");
+
+    if (!isClean()) cleanUp();
+
+    // TODO don't register again on every new editor
+    registerDoodads(text.getModel());
+
+    doc = getContentDocument(text);
+    Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
+
+    doc.setRegistries(registries);
+
+    this.docPanel = new LogicalPanel.Impl() {
+      {
+        setElement(Document.get().createDivElement());
+      }
+    };
 
 
-  private void setEditor() {
+    doc.setInteractive(docPanel);
 
-    ContentDocument doc = getContentDocument();
+    // Append the doc panel to the provided container panel
+    editorPanel.getElement().appendChild(
+        doc.getFullContentView().getDocumentElement().getImplNodelet());
 
     if (editor == null) {
       editor = Editors.attachTo(doc);
       editor.init(null, KEY_REGISTRY, EditorSettings.DEFAULT);
-      editor.addUpdateListener(new EditorUpdateListener() {
-        @Override
-        public void onUpdate(EditorUpdateEvent event) {
-
-        }
-      });
     } else {
       // Reuse exsiting editor.
-      // editor.removeContent();
       if (editor.hasDocument()) {
         editor.removeContentAndUnrender();
         editor.reset();
@@ -188,65 +238,35 @@ public class TextEditor {
       editor.init(null, KEY_REGISTRY, EDITOR_SETTINGS);
     }
 
-    // editor.getWidget().getElement().setId(id);
+    editor.addUpdateListener(this);
     // editor.addKeySignalListener(parentPanel);
 
+    editor.setEditing(true);
+    editor.focus(true);
 
   }
 
-  private ContentDocument getContentDocument() {
+
+
+  /* ---------------------------------------------------------- */
+
+
+
+  private ContentDocument getContentDocument(TextType text) {
     Preconditions.checkArgument(text != null,
         "Unable to get ContentDocument from null TextType");
-    Preconditions.checkArgument(text != null,
+    Preconditions.checkArgument(documentRegistry != null,
         "Unable to get ContentDocument from null DocumentRegistry");
+
 
     return documentRegistry.getBlipDocument(ModelUtils.serialize(text.getModel().getWaveletId()),
         text.getDocumentId()).getDocument();
   }
 
-  private void setDocument() {
-    ContentDocument doc = getContentDocument();
-
-    Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
-
-    this.docPanel = new LogicalPanel.Impl() {
-      {
-        setElement(Document.get().createDivElement());
-      }
-    };
-
-    doc.setInteractive(docPanel);
-
-    // Append the doc panel to the provided container panel
-    editorPanel.getElement().appendChild(
-        doc.getFullContentView().getDocumentElement().getImplNodelet());
-
-  }
 
 
-  public void setElement(String elementId) {
-    final Element element = Document.get().getElementById(elementId);
 
-    if (element == null) return;
 
-    this.editorPanel = new LogicalPanel.Impl() {
-      {
-        setElement(element);
-      }
-    };
-  }
-
-  public void edit(TextType text) {
-    Preconditions.checkNotNull(editorPanel, "Panel not set for TextEditor");
-
-    this.text = text;
-
-    setDocument();
-    setEditor();
-
-    editor.setEditing(true);
-    editor.focus(true);
-  }
 
   public void setEditing(boolean isEditing) {
     if (editor != null && editor.hasDocument()) {
@@ -256,13 +276,16 @@ public class TextEditor {
 
   public void cleanUp() {
     if (editor != null) {
-      editor.setEditing(false);
-      text = null;
+      editor.removeUpdateListener(this);
       editor.removeContentAndUnrender();
       editor.reset();
+      doc = null;
     }
   }
 
+  protected boolean isClean() {
+    return doc == null;
+  }
 
   public void toggleDebug() {
     editor.debugToggleDebugDialog();
@@ -374,5 +397,61 @@ public class TextEditor {
 
   }
 
+
+  public void setListener(TextEditorListener listener) {
+    this.listener = listener;
+  }
+
+
+  public void setAnnotation(final String annotationName, final String annotationValue) {
+
+    if (editor.getSelectionHelper().getSelectionRange() != null)
+      EditorAnnotationUtil.setAnnotationOverSelection(editor, annotationName, annotationValue);
+
+  }
+
+
+  private native void log(String s) /*-{
+    console.log(s);
+  }-*/;
+
+  @Override
+  public void onUpdate(final EditorUpdateEvent event) {
+
+
+    if (event.selectionLocationChanged()) {
+
+      // Notify to editor's listener which annotations are in the current
+      // selection.
+      //
+      final Range range = editor.getSelectionHelper().getOrderedSelectionRange();
+
+      if (range != null && listener != null) {
+
+
+        final JsoStringMap<String> annotationSnapshot = JsoStringMap.<String> create();
+
+        ANNOTATIONS.each(new Proc() {
+
+          @Override
+          public void apply(String annotationName) {
+
+            String annotationValue =
+                EditorAnnotationUtil.getAnnotationOverRangeIfFull(event.context().getDocument(),
+                    editor.getCaretAnnotations(), annotationName, range.getStart(), range.getEnd());
+
+            annotationSnapshot.put(annotationName, annotationValue);
+
+          }
+
+        });
+
+
+        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationSnapshot);
+
+      }
+    }
+
+  }
 
 }

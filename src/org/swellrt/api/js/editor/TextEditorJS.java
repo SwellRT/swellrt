@@ -12,12 +12,15 @@ public class TextEditorJS extends JavaScriptObject {
 
     var jsWrapper = {
 
-      setElement: function(elementId) {
-        delegate.@org.swellrt.client.editor.TextEditor::setElement(Ljava/lang/String;)(elementId);
-        return this;
+      onSelectionChanged: function(handler) {
+        var _handler = @org.swellrt.api.js.editor.TextEditorJSListener::create(Lcom/google/gwt/core/client/JavaScriptObject;)(handler);
+        delegate.@org.swellrt.client.editor.TextEditor::setListener(Lorg/swellrt/client/editor/TextEditorListener;)(_handler);
       },
 
       edit: function(text) {
+
+        // TODO check for cleanUp();
+
         var _text = text.getDelegate();
         client.@org.swellrt.api.WaveClient::configureTextEditor(Lorg/swellrt/client/editor/TextEditor;Lorg/swellrt/model/generic/TextType;)(delegate, _text);
         delegate.@org.swellrt.client.editor.TextEditor::edit(Lorg/swellrt/model/generic/TextType;)(_text);
@@ -51,6 +54,10 @@ public class TextEditorJS extends JavaScriptObject {
 
       addModelWidget: function(name, path) {
         delegate.@org.swellrt.client.editor.TextEditor::addModelWidget(Ljava/lang/String;Ljava/lang/String;)(name, path);
+      },
+
+      setAnnotation: function(name, value) {
+         delegate.@org.swellrt.client.editor.TextEditor::setAnnotation(Ljava/lang/String;Ljava/lang/String;)(name, value);
       }
 
     }; // jsWrapper
