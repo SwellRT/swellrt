@@ -326,12 +326,12 @@ public class EmailService extends SwellRTService {
           } catch (MessagingException mex) {
 
             LOG.severe("Unexpected messaging exception while sending email:" + mex.getMessage());
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mex.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
           } catch (PersistenceException e) {
 
             LOG.severe("Unexpected persistence exception while sending email:" + e.getMessage());
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
           }
 
