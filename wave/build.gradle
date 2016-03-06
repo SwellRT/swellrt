@@ -116,7 +116,7 @@ dependencies {
             [group: "commons-cli", name: "commons-cli", version: "1.2"],                                        // [?, ?]
             [group: "commons-codec", name: "commons-codec", version: "1.4"],                                    // [?, ?]
             [group: "commons-io", name: "commons-io", version: "2.4"],                                          // [?, ?]
-            [group: "commons-collections", name: "commons-collections", version: "3.2.1"],                      // [?, ?]
+            [group: "commons-collections", name: "commons-collections", version: "3.2.2"],                      // [?, ?]
             [group: "commons-configuration", name: "commons-configuration", version: "1.6"],                    // [?, ?]
             [group: "commons-httpclient", name: "commons-httpclient", version: "3.1"],                          // [?, ?]
             [group: "commons-lang", name: "commons-lang", version: "2.5"],                                      // [?, ?]
