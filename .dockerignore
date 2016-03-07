@@ -4,6 +4,7 @@ gwt-unitCache
 test
 gen
 src
+!src/org/swellrt/server/velocity
 test_out
 selenium
 third_party

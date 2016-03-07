@@ -28,7 +28,7 @@ ADD server.config wiab-logging.conf jaas.config server.federation.config $home/c
 
 ADD src/org/swellrt/server/velocity/*.vm \
     src/org/swellrt/server/velocity/*.properties \
-    $home/templates
+    $home/templates/
 ADD docker/config/* $home/config/
 ADD docker/home/* $home/
 ADD war $home/war/
