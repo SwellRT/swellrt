@@ -71,7 +71,8 @@ public class WaveClientJS extends JavaScriptObject {
            MAP: "MapType",
            STRING: "StringType",
            TEXT: "TextType",
-           LIST: "ListType"
+           LIST: "ListType",
+           FILE: "FileType"
          },
 
 
