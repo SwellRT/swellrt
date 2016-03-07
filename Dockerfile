@@ -13,7 +13,7 @@ RUN adduser --system --home $home swellrt \
 
 WORKDIR $home
 
-RUN mkdir config log sessions attachments \
+RUN mkdir config log sessions attachments templates \
     && for i in $config_files ; do ln -s $home/config/$i . ; done \
     && ln -s $home/sessions $home/_sessions \
     && ln -s $home/attachments $home/_attachments
@@ -26,6 +26,9 @@ RUN mkdir config log sessions attachments \
 # contain save settings for the docker image
 ADD server.config wiab-logging.conf jaas.config server.federation.config $home/config/
 
+ADD src/org/swellrt/server/velocity/*.vm \
+    src/org/swellrt/server/velocity/*.properties \
+    $home/templates
 ADD docker/config/* $home/config/
 ADD docker/home/* $home/
 ADD war $home/war/
@@ -33,7 +36,7 @@ ADD dist/wave-in-a-box-server*jar $home/wave.jar
 
 RUN chown -R swellrt:swellrt $home
 
-VOLUME $home/config $home/log $home/sessions $home/attachments
+VOLUME $home/config $home/log $home/sessions $home/attachments $home/templates
 
 USER swellrt
 
