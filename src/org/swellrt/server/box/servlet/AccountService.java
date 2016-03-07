@@ -301,7 +301,7 @@ public class AccountService extends SwellRTService {
       accountStore.putAccount(account);
 
 
-      sendResponse(response, toServiceData(req.getRequestURL().toString(), account));
+      sendResponse(response, toServiceData(getBaseUrl(req), account));
       return;
 
 
@@ -396,7 +396,7 @@ public class AccountService extends SwellRTService {
 
 
         sendResponse(response,
-            toPublicServiceData(req.getRequestURL().toString(), accountData.asHuman()));
+ toPublicServiceData(getBaseUrl(req), accountData.asHuman()));
         return;
 
       } else {
@@ -405,7 +405,7 @@ public class AccountService extends SwellRTService {
         // GET /account/joe retrieve user's account data including private
         // fields
 
-        sendResponse(response, toServiceData(req.getRequestURL().toString(), accountData.asHuman()));
+        sendResponse(response, toServiceData(getBaseUrl(req), accountData.asHuman()));
         return;
       }
 
@@ -437,7 +437,7 @@ public class AccountService extends SwellRTService {
     }
 
     sendResponse(response,
-        toPublicServiceData(req.getRequestURL().toString(), participantsQuery, accountStore));
+ toPublicServiceData(getBaseUrl(req), participantsQuery, accountStore));
 
 
   }
@@ -448,6 +448,7 @@ public class AccountService extends SwellRTService {
 
     String[] pathTokens = SwellRtServlet.getCleanPathInfo(req).split("/");
     String participantToken = pathTokens.length > 2 ? pathTokens[2] : null;
+    String participantOp = pathTokens.length > 3 ? pathTokens[3] : null;
 
     // All operations required a logged in user
 
@@ -467,7 +468,10 @@ public class AccountService extends SwellRTService {
 
       if (participantToken != null) {
 
-        getParticipantAccount(req, response);
+        if (participantOp != null && participantOp.equals("avatar"))
+          getAvatar(req, response);
+        else
+          getParticipantAccount(req, response);
 
       } else {
 
