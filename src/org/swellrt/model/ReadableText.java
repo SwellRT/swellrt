@@ -11,6 +11,8 @@ public interface ReadableText extends ReadableType {
 
   String getXml();
 
+  String getText(int start, int end);
+
   Iterable<AnnotationInterval<String>> getAllAnnotations(int start, int end);
 
   String getAnnotation(int location, String key);

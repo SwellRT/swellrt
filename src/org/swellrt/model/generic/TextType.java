@@ -250,9 +250,11 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
    * @param end final character position
    * @return the text with no markup tags
    */
+  @Override
   public String getText(int start, int end) {
+    Preconditions.checkArgument(0 <= start && start < end, "Invalid text range");
     Document doc = blip.getContent();
-    return DocHelper.getText(doc, start, end);
+    return DocHelper.getText(doc, start, end > doc.size() ? doc.size() : end);
   }
 
   public void setAnnotation(int start, int end, String key, String value) {

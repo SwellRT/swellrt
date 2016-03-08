@@ -127,7 +127,6 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
   @Override
   public void visit(ReadableList<? extends ReadableType> instance) {
     // TODO(pablojan) add getDocumentedId to ReadableList
-    // pathToBlipMap.put(getStringPath(), instance.)
 
     BasicDBList listDBObject = new BasicDBList();
     int i = 0;
@@ -148,9 +147,9 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
 
     // TODO (pablojan) serialize annotations
     BasicDBObject textDBObject = new BasicDBObject();
-    textDBObject.append("annotations", "");
+    // textDBObject.append("annotations", "");
     // TODO (pablojan) add test case for Text objects
-    textDBObject.append("xml", instance.getXml());
+    textDBObject.append("excerpt", instance.getText(0, 256));
 
     textDBObject.append("author", instance.getAuthor().getAddress());
     textDBObject.append("contributors", toDBList(instance.getContributors()));

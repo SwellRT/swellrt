@@ -4,6 +4,8 @@ import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableTypeVisitable;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
+import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 
@@ -88,6 +90,15 @@ public class UnmutableText implements ReadableText, ReadableTypeVisitable {
   @Override
   public UnmutableFile asFile() {
     return null;
+  }
+
+  @Override
+  public String getText(int start, int end) {
+    Preconditions.checkArgument(0 <= start && start < end, "Invalid text range");
+    int size = blipData.getContent().getMutableDocument().size();
+    return DocHelper
+        .getText(blipData.getContent().getMutableDocument(), 0, end > size ? size : end);
+
   }
 
 }
