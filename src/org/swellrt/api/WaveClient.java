@@ -554,10 +554,24 @@ public class WaveClient implements SwellRT.Listener {
 
   private static native void callOnSwellRTReady() /*-{
 
-    $wnd.SwellRT.ready = true;
+    var handlers = [];
 
+    if ($wnd.SwellRT)
+      handlers = $wnd.SwellRT._readyHandlers;
+
+    // set here definite SwellRT object
+    // to make it available to handlers
+    $wnd.SwellRT = $wnd.__SwellRT;
+    delete $wnd.__SwellRT;
+
+    for(var i=0; i < handlers.length; i++)
+      handlers[i]();
+
+
+
+    // TODO deprecated
     if (typeof $wnd.onSwellRTReady === "function")
-    $wnd.onSwellRTReady();
+      $wnd.onSwellRTReady();
 
   }-*/;
 

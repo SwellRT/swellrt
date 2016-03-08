@@ -3,7 +3,6 @@ package org.swellrt.api.js;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import org.swellrt.api.WaveClient;
-import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 
 public class WaveClientJS extends JavaScriptObject {
 
@@ -101,6 +100,13 @@ public class WaveClientJS extends JavaScriptObject {
            this.handlers[event] = handler;
 
            return this;
+         },
+
+         ready: function(handler) {
+           if (!handler || typeof handler !== "function")
+             return;
+
+           handler();
          },
 
          //
@@ -435,7 +441,7 @@ public class WaveClientJS extends JavaScriptObject {
 
 
     // Accessible from the Window object
-    $wnd.SwellRT = swellrt;
+    $wnd.__SwellRT = swellrt;
 
     return swellrt;
 
