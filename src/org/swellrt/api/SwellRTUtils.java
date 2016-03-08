@@ -165,7 +165,7 @@ public class SwellRTUtils {
   }-*/;
 
   public static String buildAttachmentUploadUrl(String simpleAttachmentId) {
-    return getBaseUrl() + "/attachment/" + simpleAttachmentId + ";sid=" + getSessionId();
+    return getBaseUrl() + "/attachment/" + simpleAttachmentId + getSessionURLparameter();
   }
 
   public static String getSessionURLparameter() {

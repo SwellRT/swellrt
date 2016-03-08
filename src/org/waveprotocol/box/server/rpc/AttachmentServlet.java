@@ -312,7 +312,10 @@ public class AttachmentServlet extends HttpServlet {
     // Discard the leading '/' in the pathinfo.
     String path = request.getPathInfo().substring(1);
     // Remove session parameter
-    return path.substring(0, path.indexOf(";"));
+    int sidDelimiterIndex = path.indexOf(";");
+    if (sidDelimiterIndex != -1) return path.substring(0, sidDelimiterIndex);
+
+    return path;
   }
 
   private AttachmentData getThumbnailByContentType(String contentType) throws IOException {
