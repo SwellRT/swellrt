@@ -19,8 +19,6 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import org.waveprotocol.wave.util.logging.Log;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -31,6 +29,7 @@ import com.google.protobuf.RpcController;
 
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -48,7 +47,7 @@ public class WebSocketClientRpcChannel implements ClientRpcChannel {
 
   private final WebSocketClient socketClient;
   private final WebSocketChannel clientChannel;
-  private final AtomicInteger lastSequenceNumber = new AtomicInteger();
+  private final AtomicInteger lastSequenceNumber = new AtomicInteger(-1);
   private final BiMap<Integer, ClientRpcController> activeMethodMap = HashBiMap.create();
 
   /**
@@ -86,7 +85,7 @@ public class WebSocketClientRpcChannel implements ClientRpcChannel {
     clientChannel.expectMessage(Rpc.RpcFinished.getDefaultInstance());
     LOG.fine("Opened a new WebSocketClientRpcChannel to " + serverAddress);
   }
-  
+
   @Override
   public RpcController newRpcController() {
     return new ClientRpcController(this);
