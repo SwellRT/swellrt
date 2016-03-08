@@ -68,9 +68,7 @@ import org.waveprotocol.box.server.rpc.AttachmentInfoServlet;
 import org.waveprotocol.box.server.rpc.AttachmentServlet;
 import org.waveprotocol.box.server.rpc.AuthenticationServlet;
 import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
-import org.waveprotocol.box.server.rpc.FetchServlet;
 import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
-import org.waveprotocol.box.server.rpc.LocaleServlet;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.rpc.SignOutServlet;
 import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
@@ -247,8 +245,8 @@ public class ServerMain {
     server.addServlet("/auth/signout*", SignOutServlet.class);
     server.addServlet("/auth/register*", UserRegistrationServlet.class);
 
-    server.addServlet("/locale/*", LocaleServlet.class);
-    server.addServlet("/fetch/*", FetchServlet.class);
+    // server.addServlet("/locale/*", LocaleServlet.class);
+    // server.addServlet("/fetch/*", FetchServlet.class);
     // server.addServlet("/search/*", SearchServlet.class);
     // server.addServlet("/notification/*", NotificationServlet.class);
 

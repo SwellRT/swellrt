@@ -85,6 +85,10 @@ public class AuthenticationService extends SwellRTService {
 
   }
 
+  /**
+   * A
+   */
+  public static final String SESSION_RECYCLE_COUNTER = "recycle_counter";
 
   // The Object ID of the PKCS #9 email address stored in the client
   // certificate.
@@ -213,7 +217,8 @@ public class AuthenticationService extends SwellRTService {
             context = login(authData.id, authData.password);
             subject = context.getSubject();
             loggedInAddress = getLoggedInUser(subject);
-            session = req.getSession(true);
+            session = createOrRecycleSession(req);
+
 
           } catch (LoginException e) {
 
@@ -229,7 +234,7 @@ public class AuthenticationService extends SwellRTService {
 
         } else if (authData.id != null) {
 
-          session = req.getSession(true);
+          session = createOrRecycleSession(req);
           loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
 
         }
@@ -441,5 +446,27 @@ public class AuthenticationService extends SwellRTService {
 
   }
 
+  /**
+   * Get the HttpSession. Increment internal session's counter each time the
+   * sesion is recycled. This will allow to detected multiple logins from
+   * different browser tabs, etc.
+   * 
+   * @param req HttpServletRequest
+   * @return the HttpSession object
+   */
+  public static HttpSession createOrRecycleSession(HttpServletRequest req) {
+    HttpSession session = req.getSession(true);
+    Integer sessionRecycleCounter = 0;
+
+    Object sessionAttribute = session.getAttribute(SESSION_RECYCLE_COUNTER);
+    if (sessionAttribute != null) {
+      sessionRecycleCounter = (Integer) sessionAttribute;
+      sessionRecycleCounter++;
+    }
+
+    session.setAttribute(SESSION_RECYCLE_COUNTER, sessionRecycleCounter);
+
+    return session;
+  }
 
 }

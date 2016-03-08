@@ -228,15 +228,25 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
     if (connected == ConnectState.DISCONNECTED) return;
 
-    if (message.startsWith("X-response:")) {
-      String response = message.split(":")[1];
-      if (response.equals("upgrade")) {
+    if (message.startsWith("X-RESPONSE:")) {
+      String[] responseTokens = message.split(":");
+      String response = responseTokens.length > 1 ? responseTokens[1] : "";
+
+      if (response.equals("UPGRADE")) {
         LOG.info("Client requires upgrade!");
         connected = ConnectState.DISCONNECTED;
-        // TODO change to other event
         ClientEvents.get().fireEvent(
             new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR,
                 NetworkStatusEvent.PAYLOAD_CLIENT_UPGRADE));
+        disconnect(true);
+        return;
+
+      } else if (response.equals("SERVER_ERROR")) {
+        String reason = responseTokens.length > 2 ? responseTokens[2] : "";
+        LOG.info("Server error: " + reason);
+        connected = ConnectState.DISCONNECTED;
+        ClientEvents.get().fireEvent(
+            new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, reason));
         disconnect(true);
         return;
       }

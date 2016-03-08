@@ -93,12 +93,26 @@ public class AtmosphereChannel extends WebSocketChannel  {
     return broadcaster.getAtmosphereResources().size() > 0;
   }
 
-  public void onClientNeedUpgrade() {
+  public void sendClientNeedUpgrade() {
 
-    broadcaster.broadcast("X-response:upgrade");
+    broadcaster.broadcast("X-RESPONSE:UPGRADE");
     LOG.info("Sending upgrade response to client " + resource != null ? resource.uuid()
         : "unknown.");
+    isValid = false;
+  }
 
+  public void sendException(Exception e) {
+
+    broadcaster.broadcast("X-RESPONSE:SERVER_ERROR:" + e.getMessage());
+    LOG.info("Sending error response to client " + resource != null ? resource.uuid()
+        : "unknown.");
+    isValid = false;
+  }
+
+  public void sendException(String e) {
+
+    broadcaster.broadcast("X-RESPONSE:SERVER_ERROR:" + e);
+    LOG.info("Sending error response to client " + resource != null ? resource.uuid() : "unknown.");
     isValid = false;
   }
 
@@ -111,7 +125,10 @@ public class AtmosphereChannel extends WebSocketChannel  {
   @Override
   protected void sendMessageString(String data) throws IOException {
 
-    if (!isValid) throw new IOException("Channel is no longer valid. Does client need upgrade?");
+    if (!isValid) {
+      LOG.warning("Channel is no longer valid. Does client need upgrade? Old RPCs hasn't been disposed?");
+      return;
+    }
 
     if (broadcaster == null || broadcaster.isDestroyed()) {
       // Just drop the message. It's rude to throw an exception since the

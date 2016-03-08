@@ -27,6 +27,7 @@ import com.google.inject.name.Named;
 
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
+import org.swellrt.server.box.servlet.AuthenticationService;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
@@ -249,8 +250,7 @@ private final WelcomeRobot welcomeBot;
 
     }
 
-
-    HttpSession session = req.getSession(true);
+    HttpSession session = AuthenticationService.createOrRecycleSession(req);
 
     // Anonymous log in
     if (loggedInAddress == null) {

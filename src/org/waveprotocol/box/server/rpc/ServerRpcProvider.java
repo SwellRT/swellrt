@@ -64,6 +64,7 @@ import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.swellrt.model.generic.Model;
+import org.swellrt.server.box.servlet.AuthenticationService;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.CoreSettings;
@@ -198,14 +199,18 @@ public class ServerRpcProvider {
 
     private final AtmosphereChannel atmosphereChannel;
     private final String sessionId;
+    private final int sessionRecycleCounter;
+
 
     public AtmosphereConnection(String sessionId, ParticipantId loggedInUser,
-        ServerRpcProvider provider) {
+        ServerRpcProvider provider, int sessionRecycleCounter) {
       super(loggedInUser, provider);
 
       this.sessionId = sessionId;
+      this.sessionRecycleCounter = sessionRecycleCounter;
       atmosphereChannel = new AtmosphereChannel(this, sessionId);
       expectMessages(atmosphereChannel);
+
 
     }
 
@@ -218,6 +223,14 @@ public class ServerRpcProvider {
       return atmosphereChannel;
     }
 
+    public void close() {
+      cancelRpcs();
+      atmosphereChannel.unbindResource();
+    }
+
+    public int getSessionReycleCounter() {
+      return sessionRecycleCounter;
+    }
 
   }
 
@@ -275,36 +288,39 @@ public class ServerRpcProvider {
       return loggedInUser;
     }
 
+    protected void cancelRpcs() {
+      if (!activeRpcs.isEmpty()) {
+        LOG.info("Cleaning up RPCs");
+        for (ServerRpcController controller : activeRpcs.values()) {
+          if (!controller.isCanceled()) {
+            controller.cancel();
+          }
+        }
+        activeRpcs.clear();
+      }
+    }
+
     @Override
     public void message(final int sequenceNo, Message message) {
       final String messageName = "/" + message.getClass().getSimpleName();
       final Timer profilingTimer = Timing.startRequest(messageName);
 
-      // Protocol hack allowing reconnection in the transport (atmosphere)
-      // level:
-      // Connection is now tied to the client's Http session. So we must
-      // detect when a remote client makes a reconnection (page reload...)
-      // without
-      // destroying the session.
-
       if (isFirstRequest && sequenceNo != 0) {
-        LOG.warning("Connection first request with sequence number not 0. Dirty reconnection?");
+        // On server's reboot, clients can get reconnected (sequenceNo !=0) but
+        // server won't be able to process the request.
+        LOG.info("First RPC request with sequence number not 0.");
+        throw new IllegalStateException("First RPC request with sequence number not 0. ");
       }
 
       isFirstRequest = false;
 
       // Clean up ServerRpcControllers if remote client starts a new
       // sequence of protocol messages.
+      // This allows dirty reconnections, resuming current sessions...
+      // This should been handle before, detecting new logins for the same
+      // session, etc.
       if (sequenceNo == 0) {
-        if (!activeRpcs.isEmpty()) {
-          LOG.info("Detected new remote client connection. Cleaning up RPCs");
-          for (ServerRpcController controller : activeRpcs.values()) {
-            if (!controller.isCanceled()) {
-              controller.cancel();
-            }
-          }
-          activeRpcs.clear();
-        }
+        cancelRpcs();
       }
 
       if (message instanceof Rpc.CancelRpc) {
@@ -730,10 +746,10 @@ public class ServerRpcProvider {
 
   /**
    * Manange atmosphere connections and dispatch messages to wave channels.
-   * 
+   *
    * This Atmosphere handler supports both WebSocket and Long-polling
    * connections with the following features:
-   * 
+   *
    * <ul>
    * <li>Detect session expiration and close remote clients properly.</li>
    * <li>Detect server reboot refusing further operations. Close remote clientes
@@ -744,18 +760,18 @@ public class ServerRpcProvider {
    * <li>Remote clients reconnection on timeout to avoid silent network
    * failures.</li>
    * </ul>
-   * 
+   *
    * Atmosphere interceptors are set manually here, to avoid duplicated CORS
    * response headers.
-   * 
+   *
    * About session tracking: The session token is expected to be stored as a
    * cookie by default. In some cases where cookies are not available (Browser
    * previnting 3rd party cookies,...) the session token can be propagated as a
    * path element /atmosphere/sessionId.
-   * 
-   * 
+   *
+   *
    * @author pablojan@gmail.com <Pablo Ojanguren>
-   * 
+   *
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
@@ -808,6 +824,16 @@ public class ServerRpcProvider {
       return session;
     }
 
+    private int getSessionRecycleCounter(HttpSession session) {
+      Object attribute = session.getAttribute(AuthenticationService.SESSION_RECYCLE_COUNTER);
+      int sessionRecycleCounter = -1;
+      if (attribute != null) {
+        Integer intObject = (Integer) attribute;
+        sessionRecycleCounter = intObject.intValue();
+      }
+
+      return sessionRecycleCounter;
+    }
 
     protected void flushResponse(AtmosphereResource resource) {
 
@@ -842,7 +868,7 @@ public class ServerRpcProvider {
 
       // If it's the old client then force the connection close
       if (!resource.getRequest().headersMap().containsKey("X-client-version")) {
-        resource.getResponse().sendError(500, "client needs upgrade");
+        resource.getBroadcaster().broadcast("X-RESPONSE:UPGRADE");
         resource.close();
         return;
       }
@@ -855,14 +881,14 @@ public class ServerRpcProvider {
       HttpSession httpSession = getSession(resource);
 
       if (httpSession == null) {
-        resource.getResponse().sendError(500, "session has expired");
+        resource.getBroadcaster().broadcast("X-RESPONSE:SERVER_ERROR:SESSION_NOT_FOUND");
         resource.close();
         return;
       }
 
       ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-
+      int sessionRecycleCounter = getSessionRecycleCounter(httpSession);
 
       // WebSocket Transport:
       //
@@ -878,20 +904,25 @@ public class ServerRpcProvider {
         String key = httpSession.getId() + ":WS";
 
         if (!CONNECTIONS.containsKey(key))
-          CONNECTIONS.put(key,
-              new AtmosphereConnection(httpSession.getId(),
-              loggedInUser, provider));
+          CONNECTIONS.put(key, new AtmosphereConnection(httpSession.getId(), loggedInUser,
+              provider, sessionRecycleCounter));
 
         AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(key);
 
-        // A connection exists for a different participant:
-        // This happens when different users shares the same browser session.
-        // Ensure that connections are cleaned up.
-        if (!connection.getParticipantId().equals(loggedInUser)) {
-          connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
+
+        // If the session has been recycled (the session recycle counter has
+        // a new value) connection must be reset.
+        // Close the previous connection properly.
+        // This happens when different tabs of the same browser are opened
+        // or when tab is refreshed or a new login is made.
+        if (sessionRecycleCounter != connection.getSessionReycleCounter()) {
+          connection.getAtmosphereChannel().sendException("DUPLICATED_CONNECTION");
+          connection.close();
+          connection =
+              new AtmosphereConnection(httpSession.getId(), loggedInUser, provider,
+                  sessionRecycleCounter);
           CONNECTIONS.put(key, connection);
         }
-
 
 
         if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
@@ -900,14 +931,13 @@ public class ServerRpcProvider {
 
           resource.suspend();
 
-          if (!connection.getAtmosphereChannel().hasResources()) {
-            connection.getAtmosphereChannel().bindResource(resource);
-          }
-
+          // Resources are new for each new connection
+          // Make sure the channel knows to which resource answer
+          connection.getAtmosphereChannel().bindResource(resource);
 
           if (needClientUpgrade) {
-            connection.getAtmosphereChannel().onClientNeedUpgrade();
-            connection.getAtmosphereChannel().unbindResource();
+            connection.getAtmosphereChannel().sendClientNeedUpgrade();
+            connection.close();
             return;
           }
 
@@ -920,7 +950,10 @@ public class ServerRpcProvider {
           try {
             connection.getAtmosphereChannel().onMessage(b.toString());
           } catch (RuntimeException e) {
-            LOG.info("Exception on channel.", e);
+            LOG.warning("Exception on channel", e);
+            connection.getAtmosphereChannel().sendException(e);
+            connection.close();
+            return;
           }
 
         }
@@ -928,22 +961,27 @@ public class ServerRpcProvider {
       } else if (resource.transport().equals(TRANSPORT.LONG_POLLING)
           || resource.transport().equals(TRANSPORT.POLLING)) {
 
-        // Cache connectios by session id and transport to allow reconnections
+        // Cache connections by session id and transport to allow reconnections
         // of the same user with different transport
         String key = httpSession.getId() + ":LP";
 
         if (!CONNECTIONS.containsKey(key))
-          CONNECTIONS.put(key,
-              new AtmosphereConnection(httpSession.getId(),
-              loggedInUser, provider));
+          CONNECTIONS.put(key, new AtmosphereConnection(httpSession.getId(), loggedInUser,
+              provider, sessionRecycleCounter));
 
         AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(key);
 
-        // A connection exists for a different participant:
-        // This happens when different users shares the same browser session.
-        // Ensure that connections are cleaned up.
-        if (!connection.getParticipantId().equals(loggedInUser)) {
-          connection = new AtmosphereConnection(httpSession.getId(), loggedInUser, provider);
+        // If the session has been recycled (the session recycle counter has
+        // a new value) connection must be reset.
+        // Close the previous connection properly.
+        // This happens when different tabs of the same browser are opened
+        // or when tab is refreshed or a new login is made.
+        if (sessionRecycleCounter != connection.getSessionReycleCounter()) {
+          connection.getAtmosphereChannel().sendException("DUPLICATED_CONNECTION");
+          connection.close();
+          connection =
+              new AtmosphereConnection(httpSession.getId(), loggedInUser, provider,
+                  sessionRecycleCounter);
           CONNECTIONS.put(key, connection);
         }
 
@@ -958,8 +996,8 @@ public class ServerRpcProvider {
 
 
           if (needClientUpgrade) {
-            connection.getAtmosphereChannel().onClientNeedUpgrade();
-            connection.getAtmosphereChannel().unbindResource();
+            connection.getAtmosphereChannel().sendClientNeedUpgrade();
+            connection.close();
             return;
           }
 
@@ -972,7 +1010,10 @@ public class ServerRpcProvider {
             connection.getAtmosphereChannel().onMessage(b.toString());
             resource.resume();
           } catch (RuntimeException e) {
-            LOG.info("Exception on channel.", e);
+            LOG.warning("Exception on channel", e);
+            connection.getAtmosphereChannel().sendException(e);
+            connection.close();
+            return;
           }
 
         }
