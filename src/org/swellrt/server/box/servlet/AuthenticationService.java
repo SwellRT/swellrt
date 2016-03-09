@@ -276,7 +276,7 @@ public class AuthenticationService extends SwellRTService {
 
     if (!loggedInAddress.isAnonymous())
       accountData =
-          AccountService.toServiceData(getBaseUrl(req),
+          AccountService.toServiceData(new UrlBuilder(req),
               accountStore.getAccount(loggedInAddress).asHuman());
     else
       accountData = new AccountService.AccountServiceData(loggedInAddress.getAddress());
@@ -403,7 +403,7 @@ public class AuthenticationService extends SwellRTService {
 
       if (!user.isAnonymous())
         accountData =
-            AccountService.toServiceData(getBaseUrl(req),
+            AccountService.toServiceData(new UrlBuilder(req),
                 accountStore.getAccount(user).asHuman());
       else
         accountData = new AccountService.AccountServiceData(user.getAddress());

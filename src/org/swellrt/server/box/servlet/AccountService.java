@@ -154,6 +154,7 @@ public class AccountService extends SwellRTService {
   protected void createAccount(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
 
+    UrlBuilder urlBuilder = new UrlBuilder(req);
 
     try {
 
@@ -208,8 +209,7 @@ public class AccountService extends SwellRTService {
 
       accountStore.putAccount(account);
 
-
-      sendResponse(response, toServiceData(getBaseUrl(req), account));
+      sendResponse(response, toServiceData(urlBuilder, account));
       return;
 
 
@@ -245,6 +245,7 @@ public class AccountService extends SwellRTService {
 
     ParticipantId loggedInUser = sessionManager.getLoggedInUser(req.getSession(false));
 
+    UrlBuilder urlBuilder = new UrlBuilder(req);
 
     try {
 
@@ -301,7 +302,7 @@ public class AccountService extends SwellRTService {
       accountStore.putAccount(account);
 
 
-      sendResponse(response, toServiceData(getBaseUrl(req), account));
+      sendResponse(response, toServiceData(urlBuilder, account));
       return;
 
 
@@ -379,6 +380,8 @@ public class AccountService extends SwellRTService {
   protected void getParticipantAccount(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
 
+    UrlBuilder urlBuilder = new UrlBuilder(req);
+
     try {
 
       ParticipantId participantId = getParticipantFromRequest(req);
@@ -395,8 +398,7 @@ public class AccountService extends SwellRTService {
         // GET /account/joe retrieve user's account data only public fields
 
 
-        sendResponse(response,
- toPublicServiceData(getBaseUrl(req), accountData.asHuman()));
+        sendResponse(response, toPublicServiceData(urlBuilder, accountData.asHuman()));
         return;
 
       } else {
@@ -405,7 +407,7 @@ public class AccountService extends SwellRTService {
         // GET /account/joe retrieve user's account data including private
         // fields
 
-        sendResponse(response, toServiceData(getBaseUrl(req), accountData.asHuman()));
+        sendResponse(response, toServiceData(urlBuilder, accountData.asHuman()));
         return;
       }
 
@@ -437,7 +439,7 @@ public class AccountService extends SwellRTService {
     }
 
     sendResponse(response,
- toPublicServiceData(getBaseUrl(req), participantsQuery, accountStore));
+        toPublicServiceData(new UrlBuilder(req), participantsQuery, accountStore));
 
 
   }
@@ -519,7 +521,7 @@ public class AccountService extends SwellRTService {
 
 
 
-  protected Collection<AccountServiceData> toPublicServiceData(String serverBaseUrl,
+  protected Collection<AccountServiceData> toPublicServiceData(UrlBuilder urlBuilder,
       Collection<ParticipantId> participants, AccountStore accountStore) {
 
     List<AccountServiceData> accountServiceDataList = new ArrayList<AccountServiceData>();
@@ -530,7 +532,7 @@ public class AccountService extends SwellRTService {
         AccountData accountData = accountStore.getAccount(p);
 
         if (accountData != null && accountData.isHuman()) {
-          accountServiceDataList.add(toPublicServiceData(serverBaseUrl, accountData.asHuman()));
+          accountServiceDataList.add(toPublicServiceData(urlBuilder, accountData.asHuman()));
         }
 
       } catch (PersistenceException e) {
@@ -544,21 +546,20 @@ public class AccountService extends SwellRTService {
 
 
 
-  protected static String getAvatarUrl(String serverBaseUrl, HumanAccountData account) {
+  protected static String getAvatarUrl(UrlBuilder urlBuilder, HumanAccountData account) {
     if (account.getAvatarFileName() == null) return null;
 
-    return serverBaseUrl + SwellRtServlet.SERVLET_CONTEXT + "/account/" + account.getId().getName()
-        + "/avatar/"
-        + account.getAvatarFileName();
+    return urlBuilder.build(
+        "/account/" + account.getId().getName() + "/avatar/" + account.getAvatarFileName(), null);
   }
 
-  protected static AccountServiceData toServiceData(String serverBaseUrl, HumanAccountData account) {
+  protected static AccountServiceData toServiceData(UrlBuilder urlBuilder, HumanAccountData account) {
 
     AccountServiceData data = new AccountServiceData();
 
     data.id = account.getId().getAddress();
     data.email = account.getEmail() == null ? "" : account.getEmail();
-    String avatarUrl = getAvatarUrl(serverBaseUrl, account);
+    String avatarUrl = getAvatarUrl(urlBuilder, account);
     data.avatarUrl = avatarUrl == null ? "" : avatarUrl;
     data.locale = account.getLocale() == null ? "" : account.getLocale();
 
@@ -566,13 +567,13 @@ public class AccountService extends SwellRTService {
 
   }
 
-  protected static AccountServiceData toPublicServiceData(String serverBaseUrl,
+  protected static AccountServiceData toPublicServiceData(UrlBuilder urlBuilder,
       HumanAccountData account) {
 
     AccountServiceData data = new AccountServiceData();
 
     data.id = account.getId().getAddress();
-    String avatarUrl = getAvatarUrl(serverBaseUrl, account);
+    String avatarUrl = getAvatarUrl(urlBuilder, account);
     data.avatarUrl = avatarUrl == null ? "" : avatarUrl;
     data.locale = account.getLocale() == null ? "" : account.getLocale();
 
