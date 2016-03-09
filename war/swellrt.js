@@ -18,7 +18,6 @@ window.SwellRT = {
 }
 
 
-
 var scripts = document.getElementsByTagName('script');
 var thisScript = scripts[scripts.length -1];
 
