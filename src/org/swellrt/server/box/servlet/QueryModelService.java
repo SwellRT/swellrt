@@ -176,16 +176,23 @@ public class QueryModelService extends SwellRTService {
     }
 
     StringBuilder JSONbuilder = new StringBuilder();
+
     JSONbuilder.append("{\"result\":[");
 
     Iterator<DBObject> it = result.iterator();
 
     while (it.hasNext()) {
-
       JSON.serialize(it.next(), JSONbuilder);
       if (it.hasNext()) JSONbuilder.append(",");
     }
     JSONbuilder.append("]}");
+
+    // Replace relative URLs with absolute ones
+    // Attachments are server from context /, wave's original context
+    UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req, "");
+    ServiceUtils.completeRelativeUrls(JSONbuilder, "url", urlBuilder);
+    ServiceUtils.completeRelativeUrls(JSONbuilder, "thumbnail", urlBuilder);
+
 
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");
@@ -194,4 +201,7 @@ public class QueryModelService extends SwellRTService {
     response.getWriter().append(JSONbuilder);
 
   }
+
+
+
 }

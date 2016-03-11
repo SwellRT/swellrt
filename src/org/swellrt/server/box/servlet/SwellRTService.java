@@ -1,6 +1,5 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -13,51 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 
 public abstract class SwellRTService {
 
-
-  public class UrlBuilder {
-
-    HttpServletRequest request;
-
-
-    public UrlBuilder(HttpServletRequest request) {
-      super();
-      this.request = request;
-    }
-
-    protected String getSessionUrlRewrite() {
-      Preconditions.checkNotNull(request, "Request can't be null");
-
-      if (request.getPathInfo() == null || request.getPathInfo().isEmpty()) return "";
-
-      // The ';sid=' syntax is jetty specific.
-      int indexSid = request.getPathInfo().indexOf(";sid=");
-
-      if (indexSid >= 0) {
-        return request.getPathInfo().substring(indexSid, request.getPathInfo().length());
-      }
-
-      return "";
-    }
-
-
-    public String build(String relativePath, String queryString) {
-      Preconditions.checkNotNull(relativePath, "Path can't be null");
-
-      String base =
-          request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-
-      String sessionRewrite = getSessionUrlRewrite();
-
-      if (!relativePath.startsWith("/")) relativePath = "/" + relativePath;
-
-      if (queryString == null) queryString = "";
-
-      String absolute =
-          base + SwellRtServlet.SERVLET_CONTEXT + relativePath + sessionRewrite + queryString;
-      return absolute;
-    }
-
-  }
 
   protected static final String RC_ACCOUNT_ALREADY_EXISTS = "ACCOUNT_ALREADY_EXISTS";
   protected static final String RC_INVALID_EMAIL_ADDRESS = "INVALID_EMAIL_ADDRESS";

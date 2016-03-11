@@ -154,7 +154,7 @@ public class AccountService extends SwellRTService {
   protected void createAccount(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
 
-    UrlBuilder urlBuilder = new UrlBuilder(req);
+    UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
     try {
 
@@ -245,7 +245,7 @@ public class AccountService extends SwellRTService {
 
     ParticipantId loggedInUser = sessionManager.getLoggedInUser(req.getSession(false));
 
-    UrlBuilder urlBuilder = new UrlBuilder(req);
+    UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
     try {
 
@@ -380,7 +380,7 @@ public class AccountService extends SwellRTService {
   protected void getParticipantAccount(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
 
-    UrlBuilder urlBuilder = new UrlBuilder(req);
+    UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
     try {
 
@@ -439,7 +439,7 @@ public class AccountService extends SwellRTService {
     }
 
     sendResponse(response,
-        toPublicServiceData(new UrlBuilder(req), participantsQuery, accountStore));
+        toPublicServiceData(ServiceUtils.getUrlBuilder(req), participantsQuery, accountStore));
 
 
   }
