@@ -35,8 +35,19 @@ public class ServiceUtils {
       public String build(String relativePath, String queryString) {
         Preconditions.checkNotNull(relativePath, "Path can't be null");
 
-        String base =
-            request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String scheme;
+
+        if (request.getHeader("X-Forwarded-Proto") != null) {
+          scheme = request.getHeader("X-Forwarded-Proto");
+        } else {
+          scheme = request.getScheme();
+        }
+
+        String port =
+            request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : ":"
+                + request.getServerPort();
+
+        String base = scheme + "://" + request.getServerName() + port;
 
         String sessionRewrite = getSessionUrlRewrite(request);
 
