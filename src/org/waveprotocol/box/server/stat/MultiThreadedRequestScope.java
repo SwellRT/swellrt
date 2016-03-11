@@ -73,7 +73,9 @@ public class MultiThreadedRequestScope implements RequestScope {
   public Map<Class, RequestScope.Value> cloneValues() {
     Map<Class, Value> map = Maps.<Class, Value>newHashMap();
     for (Map.Entry<Class, Value> entry : values.get().entrySet()) {
-      map.put(entry.getKey(), entry.getValue().clone());
+      if (entry.getValue() != null)
+        map.put(entry.getKey(), entry.getValue().clone());
+
     }
     return map;
   }
