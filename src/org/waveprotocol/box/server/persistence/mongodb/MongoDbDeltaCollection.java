@@ -21,9 +21,11 @@ package org.waveprotocol.box.server.persistence.mongodb;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
@@ -201,5 +203,62 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
           waveletName.waveId.serialise(), waveletName.waveletId.serialise()),
           WriteConcern.JOURNALED);
     }
+  }
+
+  @Override
+  public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
+
+    DBObject query = createWaveletDBQuery();
+
+    DBCursor result =
+        deltaDbCollection.find(query).sort(
+            new BasicDBObject(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION, 1));
+
+    long count = 0;
+    while (result.hasNext()) {
+      DBObject obj = result.next();
+      WaveletDeltaRecord delta;
+      try {
+        delta = MongoDbDeltaStoreUtil.deserializeWaveletDeltaRecord(obj);
+      } catch (PersistenceException e) {
+        throw new IOException(e);
+      }
+      if (!receiver.put(delta)) {
+        throw new IllegalStateException("error processing delta from mongodb");
+      }
+      count++;
+    }
+
+    return count;
+  }
+
+  @Override
+  public long getDeltasInRange(long startVersion, long endVersion,
+      Receiver<WaveletDeltaRecord> receiver) throws IOException {
+
+    DBObject query = createWaveletDBQuery();
+    query.put(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION,
+        new BasicDBObject("$gte", startVersion).append("$lte", endVersion));
+
+    DBCursor result =
+        deltaDbCollection.find(query).sort(
+            new BasicDBObject(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION, 1));
+
+    long count = 0;
+    while (result.hasNext()) {
+      DBObject obj = result.next();
+      WaveletDeltaRecord delta;
+      try {
+        delta = MongoDbDeltaStoreUtil.deserializeWaveletDeltaRecord(obj);
+      } catch (PersistenceException e) {
+        throw new IOException(e);
+      }
+      if (!receiver.put(delta)) {
+        throw new IllegalStateException("error processing delta from mongodb");
+      }
+      count++;
+    }
+
+    return count;
   }
 }

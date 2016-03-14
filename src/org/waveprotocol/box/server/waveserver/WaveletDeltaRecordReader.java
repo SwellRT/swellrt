@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
@@ -82,4 +83,25 @@ public interface WaveletDeltaRecordReader {
    *         null
    */
   TransformedWaveletDelta getTransformedDelta(long version) throws IOException;
+
+  /**
+   * Returns all the persisted deltas. Convenience method to build snapshots
+   * with only one call to the persistency component.
+   * 
+   * @return
+   * @throws IOException
+   */
+  long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException;
+
+
+  /**
+   * Returns a range of deltas.
+   * 
+   * @param start
+   * @param end
+   * @param receiver
+   */
+  long getDeltasInRange(long startVersion, long endVersion, Receiver<WaveletDeltaRecord> receiver)
+      throws IOException;
+
 }
