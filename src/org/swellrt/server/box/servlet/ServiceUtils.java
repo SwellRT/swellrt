@@ -67,7 +67,7 @@ public class ServiceUtils {
   public static void completeRelativeUrls(StringBuilder sb, String urlFieldName,
       UrlBuilder urlBuilder) {
 
-    int st = sb.indexOf("\"" + urlFieldName, 0);
+    int st = sb.indexOf("\"" + urlFieldName + "\"", 0);
     while (st >= 0) {
 
       int su = sb.indexOf("\"", st + urlFieldName.length() + 2);
@@ -79,7 +79,7 @@ public class ServiceUtils {
 
       sb.replace(su, eu + 1, "\"" + nu + "\"");
 
-      st = sb.indexOf(urlFieldName, su + nu.length() + 2);
+      st = sb.indexOf("\"" + urlFieldName + "\"", su + nu.length() + 2);
     }
 
   }
