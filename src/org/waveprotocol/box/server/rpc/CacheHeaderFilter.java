@@ -32,7 +32,11 @@ public class CacheHeaderFilter implements Filter {
       httpResponse.addHeader("Pragma", "no-cache");
     }
 
-    if (requestUri.matches(".+\\.cache\\..+")) {
+    if (requestUri.matches(".+\\.cache\\..+")
+        || (requestUri.matches("/swell/account/.+/avatar/.+") && httpRequest.getMethod().equals(
+            "GET"))
+        || (requestUri.matches("/attachment/.+") && httpRequest.getMethod().equals("GET"))
+        || (requestUri.matches("/thumbnail/.+") && httpRequest.getMethod().equals("GET"))) {
       httpResponse.addHeader("Cache-Control", "max-age=31536000");
     }
 
