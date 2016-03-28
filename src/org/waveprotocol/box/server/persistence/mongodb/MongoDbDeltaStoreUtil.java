@@ -191,7 +191,18 @@ public class MongoDbDeltaStoreUtil {
   }
 
   public static HashedVersion deserializeHashedVersion(DBObject dbObject) {
-    return HashedVersion.of((Long) dbObject.get(FIELD_VERSION),
+
+    Object o = dbObject.get(FIELD_VERSION);
+    long version;
+
+    if (o instanceof Integer)
+      version = ((Integer) dbObject.get(FIELD_VERSION)).longValue();
+    else if (o instanceof Long)
+      version = ((Long) dbObject.get(FIELD_VERSION)).longValue();
+    else
+      version = Long.parseLong(dbObject.toString());
+
+    return HashedVersion.of(version,
         (byte[]) dbObject.get(FIELD_HISTORYHASH));
   }
 

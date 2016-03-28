@@ -24,13 +24,14 @@ import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
 import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreData.ProtoTransformedWaveletDelta;
+import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
 import org.waveprotocol.box.server.waveserver.AppliedDeltaUtil;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
-import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
+import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
@@ -207,6 +208,42 @@ public class FileDeltaCollection implements DeltasAccess {
     checkIsOpen();
     return seekToRecord(version) ? readTransformedDeltaFromRecord() : null;
   }
+
+  @Override
+  public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
+    checkIsOpen();
+    long version = 0;
+    while (seekToRecord(version)) {
+      if (!receiver.put(readRecord())) {
+        throw new IllegalStateException("Error processing deltas from file");
+      }
+      version++;
+    }
+
+    return version--;
+  }
+
+  @Override
+  public long getDeltasInRange(long startVersion, long endVersion,
+      Receiver<WaveletDeltaRecord> receiver) throws IOException {
+    checkIsOpen();
+
+    if (this.endVersion == null) return 0;
+
+    Preconditions.checkState(0 <= startVersion && startVersion < endVersion
+        && endVersion <= this.endVersion.getVersion(),
+        "Invalid delta range");
+
+    long version = startVersion;
+    while (seekToRecord(version) && version <= endVersion) {
+      if (!receiver.put(readRecord())) {
+        throw new IllegalStateException("Error processing deltas from file");
+      }
+      version++;
+    }
+    return version--;
+  }
+
 
   @Override
   public HashedVersion getAppliedAtVersion(long version) throws IOException {
@@ -571,4 +608,6 @@ public class FileDeltaCollection implements DeltasAccess {
     // trailing junk such as from a partially completed write.
     file.setLength(file.getFilePointer());
   }
+
+
 }
