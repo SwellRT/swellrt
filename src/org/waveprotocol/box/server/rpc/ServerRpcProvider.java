@@ -495,6 +495,10 @@ public class ServerRpcProvider {
     corsFilterHolder.setInitParameter("allowedHeaders", "*");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
+    // Set cache header rewriter filter
+    FilterHolder cacheFilterHolder = new FilterHolder(CacheHeaderFilter.class);
+    context.addFilter(cacheFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
+
     addWebSocketServlets();
 
     try {
