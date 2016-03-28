@@ -205,6 +205,8 @@ public final class WaveletDataUtil {
         try {
             applyWaveletDelta(deltaRecord.getTransformedDelta(), wavelet);
         } catch (OperationException e) {
+            return false;
+        } catch (IllegalStateException e) {
           return false;
         }
         return true;
@@ -212,7 +214,7 @@ public final class WaveletDataUtil {
     });
 
     } catch (Exception e) {
-      throw new OperationException();
+      throw new OperationException(e);
     }
 
     return wavelet;

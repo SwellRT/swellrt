@@ -34,6 +34,7 @@ import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -46,6 +47,9 @@ import java.util.Collection;
  *
  */
 public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
+
+  private static final Log LOG = Log.get(MongoDbDeltaCollection.class);
+
 
   /** Wavelet name to work with. */
   private final WaveletName waveletName;
@@ -210,11 +214,16 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
     DBObject query = createWaveletDBQuery();
 
-    DBCursor result =
-        deltaDbCollection.find(query).sort(
-            new BasicDBObject(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION, 1));
+    BasicDBObject sort = new BasicDBObject();
+    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, 1);
+    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED + "."
+        + MongoDbDeltaStoreUtil.FIELD_APPLICATIONTIMESTAMP, 1);
+
+    DBCursor result = deltaDbCollection.find(query).sort(sort);
 
     long count = 0;
+    HashedVersion lastResultingVersion = null;
+
     while (result.hasNext()) {
       DBObject obj = result.next();
       WaveletDeltaRecord delta;
@@ -223,9 +232,21 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
       } catch (PersistenceException e) {
         throw new IOException(e);
       }
-      if (!receiver.put(delta)) {
-        throw new IllegalStateException("error processing delta from mongodb");
+
+      if (lastResultingVersion != null && !delta.getAppliedAtVersion().equals(lastResultingVersion)) {
+        LOG.warning("Skipping delta at v=" + delta.getAppliedAtVersion().getVersion() + " to v="
+            + delta.getTransformedDelta().getAppliedAtVersion());
+        continue;
       }
+
+
+      if (!receiver.put(delta)) {
+        throw new IllegalStateException("Error loading delta from persistence at v="
+            + delta.getAppliedAtVersion().getVersion() + " to v="
+            + delta.getTransformedDelta().getAppliedAtVersion());
+      }
+
+      lastResultingVersion = delta.getTransformedDelta().getResultingVersion();
       count++;
     }
 
@@ -236,15 +257,20 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
   public long getDeltasInRange(long startVersion, long endVersion,
       Receiver<WaveletDeltaRecord> receiver) throws IOException {
 
+    BasicDBObject sort = new BasicDBObject();
+    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, 1);
+    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED + "."
+        + MongoDbDeltaStoreUtil.FIELD_APPLICATIONTIMESTAMP, 1);
+
     DBObject query = createWaveletDBQuery();
-    query.put(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION,
+    query.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION,
         new BasicDBObject("$gte", startVersion).append("$lte", endVersion));
 
-    DBCursor result =
-        deltaDbCollection.find(query).sort(
-            new BasicDBObject(MongoDbDeltaStoreUtil.FIELD_APPLIEDATVERSION, 1));
+    DBCursor result = deltaDbCollection.find(query).sort(sort);
 
     long count = 0;
+    HashedVersion lastResultingVersion = null;
+
     while (result.hasNext()) {
       DBObject obj = result.next();
       WaveletDeltaRecord delta;
@@ -253,9 +279,20 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
       } catch (PersistenceException e) {
         throw new IOException(e);
       }
-      if (!receiver.put(delta)) {
-        throw new IllegalStateException("error processing delta from mongodb");
+
+      if (lastResultingVersion != null && !delta.getAppliedAtVersion().equals(lastResultingVersion)) {
+        LOG.warning("Skipping delta at v=" + delta.getAppliedAtVersion().getVersion() + " to v="
+            + delta.getTransformedDelta().getAppliedAtVersion());
+        continue;
       }
+
+      if (!receiver.put(delta)) {
+        throw new IllegalStateException("Error loading delta from persistence at v="
+            + delta.getAppliedAtVersion().getVersion() + " to v="
+            + delta.getTransformedDelta().getAppliedAtVersion());
+      }
+
+      lastResultingVersion = delta.getTransformedDelta().getResultingVersion();
       count++;
     }
 
