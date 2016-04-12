@@ -77,9 +77,9 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
   /**
    * Decode Base64 string using browser native functions to avoid issues on
    * large encoded strings.
-   * 
+   *
    * It expects an UTF-8 string.
-   * 
+   *
    * @param m
    * @return
    */
@@ -88,6 +88,9 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
     return decodeURIComponent( escape( decoded ) );
   }-*/;
 
+  protected static native void log(String s) /*-{
+    console.log(s);
+   }-*/;
 
   @Override
   public void onMessage(String message) {
@@ -110,10 +113,12 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
       if (isPackedWaveMessage(decoded)) {
         List<String> unpacked = unpackWaveMessages(decoded);
         for (String s : unpacked) {
+          log("->" + s);
           delegate.onMessage(s);
         }
 
       } else {
+        log("->" + decoded);
         delegate.onMessage(decoded);
       }
 

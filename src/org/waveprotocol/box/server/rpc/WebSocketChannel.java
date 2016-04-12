@@ -27,14 +27,14 @@ import com.google.gson.JsonPrimitive;
 import com.google.protobuf.Message;
 
 import org.waveprotocol.box.server.rpc.ProtoSerializer.SerializationException;
+import org.waveprotocol.box.stat.SessionContext;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.communication.gson.GsonException;
 import org.waveprotocol.wave.communication.gson.GsonSerializable;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
-import org.waveprotocol.box.stat.SessionContext;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
 
 /**
  * A channel abstraction for websocket, for sending and receiving strings.

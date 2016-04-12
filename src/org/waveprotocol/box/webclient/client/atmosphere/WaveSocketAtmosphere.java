@@ -31,42 +31,42 @@ import java.util.logging.Logger;
  * A wrapper implementation of the atmosphere javascript client. Websocket
  * transport will be used first by default. If not avaiable or a fatal error
  * occurs, long-polling will be tried.
- * 
- * 
+ *
+ *
  * The atmosphere client/server configuration avoids network issues with:
- * 
+ *
  * <ul>
  * <li>Server Heartbeat frecuency t = 60s. Greater values didn't avoid cuts in
  * some environments</li>
  * <li>Client will start reconnection if no data is received in t = 70s
  * (timeout)</li>
  * </ul>
- * 
+ *
  * Both settings try to keep the communication alive.
- * 
+ *
  * AtmosphereConnectionListener.onDisconnect() will be invoked when
  * communications is stopped caused by an error or not.
- * 
+ *
  * Exceptions handling server messages must be caught because JSNI code
  * receiving messages is not wrapped with the $entry() method.
- * 
- * 
+ *
+ *
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- * 
+ *
  * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- * 
- * 
+ *
+ *
  * About session tracking: The session token is expected to be stored as a
  * cookie by default. In some cases where cookies are not available (Browser
  * previnting 3rd party cookies,...) the session token can be propagated as a
  * path element /atmosphere/sessionId.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class WaveSocketAtmosphere implements WaveSocket {
 
@@ -109,7 +109,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
           // Set up atmosphere connection properties
           socket.request = new atmosphere.AtmosphereRequest();
-          socket.request.uuid = 0;
+          //socket.request.uuid = 0;
 
           // It's true by default. Just a reminder.
           socket.request.enableProtocol = getAtmosphereProperty("enableProtocol", true);
@@ -329,9 +329,13 @@ public class WaveSocketAtmosphere implements WaveSocket {
       }
     }
 
+    protected static native void log(String s) /*-{
+    console.log(s);
+   }-*/;
 
     @Override
     public void sendMessage(String message) {
+    log("<-" + message);
       socket.send(message);
     }
 
