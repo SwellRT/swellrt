@@ -31,6 +31,7 @@
 
   <fileset dir="${build.src.dir}" id="client-commons-fileset">
    <include name="org/waveprotocol/wave/model/**/*" />
+   <include name="org/waveprotocol/wave/media/model/**/*" />
    <include name="org/waveprotocol/wave/common/logging/*" />
    <include name="org/waveprotocol/wave/communication/**/*" />
    <include name="org/waveprotocol/wave/concurrencycontrol/**/*" />
