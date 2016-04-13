@@ -435,8 +435,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     else if (webSocketURL.startsWith("https://"))
       webSocketURL = webSocketURL.replace("https://", "wss://");
 
-
-    websocket = new WaveWebSocketClient(websocketNotAvailable() || !useWebSocket, webSocketURL);
+    // Use Model.MODEL_VERSION to get the client version
+    websocket = new WaveWebSocketClient(webSocketURL, "1.0");
     websocket.connect(new WaveSocketStartCallback() {
 
       @Override

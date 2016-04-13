@@ -48,11 +48,14 @@ import java.util.Queue;
 
 
 /**
- * Wrapper around WebSocket that handles the Wave client-server protocol.
- *
+ * Wrapper around Atmosphere connections that handles the Wave client-server
+ * protocol.
+ * 
  * Catch exceptions on handling server messages and provide them to client as
  * events.
- *
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
@@ -98,10 +101,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   /**
    * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594;
-   * DISCONNECTED)&#8727;
+   * DISCONNECTED)&#8727; &#8594; ERROR;
+   * 
+   * The WaveSocket tries to keep the connection alive continuously. But under
+   * some circumstances severe errors happen like server reboot or session
+   * expiration.
+   * 
    */
   private enum ConnectState {
-    CONNECTED, CONNECTING, DISCONNECTED
+    CONNECTED, CONNECTING, DISCONNECTED, ERROR
   }
 
   private ConnectState connected = ConnectState.DISCONNECTED;
@@ -114,9 +122,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   private WaveSocket.WaveSocketStartCallback onStartCallback = null;
 
-  public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
+  public WaveWebSocketClient(String urlBase, String clientVersion) {
     submitRequestCallbacks = CollectionUtils.createIntMap();
-    socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, getSessionToken(), this);
+    socket = WaveSocketFactory.create(urlBase, getSessionToken(), clientVersion, this);
   }
 
   /**
@@ -140,7 +148,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   /**
    * Opens this connection with a callback to know when actually websocket is
-   * opened. No NetworkStatusEvent events will be triggered.
+   * opened.
    */
   public void connect(WaveSocket.WaveSocketStartCallback callback) {
     onStartCallback = callback;
@@ -226,32 +234,6 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   public void onMessage(final String message) {
 
 
-    if (connected == ConnectState.DISCONNECTED) return;
-
-    if (message.startsWith("X-RESPONSE:")) {
-      String[] responseTokens = message.split(":");
-      String response = responseTokens.length > 1 ? responseTokens[1] : "";
-
-      if (response.equals("UPGRADE")) {
-        LOG.info("Client requires upgrade!");
-        connected = ConnectState.DISCONNECTED;
-        ClientEvents.get().fireEvent(
-            new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR,
-                NetworkStatusEvent.PAYLOAD_CLIENT_UPGRADE));
-        disconnect(true);
-        return;
-
-      } else if (response.equals("SERVER_ERROR")) {
-        String reason = responseTokens.length > 2 ? responseTokens[2] : "";
-        LOG.info("Server error: " + reason);
-        connected = ConnectState.DISCONNECTED;
-        ClientEvents.get().fireEvent(
-            new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, reason));
-        disconnect(true);
-        return;
-      }
-    }
-
     LOG.info("received JSON message " + message);
     Timer timer = Timing.start("deserialize message");
     MessageWrapper wrapper;
@@ -321,6 +303,14 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   public boolean isConnected() {
     return connected == ConnectState.CONNECTED;
+  }
+
+  @Override
+  public void onError(String errorCode) {
+    // For now, we can't recover exceptions from inner layers. Just let the
+    // client app to reset
+    ClientEvents.get()
+        .fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, errorCode));
   }
 
 }

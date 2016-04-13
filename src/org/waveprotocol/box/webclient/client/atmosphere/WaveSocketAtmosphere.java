@@ -28,12 +28,12 @@ import org.waveprotocol.box.webclient.client.WaveSocket;
 import java.util.logging.Logger;
 
 /**
- * A wrapper implementation of the atmosphere javascript client. Websocket
- * transport will be used first by default. If not avaiable or a fatal error
- * occurs, long-polling will be tried.
+ * A wrapper for the Atmosphere Javascript client. Websocket transport will be
+ * used first by default. If not avaiable or a fatal error occurs, long-polling
+ * will be tried.
  *
  *
- * The atmosphere client/server configuration avoids network issues with:
+ * The atmosphere client/server configuration handles network issues with:
  *
  * <ul>
  * <li>Server Heartbeat frecuency t = 60s. Greater values didn't avoid cuts in
@@ -109,7 +109,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
           // Set up atmosphere connection properties
           socket.request = new atmosphere.AtmosphereRequest();
-          //socket.request.uuid = 0;
+          socket.request.uuid = 0;
 
           // It's true by default. Just a reminder.
           socket.request.enableProtocol = getAtmosphereProperty("enableProtocol", true);
@@ -154,11 +154,27 @@ public class WaveSocketAtmosphere implements WaveSocket {
           // Try to reconnect on server's errors
           socket.request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
-          // Server<->client version control
-          socket.request.headers = {
-            'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
-          };
 
+          // Generate a browser window/tab id (See SuperSessionId)
+          if (!sessionStorage.getItem("x-swellrt-window-id")) {
+
+            if (!localStorage.getItem("x-swellrt-window-count")) {
+              localStorage.setItem("x-swellrt-window-count", 0);
+            }
+
+            var windowCount = localStorage.getItem("x-swellrt-window-count");
+            windowCount++;
+            localStorage.setItem("x-swellrt-window-count", windowCount);
+
+            sessionStorage.setItem("x-swellrt-window-id",windowCount);
+          }
+
+          var windowId =  sessionStorage.getItem("x-swellrt-window-id");
+
+          socket.request.headers = {
+            'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion),
+            'X-window-id' : windowId
+          };
 
           // OPEN
           socket.request.onOpen = function(response) {
@@ -220,9 +236,13 @@ public class WaveSocketAtmosphere implements WaveSocket {
             // Try to reconnect on server's errors
             request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
-            // Server<->client version control
+            // Get the current window Id
+            var windowId =  sessionStorage.getItem("x-swellrt-window-id");
+
+            // Set headers with protocol extension
             request.headers = {
-              'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
+              'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion),
+              'X-window-id' : windowId
             };
 
           };
@@ -239,7 +259,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
           // CLIENT TIMEOUT
           socket.request.onClientTimeout = function(request) {
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onDisconnect()();
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::reconnect()();
           };
 
           socket.request.callback = function(response) {
@@ -277,16 +297,16 @@ public class WaveSocketAtmosphere implements WaveSocket {
     private final WaveSocketCallback listener;
     private final String urlBase;
     private AtmosphereSocket socket = null;
-    private final boolean useWebSocket;
     private final String sessionId;
+    private final String clientVersion;
 
 
-    public WaveSocketAtmosphere(WaveSocketCallback listener,
-               String urlBase, boolean useWebSocketAlt, String sessionId) {
+  public WaveSocketAtmosphere(WaveSocketCallback listener, String urlBase, String sessionId,
+      String clientVersion) {
         this.listener = listener;
         this.urlBase = urlBase;
-        this.useWebSocket = !useWebSocketAlt;
         this.sessionId = sessionId;
+        this.clientVersion = clientVersion;
     }
 
 
@@ -316,9 +336,8 @@ public class WaveSocketAtmosphere implements WaveSocket {
               public void onSuccess(Void result) {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
-              AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, useWebSocket
-                  ? "websocket" : "long-polling", "long-polling", "1.0", sessionId);
-              // Check version value in Model.MODEL_VERSION
+              AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, true
+                  ? "websocket" : "long-polling", "long-polling", clientVersion, sessionId);
                 socket.connect();
               }
 
@@ -329,26 +348,30 @@ public class WaveSocketAtmosphere implements WaveSocket {
       }
     }
 
-    protected static native void log(String s) /*-{
-    console.log(s);
-   }-*/;
 
     @Override
     public void sendMessage(String message) {
-    log("<-" + message);
       socket.send(message);
     }
 
 
-    /**
-     * Atmosphere has detected a fatal error in the connection. Trigger a fallback
-     * connection with long-polling, trying to avoid unstable WebSocket
-     * connections.
-     */
+  /**
+   * Force socket reconnection. Ususally if the socket has been inactive for too
+   * much time (timeout).
+   *
+   */
+  @SuppressWarnings("unused")
+  private void reconnect() {
+    connect();
+  }
+
+  /**
+   * Atmosphere has detected a fatal error in the connection. It will stop x
+   */
     @SuppressWarnings("unused")
     private void onError(String error) {
       log.severe(error);
-      listener.onDisconnect();
+      listener.onError(error);
     }
 
     /**
