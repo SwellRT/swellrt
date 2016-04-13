@@ -88,8 +88,7 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
     public Map<String, String> apply(Map<String, Object> from, boolean isEditing) {
       String author = (String) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
       if (author != null) {
-        return Collections.singletonMap("backgroundColor", DiffHighlightingFilter.colorProvider
-            .getColor(DiffHighlightingFilter.wrapAnonymousAuthor(author)));
+        return Collections.emptyMap();
       } else {
         return Collections.emptyMap();
       }
