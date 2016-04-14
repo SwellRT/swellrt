@@ -1,9 +1,11 @@
 package org.swellrt.client.editor;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
+import org.swellrt.api.SwellRTUtils;
 import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.client.editor.doodad.WidgetController;
 import org.swellrt.client.editor.doodad.WidgetDoodad;
@@ -11,7 +13,6 @@ import org.swellrt.client.editor.doodad.WidgetModelDoodad;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
-import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
@@ -410,11 +411,6 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
-
-  private native void log(String s) /*-{
-    console.log(s);
-  }-*/;
-
   @Override
   public void onUpdate(final EditorUpdateEvent event) {
 
@@ -429,7 +425,7 @@ public class TextEditor implements EditorUpdateListener {
       if (range != null && listener != null) {
 
 
-        final JsoStringMap<String> annotationSnapshot = JsoStringMap.<String> create();
+        final JavaScriptObject annotationsSnapshot = JavaScriptObject.createObject();
 
         ANNOTATIONS.each(new Proc() {
 
@@ -440,14 +436,14 @@ public class TextEditor implements EditorUpdateListener {
                 EditorAnnotationUtil.getAnnotationOverRangeIfFull(event.context().getDocument(),
                     editor.getCaretAnnotations(), annotationName, range.getStart(), range.getEnd());
 
-            annotationSnapshot.put(annotationName, annotationValue);
+            SwellRTUtils.addField(annotationsSnapshot, annotationName, annotationValue);
 
           }
 
         });
 
 
-        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationSnapshot);
+        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationsSnapshot);
 
       }
     }

@@ -3,7 +3,7 @@ package org.swellrt.api.js.editor;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import org.swellrt.client.editor.TextEditorListener;
-import org.waveprotocol.wave.model.util.ReadableStringMap;
+import org.waveprotocol.wave.client.gadget.StateMap;
 
 public class TextEditorJSListener extends JavaScriptObject implements TextEditorListener {
 
@@ -16,7 +16,7 @@ public class TextEditorJSListener extends JavaScriptObject implements TextEditor
   }-*/;
 
   @Override
-  public final native void onSelectionChange(int start, int end, ReadableStringMap<String> annotations) /*-{
+  public final native void onSelectionChange(int start, int end, JavaScriptObject annotations) /*-{
    if (this.executor !== undefined)
       this.executor(annotations, start, end);
   }-*/;
