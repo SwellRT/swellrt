@@ -75,7 +75,7 @@ public abstract class SwellRTService {
 
   protected ParticipantId checkForLoggedInUser(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
-    ParticipantId pid = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId pid = sessionManager.getLoggedInUser(req);
     if (pid == null) {
       sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
     }

@@ -27,7 +27,6 @@ import com.google.inject.name.Named;
 
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
-import org.swellrt.server.box.servlet.AuthenticationService;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
@@ -250,7 +249,7 @@ private final WelcomeRobot welcomeBot;
 
     }
 
-    HttpSession session = AuthenticationService.createOrRecycleSession(req);
+    HttpSession session = sessionManager.createSession(req);
 
     // Anonymous log in
     if (loggedInAddress == null) {
@@ -369,8 +368,7 @@ private final WelcomeRobot welcomeBot;
     // If the user is already logged in, we'll try to redirect them immediately.
     resp.setCharacterEncoding("UTF-8");
     req.setCharacterEncoding("UTF-8");
-    HttpSession session = req.getSession(false);
-    ParticipantId user = sessionManager.getLoggedInUser(session);
+    ParticipantId user = sessionManager.getLoggedInUser(req);
 
     if (user != null) {
       redirectLoggedInUser(req, resp);
@@ -404,7 +402,7 @@ private final WelcomeRobot welcomeBot;
    */
   private void redirectLoggedInUser(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-     Preconditions.checkState(sessionManager.getLoggedInUser(req.getSession(false)) != null,
+    Preconditions.checkState(sessionManager.getLoggedInUser(req) != null,
          "The user is not logged in");
     String query = req.getQueryString();
 

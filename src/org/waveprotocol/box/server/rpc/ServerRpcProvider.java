@@ -67,6 +67,7 @@ import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.authentication.HttpWindowSession;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
@@ -128,8 +129,8 @@ public class ServerRpcProvider {
 
 
 
-  private static ConcurrentHashMap<SuperSessionId, Connection> ATMOSPHERE_CONNECTIONS =
-      new ConcurrentHashMap<SuperSessionId, Connection>();
+  private static ConcurrentHashMap<HttpWindowSession, Connection> ATMOSPHERE_CONNECTIONS =
+      new ConcurrentHashMap<HttpWindowSession, Connection>();
 
   // Mapping from incoming protocol buffer type -> specific handler.
   private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices =
@@ -183,73 +184,13 @@ public class ServerRpcProvider {
     }
   }
 
-  /**
-   * A super session is the pair (http session id, browser tab id). Server
-   * connections have a 1:1 relationship with super sessions.
-   *
-   * @author pablojan@gmail.com (Pablo Ojanguren)
-   *
-   */
-  static class SuperSessionId {
-
-    String sessionId;
-    String windowId;
-
-
-    public SuperSessionId(String sessionId, String windowId) {
-      super();
-      this.sessionId = sessionId;
-      this.windowId = windowId == null ? "" : windowId;
-    }
-
-    @Override
-    public String toString() {
-      return sessionId + ":" + windowId;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
-      result = prime * result + ((windowId == null) ? 0 : windowId.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) return true;
-      if (obj == null) return false;
-      if (getClass() != obj.getClass()) return false;
-      SuperSessionId other = (SuperSessionId) obj;
-      if (sessionId == null) {
-        if (other.sessionId != null) return false;
-      } else if (!sessionId.equals(other.sessionId)) return false;
-      if (windowId == null) {
-        if (other.windowId != null) return false;
-      } else if (!windowId.equals(other.windowId)) return false;
-      return true;
-    }
-
-
-    public String getSessionId() {
-      return sessionId;
-    }
-
-
-    public String getSubSessionId() {
-      return windowId;
-    }
-
-
-  }
 
   /**
-   * A connection is the gateway between the Atmoshphere Framework
-   * (communication layer) and the RPCs for each remote client.
+   * The glue class between the Atmoshphere Framework (communication layer) and
+   * the RPCs for each remote client.
    *
    * A connection is associated with an unique pair (HTTP session, browser
-   * window/tab), the {@link SuperSessionId}
+   * window/tab), the {@link HttpWindowSession}
    *
    * This implementation supports WebSockets and Long-Polling transports over
    * Atmosphere.
@@ -263,19 +204,18 @@ public class ServerRpcProvider {
 
     private final AtmosphereChannel atmosphereChannel;
 
-    private SuperSessionId id;
+    private HttpWindowSession id;
     private Broadcaster broadcaster;
 
     private TRANSPORT transport;
 
-    public AtmosphereConnection(SuperSessionId id, ParticipantId loggedInUser,
+    public AtmosphereConnection(HttpWindowSession id,
         ServerRpcProvider provider) {
 
-      super(loggedInUser, provider);
+      super(null, provider);
 
       this.id = id;
       this.broadcaster = BroadcasterFactory.getDefault().get(this.id.toString());
-
 
       atmosphereChannel = new AtmosphereChannel(this, broadcaster);
       expectMessages(atmosphereChannel);
@@ -289,7 +229,7 @@ public class ServerRpcProvider {
      * @param resource the resource with the incoming message or new connection
      *        signal
      */
-    public void onRequest(AtmosphereResource resource) {
+    public void onRequest(AtmosphereResource resource, ParticipantId loggedInUser) {
 
       // Update current transport
       this.transport = resource.transport();
@@ -307,7 +247,7 @@ public class ServerRpcProvider {
 
         if (isPOST(resource)) {
           String data = AtmosphereUtil.readMessage(resource);
-          atmosphereChannel.handleMessageString(data);
+          atmosphereChannel.handleMessageString(data, loggedInUser);
         }
 
 
@@ -329,7 +269,7 @@ public class ServerRpcProvider {
 
         if (isPOST(resource)) {
           String data = AtmosphereUtil.readMessage(resource);
-          atmosphereChannel.handleMessageString(data);
+          atmosphereChannel.handleMessageString(data, loggedInUser);
           resource.resume();
         }
       }
@@ -347,7 +287,7 @@ public class ServerRpcProvider {
         try {
           r.close();
         } catch (IOException e) {
-          LOG.warning("Error closing resource on session " + id.getSessionId(), e);
+          LOG.warning("Error closing resource on session " + id, e);
         }
       }
       this.broadcaster.destroy();
@@ -456,15 +396,15 @@ public class ServerRpcProvider {
     }
 
     @Override
-    public void message(final int sequenceNo, Message message) {
+    public void message(final int sequenceNo, Message message, ParticipantId loggedInUser) {
       final String messageName = "/" + message.getClass().getSimpleName();
       final Timer profilingTimer = Timing.startRequest(messageName);
 
       if (isFirstRequest && sequenceNo != 0) {
         // On server's reboot, clients can get reconnected (sequenceNo !=0) but
         // server won't be able to process the request.
-        LOG.info("Invalid request caused by server restart.");
-        throw new IllegalStateException("First RPC request with sequence number not 0. ");
+        LOG.info("First RPC request but sequence number >0");
+        throw new IllegalStateException("First RPC request nut sequence number >0");
       }
 
       isFirstRequest = false;
@@ -474,7 +414,16 @@ public class ServerRpcProvider {
       // This allows dirty reconnections, resuming current sessions...
       // This should been handle before, detecting new logins for the same
       if (sequenceNo == 0) {
+
+        // Don't update on null to keep backwards compat.
+        if (loggedInUser != null) this.loggedInUser = loggedInUser;
         cancelRpcs();
+      } else {
+        if (!this.loggedInUser.equals(loggedInUser)) {
+          LOG.info("Request's participant doesn't match connection's participant. Spoofing?");
+          throw new IllegalStateException(
+              "Request's participant doesn't match connection's participant.");
+        }
       }
 
       if (message instanceof Rpc.CancelRpc) {
@@ -643,7 +592,8 @@ public class ServerRpcProvider {
     corsFilterHolder.setInitParameter("allowedOrigins", "*");
     // Set explicit methods to allow CORS with DELETE
     corsFilterHolder.setInitParameter("allowedMethods", "GET,POST,DELETE,PUT,HEAD");
-    corsFilterHolder.setInitParameter("allowedHeaders", "*");
+    corsFilterHolder.setInitParameter("allowedHeaders",
+        "X-Requested-With,Content-Type,Accept,Origin,X-window-id");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
     // Set cache header rewriter filter
@@ -708,17 +658,40 @@ public class ServerRpcProvider {
     // TODO(zamfi): fix to let messages span frames.
     wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
+    //
     // Atmosphere framework. Replacement of Socket.IO
     // See https://issues.apache.org/jira/browse/WAVE-405
+    //
     ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
+
     // Avoid loading defualt CORS interceptor which is in conflict with general
     // jetty CORS filter
     atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
+
     // Setting a low HeartBeat frequency to avoid network issues. Let clients to
     // set a hihger value.
     atholder.setInitParameter(
         "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", ""
             + websocketHeartbeat);
+
+
+    //
+    // Configure Atmosphere Broadcaster class
+    //
+    // Comment out following line to enable Threaded broadcasters
+    atholder.setInitParameter("org.atmosphere.cpr.broadcasterClass",
+        "org.atmosphere.util.SimpleBroadcaster");
+
+    //
+    // Configuring Atmosphere threads: this config is considered if
+    // SimpleBroadcaster is not used
+    //
+
+    // Use same thread pool for all brodcaster (AtmosphereConnection)
+    atholder.setInitParameter("org.atmosphere.cpr.broadcaster.shareableThreadPool", "true");
+    // Set number of threads for atmosphere
+    atholder.setInitParameter("org.atmosphere.cpr.broadcaster.maxProcessingThreads", "4");
+
 
     // Setting all buffers at least to 2MB
     atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", ""
@@ -948,7 +921,6 @@ public class ServerRpcProvider {
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
     private static final String EXT_CLIENT_VERSION_HEADER = "X-client-version";
-    private static final String EXT_WINDOW_ID_HEADER = "X-window-id";
 
     /** Header name for extensions of the wave socket protocol */
     private static final String EXT_RESPONSE_HEADER = "X-RESPONSE:";
@@ -962,48 +934,50 @@ public class ServerRpcProvider {
 
 
     private HttpSession getSession(AtmosphereResource resource) {
-      HttpSession session = null;
 
       Cookie[] cookies = resource.getRequest().getCookies();
+
+      String cookieSessionId = null;
 
       if (cookies != null)
         for (Cookie c : cookies) {
           if (c.getName().equals(SESSION_COOKIE_NAME))
-            session = provider.sessionManager.getSessionFromToken(c.getValue());
+            cookieSessionId = c.getValue();
         }
 
-      // Try with the session URL path /atmosphere/<sessionId>
-      if (session == null) {
-        int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
-        if (lastPathSeparatorIndex >= 0) {
-          String sessionToken =
-              resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
-          session = provider.sessionManager.getSessionFromToken(sessionToken);
-        }
+      // Get the session URL path /atmosphere/<sessionId>:<windowId>
+      String urlSessionId = null;
+      String urlToken = null;
+
+      int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
+      if (lastPathSeparatorIndex >= 0) {
+        urlToken = resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
       }
 
-      return session;
-    }
+      if (urlToken != null) {
 
-    /**
-     *
-     *
-     * @param resource
-     * @return
-     */
-    private SuperSessionId getSuperSessionId(AtmosphereResource resource) {
-      HttpSession httpSession = getSession(resource);
-      if (httpSession == null) return null;
-      String windowId = resource.getRequest().getHeader(EXT_WINDOW_ID_HEADER);
-      return new SuperSessionId(httpSession.getId(), windowId);
+        String windowId = null;
+        if (urlToken.contains(":")) {
+          String[] parts = urlToken.split(":");
+          urlSessionId = parts[0];
+          windowId = parts[1];
+        } else {
+          urlSessionId = urlToken;
+        }
+
+        return provider.sessionManager.getSessionFromToken(urlToken);
+      } else if (cookieSessionId != null) {
+        return provider.sessionManager.getSessionFromToken(cookieSessionId);
+      }
+
+
+      return null;
     }
 
 
 
     @Override
     public void onRequest(AtmosphereResource resource) throws IOException {
-
-
 
       // Check if SwellRT client is compatible with server
       String clientVersionHeader = resource.getRequest().getHeader(EXT_CLIENT_VERSION_HEADER);
@@ -1015,28 +989,37 @@ public class ServerRpcProvider {
         return;
       }
 
-      SuperSessionId superSessionId = getSuperSessionId(resource);
+      // Atmosphere requires specialized HttpWindowSession instances. See
+      // SessionServerImpl class.
 
-      if (superSessionId == null) {
+      HttpSession httpSession = getSession(resource);
+      HttpWindowSession windowSession = null;
+      if (httpSession != null && httpSession instanceof HttpWindowSession)
+        windowSession = (HttpWindowSession) httpSession;
+
+      //
+      if (windowSession == null) {
         AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER + EXT_RESPONSE_INVALID_SESSION);
         resource.close();
         return;
       }
 
-      ParticipantId participantId = provider.sessionManager.getLoggedInUser(getSession(resource));
 
-      if (!ATMOSPHERE_CONNECTIONS.containsKey(superSessionId)) {
-        ATMOSPHERE_CONNECTIONS.put(superSessionId, new AtmosphereConnection(superSessionId,
-            participantId, provider));
+      ParticipantId participantId = provider.sessionManager.getLoggedInUser(httpSession);
+
+
+      if (!ATMOSPHERE_CONNECTIONS.containsKey(windowSession)) {
+        ATMOSPHERE_CONNECTIONS
+            .put(windowSession, new AtmosphereConnection(windowSession, provider));
       }
 
       AtmosphereConnection connection =
-          (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(superSessionId);
+          (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(windowSession);
 
       try {
-        connection.onRequest(resource);
+        connection.onRequest(resource, participantId);
       } catch (Exception e) {
-        LOG.warning("Error handling request for session " + superSessionId, e);
+        LOG.warning("Error handling request for session " + windowSession, e);
         AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER + EXT_RESPONSE_SERVER_EXCEPTION);
         resource.close();
         return;
@@ -1049,27 +1032,27 @@ public class ServerRpcProvider {
     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
 
       AtmosphereResource resource = event.getResource();
-      SuperSessionId superSessionId = getSuperSessionId(resource);
+      HttpSession session = getSession(resource);
 
       if (event.isSuspended()) {
         AtmosphereUtil.writeMessage(resource, event.getMessage());
 
       } else if (event.isCancelled()) {
-        LOG.info("Resource cancelled by remote client, session " + superSessionId);
+        LOG.info("Resource cancelled by remote client, session " + session);
 
       } else if (event.isResumedOnTimeout()) {
-        LOG.fine("Resource resumed on timeout, session " + superSessionId);
+        LOG.fine("Resource resumed on timeout, session " + session);
 
       } else if (event.isClosedByClient()) {
-        LOG.info("Resource closed by client, session " + superSessionId);
+        LOG.info("Resource closed by client, session " + session);
 
         AtmosphereConnection connection =
-            (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(superSessionId);
+            (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(session);
 
         if (connection != null) connection.close();
 
       } else if (event.isResumedOnTimeout()) {
-        LOG.info("Resource resumed by timeout, session " + superSessionId);
+        LOG.info("Resource resumed by timeout, session " + session);
       }
     }
 

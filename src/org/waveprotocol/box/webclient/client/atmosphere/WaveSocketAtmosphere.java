@@ -154,26 +154,8 @@ public class WaveSocketAtmosphere implements WaveSocket {
           // Try to reconnect on server's errors
           socket.request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
-
-          // Generate a browser window/tab id (See SuperSessionId)
-          if (!sessionStorage.getItem("x-swellrt-window-id")) {
-
-            if (!localStorage.getItem("x-swellrt-window-count")) {
-              localStorage.setItem("x-swellrt-window-count", 0);
-            }
-
-            var windowCount = localStorage.getItem("x-swellrt-window-count");
-            windowCount++;
-            localStorage.setItem("x-swellrt-window-count", windowCount);
-
-            sessionStorage.setItem("x-swellrt-window-id",windowCount);
-          }
-
-          var windowId =  sessionStorage.getItem("x-swellrt-window-id");
-
           socket.request.headers = {
-            'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion),
-            'X-window-id' : windowId
+            'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
           };
 
           // OPEN
@@ -236,13 +218,9 @@ public class WaveSocketAtmosphere implements WaveSocket {
             // Try to reconnect on server's errors
             request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
-            // Get the current window Id
-            var windowId =  sessionStorage.getItem("x-swellrt-window-id");
-
             // Set headers with protocol extension
             request.headers = {
-              'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion),
-              'X-window-id' : windowId
+              'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
             };
 
           };

@@ -5,7 +5,6 @@ import com.google.inject.Injector;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
@@ -65,11 +64,10 @@ public class SwellRtServlet extends HttpServlet {
 
     if (path == null) return "";
 
-    // The ';sid=' syntax is jetty specific.
-    int indexOfSessionParam = path.indexOf(";sid=");
+    int separatorIndex = path.indexOf(";");
 
-    if (indexOfSessionParam >= 0) {
-      return path.substring(0, indexOfSessionParam);
+    if (separatorIndex >= 0) {
+      return path.substring(0, separatorIndex);
     }
 
     return path;
@@ -82,8 +80,6 @@ public class SwellRtServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
-
-    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
 
     String[] pathTokens = getCleanPathInfo(req).split("/");
     String entity = pathTokens[1];

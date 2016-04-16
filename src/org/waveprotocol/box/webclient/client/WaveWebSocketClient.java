@@ -50,12 +50,12 @@ import java.util.Queue;
 /**
  * Wrapper around Atmosphere connections that handles the Wave client-server
  * protocol.
- * 
+ *
  * Catch exceptions on handling server messages and provide them to client as
  * events.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
@@ -102,11 +102,11 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   /**
    * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594;
    * DISCONNECTED)&#8727; &#8594; ERROR;
-   * 
+   *
    * The WaveSocket tries to keep the connection alive continuously. But under
    * some circumstances severe errors happen like server reboot or session
    * expiration.
-   * 
+   *
    */
   private enum ConnectState {
     CONNECTED, CONNECTING, DISCONNECTED, ERROR
@@ -169,7 +169,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
   private native String getSessionToken() /*-{
-    return $wnd.__session['sessionid'];
+    var token = $wnd.__session['sessionid'];
+    try {
+      if ($wnd.sessionStorage && $wnd.sessionStorage.getItem("x-swellrt-window-id") != null) {
+        token+=":"+$wnd.sessionStorage.getItem("x-swellrt-window-id");
+       }
+     } catch(e) {
+
+     }
+    return token;
    }-*/;
 
   @Override

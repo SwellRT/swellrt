@@ -31,16 +31,20 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 import org.waveprotocol.wave.util.logging.Log;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
  * Utility class for managing the session's authentication status.
  *
+ * It generates {@link HttpWindowSession} instances for the {@link HttpSession}
+ * interface.
+ *
  * @author josephg@gmail.com (Joseph Gentle)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public final class SessionManagerImpl implements SessionManager {
   private static final String USER_FIELD = "user";
-
 
   private final AccountStore accountStore;
   private final org.eclipse.jetty.server.SessionManager jettySessionManager;
@@ -58,10 +62,19 @@ public final class SessionManagerImpl implements SessionManager {
 
   @Override
   public ParticipantId getLoggedInUser(HttpSession session) {
-    if (session != null) {
-      return (ParticipantId) session.getAttribute(USER_FIELD);
+
+    if (session == null) return null;
+
+    String windowId = null;
+    if (session instanceof HttpWindowSession) {
+      HttpWindowSession wSession = (HttpWindowSession) session;
+      windowId = wSession.getWindowId();
+    }
+
+    if (windowId != null) {
+      return (ParticipantId) session.getAttribute(USER_FIELD + "_" + windowId);
     } else {
-      return null;
+      return (ParticipantId) session.getAttribute(USER_FIELD);
     }
   }
 
@@ -91,15 +104,35 @@ public final class SessionManagerImpl implements SessionManager {
   public void setLoggedInUser(HttpSession session, ParticipantId id) {
     Preconditions.checkNotNull(session, "Session is null");
     Preconditions.checkNotNull(id, "Participant id is null");
-    session.setAttribute(USER_FIELD, id);
+
+    String windowId = null;
+    if (session instanceof HttpWindowSession) {
+      HttpWindowSession wSession = (HttpWindowSession) session;
+      windowId = wSession.getWindowId();
+    }
+
+    if (windowId != null)
+      session.setAttribute(USER_FIELD + "_" + windowId, id);
+    else
+      session.setAttribute(USER_FIELD, id);
   }
 
   @Override
   public void logout(HttpSession session) {
     if (session != null) {
+
+      String windowId = null;
+      if (session instanceof HttpWindowSession) {
+        HttpWindowSession wSession = (HttpWindowSession) session;
+        windowId = wSession.getWindowId();
+      }
+
       // This function should also remove any other bound fields in the session
       // object.
-      session.removeAttribute(USER_FIELD);
+      if (windowId != null)
+        session.removeAttribute(USER_FIELD + "_" + windowId);
+      else
+        session.removeAttribute(USER_FIELD);
     }
   }
 
@@ -118,6 +151,40 @@ public final class SessionManagerImpl implements SessionManager {
   @Override
   public HttpSession getSessionFromToken(String token) {
     Preconditions.checkNotNull(token);
-    return jettySessionManager.getHttpSession(token);
+
+    String windowId = null;
+    if (token.contains(":")) {
+      String[] parts = token.split(":");
+      token = parts[0];
+      windowId = parts[1];
+    }
+
+    HttpSession s = jettySessionManager.getHttpSession(token);
+    if (s == null) return null;
+
+    return HttpWindowSession.of(s, windowId);
+  }
+
+
+  @Override
+  public HttpSession createSession(HttpServletRequest request) {
+    HttpSession httpSession = request.getSession(true);
+    String windowId = request.getHeader(WINDOW_ID_HEADER);
+    return HttpWindowSession.of(httpSession, windowId);
+  }
+
+  @Override
+  public HttpSession getSession(HttpServletRequest request) {
+    HttpSession httpSession = request.getSession(false);
+    if (httpSession == null) return null;
+    String windowId = request.getHeader(WINDOW_ID_HEADER);
+    return HttpWindowSession.of(httpSession, windowId);
+  }
+
+  @Override
+  public ParticipantId getLoggedInUser(HttpServletRequest request) {
+    HttpSession s = getSession(request);
+    if (s == null) return null;
+    return getLoggedInUser(s);
   }
 }

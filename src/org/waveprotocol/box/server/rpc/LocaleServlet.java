@@ -18,25 +18,24 @@
  */
 package org.waveprotocol.box.server.rpc;
 
+import com.google.inject.Inject;
+
+import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.box.server.account.HumanAccountData;
+import org.waveprotocol.box.server.account.HumanAccountDataImpl;
+import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
-import org.waveprotocol.box.server.account.HumanAccountData;
-import org.waveprotocol.box.server.account.AccountData;
-import org.waveprotocol.box.server.account.HumanAccountDataImpl;
-import org.waveprotocol.box.server.authentication.SessionManager;
 
-import com.google.inject.Inject;
+import java.io.IOException;
+import java.net.URLDecoder;
 
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.URLDecoder;
-import javax.inject.Singleton;
 
 /**
  *
@@ -61,7 +60,7 @@ public final class LocaleServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     try {
-      ParticipantId participant = sessionManager.getLoggedInUser(req.getSession(false));
+      ParticipantId participant = sessionManager.getLoggedInUser(req);
       if (participant == null) {
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         return;
