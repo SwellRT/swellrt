@@ -481,7 +481,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    */
   private native String getWindowId() /*-{
     try {
-      return sessionStorage.getItem("x-swellrt-window-id");
+      return $wnd.sessionStorage.getItem("x-swellrt-window-id");
     } catch (e) {
       return null;
     }
