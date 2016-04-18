@@ -29,6 +29,7 @@ import com.google.protobuf.RpcController;
 
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class WebSocketClientRpcChannel implements ClientRpcChannel {
 
     ProtoCallback callback = new ProtoCallback() {
       @Override
-      public void message(int sequenceNo, Message message) {
+      public void message(int sequenceNo, Message message, ParticipantId loggedInUSer) {
         final ClientRpcController controller;
         synchronized (activeMethodMap) {
           controller = activeMethodMap.get(sequenceNo);

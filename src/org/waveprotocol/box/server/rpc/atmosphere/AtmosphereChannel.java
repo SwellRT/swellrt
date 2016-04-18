@@ -20,9 +20,7 @@
 package org.waveprotocol.box.server.rpc.atmosphere;
 
 
-import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
-import org.atmosphere.cpr.BroadcasterFactory;
 import org.waveprotocol.box.server.rpc.ProtoCallback;
 import org.waveprotocol.box.server.rpc.WebSocketChannel;
 import org.waveprotocol.wave.util.logging.Log;
@@ -34,114 +32,59 @@ import java.io.IOException;
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-public class AtmosphereChannel extends WebSocketChannel  {
-
+public class AtmosphereChannel extends WebSocketChannel {
 
   private static final Log LOG = Log.get(AtmosphereChannel.class);
 
   private final Broadcaster broadcaster;
-  private AtmosphereResource resource;
-
-  private boolean isValid = true;
 
 
   /**
-   * Creates a new AtmosphereChannel using the callback for incoming messages.
+   * Constructs a new WebSocketChannel, using the callback to handle any
+   * incoming messages.
    *
-   * @param callback A ProtoCallback instance called with incoming messages.
+   * @param callback a protocallback to be called when data arrives on this
+   *        channel
    */
-  public AtmosphereChannel(ProtoCallback callback, String id) {
+  public AtmosphereChannel(ProtoCallback callback, Broadcaster broadcaster) {
     super(callback);
-    this.broadcaster = BroadcasterFactory.getDefault().get();
+    this.broadcaster = broadcaster;
+
+
   }
 
-  /**
-   * A new resource connection has been associated with
-   * this channel
-   * @param resource the Atmosphere resource object
-   */
-  public void bindResource(AtmosphereResource resource) {
-    this.broadcaster.removeAtmosphereResource(this.resource);
-    this.broadcaster.addAtmosphereResource(resource);
-    this.resource = resource;
-  }
-
-
-  public Broadcaster getBroadcaster() {
-    return broadcaster;
-  }
-
-  /**
-   * The atmosphere resource has received a new post message
-   * @param message the message
-   */
-  public void onMessage(String message) {
-
-    if (isValid) handleMessageString(message);
-  }
-
-  /**
-   * The atmosphere resource has been closed
-   */
-  public void unbindResource() {
-    broadcaster.removeAtmosphereResource(this.resource);
-    this.resource = null;
-  }
-
-
-  public boolean hasResources() {
-    return broadcaster.getAtmosphereResources().size() > 0;
-  }
-
-  public void sendClientNeedUpgrade() {
-
-    broadcaster.broadcast("X-RESPONSE:UPGRADE");
-    LOG.info("Sending upgrade response to client " + resource != null ? resource.uuid()
-        : "unknown.");
-    isValid = false;
-  }
-
-  public void sendException(Exception e) {
-
-    broadcaster.broadcast("X-RESPONSE:SERVER_ERROR:" + e.getMessage());
-    LOG.info("Sending error response to client " + resource != null ? resource.uuid()
-        : "unknown.");
-    isValid = false;
-  }
-
-  public void sendException(String e) {
-
-    broadcaster.broadcast("X-RESPONSE:SERVER_ERROR:" + e);
-    LOG.info("Sending error response to client " + resource != null ? resource.uuid() : "unknown.");
-    isValid = false;
-  }
-
-  /**
-   * Send the given data String
-   *
-   * @param data
-   * @throws IOException
-   */
   @Override
   protected void sendMessageString(String data) throws IOException {
-
-    if (!isValid) {
-      LOG.warning("Channel is no longer valid. Does client need upgrade? Old RPCs hasn't been disposed?");
-      return;
-    }
-
-    if (broadcaster == null || broadcaster.isDestroyed()) {
-      // Just drop the message. It's rude to throw an exception since the
-      // caller had no way of knowing.
-      LOG.warning("Atmosphere Channel is not connected");
-    } else {
-
-      LOG.fine("BROADCAST " + data);
-      broadcaster.broadcast(data);
-    }
+    broadcaster.broadcast(data);
   }
 
 
+
+  // public void sendClientNeedUpgrade() {
+  //
+  // broadcaster.broadcast("X-RESPONSE:UPGRADE");
+  // LOG.info("Sending upgrade response to client " + resource != null ?
+  // resource.uuid()
+  // : "unknown.");
+  // isValid = false;
+  // }
+  //
+  // public void sendException(Exception e) {
+  //
+  // broadcaster.broadcast("X-RESPONSE:SERVER_ERROR:" + e.getMessage());
+  // LOG.info("Sending error response to client " + resource != null ?
+  // resource.uuid()
+  // : "unknown.");
+  // isValid = false;
+  // }
+  //
+  // public void sendException(String e) {
+  //
+  // broadcaster.broadcast("X-RESPONSE:SERVER_ERROR:" + e);
+  // LOG.info("Sending error response to client " + resource != null ?
+  // resource.uuid() : "unknown.");
+  // isValid = false;
+  // }
 
 
 }

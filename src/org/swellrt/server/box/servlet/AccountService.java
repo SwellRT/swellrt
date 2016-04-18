@@ -243,7 +243,7 @@ public class AccountService extends SwellRTService {
 
     // POST /account/joe update user's account
 
-    ParticipantId loggedInUser = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId loggedInUser = sessionManager.getLoggedInUser(req);
 
     UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
@@ -386,7 +386,7 @@ public class AccountService extends SwellRTService {
 
       ParticipantId participantId = getParticipantFromRequest(req);
 
-      ParticipantId loggedInUser = sessionManager.getLoggedInUser(req.getSession(false));
+      ParticipantId loggedInUser = sessionManager.getLoggedInUser(req);
       AccountData accountData = accountStore.getAccount(participantId);
 
       if (accountData == null) {

@@ -209,6 +209,8 @@ public class AccountServiceTest extends TestCase {
     accountStore.putAccount(ACCOUNT_JOE);
 
     when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_JOE.getId());
+    when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
+        ACCOUNT_JOE.getId());
 
     // Test
 
@@ -266,6 +268,8 @@ public class AccountServiceTest extends TestCase {
     accountStore.putAccount(ACCOUNT_JOE);
 
     when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_JOE.getId());
+    when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
+        ACCOUNT_JOE.getId());
 
     // Test
 
@@ -293,6 +297,8 @@ public class AccountServiceTest extends TestCase {
     accountStore.putAccount(ACCOUNT_JOE);
 
     when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_MAT.getId());
+    when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
+        ACCOUNT_MAT.getId());
 
     // Test
 
@@ -326,6 +332,8 @@ public class AccountServiceTest extends TestCase {
     accountStore.putAccount(ACCOUNT_MAT);
 
     when(sessionManager.getLoggedInUser((HttpSession) anyObject())).thenReturn(ACCOUNT_MAT.getId());
+    when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
+        ACCOUNT_MAT.getId());
 
     // Test
     AccountServiceData requestData = new AccountServiceData();

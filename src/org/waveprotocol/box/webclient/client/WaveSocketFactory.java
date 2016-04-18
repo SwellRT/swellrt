@@ -37,13 +37,12 @@ public class WaveSocketFactory {
    * is wrapped, otherwise an instance of {@link com.google.gwt.websockets.client.WebSocket} is
    * wrapped.
    */
-  public static WaveSocket create(final boolean useWebSocketAlt, final String urlBase,
-      final String sessionId,
-      final WaveSocket.WaveSocketCallback callback) {
+  public static WaveSocket create(String urlBase, String sessionId, String clientVersion,
+      WaveSocket.WaveSocketCallback callback) {
 
     // Handle special atmosphere features enabled in SwellRT
     WaveSocketAtmosphereCallback swellRTCallbackSwellRT = new WaveSocketAtmosphereCallback(callback);
 
-    return new WaveSocketAtmosphere(swellRTCallbackSwellRT, urlBase, useWebSocketAlt, sessionId);
+    return new WaveSocketAtmosphere(swellRTCallbackSwellRT, urlBase, sessionId, clientVersion);
   }
 }

@@ -105,6 +105,7 @@ public class AuthenticationServletTest extends TestCase {
     String location = "/abc123?nested=query&string";
     when(req.getSession(false)).thenReturn(session);
     when(manager.getLoggedInUser(session)).thenReturn(USER);
+    when(manager.getLoggedInUser(req)).thenReturn(USER);
     configureRedirectString(location);
 
     servlet.doGet(req, resp);
@@ -185,15 +186,19 @@ public class AuthenticationServletTest extends TestCase {
     when(req.getSession(false)).thenReturn(null);
     when(req.getSession(true)).thenReturn(session);
     when(req.getLocale()).thenReturn(Locale.ENGLISH);
+    when(manager.createSession(req)).thenReturn(session);
+    when(manager.getSession(req)).thenReturn(session);
 
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.
     if (expectSuccess) {
       if (ParticipantId.isAnonymousName(address)) {
         when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(ANONYMOUS_USER);
+        when(manager.getLoggedInUser(req)).thenReturn(ANONYMOUS_USER);
         when(session.getAttribute("user")).thenReturn(ANONYMOUS_USER);
       } else {
         when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(USER);
+        when(manager.getLoggedInUser(req)).thenReturn(USER);
         when(session.getAttribute("user")).thenReturn(USER);
       }
     }

@@ -28,45 +28,45 @@ import org.waveprotocol.box.webclient.client.WaveSocket;
 import java.util.logging.Logger;
 
 /**
- * A wrapper implementation of the atmosphere javascript client. Websocket
- * transport will be used first by default. If not avaiable or a fatal error
- * occurs, long-polling will be tried.
- * 
- * 
- * The atmosphere client/server configuration avoids network issues with:
- * 
+ * A wrapper for the Atmosphere Javascript client. Websocket transport will be
+ * used first by default. If not avaiable or a fatal error occurs, long-polling
+ * will be tried.
+ *
+ *
+ * The atmosphere client/server configuration handles network issues with:
+ *
  * <ul>
  * <li>Server Heartbeat frecuency t = 60s. Greater values didn't avoid cuts in
  * some environments</li>
  * <li>Client will start reconnection if no data is received in t = 70s
  * (timeout)</li>
  * </ul>
- * 
+ *
  * Both settings try to keep the communication alive.
- * 
+ *
  * AtmosphereConnectionListener.onDisconnect() will be invoked when
  * communications is stopped caused by an error or not.
- * 
+ *
  * Exceptions handling server messages must be caught because JSNI code
  * receiving messages is not wrapped with the $entry() method.
- * 
- * 
+ *
+ *
  * More info about Atmosphere:
  * https://github.com/Atmosphere/atmosphere/wiki/jQuery.atmosphere.js-atmosphere
  * .js-API
- * 
+ *
  * More info about transports:
  * https://github.com/Atmosphere/atmosphere/wiki/Supported
  * http://stackoverflow.com/questions/9397528/server-sent-events-vs-polling
- * 
- * 
+ *
+ *
  * About session tracking: The session token is expected to be stored as a
  * cookie by default. In some cases where cookies are not available (Browser
  * previnting 3rd party cookies,...) the session token can be propagated as a
  * path element /atmosphere/sessionId.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class WaveSocketAtmosphere implements WaveSocket {
 
@@ -154,11 +154,9 @@ public class WaveSocketAtmosphere implements WaveSocket {
           // Try to reconnect on server's errors
           socket.request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
-          // Server<->client version control
           socket.request.headers = {
             'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
           };
-
 
           // OPEN
           socket.request.onOpen = function(response) {
@@ -220,7 +218,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
             // Try to reconnect on server's errors
             request.reconnectOnServerError = getAtmosphereProperty("reconnectOnServerError", true);
 
-            // Server<->client version control
+            // Set headers with protocol extension
             request.headers = {
               'X-client-version' : getAtmosphereProperty("clientVersion", clientVersion)
             };
@@ -239,7 +237,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
           // CLIENT TIMEOUT
           socket.request.onClientTimeout = function(request) {
-            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::onDisconnect()();
+            impl.@org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere::reconnect()();
           };
 
           socket.request.callback = function(response) {
@@ -277,16 +275,16 @@ public class WaveSocketAtmosphere implements WaveSocket {
     private final WaveSocketCallback listener;
     private final String urlBase;
     private AtmosphereSocket socket = null;
-    private final boolean useWebSocket;
     private final String sessionId;
+    private final String clientVersion;
 
 
-    public WaveSocketAtmosphere(WaveSocketCallback listener,
-               String urlBase, boolean useWebSocketAlt, String sessionId) {
+  public WaveSocketAtmosphere(WaveSocketCallback listener, String urlBase, String sessionId,
+      String clientVersion) {
         this.listener = listener;
         this.urlBase = urlBase;
-        this.useWebSocket = !useWebSocketAlt;
         this.sessionId = sessionId;
+        this.clientVersion = clientVersion;
     }
 
 
@@ -316,9 +314,8 @@ public class WaveSocketAtmosphere implements WaveSocket {
               public void onSuccess(Void result) {
                 // We assume Atmosphere is going to work only with http(s) schemas
           socket =
-              AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, useWebSocket
-                  ? "websocket" : "long-polling", "long-polling", "1.0", sessionId);
-              // Check version value in Model.MODEL_VERSION
+              AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, true
+                  ? "websocket" : "long-polling", "long-polling", clientVersion, sessionId);
                 socket.connect();
               }
 
@@ -336,15 +333,23 @@ public class WaveSocketAtmosphere implements WaveSocket {
     }
 
 
-    /**
-     * Atmosphere has detected a fatal error in the connection. Trigger a fallback
-     * connection with long-polling, trying to avoid unstable WebSocket
-     * connections.
-     */
+  /**
+   * Force socket reconnection. Ususally if the socket has been inactive for too
+   * much time (timeout).
+   *
+   */
+  @SuppressWarnings("unused")
+  private void reconnect() {
+    connect();
+  }
+
+  /**
+   * Atmosphere has detected a fatal error in the connection. It will stop x
+   */
     @SuppressWarnings("unused")
     private void onError(String error) {
       log.severe(error);
-      listener.onDisconnect();
+      listener.onError(error);
     }
 
     /**

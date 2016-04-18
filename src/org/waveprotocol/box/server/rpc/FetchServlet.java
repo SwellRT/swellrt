@@ -84,7 +84,7 @@ public final class FetchServlet extends HttpServlet {
   @Override
   @VisibleForTesting
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
-    ParticipantId user = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId user = sessionManager.getLoggedInUser(req);
 
     // This path will look like "/example.com/w+abc123/foo.com/conv+root
     // Strip off the leading '/'.

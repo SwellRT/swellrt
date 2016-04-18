@@ -22,17 +22,23 @@ package org.waveprotocol.box.server.authentication;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 
 /**
  * Utility class for managing the session's authentication status.
- *
+ * 
  * @author josephg@gmail.com (Joseph Gentle)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface SessionManager {
   static final String USER_FIELD = "user";
   static final String SIGN_IN_URL = "/auth/signin";
+
+  public final static String SESSION_URL_PARAM = "sid";
+  public final static String WINDOW_ID_HEADER = "X-window-id";
+  public final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
 
   /**
@@ -93,9 +99,42 @@ public interface SessionManager {
 
   /**
    * Get a user's HttpSession from their session token.
-   *
-   * @param token the session token. Eg, "JSESSION=abcdef123567890"
+   * 
+   * A token may include an optional window Id.
+   * 
+   * @param token the session token with optional window id. Eg,
+   *        "JSESSION=abcdef123567890:23"
    * @return the user's HttpSession, or null if the token is invalid.
    */
   HttpSession getSessionFromToken(String token);
+
+
+  /**
+   * Create a session for the provided request
+   * 
+   * @param request
+   * @return
+   */
+  HttpSession createSession(HttpServletRequest request);
+
+
+  /**
+   * Create a session for the provided request
+   * 
+   * @param request
+   * @return
+   */
+  HttpSession getSession(HttpServletRequest request);
+
+
+  /**
+   * A convinience method to extract the logged in participant from the request
+   * in only one step.
+   * 
+   * @param request
+   * @return
+   */
+  ParticipantId getLoggedInUser(HttpServletRequest request);
+
+
 }

@@ -215,7 +215,8 @@ public class WebClientMod implements EntryPoint {
     HistorySupport.init(new HistoryProviderDefault());
     HistoryChangeListener.init();
 
-    websocket = new WaveWebSocketClient(websocketNotAvailable(), getWebSocketBaseUrl());
+    // TODO use optional constructor w/o version parameter
+    websocket = new WaveWebSocketClient(getWebSocketBaseUrl(), "1.0");
     websocket.connect();
 
     if (Session.get().isLoggedIn()) {
