@@ -98,7 +98,6 @@ import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -933,20 +932,27 @@ public class ServerRpcProvider {
     public ServerRpcProvider provider;
 
 
+    /**
+     * Get the session for the Atmosphere resource based on the session token
+     * passes as path part.
+     * 
+     * We ignore cookies explicity here. If request come from an iframe, the
+     * websocket request can send parent's window cookie session causing a
+     * mismatch with session id given in a login request.
+     * 
+     * @param resource
+     * @return
+     */
     private HttpSession getSession(AtmosphereResource resource) {
 
-      Cookie[] cookies = resource.getRequest().getCookies();
-
-      String cookieSessionId = null;
-
-      if (cookies != null)
-        for (Cookie c : cookies) {
-          if (c.getName().equals(SESSION_COOKIE_NAME))
-            cookieSessionId = c.getValue();
-        }
+      /*
+       * Cookie[] cookies = resource.getRequest().getCookies(); String
+       * cookieSessionId = null; if (cookies != null) for (Cookie c : cookies) {
+       * if (c.getName().equals(SESSION_COOKIE_NAME)) cookieSessionId =
+       * c.getValue(); }
+       */
 
       // Get the session URL path /atmosphere/<sessionId>:<windowId>
-      String urlSessionId = null;
       String urlToken = null;
 
       int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
@@ -954,20 +960,10 @@ public class ServerRpcProvider {
         urlToken = resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
       }
 
+      // Trust first in the session token passed as URL path.
+      // Inside IFrames, we could get the wrong cookie!
       if (urlToken != null) {
-
-        String windowId = null;
-        if (urlToken.contains(":")) {
-          String[] parts = urlToken.split(":");
-          urlSessionId = parts[0];
-          windowId = parts[1];
-        } else {
-          urlSessionId = urlToken;
-        }
-
         return provider.sessionManager.getSessionFromToken(urlToken);
-      } else if (cookieSessionId != null) {
-        return provider.sessionManager.getSessionFromToken(cookieSessionId);
       }
 
 
