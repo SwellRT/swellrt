@@ -22,6 +22,8 @@ package org.waveprotocol.box.server.authentication;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -37,7 +39,6 @@ public interface SessionManager {
   static final String SIGN_IN_URL = "/auth/signin";
 
   public final static String SESSION_URL_PARAM = "sid";
-  public final static String WINDOW_ID_HEADER = "X-window-id";
   public final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
 
@@ -110,16 +111,16 @@ public interface SessionManager {
 
 
   /**
-   * Create a session for the provided request
+   * Get the session for the provided request, create a new one if it doesn't
+   * exist.
    * 
    * @param request
    * @return
    */
-  HttpSession createSession(HttpServletRequest request);
-
+  HttpSession getSession(HttpServletRequest request, boolean create);
 
   /**
-   * Create a session for the provided request
+   * Get the session for the provided request, return null if it doesn't exist.
    * 
    * @param request
    * @return
@@ -135,6 +136,23 @@ public interface SessionManager {
    * @return
    */
   ParticipantId getLoggedInUser(HttpServletRequest request);
+
+
+  /**
+   * Get all the participants sharing the same HTTP session.
+   * 
+   * @param session the HTTP session object
+   * @return a set of participants, maybe empty, but never null.
+   */
+  Set<ParticipantId> getAllLoggedInUser(HttpSession session);
+
+  /**
+   * Return the last user who has opened a session on the browser.
+   * 
+   * @param session
+   * @return
+   */
+  ParticipantId getOtherLoggedInUser(HttpSession session);
 
 
 }

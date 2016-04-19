@@ -115,7 +115,9 @@ public class SessionManagerTest extends TestCase {
     when(session.getId()).thenReturn("abc123");
 
     HttpServletRequest request = mock(HttpServletRequest.class);
-    when(request.getHeader(SessionManager.WINDOW_ID_HEADER)).thenReturn("456");
+    when(request.getHeader(HttpWindowSession.WINDOW_SESSION_HEADER_NAME)).thenReturn("456");
+    when((String) request.getAttribute((HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR)))
+        .thenReturn("456");
     when(request.getSession(anyBoolean())).thenReturn(session);
 
     HttpWindowSession wSession = HttpWindowSession.of(session, "456");

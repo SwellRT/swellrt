@@ -1,5 +1,6 @@
 package org.waveprotocol.box.server.authentication;
 
+import org.waveprotocol.box.server.rpc.HttpWindowSessionFilter;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import java.util.Enumeration;
@@ -12,10 +13,21 @@ import javax.servlet.http.HttpSessionContext;
  * A super session handling the standard HTTP session plus the Id of the
  * browser's window.
  * 
+ * Clients must send window ids as HTTP header ("X-window-id") or as query
+ * parameter ("wid=").
+ * 
+ * The {@link HttpWindowSessionFilter} filter updates requests with the
+ * attribute {@link WINDOW_SESSION_REQUEST_ATTR}.
+ * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
  * 
  */
 public class HttpWindowSession implements HttpSession {
+
+  public static final String WINDOW_SESSION_HEADER_NAME = "X-window-id";
+  public static final String WINDOW_SESSION_PARAMETER_NAME = "wid";
+  public static final String WINDOW_SESSION_REQUEST_ATTR =
+      "org.waveprotocol.box.server.authentication.windowid";
 
   private final HttpSession delegate;
   private final String windowId;

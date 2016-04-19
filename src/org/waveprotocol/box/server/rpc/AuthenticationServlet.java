@@ -249,7 +249,7 @@ private final WelcomeRobot welcomeBot;
 
     }
 
-    HttpSession session = sessionManager.createSession(req);
+    HttpSession session = sessionManager.getSession(req, true);
 
     // Anonymous log in
     if (loggedInAddress == null) {

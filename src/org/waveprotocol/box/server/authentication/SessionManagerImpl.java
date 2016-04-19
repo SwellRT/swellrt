@@ -27,9 +27,15 @@ import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 import org.waveprotocol.wave.util.logging.Log;
+
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -165,19 +171,16 @@ public final class SessionManagerImpl implements SessionManager {
     return HttpWindowSession.of(s, windowId);
   }
 
-
   @Override
-  public HttpSession createSession(HttpServletRequest request) {
-    HttpSession httpSession = request.getSession(true);
-    String windowId = request.getHeader(WINDOW_ID_HEADER);
-    return HttpWindowSession.of(httpSession, windowId);
+  public HttpSession getSession(HttpServletRequest request) {
+    return getSession(request, false);
   }
 
   @Override
-  public HttpSession getSession(HttpServletRequest request) {
-    HttpSession httpSession = request.getSession(false);
+  public HttpSession getSession(HttpServletRequest request, boolean create) {
+    HttpSession httpSession = request.getSession(create);
     if (httpSession == null) return null;
-    String windowId = request.getHeader(WINDOW_ID_HEADER);
+    String windowId = (String) request.getAttribute(HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR);
     return HttpWindowSession.of(httpSession, windowId);
   }
 
@@ -186,5 +189,65 @@ public final class SessionManagerImpl implements SessionManager {
     HttpSession s = getSession(request);
     if (s == null) return null;
     return getLoggedInUser(s);
+  }
+
+  @Override
+  public Set<ParticipantId> getAllLoggedInUser(HttpSession session) {
+
+    if (session == null) return Collections.<ParticipantId> emptySet();
+
+    Set<ParticipantId> participants = new HashSet<ParticipantId>();
+    Enumeration<String> attrNames = session.getAttributeNames();
+    while (attrNames.hasMoreElements()) {
+      String attr = attrNames.nextElement();
+      if (attr.startsWith(USER_FIELD)) {
+        try {
+          participants.add(ParticipantId.of((String) session.getAttribute(attr)));
+        } catch (InvalidParticipantAddress e) {
+          LOG.warning("Error retrieving session participants", e);
+        } catch (IllegalStateException e) {
+          LOG.warning("Error retrieving session participants", e);
+        }
+      }
+    }
+
+    return participants;
+  }
+
+
+  @Override
+  public ParticipantId getOtherLoggedInUser(HttpSession session) {
+
+    if (session == null) return null;
+
+    ParticipantId lastParticipant = null;
+    int lastParticipantIndex = -1;
+    Enumeration<String> names = session.getAttributeNames();
+
+    // Found the last participant among all the session attributes
+    while (names.hasMoreElements()) {
+      String name = names.nextElement();
+      if (name.contains(USER_FIELD)) {
+        if (name.contains(USER_FIELD + "_")) {
+
+          int index = Integer.valueOf(name.split("_")[1]);
+
+          if (index > lastParticipantIndex) {
+            lastParticipantIndex = index;
+            lastParticipant = (ParticipantId) session.getAttribute(name);
+          }
+
+        } else {
+
+          if (lastParticipantIndex < 0) {
+            lastParticipantIndex = 0;
+            lastParticipant = (ParticipantId) session.getAttribute(name);
+          }
+
+        }
+      }
+    }
+
+    return lastParticipant;
   }
 }

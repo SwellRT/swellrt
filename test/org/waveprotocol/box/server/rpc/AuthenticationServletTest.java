@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -186,7 +187,7 @@ public class AuthenticationServletTest extends TestCase {
     when(req.getSession(false)).thenReturn(null);
     when(req.getSession(true)).thenReturn(session);
     when(req.getLocale()).thenReturn(Locale.ENGLISH);
-    when(manager.createSession(req)).thenReturn(session);
+    when(manager.getSession(req, anyBoolean())).thenReturn(session);
     when(manager.getSession(req)).thenReturn(session);
 
     // Servlet control flow forces us to set these return values first and

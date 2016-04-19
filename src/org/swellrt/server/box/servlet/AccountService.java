@@ -339,6 +339,12 @@ public class AccountService extends SwellRTService {
 
 
       ParticipantId participantId = getParticipantFromRequest(req);
+
+      if (!isSessionParticipant(req, participantId)) {
+        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
+        return;
+      }
+
       AccountData accountData = accountStore.getAccount(participantId);
 
       if (accountData == null) {
@@ -384,9 +390,13 @@ public class AccountService extends SwellRTService {
 
     try {
 
+      ParticipantId loggedInUser = null;
+
+      if ((loggedInUser = checkForLoggedInUser(req, response)) == null)
+        return;
+
       ParticipantId participantId = getParticipantFromRequest(req);
 
-      ParticipantId loggedInUser = sessionManager.getLoggedInUser(req);
       AccountData accountData = accountStore.getAccount(participantId);
 
       if (accountData == null) {
@@ -466,8 +476,6 @@ public class AccountService extends SwellRTService {
 
     } else if (req.getMethod().equals("GET")) {
 
-      if (checkForLoggedInUser(req, response) == null) return;
-
       if (participantToken != null) {
 
         if (participantOp != null && participantOp.equals("avatar"))
@@ -477,7 +485,7 @@ public class AccountService extends SwellRTService {
 
       } else {
 
-        queryParticipantAccount(req, response);
+        if (checkForLoggedInUser(req, response) != null) queryParticipantAccount(req, response);
 
       }
     }

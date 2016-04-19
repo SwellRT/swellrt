@@ -212,7 +212,7 @@ public class AuthenticationService extends SwellRTService {
             context = login(authData.id, authData.password);
             subject = context.getSubject();
             loggedInAddress = getLoggedInUser(subject);
-            session = sessionManager.createSession(req);
+            session = sessionManager.getSession(req, true);
 
           } catch (LoginException e) {
 
@@ -228,7 +228,7 @@ public class AuthenticationService extends SwellRTService {
 
         } else if (authData.id != null) {
 
-          session = sessionManager.createSession(req);
+          session = sessionManager.getSession(req, true);
           loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
 
         }
@@ -388,24 +388,32 @@ public class AuthenticationService extends SwellRTService {
     // If the user is already logged in, we'll try to redirect them immediately.
     resp.setCharacterEncoding("UTF-8");
     req.setCharacterEncoding("UTF-8");
-    ParticipantId user = sessionManager.getLoggedInUser(req);
 
-    if (user != null) {
+    HttpSession session = sessionManager.getSession(req, false);
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
+
+    // Resume last user session from other browser's tab or window.
+    if (participantId == null && session != null) {
+      participantId = sessionManager.getOtherLoggedInUser(session);
+      if (participantId != null) sessionManager.setLoggedInUser(session, participantId);
+    }
+
+    if (participantId != null) {
 
       AccountService.AccountServiceData accountData;
 
-      if (!user.isAnonymous())
+      if (!participantId.isAnonymous())
         accountData =
             AccountService.toServiceData(ServiceUtils.getUrlBuilder(req),
-                accountStore.getAccount(user).asHuman());
+                accountStore.getAccount(participantId).asHuman());
       else
-        accountData = new AccountService.AccountServiceData(user.getAddress());
+        accountData = new AccountService.AccountServiceData(participantId.getAddress());
 
       accountData.sessionId = req.getSession().getId();
       accountData.domain = domain;
 
       // Resuming the session
-      LOG.info("Resuming Authenticated user " + user);
+      LOG.info("Resuming Authenticated user " + participantId);
       sendResponse(resp, accountData);
       return;
 
