@@ -95,9 +95,8 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
         formData.append("waveRef", waveRef);
         formData.append("uploadFormElement", file, file.name);
 
-        var request = new XMLHttpRequest();
+        var request = @org.swellrt.api.SwellRTUtils::newXMLHttpRequest()();
 
-        request.withCredentials = true;
         request.onload = function(event) {
           if (request.status == 201) {
             var _file = delegate.@org.swellrt.model.generic.Model::createFile(Lorg/waveprotocol/wave/media/model/AttachmentId;)(attachmentId);

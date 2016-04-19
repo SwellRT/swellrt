@@ -71,9 +71,8 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
 
           delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(null);
 
-          var request = new XMLHttpRequest();
+          var request = @org.swellrt.api.SwellRTUtils::newXMLHttpRequest()();
 
-          request.withCredentials = true;
           request.onload = function(event) {
             if (request.status == 200) {
              console.log("Attachment delete from server");

@@ -4,6 +4,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestBuilder.Method;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Random;
@@ -162,6 +164,55 @@ public class SwellRTUtils {
 
   public static native String getSessionId() /*-{
     return $wnd.__session.sessionid;
+  }-*/;
+
+  /**
+   * Return the window id generated when SwellRT is loaded in a browser's
+   * window. See {@link WaveClient#onReady()}
+   *
+   * @return
+   */
+  public static native String getWindowId() /*-{
+    try {
+      return $wnd.sessionStorage.getItem("x-swellrt-window-id");
+    } catch (e) {
+      return null;
+    }
+  }-*/;
+
+  /**
+   * A factory of {@link RequestBuilder} objects tthat performs common
+   * initializations.
+   *
+   * @param method
+   * @param url
+   * @return
+   */
+  public static RequestBuilder newRequestBuilder(Method method, String url) {
+    RequestBuilder rb = new RequestBuilder(method, url);
+    rb.setIncludeCredentials(true);
+    String windowId = getWindowId();
+    if (windowId != null) rb.setHeader("X-window-id", windowId);
+    return rb;
+  }
+
+  /**
+   * A factory of XMLHttpRequest objects that performs common initializations.
+   *
+   * @return
+   */
+  public static native JavaScriptObject newXMLHttpRequest() /*-{
+
+    var request = new XMLHttpRequest();
+    request.withCredentials = true;
+
+    try {
+      request.setRequestHeader("X-window.id", $wnd.sessionStorage.getItem("x-swellrt-window-id") );
+    } catch (e) {
+
+    }
+
+    return request;
   }-*/;
 
   public static String buildAttachmentUploadUrl(String simpleAttachmentId) {
