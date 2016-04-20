@@ -95,7 +95,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
         formData.append("waveRef", waveRef);
         formData.append("uploadFormElement", file, file.name);
 
-        var request = @org.swellrt.api.SwellRTUtils::newXMLHttpRequest()();
+        var request = new XMLHttpRequest();
 
         request.onload = function(event) {
           if (request.status == 201) {
@@ -112,6 +112,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
         request.open("POST", url);
         request.setRequestHeader("Accept", "text/plain");
+        @org.swellrt.api.SwellRTUtils::addCommonRequestHeaders(Lcom/google/gwt/core/client/JavaScriptObject;)(request);
         request.send(formData);
 
         return true;

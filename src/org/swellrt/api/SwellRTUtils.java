@@ -196,23 +196,23 @@ public class SwellRTUtils {
     return rb;
   }
 
+
   /**
-   * A factory of XMLHttpRequest objects that performs common initializations.
+   * A utility method to perform common initializations in XMLHttpRequest
+   * objects. Use it after XMLHttpRequest.open()
    *
    * @return
    */
-  public static native JavaScriptObject newXMLHttpRequest() /*-{
+  public static native JavaScriptObject addCommonRequestHeaders(JavaScriptObject request) /*-{
 
-    var request = new XMLHttpRequest();
-    request.withCredentials = true;
+      request.withCredentials = true;
 
-    try {
-      request.setRequestHeader("X-window.id", $wnd.sessionStorage.getItem("x-swellrt-window-id") );
-    } catch (e) {
+      try {
+        request.setRequestHeader("X-window-id", $wnd.sessionStorage.getItem("x-swellrt-window-id") );
+      } catch (e) {
+      }
+      return request;
 
-    }
-
-    return request;
   }-*/;
 
   public static String buildAttachmentUploadUrl(String simpleAttachmentId) {
@@ -234,7 +234,8 @@ public class SwellRTUtils {
 
 
     return getBaseUrl() + "/attachment/" + file.getValue().getId() + getSessionURLparameter()
-        + "?waveRef=" + encodeWaveRefUri(file.getModel().getWaveRef());
+        + "?waveRef=" + encodeWaveRefUri(file.getModel().getWaveRef())
+        + (getWindowId() != null ? "&wid=" + getWindowId() : "");
   }
 
   public static String encodeWaveRefUri(WaveRef waveRef) {

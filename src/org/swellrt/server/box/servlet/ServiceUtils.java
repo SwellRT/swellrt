@@ -57,13 +57,15 @@ public class ServiceUtils {
 
         if (queryString == null) queryString = "";
 
-        // Add x-window-id header as query parameter
-        String windowId = request.getHeader(HttpWindowSession.WINDOW_SESSION_HEADER_NAME);
+        // Add x-window-id as query parameter
+        Object o = request.getAttribute(HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR);
+        String windowId = (o != null && o instanceof String) ? (String) o : null;
+
         if (windowId != null) {
           if (queryString.isEmpty())
             queryString = "?" + HttpWindowSession.WINDOW_SESSION_PARAMETER_NAME + "=" + windowId;
           else
-            queryString += "&wid=" + windowId;
+            queryString += "&" + HttpWindowSession.WINDOW_SESSION_PARAMETER_NAME + "=" + windowId;
         }
 
         String absolute =

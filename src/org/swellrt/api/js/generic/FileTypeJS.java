@@ -71,7 +71,7 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
 
           delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(null);
 
-          var request = @org.swellrt.api.SwellRTUtils::newXMLHttpRequest()();
+          var request = new XMLHttpRequest();
 
           request.onload = function(event) {
             if (request.status == 200) {
@@ -83,6 +83,7 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
 
 
           request.open("DELETE", url);
+          @org.swellrt.api.SwellRTUtils::addCommonRequestHeaders(Lcom/google/gwt/core/client/JavaScriptObject;)(request);
           request.send();
 
         },
