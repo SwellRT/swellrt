@@ -10,7 +10,6 @@ import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.client.editor.doodad.WidgetController;
 import org.swellrt.client.editor.doodad.WidgetDoodad;
 import org.swellrt.client.editor.doodad.WidgetModelDoodad;
-import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
@@ -175,6 +174,7 @@ public class TextEditor implements EditorUpdateListener {
     Preconditions.checkNotNull(e, "Editor's parent element doesn't exist");
 
     TextEditor editor = new TextEditor(e);
+    editor.registerDoodads();
     return editor;
   }
 
@@ -205,8 +205,11 @@ public class TextEditor implements EditorUpdateListener {
 
     if (!isClean()) cleanUp();
 
-    // TODO don't register again on every new editor
-    registerDoodads(text.getModel());
+    // TODO enable a way to set the Model after registering the Doodad. Move
+    // this registering on
+    // right methids registerDoodads()
+    WidgetModelDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry,
+        text.getModel());
 
     doc = getContentDocument(text);
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
@@ -365,7 +368,7 @@ public class TextEditor implements EditorUpdateListener {
     }
   }
 
-  protected void registerDoodads(Model model) {
+  protected void registerDoodads() {
 
 
     // TOPLEVEL_CONTAINER_TAGNAME
@@ -393,8 +396,6 @@ public class TextEditor implements EditorUpdateListener {
 
     // Add additional doodas here
     WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);
-    WidgetModelDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry,
-        model);
 
   }
 
