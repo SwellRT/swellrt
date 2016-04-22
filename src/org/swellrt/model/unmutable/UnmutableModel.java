@@ -69,6 +69,11 @@ public class UnmutableModel implements ReadableModel {
 
 
   @Override
+  public String getId() {
+    return getWaveId().serialise();
+  }
+
+  @Override
   public WaveId getWaveId() {
     return waveletData.getWaveId();
   }

@@ -8,6 +8,8 @@ import java.util.Set;
 
 public interface ReadableModel {
 
+  public String getId();
+
   public WaveId getWaveId();
 
   public WaveletId getWaveletId();

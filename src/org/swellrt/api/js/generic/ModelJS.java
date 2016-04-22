@@ -34,6 +34,11 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
       this.eventHandlers[event] = null;
      },
 
+     id: function() {
+       return delegate.@org.swellrt.model.generic.Model::getId()();
+     },
+
+
      getParticipants: function() {
       var _participants = delegate.@org.swellrt.model.generic.Model::getParticipants()();
       return @org.swellrt.api.SwellRTUtils::participantIterableToJs(Ljava/lang/Iterable;)(_participants);

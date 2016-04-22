@@ -279,6 +279,10 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return currentParticipant;
   }
 
+  public String getId() {
+    return this.getWaveId().serialise();
+  }
+
   public WaveId getWaveId() {
     return this.waveletData.getWaveId();
   }
