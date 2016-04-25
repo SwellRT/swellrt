@@ -27,7 +27,6 @@ import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 import org.waveprotocol.wave.util.logging.Log;
@@ -202,9 +201,7 @@ public final class SessionManagerImpl implements SessionManager {
       String attr = attrNames.nextElement();
       if (attr.startsWith(USER_FIELD)) {
         try {
-          participants.add(ParticipantId.of((String) session.getAttribute(attr)));
-        } catch (InvalidParticipantAddress e) {
-          LOG.warning("Error retrieving session participants", e);
+          participants.add((ParticipantId) session.getAttribute(attr));
         } catch (IllegalStateException e) {
           LOG.warning("Error retrieving session participants", e);
         }
