@@ -20,7 +20,6 @@
 */gwt-unitCache
 war/WEB-INF
 *.old
-*.log*
 .DS_Store
 
 ### IntelliJ Idea
@@ -50,7 +49,6 @@ reports/
 ### Generated Sources
 **/generated/
 ### Gwt Testing
-wave/gwt-unitCache
 ### config
 wave/local.net.cfg.lua
 wave/config/wave.conf
