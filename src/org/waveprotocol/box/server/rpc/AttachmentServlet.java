@@ -130,7 +130,14 @@ public class AttachmentServlet extends HttpServlet {
     }
 
     if (metadata == null) {
-      metadata = service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
+      try {
+        metadata =
+            service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
+      } catch (IOException e) {
+        LOG.warning(e.getMessage());
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
     }
 
     String contentType;
