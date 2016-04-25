@@ -23,10 +23,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Matchers;
@@ -118,9 +120,13 @@ public class WaveServerTest extends TestCase {
 
     waveletStore = new DeltaStoreBasedSnapshotStore(deltaStore);
     Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
+    Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "core.wave_cache_size", 1000,
+      "core.wave_cache_expire", "60m")
+    );
     waveMap =
         new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", lookupExecutor);
+            remoteWaveletContainerFactory, "example.com", config, lookupExecutor);
     waveServer =
         new WaveServerImpl(MoreExecutors.sameThreadExecutor(), certificateManager,
             federationRemote, waveMap);

@@ -51,6 +51,9 @@ import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
 import org.waveprotocol.box.server.robots.dataapi.DataApiServlet;
 import org.waveprotocol.box.server.robots.passive.RobotsGateway;
 import org.waveprotocol.box.server.rpc.*;
+import org.waveprotocol.box.server.shutdown.ShutdownManager;
+import org.waveprotocol.box.server.shutdown.ShutdownPriority;
+import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.server.stat.RequestScopeFilter;
 import org.waveprotocol.box.server.stat.StatuszServlet;
 import org.waveprotocol.box.server.stat.TimingFilter;
@@ -167,6 +170,7 @@ public class ServerMain {
     initializeFrontend(injector, server, waveBus);
     initializeFederation(injector);
     initializeSearch(injector, waveBus);
+    initializeShutdownHandler(server);
 
     LOG.info("Starting server");
     server.startWebSocketServer(injector);
@@ -283,5 +287,15 @@ public class ServerMain {
 
     WaveIndexer waveIndexer = injector.getInstance(WaveIndexer.class);
     waveIndexer.remakeIndex();
+  }
+
+  private static void initializeShutdownHandler(final ServerRpcProvider server) {
+    ShutdownManager.getInstance().register(new Shutdownable() {
+
+      @Override
+      public void shutdown() throws Exception {
+        server.stopServer();
+      }
+    }, ServerMain.class.getSimpleName(), ShutdownPriority.Server);
   }
 }

@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.LookupExecutor;
@@ -41,6 +42,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A collection of wavelets, local and remote, held in memory.
@@ -75,18 +77,20 @@ public class WaveMap {
       final WaveletNotificationSubscriber notifiee,
       final LocalWaveletContainer.Factory localFactory,
       final RemoteWaveletContainer.Factory remoteFactory,
-                 @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain,
+      @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain,
+      Config config,
       @LookupExecutor final Executor lookupExecutor) {
-    // NOTE(anorth): DeltaAndSnapshotStore is more specific than necessary, but
-    // helps Guice out.
+
     this.store = waveletStore;
-    waves = CacheBuilder.newBuilder().build(new CacheLoader<WaveId, Wave>() {
+    waves = CacheBuilder.newBuilder()
+            .maximumSize(config.getInt("core.wave_cache_size"))
+            .expireAfterAccess(config.getDuration("core.wave_cache_expire", TimeUnit.MINUTES), TimeUnit.MINUTES)
+            .build(new CacheLoader<WaveId, Wave>() {
       @Override
-      public Wave load(WaveId waveId) {
+      public Wave load(WaveId waveId) throws Exception {
         ListenableFuture<ImmutableSet<WaveletId>> lookedupWavelets =
-            lookupWavelets(waveId, waveletStore, lookupExecutor);
-        return new Wave(waveId, lookedupWavelets, notifiee, localFactory, remoteFactory,
-            waveDomain);
+          lookupWavelets(waveId, waveletStore, lookupExecutor);
+        return new Wave(waveId, lookedupWavelets, notifiee, localFactory, remoteFactory, waveDomain);
       }
     });
   }

@@ -22,10 +22,13 @@ package org.waveprotocol.box.server.waveserver;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Mock;
@@ -83,9 +86,13 @@ public class WaveMapTest extends TestCase {
         };
 
     waveletStore = mock(DeltaAndSnapshotStore.class);
+    Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "core.wave_cache_size", 1000,
+      "core.wave_cache_expire", "60m")
+    );
     waveMap =
         new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", storageContinuationExecutor);
+            remoteWaveletContainerFactory, "example.com", config, storageContinuationExecutor);
   }
 
   public void testWaveMapStartsEmpty() throws WaveServerException {

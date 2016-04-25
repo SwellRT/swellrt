@@ -19,22 +19,17 @@
 package org.waveprotocol.box.server.executor;
 
 import com.google.inject.Inject;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
-
+import org.waveprotocol.box.server.shutdown.ShutdownManager;
+import org.waveprotocol.box.server.shutdown.ShutdownPriority;
+import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.stat.RequestScope;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.model.util.Preconditions;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
 
 /**
  * Session-based request scope executor.
@@ -44,8 +39,7 @@ import org.waveprotocol.wave.model.util.Preconditions;
  * @author akaplanov@gmail.com (A. Kaplanov)
  */
 @SuppressWarnings("rawtypes")
-public class ScheduledRequestScopeExecutor implements ScheduledExecutorService {
-  private final static Logger LOG = Logger.getLogger(ScheduledRequestScopeExecutor.class.getName());
+public class ScheduledRequestScopeExecutor implements ScheduledExecutorService, Shutdownable {
 
   private ScheduledExecutorService executor;
 
@@ -59,6 +53,7 @@ public class ScheduledRequestScopeExecutor implements ScheduledExecutorService {
   public void setExecutor(ScheduledExecutorService executor, String name) {
     Preconditions.checkArgument(this.executor == null, "Executor is already defined.");
     this.executor = executor;
+    ShutdownManager.getInstance().register(this, name, ShutdownPriority.Task);
   }
 
   @Override

@@ -22,6 +22,7 @@ package org.waveprotocol.box.server.waveserver;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.util.concurrent.Futures;
@@ -29,6 +30,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gxp.com.google.common.collect.Maps;
 import com.google.wave.api.SearchResult;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Mock;
@@ -203,9 +206,14 @@ public class SimpleSearchProviderImplTest extends TestCase {
           }
         };
 
+    Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "core.wave_cache_size", 1000,
+      "core.wave_cache_expire", "60m")
+    );
+
     waveMap =
         new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, DOMAIN, lookupExecutor);
+            remoteWaveletContainerFactory, DOMAIN, config, lookupExecutor);
 
     searchProvider = new SimpleSearchProviderImpl(DOMAIN, digester, waveMap, waveViewProvider);
   }

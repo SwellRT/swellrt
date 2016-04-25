@@ -27,6 +27,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
 import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreData.ProtoTransformedWaveletDelta;
+import org.waveprotocol.box.server.shutdown.LifeCycle;
+import org.waveprotocol.box.server.shutdown.ShutdownPriority;
+import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.server.waveserver.AppliedDeltaUtil;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
 import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
@@ -82,6 +85,15 @@ public class FileDeltaCollection implements DeltasAccess {
   private HashedVersion endVersion;
   private boolean isOpen;
 
+
+  final private LifeCycle lifeCycle = new LifeCycle(FileDeltaCollection.class.getSimpleName(),
+                                                    ShutdownPriority.Storage, new Shutdownable() {
+    @Override
+    public void shutdown() throws Exception {
+      close();
+    }
+  });
+
   /**
    * A single record in the delta file.
    */
@@ -129,6 +141,7 @@ public class FileDeltaCollection implements DeltasAccess {
 
     index.openForCollection(collection);
     collection.initializeEndVersionAndTruncateTrailingJunk();
+
     return collection;
   }
 
@@ -171,6 +184,7 @@ public class FileDeltaCollection implements DeltasAccess {
     this.file = deltaFile;
     this.index = index;
     this.isOpen = true;
+    lifeCycle.start();
   }
 
   @Override
@@ -185,43 +199,73 @@ public class FileDeltaCollection implements DeltasAccess {
 
   @Override
   public WaveletDeltaRecord getDelta(long version) throws IOException {
-    checkIsOpen();
-    return seekToRecord(version) ? readRecord() : null;
+    lifeCycle.enter();
+    try {
+      checkIsOpen();
+      return seekToRecord(version) ? readRecord() : null;
+    } finally {
+      lifeCycle.leave();
+    }
   }
 
   @Override
   public WaveletDeltaRecord getDeltaByEndVersion(long version) throws IOException {
-    checkIsOpen();
-    return seekToEndRecord(version) ? readRecord() : null;
+    lifeCycle.enter();
+    try {
+      checkIsOpen();
+      return seekToEndRecord(version) ? readRecord() : null;
+    } finally {
+      lifeCycle.leave();
+    }
   }
 
   @Override
   public ByteStringMessage<ProtocolAppliedWaveletDelta> getAppliedDelta(long version)
       throws IOException {
-    checkIsOpen();
-    return seekToRecord(version) ? readAppliedDeltaFromRecord() : null;
+    lifeCycle.enter();
+    try {
+      checkIsOpen();
+      return seekToRecord(version) ? readAppliedDeltaFromRecord() : null;
+    } finally {
+      lifeCycle.leave();
+    }
   }
 
   @Override
   public TransformedWaveletDelta getTransformedDelta(long version) throws IOException {
-    checkIsOpen();
-    return seekToRecord(version) ? readTransformedDeltaFromRecord() : null;
+    lifeCycle.enter();
+    try {
+      checkIsOpen();
+      return seekToRecord(version) ? readTransformedDeltaFromRecord() : null;
+    } finally {
+      lifeCycle.leave();
+    }
   }
 
   @Override
   public HashedVersion getAppliedAtVersion(long version) throws IOException {
-    checkIsOpen();
-    ByteStringMessage<ProtocolAppliedWaveletDelta> applied = getAppliedDelta(version);
+    lifeCycle.enter();
+    try {
+      checkIsOpen();
+      ByteStringMessage<ProtocolAppliedWaveletDelta> applied = getAppliedDelta(version);
 
-    return (applied != null) ? AppliedDeltaUtil.getHashedVersionAppliedAt(applied) : null;
+      return (applied != null) ? AppliedDeltaUtil.getHashedVersionAppliedAt(applied) : null;
+    } finally {
+      lifeCycle.leave();
+    }
   }
 
   @Override
   public HashedVersion getResultingVersion(long version) throws IOException {
-    checkIsOpen();
-    TransformedWaveletDelta transformed = getTransformedDelta(version);
+    lifeCycle.enter();
+    try {
+      checkIsOpen();
+      TransformedWaveletDelta transformed = getTransformedDelta(version);
 
-    return (transformed != null) ? transformed.getResultingVersion() : null;
+      return (transformed != null) ? transformed.getResultingVersion() : null;
+    } finally {
+      lifeCycle.leave();
+    }
   }
 
   @Override
@@ -234,6 +278,7 @@ public class FileDeltaCollection implements DeltasAccess {
 
   @Override
   public void append(Collection<WaveletDeltaRecord> deltas) throws PersistenceException {
+    lifeCycle.enter();
     checkIsOpen();
     try {
       file.seek(file.length());
@@ -252,6 +297,8 @@ public class FileDeltaCollection implements DeltasAccess {
       endVersion = lastDelta.getTransformedDelta().getResultingVersion();
     } catch (IOException e) {
       throw new PersistenceException(e);
+    } finally {
+      lifeCycle.leave();
     }
   }
 
