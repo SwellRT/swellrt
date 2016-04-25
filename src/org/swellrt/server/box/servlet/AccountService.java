@@ -340,8 +340,7 @@ public class AccountService extends SwellRTService {
 
       ParticipantId participantId = getParticipantFromRequest(req);
 
-      if (!isSessionParticipant(req, participantId)) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
+      if (checkForLoggedInUser(req, response) == null) {
         return;
       }
 
@@ -361,6 +360,13 @@ public class AccountService extends SwellRTService {
       }
 
       Attachment avatar = attachmentAccountStore.getAvatar(fileName);
+
+      if (avatar == null) {
+        sendResponseError(response, HttpServletResponse.SC_NOT_FOUND,
+            "ACCOUNT_ATTACHMENT_NOT_FOUND");
+        LOG.warning("Avatar file not found: " + fileName);
+        return;
+      }
 
       response.setContentType(accountData.asHuman().getAvatarMimeType());
       response.setContentLength((int) avatar.getSize());
