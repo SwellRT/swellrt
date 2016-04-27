@@ -1,4 +1,7 @@
-[![Build Status](https://builds.apache.org/buildStatus/icon?job=wave-small_tests)](https://builds.apache.org/job/wave-small_tests)   
+| Tool | Status |
+| --- | --- |
+| Jenkins | [![Build Status](https://builds.apache.org/buildStatus/icon?job=wave-small_tests)](https://builds.apache.org/job/wave-small_tests) |
+| Travis | [![Build Status](https://travis-ci.org/apache/incubator-wave.svg?branch=master)](https://travis-ci.org/apache/incubator-wave) |
 
 # Apache Wave
 
