@@ -157,24 +157,24 @@ public class EventRule {
   /**
    * Rules can define path expresions to be evaluated against the data model
    * associated with an event.
-   *
+   * 
    * When a rule matches an event, EventRule can get the evaluation of these
    * expressions calling to
    * {@link EventRule#evaluateExpression(Event event, String expresion)}
-   *
+   * 
    * Expresions must be provided to the parent constructor in order to be
    * extracted when events are generated.
-   *
+   * 
    * Expresions are like this:
-   *
+   * 
    * ${root.key.0.value} ${root.key.?.value} $hash{root.key.0.value}
-   *
-   * the simple version '${path}', means 'the value on this path'. other
+   * 
+   * the simple version '${&lt;path&gt;}', means 'the value on this path'. other
    * functions can be used with paths, like '$hash{}'
-   *
+   * 
    * ? is a wildcard for list indexes, allowing to extract values for the list
    * item matched by the event.
-   *
+   * 
    */
   private final Set<String> expressions = new HashSet<String>();
   private final Set<String> expressionsPaths = new HashSet<String>();
@@ -254,7 +254,7 @@ public class EventRule {
    * @param event
    * @return
    */
-  protected boolean matchPreconditions(Event event) {
+  protected boolean matchConditions(Event event) {
 
     if (conditions == null) return true;
 
@@ -290,10 +290,8 @@ public class EventRule {
 
     if (!doesItMatch) return false; // Avoid unnecessary further logic
 
-    // Match conditions. This should be avoided.
-    // Use app and dataType as preconditions instead.
-
-    doesItMatch = doesItMatch && matchPreconditions(event);
+    // Match conditions.
+    doesItMatch = doesItMatch && matchConditions(event);
 
     return doesItMatch;
   }
