@@ -6,7 +6,7 @@ public interface EventQueue {
 
   public void add(Event event);
 
-  public boolean hasEvents(String app, String dataType);
+  public boolean hasEventsFor(String app, String dataType);
 
   public Set<String> getExpressionPaths(String app, String dataType);
 

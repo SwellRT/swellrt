@@ -32,7 +32,7 @@ public class EventDispatcherImplTest extends TestCase {
       }
 
       @Override
-      public boolean hasEvents(String app, String dataType) {
+      public boolean hasEventsFor(String app, String dataType) {
         return false;
       }
 

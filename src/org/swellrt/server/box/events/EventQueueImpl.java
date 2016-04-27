@@ -33,7 +33,7 @@ public class EventQueueImpl implements EventQueue {
   }
 
   @Override
-  public boolean hasEvents(String app, String dataType) {
+  public boolean hasEventsFor(String app, String dataType) {
     return expressions.containsKey(new EventRuleClass(app, dataType));
   }
 
