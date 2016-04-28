@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
 import org.swellrt.api.SwellRTUtils;
+import org.swellrt.client.editor.TextEditorAnnotation.ParagraphAnnotation;
 import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.client.editor.doodad.WidgetController;
 import org.swellrt.client.editor.doodad.WidgetDoodad;
@@ -28,6 +29,8 @@ import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
+import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
+import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
@@ -39,17 +42,16 @@ import org.waveprotocol.wave.client.widget.popup.simple.Popup;
 import org.waveprotocol.wave.common.logging.AbstractLogger;
 import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
-import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
-import org.waveprotocol.wave.model.util.CollectionUtils;
-import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A wrapper of the original Wave {@link Editor} to be integrated in the SwellRT
@@ -133,19 +135,6 @@ public class TextEditor implements EditorUpdateListener {
   private WaveDocuments<? extends InteractiveDocument> documentRegistry;
 
   private Editor editor;
-
-  private static final ReadableStringSet ANNOTATIONS = CollectionUtils.newStringSet(
-      AnnotationConstants.STYLE_BG_COLOR,
-      AnnotationConstants.STYLE_COLOR,
-      AnnotationConstants.STYLE_FONT_FAMILY,
-      AnnotationConstants.STYLE_FONT_SIZE,
-      AnnotationConstants.STYLE_FONT_STYLE,
-      AnnotationConstants.STYLE_FONT_WEIGHT,
-      AnnotationConstants.STYLE_TEXT_DECORATION,
-      AnnotationConstants.STYLE_VERTICAL_ALIGN,
-      AnnotationConstants.LINK_AUTO,
-      AnnotationConstants.LINK_MANUAL
-    );
 
   private TextEditorListener listener;
 
@@ -405,10 +394,39 @@ public class TextEditor implements EditorUpdateListener {
   }
 
 
-  public void setAnnotation(final String annotationName, final String annotationValue) {
+  /**
+   * Set any type of annotation in the current selected text or
+   * annotationStateMapcaret.
+   * 
+   * @param annotationName
+   * @param annotationValue
+   */
+  public void setAnnotation(String annotationName, String annotationValue) {
 
-    if (editor.getSelectionHelper().getSelectionRange() != null)
-      EditorAnnotationUtil.setAnnotationOverSelection(editor, annotationName, annotationValue);
+    final Range range = editor.getSelectionHelper().getOrderedSelectionRange();
+    if (range != null) {
+
+      if (TextEditorAnnotation.isParagraphAnnotation(annotationName)) {
+
+        ParagraphAnnotation annotation =
+            TextEditorAnnotation.ParagraphAnnotation.fromString(annotationName);
+        final LineStyle style = annotation.getLineStyleForValue(annotationValue);
+        final boolean isOn = annotationValue != null && !annotationValue.isEmpty();
+
+        editor.undoableSequence(new Runnable() {
+          @Override
+          public void run() {
+            Paragraph.apply(editor.getDocument(), range.getStart(), range.getEnd(), style, isOn);
+          }
+        });
+
+      } else {
+        EditorAnnotationUtil.setAnnotationOverSelection(editor, annotationName, annotationValue);
+      }
+
+
+    }
+
 
   }
 
@@ -425,10 +443,11 @@ public class TextEditor implements EditorUpdateListener {
 
       if (range != null && listener != null) {
 
+        // Map to contain the current state of each annotation
+        final JavaScriptObject annotationStateMap = JavaScriptObject.createObject();
 
-        final JavaScriptObject annotationsSnapshot = JavaScriptObject.createObject();
-
-        ANNOTATIONS.each(new Proc() {
+        // Get state of caret annotations
+        TextEditorAnnotation.CARET_ANNOTATIONS.each(new Proc() {
 
           @Override
           public void apply(String annotationName) {
@@ -437,14 +456,34 @@ public class TextEditor implements EditorUpdateListener {
                 EditorAnnotationUtil.getAnnotationOverRangeIfFull(event.context().getDocument(),
                     editor.getCaretAnnotations(), annotationName, range.getStart(), range.getEnd());
 
-            SwellRTUtils.addField(annotationsSnapshot, annotationName, annotationValue);
+            SwellRTUtils.addField(annotationStateMap, annotationName, annotationValue);
 
           }
 
         });
 
+        TextEditorAnnotation.PARAGRAPH_ANNOTATIONS.each(new Proc() {
 
-        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationsSnapshot);
+          @Override
+          public void apply(String annotationName) {
+
+            Collection<Entry<String, LineStyle>> styles =
+                TextEditorAnnotation.ParagraphAnnotation.fromString(annotationName).values
+                    .entrySet();
+
+            String annotationValue = null;
+            for (Entry<String, LineStyle> s : styles) {
+              if (Paragraph.appliesEntirely(editor.getDocument(), range.getStart(), range.getEnd(),
+                  s.getValue())) {
+                annotationValue = s.getKey();
+                break;
+              }
+            }
+            SwellRTUtils.addField(annotationStateMap, annotationName, annotationValue);
+          }
+        });
+
+        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationStateMap);
 
       }
     }
