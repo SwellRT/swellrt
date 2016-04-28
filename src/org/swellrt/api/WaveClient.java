@@ -496,6 +496,22 @@ public class WaveClient implements SwellRT.Listener {
     });
   }
 
+  public void invite(JsArrayString emails, final JavaScriptObject callback)
+      throws RequestException {
+    coreClient.invite(emails, new Callback<String, String>() {
+
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS);
+      }
+    });
+    };
+
   /**
    * Enable/disable WebSockets transport. Alternative protocol is long-polling.
    *

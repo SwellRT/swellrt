@@ -137,6 +137,10 @@ public class SwellRtServlet extends HttpServlet {
 
       injector.getInstance(AuthenticationService.class).execute(req, response);
 
+    } else if (entity.equals("invite")) {
+
+      injector.getInstance(InviteService.class).execute(req, response);
+
     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);

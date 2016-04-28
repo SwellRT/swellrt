@@ -19,8 +19,6 @@
 
 package org.waveprotocol.box.server;
 
-import cc.kune.initials.InitialsAvatarsServlet;
-
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -43,6 +41,7 @@ import org.swellrt.server.box.events.dummy.DummyDispatcher;
 import org.swellrt.server.box.events.gcm.GCMDispatcher;
 import org.swellrt.server.box.index.ModelIndexerDispatcher;
 import org.swellrt.server.box.index.ModelIndexerModule;
+import org.swellrt.server.box.servlet.EmailModule;
 import org.swellrt.server.box.servlet.SwellRtServlet;
 import org.swellrt.server.ds.DSFileServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
@@ -103,6 +102,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+
+import cc.kune.initials.InitialsAvatarsServlet;
 
 /**
  * Wave Server entrypoint.
@@ -181,8 +182,10 @@ public class ServerMain {
     Module modelIndexerModule = injector.getInstance(ModelIndexerModule.class); // SwellRT
     Module eventsModule = injector.getInstance(EventsModule.class); // SwellRT
     Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
+    Module emailModule = injector.getInstance(EmailModule.class); // SwellRT
     injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
-            federationModule, searchModule, profileFetcherModule, modelIndexerModule, eventsModule);
+        federationModule, searchModule, profileFetcherModule, modelIndexerModule, eventsModule,
+        emailModule);
 
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);

@@ -1314,5 +1314,42 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     });
   }
 
+  public void invite(JsArrayString emails, final Callback<String, String> callback)
+      throws RequestException {
+    String url = baseServerUrl + "/swell/invite/";
+    url = addSessionToUrl(url);
 
+    String query = "";
+    for (int i = 0; i < emails.length(); i++) {
+      if (!query.isEmpty()) query += ";";
+
+      query += emails.get(i);
+
+      query = "email=" + URL.encode(query);
+      url += "?" + query;
+
+      RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
+      builder.setIncludeCredentials(true);
+      builder.sendRequest(null, new RequestCallback() {
+
+        @Override
+        public void onResponseReceived(Request request, Response response) {
+
+          if (response.getStatusCode() != 200)
+            callback.onFailure("SERVICE_EXCEPTION " + response.getText());
+          else
+            callback.onSuccess(response.getText());
+        }
+
+        @Override
+        public void onError(Request request, Throwable exception) {
+          callback.onFailure("SERVICE_EXCEPTION " + exception.getMessage());
+
+        }
+
+      });
+
+
+    }
+  }
 }
