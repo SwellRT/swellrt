@@ -8,12 +8,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.context.Context;
-import org.apache.velocity.exception.ResourceNotFoundException;
-import org.apache.velocity.tools.ConversionUtils;
 import org.apache.velocity.tools.ToolManager;
-import org.apache.velocity.tools.generic.ResourceTool;
-import org.swellrt.server.velocity.CustomResourceTool;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
@@ -25,7 +20,6 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -39,12 +33,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -84,16 +75,22 @@ public class EmailService extends SwellRTService {
 
   private String recoverPasswordMessages;
 
+  private EmailSender emailSender;
+
+  private DecoupledTemplates decTemplates;
+
   @Inject
   public EmailService(SessionManager sessionManager, AccountStore accountStore,
       @Named(CoreSettings.EMAIL_HOST) String host,
       @Named(CoreSettings.EMAIL_FROM_ADDRESS) String from,
-      @Named(CoreSettings.VELOCITY_PATH) String velocityPath) {
+      @Named(CoreSettings.VELOCITY_PATH) String velocityPath, EmailSender emailSender,
+      DecoupledTemplates decTemplates) {
     super(sessionManager);
     this.accountStore = accountStore;
     this.host = host;
     this.from = from;
-
+    this.emailSender = emailSender;
+    this.decTemplates = decTemplates;
 
     Properties p = new Properties();
     p.put("resource.loader", "file, class");
@@ -148,13 +145,6 @@ public class EmailService extends SwellRTService {
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
-    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
-
-    if (participantId == null) {
-      response.sendError(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
-
     Enumeration<String> paramNames = req.getParameterNames();
 
     if (!paramNames.hasMoreElements()) {
@@ -199,10 +189,7 @@ public class EmailService extends SwellRTService {
           String recoverUrl = URLDecoder.decode(req.getParameter(RECOVER_URL), "UTF-8");
           String idOrEmail = URLDecoder.decode(req.getParameter("id-or-email"), "UTF-8");
 
-          String subject = null;
-
-          String htmlBody = null;
-
+          String emailAddress = "";
           try {
 
             List<AccountData> accounts = null;
@@ -218,7 +205,10 @@ public class EmailService extends SwellRTService {
 
               if (acc != null && !acc.getId().isAnonymous()) {
                 accounts.add(acc);
+                emailAddress = acc.asHuman().getEmail();
               }
+            } else {
+              emailAddress = idOrEmail;
             }
 
             if (accounts != null && !accounts.isEmpty()) {
@@ -235,88 +225,34 @@ public class EmailService extends SwellRTService {
                 a.asHuman().setRecoveryToken(token);
                 accountStore.putAccount(a);
 
+                String recoverUrlCp = recoverUrl;
 
-                if (recoverUrl.contains("$user-id")) {
-                  recoverUrl = recoverUrl.replaceAll("\\$user-id", userAddress);
+                if (recoverUrlCp.contains("$user-id")) {
+                  recoverUrlCp = recoverUrlCp.replaceAll("\\$user-id", userAddress);
                 }
 
-                if (recoverUrl.contains("$token")) {
-                  recoverUrl = recoverUrl.replaceAll("\\$token", token);
+                if (recoverUrlCp.contains("$token")) {
+                  recoverUrlCp = recoverUrlCp.replaceAll("\\$token", token);
 
                 } else {
-                  recoverUrl = recoverUrl + token;
+                  recoverUrlCp = recoverUrlCp + token;
                 }
 
-                MimeMessage message = new MimeMessage(mailSession);
+                Map<String, Object> ctx = new HashMap<String, Object>();
 
-                try {
+                ctx.put("recoverUrl", recoverUrlCp);
+                ctx.put("userName", userAddress);
 
-                  Map<String, Object> ctx = new HashMap<String, Object>();
+                Locale locale = new Locale(a.asHuman().getLocale());
 
-                  String loc = a.asHuman().getLocale();
+                Template t = decTemplates.getTemplateFromName(RECOVER_PASSWORD_TEMPLATE);
+                ResourceBundle b = decTemplates.getBundleFromName(RECOVER_PASSWORD_BUNDLE, locale);
 
-                  Locale locale = null;
+                String subject = MessageFormat.format(b.getString("emailSubject"), userAddress);
 
-                  if (loc == null) {
-                    locale = Locale.getDefault();
-                  } else {
-                    locale = ConversionUtils.toLocale(loc);
-                  }
+                String body = decTemplates.getTemplateMessage(t, b, ctx, locale);
 
-                  ctx.put("locale", locale);
-
-                  ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
-
-                  ctx.put(ResourceTool.BUNDLES_KEY, recoverPasswordMessages);
-
-                  Context context = manager.createContext(ctx);
-
-                  context.put("recoverUrl", recoverUrl);
-                  context.put("userName", userAddress);
-
-
-                  Template template = null;
-
-                  try {
-
-                    template = ve.getTemplate(recoverPasswordTemplateName);
-
-                    StringWriter sw = new StringWriter();
-
-                    template.merge(context, sw);
-
-                    sw.flush();
-
-                    htmlBody = sw.toString();
-
-                    ResourceBundle bundle =
-                        ResourceBundle.getBundle(recoverPasswordMessages, locale, loader);
-
-                    subject = MessageFormat.format(bundle.getString("emailSubject"), userAddress);
-
-                  } catch (ResourceNotFoundException rnfe) {
-                    // couldn't find the template
-                    LOG.warning("velocity template not fould");
-                    return;
-                  }
-                } catch (Exception e) {
-                  LOG.severe(
-                      "Unexpected error while composing email with velocity. The email was not sent. "
-                          + e.toString());
-                  return;
-                }
-
-                message.setFrom(new InternetAddress(from));
-
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(idOrEmail));
-
-                message.setSubject(subject);
-                message.setText(htmlBody, "UTF-8", "html");
-
-                LOG.info(
-                    "Sending email:" + "\n  Subject: " + subject + "\n  Message body: " + htmlBody);
-                // Send message
-                Transport.send(message);
+                emailSender.send(new InternetAddress(emailAddress), subject, body);
 
               }
             }

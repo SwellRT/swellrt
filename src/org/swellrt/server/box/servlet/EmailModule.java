@@ -8,6 +8,7 @@ public class EmailModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(EmailSender.class).to(EmailSenderImp.class).in(Singleton.class);
+    bind(DecoupledTemplates.class).to(EmailSenderImp.class).in(Singleton.class);
   }
 
 }

@@ -6,7 +6,6 @@ import com.google.inject.name.Named;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.tools.ToolManager;
 import org.apache.velocity.tools.generic.ResourceTool;
 import org.swellrt.server.velocity.CustomResourceTool;
@@ -20,7 +19,6 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -37,12 +35,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-public class EmailSenderImp implements EmailSender {
-
-  /*
-   * Path that has the default templates and translations inside the classpath
-   */
-  private static final String CLASSPATH_VELOCITY_PATH = "org/swellrt/server/velocity/";
+public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 
   private static final Log LOG = Log.get(EmailSenderImp.class);
 
@@ -102,19 +95,6 @@ public class EmailSenderImp implements EmailSender {
 
     manager.configure("velocity-tools-config.xml");
 
-  }
-
-  @Override
-  public void send(String address, String templateFileName, String messageBundleFileName,
-      HashMap<String, String> params, Locale locale) throws AddressException, MessagingException {
-
-    String templatePath = ve.resourceExists(templateFileName) ? templateFileName
-        : CLASSPATH_VELOCITY_PATH + templateFileName;
-
-    String messagesPath = new File(velocityPath + messageBundleFileName + ".properties").exists()
-        ? messageBundleFileName : CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleFileName;
-
-
     try {
       // based on http://stackoverflow.com/a/15654598/4928558
       File file = new File(velocityPath);
@@ -125,77 +105,86 @@ public class EmailSenderImp implements EmailSender {
           + e.getMessage());
     }
 
+  }
+
+  @Override
+  public void send(InternetAddress address, String subject, String htmlBody)
+      throws AddressException, MessagingException {
+
+
     MimeMessage message = new MimeMessage(mailSession);
-
-    String htmlBody;
-    String subject;
-    try {
-
-      Map<String, Object> ctx = new HashMap<String, Object>();
-
-      if (locale == null) {
-        locale = Locale.getDefault();
-      }
-
-      ctx.put("locale", locale);
-
-      ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
-
-      ctx.put(ResourceTool.BUNDLES_KEY, messagesPath);
-
-      Context context = manager.createContext(ctx);
-
-      // context.put("recoverUrl", recoverUrl);
-      // context.put("userName", userAddress);
-
-      Iterator<Map.Entry<String, String>> it = params.entrySet().iterator();
-
-      while (it.hasNext()) {
-        Entry<String, String> p = it.next();
-        context.put(p.getKey(), p.getValue());
-      }
-
-
-      Template template = null;
-
-      try {
-
-        template = ve.getTemplate(templatePath);
-
-        StringWriter sw = new StringWriter();
-
-        template.merge(context, sw);
-
-        sw.flush();
-
-        htmlBody = sw.toString();
-
-        ResourceBundle bundle = ResourceBundle.getBundle(messagesPath, locale, loader);
-
-        subject = MessageFormat.format(bundle.getString("emailSubject"), address);
-
-      } catch (ResourceNotFoundException rnfe) {
-        // couldn't find the template
-        LOG.warning("velocity template not fould");
-        return;
-      }
-    } catch (Exception e) {
-      LOG.severe("Unexpected error while composing email with velocity. The email was not sent. "
-          + e.toString());
-      return;
-    }
 
     message.setFrom(new InternetAddress(from));
 
-    message.addRecipient(Message.RecipientType.TO, new InternetAddress(address));
+    message.addRecipient(Message.RecipientType.TO, address);
 
     message.setSubject(subject);
+
     message.setText(htmlBody, "UTF-8", "html");
 
     LOG.info("Sending email:" + "\n  Subject: " + subject + "\n  Message body: " + htmlBody);
     // Send message
     Transport.send(message);
   }
+
+  @Override
+  public Template getTemplateFromName(String templateName) {
+    String path =
+        ve.resourceExists(templateName) ? templateName : CLASSPATH_VELOCITY_PATH + templateName;
+
+    return ve.getTemplate(path);
+
+  }
+
+  @Override
+  public ResourceBundle getBundleFromName(String messageBundleName, Locale locale) {
+
+    String bundleQualifiedName = new File(velocityPath + messageBundleName + ".properties").exists()
+        ? messageBundleName : CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleName;
+
+    if (locale == null) {
+      locale = Locale.getDefault();
+    }
+
+    return ResourceBundle.getBundle(bundleQualifiedName, locale, loader);
+
+  }
+
+  @Override
+  public String getTemplateMessage(Template template, ResourceBundle bundle,
+      Map<String, Object> params, Locale locale) {
+
+    Map<String, Object> ctx = new HashMap<String, Object>();
+
+    if (locale == null) {
+      locale = Locale.getDefault();
+    }
+
+    Context context = manager.createContext(ctx);
+
+    Iterator<Map.Entry<String, Object>> it = params.entrySet().iterator();
+
+    while (it.hasNext()) {
+      Entry<String, Object> p = it.next();
+      context.put(p.getKey(), p.getValue());
+    }
+
+
+    ctx.put("locale", locale);
+
+    ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
+
+    ctx.put(ResourceTool.BUNDLES_KEY, bundle.getClass().getName());
+
+    StringWriter sw = new StringWriter();
+
+    template.merge(context, sw);
+
+    sw.flush();
+
+    return sw.toString();
+
+  };
 
 }
 
