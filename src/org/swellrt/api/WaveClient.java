@@ -496,9 +496,9 @@ public class WaveClient implements SwellRT.Listener {
     });
   }
 
-  public void invite(JsArrayString emails, final JavaScriptObject callback)
+  public void invite(JsArrayString emails, String url, final JavaScriptObject callback)
       throws RequestException {
-    coreClient.invite(emails, new Callback<String, String>() {
+    coreClient.invite(emails, url, new Callback<String, String>() {
 
       @Override
       public void onFailure(String reason) {

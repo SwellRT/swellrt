@@ -3,6 +3,7 @@ package org.swellrt.server.box.servlet;
 import com.google.inject.Inject;
 
 import org.apache.velocity.Template;
+import org.apache.velocity.tools.ConversionUtils;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
@@ -25,6 +26,7 @@ public class InviteService extends SwellRTService {
   private static final String EMAIL = "email";
   private static final String INVITATION_EMAIL_BUNDLE = "InvitationEmailMessages";
   private static final String INVITATION_TEMPLATE = "Invitation.vm";
+  private static final String URL = "url";
   private final AccountStore accountStore;
   private final EmailSender emailSender;
   private DecoupledTemplates decTemplates;
@@ -43,15 +45,19 @@ public class InviteService extends SwellRTService {
 
     ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
 
+    if (participantId == null) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
     HumanAccountData hum = sessionManager.getLoggedInAccount(req.getSession(false)).asHuman();
 
     Locale locale;
 
-    if (hum != null) {
+    if (hum != null && !hum.getId().isAnonymous()) {
 
       if (hum.getLocale() != null) {
 
-        locale = new Locale(hum.getLocale());
+        locale = ConversionUtils.toLocale(hum.getLocale());
 
       }
 
@@ -64,25 +70,27 @@ public class InviteService extends SwellRTService {
 
     }
 
-    if (participantId == null) {
-      response.sendError(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
-
     String email = req.getParameter(EMAIL);
+
+    String url = req.getParameter(URL);
 
     HashMap<String, Object> params = new HashMap<String, Object>();
 
-    params.put("inviter", participantId.getAddress());
+    String inviter = participantId.getAddress().split("@")[0];
+    params.put("inviter", inviter);
+    params.put("url", url);
+    params.put("email", email);
+
+    System.out.println("URL:::" + url);
 
     try {
 
       Template t = decTemplates.getTemplateFromName(INVITATION_TEMPLATE);
       ResourceBundle b = decTemplates.getBundleFromName(INVITATION_EMAIL_BUNDLE, locale);
 
-      String subject = MessageFormat.format(b.getString("emailSubject"), null);
+      String subject = MessageFormat.format(b.getString("emailSubject"), inviter);
 
-      String body = decTemplates.getTemplateMessage(t, b, params, locale);
+      String body = decTemplates.getTemplateMessage(t, INVITATION_EMAIL_BUNDLE, params, locale);
 
       emailSender.send(new InternetAddress(email), subject, body);
     } catch (AddressException e) {

@@ -139,19 +139,22 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
   @Override
   public ResourceBundle getBundleFromName(String messageBundleName, Locale locale) {
 
-    String bundleQualifiedName = new File(velocityPath + messageBundleName + ".properties").exists()
-        ? messageBundleName : CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleName;
-
     if (locale == null) {
       locale = Locale.getDefault();
     }
 
-    return ResourceBundle.getBundle(bundleQualifiedName, locale, loader);
+    return ResourceBundle.getBundle(getDecoupledBundleName(messageBundleName), locale, loader);
 
   }
 
   @Override
-  public String getTemplateMessage(Template template, ResourceBundle bundle,
+  public String getDecoupledBundleName(String messageBundleName) {
+    return new File(velocityPath + messageBundleName + ".properties").exists() ? messageBundleName
+        : CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleName;
+  }
+
+  @Override
+  public String getTemplateMessage(Template template, String messageBundleName,
       Map<String, Object> params, Locale locale) {
 
     Map<String, Object> ctx = new HashMap<String, Object>();
@@ -159,6 +162,11 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
     if (locale == null) {
       locale = Locale.getDefault();
     }
+    ctx.put("locale", locale);
+
+    ctx.put(ResourceTool.BUNDLES_KEY, getDecoupledBundleName(messageBundleName));
+
+    ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
 
     Context context = manager.createContext(ctx);
 
@@ -169,12 +177,6 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
       context.put(p.getKey(), p.getValue());
     }
 
-
-    ctx.put("locale", locale);
-
-    ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
-
-    ctx.put(ResourceTool.BUNDLES_KEY, bundle.getClass().getName());
 
     StringWriter sw = new StringWriter();
 

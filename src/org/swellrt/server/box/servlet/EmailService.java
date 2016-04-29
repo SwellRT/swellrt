@@ -8,6 +8,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.tools.ConversionUtils;
 import org.apache.velocity.tools.ToolManager;
 import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
@@ -243,14 +244,15 @@ public class EmailService extends SwellRTService {
                 ctx.put("recoverUrl", recoverUrlCp);
                 ctx.put("userName", userAddress);
 
-                Locale locale = new Locale(a.asHuman().getLocale());
+                Locale locale = ConversionUtils.toLocale(a.asHuman().getLocale());
 
                 Template t = decTemplates.getTemplateFromName(RECOVER_PASSWORD_TEMPLATE);
                 ResourceBundle b = decTemplates.getBundleFromName(RECOVER_PASSWORD_BUNDLE, locale);
 
                 String subject = MessageFormat.format(b.getString("emailSubject"), userAddress);
 
-                String body = decTemplates.getTemplateMessage(t, b, ctx, locale);
+                String body =
+                    decTemplates.getTemplateMessage(t, RECOVER_PASSWORD_BUNDLE, ctx, locale);
 
                 emailSender.send(new InternetAddress(emailAddress), subject, body);
 

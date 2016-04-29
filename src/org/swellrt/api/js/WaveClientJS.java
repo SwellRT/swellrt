@@ -420,13 +420,13 @@ public class WaveClientJS extends JavaScriptObject {
          // Invite
          //
 
-         invite: function(emails, onSuccess, onFailure){
+         invite: function(emails, url, onSuccess, onFailure){
            var callback = new Object();
            callback.success = onSuccess;
            callback.failure = onFailure;
 
            try {
-             delegate.@org.swellrt.api.WaveClient::invite(Lcom/google/gwt/core/client/JsArrayString;Lcom/google/gwt/core/client/JavaScriptObject;)(emails, callback);
+             delegate.@org.swellrt.api.WaveClient::invite(Lcom/google/gwt/core/client/JsArrayString;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(emails, url, callback);
            } catch (e) {
              throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
            }
