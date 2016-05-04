@@ -1,5 +1,7 @@
 # SwellRT, a Real-Time Federated Collaboration Framework
 
+[![Join the chat at https://gitter.im/P2Pvalue/swellrt](https://badges.gitter.im/P2Pvalue/swellrt.svg)](https://gitter.im/P2Pvalue/swellrt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 SwellRT is a collaboration framework based on [Apache Wave](http://incubator.apache.org/wave/).
 It allows to develop real-time collaborative apps for **Web** (JavaScript or GWT), **Android** and **Java**.
 
