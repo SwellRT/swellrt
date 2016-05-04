@@ -248,7 +248,7 @@ public class AuthenticationService extends SwellRTService {
     if (loggedInAddress == null) {
 
       try {
-        session = req.getSession(false);
+        session = sessionManager.getSession(req);
         LOG.info("Closing session " + (session != null ? session.getId() : ""));
         sessionManager.logout(session);
         if (context != null)

@@ -50,6 +50,7 @@ import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * The HTTP servlet for serving a wave client along with content generated on
@@ -110,7 +111,8 @@ public class WaveClientServlet extends HttpServlet {
       return;
     }
 
-    AccountData account = sessionManager.getLoggedInAccount(request.getSession(false));
+    HttpSession session = sessionManager.getSession(request);
+    AccountData account = sessionManager.getLoggedInAccount(session);
     if (account != null) {
       String locale = account.asHuman().getLocale();
       if (locale != null) {

@@ -46,10 +46,7 @@ public class NotificationService extends SwellRTService {
       String name = paramNames.nextElement();
       String value = req.getParameter(name);
 
-      HttpSession session = req.getSession(false);
-
-      System.out.println(session);
-      System.out.println(sessionManager);
+      HttpSession session = sessionManager.getSession(req);
       String account = sessionManager.getLoggedInAccount(session).getId().getAddress();
 
       switch (name) {
