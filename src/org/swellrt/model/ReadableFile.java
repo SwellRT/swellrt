@@ -6,4 +6,8 @@ public interface ReadableFile extends ReadableType {
 
   AttachmentId getValue();
 
+  AttachmentId getFileId();
+
+  String getContentType();
+
 }

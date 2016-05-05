@@ -104,7 +104,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
         request.onload = function(event) {
           if (request.status == 201) {
-            var _file = delegate.@org.swellrt.model.generic.Model::createFile(Lorg/waveprotocol/wave/media/model/AttachmentId;)(attachmentId);
+            var _file = delegate.@org.swellrt.model.generic.Model::createFile(Lorg/waveprotocol/wave/media/model/AttachmentId;Ljava/lang/String;)(attachmentId, file.type);
             onComplete(@org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_file));
           } else {
             onComplete({ error : "SERVICE_EXCEPTION" });

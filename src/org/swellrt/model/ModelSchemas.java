@@ -13,6 +13,8 @@ public class ModelSchemas {
           addChildren("body", WidgetDoodad.TAG);
           addAttrs(WidgetDoodad.TAG, WidgetDoodad.ATTR_TYPE);
           addAttrs(WidgetDoodad.TAG, WidgetDoodad.ATTR_STATE);
+          containsBlipText(WidgetDoodad.TAG);
+          containsAnyText(WidgetDoodad.TAG);
 
           addChildren("body", WidgetModelDoodad.TAG);
           addAttrs(WidgetModelDoodad.TAG, WidgetModelDoodad.ATTR_TYPE);

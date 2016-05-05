@@ -8,10 +8,12 @@ import org.waveprotocol.wave.media.model.AttachmentId;
 public class UnmutableFile implements ReadableFile, ReadableTypeVisitable {
 
 
-  AttachmentId value;
+  AttachmentId attachmentId;
+  String contentType;
 
-  protected UnmutableFile(AttachmentId value) {
-    this.value = value;
+  protected UnmutableFile(AttachmentId attachmentId, String contentType) {
+    this.attachmentId = attachmentId;
+    this.contentType = contentType;
   }
 
   @Override
@@ -21,12 +23,13 @@ public class UnmutableFile implements ReadableFile, ReadableTypeVisitable {
 
   @Override
   public AttachmentId getValue() {
-    return value;
+    return attachmentId;
   }
 
   @Override
   public String toString() {
-    return value.serialise();
+    return attachmentId.serialise()
+        + (contentType != null && !contentType.isEmpty() ? "," + contentType : "");
   }
 
   @Override
@@ -55,6 +58,16 @@ public class UnmutableFile implements ReadableFile, ReadableTypeVisitable {
   @Override
   public UnmutableFile asFile() {
     return this;
+  }
+
+  @Override
+  public AttachmentId getFileId() {
+    return attachmentId;
+  }
+
+  @Override
+  public String getContentType() {
+    return contentType;
   }
 
 }
