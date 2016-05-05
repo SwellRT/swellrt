@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'Apache Wave Server'
 def vendor = 'The Apache Software Foundation'
-version = "0.4.1"
+version = "0.4.2"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
@@ -166,9 +166,6 @@ dependencies {
             [group: "org.eclipse.jetty.websocket", name: "websocket-common", version: "9.2.14.v20151106"],       // [?, ?]
             [group: "org.eclipse.jetty.websocket", name: "websocket-server", version: "9.2.14.v20151106"],       // [?, ?]
             [group: "org.eclipse.jetty.websocket", name: "websocket-servlet", version: "9.2.14.v20151106"],      // [?, ?]
-            [group: "org.gnu.inet", name: "libidn", version: "1.15"],                                           // [?, ?]
-            [group: "org.igniterealtime", name: "tinder", version: "1.2.3"],                                    // [1/2016, 6/2016]
-            [group: "org.igniterealtime.whack", name: "core", version: "2.0.0"],                                // [1/2016, 6/2016]
             [group: "org.jdom", name: "jdom", version: "1.1.3"],                                                // [?, ?]
             [group: "org.mongodb", name: "mongo-java-driver", version: "2.11.2"],                               // [?, ?]
             [group: "org.slf4j", name: "slf4j-api", version: "1.6.1"],                                          // [?, ?]
@@ -506,8 +503,6 @@ testAll.dependsOn test, testMongo, testLarge, testGwt
 testGwt.mustRunAfter compileGwt, testLarge
 testMongo.mustRunAfter compileJava, test
 testLarge.mustRunAfter test
-
-ant.importBuild 'config/server-config.xml'
 
 //=============================================================================
 // Custom UberJar Implementation

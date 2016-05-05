@@ -45,7 +45,7 @@ public class SimpleWantedEvaluationSetTest extends TestCase {
     EVALUATION_2 =
       new SimpleWantedEvaluation(TEST_ID, ADDER, false, 0.2f, 1010, "test2", false, "");
     EVALUATION_3 =
-      new SimpleWantedEvaluation(TEST_ID, ADDER, true, 0.3f, 1010, "agent", true, "");
+      new SimpleWantedEvaluation(TEST_ID, ADDER, true, 0.3f, 1011, "agent", true, "");
   }
 
   public void testBasic() {

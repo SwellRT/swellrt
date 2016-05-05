@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.file;
 
+import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.ConfigFactory;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.AccountStoreTestBase;
@@ -42,7 +43,7 @@ public class AccountStoreTest extends AccountStoreTestBase {
   @Override
   protected AccountStore newAccountStore() {
     return new FileAccountStore(
-      ConfigFactory.parseString("core.account_store_directory : " + path.getAbsolutePath()));
+      ConfigFactory.parseMap (ImmutableMap.of("core.account_store_directory", path.getAbsolutePath())));
   }
 
   @Override

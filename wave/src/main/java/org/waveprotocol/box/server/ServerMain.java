@@ -61,7 +61,6 @@ import org.waveprotocol.box.stat.StatService;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.federation.FederationTransport;
 import org.waveprotocol.wave.federation.noop.NoOpFederationModule;
-import org.waveprotocol.wave.federation.xmpp.XmppFederationModule;
 import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
@@ -108,10 +107,9 @@ public class ServerMain {
     injector = injector.createChildInjector(profilingModule, executorsModule);
 
     Config config = injector.getInstance(Config.class);
-    boolean enableFederation = config.getBoolean("federation.enable_federation");
 
     Module serverModule = injector.getInstance(ServerModule.class);
-    Module federationModule = buildFederationModule(injector, enableFederation);
+    Module federationModule = buildFederationModule(injector);
     Module robotApiModule = new RobotApiModule();
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
     Module searchModule = injector.getInstance(SearchModule.class);
@@ -140,15 +138,9 @@ public class ServerMain {
     server.startWebSocketServer(injector);
   }
 
-  private static Module buildFederationModule(Injector settingsInjector, boolean enableFederation)
+  private static Module buildFederationModule(Injector settingsInjector)
       throws ConfigurationException {
-    Module federationModule;
-    if (enableFederation) {
-      federationModule = settingsInjector.getInstance(XmppFederationModule.class);
-    } else {
-      federationModule = settingsInjector.getInstance(NoOpFederationModule.class);
-    }
-    return federationModule;
+    return settingsInjector.getInstance(NoOpFederationModule.class);
   }
 
   private static void initializeServer(Injector injector, String waveDomain)

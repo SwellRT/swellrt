@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.file;
 
+import com.google.common.collect.ImmutableMap;
 import com.typesafe.config.ConfigFactory;
 import org.waveprotocol.box.server.persistence.CertPathStoreTestBase;
 import org.waveprotocol.wave.crypto.CertPathStore;
@@ -46,7 +47,8 @@ public class CertPathStoreTest extends CertPathStoreTestBase {
 
   @Override
   protected CertPathStore newCertPathStore() {
-    return new FileSignerInfoStore(ConfigFactory.parseString("core.signer_info_store_directory : " + path.getAbsolutePath()));
+    return new FileSignerInfoStore(ConfigFactory.parseMap (
+        ImmutableMap.of("core.signer_info_store_directory", path.getAbsolutePath())));
   }
 
   @Override

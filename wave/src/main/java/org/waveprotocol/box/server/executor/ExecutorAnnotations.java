@@ -80,11 +80,6 @@ public interface ExecutorAnnotations {
   public @interface RobotGatewayExecutor {
   }
 
-  @Retention(RUNTIME)
-  @BindingAnnotation
-  public @interface XmppExecutor {
-  }
-
   @BindingAnnotation
   public @interface SolrExecutor {
   }

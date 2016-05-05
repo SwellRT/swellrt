@@ -160,17 +160,6 @@ Note:
 - if a jar is unable to be unzipped with wave:extractApi then delete the jar from your cache and try again.
     You may need to restart. If problem persists let the newsgroup know or create an issue on Jira.
 
-To config your server a default configuration is provided by reference.conf,
-this can be overwritten by application.conf with custom values.
-
-To enable federation the following must be run.
-
-To create a simple configuration run:
-    `./gradlew prosody-config`
-
-To override default values pass them to the ant script.
-For example, to override wave\_server\_domain run:
-`./gradlew prosody-config -Dwave_server_domain=example.com`
 Take a look at the reference.conf to learn about configuration and possible/default values.
 
 The server can be started (on Linux/MacOS) by running
