@@ -41,10 +41,10 @@ import org.atmosphere.config.service.AtmosphereHandlerService;
 import org.atmosphere.cpr.*;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
 import org.atmosphere.util.IOUtils;
+import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-//import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -482,7 +482,7 @@ public class ServerRpcProvider {
   }
 
   /**
-   * @return a list of {@link SelectChannelConnector} each bound to a host:port
+   * @return a list of {@link Connector} each bound to a host:port
    *         pair form the list addresses.
    */
   private List<Connector> getSelectChannelConnectors(
@@ -822,5 +822,23 @@ public class ServerRpcProvider {
    */
   public void addFilter(String urlPattern, Class<? extends Filter> filter) {
     filterRegistry.add(new Pair<String, Class<? extends Filter>>(urlPattern, filter));
+  }
+
+  /**
+   * Add a transparent proxy to the servlet registry. The servlet will proxy to the
+   * specified URL pattern.
+   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   * @param proxyTo the URL to proxy to.
+   * @param prefix the prefix that should be proxied.
+   */
+  public void addTransparentProxy(String urlPattern, String proxyTo, String prefix) {
+    Preconditions.checkNotNull(urlPattern);
+    Preconditions.checkNotNull(proxyTo);
+    Preconditions.checkNotNull(prefix);
+
+    ServletHolder proxy = new ServletHolder(ProxyServlet.Transparent.class);
+    proxy.setInitParameter("proxyTo", proxyTo);
+    proxy.setInitParameter("prefix", prefix);
+    servletRegistry.add(Pair.of(urlPattern, proxy));
   }
 }

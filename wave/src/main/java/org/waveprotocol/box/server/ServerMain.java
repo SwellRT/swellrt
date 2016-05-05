@@ -26,7 +26,6 @@ import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.configuration.ConfigurationException;
-import org.eclipse.jetty.proxy.ProxyServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
 import org.waveprotocol.box.server.authentication.AccountStoreHolder;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -67,15 +66,7 @@ import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
 import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Wave Server entrypoint.
@@ -83,33 +74,6 @@ import java.util.Map;
 public class ServerMain {
 
   private static final Log LOG = Log.get(ServerMain.class);
-
-  @SuppressWarnings("serial")
-  @Singleton
-  public static class GadgetProxyServlet extends HttpServlet {
-
-    ProxyServlet.Transparent proxyServlet;
-
-    @Inject
-    public GadgetProxyServlet(Config config) {
-      String gadgetServerHostname = config.getString("core.gadget_server_hostname");
-      int gadgetServerPort = config.getInt("core.gadget_server_port");
-      LOG.info("Starting GadgetProxyServlet for " + gadgetServerHostname + ":" + gadgetServerPort);
-      proxyServlet = new ProxyServlet.Transparent(
-          "http://" + gadgetServerHostname + ":" + gadgetServerPort + "/gadgets",
-          "/gadgets");
-    }
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-      proxyServlet.init(config);
-    }
-
-    @Override
-    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-      proxyServlet.service(req, res);
-    }
-  }
 
   public static void main(String... args) {
     try {
@@ -230,11 +194,11 @@ public class ServerMain {
     server.addServlet("/iniavatars/*", InitialsAvatarsServlet.class);
     server.addServlet("/waveref/*", WaveRefServlet.class);
 
-    String gadgetHostName = config.getString("core.gadget_server_hostname");
-    int port = config.getInt("core.gadget_server_port");
-    Map<String, String> initParams =
-        Collections.singletonMap("hostHeader", gadgetHostName + ":" + port);
-    server.addServlet("/gadgets/*", GadgetProxyServlet.class, initParams);
+    String gadgetServerHostname = config.getString("core.gadget_server_hostname");
+    int gadgetServerPort = config.getInt("core.gadget_server_port");
+    LOG.info("Starting GadgetProxyServlet for " + gadgetServerHostname + ":" + gadgetServerPort);
+    server.addTransparentProxy("/gadgets/*",
+        "http://" + gadgetServerHostname + ":" + gadgetServerPort + "/gadgets", "/gadgets");
 
     server.addServlet("/", WaveClientServlet.class);
 
