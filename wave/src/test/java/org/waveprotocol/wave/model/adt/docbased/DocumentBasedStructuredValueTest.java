@@ -272,9 +272,11 @@ public class DocumentBasedStructuredValueTest extends TestCase {
    *
    * @return a map-context view of the document state
    */
-  private static ValueContext<?, ?> substrate(Map<Key, Integer> values) {
-    return substrate(BasicFactories.observableDocumentProvider().create("tagname",
-        Collections.<String, String>emptyMap()), values);
+  @SuppressWarnings("unchecked")
+  private static <N, E extends N> ValueContext<N, E> substrate(Map<Key, Integer> values) {
+    ObservableMutableDocument doc =
+      BasicFactories.observableDocumentProvider().create("tagname",Collections.<String, String>emptyMap());
+    return substrate(doc, values);
   }
 
   /**
@@ -282,8 +284,8 @@ public class DocumentBasedStructuredValueTest extends TestCase {
    *
    * @return a map-context view of the document state.
    */
-  private static <N, E extends N> ValueContext<N, E> substrate(
-      ObservableMutableDocument<N, E, ?> doc, Map<Key, Integer> values) {
+  private static <N, E extends N, T extends N> ValueContext<N, E> substrate(
+      ObservableMutableDocument<N, E, T> doc, Map<Key, Integer> values) {
     // Insert container element.
     E container = doc.createChildElement(doc.getDocumentElement(), CONTAINER_TAG,
         Collections.<String,String>emptyMap());

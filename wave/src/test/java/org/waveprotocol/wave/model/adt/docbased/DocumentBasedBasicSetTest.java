@@ -121,9 +121,11 @@ public class DocumentBasedBasicSetTest extends TestCase {
    * @param value list of entries to include in the document state
    * @return a map-context view of the document state
    */
-  private static ValueContext<?, ?> substrate(int ... value) {
-    return substrate(BasicFactories.observableDocumentProvider().create("data",
-        Collections.<String, String>emptyMap()), value);
+  @SuppressWarnings("unchecked")
+  private static <N, E extends N>  ValueContext<N, E> substrate(int ... value) {
+    ObservableMutableDocument doc =
+      BasicFactories.observableDocumentProvider().create("data",Collections.<String, String>emptyMap());
+    return substrate(doc, value);
   }
 
   /**
@@ -131,8 +133,8 @@ public class DocumentBasedBasicSetTest extends TestCase {
    *
    * @return a map-context view of the document state.
    */
-  private static <N, E extends N> ValueContext<N, E> substrate(
-      ObservableMutableDocument<N, E, ?> doc,
+  private static <N, E extends N, T extends N> ValueContext<N, E> substrate(
+      ObservableMutableDocument<N, E, T> doc,
       int ... values) {
     // Insert container element
     E container = doc.createChildElement(doc.getDocumentElement(), CONTAINER_TAG,

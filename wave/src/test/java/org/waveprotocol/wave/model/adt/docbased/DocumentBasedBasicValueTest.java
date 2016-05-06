@@ -116,9 +116,11 @@ public class DocumentBasedBasicValueTest extends TestCase {
    * @param value list of entries to include in the document state
    * @return a map-context view of the document state
    */
-  private static ValueContext<?, ?> substrate(int value) {
-    return substrate(BasicFactories.observableDocumentProvider().create("data",
-        Collections.<String, String>emptyMap()), value);
+  @SuppressWarnings("unchecked")
+  private static <N, E extends N> ValueContext<N, E>substrate(int value) {
+    ObservableMutableDocument doc =
+      BasicFactories.observableDocumentProvider().create("data",Collections.<String, String>emptyMap());
+    return substrate(doc, value);
   }
 
   /**

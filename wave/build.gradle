@@ -38,8 +38,8 @@ applicationDefaultJvmArgs = [
         "-Djava.util.logging.config.file=config/wiab-logging.conf",
         "-Djava.security.auth.login.config=config/jaas.config"
 ]
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 compileJava {
     options.incremental = true
 }

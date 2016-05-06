@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import com.google.wave.api.FetchProfilesRequest;
 import com.google.wave.api.FetchProfilesResult;
@@ -183,7 +184,7 @@ public final class FetchProfilesServlet extends HttpServlet {
   /**
    * Writes the json with profile results to Response.
    */
-  private void printJson(MessageLite message, HttpServletResponse resp)
+  private <P extends Message> void printJson(P message, HttpServletResponse resp)
       throws IOException {
     if (message == null) {
       resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
