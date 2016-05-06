@@ -827,6 +827,7 @@ public class ServerRpcProvider {
   /**
    * Add a transparent proxy to the servlet registry. The servlet will proxy to the
    * specified URL pattern.
+   * For example: addTransparentProxy("/gadgets/*","http://gmodules:80/gadgets", "/gadgets")
    * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
    * @param proxyTo the URL to proxy to.
    * @param prefix the prefix that should be proxied.

@@ -30,11 +30,12 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'Apache Wave Server'
 def vendor = 'The Apache Software Foundation'
-version = 0.4
+version = "0.4.1"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
         "-Dorg.eclipse.jetty.LEVEL=DEBUG",
+        "-Djava.util.logging.config.file=config/wiab-logging.conf",
         "-Djava.security.auth.login.config=config/jaas.config"
 ]
 sourceCompatibility = 1.7
