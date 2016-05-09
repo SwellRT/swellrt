@@ -29,10 +29,17 @@ public class WidgetDoodad {
   public static final String TAG = "widget";
   public static final String ATTR_TYPE = "type";
   public static final String ATTR_STATE = "state";
+  public static final String ATTR_ID = "id";
+
+  public static final String WIDGET_CLASS = "sw-widget";
+  public static final String WIDGET_ELEMENT_PREFIX = "sw-widget-";
+
+  public static String getWidgetElementId(String type, String id) {
+    return WIDGET_ELEMENT_PREFIX + type + "-" + id;
+  }
 
 
   static class WidgetContext extends JavaScriptObject {
-
 
     public final static native WidgetContext create(ContentElement element) /*-{
 
@@ -81,18 +88,20 @@ public class WidgetDoodad {
 
     @Override
     public Element createDomImpl(Renderable element) {
-      Element widgetSpan = Document.get().createSpanElement();
-      widgetSpan.addClassName("sw-widget");
-      DomHelper.setContentEditable(widgetSpan, false, false);
-      return widgetSpan;
+      Element widgetElement = Document.get().createDivElement();
+      widgetElement.addClassName(WIDGET_CLASS);
+      DomHelper.setContentEditable(widgetElement, true, true);
+      return widgetElement;
     }
 
     @Override
     public void onActivatedSubtree(ContentElement element) {
       String state = element.getAttribute(ATTR_STATE);
       String type = element.getAttribute(ATTR_TYPE);
+      String id = element.getAttribute(ATTR_ID);
 
-      element.getImplNodelet().addClassName("sw-widget-" + type);
+      element.getImplNodelet().addClassName(WIDGET_ELEMENT_PREFIX + type);
+      element.getImplNodelet().setId(getWidgetElementId(type, id));
 
       WidgetController controller = controllers.get(type);
       if (controller != null) {

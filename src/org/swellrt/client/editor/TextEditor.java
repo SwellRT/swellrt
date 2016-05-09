@@ -48,6 +48,7 @@ import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -136,6 +137,8 @@ public class TextEditor implements EditorUpdateListener {
   private Editor editor;
 
   private TextEditorListener listener;
+
+  private int widgetCounter = 0;
 
   /**
    * Registry of JavaScript controllers for each Widget type
@@ -293,21 +296,26 @@ public class TextEditor implements EditorUpdateListener {
   /**
    * Insert a Widget at the current cursor position or at the end iff the type
    * is registered.
-   *
+   * 
    * @param type
    * @param state
+   * 
+   * @return The widget as DOM element
    */
-  public void addWidget(String type, String state) {
+  public Element addWidget(String type, String state) {
 
-    if (!widgetRegistry.containsKey(type)) return;
+    if (!widgetRegistry.containsKey(type)) return null;
 
     Point<ContentNode> currentPoint = null;
 
     if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
       currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
 
+    // For now, the widget id will be a timestamp
+    String id = String.valueOf(new Date().getTime());
+
     XmlStringBuilder xml = XmlStringBuilder.createFromXmlString("<widget type='" + type + "' state='" + state
-        + "' />");
+            + "' id='" + id + "' />");
 
     if (currentPoint != null) {
       editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
@@ -315,6 +323,9 @@ public class TextEditor implements EditorUpdateListener {
       editor.getContent().getMutableDoc().appendXml(xml);
       editor.flushSaveSelection();
     }
+
+    String widgetElementId = WidgetDoodad.getWidgetElementId(type, id);
+    return editor.getDocumentHtmlElement().getOwnerDocument().getElementById(widgetElementId);
 
   }
 
