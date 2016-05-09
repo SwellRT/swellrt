@@ -54,6 +54,10 @@ public class TextEditorJS extends JavaScriptObject {
 
       setAnnotation: function(name, value) {
          delegate.@org.swellrt.client.editor.TextEditor::setAnnotation(Ljava/lang/String;Ljava/lang/String;)(name, value);
+      },
+
+      getSelection: function() {
+        return delegate.@org.swellrt.client.editor.TextEditor::getSelection()();
       }
 
     }; // jsWrapper

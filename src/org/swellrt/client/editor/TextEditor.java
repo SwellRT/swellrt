@@ -452,4 +452,15 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
+  /**
+   * Gets the current selection. See {@link TextEditorSelection} for methods to
+   * update the document's selection.
+   * 
+   * @return
+   */
+  public TextEditorSelection getSelection() {
+    return TextEditorSelection.create(editor.getSelectionHelper().getSelectionRange().asRange(),
+        doc.getMutableDoc());
+  }
+
 }
