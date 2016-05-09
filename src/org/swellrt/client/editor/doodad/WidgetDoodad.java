@@ -3,7 +3,6 @@ package org.swellrt.client.editor.doodad;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
@@ -93,6 +92,8 @@ public class WidgetDoodad {
       String state = element.getAttribute(ATTR_STATE);
       String type = element.getAttribute(ATTR_TYPE);
 
+      element.getImplNodelet().addClassName("sw-widget-" + type);
+
       WidgetController controller = controllers.get(type);
       if (controller != null) {
         controller.onInit(element.getImplNodelet(), state);
@@ -127,34 +128,18 @@ public class WidgetDoodad {
     @Override
     public void onActivated(ContentElement element) {
 
-      final String type = element.getAttribute(ATTR_TYPE);
-      final WidgetController controller = controllers.get(type);
-      final WidgetContext context = WidgetContext.create(element);
+      /*
+       * final String type = element.getAttribute(ATTR_TYPE); final
+       * WidgetController controller = controllers.get(type); final
+       * WidgetContext context = WidgetContext.create(element);
+       */
 
-      // Register Widget's event handlers as Doodad handlers.
-
-      for (int i = 0; i < controller.getSupportedEvents().length(); i++) {
-        final String event = controller.getSupportedEvents().get(i);
-
-        // TODO check if event is a valid event
-
-        Helper.registerJsHandler(element, element.getImplNodelet(), event,
-            new DomHelper.JavaScriptEventListener() {
-
-              @Override
-              public void onJavaScriptEvent(String name, Event event) {
-                controller.onEvent(name, event, context);
-              }
-
-            });
-      }
-
+      // TODO consider to show this method in the WidgetController interface
     }
 
     @Override
     public void onDeactivated(ContentElement element) {
-      // Cleanup
-      Helper.removeJsHandlers(element);
+      // TODO consider to show this method in the WidgetController interface
     }
 
   }

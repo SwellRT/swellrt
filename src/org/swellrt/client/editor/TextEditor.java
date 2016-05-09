@@ -10,7 +10,6 @@ import org.swellrt.client.editor.TextEditorAnnotation.ParagraphAnnotation;
 import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.client.editor.doodad.WidgetController;
 import org.swellrt.client.editor.doodad.WidgetDoodad;
-import org.swellrt.client.editor.doodad.WidgetModelDoodad;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
@@ -194,12 +193,6 @@ public class TextEditor implements EditorUpdateListener {
 
     if (!isClean()) cleanUp();
 
-    // TODO enable a way to set the Model after registering the Doodad. Move
-    // this registering on
-    // right methids registerDoodads()
-    WidgetModelDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry,
-        text.getModel());
-
     doc = getContentDocument(text);
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
 
@@ -325,37 +318,6 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
-  /**
-   * Insert a Model supported Widget at the current cursor position iff the type
-   * is registered.
-   *
-   * The state of the Widget is provided in a subtree of the collaborative data
-   * model containing the current text;
-   *
-   * @param type
-   * @param dataModelPath a path to object in the data model. e.g.
-   *        root.cities.newyork
-   */
-  public void addModelWidget(String type, String dataModelPath) {
-
-    if (!widgetRegistry.containsKey(type)) return;
-
-    Point<ContentNode> currentPoint = null;
-
-    if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
-      currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
-
-    XmlStringBuilder xml =
-        XmlStringBuilder.createFromXmlString("<widget-model type='" + type + "' path='"
-            + dataModelPath + "' />");
-
-    if (currentPoint != null) {
-      editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
-    } else {
-      editor.getContent().getMutableDoc().appendXml(xml);
-      editor.flushSaveSelection();
-    }
-  }
 
   protected void registerDoodads() {
 
