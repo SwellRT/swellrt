@@ -43,7 +43,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
-import org.swellrt.client.WaveWrapper;
+import org.swellrt.client.WaveLoader;
 import org.swellrt.webclient.search.SearchPresenterMod;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
@@ -184,7 +184,7 @@ public class WebClientMod implements EntryPoint {
   /**
    * A central point for new wave models instances
    */
-  private WaveWrapper currentContentWave;
+  private WaveLoader currentContentWave;
 
   /**
    * This is the entry point method.

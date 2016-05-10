@@ -15,7 +15,19 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
 
 import java.util.Set;
 
-public class WaveWrapper extends Stages {
+/**
+ * The Wave Loader encapsulates the process of loading a Wave and Wavelets from
+ * the server and build the in-memory structure.
+ * 
+ * It uses the original stage-based load process optimized for Browsers and the
+ * conversational model. TODO consider to simplify the staged loader.
+ * 
+ * Use the method {@link Stages#load} to launch the load process.
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
+ */
+public class WaveLoader extends Stages {
 
 
   private final static AsyncHolder<Object> HALT = new AsyncHolder<Object>() {
@@ -41,7 +53,7 @@ public class WaveWrapper extends Stages {
   protected ParticipantId loggedInUser;
 
 
-  public WaveWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+  public WaveLoader(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, String localDomain,
       Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave,
       UnsavedDataListener dataListener) {
@@ -95,7 +107,7 @@ public class WaveWrapper extends Stages {
 
       @Override
       protected String getLocalDomain() {
-        return WaveWrapper.this.localDomain;
+        return WaveLoader.this.localDomain;
       }
     });
   }

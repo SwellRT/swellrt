@@ -79,13 +79,11 @@ public class ProxyAdapter {
     return undefined;
   }-*/;
 
+
   public native JavaScriptObject of(ModelJS delegate) /*-{
 
 
-
   }-*/;
-
-
 
 
   public native JavaScriptObject of(MapType delegate) /*-{

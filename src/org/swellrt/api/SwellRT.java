@@ -18,7 +18,7 @@ import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import org.swellrt.api.ServiceCallback.JavaScriptResponse;
-import org.swellrt.client.WaveWrapper;
+import org.swellrt.client.WaveLoader;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.box.stat.Timing;
@@ -138,7 +138,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
   /** List of living waves for the active session. */
-  private Map<WaveId, WaveWrapper> waveWrappers = CollectionUtils.newHashMap();;
+  private Map<WaveId, WaveLoader> waveWrappers = CollectionUtils.newHashMap();;
 
   /** A listener to global data/network/runtime events */
   private SwellRT.Listener listener = null;
@@ -172,7 +172,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   protected void cleanChannelData() {
     // Destroy all waves
-    for (Entry<WaveId, WaveWrapper> entry : waveWrappers.entrySet())
+    for (Entry<WaveId, WaveLoader> entry : waveWrappers.entrySet())
       entry.getValue().destroy();
 
     waveWrappers.clear();
@@ -673,7 +673,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     if (loggedInUser == null) throw new SessionNotStartedException();
 
     // Destroy all waves
-    for (Entry<WaveId, WaveWrapper> entry : waveWrappers.entrySet())
+    for (Entry<WaveId, WaveLoader> entry : waveWrappers.entrySet())
       entry.getValue().destroy();
 
     waveWrappers.clear();
@@ -688,21 +688,21 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     destroyWebClientSession();
   }
 
-  protected WaveWrapper getWaveWrapper(WaveId waveId, boolean isNew) {
+  protected WaveLoader getWaveWrapper(WaveId waveId, boolean isNew) {
 
 
     if (isNew) {
       Preconditions.checkArgument(!waveWrappers.containsKey(waveId),
           "Trying to create an existing Wave");
-      WaveWrapper ww =
-          new WaveWrapper(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+      WaveLoader ww =
+          new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
               .getUnderlyingGenerator(), waveDomain,
               Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
       waveWrappers.put(waveId, ww);
     } else {
       if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
-        WaveWrapper ww =
-            new WaveWrapper(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+        WaveLoader ww =
+            new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
                 .getUnderlyingGenerator(), waveDomain,
                 Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
         waveWrappers.put(waveId, ww);
@@ -713,7 +713,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public String createWave(final OnLoadCallback<WaveWrapper> callback) throws NetworkException,
+  public String createWave(final OnLoadCallback<WaveLoader> callback) throws NetworkException,
       SessionNotStartedException {
 
     if (!isSessionStarted()) {
@@ -727,7 +727,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
     final WaveId waveId = TypeIdGenerator.get().newWaveId();
-    final WaveWrapper waveWrapper = getWaveWrapper(waveId, true);
+    final WaveLoader waveWrapper = getWaveWrapper(waveId, true);
 
     if (waveWrapper.isLoaded()) {
       callback.onLoad(waveWrapper);
@@ -754,7 +754,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @throws SessionNotStartedException
    * @throws RequestException
    */
-  public String openWave(final String strWaveId, final OnLoadCallback<WaveWrapper> callback)
+  public String openWave(final String strWaveId, final OnLoadCallback<WaveLoader> callback)
       throws InvalidIdException, NetworkException, SessionNotStartedException, RequestException {
 
     final WaveId waveId = WaveId.deserialise(strWaveId);
@@ -768,7 +768,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     }
 
 
-    final WaveWrapper waveWrapper = getWaveWrapper(waveId, false);
+    final WaveLoader waveWrapper = getWaveWrapper(waveId, false);
 
     if (waveWrapper.isLoaded()) {
       callback.onLoad(waveWrapper);
@@ -803,7 +803,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new InvalidIdException();
     }
 
-    WaveWrapper waveWrapper = waveWrappers.get(waveId);
+    WaveLoader waveWrapper = waveWrappers.get(waveId);
 
     if (waveWrapper == null) throw new InvalidIdException();
 
