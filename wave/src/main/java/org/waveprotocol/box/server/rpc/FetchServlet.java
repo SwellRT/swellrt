@@ -21,6 +21,7 @@ package org.waveprotocol.box.server.rpc;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 
 import org.waveprotocol.box.common.comms.WaveClientRpc.DocumentSnapshot;
@@ -103,7 +104,7 @@ public final class FetchServlet extends HttpServlet {
     renderSnapshot(waveref, user, response);
   }
 
-  private void serializeObjectToServlet(MessageLite message, HttpServletResponse dest)
+  private <P extends Message> void serializeObjectToServlet(P message, HttpServletResponse dest)
       throws IOException {
     if (message == null) {
       // Snapshot is null. It would be nice to 404 here, but we can't let

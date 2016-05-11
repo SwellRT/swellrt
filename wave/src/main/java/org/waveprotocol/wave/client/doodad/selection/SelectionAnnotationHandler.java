@@ -576,7 +576,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     final String profileAddress = profile.getAddress();
     sessions.each(new ProcV<SessionData>() {
       @Override
-      public void apply(String _, SessionData value) {
+      public void apply(String s, SessionData value) {
         if (value.address.equals(profileAddress) && !value.isStale()) {
           value.replaceName(profile);
         }

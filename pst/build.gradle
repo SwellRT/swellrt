@@ -28,8 +28,8 @@ apply plugin: 'com.google.protobuf'
 // Project Level Settings
 //=============================================================================
 version = 0.1
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 def title = 'Apache Wave PST Compiler'
 def vendor = 'The Apache Software Foundation'
 
