@@ -15,8 +15,7 @@
       <td style="padding: 15px 30px 15px 30px; font-size: 15px">
 
        <p style="margin: 0 0 9px">
-        $text.invitationEmailBody.insert($email, $inviter)
-        <a href="$url">$url</a>
+        $text.invitationEmailBody.insert($email, $inviter, $url, $url_text)
        </p>
       </td>
      </tr>

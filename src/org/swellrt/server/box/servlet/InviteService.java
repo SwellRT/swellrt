@@ -26,7 +26,8 @@ public class InviteService extends SwellRTService {
   private static final String EMAIL = "email";
   private static final String INVITATION_EMAIL_BUNDLE = "InvitationEmailMessages";
   private static final String INVITATION_TEMPLATE = "Invitation.vm";
-  private static final String URL = "url";
+  public static final String URL = "url";
+  public static final String URL_TEXT = "url_text";
   private final AccountStore accountStore;
   private final EmailSender emailSender;
   private DecoupledTemplates decTemplates;
@@ -74,14 +75,15 @@ public class InviteService extends SwellRTService {
 
     String url = req.getParameter(URL);
 
+    String urlText = req.getParameter(URL_TEXT);
+
     HashMap<String, Object> params = new HashMap<String, Object>();
 
     String inviter = participantId.getAddress().split("@")[0];
     params.put("inviter", inviter);
     params.put("url", url);
     params.put("email", email);
-
-    System.out.println("URL:::" + url);
+    params.put("url_text", urlText);
 
     try {
 
