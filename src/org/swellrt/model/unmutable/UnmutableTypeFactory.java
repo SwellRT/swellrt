@@ -3,12 +3,11 @@ package org.swellrt.model.unmutable;
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.adt.UnmutableElementList;
 import org.swellrt.model.generic.FileType;
+import org.swellrt.model.generic.InvalidModelStringValue;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.StringType;
 import org.swellrt.model.generic.TextType;
-import org.waveprotocol.wave.media.model.AttachmentId;
-import org.waveprotocol.wave.model.id.InvalidIdException;
 
 public class UnmutableTypeFactory {
 
@@ -35,8 +34,9 @@ public class UnmutableTypeFactory {
 
       int index = Integer.valueOf(ref.substring(FileType.PREFIX.length() + 1));
       try {
-        return new UnmutableFile(AttachmentId.deserialise(valuesContainer.get(index)));
-      } catch (InvalidIdException e) {
+        FileType.Value v = FileType.Value.deserialize(valuesContainer.get(index));
+        return new UnmutableFile(v.getAttachmentId(), v.getContentType());
+      } catch (InvalidModelStringValue e) {
         // TODO handle exception
         return null;
       }

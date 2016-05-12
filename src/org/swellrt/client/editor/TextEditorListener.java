@@ -1,10 +1,11 @@
 package org.swellrt.client.editor;
 
-import org.waveprotocol.wave.model.util.ReadableStringMap;
+import com.google.gwt.core.client.JavaScriptObject;
+
 
 public interface TextEditorListener {
 
-  public void onSelectionChange(int start, int end, ReadableStringMap<String> annotations);
+  public void onSelectionChange(int start, int end, JavaScriptObject annotations);
 
 
 }

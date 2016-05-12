@@ -29,7 +29,7 @@ public class NotificationService extends SwellRTService {
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
-    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
 
     if (participantId == null) {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -46,10 +46,7 @@ public class NotificationService extends SwellRTService {
       String name = paramNames.nextElement();
       String value = req.getParameter(name);
 
-      HttpSession session = req.getSession(false);
-
-      System.out.println(session);
-      System.out.println(sessionManager);
+      HttpSession session = sessionManager.getSession(req);
       String account = sessionManager.getLoggedInAccount(session).getId().getAddress();
 
       switch (name) {

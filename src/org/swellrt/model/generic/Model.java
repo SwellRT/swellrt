@@ -279,6 +279,10 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return currentParticipant;
   }
 
+  public String getId() {
+    return this.getWaveId().serialise();
+  }
+
   public WaveId getWaveId() {
     return this.waveletData.getWaveId();
   }
@@ -420,9 +424,12 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
   }
 
   public FileType createFile(AttachmentId attachmentId) {
-    return new FileType(attachmentId, this);
+    return new FileType(attachmentId, null, this);
   }
 
+  public FileType createFile(AttachmentId attachmentId, String contentType) {
+    return new FileType(attachmentId, contentType, this);
+  }
 
   @Override
   public Type fromPath(String path) {

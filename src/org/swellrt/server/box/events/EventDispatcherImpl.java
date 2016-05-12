@@ -10,6 +10,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Default implementation of {@link EventDispatcher}
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
+ */
 public class EventDispatcherImpl implements EventDispatcher {
 
   private static final Log LOG = Log.get(EventDispatcherImpl.class);

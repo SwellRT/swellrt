@@ -73,14 +73,34 @@ public abstract class SwellRTService {
     return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
   }
 
+  /**
+   * Check if request has a valid user session, if so return the participant
+   * object. Send a HTTP response error otherwise.
+   * 
+   * @param req
+   * @param response
+   * @return
+   * @throws IOException
+   */
   protected ParticipantId checkForLoggedInUser(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
-    ParticipantId pid = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId pid = sessionManager.getLoggedInUser(req);
     if (pid == null) {
       sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
     }
     return pid;
 
+  }
+
+  /**
+   * Check if a participant is in the HTTP current session. It means that at
+   * least is logged in one Window session.
+   * 
+   * @param participantId
+   * @return
+   */
+  protected boolean isSessionParticipant(HttpServletRequest req, ParticipantId participantId) {
+    return sessionManager.getAllLoggedInUser(req.getSession()).contains(participantId);
   }
 
 }

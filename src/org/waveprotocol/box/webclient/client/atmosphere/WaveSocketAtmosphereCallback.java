@@ -2,9 +2,6 @@ package org.waveprotocol.box.webclient.client.atmosphere;
 
 import org.waveprotocol.box.webclient.client.WaveSocket;
 import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketCallback;
-import org.waveprotocol.wave.client.events.ClientEvents;
-import org.waveprotocol.wave.client.events.NetworkStatusEvent;
-import org.waveprotocol.wave.client.events.NetworkStatusEvent.ConnectionStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,21 +10,29 @@ import java.util.logging.Logger;
 /**
  * A WaveSocketCallback implementations adding specific Atmosphere WebSocket
  * subprotocol features to the original Wave WebSocket subprotocol.
- *
- *
+ * 
+ * 
  * This implementation expects following atmosphere features enabled:
  * <ul>
  * <li>Heart beat messages</li>
  * <li>Track message size + Base64 message encoding</li>
  * </ul>
- *
+ * 
+ * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
- *
+ * 
  */
 public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallback {
 
   private static final Logger Log = Logger.getLogger(WaveSocketAtmosphereCallback.class
       .getSimpleName());
+
+
+  /** Header name for extensions of the wave socket protocol */
+  private static final String EXT_RESPONSE_HEADER = "X-RESPONSE:";
+
+  private static final String EXT_RESPONSE_CLIENT_NOT_SUPPORTED = "CLIENT_NOT_SUPPORTED";
+  private static final String EXT_RESPONSE_INVALID_SESSION = "INVALID_SESSION";
 
 
   final static int WAVE_MESSAGE_SEPARATOR = '|';
@@ -77,9 +82,9 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
   /**
    * Decode Base64 string using browser native functions to avoid issues on
    * large encoded strings.
-   * 
+   *
    * It expects an UTF-8 string.
-   * 
+   *
    * @param m
    * @return
    */
@@ -110,22 +115,40 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
       if (isPackedWaveMessage(decoded)) {
         List<String> unpacked = unpackWaveMessages(decoded);
         for (String s : unpacked) {
-          delegate.onMessage(s);
+          dispatch(s);
         }
 
       } else {
-        delegate.onMessage(decoded);
+        dispatch(decoded);
       }
 
     } catch (Exception e) {
-      Log.severe(e.getMessage());
-      // Errors here should passed to WaveWebSocket, instead of relaying on
-      // client events.
-      ClientEvents.get().fireEvent(
-          new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, "DECODE_EXCEPTION"));
+      delegate.onError("EXCEPTION="+e.getMessage());
     }
 
   }
 
+  /**
+   * Check a message for extension headers and dispatch it to the
+   * {@link WaveSocket.WaveSocketCallback}
+   * 
+   * @param message a Wave RPC protocol's message maybe including extensions
+   */
+  private void dispatch(String message) {
+
+    if (message.startsWith(EXT_RESPONSE_HEADER)) {
+      String response = message.substring(EXT_RESPONSE_HEADER.length());
+      delegate.onError(response);
+    } else {
+      delegate.onMessage(message);
+    }
+
+  }
+
+
+  @Override
+  public void onError(String errorCode) {
+    delegate.onError("EXCEPTION=" + errorCode);
+  }
 
 }

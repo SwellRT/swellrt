@@ -21,7 +21,9 @@ package org.waveprotocol.box.server.rpc;
 
 import com.google.protobuf.Message;
 
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
 public interface ProtoCallback {
-  public void message(int sequenceNo, Message message);
+  public void message(int sequenceNo, Message message, ParticipantId loggedInUser);
 }
 

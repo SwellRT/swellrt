@@ -43,6 +43,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
+import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.i18n.WebClientMessages;
 import org.waveprotocol.box.webclient.profile.RemoteProfileManagerImpl;
 import org.waveprotocol.box.webclient.search.RemoteSearchService;
@@ -52,6 +53,9 @@ import org.waveprotocol.box.webclient.search.SearchPanelWidget;
 import org.waveprotocol.box.webclient.search.SearchPresenter;
 import org.waveprotocol.box.webclient.search.SimpleSearch;
 import org.waveprotocol.box.webclient.search.WaveStore;
+import org.waveprotocol.box.webclient.stat.SingleThreadedRequestScope;
+import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsEventSystem;
+import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 import org.waveprotocol.box.webclient.widget.error.ErrorIndicatorPresenter;
 import org.waveprotocol.box.webclient.widget.frame.FramedPanel;
 import org.waveprotocol.box.webclient.widget.loading.LoadingIndicator;
@@ -71,8 +75,8 @@ import org.waveprotocol.wave.client.events.WaveCreationEventHandler;
 import org.waveprotocol.wave.client.events.WaveSelectionEvent;
 import org.waveprotocol.wave.client.events.WaveSelectionEventHandler;
 import org.waveprotocol.wave.client.wavepanel.event.EventDispatcherPanel;
-import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
 import org.waveprotocol.wave.client.wavepanel.event.FocusManager;
+import org.waveprotocol.wave.client.wavepanel.event.WaveChangeHandler;
 import org.waveprotocol.wave.client.widget.common.ImplPanel;
 import org.waveprotocol.wave.client.widget.popup.CenterPopupPositioner;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
@@ -89,10 +93,6 @@ import org.waveprotocol.wave.util.escapers.GwtWaverefEncoder;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.waveprotocol.box.stat.Timing;
-import org.waveprotocol.box.webclient.stat.SingleThreadedRequestScope;
-import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsEventSystem;
-import org.waveprotocol.box.webclient.stat.gwtevent.GwtStatisticsHandler;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -194,7 +194,7 @@ public class WebClient implements EntryPoint {
     HistorySupport.init(new HistoryProviderDefault());
     HistoryChangeListener.init();
 
-    websocket = new WaveWebSocketClient(websocketNotAvailable(), getWebSocketBaseUrl());
+    websocket = new WaveWebSocketClient(getWebSocketBaseUrl(), "1.0");
     websocket.connect();
 
     if (Session.get().isLoggedIn()) {

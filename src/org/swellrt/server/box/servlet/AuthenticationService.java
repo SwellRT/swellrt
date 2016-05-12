@@ -85,11 +85,6 @@ public class AuthenticationService extends SwellRTService {
 
   }
 
-  /**
-   * A
-   */
-  public static final String SESSION_RECYCLE_COUNTER = "recycle_counter";
-
   // The Object ID of the PKCS #9 email address stored in the client
   // certificate.
   // Source:
@@ -217,8 +212,7 @@ public class AuthenticationService extends SwellRTService {
             context = login(authData.id, authData.password);
             subject = context.getSubject();
             loggedInAddress = getLoggedInUser(subject);
-            session = createOrRecycleSession(req);
-
+            session = sessionManager.getSession(req, true);
 
           } catch (LoginException e) {
 
@@ -234,7 +228,7 @@ public class AuthenticationService extends SwellRTService {
 
         } else if (authData.id != null) {
 
-          session = createOrRecycleSession(req);
+          session = sessionManager.getSession(req, true);
           loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
 
         }
@@ -254,7 +248,7 @@ public class AuthenticationService extends SwellRTService {
     if (loggedInAddress == null) {
 
       try {
-        session = req.getSession(false);
+        session = sessionManager.getSession(req);
         LOG.info("Closing session " + (session != null ? session.getId() : ""));
         sessionManager.logout(session);
         if (context != null)
@@ -394,25 +388,32 @@ public class AuthenticationService extends SwellRTService {
     // If the user is already logged in, we'll try to redirect them immediately.
     resp.setCharacterEncoding("UTF-8");
     req.setCharacterEncoding("UTF-8");
-    HttpSession session = req.getSession(false);
-    ParticipantId user = sessionManager.getLoggedInUser(session);
 
-    if (user != null) {
+    HttpSession session = sessionManager.getSession(req, false);
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
+
+    // Resume last user session from other browser's tab or window.
+    if (participantId == null && session != null) {
+      participantId = sessionManager.getOtherLoggedInUser(session);
+      if (participantId != null) sessionManager.setLoggedInUser(session, participantId);
+    }
+
+    if (participantId != null) {
 
       AccountService.AccountServiceData accountData;
 
-      if (!user.isAnonymous())
+      if (!participantId.isAnonymous())
         accountData =
             AccountService.toServiceData(ServiceUtils.getUrlBuilder(req),
-                accountStore.getAccount(user).asHuman());
+                accountStore.getAccount(participantId).asHuman());
       else
-        accountData = new AccountService.AccountServiceData(user.getAddress());
+        accountData = new AccountService.AccountServiceData(participantId.getAddress());
 
       accountData.sessionId = req.getSession().getId();
       accountData.domain = domain;
 
       // Resuming the session
-      LOG.info("Resuming Authenticated user " + user);
+      LOG.info("Resuming Authenticated user " + participantId);
       sendResponse(resp, accountData);
       return;
 
@@ -446,27 +447,5 @@ public class AuthenticationService extends SwellRTService {
 
   }
 
-  /**
-   * Get the HttpSession. Increment internal session's counter each time the
-   * sesion is recycled. This will allow to detected multiple logins from
-   * different browser tabs, etc.
-   * 
-   * @param req HttpServletRequest
-   * @return the HttpSession object
-   */
-  public static HttpSession createOrRecycleSession(HttpServletRequest req) {
-    HttpSession session = req.getSession(true);
-    Integer sessionRecycleCounter = 0;
-
-    Object sessionAttribute = session.getAttribute(SESSION_RECYCLE_COUNTER);
-    if (sessionAttribute != null) {
-      sessionRecycleCounter = (Integer) sessionAttribute;
-      sessionRecycleCounter++;
-    }
-
-    session.setAttribute(SESSION_RECYCLE_COUNTER, sessionRecycleCounter);
-
-    return session;
-  }
 
 }

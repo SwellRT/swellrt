@@ -342,7 +342,7 @@ public class WaveClientJS extends JavaScriptObject {
 
 
          domain: function() {
-
+           return $wnd.__session.domain;
          },
 
          //

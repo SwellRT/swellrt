@@ -2,6 +2,8 @@ package org.swellrt.server.box.servlet;
 
 import com.google.common.base.Preconditions;
 
+import org.waveprotocol.box.server.authentication.HttpWindowSession;
+
 import javax.servlet.http.HttpServletRequest;
 
 public class ServiceUtils {
@@ -54,6 +56,17 @@ public class ServiceUtils {
         if (!relativePath.startsWith("/")) relativePath = "/" + relativePath;
 
         if (queryString == null) queryString = "";
+
+        // Add x-window-id as query parameter
+        Object o = request.getAttribute(HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR);
+        String windowId = (o != null && o instanceof String) ? (String) o : null;
+
+        if (windowId != null) {
+          if (queryString.isEmpty())
+            queryString = "?" + HttpWindowSession.WINDOW_SESSION_PARAMETER_NAME + "=" + windowId;
+          else
+            queryString += "&" + HttpWindowSession.WINDOW_SESSION_PARAMETER_NAME + "=" + windowId;
+        }
 
         String absolute =
             base + context + relativePath + sessionRewrite + queryString;

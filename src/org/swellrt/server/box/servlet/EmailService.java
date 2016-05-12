@@ -146,6 +146,7 @@ public class EmailService extends SwellRTService {
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
+
     Enumeration<String> paramNames = req.getParameterNames();
 
     if (!paramNames.hasMoreElements()) {
@@ -159,7 +160,7 @@ public class EmailService extends SwellRTService {
       switch (method) {
 
         case SET:
-          HttpSession session = req.getSession(false);
+          HttpSession session = sessionManager.getSession(req);
           HumanAccountData account = sessionManager.getLoggedInAccount(session).asHuman();
 
           if (account != null && account.getId().isAnonymous()) {

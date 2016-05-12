@@ -21,7 +21,6 @@ import org.waveprotocol.wave.model.document.operation.AttributesUpdate;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.util.DocHelper;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.AddParticipant;
 import org.waveprotocol.wave.model.operation.wave.BlipContentOperation;
@@ -104,26 +103,75 @@ public class DeltaBasedEventSource implements Subscriber {
 
     }
 
+
+    protected Event generateEventWithContext(Event.Type eventType, String path, String valueRef) {
+
+      Event e = null;
+
+      // Check which type of value of the event:
+      // primitive, or container = map, list
+      if (ModelUtils.isContainerId(valueRef)) {
+
+        // Check if the blip of this container still exists
+        if (wavelet.getDocumentIds().contains(valueRef)) {
+
+          String containerPath =
+              ModelUtils.getMetadataPath(wavelet.getDocument(valueRef).getContent()
+                  .getMutableDocument());
+
+          // Evaluate context data based on the container's path
+          e = eventBuilder.build(eventType, path,
+                  getContextData(dataModel, containerPath, eventBuilder.getContextData()));
+        }
+
+      } else {
+
+        // First evaluate context data's expressions based on the value's
+        // parent
+        Map<String, String> contextData = getContextData(dataModel, path.substring(0, path.lastIndexOf(".")), eventBuilder.getContextData());
+        // Second, add the event's value in the context
+        contextData.putAll(getContextData(wavelet.getDocument(eventBuilder.getBlipId()), path, valueRef));
+
+        e = eventBuilder.build(eventType, path, contextData);
+
+      }
+
+      return e;
+
+    }
+
+
     protected void triggerLastMapDocOp() {
+
+      Event e = null;
 
       if (lastMapDocOp.equals(CREATE_ELEMENT)) {
 
         // TODO support new MAP_ENTRY_CREATED
-        eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + lastMapDocOpKey));
+        e =
+            generateEventWithContext(Type.MAP_ENTRY_UPDATED, path + "." + lastMapDocOpKey,
+                lastMapDocOpValue);
+
 
       } else if (lastMapDocOp.equals(DELETE_ELEMENT)) {
 
-        eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_REMOVED, path + "." + lastMapDocOpKey));
+        e =
+            generateEventWithContext(Type.MAP_ENTRY_REMOVED, path + "." + lastMapDocOpKey,
+                lastMapDocOpValue);
 
       }
 
+      if (e != null) eventQueue.add(e);
       setLastMapDocOp(null, null, null);
 
     }
 
     protected void triggerLastMapDocOpUpdate() {
 
-      eventQueue.add(eventBuilder.build(Type.MAP_ENTRY_UPDATED, path + "." + lastMapDocOpKey));
+      Event e =
+          generateEventWithContext(Type.MAP_ENTRY_UPDATED, path + "." + lastMapDocOpKey, lastMapDocOpValue);
+
+      if (e != null) eventQueue.add(e);
 
       setLastMapDocOp(null, null, null);
 
@@ -227,26 +275,8 @@ public class DeltaBasedEventSource implements Subscriber {
       if (ModelUtils.isListBlip(blipId) && type.equals(ListType.TAG_LIST_ITEM)) {
 
         String ref = attrs.get(ListType.ATTR_LIST_ITEM_REF);
-
-        // Look up context data in added containers
-        if (ModelUtils.isContainerId(ref)) {
-
-          if (wavelet.getDocumentIds().contains(ref)) {
-
-            String refPath =
-                ModelUtils.getMetadataPath(wavelet.getDocument(ref).getContent()
-                    .getMutableDocument());
-
-            eventQueue.add(eventBuilder.build(Type.LIST_ITEM_ADDED, path,
-                evaluateContextData(dataModel, refPath, eventBuilder.getContextData())));
-          }
-
-        } else {
-
-          // Just get the primitive value added to the list
-          eventQueue.add(eventBuilder.build(Type.LIST_ITEM_ADDED, path,
-              evaluateContextData(wavelet.getDocument(eventBuilder.getBlipId()), path, ref)));
-        }
+        Event e = generateEventWithContext(Type.LIST_ITEM_ADDED, path + ".?", ref);
+        if (e != null) eventQueue.add(e);
 
       }
     }
@@ -332,47 +362,51 @@ public class DeltaBasedEventSource implements Subscriber {
 
 
   /**
-   * Matches a expression against a parent path, then evaluate the expression
-   * against the model to get the actual value.
+   * Returns a context data map populated with values for paths matching the
+   * provided value path.
+   * <p>
+   * A context's path matches the provided path expression if it is partial or
+   * fully compatible: <br>
+   * <p>
+   * Example 1:<br>
+   * <p>
+   * ContextData["root.list.?.field"]
+   * <p>
+   * Value Path = "root.list.3"<br>
+   * <p>
+   * generates<br>
+   * <p>
+   * ContextData["root.list.?.field"] = value of "root.list.3.field"
+   * <p>
+   * <p>
+   * Example 2:<br>
+   * <p>
+   * ContextData["root.list.?.array.?.field"]
+   * <p>
+   * Value Path "root.list.2.array.5"<br>
+   * <p>
+   * generates<br>
+   * <p>
+   * ContextData["root.list.?.array.?.field"] = value of "root.list.2.array.5"
    * 
-   * Example:
-   * 
-   * if
-   * 
-   * opPath ["root.list.3"] contextData ["root.list.?.field"]
-   * 
-   * then
-   * 
-   * newContextData["root.list.?.field"] = valueOf("root.list.3.field")
-   * 
-   * if
-   * 
-   * opPath ["root.list.2.array.5"] contextData ["root.list.?.array.?.field"]
-   * 
-   * then
-   * 
-   * newContextData["root.list.?.array.?.field"] =
-   * valueOf("root.list.2.array.5")
-   * 
-   * Returns a copy of the provided context data but including these new values.
+   * @param dataModel the data model of the event
+   * @param valuePath the path to match with context paths
+   * @params contextData context data of the event
+   * @return a copy of the provided context populated with values
    * 
    */
-  protected Map<String, String> evaluateContextData(UnmutableModel dataModel, String opPath,
+  protected Map<String, String> getContextData(UnmutableModel dataModel, String valuePath,
       Map<String, String> contextData) {
 
     Map<String, String> newContextData = new HashMap<String, String>(contextData);
 
     for (String key : contextData.keySet()) {
 
-      String path = ExpressionParser.matchSubpath(key, opPath);
+      String path = ExpressionParser.matchSubpath(key, valuePath);
 
       if (path != null) {
         ReadableType value = dataModel.fromPath(path);
-        if (value == null) {
-          LOG.warning("Unable to get value from path " + path + " in "
-              + ModernIdSerialiser.INSTANCE.serialiseWaveId(dataModel.getWaveId()));
-          break;
-        }
+        if (value == null) break;
         ReadableString strValue = value.asString();
         if (strValue != null) newContextData.put(key, strValue.getValue());
       }
@@ -382,42 +416,49 @@ public class DeltaBasedEventSource implements Subscriber {
   }
 
   /**
-   * Generate a new context data map with a single value referenced by the the
-   * containerPath and the value on it referenced as containerValueRef.
-   *
-   * if
-   *
-   *  containerPath = root.list
-   *  containerValueRef = str+3
-   *
-   * then
-   *
-   *  newContextData["root.list.?"] = (value of str+3 in the blip)
-   *
+   * Returns a context data map for the provided path and simple value within a
+   * container blip.
+   * <p>
+   * e.g.
+   * <p>
+   * dataPath = root.list.?
+   * <p>
+   * dataValueRef = str+3
+   * <p>
+   * returns
+   * <p>
+   * ["root.list.?"] = value of str+3 in the provided blip
+   * 
+   * 
+   * 
+   * @param dataContainerBlip the blip containing the data
+   * @param dataPath the path pointing a value within the blip
+   * @param dataValueRef the pointer to a value within the blip
+   * 
    */
-  protected Map<String, String> evaluateContextData(ReadableBlipData containerBlip,
-      String containerPath,
-      String containerValueRef) {
+  protected Map<String, String> getContextData(ReadableBlipData dataContainerBlip,
+      String dataPath,
+      String dataValueRef) {
 
-    Map<String, String> newContextData = new HashMap<String, String>();
+    Map<String, String> opContextData = new HashMap<String, String>();
 
-    newContextData.put(containerPath + ".?",
-        ModelUtils.getContainerValue(containerBlip, containerValueRef));
+    opContextData.put(dataPath, ModelUtils.getContainerValue(dataContainerBlip, dataValueRef));
 
-    return newContextData;
+    return opContextData;
   }
 
 
   /**
-   * Extract primitive values from the provided data model matching the paths
-   * provided as keys of the context data map, and put values back to it.
-   *
-   * Paths with wildcards are ignored, they should be evaluated on specific.
-   *
+   * Populate map with values of static path expressions for the provided data
+   * model.<br>
+   * <p>
+   * Paths with wildcards are ignored, they should be evaluated on op event
+   * processing.
+   * 
    * @param dataModel
    * @param contextData
    */
-  protected void populateContextData(UnmutableModel dataModel, Map<String, String> contextData) {
+  protected void populateStaticContextData(UnmutableModel dataModel, Map<String, String> contextData) {
 
     for (String path : contextData.keySet()) {
       if (!path.contains("?")) {
@@ -432,13 +473,14 @@ public class DeltaBasedEventSource implements Subscriber {
 
 
   /**
-   * Generate an empty map of paths to fill in with actual values of the updated
-   * model.
-   *
-   * Paths not depending on event, no support list transversing: root.map.key
-   * Paths including list wildcards are matching agains the values changed in
-   * the add list event.
-   *
+   * Create an map having paths expressions as keys.<br>
+   * <p>
+   * For static expressions (e.g. "root.key.field") value can be set before op
+   * event is processed.
+   * <p>
+   * For relative expressions (e.g. "root.?.list.?.field) value must be
+   * calculated in the context of the op event.
+   * 
    * @param app
    * @param dataType
    * @return
@@ -467,7 +509,7 @@ public class DeltaBasedEventSource implements Subscriber {
     String dataType = getWaveletDataType(wavelet);
 
     // Only process deltas if there are event rules for this app and data type
-    if (!eventQueue.hasEvents(app, dataType)) return;
+    if (!eventQueue.hasEventsFor(app, dataType)) return;
 
     UnmutableModel dataModel = null;
     Map<String, String> contextData = initializeContextData(app, dataType);
@@ -475,7 +517,7 @@ public class DeltaBasedEventSource implements Subscriber {
     // Avoid to generate the tree data model if no context data is required
     if (!contextData.isEmpty()) {
       dataModel = UnmutableModel.create(wavelet);
-      populateContextData(dataModel, contextData);
+      populateStaticContextData(dataModel, contextData);
     }
 
     Event.Builder eventBuilder =

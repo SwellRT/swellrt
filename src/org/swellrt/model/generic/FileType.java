@@ -12,6 +12,45 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 public class FileType extends Type implements ReadableFile, SourcesEvents<FileType.Listener> {
 
+  public static class Value {
+
+    AttachmentId attachmentId;
+    String contentType;
+
+    public String serialize() {
+      return attachmentId.serialise()
+          + (contentType == null || contentType.isEmpty() ? "" : "," + contentType);
+    }
+
+    protected Value(AttachmentId attachmentId, String contentType) {
+      this.attachmentId = attachmentId;
+      this.contentType = contentType;
+    }
+
+    public static Value deserialize(String valueString) throws InvalidModelStringValue {
+      Preconditions.checkNotNull(valueString, "String value can't be null");
+      String[] parts = valueString.split(",");
+      Value v = null;
+      try {
+        v = new Value(AttachmentId.deserialise(parts[0]), parts.length > 1 ? parts[1] : null);
+      } catch (InvalidIdException e) {
+        throw new InvalidModelStringValue();
+      }
+
+      return v;
+    }
+
+    public AttachmentId getAttachmentId() {
+      return attachmentId;
+    }
+
+    public String getContentType() {
+      return contentType;
+    }
+
+  }
+
+
 
   public interface Listener {
 
@@ -58,7 +97,7 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
 
   private Type parent;
   private int valueRef; // the index of this value in the ValuesContainer
-  private AttachmentId initValue;
+  private Value initValue;
 
   /**
    * The model owning this object. Despite other Types, FileType needs to know
@@ -75,8 +114,8 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
     this.initValue = null;
   }
 
-  public FileType(AttachmentId initValue, Model model) {
-    this.initValue = initValue != null ? initValue : null;
+  public FileType(AttachmentId attachmentId, String contentType, Model model) {
+    this.initValue = attachmentId != null ? new FileType.Value(attachmentId, contentType) : null;
     this.model = model;
   }
 
@@ -92,7 +131,7 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
     Preconditions.checkArgument(parent.hasValuesContainer(),
         "Invalid parent type for a primitive value");
     this.parent = parent;
-    observableValue = parent.getValuesContainer().add(initValue.serialise());
+    observableValue = parent.getValuesContainer().add(initValue.serialize());
     observableValue.addListener(observableValueListener);
     valueRef = parent.getValuesContainer().indexOf(observableValue);
     isAttached = true;
@@ -188,37 +227,60 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
   //
 
   public AttachmentId getValue() {
+    return getFileId();
+  }
+
+  public AttachmentId getFileId() {
     if (!isAttached())
-      return initValue;
+      return initValue.attachmentId;
     else {
+
+      String valueString = observableValue.get();
+      if (valueString == null || valueString.isEmpty()) return null;
+
       try {
-        return AttachmentId.deserialise(observableValue.get());
-      } catch (InvalidIdException e) {
+        return FileType.Value.deserialize(valueString).attachmentId;
+      } catch (InvalidModelStringValue e) {
         return null;
       }
     }
 
   }
 
+  public String getContentType() {
+    if (!isAttached())
+      return initValue.contentType;
+    else {
 
-  public void setValue(AttachmentId value) {
-    if (isAttached()) {
+      String valueString = observableValue.get();
+      if (valueString == null || valueString.isEmpty()) return null;
+
       try {
-
-        if (value == null) {
-          observableValue.set("");
-          parent.markValueUpdate(this);
-
-        } else if (!value.equals(AttachmentId.deserialise(observableValue.get()))) {
-          observableValue.set(value.serialise());
-          parent.markValueUpdate(this);
-        }
-
-
-      } catch (InvalidIdException e) {
-        // TODO handle exception
-        return;
+        return FileType.Value.deserialize(valueString).contentType;
+      } catch (InvalidModelStringValue e) {
+        return null;
       }
+    }
+  }
+
+
+  public void setValue(AttachmentId attachmentId, String contentType) {
+    Preconditions.checkNotNull(attachmentId, "Attachment id can't be null");
+    if (isAttached()) {
+      FileType.Value v = new FileType.Value(attachmentId, contentType);
+      observableValue.set(v.serialize());
+      parent.markValueUpdate(this);
+    }
+  }
+
+  public void setValue(FileType file) {
+    setValue(file.getFileId(), file.getContentType());
+  }
+
+  public void clearValue() {
+    if (isAttached()) {
+      observableValue.set("");
+      parent.markValueUpdate(this);
     }
   }
 

@@ -44,6 +44,14 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
           return delegate.@org.swellrt.model.generic.FileType::getValue()();
         },
 
+        fileId: function() {
+          return delegate.@org.swellrt.model.generic.FileType::getFileId()();
+        },
+
+        contentType: function() {
+          return delegate.@org.swellrt.model.generic.FileType::getContentType()();
+        },
+
         url: function() {
           return @org.swellrt.api.SwellRTUtils::buildAttachmentUrl(Lorg/swellrt/model/generic/FileType;)(this._delegate);
         },
@@ -57,8 +65,10 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
         },
 
         set: function(file) {
-          if (file && file.type && file.type()== "FileType")
-            delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(file.getValue());
+          if (file && file.type && file.type() == "FileType") {
+            this.clear();
+            delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;Ljava/lang/String;)(file.value(), file.contentType());
+            }
         },
 
         clearValue: function() {
@@ -69,11 +79,10 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
 
           var url = this.url();
 
-          delegate.@org.swellrt.model.generic.FileType::setValue(Lorg/waveprotocol/wave/media/model/AttachmentId;)(null);
+          delegate.@org.swellrt.model.generic.FileType::clearValue()();
 
           var request = new XMLHttpRequest();
 
-          request.withCredentials = true;
           request.onload = function(event) {
             if (request.status == 200) {
              console.log("Attachment delete from server");
@@ -84,6 +93,7 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
 
 
           request.open("DELETE", url);
+          @org.swellrt.api.SwellRTUtils::addCommonRequestHeaders(Lcom/google/gwt/core/client/JavaScriptObject;)(request);
           request.send();
 
         },

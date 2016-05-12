@@ -27,6 +27,7 @@ package org.waveprotocol.box.webclient.client;
  */
 public interface WaveSocket {
 
+
   interface WaveSocketStartCallback {
     void onSuccess();
     void onFailure();
@@ -35,6 +36,7 @@ public interface WaveSocket {
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
+    void onError(String errorCode);
     void onMessage(String message);
   }
 

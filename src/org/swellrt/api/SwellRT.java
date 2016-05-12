@@ -113,6 +113,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   protected final static String SESSION_COOKIE_NAME = "WSESSIONID";
   protected final static String SESSION_PATH_PARAM = "sid";
+  protected final static String WINDOWID_PATH_PARAM = "wid";
 
   private static String CHARSET = "utf-8";
 
@@ -185,8 +186,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     String url = baseServerUrl + "/swell/auth";
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
     builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
 
@@ -236,8 +236,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/auth";
     url = addSessionToUrl(url);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
     builder.sendRequest("{}", new RequestCallback() {
 
@@ -291,8 +290,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/auth";
     url = addSessionToUrl(url);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
     builder.sendRequest("{}", new RequestCallback() {
 
@@ -340,8 +338,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     // query += "&r=" + URL.encodeQueryString("/profile/?adresses=");
 
     String url = baseServerUrl + "/auth/signin?r=none";
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
     builder.sendRequest(query, new RequestCallback() {
 
@@ -435,8 +432,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     else if (webSocketURL.startsWith("https://"))
       webSocketURL = webSocketURL.replace("https://", "wss://");
 
-
-    websocket = new WaveWebSocketClient(websocketNotAvailable() || !useWebSocket, webSocketURL);
+    // Use Model.MODEL_VERSION to get the client version
+    websocket = new WaveWebSocketClient(webSocketURL, "1.0");
     websocket.connect(new WaveSocketStartCallback() {
 
       @Override
@@ -475,9 +472,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     return loggedInUser != null;
   }
 
+
   /**
-   * Add an extra path token with the session id in case of session cookie is
-   * not available. The format is specific for the Jetty server.
+   * Add an extra path token for session id (;sid=) at the end of the URL path
+   * if session cookie is not available. This is specific for the Jetty server.
    *
    * @param url The url where to add the session id
    * @return
@@ -513,12 +511,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     url = addSessionToUrl(url);
     String queryStr = "address=" + URL.encode(username) + "&password=" + URL.encode(password);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-
-
-      // Allow cookie headers, and so Wave session can be set
-      builder.setIncludeCredentials(true);
-
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
       builder.setHeader("Accept-Charset", CHARSET);
       builder.setHeader("Content-Type", "application/x-www-form-urlencoded;charset=" + CHARSET);
 
@@ -616,8 +609,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/auth";
     url = addSessionToUrl(url);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
     builder.sendRequest("{}", new RequestCallback() {
 
@@ -971,10 +963,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/model";
     url = addSessionToUrl(url);
     url += "?" + query;
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
-
-    // Allow cookie headers, and so Wave session can be set
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
 
     builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
     builder.sendRequest(query, new RequestCallback() {
@@ -1011,10 +1000,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/notification";
     url = addSessionToUrl(url);
     url += "?" + query;
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-
-    // Allow cookie headers, and so Wave session can be set
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
 
     builder.sendRequest(query, new RequestCallback() {
 
@@ -1055,10 +1041,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     url = addSessionToUrl(url);
     url += "?" + query;
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-
-    // Allow cookie headers
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
 
     builder.sendRequest(query, new RequestCallback() {
 
@@ -1099,10 +1082,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     url += "?" + query;
 
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-
-    // Allow cookie headers
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
 
     builder.sendRequest(query, new RequestCallback() {
 
@@ -1147,10 +1127,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     url += "?" + query;
 
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-
-    // Allow cookie headers
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
 
     builder.sendRequest(query, new RequestCallback() {
 
@@ -1188,8 +1165,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/account";
     url = addSessionToUrl(url);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
     builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
 
@@ -1220,8 +1196,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
     url = addSessionToUrl(url);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
     builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
 
@@ -1252,8 +1227,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
     url = addSessionToUrl(url);
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
     builder.sendRequest(null, new RequestCallback() {
 
       @Override
@@ -1291,8 +1265,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     query = "p=" + URL.encode(query);
     url += "?" + query;
 
-    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
-    builder.setIncludeCredentials(true);
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
     builder.sendRequest(null, new RequestCallback() {
 
       @Override

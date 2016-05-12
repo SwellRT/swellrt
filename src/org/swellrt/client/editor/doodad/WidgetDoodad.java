@@ -3,7 +3,6 @@ package org.swellrt.client.editor.doodad;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
@@ -30,10 +29,17 @@ public class WidgetDoodad {
   public static final String TAG = "widget";
   public static final String ATTR_TYPE = "type";
   public static final String ATTR_STATE = "state";
+  public static final String ATTR_ID = "id";
+
+  public static final String WIDGET_CLASS = "sw-widget";
+  public static final String WIDGET_ELEMENT_PREFIX = "sw-widget-";
+
+  public static String getWidgetElementId(String type, String id) {
+    return WIDGET_ELEMENT_PREFIX + type + "-" + id;
+  }
 
 
   static class WidgetContext extends JavaScriptObject {
-
 
     public final static native WidgetContext create(ContentElement element) /*-{
 
@@ -82,16 +88,20 @@ public class WidgetDoodad {
 
     @Override
     public Element createDomImpl(Renderable element) {
-      Element widgetSpan = Document.get().createSpanElement();
-      widgetSpan.addClassName("sw-widget");
-      DomHelper.setContentEditable(widgetSpan, false, false);
-      return widgetSpan;
+      Element widgetElement = Document.get().createDivElement();
+      widgetElement.addClassName(WIDGET_CLASS);
+      DomHelper.setContentEditable(widgetElement, true, true);
+      return widgetElement;
     }
 
     @Override
     public void onActivatedSubtree(ContentElement element) {
       String state = element.getAttribute(ATTR_STATE);
       String type = element.getAttribute(ATTR_TYPE);
+      String id = element.getAttribute(ATTR_ID);
+
+      element.getImplNodelet().addClassName(WIDGET_ELEMENT_PREFIX + type);
+      element.getImplNodelet().setId(getWidgetElementId(type, id));
 
       WidgetController controller = controllers.get(type);
       if (controller != null) {
@@ -127,34 +137,18 @@ public class WidgetDoodad {
     @Override
     public void onActivated(ContentElement element) {
 
-      final String type = element.getAttribute(ATTR_TYPE);
-      final WidgetController controller = controllers.get(type);
-      final WidgetContext context = WidgetContext.create(element);
+      /*
+       * final String type = element.getAttribute(ATTR_TYPE); final
+       * WidgetController controller = controllers.get(type); final
+       * WidgetContext context = WidgetContext.create(element);
+       */
 
-      // Register Widget's event handlers as Doodad handlers.
-
-      for (int i = 0; i < controller.getSupportedEvents().length(); i++) {
-        final String event = controller.getSupportedEvents().get(i);
-
-        // TODO check if event is a valid event
-
-        Helper.registerJsHandler(element, element.getImplNodelet(), event,
-            new DomHelper.JavaScriptEventListener() {
-
-              @Override
-              public void onJavaScriptEvent(String name, Event event) {
-                controller.onEvent(name, event, context);
-              }
-
-            });
-      }
-
+      // TODO consider to show this method in the WidgetController interface
     }
 
     @Override
     public void onDeactivated(ContentElement element) {
-      // Cleanup
-      Helper.removeJsHandlers(element);
+      // TODO consider to show this method in the WidgetController interface
     }
 
   }

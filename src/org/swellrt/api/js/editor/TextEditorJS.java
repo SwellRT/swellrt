@@ -49,15 +49,15 @@ public class TextEditorJS extends JavaScriptObject {
       },
 
       addWidget: function(name, state) {
-        delegate.@org.swellrt.client.editor.TextEditor::addWidget(Ljava/lang/String;Ljava/lang/String;)(name,state);
-      },
-
-      addModelWidget: function(name, path) {
-        delegate.@org.swellrt.client.editor.TextEditor::addModelWidget(Ljava/lang/String;Ljava/lang/String;)(name, path);
+        return delegate.@org.swellrt.client.editor.TextEditor::addWidget(Ljava/lang/String;Ljava/lang/String;)(name,state);
       },
 
       setAnnotation: function(name, value) {
          delegate.@org.swellrt.client.editor.TextEditor::setAnnotation(Ljava/lang/String;Ljava/lang/String;)(name, value);
+      },
+
+      getSelection: function() {
+        return delegate.@org.swellrt.client.editor.TextEditor::getSelection()();
       }
 
     }; // jsWrapper

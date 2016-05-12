@@ -117,7 +117,7 @@ public class AttachmentServlet extends HttpServlet {
       waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
     }
 
-    ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
+    ParticipantId user = sessionManager.getLoggedInUser(request);
     boolean isAuthorized = false;
     try {
       isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
@@ -130,7 +130,14 @@ public class AttachmentServlet extends HttpServlet {
     }
 
     if (metadata == null) {
-      metadata = service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
+      try {
+        metadata =
+            service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
+      } catch (IOException e) {
+        LOG.warning(e.getMessage());
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
     }
 
     String contentType;
@@ -215,7 +222,7 @@ public class AttachmentServlet extends HttpServlet {
         }
 
         WaveletName waveletName = AttachmentUtil.waveRef2WaveletName(waveRefStr);
-        ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
+        ParticipantId user = sessionManager.getLoggedInUser(request);
         boolean isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
         if (!isAuthorized) {
           response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -276,7 +283,7 @@ public class AttachmentServlet extends HttpServlet {
     }
 
 
-    ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
+    ParticipantId user = sessionManager.getLoggedInUser(request);
     boolean isAuthorized = false;
     try {
       isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);

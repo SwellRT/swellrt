@@ -243,7 +243,7 @@ public class AccountService extends SwellRTService {
 
     // POST /account/joe update user's account
 
-    ParticipantId loggedInUser = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId loggedInUser = sessionManager.getLoggedInUser(req);
 
     UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
@@ -339,6 +339,11 @@ public class AccountService extends SwellRTService {
 
 
       ParticipantId participantId = getParticipantFromRequest(req);
+
+      if (checkForLoggedInUser(req, response) == null) {
+        return;
+      }
+
       AccountData accountData = accountStore.getAccount(participantId);
 
       if (accountData == null) {
@@ -355,6 +360,13 @@ public class AccountService extends SwellRTService {
       }
 
       Attachment avatar = attachmentAccountStore.getAvatar(fileName);
+
+      if (avatar == null) {
+        sendResponseError(response, HttpServletResponse.SC_NOT_FOUND,
+            "ACCOUNT_ATTACHMENT_NOT_FOUND");
+        LOG.warning("Avatar file not found: " + fileName);
+        return;
+      }
 
       response.setContentType(accountData.asHuman().getAvatarMimeType());
       response.setContentLength((int) avatar.getSize());
@@ -384,9 +396,13 @@ public class AccountService extends SwellRTService {
 
     try {
 
+      ParticipantId loggedInUser = null;
+
+      if ((loggedInUser = checkForLoggedInUser(req, response)) == null)
+        return;
+
       ParticipantId participantId = getParticipantFromRequest(req);
 
-      ParticipantId loggedInUser = sessionManager.getLoggedInUser(req.getSession(false));
       AccountData accountData = accountStore.getAccount(participantId);
 
       if (accountData == null) {
@@ -466,8 +482,6 @@ public class AccountService extends SwellRTService {
 
     } else if (req.getMethod().equals("GET")) {
 
-      if (checkForLoggedInUser(req, response) == null) return;
-
       if (participantToken != null) {
 
         if (participantOp != null && participantOp.equals("avatar"))
@@ -477,7 +491,7 @@ public class AccountService extends SwellRTService {
 
       } else {
 
-        queryParticipantAccount(req, response);
+        if (checkForLoggedInUser(req, response) != null) queryParticipantAccount(req, response);
 
       }
     }

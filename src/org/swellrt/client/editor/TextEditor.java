@@ -1,17 +1,17 @@
 package org.swellrt.client.editor;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
+import org.swellrt.api.SwellRTUtils;
+import org.swellrt.client.editor.TextEditorAnnotation.ParagraphAnnotation;
 import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
 import org.swellrt.client.editor.doodad.WidgetController;
 import org.swellrt.client.editor.doodad.WidgetDoodad;
-import org.swellrt.client.editor.doodad.WidgetModelDoodad;
-import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
-import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
@@ -28,6 +28,8 @@ import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
+import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
+import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
@@ -39,17 +41,17 @@ import org.waveprotocol.wave.client.widget.popup.simple.Popup;
 import org.waveprotocol.wave.common.logging.AbstractLogger;
 import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
-import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
-import org.waveprotocol.wave.model.util.CollectionUtils;
-import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A wrapper of the original Wave {@link Editor} to be integrated in the SwellRT
@@ -134,20 +136,9 @@ public class TextEditor implements EditorUpdateListener {
 
   private Editor editor;
 
-  private static final ReadableStringSet ANNOTATIONS = CollectionUtils.newStringSet(
-      AnnotationConstants.STYLE_BG_COLOR,
-      AnnotationConstants.STYLE_COLOR,
-      AnnotationConstants.STYLE_FONT_FAMILY,
-      AnnotationConstants.STYLE_FONT_SIZE,
-      AnnotationConstants.STYLE_FONT_STYLE,
-      AnnotationConstants.STYLE_FONT_WEIGHT,
-      AnnotationConstants.STYLE_TEXT_DECORATION,
-      AnnotationConstants.STYLE_VERTICAL_ALIGN,
-      AnnotationConstants.LINK_AUTO,
-      AnnotationConstants.LINK_MANUAL
-    );
-
   private TextEditorListener listener;
+
+  private int widgetCounter = 0;
 
   /**
    * Registry of JavaScript controllers for each Widget type
@@ -174,6 +165,7 @@ public class TextEditor implements EditorUpdateListener {
     Preconditions.checkNotNull(e, "Editor's parent element doesn't exist");
 
     TextEditor editor = new TextEditor(e);
+    editor.registerDoodads();
     return editor;
   }
 
@@ -203,9 +195,6 @@ public class TextEditor implements EditorUpdateListener {
     Preconditions.checkNotNull(documentRegistry, "Document registry hasn't been initialized");
 
     if (!isClean()) cleanUp();
-
-    // TODO don't register again on every new editor
-    registerDoodads(text.getModel());
 
     doc = getContentDocument(text);
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
@@ -307,21 +296,26 @@ public class TextEditor implements EditorUpdateListener {
   /**
    * Insert a Widget at the current cursor position or at the end iff the type
    * is registered.
-   *
+   * 
    * @param type
    * @param state
+   * 
+   * @return The widget as DOM element
    */
-  public void addWidget(String type, String state) {
+  public Element addWidget(String type, String state) {
 
-    if (!widgetRegistry.containsKey(type)) return;
+    if (!widgetRegistry.containsKey(type)) return null;
 
     Point<ContentNode> currentPoint = null;
 
     if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
       currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
+
+    // For now, the widget id will be a timestamp
+    String id = String.valueOf(new Date().getTime());
 
     XmlStringBuilder xml = XmlStringBuilder.createFromXmlString("<widget type='" + type + "' state='" + state
-        + "' />");
+            + "' id='" + id + "' />");
 
     if (currentPoint != null) {
       editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
@@ -330,41 +324,13 @@ public class TextEditor implements EditorUpdateListener {
       editor.flushSaveSelection();
     }
 
+    String widgetElementId = WidgetDoodad.getWidgetElementId(type, id);
+    return editor.getDocumentHtmlElement().getOwnerDocument().getElementById(widgetElementId);
+
   }
 
-  /**
-   * Insert a Model supported Widget at the current cursor position iff the type
-   * is registered.
-   *
-   * The state of the Widget is provided in a subtree of the collaborative data
-   * model containing the current text;
-   *
-   * @param type
-   * @param dataModelPath a path to object in the data model. e.g.
-   *        root.cities.newyork
-   */
-  public void addModelWidget(String type, String dataModelPath) {
 
-    if (!widgetRegistry.containsKey(type)) return;
-
-    Point<ContentNode> currentPoint = null;
-
-    if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
-      currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
-
-    XmlStringBuilder xml =
-        XmlStringBuilder.createFromXmlString("<widget-model type='" + type + "' path='"
-            + dataModelPath + "' />");
-
-    if (currentPoint != null) {
-      editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
-    } else {
-      editor.getContent().getMutableDoc().appendXml(xml);
-      editor.flushSaveSelection();
-    }
-  }
-
-  protected void registerDoodads(Model model) {
+  protected void registerDoodads() {
 
 
     // TOPLEVEL_CONTAINER_TAGNAME
@@ -392,8 +358,6 @@ public class TextEditor implements EditorUpdateListener {
 
     // Add additional doodas here
     WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);
-    WidgetModelDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry,
-        model);
 
   }
 
@@ -403,17 +367,41 @@ public class TextEditor implements EditorUpdateListener {
   }
 
 
-  public void setAnnotation(final String annotationName, final String annotationValue) {
+  /**
+   * Set any type of annotation in the current selected text or
+   * annotationStateMapcaret.
+   * 
+   * @param annotationName
+   * @param annotationValue
+   */
+  public void setAnnotation(String annotationName, String annotationValue) {
 
-    if (editor.getSelectionHelper().getSelectionRange() != null)
-      EditorAnnotationUtil.setAnnotationOverSelection(editor, annotationName, annotationValue);
+    final Range range = editor.getSelectionHelper().getOrderedSelectionRange();
+    if (range != null) {
+
+      if (TextEditorAnnotation.isParagraphAnnotation(annotationName)) {
+
+        ParagraphAnnotation annotation =
+            TextEditorAnnotation.ParagraphAnnotation.fromString(annotationName);
+        final LineStyle style = annotation.getLineStyleForValue(annotationValue);
+        final boolean isOn = annotationValue != null && !annotationValue.isEmpty();
+
+        editor.undoableSequence(new Runnable() {
+          @Override
+          public void run() {
+            Paragraph.apply(editor.getDocument(), range.getStart(), range.getEnd(), style, isOn);
+          }
+        });
+
+      } else {
+        EditorAnnotationUtil.setAnnotationOverSelection(editor, annotationName, annotationValue);
+      }
+
+
+    }
+
 
   }
-
-
-  private native void log(String s) /*-{
-    console.log(s);
-  }-*/;
 
   @Override
   public void onUpdate(final EditorUpdateEvent event) {
@@ -428,10 +416,11 @@ public class TextEditor implements EditorUpdateListener {
 
       if (range != null && listener != null) {
 
+        // Map to contain the current state of each annotation
+        final JavaScriptObject annotationStateMap = JavaScriptObject.createObject();
 
-        final JsoStringMap<String> annotationSnapshot = JsoStringMap.<String> create();
-
-        ANNOTATIONS.each(new Proc() {
+        // Get state of caret annotations
+        TextEditorAnnotation.CARET_ANNOTATIONS.each(new Proc() {
 
           @Override
           public void apply(String annotationName) {
@@ -440,18 +429,49 @@ public class TextEditor implements EditorUpdateListener {
                 EditorAnnotationUtil.getAnnotationOverRangeIfFull(event.context().getDocument(),
                     editor.getCaretAnnotations(), annotationName, range.getStart(), range.getEnd());
 
-            annotationSnapshot.put(annotationName, annotationValue);
+            SwellRTUtils.addField(annotationStateMap, annotationName, annotationValue);
 
           }
 
         });
 
+        TextEditorAnnotation.PARAGRAPH_ANNOTATIONS.each(new Proc() {
 
-        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationSnapshot);
+          @Override
+          public void apply(String annotationName) {
+
+            Collection<Entry<String, LineStyle>> styles =
+                TextEditorAnnotation.ParagraphAnnotation.fromString(annotationName).values
+                    .entrySet();
+
+            String annotationValue = null;
+            for (Entry<String, LineStyle> s : styles) {
+              if (Paragraph.appliesEntirely(editor.getDocument(), range.getStart(), range.getEnd(),
+                  s.getValue())) {
+                annotationValue = s.getKey();
+                break;
+              }
+            }
+            SwellRTUtils.addField(annotationStateMap, annotationName, annotationValue);
+          }
+        });
+
+        listener.onSelectionChange(range.getStart(), range.getEnd(), annotationStateMap);
 
       }
     }
 
+  }
+
+  /**
+   * Gets the current selection. See {@link TextEditorSelection} for methods to
+   * update the document's selection.
+   * 
+   * @return
+   */
+  public TextEditorSelection getSelection() {
+    return TextEditorSelection.create(editor.getSelectionHelper().getSelectionRange().asRange(),
+        doc.getMutableDoc());
   }
 
 }

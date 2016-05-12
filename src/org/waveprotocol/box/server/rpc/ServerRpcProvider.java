@@ -43,9 +43,9 @@ import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.AtmosphereResourceEvent;
-import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.Broadcaster;
+import org.atmosphere.cpr.BroadcasterFactory;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
-import org.atmosphere.util.IOUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -64,15 +64,16 @@ import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.swellrt.model.generic.Model;
-import org.swellrt.server.box.servlet.AuthenticationService;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.authentication.HttpWindowSession;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereChannel;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereClientInterceptor;
+import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereUtil;
 import org.waveprotocol.box.server.util.NetUtils;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
@@ -81,11 +82,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -99,7 +98,6 @@ import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -130,8 +128,8 @@ public class ServerRpcProvider {
 
 
 
-  private static ConcurrentHashMap<String, Connection> CONNECTIONS =
-      new ConcurrentHashMap<String, Connection>();
+  private static ConcurrentHashMap<HttpWindowSession, Connection> ATMOSPHERE_CONNECTIONS =
+      new ConcurrentHashMap<HttpWindowSession, Connection>();
 
   // Mapping from incoming protocol buffer type -> specific handler.
   private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices =
@@ -185,51 +183,147 @@ public class ServerRpcProvider {
     }
   }
 
+
   /**
-   * A Wave server's RPC connection with a remote client using the Atmosphere
-   * transport protocol.
+   * The glue class between the Atmoshphere Framework (communication layer) and
+   * the RPCs for each remote client.
    *
-   * It wraps an underlying {@AtmosphereChannel} instance
-   * which is the actual Atmosphere's interface.
+   * A connection is associated with an unique pair (HTTP session, browser
+   * window/tab), the {@link HttpWindowSession}
+   *
+   * This implementation supports WebSockets and Long-Polling transports over
+   * Atmosphere.
+   *
    *
    * @author pablojan@gmail.com (Pablo Ojanguren)
    *
    */
   static class AtmosphereConnection extends Connection {
 
+
     private final AtmosphereChannel atmosphereChannel;
-    private final String sessionId;
-    private final int sessionRecycleCounter;
 
+    private HttpWindowSession id;
+    private Broadcaster broadcaster;
 
-    public AtmosphereConnection(String sessionId, ParticipantId loggedInUser,
-        ServerRpcProvider provider, int sessionRecycleCounter) {
-      super(loggedInUser, provider);
+    private TRANSPORT transport;
 
-      this.sessionId = sessionId;
-      this.sessionRecycleCounter = sessionRecycleCounter;
-      atmosphereChannel = new AtmosphereChannel(this, sessionId);
+    public AtmosphereConnection(HttpWindowSession id,
+        ServerRpcProvider provider) {
+
+      super(null, provider);
+
+      this.id = id;
+      this.broadcaster = BroadcasterFactory.getDefault().get(this.id.toString());
+
+      atmosphereChannel = new AtmosphereChannel(this, broadcaster);
       expectMessages(atmosphereChannel);
 
 
     }
 
+    /**
+     * Handle an incoming request through an {@link AtmosphereResource}.
+     *
+     * @param resource the resource with the incoming message or new connection
+     *        signal
+     */
+    public void onRequest(AtmosphereResource resource, ParticipantId loggedInUser) {
+
+      // Update current transport
+      this.transport = resource.transport();
+
+
+      if (isWebSocket(this.transport)) {
+
+
+        if (isGET(resource)) {
+          // New connection
+          resource.setBroadcaster(broadcaster);
+          resource.suspend();
+        }
+
+
+        if (isPOST(resource)) {
+          String data = AtmosphereUtil.readMessage(resource);
+          atmosphereChannel.handleMessageString(data, loggedInUser);
+        }
+
+
+      }
+
+
+      /*
+       * Responses are always sent back through the GET request (resource). POST
+       * requests are released as soon as the request has been delivered
+       */
+      if (isLongPolling(this.transport)) {
+
+        if (isGET(resource)) {
+          // New connection
+          resource.suspend();
+          broadcaster.addAtmosphereResource(resource);
+        }
+
+
+        if (isPOST(resource)) {
+          String data = AtmosphereUtil.readMessage(resource);
+          atmosphereChannel.handleMessageString(data, loggedInUser);
+          resource.resume();
+        }
+      }
+
+    }
+
+
+    /**
+     * Closes the connection and its RPCs. This method must be invoked when
+     * client closes the communication.
+     */
+    public void close() {
+      this.cancelRpcs();
+      for (AtmosphereResource r : this.broadcaster.getAtmosphereResources()) {
+        try {
+          r.close();
+        } catch (IOException e) {
+          LOG.warning("Error closing resource on session " + id, e);
+        }
+      }
+      this.broadcaster.destroy();
+    }
+
+    //
+    // Send back
+    //
+
+
     @Override
     protected void sendMessage(int sequenceNo, Message message) {
       atmosphereChannel.sendMessage(sequenceNo, message);
+      if (isLongPolling(transport)) {
+        broadcaster.resumeAll();
+      }
     }
 
-    public AtmosphereChannel getAtmosphereChannel() {
-      return atmosphereChannel;
+    //
+    // Utility methods
+    //
+
+    protected static boolean isWebSocket(TRANSPORT transport) {
+      return transport.equals(TRANSPORT.WEBSOCKET);
     }
 
-    public void close() {
-      cancelRpcs();
-      atmosphereChannel.unbindResource();
+    protected static boolean isLongPolling(TRANSPORT transport) {
+      return transport.equals(TRANSPORT.LONG_POLLING) || transport.equals(TRANSPORT.POLLING);
     }
 
-    public int getSessionReycleCounter() {
-      return sessionRecycleCounter;
+
+    protected static boolean isGET(AtmosphereResource r) {
+      return r.getRequest().getMethod().equalsIgnoreCase("GET");
+    }
+
+    protected static boolean isPOST(AtmosphereResource r) {
+      return r.getRequest().getMethod().equalsIgnoreCase("POST");
     }
 
   }
@@ -301,15 +395,15 @@ public class ServerRpcProvider {
     }
 
     @Override
-    public void message(final int sequenceNo, Message message) {
+    public void message(final int sequenceNo, Message message, ParticipantId loggedInUser) {
       final String messageName = "/" + message.getClass().getSimpleName();
       final Timer profilingTimer = Timing.startRequest(messageName);
 
       if (isFirstRequest && sequenceNo != 0) {
         // On server's reboot, clients can get reconnected (sequenceNo !=0) but
         // server won't be able to process the request.
-        LOG.info("First RPC request with sequence number not 0.");
-        throw new IllegalStateException("First RPC request with sequence number not 0. ");
+        LOG.info("First RPC request but sequence number >0");
+        throw new IllegalStateException("First RPC request nut sequence number >0");
       }
 
       isFirstRequest = false;
@@ -318,9 +412,17 @@ public class ServerRpcProvider {
       // sequence of protocol messages.
       // This allows dirty reconnections, resuming current sessions...
       // This should been handle before, detecting new logins for the same
-      // session, etc.
       if (sequenceNo == 0) {
+
+        // Don't update on null to keep backwards compat.
+        if (loggedInUser != null) this.loggedInUser = loggedInUser;
         cancelRpcs();
+      } else {
+        if (!this.loggedInUser.equals(loggedInUser)) {
+          LOG.info("Request's participant doesn't match connection's participant. Spoofing?");
+          throw new IllegalStateException(
+              "Request's participant doesn't match connection's participant.");
+        }
       }
 
       if (message instanceof Rpc.CancelRpc) {
@@ -344,9 +446,6 @@ public class ServerRpcProvider {
         ProtocolAuthenticate authMessage = (ProtocolAuthenticate) message;
         ParticipantId authenticatedAs = authenticate(authMessage.getToken());
         Preconditions.checkArgument(authenticatedAs != null, "Auth token invalid");
-        Preconditions.checkArgument(loggedInUser.equals(authenticatedAs),
-            "Protocol user doesn't match session user");
-        LOG.info("Protocol authenticated as " + loggedInUser);
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
@@ -492,7 +591,8 @@ public class ServerRpcProvider {
     corsFilterHolder.setInitParameter("allowedOrigins", "*");
     // Set explicit methods to allow CORS with DELETE
     corsFilterHolder.setInitParameter("allowedMethods", "GET,POST,DELETE,PUT,HEAD");
-    corsFilterHolder.setInitParameter("allowedHeaders", "*");
+    corsFilterHolder.setInitParameter("allowedHeaders",
+        "X-Requested-With,Content-Type,Accept,Origin,X-window-id");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
     // Set cache header rewriter filter
@@ -557,17 +657,40 @@ public class ServerRpcProvider {
     // TODO(zamfi): fix to let messages span frames.
     wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
+    //
     // Atmosphere framework. Replacement of Socket.IO
     // See https://issues.apache.org/jira/browse/WAVE-405
+    //
     ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
+
     // Avoid loading defualt CORS interceptor which is in conflict with general
     // jetty CORS filter
     atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
+
     // Setting a low HeartBeat frequency to avoid network issues. Let clients to
     // set a hihger value.
     atholder.setInitParameter(
         "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", ""
             + websocketHeartbeat);
+
+
+    //
+    // Configure Atmosphere Broadcaster class
+    //
+    // Comment out following line to enable Threaded broadcasters
+    atholder.setInitParameter("org.atmosphere.cpr.broadcasterClass",
+        "org.atmosphere.util.SimpleBroadcaster");
+
+    //
+    // Configuring Atmosphere threads: this config is considered if
+    // SimpleBroadcaster is not used
+    //
+
+    // Use same thread pool for all brodcaster (AtmosphereConnection)
+    atholder.setInitParameter("org.atmosphere.cpr.broadcaster.shareableThreadPool", "true");
+    // Set number of threads for atmosphere
+    atholder.setInitParameter("org.atmosphere.cpr.broadcaster.maxProcessingThreads", "4");
+
 
     // Setting all buffers at least to 2MB
     atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", ""
@@ -749,18 +872,18 @@ public class ServerRpcProvider {
   }
 
   /**
-   * Manange atmosphere connections and dispatch messages to wave channels.
+   * The Atmosphere handler. Dispatchs incoming requests from remote clients to
+   * the right {@link AtmosphereConnection}.
    *
-   * This Atmosphere handler supports both WebSocket and Long-polling
-   * connections with the following features:
+   * It handles transport-level events:
    *
    * <ul>
-   * <li>Detect session expiration and close remote clients properly.</li>
-   * <li>Detect server reboot refusing further operations. Close remote clientes
+   * <li>Session expiration: close remote clients properly.</li>
+   * <li>Server reboot refusing further operations. Close remote clientes
    * properly.</li>
    * <li>Allow reconnection of remote clients if HTTP session is still active
    * despite the transport failure.</li>
-   * <li>Keep connections opened sending heartbeat signasl</li>
+   * <li>Keep connections opened sending heartbeat signal</li>
    * <li>Remote clients reconnection on timeout to avoid silent network
    * failures.</li>
    * </ul>
@@ -796,346 +919,137 @@ public class ServerRpcProvider {
 
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
-    private static final String CHARSET = "UTF-8";
-    private static final String SEPARATOR = "|";
+    private static final String EXT_CLIENT_VERSION_HEADER = "X-client-version";
 
+    /** Header name for extensions of the wave socket protocol */
+    private static final String EXT_RESPONSE_HEADER = "X-RESPONSE:";
+
+    private static final String EXT_RESPONSE_CLIENT_NOT_SUPPORTED = "CLIENT_NOT_SUPPORTED";
+    private static final String EXT_RESPONSE_INVALID_SESSION = "INVALID_SESSION";
+    private static final String EXT_RESPONSE_SERVER_EXCEPTION = "SERVER_EXCEPTION";
 
     @Inject
     public ServerRpcProvider provider;
 
 
+    /**
+     * Get the session for the Atmosphere resource based on the session token
+     * passes as path part.
+     * 
+     * We ignore cookies explicity here. If request come from an iframe, the
+     * websocket request can send parent's window cookie session causing a
+     * mismatch with session id given in a login request.
+     * 
+     * @param resource
+     * @return
+     */
     private HttpSession getSession(AtmosphereResource resource) {
-      HttpSession session = null;
 
-      Cookie[] cookies = resource.getRequest().getCookies();
+      /*
+       * Cookie[] cookies = resource.getRequest().getCookies(); String
+       * cookieSessionId = null; if (cookies != null) for (Cookie c : cookies) {
+       * if (c.getName().equals(SESSION_COOKIE_NAME)) cookieSessionId =
+       * c.getValue(); }
+       */
 
-      if (cookies != null)
-        for (Cookie c : cookies) {
-          if (c.getName().equals(SESSION_COOKIE_NAME))
-            session = provider.sessionManager.getSessionFromToken(c.getValue());
-        }
+      // Get the session URL path /atmosphere/<sessionId>:<windowId>
+      String urlToken = null;
 
-      // Try with the session URL path /atmosphere/<sessionId>
-      if (session == null) {
-        int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
-        if (lastPathSeparatorIndex >= 0) {
-          String sessionToken =
-              resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
-          session = provider.sessionManager.getSessionFromToken(sessionToken);
-        }
+      int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
+      if (lastPathSeparatorIndex >= 0) {
+        urlToken = resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
       }
 
-      return session;
-    }
-
-    private int getSessionRecycleCounter(HttpSession session) {
-      Object attribute = session.getAttribute(AuthenticationService.SESSION_RECYCLE_COUNTER);
-      int sessionRecycleCounter = -1;
-      if (attribute != null) {
-        Integer intObject = (Integer) attribute;
-        sessionRecycleCounter = intObject.intValue();
+      // Trust first in the session token passed as URL path.
+      // Inside IFrames, we could get the wrong cookie!
+      if (urlToken != null) {
+        return provider.sessionManager.getSessionFromToken(urlToken);
       }
 
-      return sessionRecycleCounter;
+
+      return null;
     }
 
-    protected void flushResponse(AtmosphereResource resource) {
-
-      try {
-
-        resource.getResponse().flushBuffer();
-
-        switch (resource.transport()) {
-          case JSONP:
-          case LONG_POLLING:
-            resource.resume();
-            break;
-          case WEBSOCKET:
-          case STREAMING:
-          case SSE:
-            resource.getResponse().getOutputStream().flush();
-            break;
-          default:
-            LOG.info("Unknown transport");
-            break;
-        }
-      } catch (IOException e) {
-        LOG.warning("Error resuming resource response", e);
-      }
-    }
 
 
     @Override
     public void onRequest(AtmosphereResource resource) throws IOException {
 
+      // Check if SwellRT client is compatible with server
+      String clientVersionHeader = resource.getRequest().getHeader(EXT_CLIENT_VERSION_HEADER);
 
-
-      // If it's the old client then force the connection close
-      if (!resource.getRequest().headersMap().containsKey("X-client-version")) {
-        resource.getBroadcaster().broadcast("X-RESPONSE:UPGRADE");
+      if ((clientVersionHeader == null) || (!clientVersionHeader.equals(Model.MODEL_VERSION))) {
+        AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER
+            + EXT_RESPONSE_CLIENT_NOT_SUPPORTED);
         resource.close();
         return;
       }
 
-      String clientVersionHeader = resource.getRequest().getHeader("X-client-version");
-      boolean needClientUpgrade =
-          (clientVersionHeader == null) || (!clientVersionHeader.equals(Model.MODEL_VERSION));
-
+      // Atmosphere requires specialized HttpWindowSession instances. See
+      // SessionServerImpl class.
 
       HttpSession httpSession = getSession(resource);
+      HttpWindowSession windowSession = null;
+      if (httpSession != null && httpSession instanceof HttpWindowSession)
+        windowSession = (HttpWindowSession) httpSession;
 
-      if (httpSession == null) {
-        resource.getBroadcaster().broadcast("X-RESPONSE:SERVER_ERROR:SESSION_NOT_FOUND");
+      //
+      if (windowSession == null) {
+        AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER + EXT_RESPONSE_INVALID_SESSION);
         resource.close();
         return;
       }
 
-      ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
 
-      int sessionRecycleCounter = getSessionRecycleCounter(httpSession);
-
-      // WebSocket Transport:
-      //
-      // A base resource is the WebSocket connection
-      // A new resource for each remote client request
-      // Wave Connections are associated to the user session to
-      // share it across request's resources
-
-      if (resource.transport().equals(TRANSPORT.WEBSOCKET)) {
-
-        // Cache connectios by session id and transport to allow reconnections
-        // of the same user with different transport
-        String key = httpSession.getId() + ":WS";
-
-        if (!CONNECTIONS.containsKey(key))
-          CONNECTIONS.put(key, new AtmosphereConnection(httpSession.getId(), loggedInUser,
-              provider, sessionRecycleCounter));
-
-        AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(key);
+      ParticipantId participantId = provider.sessionManager.getLoggedInUser(httpSession);
 
 
-        // If the session has been recycled (the session recycle counter has
-        // a new value) connection must be reset.
-        // Close the previous connection properly.
-        // This happens when different tabs of the same browser are opened
-        // or when tab is refreshed or a new login is made.
-        if (sessionRecycleCounter != connection.getSessionReycleCounter()) {
-          connection.getAtmosphereChannel().sendException("DUPLICATED_CONNECTION");
-          connection.close();
-          connection =
-              new AtmosphereConnection(httpSession.getId(), loggedInUser, provider,
-                  sessionRecycleCounter);
-          CONNECTIONS.put(key, connection);
-        }
-
-
-        if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
-
-          // LOG.info("Websocket suspending request " + resource.uuid());
-
-          resource.suspend();
-
-          // Resources are new for each new connection
-          // Make sure the channel knows to which resource answer
-          connection.getAtmosphereChannel().bindResource(resource);
-
-          if (needClientUpgrade) {
-            connection.getAtmosphereChannel().sendClientNeedUpgrade();
-            connection.close();
-            return;
-          }
-
-
-        } else if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
-
-          // LOG.info("Websocket proccessing request " + resource.uuid());
-
-          StringBuilder b = IOUtils.readEntirely(resource);
-          try {
-            connection.getAtmosphereChannel().onMessage(b.toString());
-          } catch (RuntimeException e) {
-            LOG.warning("Exception on channel", e);
-            connection.getAtmosphereChannel().sendException(e);
-            connection.close();
-            return;
-          }
-
-        }
-
-      } else if (resource.transport().equals(TRANSPORT.LONG_POLLING)
-          || resource.transport().equals(TRANSPORT.POLLING)) {
-
-        // Cache connections by session id and transport to allow reconnections
-        // of the same user with different transport
-        String key = httpSession.getId() + ":LP";
-
-        if (!CONNECTIONS.containsKey(key))
-          CONNECTIONS.put(key, new AtmosphereConnection(httpSession.getId(), loggedInUser,
-              provider, sessionRecycleCounter));
-
-        AtmosphereConnection connection = (AtmosphereConnection) CONNECTIONS.get(key);
-
-        // If the session has been recycled (the session recycle counter has
-        // a new value) connection must be reset.
-        // Close the previous connection properly.
-        // This happens when different tabs of the same browser are opened
-        // or when tab is refreshed or a new login is made.
-        if (sessionRecycleCounter != connection.getSessionReycleCounter()) {
-          connection.getAtmosphereChannel().sendException("DUPLICATED_CONNECTION");
-          connection.close();
-          connection =
-              new AtmosphereConnection(httpSession.getId(), loggedInUser, provider,
-                  sessionRecycleCounter);
-          CONNECTIONS.put(key, connection);
-        }
-
-
-        if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
-
-          // LOG.info("Long-polling suspending request " + resource.uuid());
-
-          resource.suspend();
-          // In long polling we bind any new resource to the channel
-          connection.getAtmosphereChannel().bindResource(resource);
-
-
-          if (needClientUpgrade) {
-            connection.getAtmosphereChannel().sendClientNeedUpgrade();
-            connection.close();
-            return;
-          }
-
-        } else if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
-
-          // LOG.info("Long-polling proccessing request " + resource.uuid());
-
-          StringBuilder b = IOUtils.readEntirely(resource);
-          try {
-            connection.getAtmosphereChannel().onMessage(b.toString());
-            resource.resume();
-          } catch (RuntimeException e) {
-            LOG.warning("Exception on channel", e);
-            connection.getAtmosphereChannel().sendException(e);
-            connection.close();
-            return;
-          }
-
-        }
-
+      if (!ATMOSPHERE_CONNECTIONS.containsKey(windowSession)) {
+        ATMOSPHERE_CONNECTIONS
+            .put(windowSession, new AtmosphereConnection(windowSession, provider));
       }
 
+      AtmosphereConnection connection =
+          (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(windowSession);
 
-
-    }
-
-    /**
-     * Packing messages ensures that a Wave message order is preserved when
-     * server is delivering messages through atmosphere long-polling. I wasn't
-     * able to avoid this forcing the flush/resuming of atmosphere's output
-     * stream.
-     *
-     * @param messages
-     * @return
-     * @throws UnsupportedEncodingException
-     */
-    private byte[] packWaveMessages(List<Object> messages) throws UnsupportedEncodingException {
-
-      StringBuilder sb = new StringBuilder();
-
-      sb.append(SEPARATOR);
-      for (Object obj : messages) {
-        LOG.fine("Sending Wave message: " + (String) obj);
-        sb.append((String) obj).append(SEPARATOR);
+      try {
+        connection.onRequest(resource, participantId);
+      } catch (Exception e) {
+        LOG.warning("Error handling request for session " + windowSession, e);
+        AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER + EXT_RESPONSE_SERVER_EXCEPTION);
+        resource.close();
+        return;
       }
-
-      return sb.toString().getBytes(CHARSET);
     }
+
+
 
     @Override
     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
 
-      AtmosphereResponse response = event.getResource().getResponse();
       AtmosphereResource resource = event.getResource();
-
-      HttpSession httpSession = getSession(resource);
-      ParticipantId loggedInUser = provider.sessionManager.getLoggedInUser(httpSession);
+      HttpSession session = getSession(resource);
 
       if (event.isSuspended()) {
-
-        LOG.fine("Atmosphere response for suspended resource " + resource.uuid()
-            + " response is "
-            + event.getMessage() != null ? "not empty" : "EMPTY!");
-
-        // Set content type before do response.getWriter()
-        // http://docs.oracle.com/javaee/5/api/javax/servlet/ServletResponse.html#setContentType(java.lang.String)
-        response.setContentType("text/plain; charset=UTF-8");
-        response.setCharacterEncoding("UTF-8");
-
-        if (event.getMessage().getClass().isArray()) {
-
-          List<Object> list = Arrays.asList(event.getMessage());
-          response.getOutputStream().write(packWaveMessages(list));
-
-        } else if (event.getMessage() instanceof List) {
-
-          @SuppressWarnings("unchecked")
-          List<Object> list = List.class.cast(event.getMessage());
-          response.getOutputStream().write(packWaveMessages(list));
-
-        } else if (event.getMessage() instanceof String) {
-
-          String message = (String) event.getMessage();
-          response.getOutputStream().write(message.getBytes(CHARSET));
-        }
-
-
-        flushResponse(resource);
-
+        AtmosphereUtil.writeMessage(resource, event.getMessage());
 
       } else if (event.isCancelled()) {
-
-        LOG.info("Resource cancelled by remote client: " + event.getResource().uuid() + " / "
-            + loggedInUser.getAddress());
-
-        AtmosphereConnection connection =
-            (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
-
-        if (connection != null) connection.getAtmosphereChannel().unbindResource();
+        LOG.info("Resource cancelled by remote client, session " + session);
 
       } else if (event.isResumedOnTimeout()) {
+        LOG.fine("Resource resumed on timeout, session " + session);
 
-        LOG.fine("Resource resumed on timeout: " + event.getResource().uuid());
-
-      } else if (event.isResuming()) {
-
-        LOG.fine("Resource resumed: " + event.getResource().uuid());
-
-      } else if (event.isClosedByApplication() || event.isClosedByClient()) {
-
-        LOG.info("Resource closed " + ": " + event.getResource().uuid() + " / "
-            + loggedInUser.getAddress());
+      } else if (event.isClosedByClient()) {
+        LOG.info("Resource closed by client, session " + session);
 
         AtmosphereConnection connection =
-            (AtmosphereConnection) CONNECTIONS.get(httpSession.getId());
+            (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(session);
 
-        if (connection != null) connection.getAtmosphereChannel().unbindResource();
-
-      } else if (event.isResuming()) {
-
-        LOG.info("Resuming resource " + event.getResource().uuid() + " / "
-            + loggedInUser.getAddress());
+        if (connection != null) connection.close();
 
       } else if (event.isResumedOnTimeout()) {
-
-        LOG.info("Resuming resource in Timeout " + event.getResource().uuid() + " / "
-            + loggedInUser.getAddress());
-
-      } else {
-
-        LOG.info("Unknown atmosphere event for resource " + event.getResource().uuid() + " / "
-            + loggedInUser.getAddress());
+        LOG.info("Resource resumed by timeout, session " + session);
       }
-
     }
 
     @Override

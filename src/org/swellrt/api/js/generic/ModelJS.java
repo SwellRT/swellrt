@@ -34,6 +34,11 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
       this.eventHandlers[event] = null;
      },
 
+     id: function() {
+       return delegate.@org.swellrt.model.generic.Model::getId()();
+     },
+
+
      getParticipants: function() {
       var _participants = delegate.@org.swellrt.model.generic.Model::getParticipants()();
       return @org.swellrt.api.SwellRTUtils::participantIterableToJs(Ljava/lang/Iterable;)(_participants);
@@ -97,10 +102,9 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
         var request = new XMLHttpRequest();
 
-        request.withCredentials = true;
         request.onload = function(event) {
           if (request.status == 201) {
-            var _file = delegate.@org.swellrt.model.generic.Model::createFile(Lorg/waveprotocol/wave/media/model/AttachmentId;)(attachmentId);
+            var _file = delegate.@org.swellrt.model.generic.Model::createFile(Lorg/waveprotocol/wave/media/model/AttachmentId;Ljava/lang/String;)(attachmentId, file.type);
             onComplete(@org.swellrt.api.js.generic.AdapterTypeJS::adapt(Lorg/swellrt/model/generic/Type;)(_file));
           } else {
             onComplete({ error : "SERVICE_EXCEPTION" });
@@ -113,6 +117,7 @@ public class ModelJS extends JavaScriptObject implements Model.Listener {
 
         request.open("POST", url);
         request.setRequestHeader("Accept", "text/plain");
+        @org.swellrt.api.SwellRTUtils::addCommonRequestHeaders(Lcom/google/gwt/core/client/JavaScriptObject;)(request);
         request.send(formData);
 
         return true;

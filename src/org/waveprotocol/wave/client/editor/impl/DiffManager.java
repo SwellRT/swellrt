@@ -25,7 +25,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.StyleInjector;
 
-import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.client.editor.content.TransparentManager;
 import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
 
@@ -121,13 +120,13 @@ public class DiffManager implements TransparentManager<Element> {
     switch (type) {
       case INSERT:
         element.addClassName(resources.css().insert());
-        element.getStyle()
-            .setBackgroundColor(DiffHighlightingFilter.colorProvider.getColor(DiffHighlightingFilter.wrapAnonymousAuthor(author)));
+        element.addClassName("inserted-text");
+        element.addClassName("author-" + author);
         break;
       case DELETE:
         element.addClassName(resources.css().delete());
-        element.getStyle()
-            .setBackgroundColor(DiffHighlightingFilter.colorProvider.getColor(DiffHighlightingFilter.wrapAnonymousAuthor(author)));
+        element.addClassName("deleted-text");
+        element.addClassName("author-" + author);
         NodeManager.setTransparency(element, Skip.DEEP);
         element.setAttribute("contentEditable", "false");
         break;

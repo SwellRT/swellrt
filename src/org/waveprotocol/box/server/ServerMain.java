@@ -68,6 +68,7 @@ import org.waveprotocol.box.server.rpc.AttachmentServlet;
 import org.waveprotocol.box.server.rpc.AuthenticationServlet;
 import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
 import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
+import org.waveprotocol.box.server.rpc.HttpWindowSessionFilter;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.rpc.SignOutServlet;
 import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
@@ -297,6 +298,9 @@ public class ServerMain {
 
     // SwellRt
     server.addServlet("/swell/*", SwellRtServlet.class);
+
+    // Handles headers and query params porting the window's session id
+    server.addFilter("/*", HttpWindowSessionFilter.class);
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {

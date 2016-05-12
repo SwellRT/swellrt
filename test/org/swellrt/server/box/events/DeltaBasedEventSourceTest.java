@@ -132,12 +132,20 @@ public class DeltaBasedEventSourceTest extends TestCase {
     fakeWave = createSampleWave(fakeSink);
     fakeDataModel = Model.create(fakeWave, fakeDomain, fakeAuthor, Boolean.TRUE, fakeIdGenerator);
     fakeDataModel.getRoot().put("one", fakeDataModel.createString("String One"));
-    fakeDataModel.getRoot().put("list", fakeDataModel.createList());
+    ListType list =
+        (ListType) fakeDataModel.getRoot().put("list", fakeDataModel.createList()).asList();
+    list.add(fakeDataModel.createString("list-zero"));
+    list.add(fakeDataModel.createString("list-one"));
+    list.add(fakeDataModel.createString("list-two"));
+    MapType map = (MapType) list.add(fakeDataModel.createMap()).asMap();
+    map.put("l4-k1", fakeDataModel.createString("value 1"));
+    map.put("l4-k2", fakeDataModel.createString("value 2"));
+
     fakeDataModel.getRoot().put("two", fakeDataModel.createString("String Two"));
     fakeDataModel.getRoot().put("map", fakeDataModel.createMap());
     fakeDataModel.getRoot().put("text", fakeDataModel.createText());
     LOG.fine("Created fake Wave and Data Model");
-  }
+  } // root.list.?.<property>
 
 
 
@@ -169,7 +177,7 @@ public class DeltaBasedEventSourceTest extends TestCase {
       }
 
       @Override
-      public boolean hasEvents(String app, String dataType) {
+      public boolean hasEventsFor(String app, String dataType) {
         return (_app == null && _dataType == null)
             || (_app.equals(app) && _dataType.equals(dataType));
       }
@@ -385,6 +393,55 @@ public class DeltaBasedEventSourceTest extends TestCase {
 
   }
 
+  //
+  // MAP_ENTRY_UPDATED inside a LIST
+  //
+  public void testEventMapEntryUpdatedInsideList() throws InvalidIdException {
+
+    // Mutate the fake data model. Changes reach the sink as doc ops.
+    MapType map = ((MapType) fakeDataModel.getRoot().get("list").asList().get(3)).asMap();
+    map.put("l4-k1", "hello world");
+
+    // Reset operations sink
+    fakeSink.getTransformedWaveletDelta();
+
+    // Three updates in the same delta, all of them will share the same last
+    // state = "ro"
+    map.put("l4-k2", "foo");
+    map.put("l4-k2", "bar");
+    map.put("l4-k2", "ro");
+
+
+    // Test generated events
+    testWaveletUpdate(CollectionUtils.<String> newArrayList(
+        "root.one",
+        "root.two",
+        "root.map.field0",
+        "root.map.field1",
+        "root.list.?.l4-k1",
+        "root.list.?.l4-k2"), "default", "default",
+        new EventAssertionChecker() {
+
+          @Override
+          public void checkAssertions(Event e) {
+
+            LOG.fine(e.getType().toString());
+
+            // All updates has the same value (the lastest)
+            assertEquals(Event.Type.MAP_ENTRY_UPDATED, e.getType());
+            assertEquals("ro", e.getContextData().get("root.list.?.l4-k2"));
+
+            assertEquals("hello world", e.getContextData().get("root.list.?.l4-k1"));
+
+            // Check generic context data, it applies for all events
+            assertEquals("String One", e.getContextData().get("root.one"));
+            assertEquals("String Two", e.getContextData().get("root.two"));
+
+          }
+        });
+
+  }
+
 
   //
   // MAP_ENTRY_REMOVED
@@ -422,7 +479,7 @@ public class DeltaBasedEventSourceTest extends TestCase {
 
             if (step == 0) {
               assertEquals(Event.Type.MAP_ENTRY_UPDATED, e.getType());
-              assertNull(e.getContextData().get("root.map.field2"));
+              assertEquals("please, delete me", e.getContextData().get("root.map.field2"));
               step++;
             }
 
