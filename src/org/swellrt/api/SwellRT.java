@@ -1305,8 +1305,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       query += "&url_text=" + URL.encodeQueryString(urlText);
       url += "?" + query;
 
-      RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-      builder.setIncludeCredentials(true);
+      RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
+
       builder.sendRequest(null, new RequestCallback() {
 
         @Override

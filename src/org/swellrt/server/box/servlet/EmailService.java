@@ -245,7 +245,15 @@ public class EmailService extends SwellRTService {
                 ctx.put("recoverUrl", recoverUrlCp);
                 ctx.put("userName", userAddress);
 
-                Locale locale = ConversionUtils.toLocale(a.asHuman().getLocale());
+                Locale locale = null;
+
+                String localeStr = a.asHuman().getLocale();
+
+                if (localeStr == null) {
+                  locale = Locale.getDefault();
+                } else {
+                  locale = ConversionUtils.toLocale(localeStr);
+                }
 
                 Template t = decTemplates.getTemplateFromName(RECOVER_PASSWORD_TEMPLATE);
                 ResourceBundle b = decTemplates.getBundleFromName(RECOVER_PASSWORD_BUNDLE, locale);

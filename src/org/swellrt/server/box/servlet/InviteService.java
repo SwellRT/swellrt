@@ -20,6 +20,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class InviteService extends SwellRTService {
 
@@ -44,13 +45,15 @@ public class InviteService extends SwellRTService {
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
-    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
 
     if (participantId == null) {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-    HumanAccountData hum = sessionManager.getLoggedInAccount(req.getSession(false)).asHuman();
+
+    HttpSession session = sessionManager.getSession(req);
+    HumanAccountData hum = sessionManager.getLoggedInAccount(session).asHuman();
 
     Locale locale;
 
