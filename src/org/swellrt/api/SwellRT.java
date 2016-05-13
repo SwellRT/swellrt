@@ -39,9 +39,7 @@ import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.waveref.WaveRef;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -690,25 +688,19 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   protected WaveLoader getWaveWrapper(WaveId waveId, boolean isNew) {
 
-
-    if (isNew) {
-      Preconditions.checkArgument(!waveWrappers.containsKey(waveId),
-          "Trying to create an existing Wave");
-      WaveLoader ww =
-          new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
-              .getUnderlyingGenerator(), waveDomain,
-              Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
-      waveWrappers.put(waveId, ww);
-    } else {
-      if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
-        WaveLoader ww =
-            new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
-                .getUnderlyingGenerator(), waveDomain,
-                Collections.<ParticipantId> emptySet(), loggedInUser, isNew, this);
-        waveWrappers.put(waveId, ww);
-      }
-    }
-
+    /*
+     * if (isNew) {
+     * Preconditions.checkArgument(!waveWrappers.containsKey(waveId),
+     * "Trying to create an existing Wave"); WaveLoader ww = new
+     * WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+     * .getUnderlyingGenerator(), waveDomain, Collections.<ParticipantId>
+     * emptySet(), loggedInUser, isNew, this); waveWrappers.put(waveId, ww); }
+     * else { if (!waveWrappers.containsKey(waveId) ||
+     * waveWrappers.get(waveId).isClosed()) { WaveLoader ww = new
+     * WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+     * .getUnderlyingGenerator(), waveDomain, Collections.<ParticipantId>
+     * emptySet(), loggedInUser, isNew, this); waveWrappers.put(waveId, ww); } }
+     */
     return waveWrappers.get(waveId);
   }
 

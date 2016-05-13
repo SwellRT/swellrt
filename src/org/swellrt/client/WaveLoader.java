@@ -7,7 +7,6 @@ import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
-import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -19,7 +18,7 @@ import java.util.Set;
  * The Wave Loader encapsulates the process of loading a Wave and Wavelets from
  * the server and build the in-memory structure.
  * 
- * It uses the original stage-based load process optimized for Browsers and the
+ * It uses the original stage-based load process optimized for browsers and the
  * conversational model. TODO consider to simplify the staged loader.
  * 
  * Use the method {@link Stages#load} to launch the load process.
@@ -55,7 +54,7 @@ public class WaveLoader extends Stages {
 
   public WaveLoader(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, String localDomain,
-      Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave,
+ Set<ParticipantId> participants, ParticipantId loggedInUser,
       UnsavedDataListener dataListener) {
     super();
     this.waveRef = waveRef;
@@ -63,7 +62,6 @@ public class WaveLoader extends Stages {
     this.idGenerator = idGenerator;
     this.localDomain = localDomain;
     this.participants = participants;
-    this.isNewWave = isNewWave;
     this.loggedInUser = loggedInUser;
     this.dataListener = dataListener;
 
@@ -118,30 +116,12 @@ public class WaveLoader extends Stages {
       return;
     }
     three = x;
-    if (this.isNewWave) {
-      initNewWave(x);
-    } else {
-      handleExistingWave(x);
-    }
     wave =
         new WaveContext(two.getWave(), two.getConversations(), two.getSupplement(),
  null);
     // Add into some Wave store?
     install();
     whenReady.use(x);
-  }
-
-  private void initNewWave(StageThree three) {
-
-    // Do the new-wave flow.
-    ConversationView wave = two.getConversations();
-
-
-    // Force rendering to finish.
-  }
-
-  private void handleExistingWave(StageThree three) {
-
   }
 
 

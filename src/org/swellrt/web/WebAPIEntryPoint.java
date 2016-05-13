@@ -13,13 +13,18 @@ import com.google.gwt.user.client.ui.RootPanel;
  */
 public class WebAPIEntryPoint implements EntryPoint {
 
+  public static native void log(String s) /*-{
+    console.log(s);
+  }-*/;
+
   @Override
   public void onModuleLoad() {
 
     RootPanel.get();
 
     setupWindowId();
-    injectAPItoWindow(WebAPI.create(getServerURL()));
+    WebAPI webapi = WebAPI.create(getServerURL());
+    injectAPItoWindow(webapi);
 
     // Force to flow exceptions to the browser
     GWT.setUncaughtExceptionHandler(null);

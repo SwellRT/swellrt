@@ -2,7 +2,6 @@ package org.swellrt.model.js;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import org.swellrt.api.js.generic.ModelJS;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
@@ -19,12 +18,6 @@ import org.swellrt.model.generic.Type;
 public class ProxyAdapter {
 
 
-  private Model model;
-
-  public ProxyAdapter(Model model) {
-    this.model = model;
-  }
-
   public native Type fromJs(Type parent, JavaScriptObject o) /*-{
 
     if (!o) return null;
@@ -38,8 +31,6 @@ public class ProxyAdapter {
         // list.add(fromJs(item))
 
         // return list;
-
-
 
     }
 
@@ -75,37 +66,68 @@ public class ProxyAdapter {
   }-*/;
 
 
-  public native JavaScriptObject of(Object delegate) /*-{
-    return undefined;
+  public JavaScriptObject of(Type delegate) {
+
+    if (delegate instanceof MapType)
+      return ofMap((MapType) delegate);
+
+    if (delegate instanceof ListType)
+      return ofList((ListType) delegate);
+
+    if (delegate instanceof StringType)
+      return ofString((StringType) delegate);
+
+
+    return null;
+  }
+
+
+  public native JavaScriptObject getJSObject(Model delegate, MapType root) /*-{
+
+    // Set the root map as default trap
+    var target = this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(root);
+
+    var proxy = new $wnd.Proxy(target, {
+
+            get: function(t, n) {
+
+              if (n == "model") {
+                console.log("Model");
+               } else {
+                 return t[n];
+               }
+            }
+
+    });
+
+    return proxy;
+
   }-*/;
 
 
-  public native JavaScriptObject of(ModelJS delegate) /*-{
+  public native JavaScriptObject ofMap(MapType delegate) /*-{
 
-
-  }-*/;
-
-
-  public native JavaScriptObject of(MapType delegate) /*-{
-
-    var proxy = new $wnd.Proxy({},{
+    var _this = this;
+    var proxy = new $wnd.Proxy(
+    {
+      _delegate: delegate
+    },
+    {
 
       get: function(t, n) {
 
-        var vtype = delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(n);
+        var vtype = t._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(n);
 
         if (!vtype)
           return undefined;
 
-        var vproxy = this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(vtype);
+        var vproxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(vtype);
         return vproxy;
 
       },
 
       set: function(t, n, v) {
-
-         // delegate.put(n, fromJs(v));
-
+         console.log("set "+n+ " = "+v);
       }
 
 
@@ -118,11 +140,26 @@ public class ProxyAdapter {
 
 
 
-  public native JavaScriptObject of(ListType delegate) /*-{
+  public native JavaScriptObject ofList(ListType delegate) /*-{
 
-    let proxy = new $wnd.Proxy([],{
+    var _this = this;
+    var proxy = new $wnd.Proxy([],{
 
+     get: function(t, n) {
 
+        var vtype = delegate.@org.swellrt.model.generic.ListType::get(I)(n);
+
+        if (!vtype)
+          return undefined;
+
+        var vproxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(vtype);
+        return vproxy;
+
+      },
+
+      set: function(t, n, v) {
+         console.log("set "+n+ " = "+v);
+      }
 
     });
 
@@ -131,9 +168,9 @@ public class ProxyAdapter {
   }-*/;
 
 
-  public native  JavaScriptObject of(StringType delegate) /*-{
+  public native  JavaScriptObject ofString(StringType delegate) /*-{
 
-    return delegate.getValue();
+    return delegate.@org.swellrt.model.generic.StringType::getValue()();
 
   }-*/;
 

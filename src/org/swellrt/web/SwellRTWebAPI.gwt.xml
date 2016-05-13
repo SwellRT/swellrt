@@ -8,10 +8,11 @@
 
  -->
 <module rename-to="webapi">
-  <inherits name="com.google.gwt.http.HTTP"/>
-  <inherits name="org.waveprotocol.box.webclient.WebClient" />
 
-  <inherits name='org.swellrt.model.SwellRTModel'/>
+  <inherits name="org.waveprotocol.box.webclient.WebClient" />
+  <inherits name="org.swellrt.client.SwellRTClient"/>
+  <inherits name='org.swellrt.api.SwellRT'/>
+
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.swellrt.web.WebAPIEntryPoint'/>
