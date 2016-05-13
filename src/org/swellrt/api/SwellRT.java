@@ -1294,13 +1294,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String url = baseServerUrl + "/swell/invite/";
     url = addSessionToUrl(url);
 
-    String query = "";
     for (int i = 0; i < emails.length(); i++) {
-      if (!query.isEmpty()) query += ";";
 
-      query += emails.get(i);
+      String email = emails.get(i);
 
-      query = "email=" + URL.encodeQueryString(query);
+      String query = "email=" + URL.encodeQueryString(email);
       query += "&url=" + URL.encodeQueryString(inviteUrl);
       query += "&url_text=" + URL.encodeQueryString(urlText);
       url += "?" + query;
