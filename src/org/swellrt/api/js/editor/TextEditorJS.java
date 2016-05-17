@@ -44,7 +44,7 @@ public class TextEditorJS extends JavaScriptObject {
         if (typeof widgetController == 'undefined')
           return;
 
-        delegate.@org.swellrt.client.editor.TextEditor::registerWidget(Ljava/lang/String;Lorg/swellrt/client/editor/doodad/WidgetController;)(name, widgetController);
+        delegate.@org.swellrt.client.editor.TextEditor::registerWidget(Ljava/lang/String;Lorg/swellrt/model/doodad/WidgetController;)(name, widgetController);
         return widgetController;
       },
 

@@ -20,9 +20,7 @@
   <inherits name='cc.kune.initials.InitialsAvatars'/>
 
   <!-- Specify the app entry point class.                         -->
-  <!-- Disable entry point, use the NEW API in org.swellrt.web
   <entry-point class='org.swellrt.api.SwellRT'/>
-   -->
 
   <!-- Specification of permutation restrictions suitable for production.
        In general, this should support as many permutations as possible -->

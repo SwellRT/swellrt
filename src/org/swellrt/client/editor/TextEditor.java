@@ -7,10 +7,10 @@ import com.google.gwt.dom.client.Element;
 
 import org.swellrt.api.SwellRTUtils;
 import org.swellrt.client.editor.TextEditorAnnotation.ParagraphAnnotation;
-import org.swellrt.client.editor.doodad.ExternalAnnotationHandler;
-import org.swellrt.client.editor.doodad.WidgetController;
-import org.swellrt.client.editor.doodad.WidgetDoodad;
-import org.swellrt.client.editor.doodad.WidgetModelDoodad;
+import org.swellrt.model.doodad.ExternalAnnotationHandler;
+import org.swellrt.model.doodad.WidgetController;
+import org.swellrt.model.doodad.WidgetDoodad;
+import org.swellrt.model.doodad.WidgetModelDoodad;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;

@@ -1,4 +1,4 @@
-package org.swellrt.client.editor.doodad;
+package org.swellrt.model.doodad;
 
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFunction;

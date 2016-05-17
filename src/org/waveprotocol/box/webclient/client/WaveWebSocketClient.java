@@ -35,7 +35,10 @@ import org.waveprotocol.box.common.comms.jso.ProtocolSubmitResponseJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolWaveletUpdateJsoImpl;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
+import org.waveprotocol.wave.client.events.ClientEvents;
 import org.waveprotocol.wave.client.events.Log;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent;
+import org.waveprotocol.wave.client.events.NetworkStatusEvent.ConnectionStatus;
 import org.waveprotocol.wave.communication.gwt.JsonMessage;
 import org.waveprotocol.wave.communication.json.JsonException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -57,11 +60,6 @@ import java.util.Queue;
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
 
-  public static interface StatusListener {
-
-    public void onStateChange(String state, String stateInfo);
-
-  }
 
   /**
    * Envelope for delivering arbitrary messages. Each envelope has a sequence
@@ -110,24 +108,12 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * expiration.
    *
    */
-  public enum ConnectState {
-    CONNECTED, CONNECTING, DISCONNECTED, ERROR;
-
-    public String toString() {
-
-      if (this == CONNECTED) return "CONNECTED";
-      if (this == CONNECTING) return "CONNECTING";
-      if (this == DISCONNECTED) return "DISCONNECTED";
-      if (this == ERROR) return "ERROR";
-
-      return "UNKOWN";
-    }
-
+  private enum ConnectState {
+    CONNECTED, CONNECTING, DISCONNECTED, ERROR
   }
 
-  private ConnectState connectState = ConnectState.DISCONNECTED;
+  private ConnectState connected = ConnectState.DISCONNECTED;
   private WaveWebSocketCallback callback;
-  private StatusListener statusListener;
   private int sequenceNo;
 
   private final Queue<JsonMessage> messages = CollectionUtils.createQueue();
@@ -147,22 +133,16 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * {@link #connect()}.
    */
   public void attachHandler(WaveWebSocketCallback callback) {
-    // Preconditions.checkState(this.callback == null);
+    Preconditions.checkState(this.callback == null);
     Preconditions.checkArgument(callback != null);
     this.callback = callback;
-  }
-
-
-  public void attachStatusListener(StatusListener listener) {
-    Preconditions.checkArgument(listener != null);
-    this.statusListener = listener;
   }
 
   /**
    * Opens this connection.
    */
   public void connect() {
-    setState(ConnectState.CONNECTING);
+    connected = ConnectState.CONNECTING;
     socket.connect();
   }
 
@@ -172,7 +152,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    */
   public void connect(WaveSocket.WaveSocketStartCallback callback) {
     onStartCallback = callback;
-    setState(ConnectState.CONNECTING);
+    connected = ConnectState.CONNECTING;
     socket.connect();
   }
 
@@ -181,7 +161,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    *
    */
   public void disconnect(boolean discardInFlightMessages) {
-    setState(ConnectState.DISCONNECTED);
+    connected = ConnectState.DISCONNECTED;
     socket.disconnect();
     connectedAtLeastOnce = false;
     if (discardInFlightMessages) messages.clear();
@@ -189,13 +169,21 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
   private native String getSessionToken() /*-{
-    return $wnd.SwellRT._session.sessionId;
+    var token = $wnd.__session['sessionid'];
+    try {
+      if ($wnd.sessionStorage && $wnd.sessionStorage.getItem("x-swellrt-window-id") != null) {
+        token+=":"+$wnd.sessionStorage.getItem("x-swellrt-window-id");
+       }
+     } catch(e) {
+
+     }
+    return token;
    }-*/;
 
   @Override
   public void onConnect() {
 
-    setState(ConnectState.CONNECTED);
+    connected = ConnectState.CONNECTED;
 
     try {
       // Sends the session cookie to the server via an RPC to work around
@@ -213,17 +201,20 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       }
       connectedAtLeastOnce = true;
       // Flush queued messages.
-      while (!messages.isEmpty() && connectState == ConnectState.CONNECTED) {
+      while (!messages.isEmpty() && connected == ConnectState.CONNECTED) {
         send(messages.poll());
       }
     } catch (Exception e) {
-
-      setState(ConnectState.ERROR);
+      connected = ConnectState.DISCONNECTED;
 
       // Report connection error on connection started explicitly
       if (onStartCallback != null) {
         onStartCallback.onFailure();
         onStartCallback = null;
+      } else {
+        // Trigger event on else block cause. onStartCallback is only set for
+        // the first time connection.
+        ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
       }
 
       return;
@@ -235,11 +226,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       onStartCallback = null;
     }
 
+    // Trigger event anyway
+    ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.CONNECTED));
+
   }
 
   @Override
   public void onDisconnect() {
-    setState(ConnectState.DISCONNECTED);
+    connected = ConnectState.DISCONNECTED;
+    ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.DISCONNECTED));
   }
 
 
@@ -265,8 +260,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         try {
           callback.onWaveletUpdate(wrapper.<ProtocolWaveletUpdateJsoImpl> getPayload());
         } catch (Exception e) {
-          // TODO consider if we should drop the connection or just invalidate the broken wave
-          setState(ConnectState.ERROR, e.toString());
+          ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
         }
 
       }
@@ -279,8 +273,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
           submitRequestCallbacks.remove(seqno);
           callback.run(wrapper.<ProtocolSubmitResponseJsoImpl> getPayload());
         } catch (Exception e) {
-          // TODO consider if we should drop the connection or just invalidate the broken wave
-          setState(ConnectState.ERROR, e.toString());
+          connected = ConnectState.DISCONNECTED;
+          ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
         }
 
       }
@@ -298,7 +292,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
   private void send(JsonMessage message) {
-    switch (connectState) {
+    switch (connected) {
       case CONNECTED:
         Timer timing = Timing.start("serialize message");
         String json;
@@ -316,23 +310,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   }
 
   public boolean isConnected() {
-    return connectState == ConnectState.CONNECTED;
+    return connected == ConnectState.CONNECTED;
   }
 
   @Override
   public void onError(String errorCode) {
     // For now, we can't recover exceptions from inner layers. Just let the
     // client app to reset
-    setState(ConnectState.ERROR);
-  }
-
-  protected void setState(ConnectState state) {
-    setState(state, null);
-  }
-
-  protected void setState(ConnectState state, String protocolInfo) {
-    connectState = state;
-    if (statusListener != null) statusListener.onStateChange(state.toString(), protocolInfo);
+    ClientEvents.get()
+        .fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, errorCode));
   }
 
 }

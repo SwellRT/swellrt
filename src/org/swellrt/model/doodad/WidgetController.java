@@ -1,11 +1,12 @@
-package org.swellrt.client.editor.doodad;
+package org.swellrt.model.doodad;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 
-import org.swellrt.client.editor.doodad.WidgetDoodad.WidgetContext;
+import org.swellrt.model.doodad.WidgetDoodad.WidgetContext;
+
 
 /**
  * JavaScript object to controll a Widget doodad. It must provide following

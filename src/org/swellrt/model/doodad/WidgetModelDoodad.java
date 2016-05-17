@@ -1,4 +1,4 @@
-package org.swellrt.client.editor.doodad;
+package org.swellrt.model.doodad;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
