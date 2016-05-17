@@ -20,11 +20,12 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class InviteService extends SwellRTService {
 
   private static final String EMAIL = "email";
-  private static final String INVITATION_EMAIL_BUNDLE = "InvitationEmailMessages";
+  private static final String INVITATION_EMAIL_BUNDLE = "EmailMessages";
   private static final String INVITATION_TEMPLATE = "Invitation.vm";
   public static final String URL = "url";
   public static final String URL_TEXT = "url_text";
@@ -44,13 +45,15 @@ public class InviteService extends SwellRTService {
   @Override
   public void execute(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
-    ParticipantId participantId = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
 
     if (participantId == null) {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
       return;
     }
-    HumanAccountData hum = sessionManager.getLoggedInAccount(req.getSession(false)).asHuman();
+
+    HttpSession session = sessionManager.getSession(req);
+    HumanAccountData hum = sessionManager.getLoggedInAccount(session).asHuman();
 
     Locale locale;
 
@@ -90,7 +93,7 @@ public class InviteService extends SwellRTService {
       Template t = decTemplates.getTemplateFromName(INVITATION_TEMPLATE);
       ResourceBundle b = decTemplates.getBundleFromName(INVITATION_EMAIL_BUNDLE, locale);
 
-      String subject = MessageFormat.format(b.getString("emailSubject"), inviter);
+      String subject = MessageFormat.format(b.getString("invitationEmailSubject"), inviter);
 
       String body = decTemplates.getTemplateMessage(t, INVITATION_EMAIL_BUNDLE, params, locale);
 

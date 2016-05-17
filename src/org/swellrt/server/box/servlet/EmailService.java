@@ -62,7 +62,7 @@ public class EmailService extends SwellRTService {
 
   private static final Log LOG = Log.get(EmailService.class);
 
-  private static final String RECOVER_PASSWORD_BUNDLE = "PasswordRestoreMessages";
+  private static final String RECOVER_PASSWORD_BUNDLE = "EmailMessages";
 
 
   private final AccountStore accountStore;
@@ -245,12 +245,21 @@ public class EmailService extends SwellRTService {
                 ctx.put("recoverUrl", recoverUrlCp);
                 ctx.put("userName", userAddress);
 
-                Locale locale = ConversionUtils.toLocale(a.asHuman().getLocale());
+                Locale locale = null;
+
+                String localeStr = a.asHuman().getLocale();
+
+                if (localeStr == null) {
+                  locale = Locale.getDefault();
+                } else {
+                  locale = ConversionUtils.toLocale(localeStr);
+                }
 
                 Template t = decTemplates.getTemplateFromName(RECOVER_PASSWORD_TEMPLATE);
                 ResourceBundle b = decTemplates.getBundleFromName(RECOVER_PASSWORD_BUNDLE, locale);
 
-                String subject = MessageFormat.format(b.getString("emailSubject"), userAddress);
+                String subject =
+                    MessageFormat.format(b.getString("restoreEmailSubject"), userAddress);
 
                 String body =
                     decTemplates.getTemplateMessage(t, RECOVER_PASSWORD_BUNDLE, ctx, locale);

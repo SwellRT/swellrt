@@ -1291,22 +1291,20 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
  String urlText,
       final Callback<String, String> callback)
       throws RequestException {
-    String url = baseServerUrl + "/swell/invite/";
-    url = addSessionToUrl(url);
+    String baseUrl = baseServerUrl + "/swell/invite/";
+    baseUrl = addSessionToUrl(baseUrl);
 
-    String query = "";
     for (int i = 0; i < emails.length(); i++) {
-      if (!query.isEmpty()) query += ";";
 
-      query += emails.get(i);
+      String email = emails.get(i);
 
-      query = "email=" + URL.encodeQueryString(query);
+      String query = "email=" + URL.encodeQueryString(email);
       query += "&url=" + URL.encodeQueryString(inviteUrl);
       query += "&url_text=" + URL.encodeQueryString(urlText);
-      url += "?" + query;
+      String url = baseUrl + "?" + query;
 
-      RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
-      builder.setIncludeCredentials(true);
+      RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
+
       builder.sendRequest(null, new RequestCallback() {
 
         @Override
