@@ -9,12 +9,24 @@
  -->
 <module rename-to="webapi">
 
-  <inherits name="org.waveprotocol.box.webclient.WebClient" />
-  <inherits name="org.swellrt.client.SwellRTClient"/>
-  <inherits name='org.swellrt.api.SwellRT'/>
+  <inherits name="com.google.common.base.Base"/>
+  <inherits name='com.google.gwt.user.User'/>
+
+  <inherits name='org.waveprotocol.wave.client.Client'/>
+  <inherits name='org.waveprotocol.wave.client.util.ClientFlags'/>
+  <inherits name='org.waveprotocol.wave.model.Model'/>
+  <inherits name="org.waveprotocol.wave.model.account.Account"/>
+
+  <inherits name="org.waveprotocol.box.common.Common"/>
+  <inherits name='org.waveprotocol.box.common.comms.WaveClientRpc'/>
+  <inherits name='org.waveprotocol.box.webclient.common.Common'/>
+  <inherits name='org.waveprotocol.box.webclient.common.communication.Communication'/>
 
 
-  <!-- Specify the app entry point class.                         -->
+  <!-- Dependencies with original Wave client code -->
+  <inherits name='org.swellrt.model.SwellRTModel'/>
+
+  <!-- Specify the app entry point class.  -->
   <entry-point class='org.swellrt.web.WebAPIEntryPoint'/>
 
   <!-- Specification of permutation restrictions suitable for production.
@@ -44,5 +56,6 @@
   <add-linker name="xsiframe"/>
 
   <source path="" />
+  <source path="wave" />
 
 </module>

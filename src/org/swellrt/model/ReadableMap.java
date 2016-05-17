@@ -8,5 +8,7 @@ public interface ReadableMap extends ReadableType {
 
   Set<String> keySet();
 
+  boolean hasKey(String key);
+
 
 }

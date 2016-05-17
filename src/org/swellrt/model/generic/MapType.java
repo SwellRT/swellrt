@@ -283,7 +283,7 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   // Map operations
   //
 
-
+  @Override
   public Type get(String key) {
     Preconditions.checkArgument(isAttached, "Unable to get values from an unattached Map");
 
@@ -350,9 +350,16 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     return strValue;
   }
 
+  @Override
   public Set<String> keySet() {
     return observableMap.keySet();
   }
+
+  @Override
+  public boolean hasKey(String key) {
+    return observableMap.keySet().contains(key);
+  }
+
 
   public void remove(String key) {
     Preconditions.checkArgument(isAttached, "Unable to remove values from an unattached Map");
@@ -445,6 +452,5 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     String key = getValueReference(value);
     if (key != null) observableMap.put(key, value);
   }
-
 
 }

@@ -1,7 +1,9 @@
 package org.swellrt.model.js;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 
+import org.swellrt.api.js.generic.ModelJS;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
@@ -17,6 +19,20 @@ import org.swellrt.model.generic.Type;
  */
 public class ProxyAdapter {
 
+
+  /**
+   * Covnerts a Java iterable of strings to a Javascript array.
+   *
+   * @param strings@org.swellrt.model.js.ProxyAdapter
+   * @return
+   */
+  private static JsArrayString iterableToArray(Iterable<String> strings) {
+    JsArrayString array = (JsArrayString) JavaScriptObject.createArray();
+    for (String s : strings)
+      array.push(s);
+
+    return array;
+  }
 
   public native Type fromJs(Type parent, JavaScriptObject o) /*-{
 
@@ -89,13 +105,8 @@ public class ProxyAdapter {
 
     var proxy = new $wnd.Proxy(target, {
 
-            get: function(t, n) {
-
-              if (n == "model") {
-                console.log("Model");
-               } else {
-                 return t[n];
-               }
+            get: function(target, propKey) {
+                 return target[propKey];
             }
 
     });
@@ -114,20 +125,30 @@ public class ProxyAdapter {
     },
     {
 
-      get: function(t, n) {
+      get: function(target, propKey, receiver) {
 
-        var vtype = t._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(n);
+        var value = target._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(propKey);
 
-        if (!vtype)
+        if (!value)
           return undefined;
 
-        var vproxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(vtype);
-        return vproxy;
+        var proxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
+        return proxy;
 
       },
 
-      set: function(t, n, v) {
-         console.log("set "+n+ " = "+v);
+      set: function(target, propKey, value, receiver) {
+        return true;
+      },
+
+      has: function(target, propKey) {
+        return target._delegate.@org.swellrt.model.generic.MapType::hasKey(Ljava/lang/String;)(propKey);
+      },
+
+      ownKeys: function(target) {
+        var nativeKeys = target._delegate.@org.swellrt.model.generic.MapType::keySet()();
+        var keys = @org.swellrt.model.js.ProxyAdapter::iterableToArray(Ljava/lang/Iterable;)(nativeKeys);
+        return keys;
       }
 
 

@@ -3,14 +3,13 @@ package org.swellrt.web;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Command;
 
-import org.swellrt.api.js.generic.ModelJS;
-import org.swellrt.client.WaveLoader;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
 import org.swellrt.model.js.ProxyAdapter;
-import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
-import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
-import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
+import org.swellrt.web.wave.RemoteViewServiceMultiplexer;
+import org.swellrt.web.wave.WaveLoader;
+import org.swellrt.web.wave.WaveSocket.WaveSocketStartCallback;
+import org.swellrt.web.wave.WaveWebSocketClient;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -266,17 +265,11 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
               Model.create(waveLoader.getWave().getWave(), webapi.getDomain(), userId, false,
                   waveLoader.getIdGenerator());
 
-
-          // OLD API
-          ModelJS modelJS = ModelJS.create(model);
-          model.addListener(modelJS);
-
-
           // NEW API
           ProxyAdapter proxyAdapter = new ProxyAdapter();
           JavaScriptObject proxyModel = proxyAdapter.getJSObject(model, model.getRoot());
 
-          callback.onSuccess(WebAPIUtils.createCallbackSuccess(proxyModel, modelJS));
+          callback.onSuccess(WebAPIUtils.createCallbackSuccess(proxyModel));
         }
       });
 

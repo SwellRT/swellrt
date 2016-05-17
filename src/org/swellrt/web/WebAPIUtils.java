@@ -45,9 +45,6 @@ public class WebAPIUtils {
     return object;
    }-*/;
 
-  public static native JavaScriptObject createCallbackSuccess(Object a, Object b) /*-{
-    return {  first: a, second: b };
-  }-*/;
 
 
 

@@ -128,6 +128,11 @@ public class UnmutableMap implements ReadableMap, ReadableTypeVisitable {
   }
 
   @Override
+  public boolean hasKey(String key) {
+    return docBasedMap.keySet().contains(key);
+  }
+
+  @Override
   public UnmutableMap asMap() {
     return this;
   }
