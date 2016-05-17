@@ -1,7 +1,8 @@
 package org.swellrt.model;
 
-import org.swellrt.client.editor.doodad.WidgetDoodad;
-import org.swellrt.client.editor.doodad.WidgetModelDoodad;
+
+import org.swellrt.model.doodad.WidgetDoodad;
+import org.swellrt.model.doodad.WidgetModelDoodad;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
 
