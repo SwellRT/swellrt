@@ -14,7 +14,7 @@ import com.google.gwt.http.client.RequestException;
 import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.api.js.editor.TextEditorJS;
 import org.swellrt.api.js.generic.ModelJS;
-import org.swellrt.client.WaveWrapper;
+import org.swellrt.client.WaveLoader;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
@@ -287,9 +287,9 @@ public class WaveClient implements SwellRT.Listener {
 
     String waveId = null;
 
-    waveId = coreClient.createWave(new OnLoadCallback<WaveWrapper>() {
+    waveId = coreClient.createWave(new OnLoadCallback<WaveLoader>() {
         @Override
-      public void onLoad(WaveWrapper wrapper) {
+      public void onLoad(WaveLoader wrapper) {
 
           ModelJS modelJS = null;
 
@@ -329,10 +329,10 @@ public class WaveClient implements SwellRT.Listener {
 
     String modelId = null;
 
-    modelId = coreClient.openWave(waveId, new OnLoadCallback<WaveWrapper>() {
+    modelId = coreClient.openWave(waveId, new OnLoadCallback<WaveLoader>() {
 
         @Override
-      public void onLoad(WaveWrapper wrapper) {
+      public void onLoad(WaveLoader wrapper) {
 
           ModelJS modelJS = null;
 

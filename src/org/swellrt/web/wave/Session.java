@@ -17,13 +17,9 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client;
-
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
+package org.swellrt.web.wave;
 
 import org.waveprotocol.box.common.SessionConstants;
-import org.waveprotocol.box.webclient.client.i18n.SessionMessages;
 
 /**
  * Session data for the web client.
@@ -33,15 +29,11 @@ import org.waveprotocol.box.webclient.client.i18n.SessionMessages;
 public abstract class Session implements SessionConstants {
 
   private static final Session INSTANCE;
-
-  private static SessionMessages messages = GWT.create(SessionMessages.class);
-
   static {
     // In the future we could inject other Session instances for testing.
     if (JsSession.isAvailable()) {
       INSTANCE = new JsSession();
     } else {
-      Window.alert(messages.sessionDataNotAvailable());
       INSTANCE = new StubSession();
     }
   }

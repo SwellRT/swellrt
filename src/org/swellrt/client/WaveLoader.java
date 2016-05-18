@@ -7,7 +7,6 @@ import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
-import org.waveprotocol.wave.model.conversation.ConversationView;
 import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -15,7 +14,19 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
 
 import java.util.Set;
 
-public class WaveWrapper extends Stages {
+/**
+ * The Wave Loader encapsulates the process of loading a Wave and Wavelets from
+ * the server and build the in-memory structure.
+ * 
+ * It uses the original stage-based load process optimized for browsers and the
+ * conversational model. TODO consider to simplify the staged loader.
+ * 
+ * Use the method {@link Stages#load} to launch the load process.
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
+ */
+public class WaveLoader extends Stages {
 
 
   private final static AsyncHolder<Object> HALT = new AsyncHolder<Object>() {
@@ -41,9 +52,9 @@ public class WaveWrapper extends Stages {
   protected ParticipantId loggedInUser;
 
 
-  public WaveWrapper(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+  public WaveLoader(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, String localDomain,
-      Set<ParticipantId> participants, ParticipantId loggedInUser, boolean isNewWave,
+ Set<ParticipantId> participants, ParticipantId loggedInUser,
       UnsavedDataListener dataListener) {
     super();
     this.waveRef = waveRef;
@@ -51,7 +62,6 @@ public class WaveWrapper extends Stages {
     this.idGenerator = idGenerator;
     this.localDomain = localDomain;
     this.participants = participants;
-    this.isNewWave = isNewWave;
     this.loggedInUser = loggedInUser;
     this.dataListener = dataListener;
 
@@ -95,7 +105,7 @@ public class WaveWrapper extends Stages {
 
       @Override
       protected String getLocalDomain() {
-        return WaveWrapper.this.localDomain;
+        return WaveLoader.this.localDomain;
       }
     });
   }
@@ -106,30 +116,12 @@ public class WaveWrapper extends Stages {
       return;
     }
     three = x;
-    if (this.isNewWave) {
-      initNewWave(x);
-    } else {
-      handleExistingWave(x);
-    }
     wave =
         new WaveContext(two.getWave(), two.getConversations(), two.getSupplement(),
  null);
     // Add into some Wave store?
     install();
     whenReady.use(x);
-  }
-
-  private void initNewWave(StageThree three) {
-
-    // Do the new-wave flow.
-    ConversationView wave = two.getConversations();
-
-
-    // Force rendering to finish.
-  }
-
-  private void handleExistingWave(StageThree three) {
-
   }
 
 

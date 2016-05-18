@@ -1,4 +1,4 @@
-package org.swellrt.client.editor.doodad;
+package org.swellrt.model.doodad;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
@@ -48,11 +48,11 @@ public class WidgetDoodad {
         _element: element,
 
         getState: function() {
-          return @org.swellrt.client.editor.doodad.WidgetDoodad.WidgetContext::getState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;)(element);
+          return @org.swellrt.model.doodad.WidgetDoodad.WidgetContext::getState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;)(element);
         },
 
         setState: function(state) {
-          @org.swellrt.client.editor.doodad.WidgetDoodad.WidgetContext::setState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;Ljava/lang/String;)(element,state);
+          @org.swellrt.model.doodad.WidgetDoodad.WidgetContext::setState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;Ljava/lang/String;)(element,state);
         }
 
       };
