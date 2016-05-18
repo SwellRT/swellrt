@@ -198,6 +198,28 @@ public class ProxyAdapter {
 
 
   /**
+   * Add a Javascript object into a {@ListType} instance in the
+   * specified index. This can trigger a recursive process to attach a new
+   * subtree of Javascript objects into the collaborative object.
+   *
+   * Collaborative list semantics differs from javascript's, provided index must
+   * be in the bounds of the list.
+   *
+   * @param list
+   * @param value
+   * @return
+   */
+  protected boolean add(ListType list, int index, JavaScriptObject value) {
+
+    Type tvalue = fromJs(value);
+    if (tvalue == null) return false;
+
+    tvalue = list.add(index, tvalue);
+
+    return populateValues(tvalue, value);
+  }
+
+  /**
    * Add a Javascript object into a {@ListType} instance. This can
    * trigger a recursive process to attach a new subtree of Javascript objects
    * into the collaborative object.
@@ -215,7 +237,6 @@ public class ProxyAdapter {
 
     return populateValues(tvalue, value);
   }
-
 
 
   public JavaScriptObject of(Type delegate) {
@@ -308,14 +329,11 @@ public class ProxyAdapter {
       },
 
       set: function(target, propKey, value, receiver) {
-        console.log("SET "+propKey+ " = "+value);
         return _this.@org.swellrt.model.js.ProxyAdapter::put(Lorg/swellrt/model/generic/MapType;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
       },
 
 
       defineProperty: function(target, propKey, propDesc) {
-        console.log("DEF PROP "+propKey);
-
         var value = propDesc.value;
         if (!value)
           return false;
@@ -343,22 +361,160 @@ public class ProxyAdapter {
   public native JavaScriptObject ofList(ListType delegate) /*-{
 
     var _this = this;
-    var proxy = new $wnd.Proxy([],{
+    var _array = new Array();
+    _array._delegate = delegate;
 
-     get: function(t, n) {
+    var proxy = new $wnd.Proxy(_array,{
 
-        var vtype = delegate.@org.swellrt.model.generic.ListType::get(I)(n);
+     get: function(target, propKey, receiver) {
 
-        if (!vtype)
-          return undefined;
+        var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+        var index = Number(propKey);
 
-        var vproxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(vtype);
-        return vproxy;
+
+        if (index >=0 && index < length) {
+
+          //
+          // get
+          //
+
+          var value = target._delegate.@org.swellrt.model.generic.ListType::get(I)(index);
+
+          if (!value) {
+            return undefined;
+          } else {
+            return _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
+          }
+
+
+        } else if (propKey == "length") {
+
+          //
+          // length
+          //
+
+          return target._delegate.@org.swellrt.model.generic.ListType::size()();
+
+        } else if (propKey == "push") {
+
+          //
+          // push
+          //
+
+          return function() {
+
+            for(var i in arguments) {
+              _this.@org.swellrt.model.js.ProxyAdapter::add(Lorg/swellrt/model/generic/ListType;Lcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, arguments[i]);
+            }
+            return target._delegate.@org.swellrt.model.generic.ListType::size()();
+          }
+
+
+       } else if (propKey == "pop") {
+
+           //
+           // pop
+           //
+
+          return function() {
+
+            var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+
+            if (length > 0) {
+
+              var value = target._delegate.@org.swellrt.model.generic.ListType::get(I)(length-1);
+              var proxy = null;
+              if (!value) {
+                return undefined;
+              } else {
+                 proxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
+              }
+
+              target._delegate.@org.swellrt.model.generic.ListType::remove(I)(length-1);
+
+              return proxy;
+            }
+          }
+       }
+
 
       },
 
-      set: function(t, n, v) {
-         console.log("set "+n+ " = "+v);
+
+      set: function(target, propKey, value, receiver) {
+
+         var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+         var index = Number(propKey);
+
+         // Should check here index out of bounds?
+         // Collaborative list doesn't support inserting out of bounds
+         if (index >=0 && index <= length) {
+           return _this.@org.swellrt.model.js.ProxyAdapter::add(Lorg/swellrt/model/generic/ListType;ILcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
+         } else {
+           // Should reflect non array properties set?
+           return Reflect.set(target, propKey, value);
+         }
+
+
+      },
+
+
+      has: function(target, propKey) {
+
+        var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+        var index = Number(propKey);
+
+        if (index >=0 && index < length)
+          return true;
+        else if (propKey === 'length')
+          return true;
+        else Reflect.has(target, propKey);
+
+      },
+
+      ownKeys: function(target) {
+
+        // keys is just a contiguos list of indexes, because collaborative lists doesn't allow gaps on indexes
+
+        var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+        var keys = new Array();
+
+        for (var i = 0; i < length; i++)
+          keys.push(""+i);
+
+        keys.push("length");
+
+        return keys;
+      },
+
+      getOwnPropertyDescriptor: function(target, propKey) {
+
+        var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+        var index = Number(propKey);
+
+        if (index >=0 && index < length) {
+
+          var descriptor = {
+            value: this.get(target, propKey),
+            writable: true,
+            enumerable: true,
+            configurable: true
+          };
+
+          return descriptor;
+
+        } else if (propKey == 'length') {
+
+          return {
+            value: this.get(target, 'length'),
+            writable: true,
+            enumerable: false,
+            configurable: false
+          };
+
+        } else {
+          return Reflect.getOwnPropertyDescriptor(target, propKey);
+        }
       }
 
     });
