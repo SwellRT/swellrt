@@ -9,6 +9,9 @@ import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.StringType;
 import org.swellrt.model.generic.Type;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import java.util.Set;
 
 /**
  *
@@ -21,7 +24,7 @@ public class ProxyAdapter {
 
 
   /**
-   * Covnerts a Java iterable of strings to a Javascript array.
+   * Converts a Java iterable of strings to a Javascript array.
    *
    * @param strings@org.swellrt.model.js.ProxyAdapter
    * @return
@@ -30,6 +33,21 @@ public class ProxyAdapter {
     JsArrayString array = (JsArrayString) JavaScriptObject.createArray();
     for (String s : strings)
       array.push(s);
+
+    return array;
+  }
+
+  /**
+   * Converts a Java set of ParticipantId objects to a Javascript array of
+   * strings.
+   *
+   * @param participants
+   * @return
+   */
+  private static JsArrayString participantsToArray(Set<ParticipantId> participants) {
+    JsArrayString array = (JsArrayString) JavaScriptObject.createArray();
+    for (ParticipantId p : participants)
+      array.push(p.getAddress());
 
     return array;
   }
@@ -255,16 +273,61 @@ public class ProxyAdapter {
   }
 
 
+  /**
+   * Creates a Javascript object proxing a collaborative object. The create
+   * object allows a native JS syntax to work with the collab. object.
+   *
+   * It also provide syntax sugar to inner properties by path: <br>
+   *
+   * "object[listprop.3.field]" is equivalent to "object.listprop[3].field"
+   *
+   *
+   * <br>
+   * but the first expression is more efficient.
+   *
+   * @param delegate
+   * @param root
+   * @return
+   */
   public native JavaScriptObject getJSObject(Model delegate, MapType root) /*-{
 
+    var _this = this;
+
     // Set the root map as default trap
-    var target = this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(root);
+    var target = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(root);
 
     var proxy = new $wnd.Proxy(target, {
 
-            get: function(target, propKey) {
-                 return target[propKey];
-            }
+           get: function(target, propKey) {
+
+             if (typeof propKey == "string" && propKey.contains(".")) {
+
+               var value = delegate.@org.swellrt.model.generic.Model::fromPath(Ljava/lang/String;)(propKey);
+               if (value) {
+                 return _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
+               }
+
+             } else if (propKey == "addCollaborator") {
+
+                return function(c) {
+                  delegate.@org.swellrt.model.generic.Model::addParticipant(Ljava/lang/String;)(c);
+                };
+
+             } else if (propKey == "removeCollaborator") {
+
+                return function(c) {
+                  delegate.@org.swellrt.model.generic.Model::removeParticipant(Ljava/lang/String;)(c);
+                };
+
+             } else if (propKey == "collaborators") {
+
+                var collaboratorSet = delegate.@org.swellrt.model.generic.Model::getParticipants()();
+                return @org.swellrt.model.js.ProxyAdapter::participantsToArray(Ljava/util/Set;)(collaboratorSet);
+
+             } else {
+                return target[propKey];
+             }
+           }
 
     });
 
