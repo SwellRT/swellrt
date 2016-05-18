@@ -259,14 +259,13 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
         public void execute() {
           webapi.getLiveWaveRegistry().put(waveRef.getWaveId(), waveLoader);
 
-          // TODO remove the isNull parameter
           // TODO simplify the model static creator, pass just the WaveLoader
           Model model =
               Model.create(waveLoader.getWave().getWave(), webapi.getDomain(), userId, false,
                   waveLoader.getIdGenerator());
 
-          // NEW API
-          ProxyAdapter proxyAdapter = new ProxyAdapter();
+          // Inject the JS API
+          ProxyAdapter proxyAdapter = new ProxyAdapter(model);
           JavaScriptObject proxyModel = proxyAdapter.getJSObject(model, model.getRoot());
 
           callback.onSuccess(WebAPIUtils.createCallbackSuccess(proxyModel));

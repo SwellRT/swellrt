@@ -1,9 +1,9 @@
 package org.swellrt.model.js;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 
-import org.swellrt.api.js.generic.ModelJS;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
@@ -34,52 +34,188 @@ public class ProxyAdapter {
     return array;
   }
 
-  public native Type fromJs(Type parent, JavaScriptObject o) /*-{
 
-    if (!o) return null;
-
-
-    if (o instanceof Array) {
-
-        // list = createList(parent)
-
-        // foreach (item in o)
-        // list.add(fromJs(item))
-
-        // return list;
-
-    }
-
-    if (typeof o === "string") {
-
-        // return createString(parent, o.value);
-    }
-
-    if (typeof o === "number") {
-
-        // return createNumber(parent, o.value);
-
-    }
-
-    if (typeof o === "boolean") {
-
-       // return createBoolean(parent, o.value)
-
-    }
-
-    if (typeof o === "object") {
-
-       // map = createMap(parent, o);
-
-       // for (k,v in o)
-       // map.put(k, fromJs(parent, v);
-
-       // return map;
-    }
-
-
-
+  private native static boolean isJsArray(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "object") && (jso.constructor == Array));
   }-*/;
+
+  private native static boolean isJsObject(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "object"));
+  }-*/;
+
+  private native static boolean isJsNumber(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "number"));
+  }-*/;
+
+  private native static boolean isJsBoolean(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "boolean"));
+  }-*/;
+
+  private native static boolean isJsString(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "string"));
+  }-*/;
+
+  private native static boolean isJsFile(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "object") && (jso.constructor == File));
+  }-*/;
+
+  private native static boolean isJsText(JavaScriptObject jso) /*-{
+    return jso != null && ((typeof jso == "object") && (jso.constructor == Text));
+  }-*/;
+
+  private native static String asString(JavaScriptObject jso) /*-{
+    return jso;
+  }-*/;
+
+  private native static JsArrayMixed asArray(JavaScriptObject jso) /*-{
+    return jso;
+  }-*/;
+
+
+  private final Model model;
+
+  public ProxyAdapter(Model model) {
+    this.model = model;
+  }
+
+  /**
+   * Generate a {@link Type} instance for a Javascript value. The new object is
+   * NOT attached to a collaborative object.
+   *
+   * @param value
+   * @return
+   */
+  protected Type fromJs(JavaScriptObject value) {
+
+    Type t = null;
+
+    if (isJsNumber(value)) {
+      t = model.createString(asString(value));
+
+    } else if (isJsString(value)) {
+      t = model.createString(asString(value));
+
+    } else if (isJsBoolean(value)) {
+      t = model.createString(asString(value));
+
+    } else if (isJsArray(value)) {
+      t = model.createList();
+
+    } else if (isJsText(value)) {
+      t = model.createText();
+
+    } else if (isJsFile(value)) {
+      t = model.createList();
+
+    } else if (isJsObject(value)) {
+      t = model.createMap();
+
+    }
+
+    return t;
+  }
+
+  /**
+   * Populate the content of a native Javascript object into its counterpart of
+   * the collaborative object. Hence, types of both 'tObject' and 'jsObject'
+   * arguments must be similar.
+   *
+   * If they are primitive values, values are not populated.
+   *
+   *
+   * @param tObject
+   * @param jsObject
+   * @return
+   */
+  protected boolean populateValues(Type tObject, JavaScriptObject jsObject) {
+
+    if (isJsNumber(jsObject)) {
+      // Nothing to do
+      return true;
+
+    } else if (isJsString(jsObject)) {
+      // Nothing to do
+      return true;
+
+    } else if (isJsBoolean(jsObject)) {
+      // Nothing to do
+      return true;
+
+    } else if (isJsArray(jsObject)) {
+
+      JsArrayMixed jsArray = asArray(jsObject);
+      for (int i = 0; i < jsArray.length(); i++) {
+        if (!add((ListType) tObject, jsArray.getObject(i))) {
+          return false;
+        }
+      }
+
+
+    } else if (isJsText(jsObject)) {
+      // TODO add support for Text objects
+      return true;
+
+    } else if (isJsFile(jsObject)) {
+      // TODO add support for File objects
+      return true;
+
+    } else if (isJsObject(jsObject)) {
+
+      JsMap jsMap = JsMap.of(jsObject);
+
+      JsArrayString keys = jsMap.keys();
+      for (int i = 0; i < keys.length(); i++) {
+        String key = keys.get(i);
+        if (!put((MapType) tObject, key, jsMap.get(key))) {
+          return false;
+        }
+      }
+
+    }
+
+    return false;
+  }
+
+
+  /**
+   * Put a Javascript object into a {@MapType} instance. This can
+   * trigger a recursive process to attach a new subtree of Javascript objects
+   * into the collaborative object.
+   *
+   * @param map
+   * @param key
+   * @param value
+   */
+  protected boolean put(MapType map, String key, JavaScriptObject value) {
+
+    Type tvalue = fromJs(value);
+    if (tvalue == null) return false;
+
+    tvalue = map.put(key, tvalue);
+
+    return populateValues(tvalue, value);
+  }
+
+
+  /**
+   * Add a Javascript object into a {@ListType} instance. This can
+   * trigger a recursive process to attach a new subtree of Javascript objects
+   * into the collaborative object.
+   *
+   * @param list
+   * @param value
+   * @return
+   */
+  protected boolean add(ListType list, JavaScriptObject value) {
+
+    Type tvalue = fromJs(value);
+    if (tvalue == null) return false;
+
+    tvalue = list.add(tvalue);
+
+    return populateValues(tvalue, value);
+  }
+
 
 
   public JavaScriptObject of(Type delegate) {
@@ -115,7 +251,12 @@ public class ProxyAdapter {
 
   }-*/;
 
-
+  /**
+   * Generate a JavaScript proxy object for an underlying collaborative map
+   *
+   * @param delegate
+   * @return
+   */
   public native JavaScriptObject ofMap(MapType delegate) /*-{
 
     var _this = this;
@@ -129,16 +270,13 @@ public class ProxyAdapter {
 
         var value = target._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(propKey);
 
-        if (!value)
+        if (!value) {
           return undefined;
+        } else {
+          var proxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
+          return proxy;
+        }
 
-        var proxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
-        return proxy;
-
-      },
-
-      set: function(target, propKey, value, receiver) {
-        return true;
       },
 
       has: function(target, propKey) {
@@ -149,7 +287,48 @@ public class ProxyAdapter {
         var nativeKeys = target._delegate.@org.swellrt.model.generic.MapType::keySet()();
         var keys = @org.swellrt.model.js.ProxyAdapter::iterableToArray(Ljava/lang/Iterable;)(nativeKeys);
         return keys;
+      },
+
+      getOwnPropertyDescriptor: function(target, propKey) {
+
+        var hasPropKey = target._delegate.@org.swellrt.model.generic.MapType::hasKey(Ljava/lang/String;)(propKey);
+
+        if (hasPropKey) {
+          var descriptor = {
+            value: this.get(target, propKey),
+            writable: true,
+            enumerable: true,
+            configurable: true
+          };
+
+          return descriptor;
+        } else {
+          return Reflect.getOwnPropertyDescriptor(target, propKey);
+        }
+      },
+
+      set: function(target, propKey, value, receiver) {
+        console.log("SET "+propKey+ " = "+value);
+        return _this.@org.swellrt.model.js.ProxyAdapter::put(Lorg/swellrt/model/generic/MapType;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
+      },
+
+
+      defineProperty: function(target, propKey, propDesc) {
+        console.log("DEF PROP "+propKey);
+
+        var value = propDesc.value;
+        if (!value)
+          return false;
+
+        return _this.@org.swellrt.model.js.ProxyAdapter::put(Lorg/swellrt/model/generic/MapType;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
+      },
+
+      deleteProperty: function(target, propKey) {
+        target._delegate.@org.swellrt.model.generic.MapType::remove(Ljava/lang/String;)(propKey);
+        var hasPropKey = target._delegate.@org.swellrt.model.generic.MapType::hasKey(Ljava/lang/String;)(propKey);
+        return !hasPropKey;
       }
+
 
 
     });
