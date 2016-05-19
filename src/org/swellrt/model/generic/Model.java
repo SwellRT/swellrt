@@ -431,6 +431,18 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return new FileType(attachmentId, contentType, this);
   }
 
+  public NumberType createNumber(int value) {
+    return new NumberType(value);
+  }
+
+  public NumberType createNumber(double value) {
+    return new NumberType(value);
+  }
+
+  public BooleanType createBoolean(boolean value) {
+    return new BooleanType(value);
+  }
+
   @Override
   public Type fromPath(String path) {
     return (Type) ModelUtils.fromPath(this, path);

@@ -103,16 +103,12 @@ public class ModelUtils {
 
         currentObject = (ReadableType) currentObject.asList().get(index);
 
-      } else if (currentObject.asString() != null) {
-
-        isLeaf = true;
-
-      } else if (currentObject.asText() != null) {
-
-        isLeaf = true;
-
-      } else if (currentObject.asFile() != null) {
-
+      } else if (currentObject.asText() != null ||
+                 currentObject.asFile() != null ||
+                 currentObject.asNumber() != null ||
+                 currentObject.asBoolean() != null ||
+                 currentObject.asString() != null)
+      {
         isLeaf = true;
       }
 
