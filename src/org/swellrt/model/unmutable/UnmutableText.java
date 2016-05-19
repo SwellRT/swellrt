@@ -1,5 +1,7 @@
 package org.swellrt.model.unmutable;
 
+import org.swellrt.model.ReadableBoolean;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableTypeVisitable;
 import org.swellrt.model.ReadableTypeVisitor;
@@ -99,6 +101,16 @@ public class UnmutableText implements ReadableText, ReadableTypeVisitable {
     return DocHelper
         .getText(blipData.getContent().getMutableDocument(), 0, end > size ? size : end);
 
+  }
+
+  @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+  @Override
+  public ReadableBoolean asBoolean() {
+    return null;
   }
 
 }

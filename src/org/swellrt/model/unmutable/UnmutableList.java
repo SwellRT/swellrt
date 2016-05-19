@@ -1,6 +1,8 @@
 package org.swellrt.model.unmutable;
 
+import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableList;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.ReadableTypeVisitable;
 import org.swellrt.model.ReadableTypeVisitor;
@@ -129,6 +131,18 @@ public class UnmutableList implements ReadableList<ReadableType>, ReadableTypeVi
 
   @Override
   public UnmutableFile asFile() {
+    return null;
+  }
+
+
+  @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+
+  @Override
+  public ReadableBoolean asBoolean() {
     return null;
   }
 

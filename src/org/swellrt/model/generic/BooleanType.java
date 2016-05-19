@@ -3,37 +3,37 @@ package org.swellrt.model.generic;
 
 import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableNumber;
-import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
-public class StringType extends Type implements ReadableString, SourcesEvents<StringType.Listener> {
+public class BooleanType extends Type implements ReadableBoolean,
+    SourcesEvents<BooleanType.Listener> {
 
 
   public interface Listener {
 
-    void onValueChanged(String oldValue, String newValue);
+    void onValueChanged(boolean oldValue, boolean newValue);
 
   }
 
   /**
-   * Get an instance of StringType. This method is used for deserialization.
+   * Get an instance of BooleanType. This method is used for deserialization.
    * 
    * @param parent the parent Type instance of this string
    * @param valueIndex the index of the value in the parent's value container
    * @return
    */
-  protected static StringType deserialize(Type parent, String valueIndex) {
-    StringType string = new StringType();
+  protected static BooleanType deserialize(Type parent, String valueIndex) {
+    BooleanType string = new BooleanType();
     string.attach(parent, valueIndex);
     return string;
   }
 
-  public final static String TYPE_NAME = "StringType";
-  public final static String PREFIX = "str";
+  public final static String TYPE_NAME = "BooleanType";
+  public final static String PREFIX = "b";
   public final static String VALUE_ATTR = "v";
 
 
@@ -44,7 +44,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   private Type parent;
   private int valueRef; // the index of this value in the ValuesContainer
-  private String initValue;
+  private Boolean initValue;
 
 
 
@@ -53,7 +53,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
 
-  protected StringType() {
+  protected BooleanType() {
 
     this.initValue = null;
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
@@ -61,24 +61,25 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
       @Override
       public void onValueChanged(String oldValue, String newValue) {
         for (Listener l : listeners)
-          l.onValueChanged(oldValue, newValue);
+          l.onValueChanged(Boolean.valueOf(oldValue), Boolean.valueOf(newValue));
       }
     };
   }
 
-  public StringType(String initValue) {
 
-    this.initValue = initValue != null ? initValue : "";
+  public BooleanType(boolean initValue) {
+
+    this.initValue = initValue;
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
       @Override
       public void onValueChanged(String oldValue, String newValue) {
         for (Listener l: listeners)
-          l.onValueChanged(oldValue, newValue);
+          l.onValueChanged(Boolean.valueOf(oldValue), Boolean.valueOf(newValue));
       }
     };
-  }
 
+  }
 
 
   @Override
@@ -91,7 +92,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
     Preconditions.checkArgument(parent.hasValuesContainer(),
         "Invalid parent type for a primitive value");
     this.parent = parent;
-    observableValue = parent.getValuesContainer().add(initValue);
+    observableValue = parent.getValuesContainer().add(Boolean.toString(initValue));
     observableValue.addListener(observableValueListener);
     valueRef = parent.getValuesContainer().indexOf(observableValue);
     isAttached = true;
@@ -129,7 +130,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   }
 
   protected void deattach() {
-    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached StringType");
+    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached BooleanType");
     observableValue.removeListener(this.observableValueListener);
     observableValue = null;
     isAttached = false;
@@ -144,7 +145,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   protected String serialize() {
-    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached StringType");
+    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached BooleanType");
     return PREFIX + "+" + Integer.toString(valueRef);
   }
 
@@ -159,7 +160,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
       @Override
       public String getBackendId() {
-        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached StringType");
+        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached BooleanType");
         return serialize();
       }
 
@@ -183,16 +184,24 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
 
   //
-  // String operations
+  // Number operations
   //
 
-  public String getValue() {
+  public boolean getValue() {
     if (!isAttached())
       return initValue;
     else
-      return observableValue.get();
+      return Boolean.valueOf(observableValue.get());
   }
 
+
+  public void setValue(double value) {
+    setValue(Double.toString(value));
+  }
+
+  public void setValue(int value) {
+    setValue(Integer.toString(value));
+  }
 
   public void setValue(String value) {
     if (isAttached()) {
@@ -264,7 +273,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public StringType asString() {
-    return this;
+    return null;
   }
 
   @Override
@@ -295,8 +304,8 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   @Override
   public boolean equals(Object obj) {
 
-    if (obj instanceof StringType) {
-      StringType other = (StringType) obj;
+    if (obj instanceof BooleanType) {
+      BooleanType other = (BooleanType) obj;
       // It's suppossed comparasion between types in the same container
       return (other.valueRef == this.valueRef);
     }

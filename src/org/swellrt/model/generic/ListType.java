@@ -1,7 +1,9 @@
 package org.swellrt.model.generic;
 
 
+import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableList;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
@@ -367,6 +369,16 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
 
   @Override
   public FileType asFile() {
+    return null;
+  }
+
+  @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+  @Override
+  public ReadableBoolean asBoolean() {
     return null;
   }
 

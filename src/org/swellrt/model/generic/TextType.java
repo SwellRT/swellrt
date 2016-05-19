@@ -1,5 +1,7 @@
 package org.swellrt.model.generic;
 
+import org.swellrt.model.ReadableBoolean;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
@@ -317,4 +319,13 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
     return null;
   }
 
+  @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+  @Override
+  public ReadableBoolean asBoolean() {
+    return null;
+  }
 }

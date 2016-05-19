@@ -1,6 +1,8 @@
 package org.swellrt.model.generic;
 
+import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableMap;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.swellrt.model.adt.DocumentBasedBasicRMap;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
@@ -442,6 +444,16 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
   @Override
   public FileType asFile() {
+    return null;
+  }
+
+  @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+  @Override
+  public ReadableBoolean asBoolean() {
     return null;
   }
 

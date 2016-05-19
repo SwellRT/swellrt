@@ -21,4 +21,8 @@ public interface ReadableType extends ReadableTypeVisitable {
 
   public abstract ReadableFile asFile();
 
+  public abstract ReadableNumber asNumber();
+
+  public abstract ReadableBoolean asBoolean();
+
 }

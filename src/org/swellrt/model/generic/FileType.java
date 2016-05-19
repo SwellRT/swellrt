@@ -1,7 +1,9 @@
 package org.swellrt.model.generic;
 
 
+import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableFile;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
@@ -364,6 +366,16 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
   }
 
   @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+  @Override
+  public ReadableBoolean asBoolean() {
+    return null;
+  }
+
+  @Override
   public boolean equals(Object obj) {
 
     if (obj instanceof FileType) {
@@ -375,5 +387,6 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
 
     return false;
   }
+
 
 }

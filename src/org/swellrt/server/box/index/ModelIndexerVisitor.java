@@ -3,10 +3,12 @@ package org.swellrt.server.box.index;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
+import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableFile;
 import org.swellrt.model.ReadableList;
 import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableModel;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableType;
@@ -193,6 +195,15 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
     objects.add(fileDBObject);
   }
 
+  @Override
+  public void visit(ReadableNumber instance) {
+    this.objects.add(instance.getValueLong());
+  }
+
+  @Override
+  public void visit(ReadableBoolean instance) {
+    this.objects.add(instance.getValue());
+  }
 
   protected String getStringPath() {
     String strPath = "";
@@ -212,6 +223,7 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
 
     return listDBObject;
   }
+
 
 
 }

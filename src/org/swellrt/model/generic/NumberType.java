@@ -3,14 +3,13 @@ package org.swellrt.model.generic;
 
 import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableNumber;
-import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.adt.ObservableBasicValue;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
-public class StringType extends Type implements ReadableString, SourcesEvents<StringType.Listener> {
+public class NumberType extends Type implements ReadableNumber, SourcesEvents<NumberType.Listener> {
 
 
   public interface Listener {
@@ -20,20 +19,20 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   }
 
   /**
-   * Get an instance of StringType. This method is used for deserialization.
+   * Get an instance of NumberType. This method is used for deserialization.
    * 
    * @param parent the parent Type instance of this string
    * @param valueIndex the index of the value in the parent's value container
    * @return
    */
-  protected static StringType deserialize(Type parent, String valueIndex) {
-    StringType string = new StringType();
+  protected static NumberType deserialize(Type parent, String valueIndex) {
+    NumberType string = new NumberType();
     string.attach(parent, valueIndex);
     return string;
   }
 
-  public final static String TYPE_NAME = "StringType";
-  public final static String PREFIX = "str";
+  public final static String TYPE_NAME = "NumberType";
+  public final static String PREFIX = "n";
   public final static String VALUE_ATTR = "v";
 
 
@@ -53,7 +52,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
 
-  protected StringType() {
+  protected NumberType() {
 
     this.initValue = null;
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
@@ -66,8 +65,22 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
     };
   }
 
-  public StringType(String initValue) {
 
+  public NumberType(double initValue) {
+    init(Double.toString(initValue));
+  }
+
+  public NumberType(int initValue) {
+    init(Integer.toString(initValue));
+  }
+
+
+  public NumberType(String initValue) {
+    init(initValue);
+  }
+
+
+  private void init(String initValue) {
     this.initValue = initValue != null ? initValue : "";
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
@@ -77,8 +90,8 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
           l.onValueChanged(oldValue, newValue);
       }
     };
-  }
 
+  }
 
 
   @Override
@@ -129,7 +142,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   }
 
   protected void deattach() {
-    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached StringType");
+    Preconditions.checkArgument(isAttached, "Unable to deattach an unattached NumberType");
     observableValue.removeListener(this.observableValueListener);
     observableValue = null;
     isAttached = false;
@@ -144,7 +157,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   protected String serialize() {
-    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached StringType");
+    Preconditions.checkArgument(isAttached, "Unable to serialize an unattached NumberType");
     return PREFIX + "+" + Integer.toString(valueRef);
   }
 
@@ -159,7 +172,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
       @Override
       public String getBackendId() {
-        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached StringType");
+        Preconditions.checkArgument(isAttached, "Unable to initialize an unattached NumberType");
         return serialize();
       }
 
@@ -183,7 +196,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
 
   //
-  // String operations
+  // Number operations
   //
 
   public String getValue() {
@@ -193,6 +206,14 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
       return observableValue.get();
   }
 
+
+  public void setValue(double value) {
+    setValue(Double.toString(value));
+  }
+
+  public void setValue(int value) {
+    setValue(Integer.toString(value));
+  }
 
   public void setValue(String value) {
     if (isAttached()) {
@@ -264,7 +285,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public StringType asString() {
-    return this;
+    return null;
   }
 
   @Override
@@ -284,7 +305,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public ReadableNumber asNumber() {
-    return null;
+    return this;
   }
 
   @Override
@@ -295,14 +316,24 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   @Override
   public boolean equals(Object obj) {
 
-    if (obj instanceof StringType) {
-      StringType other = (StringType) obj;
+    if (obj instanceof NumberType) {
+      NumberType other = (NumberType) obj;
       // It's suppossed comparasion between types in the same container
       return (other.valueRef == this.valueRef);
     }
 
 
     return false;
+  }
+
+  @Override
+  public double getValueLong() {
+    return Double.parseDouble(getValue());
+  }
+
+  @Override
+  public int getValueInt() {
+    return Integer.parseInt(getValue());
   }
 
 }

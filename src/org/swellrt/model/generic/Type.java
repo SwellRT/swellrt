@@ -37,6 +37,13 @@ public abstract class Type implements ReadableType {
 
     } else if (ref.startsWith(FileType.PREFIX)) {
       instance = FileType.deserialize(parent, ref.substring(FileType.PREFIX.length() + 1));
+
+    } else if (ref.startsWith(NumberType.PREFIX)) {
+      instance = NumberType.deserialize(parent, ref.substring(NumberType.PREFIX.length() + 1));
+
+    } else if (ref.startsWith(BooleanType.PREFIX)) {
+      instance = BooleanType.deserialize(parent, ref.substring(BooleanType.PREFIX.length() + 1));
+
     }
 
     return instance;

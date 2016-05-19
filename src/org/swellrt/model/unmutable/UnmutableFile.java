@@ -1,6 +1,8 @@
 package org.swellrt.model.unmutable;
 
+import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableFile;
+import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitable;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.media.model.AttachmentId;
@@ -68,6 +70,16 @@ public class UnmutableFile implements ReadableFile, ReadableTypeVisitable {
   @Override
   public String getContentType() {
     return contentType;
+  }
+
+  @Override
+  public ReadableNumber asNumber() {
+    return null;
+  }
+
+  @Override
+  public ReadableBoolean asBoolean() {
+    return null;
   }
 
 }

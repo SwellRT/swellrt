@@ -2,16 +2,15 @@ package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableNumber;
-import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableTypeVisitable;
 import org.swellrt.model.ReadableTypeVisitor;
 
-public class UnmutableString implements ReadableString, ReadableTypeVisitable {
+public class UnmutableNumber implements ReadableNumber, ReadableTypeVisitable {
 
 
   String value;
 
-  protected UnmutableString(String value) {
+  protected UnmutableNumber(String value) {
     this.value = value;
   }
 
@@ -38,7 +37,7 @@ public class UnmutableString implements ReadableString, ReadableTypeVisitable {
 
   @Override
   public UnmutableString asString() {
-    return this;
+    return null;
   }
 
 
@@ -60,12 +59,22 @@ public class UnmutableString implements ReadableString, ReadableTypeVisitable {
 
   @Override
   public ReadableNumber asNumber() {
-    return null;
+    return this;
   }
 
   @Override
   public ReadableBoolean asBoolean() {
     return null;
+  }
+
+  @Override
+  public double getValueLong() {
+    return Double.valueOf(value);
+  }
+
+  @Override
+  public int getValueInt() {
+    return Integer.valueOf(value);
   }
 
 }
