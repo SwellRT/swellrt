@@ -654,7 +654,20 @@ public class ProxyAdapter {
          // Should check here index out of bounds?
          // Collaborative list doesn't support inserting out of bounds
          if (index >=0 && index <= length) {
-           return _this.@org.swellrt.model.js.ProxyAdapter::add(Lorg/swellrt/model/generic/ListType;ILcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
+
+           if (value === undefined || value === null) {
+
+              var deletedValue = target._delegate.@org.swellrt.model.generic.ListType::remove(I)(index);
+
+              if (deletedValue)
+                return _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(deletedValue);
+              else
+                return false;
+
+           } else {
+             return _this.@org.swellrt.model.js.ProxyAdapter::add(Lorg/swellrt/model/generic/ListType;ILcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
+           }
+
          } else {
            // Should reflect non array properties set?
            return Reflect.set(target, propKey, value);
@@ -720,6 +733,27 @@ public class ProxyAdapter {
         } else {
           return Reflect.getOwnPropertyDescriptor(target, propKey);
         }
+      },
+
+
+      deleteProperty: function(target, propKey) {
+
+        var length = target._delegate.@org.swellrt.model.generic.ListType::size()();
+        var index = Number(propKey);
+
+        if (index >=0 && index < length) {
+
+          var deletedValue = target._delegate.@org.swellrt.model.generic.ListType::remove(I)(index);
+
+          if (deletedValue)
+            return _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(deletedValue);
+          else
+            return false;
+
+        } else {
+          return Reflect.deleteProperty(target, propKey);
+        }
+
       }
 
     });
