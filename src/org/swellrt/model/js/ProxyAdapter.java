@@ -4,9 +4,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.core.client.JsArrayString;
 
+import org.swellrt.model.generic.BooleanType;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
+import org.swellrt.model.generic.NumberType;
 import org.swellrt.model.generic.StringType;
 import org.swellrt.model.generic.Type;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -89,6 +91,29 @@ public class ProxyAdapter {
     return jso;
   }-*/;
 
+  private native static Integer asInteger(JavaScriptObject value) /*-{
+    var x;
+    if (isNaN(value)) {
+      return null;
+    }
+    x = parseFloat(value);
+    if ((x | 0) === x) {
+      return value;
+    }
+
+    return null;
+  }-*/;
+
+  private native static Double asDouble(JavaScriptObject value) /*-{
+    return value;
+  }-*/;
+
+  private native static boolean asBoolean(JavaScriptObject value) /*-{
+    return value;
+  }-*/;
+
+
+
   private native static JsArrayMixed asArray(JavaScriptObject jso) /*-{
     return jso;
   }-*/;
@@ -114,13 +139,20 @@ public class ProxyAdapter {
     Type t = null;
 
     if (isJsNumber(value)) {
-      t = model.createString(asString(value));
+
+      Integer i = asInteger(value);
+      if (i != null)
+        t = model.createNumber(i);
+      else {
+        Double d = asDouble(value);
+        t = model.createNumber(d);
+      }
 
     } else if (isJsString(value)) {
       t = model.createString(asString(value));
 
     } else if (isJsBoolean(value)) {
-      t = model.createString(asString(value));
+      t = model.createBoolean(asBoolean(value));
 
     } else if (isJsArray(value)) {
       t = model.createList();
@@ -402,6 +434,11 @@ public class ProxyAdapter {
     if (delegate instanceof StringType)
       return ofString((StringType) delegate);
 
+    if (delegate instanceof NumberType)
+      return ofNumber((NumberType) delegate);
+
+    if (delegate instanceof BooleanType)
+      return ofBoolean((BooleanType) delegate);
 
     return null;
   }
@@ -765,6 +802,15 @@ public class ProxyAdapter {
 
   public native  JavaScriptObject ofString(StringType delegate) /*-{
     return delegate.@org.swellrt.model.generic.StringType::getValue()();
+  }-*/;
+
+
+  public native  JavaScriptObject ofNumber(NumberType delegate) /*-{
+    return delegate.@org.swellrt.model.generic.NumberType::getValueDouble()();
+  }-*/;
+
+  public native  JavaScriptObject ofBoolean(BooleanType delegate) /*-{
+    return delegate.@org.swellrt.model.generic.BooleanType::getValue()();
   }-*/;
 
   public final native JavaScriptObject ofParticipant(ParticipantId participant) /*-{
