@@ -327,7 +327,7 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
   }
 
   @Override
-  public double getValueLong() {
+  public double getValueDouble() {
     return Double.parseDouble(getValue());
   }
 

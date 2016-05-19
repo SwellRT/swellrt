@@ -68,7 +68,7 @@ public class UnmutableNumber implements ReadableNumber, ReadableTypeVisitable {
   }
 
   @Override
-  public double getValueLong() {
+  public double getValueDouble() {
     return Double.valueOf(value);
   }
 

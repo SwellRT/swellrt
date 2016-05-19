@@ -197,7 +197,7 @@ public class ModelIndexerVisitor implements ReadableTypeVisitor {
 
   @Override
   public void visit(ReadableNumber instance) {
-    this.objects.add(instance.getValueLong());
+    this.objects.add(instance.getValueDouble());
   }
 
   @Override
