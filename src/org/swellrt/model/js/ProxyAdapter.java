@@ -81,6 +81,10 @@ public class ProxyAdapter {
     return jso != null && ((typeof jso == "object") && (jso.constructor == Text));
   }-*/;
 
+  private native static boolean isJsFunction(JavaScriptObject jso) /*-{
+    return jso != null && (typeof jso == "function");
+  }-*/;
+
   private native static String asString(JavaScriptObject jso) /*-{
     return jso;
   }-*/;
@@ -88,6 +92,8 @@ public class ProxyAdapter {
   private native static JsArrayMixed asArray(JavaScriptObject jso) /*-{
     return jso;
   }-*/;
+
+
 
 
   private final Model model;
@@ -257,19 +263,67 @@ public class ProxyAdapter {
   }
 
 
-  public JavaScriptObject of(Type delegate) {
+  /**
+   * Sets an event handler in a node of the collaborative object. Handler must
+   * be a function.
+   *
+   * @param handler
+   * @param target
+   * @return the listener
+   */
+  protected ProxyListener setListener(Type target, JavaScriptObject handler) {
 
-    if (delegate instanceof MapType)
-      return ofMap((MapType) delegate);
+    if (!isJsFunction(handler)) return null;
 
-    if (delegate instanceof ListType)
-      return ofList((ListType) delegate);
 
-    if (delegate instanceof StringType)
-      return ofString((StringType) delegate);
+    if (target instanceof MapType) {
+      ProxyMapListener listener = ProxyMapListener.create(handler);
+      listener.setAdapter(this);
+      ((MapType) target).addListener(listener);
 
+      return listener;
+
+    } else if (target instanceof ListType) {
+      ProxyListListener listener = ProxyListListener.create(handler);
+      listener.setAdapter(this);
+      ((ListType) target).addListener(listener);
+
+      return listener;
+
+    } else if (target instanceof StringType) {
+      ProxyPrimitiveListener listener = ProxyPrimitiveListener.create(handler);
+      listener.setAdapter(this);
+      ((StringType) target).addListener(listener);
+
+      return listener;
+    }
 
     return null;
+  }
+
+  /**
+   * Remove an event handler from a node of the collaborative object.
+   *
+   * TODO verify that this implementation works
+   *
+   * @param target
+   * @param handler
+   */
+  protected boolean removeListener(Type target, ProxyListener handler) {
+
+    if (handler instanceof ProxyMapListener) {
+      ((MapType) target).removeListener((ProxyMapListener) handler);
+
+    } else if (handler instanceof ProxyListListener) {
+      ((ListType) target).removeListener((ProxyListListener) handler);
+
+    } else if (handler instanceof ProxyPrimitiveListener) {
+      ((StringType) target).removeListener((ProxyPrimitiveListener) handler);
+
+    }
+
+    return true;
+
   }
 
 
@@ -293,8 +347,9 @@ public class ProxyAdapter {
 
     var _this = this;
 
-    // Set the root map as default trap
-    var target = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(root);
+    var target = this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(root);
+    target._object = delegate;
+
 
     var proxy = new $wnd.Proxy(target, {
 
@@ -302,7 +357,7 @@ public class ProxyAdapter {
 
              if (typeof propKey == "string" && propKey.contains(".")) {
 
-               var value = delegate.@org.swellrt.model.generic.Model::fromPath(Ljava/lang/String;)(propKey);
+               var value = target._object.@org.swellrt.model.generic.Model::fromPath(Ljava/lang/String;)(propKey);
                if (value) {
                  return _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
                }
@@ -310,18 +365,18 @@ public class ProxyAdapter {
              } else if (propKey == "addCollaborator") {
 
                 return function(c) {
-                  delegate.@org.swellrt.model.generic.Model::addParticipant(Ljava/lang/String;)(c);
+                  target._object.@org.swellrt.model.generic.Model::addParticipant(Ljava/lang/String;)(c);
                 };
 
              } else if (propKey == "removeCollaborator") {
 
                 return function(c) {
-                  delegate.@org.swellrt.model.generic.Model::removeParticipant(Ljava/lang/String;)(c);
+                  target._object.@org.swellrt.model.generic.Model::removeParticipant(Ljava/lang/String;)(c);
                 };
 
              } else if (propKey == "collaborators") {
 
-                var collaboratorSet = delegate.@org.swellrt.model.generic.Model::getParticipants()();
+                var collaboratorSet = target._object.@org.swellrt.model.generic.Model::getParticipants()();
                 return @org.swellrt.model.js.ProxyAdapter::participantsToArray(Ljava/util/Set;)(collaboratorSet);
 
              } else {
@@ -334,6 +389,22 @@ public class ProxyAdapter {
     return proxy;
 
   }-*/;
+
+
+  public JavaScriptObject of(Type delegate) {
+
+    if (delegate instanceof MapType)
+      return ofMap((MapType) delegate);
+
+    if (delegate instanceof ListType)
+      return ofList((ListType) delegate);
+
+    if (delegate instanceof StringType)
+      return ofString((StringType) delegate);
+
+
+    return null;
+  }
 
   /**
    * Generate a JavaScript proxy object for an underlying collaborative map
@@ -352,13 +423,50 @@ public class ProxyAdapter {
 
       get: function(target, propKey, receiver) {
 
-        var value = target._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(propKey);
 
-        if (!value) {
-          return undefined;
-        } else {
+        if (propKey == 'addListener' || propKey == 'on' || propKey == 'onEvent') {
+
+          return function(listener, property) {
+
+            if (!listener)
+              return false;
+
+            var eventTarget = target._delegate;
+
+            if (property != null && typeof property == 'string') {
+              eventTarget = target._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(propKey);
+
+              if (!eventTarget)
+                return false;
+            }
+
+            var proxyListener = _this.@org.swellrt.model.js.ProxyAdapter::setListener(Lorg/swellrt/model/generic/Type;Lcom/google/gwt/core/client/JavaScriptObject;)(eventTarget, listener);
+
+            // Return an object which can remove the listener
+            return {
+              dispose: function() {
+                _this.@org.swellrt.model.js.ProxyAdapter::removeListener(Lorg/swellrt/model/generic/Type;Lorg/swellrt/model/js/ProxyListener;)(eventTarget, proxyListener);
+              }
+
+            };
+
+          };
+
+
+        } else if (propKey == '_object') {
+
+          // bypass the _object property
+          return target[propKey];
+
+         } else {
+
+          var value = target._delegate.@org.swellrt.model.generic.MapType::get(Ljava/lang/String;)(propKey);
+          if (!value)
+            return undefined;
+
           var proxy = _this.@org.swellrt.model.js.ProxyAdapter::of(Lorg/swellrt/model/generic/Type;)(value);
           return proxy;
+
         }
 
       },
@@ -392,6 +500,12 @@ public class ProxyAdapter {
       },
 
       set: function(target, propKey, value, receiver) {
+
+        // bypass a special property _object
+        if (propKey == '_object') {
+          return target[propKey] = value;
+        }
+
         return _this.@org.swellrt.model.js.ProxyAdapter::put(Lorg/swellrt/model/generic/MapType;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(target._delegate, propKey, value);
       },
 
@@ -498,8 +612,36 @@ public class ProxyAdapter {
               return proxy;
             }
           }
-       }
 
+       } else if (propKey == 'addListener' || propKey == 'on' || propKey == 'onEvent') {
+
+          return function(listener, index) {
+
+            if (!listener)
+              return false;
+
+            var eventTarget = target._delegate;
+
+            index = Number(index);
+            if (index >=0 && index < length)
+              eventTarget = target._delegate.@org.swellrt.model.generic.ListType::get(I)(index);
+
+            if (!eventTarget)
+              return false;
+
+            var proxyListener = _this.@org.swellrt.model.js.ProxyAdapter::setListener(Lorg/swellrt/model/generic/Type;Lcom/google/gwt/core/client/JavaScriptObject;)(eventTarget, listener);
+
+            // Return an object which can remove the listener
+            return {
+              dispose: function() {
+                _this.@org.swellrt.model.js.ProxyAdapter::removeListener(Lorg/swellrt/model/generic/Type;Lorg/swellrt/model/js/ProxyListener;)(eventTarget, proxyListener);
+              }
+
+            };
+
+          };
+
+        }
 
       },
 
@@ -588,9 +730,15 @@ public class ProxyAdapter {
 
 
   public native  JavaScriptObject ofString(StringType delegate) /*-{
-
     return delegate.@org.swellrt.model.generic.StringType::getValue()();
+  }-*/;
 
+  public final native JavaScriptObject ofParticipant(ParticipantId participant) /*-{
+    return participant.@org.waveprotocol.wave.model.wave.ParticipantId::getAddress()()
+  }-*/;
+
+  public final native JavaScriptObject ofPrimitive(String value) /*-{
+    return value;
   }-*/;
 
 }

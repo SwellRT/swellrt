@@ -275,7 +275,7 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
   @Override
   public void removeListener(Listener listener) {
-    listeners.add(listener);
+    listeners.remove(listener);
   }
 
 
