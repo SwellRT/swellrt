@@ -5,6 +5,7 @@ import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.swellrt.model.adt.DocumentBasedBasicRMap;
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
@@ -149,6 +150,11 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     Preconditions.checkArgument(!isAttached, "Already attached map type");
     String substrateDocumentId = model.generateDocId(getPrefix());
     attach(parent, substrateDocumentId);
+  }
+
+  @Override
+  protected void attach(Type parent, int slotIndex) {
+    throw new IllegalStateException("This method is not allowed for a MapType");
   }
 
   @Override
@@ -300,8 +306,21 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
     Type oldValue = observableMap.get(key);
 
-    // Attach to a new substrate document o to a values container
-    value.attach(this);
+    // If replacing primitive values, reuse the old value's container slot
+    if (oldValue != null && ModelUtils.isPrimitiveType(oldValue)
+        && ModelUtils.isPrimitiveType(value)) {
+
+      /* TODO consider to update just the value if old a new types are similar
+      boolean isPrimitiveReplace = ModelUtils.isPrimitiveType(oldValue) && ModelUtils.isPrimitiveType(value);
+      if (isPrimitiveReplace && (oldValue instanceof StringType) && (value instanceof StringType)) {
+        ...
+      } */
+
+      value.attach(this, oldValue.getValueRefefence());
+    } else {
+      // Attach to a new substrate document or to a values container
+      value.attach(this);
+    }
 
     // This should be always a new put, otherwise the !value.isAttached
     // precondition
@@ -326,16 +345,6 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
   public StringType put(String key, String value) {
     Preconditions.checkArgument(isAttached, "Unable to put values into an unattached Map");
-
-    // if key exists, change primitive directly
-    if (keySet().contains(key)) {
-      Type existingValue = observableMap.get(key);
-      if (existingValue.getType().equals(StringType.TYPE_NAME)) {
-        StringType existingStringValue = (StringType) existingValue;
-        existingStringValue.setValue(value);
-        return existingStringValue;
-      }
-    }
 
     StringType strValue = new StringType(value);
     put(key, strValue);

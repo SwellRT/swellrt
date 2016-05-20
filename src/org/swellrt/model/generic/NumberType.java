@@ -20,7 +20,7 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
 
   /**
    * Get an instance of NumberType. This method is used for deserialization.
-   * 
+   *
    * @param parent the parent Type instance of this string
    * @param valueIndex the index of the value in the parent's value container
    * @return
@@ -112,11 +112,28 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
   }
 
   @Override
+  protected void attach(Type parent, int slotIndex) {
+    this.parent = parent;
+    valueRef = slotIndex;
+
+    if (initValue != null && !initValue.isEmpty())
+      observableValue = parent.getValuesContainer().add(initValue, slotIndex);
+    else
+      observableValue = parent.getValuesContainer().get(slotIndex);
+
+    if (observableValue == null) {
+      // return a non-attached value
+      // this singals the actual value hasn't been received yet.
+      return;
+    }
+    observableValue.addListener(observableValueListener);
+    isAttached = true;
+  }
+
+  @Override
   protected void attach(Type parent, String valueIndex) {
     Preconditions.checkArgument(parent.hasValuesContainer(),
         "Invalid parent type for a primitive value");
-
-    this.parent = parent;
 
     Integer index = null;
     try {
@@ -126,20 +143,7 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
     }
 
     Preconditions.checkNotNull(index, "Value index is null");
-
-    valueRef = index;
-    observableValue = parent.getValuesContainer().get(index);
-
-    if (observableValue == null) {
-      // return a non-attached value
-      // this singals the actual value hasn't been received yet.
-      return;
-    }
-
-
-    observableValue.addListener(observableValueListener);
-
-    isAttached = true;
+    attach(parent, index);
   }
 
   protected void deattach() {

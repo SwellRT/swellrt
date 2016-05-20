@@ -105,11 +105,28 @@ public class BooleanType extends Type implements ReadableBoolean,
   }
 
   @Override
+  protected void attach(Type parent, int slotIndex) {
+    this.parent = parent;
+    valueRef = slotIndex;
+
+    if (initValue != null && !initValue.isEmpty())
+      observableValue = parent.getValuesContainer().add(initValue, slotIndex);
+    else
+      observableValue = parent.getValuesContainer().get(slotIndex);
+
+    if (observableValue == null) {
+      // return a non-attached value
+      // this singals the actual value hasn't been received yet.
+      return;
+    }
+    observableValue.addListener(observableValueListener);
+    isAttached = true;
+  }
+
+  @Override
   protected void attach(Type parent, String valueIndex) {
     Preconditions.checkArgument(parent.hasValuesContainer(),
         "Invalid parent type for a primitive value");
-
-    this.parent = parent;
 
     Integer index = null;
     try {
@@ -119,20 +136,7 @@ public class BooleanType extends Type implements ReadableBoolean,
     }
 
     Preconditions.checkNotNull(index, "Value index is null");
-
-    valueRef = index;
-    observableValue = parent.getValuesContainer().get(index);
-
-    if (observableValue == null) {
-      // return a non-attached value
-      // this singals the actual value hasn't been received yet.
-      return;
-    }
-
-
-    observableValue.addListener(observableValueListener);
-
-    isAttached = true;
+    attach(parent, index);
   }
 
   protected void deattach() {
@@ -314,5 +318,6 @@ public class BooleanType extends Type implements ReadableBoolean,
 
     return false;
   }
+
 
 }

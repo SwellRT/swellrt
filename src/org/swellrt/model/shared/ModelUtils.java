@@ -2,10 +2,14 @@ package org.swellrt.model.shared;
 
 import org.swellrt.model.ReadableModel;
 import org.swellrt.model.ReadableType;
+import org.swellrt.model.generic.BooleanType;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.MetadataContainer;
+import org.swellrt.model.generic.NumberType;
+import org.swellrt.model.generic.StringType;
 import org.swellrt.model.generic.TextType;
+import org.swellrt.model.generic.Type;
 import org.swellrt.model.generic.ValuesContainer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
@@ -124,6 +128,10 @@ public class ModelUtils {
       return doc.getAttribute(element, MetadataContainer.ATTR_PATH);
 
     return null;
+  }
+
+  public static boolean isPrimitiveType(Type t) {
+    return (t instanceof StringType || t instanceof BooleanType || t instanceof NumberType);
   }
 
 }

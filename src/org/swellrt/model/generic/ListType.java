@@ -5,6 +5,7 @@ import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableList;
 import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
+import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
 import org.waveprotocol.wave.model.document.Doc;
@@ -110,6 +111,11 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
     Preconditions.checkArgument(!isAttached, "Already attached list type");
     String substrateDocumentId = model.generateDocId(getPrefix());
     attach(parent, substrateDocumentId);
+  }
+
+  @Override
+  protected void attach(Type parent, int slotIndex) {
+    throw new IllegalStateException("This method is not allowed for a ListType");
   }
 
   @Override
@@ -259,9 +265,21 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
     Preconditions.checkArgument(!value.isAttached(),
         "Already attached Type instances can't be put into a List");
 
-    value.attach(this);
+    Type oldValue = observableList.get(index);
+
+    if (oldValue != null && ModelUtils.isPrimitiveType(oldValue)
+        && ModelUtils.isPrimitiveType(value)) {
+      value.attach(this, oldValue.getValueRefefence());
+    } else {
+      value.attach(this);
+    }
+
     value = observableList.add(index, value.getListElementInitializer());
     value.setPath(getPath() + "." + index);
+
+    if (oldValue != null) {
+      oldValue.deattach();
+    }
 
     // return the value generated from list to double check add() success
     // also it is the cached value in the observable list

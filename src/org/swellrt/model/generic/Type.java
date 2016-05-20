@@ -53,8 +53,14 @@ public abstract class Type implements ReadableType {
   protected abstract void attach(Type parent, String substrateDocumentIdOrValueIndex);
 
 
-  /** Attach a type instance to a new substrate document. */
+  /** Attach a type instance. */
   protected abstract void attach(Type parent);
+
+  /**
+   * Attach a type instance reusing a specific value container slot. Only for
+   * primitive/simple values.
+   */
+  protected abstract void attach(Type parent, int slotIndex);
 
   /** Remove the backend document */
   protected abstract void deattach();

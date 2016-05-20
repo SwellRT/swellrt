@@ -19,6 +19,37 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A observable list view of primitive/simple observable values stored in the
+ * substrate document of containers types {@MapType} or {@ListType
+ * 
+ * 
+ * 
+ * 
+ * The container type must manage list's slots properly, for example, reusing
+ * slots when a key's value change.
+ * 
+ * In the following {@ListType} substrate document, the
+ * {@ValuesContainer} manage the 'values' element.
+ * 
+ * <pre>
+ *  &lt;list&gt;
+ *  &lt;item r="map+RK6dvcSzC2B" t="map" /&gt;
+ *  &lt;item r="str+0" t="str" /&gt;
+ *  &lt;item r="str+1" t="str" /&gt;
+ * &lt;/list&gt;
+ * &lt;values&gt;
+ *  &lt;i v="Hello 0" /&gt;
+ *  &lt;i v="Hello 1" /&gt;
+ * &lt;/values&gt;
+ * 
+ * </pre>
+ * 
+ * 
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
+ */
 public class ValuesContainer {
 
   public static interface EventHandler {
@@ -120,23 +151,28 @@ public class ValuesContainer {
     return null;
   }
 
+
   public ObservableBasicValue<String> add(String value) {
     return values.add(value);
+  }
+
+  public ObservableBasicValue<String> add(String value, int slotIndex) {
+    return values.add(slotIndex, value);
   }
 
   public int indexOf(ObservableBasicValue<String> value) {
     return values.indexOf(value);
   }
 
-  public ObservableBasicValue<String> get(int index) {
+  public ObservableBasicValue<String> get(int slotIndex) {
 
-    if (values.size() == 0 || index >= values.size()) {
+    if (values.size() == 0 || slotIndex >= values.size()) {
       // perhaps the values container hasn't got the data yet
       // return null to indicate to primitive value a deferred value
       return null;
     }
 
-    return values.get(index);
+    return values.get(slotIndex);
   }
 
 }

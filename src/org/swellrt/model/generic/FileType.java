@@ -140,34 +140,36 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
   }
 
   @Override
-  protected void attach(Type parent, String valueIndex) {
-    Preconditions.checkArgument(parent.hasValuesContainer(),
-        "Invalid parent type for a primitive value");
-
+  protected void attach(Type parent, int slotIndex) {
     this.parent = parent;
+    valueRef = slotIndex;
 
-    Integer index = null;
-    try {
-      index = Integer.valueOf(valueIndex);
-    } catch (NumberFormatException e) {
-
-    }
-
-    Preconditions.checkNotNull(index, "Value index is null");
-
-    valueRef = index;
-    observableValue = parent.getValuesContainer().get(index);
+    if (initValue != null && initValue.attachmentId != null)
+      observableValue = parent.getValuesContainer().add(initValue.serialize(), slotIndex);
+    else
+      observableValue = parent.getValuesContainer().get(slotIndex);
 
     if (observableValue == null) {
       // return a non-attached value
       // this singals the actual value hasn't been received yet.
       return;
     }
-
-
     observableValue.addListener(observableValueListener);
-
     isAttached = true;
+  }
+
+  @Override
+  protected void attach(Type parent, String valueIndex) {
+    Preconditions.checkArgument(parent.hasValuesContainer(),
+        "Invalid parent type for a primitive value");
+    Integer index = null;
+    try {
+      index = Integer.valueOf(valueIndex);
+    } catch (NumberFormatException e) {
+
+    }
+    Preconditions.checkNotNull(index, "Value index is null");
+    attach(parent, index);
   }
 
   protected void deattach() {

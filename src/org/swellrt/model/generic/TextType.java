@@ -84,6 +84,11 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
   }
 
   @Override
+  protected void attach(Type parent, int slotIndex) {
+    throw new IllegalStateException("This method is not allowed for a TextType");
+  }
+
+  @Override
   protected void attach(Type parent, String substrateDocumentId) {
     this.parent = parent;
     blip = model.getBlip(substrateDocumentId);
