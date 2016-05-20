@@ -476,5 +476,21 @@
     </java>
   </target>
 
+  <target name="swellrt-webapi-superdev" depends="compile"
+      description="Runs the superdev mode, for debugging the GWT client in a browser.">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.codeserver.CodeServer">
+      <classpath>
+        <pathelement location="${lib.codegen}/gwt-dev-2.6.1.jar" />
+        <pathelement location="${lib.codegen}/gwt-codeserver-2.6.1.jar" />
+        <pathelement location="${src.dir}"/>
+        <pathelement location="${gen.dir}/messages"/>
+        <path refid="libpath"/>
+        <path refid="test.libpath"/>
+      </classpath>
+      <arg line="${gwt.args}"/>
+      <arg line="-src src"/>
+      <arg value="org.swellrt.web.SwellRTWebAPI"/>
+    </java>
+  </target>
 
 </project>

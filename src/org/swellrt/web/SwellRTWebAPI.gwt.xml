@@ -25,6 +25,7 @@
 
   <!-- Dependencies with original Wave client code -->
   <inherits name='org.swellrt.model.SwellRTModel'/>
+  <inherits name='org.swellrt.model.js.SwellRTModelJS'/>
 
   <!-- Specify the app entry point class.  -->
   <entry-point class='org.swellrt.web.WebAPIEntryPoint'/>

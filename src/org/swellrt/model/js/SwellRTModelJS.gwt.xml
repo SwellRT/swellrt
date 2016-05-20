@@ -26,5 +26,6 @@
 
   <add-linker name="xsiframe"/>
 
-  <source path="" excludes="js/**" />
+  <source path="" />
+
 </module>
