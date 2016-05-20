@@ -67,11 +67,12 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
 
 
   public NumberType(double initValue) {
-    init(Double.toString(initValue));
+    // Use String.valueOf to be compatible with GWT
+    init(String.valueOf(initValue));
   }
 
   public NumberType(int initValue) {
-    init(Integer.toString(initValue));
+    init(String.valueOf(initValue));
   }
 
 

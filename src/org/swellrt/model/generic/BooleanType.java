@@ -15,13 +15,13 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   public interface Listener {
 
-    void onValueChanged(boolean oldValue, boolean newValue);
+    void onValueChanged(String oldValue, String newValue);
 
   }
 
   /**
    * Get an instance of BooleanType. This method is used for deserialization.
-   * 
+   *
    * @param parent the parent Type instance of this string
    * @param valueIndex the index of the value in the parent's value container
    * @return
@@ -33,7 +33,7 @@ public class BooleanType extends Type implements ReadableBoolean,
   }
 
   public final static String TYPE_NAME = "BooleanType";
-  public final static String PREFIX = "b";
+  public final static String PREFIX = "bl";
   public final static String VALUE_ATTR = "v";
 
 
@@ -44,7 +44,7 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   private Type parent;
   private int valueRef; // the index of this value in the ValuesContainer
-  private Boolean initValue;
+  private String initValue;
 
 
 
@@ -61,21 +61,27 @@ public class BooleanType extends Type implements ReadableBoolean,
       @Override
       public void onValueChanged(String oldValue, String newValue) {
         for (Listener l : listeners)
-          l.onValueChanged(Boolean.valueOf(oldValue), Boolean.valueOf(newValue));
+          l.onValueChanged(oldValue, newValue);
       }
     };
   }
 
-
   public BooleanType(boolean initValue) {
+    init(String.valueOf(initValue));
+  }
 
-    this.initValue = initValue;
+  public BooleanType(String initValue) {
+    init(initValue);
+  }
+
+  private void init(String initValue) {
+    this.initValue = initValue != null ? initValue : "";
     this.observableValueListener = new ObservableBasicValue.Listener<String>() {
 
       @Override
       public void onValueChanged(String oldValue, String newValue) {
         for (Listener l: listeners)
-          l.onValueChanged(Boolean.valueOf(oldValue), Boolean.valueOf(newValue));
+          l.onValueChanged(oldValue, newValue);
       }
     };
 
@@ -92,7 +98,7 @@ public class BooleanType extends Type implements ReadableBoolean,
     Preconditions.checkArgument(parent.hasValuesContainer(),
         "Invalid parent type for a primitive value");
     this.parent = parent;
-    observableValue = parent.getValuesContainer().add(Boolean.toString(initValue));
+    observableValue = parent.getValuesContainer().add(String.valueOf(initValue));
     observableValue.addListener(observableValueListener);
     valueRef = parent.getValuesContainer().indexOf(observableValue);
     isAttached = true;
@@ -189,18 +195,13 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   public boolean getValue() {
     if (!isAttached())
-      return initValue;
+      return Boolean.valueOf(initValue);
     else
       return Boolean.valueOf(observableValue.get());
   }
 
-
-  public void setValue(double value) {
-    setValue(Double.toString(value));
-  }
-
-  public void setValue(int value) {
-    setValue(Integer.toString(value));
+  public void setValue(boolean value) {
+    setValue(String.valueOf(value));
   }
 
   public void setValue(String value) {
@@ -298,7 +299,7 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   @Override
   public ReadableBoolean asBoolean() {
-    return null;
+    return this;
   }
 
   @Override

@@ -88,7 +88,7 @@ public class ProxyAdapter {
   }-*/;
 
   private native static String asString(JavaScriptObject jso) /*-{
-    return jso;
+    return ""+jso;
   }-*/;
 
   private native static Integer asInteger(JavaScriptObject value) /*-{
@@ -112,12 +112,17 @@ public class ProxyAdapter {
     return value;
   }-*/;
 
-
-
   private native static JsArrayMixed asArray(JavaScriptObject jso) /*-{
     return jso;
   }-*/;
 
+  private native static void log(String m, JavaScriptObject obj) /*-{
+    if (!$wnd._traces) {
+      $wnd._traces = new Array();
+    }
+    $wnd._traces.push({ trace: m, data: obj });
+    console.log(m);
+  }-*/;
 
 
 
@@ -140,19 +145,15 @@ public class ProxyAdapter {
 
     if (isJsNumber(value)) {
 
-      Integer i = asInteger(value);
-      if (i != null)
-        t = model.createNumber(i);
-      else {
-        Double d = asDouble(value);
-        t = model.createNumber(d);
-      }
+      // Using the string representation of the number to avoid
+      // issues converting JS number to Java number with toString() methods
+      t = model.createNumber(asString(value));
 
     } else if (isJsString(value)) {
       t = model.createString(asString(value));
 
     } else if (isJsBoolean(value)) {
-      t = model.createBoolean(asBoolean(value));
+      t = model.createBoolean(asString(value));
 
     } else if (isJsArray(value)) {
       t = model.createList();
@@ -387,7 +388,7 @@ public class ProxyAdapter {
 
            get: function(target, propKey) {
 
-             if (typeof propKey == "string" && propKey.contains(".")) {
+             if (typeof propKey == "string" && propKey.indexOf(".") > 0) {
 
                var value = target._object.@org.swellrt.model.generic.Model::fromPath(Ljava/lang/String;)(propKey);
                if (value) {
@@ -410,6 +411,25 @@ public class ProxyAdapter {
 
                 var collaboratorSet = target._object.@org.swellrt.model.generic.Model::getParticipants()();
                 return @org.swellrt.model.js.ProxyAdapter::participantsToArray(Ljava/util/Set;)(collaboratorSet);
+
+             } else if (propKey == "_nodes") {
+
+                //
+                // For debug purposes: list of Wavelet documents storing collaborative object's nodes
+                //
+
+                var parts = target._object.@org.swellrt.model.generic.Model::getModelDocuments()();
+                return @org.swellrt.model.js.ProxyAdapter::iterableToArray(Ljava/lang/Iterable;)(parts);
+
+             } else if (propKey == "_node") {
+
+                //
+                // For debug purposes: return a Wavelet document storing a collaborative object's node
+                //
+
+                return function(node) {
+                  return target._object.@org.swellrt.model.generic.Model::getModelDocument(Ljava/lang/String;)(node);
+                };
 
              } else {
                 return target[propKey];

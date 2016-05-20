@@ -431,6 +431,10 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return new FileType(attachmentId, contentType, this);
   }
 
+  public NumberType createNumber(String value) {
+    return new NumberType(value);
+  }
+
   public NumberType createNumber(int value) {
     return new NumberType(value);
   }
@@ -440,6 +444,10 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
   }
 
   public BooleanType createBoolean(boolean value) {
+    return new BooleanType(value);
+  }
+
+  public BooleanType createBoolean(String value) {
     return new BooleanType(value);
   }
 
@@ -460,7 +468,7 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
    * For debug purposes only
    */
   public String getModelDocument(String documentId) {
-    return wavelet.getDocument(documentId).toDebugString();
+    return wavelet.getDocument(documentId).toXmlString();
   }
 
 

@@ -23,25 +23,25 @@ public abstract class Type implements ReadableType {
 
     Type instance = null;
 
-    if (ref.startsWith(StringType.PREFIX + "+")) {
+    if (ref.startsWith(StringType.PREFIX+"+")) {
       instance = StringType.deserialize(parent, ref.substring(StringType.PREFIX.length() + 1));
 
-    } else if (ref.startsWith(ListType.PREFIX + "+")) {
+    } else if (ref.startsWith(ListType.PREFIX+"+")) {
       instance = ListType.deserialize(parent, ref);
 
-    } else if (ref.startsWith(MapType.PREFIX + "+")) {
+    } else if (ref.startsWith(MapType.PREFIX+"+")) {
       instance = MapType.deserialize(parent, ref);
 
-    } else if (ref.startsWith(TextType.PREFIX + "+")) {
+    } else if (ref.startsWith(TextType.PREFIX+"+")) {
       instance = TextType.deserialize(parent, ref);
 
-    } else if (ref.startsWith(FileType.PREFIX + "+")) {
+    } else if (ref.startsWith(FileType.PREFIX+"+")) {
       instance = FileType.deserialize(parent, ref.substring(FileType.PREFIX.length() + 1));
 
-    } else if (ref.startsWith(NumberType.PREFIX + "+")) {
+    } else if (ref.startsWith(NumberType.PREFIX+"+")) {
       instance = NumberType.deserialize(parent, ref.substring(NumberType.PREFIX.length() + 1));
 
-    } else if (ref.startsWith(BooleanType.PREFIX + "+")) {
+    } else if (ref.startsWith(BooleanType.PREFIX+"+")) {
       instance = BooleanType.deserialize(parent, ref.substring(BooleanType.PREFIX.length() + 1));
 
     }
