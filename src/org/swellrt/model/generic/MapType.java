@@ -16,8 +16,6 @@ import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.Listener> {
@@ -86,8 +84,6 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   private final CopyOnWriteSet<Listener> listeners = CopyOnWriteSet.create();
 
   private DefaultDocEventRouter router;
-
-  private final Map<String, Type> cachedMap = new HashMap<String, Type>();
 
   /**
    * Constructor for MapType instances.
@@ -290,10 +286,7 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     Preconditions.checkArgument(isAttached, "Unable to get values from an unattached Map");
 
     if (observableMap.keySet().contains(key)) {
-
-      if (!cachedMap.containsKey(key)) cachedMap.put(key, observableMap.get(key));
-
-      return cachedMap.get(key);
+      return observableMap.get(key);
     }
 
     return null;
@@ -320,8 +313,6 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
     value = observableMap.get(key);
     value.setPath(getPath() + "." + key);
-
-    cachedMap.put(key, value);
 
 
     if (oldValue != null) {
@@ -367,7 +358,6 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     Preconditions.checkArgument(isAttached, "Unable to remove values from an unattached Map");
     Type removedValue = observableMap.get(key);
     if (removedValue != null) {
-      cachedMap.remove(key);
       observableMap.remove(key);
       removedValue.deattach();
     }
