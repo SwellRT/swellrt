@@ -23,25 +23,25 @@ public abstract class Type implements ReadableType {
 
     Type instance = null;
 
-    if (ref.startsWith(StringType.PREFIX)) {
+    if (ref.startsWith(StringType.PREFIX + "+")) {
       instance = StringType.deserialize(parent, ref.substring(StringType.PREFIX.length() + 1));
 
-    } else if (ref.startsWith(ListType.PREFIX)) {
+    } else if (ref.startsWith(ListType.PREFIX + "+")) {
       instance = ListType.deserialize(parent, ref);
 
-    } else if (ref.startsWith(MapType.PREFIX)) {
+    } else if (ref.startsWith(MapType.PREFIX + "+")) {
       instance = MapType.deserialize(parent, ref);
 
-    } else if (ref.startsWith(TextType.PREFIX)) {
+    } else if (ref.startsWith(TextType.PREFIX + "+")) {
       instance = TextType.deserialize(parent, ref);
 
-    } else if (ref.startsWith(FileType.PREFIX)) {
+    } else if (ref.startsWith(FileType.PREFIX + "+")) {
       instance = FileType.deserialize(parent, ref.substring(FileType.PREFIX.length() + 1));
 
-    } else if (ref.startsWith(NumberType.PREFIX)) {
+    } else if (ref.startsWith(NumberType.PREFIX + "+")) {
       instance = NumberType.deserialize(parent, ref.substring(NumberType.PREFIX.length() + 1));
 
-    } else if (ref.startsWith(BooleanType.PREFIX)) {
+    } else if (ref.startsWith(BooleanType.PREFIX + "+")) {
       instance = BooleanType.deserialize(parent, ref.substring(BooleanType.PREFIX.length() + 1));
 
     }
@@ -116,25 +116,15 @@ public abstract class Type implements ReadableType {
   public abstract String getType();
 
 
-//  private static native void jsLog(String m) /*-{
-//    console.log(m);
-//  }-*/;
+  // private static native void jsLog(String m) /*-{
+  // console.log(m);
+  // }-*/;
 
   /** Log a trace message, don't use in prod. Only for low-level debug **/
   /*
-  protected void trace(String m) {
-    if (GWT.isScript()) {
-
-      if (GWT.isProdMode()) {
-        jsLog(m);
-      } else {
-        GWT.log(m);
-      }
-
-    } else {
-      System.out.println(m);
-    }
-  }
-  */
+   * protected void trace(String m) { if (GWT.isScript()) { if
+   * (GWT.isProdMode()) { jsLog(m); } else { GWT.log(m); } } else {
+   * System.out.println(m); } }
+   */
 
 }
