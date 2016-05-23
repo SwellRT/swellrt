@@ -826,7 +826,12 @@ public class ProxyAdapter {
 
 
   public native  JavaScriptObject ofNumber(NumberType delegate) /*-{
-    return delegate.@org.swellrt.model.generic.NumberType::getValueDouble()();
+    var value = delegate.@org.swellrt.model.generic.NumberType::getValueDouble()();
+    if (value != null) {
+      return value.@java.lang.Double::doubleValue()();
+    }
+
+    return null;
   }-*/;
 
   public native  JavaScriptObject ofBoolean(BooleanType delegate) /*-{

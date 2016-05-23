@@ -332,13 +332,21 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
   }
 
   @Override
-  public double getValueDouble() {
-    return Double.parseDouble(getValue());
+  public Double getValueDouble() {
+    try {
+      return Double.parseDouble(getValue());
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
   @Override
-  public int getValueInt() {
-    return Integer.parseInt(getValue());
+  public Integer getValueInt() {
+    try {
+      return Integer.parseInt(getValue());
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
 }

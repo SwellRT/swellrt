@@ -68,13 +68,21 @@ public class UnmutableNumber implements ReadableNumber, ReadableTypeVisitable {
   }
 
   @Override
-  public double getValueDouble() {
-    return Double.valueOf(value);
+  public Double getValueDouble() {
+    try {
+      return Double.parseDouble(getValue());
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
   @Override
-  public int getValueInt() {
-    return Integer.valueOf(value);
+  public Integer getValueInt() {
+    try {
+      return Integer.parseInt(getValue());
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
 }

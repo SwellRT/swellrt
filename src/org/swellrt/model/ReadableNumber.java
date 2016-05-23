@@ -4,8 +4,8 @@ public interface ReadableNumber extends ReadableType {
 
   String getValue();
 
-  public double getValueDouble();
+  public Double getValueDouble();
 
-  public int getValueInt();
+  public Integer getValueInt();
 
 }
