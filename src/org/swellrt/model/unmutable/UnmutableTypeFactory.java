@@ -2,10 +2,12 @@ package org.swellrt.model.unmutable;
 
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.adt.UnmutableElementList;
+import org.swellrt.model.generic.BooleanType;
 import org.swellrt.model.generic.FileType;
 import org.swellrt.model.generic.InvalidModelStringValue;
 import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
+import org.swellrt.model.generic.NumberType;
 import org.swellrt.model.generic.StringType;
 import org.swellrt.model.generic.TextType;
 
@@ -16,8 +18,15 @@ public class UnmutableTypeFactory {
       UnmutableElementList<String, Void> valuesContainer,
       String ref) {
 
+    if (ref.startsWith(NumberType.PREFIX)) {
+      int index = Integer.valueOf(ref.substring(NumberType.PREFIX.length() + 1));
+      return new UnmutableNumber(valuesContainer.get(index));
 
-    if (ref.startsWith(StringType.PREFIX)) {
+    } else if (ref.startsWith(BooleanType.PREFIX)) {
+      int index = Integer.valueOf(ref.substring(BooleanType.PREFIX.length() + 1));
+      return new UnmutableBoolean(valuesContainer.get(index));
+
+    } else if (ref.startsWith(StringType.PREFIX)) {
       int index = Integer.valueOf(ref.substring(StringType.PREFIX.length()+1));
       return new UnmutableString(valuesContainer.get(index));
 

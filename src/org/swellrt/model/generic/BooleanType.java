@@ -197,7 +197,7 @@ public class BooleanType extends Type implements ReadableBoolean,
   // Number operations
   //
 
-  public boolean getValue() {
+  public Boolean getValue() {
     if (!isAttached())
       return Boolean.valueOf(initValue);
     else

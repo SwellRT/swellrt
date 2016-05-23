@@ -8,10 +8,16 @@ import org.swellrt.model.ReadableTypeVisitor;
 public class UnmutableBoolean implements ReadableBoolean, ReadableTypeVisitable {
 
 
-  boolean value;
+  Boolean value;
 
-  protected UnmutableBoolean(boolean value) {
-    this.value = value;
+
+  protected UnmutableBoolean(String value) {
+
+    try {
+      this.value = Boolean.parseBoolean(value);
+    } catch (Exception e) {
+      this.value = null;
+    }
   }
 
   @Override
@@ -20,7 +26,7 @@ public class UnmutableBoolean implements ReadableBoolean, ReadableTypeVisitable 
   }
 
   @Override
-  public boolean getValue() {
+  public Boolean getValue() {
     return value;
   }
 
