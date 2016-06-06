@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <title>SwellRT, real-time text editor and collaboration API for Web and Android</title>
+    <title>SwellRT - Create Real-time, Decentralized Apps</title>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -55,11 +55,11 @@
             padding-right: 5em;
 
             margin-bottom: 3em;
-            margin-top: 5.5em;
+            margin-top: 2em;
         }
 
         .main-logo {
-            margin-bottom: 4em;     
+            margin-bottom: 2em;
         }
 
         .row-bg-blue {
@@ -124,7 +124,7 @@
 
         .pad-disabled {
             color: #BBBBBB;
-            background-color: #DCDCDC;            
+            background-color: #DCDCDC;
         }
 
         .pad-overlay {
@@ -155,11 +155,11 @@
         }
 
         .bottom-info a {
-           color: white;          
+           color: white;
         }
 
         .bottom-info p {
-           margin-bottom: 1em;          
+           margin-bottom: 1em;
         }
 
 
@@ -169,7 +169,7 @@
                 margin-left: 8em;
             }
         }
-        
+
 
     </style>
 </head>
@@ -199,23 +199,38 @@
 
         <div class="row row-logo">
             <div class="col-md-12">
+                <h4 class="baseline text-center" style="margin-bottom: 1.5em">
+                    Open Source Decentralized Platform for Developers
+                </h4>
                 <a href="">
-                <img class="img-responsive center-block main-logo"  src="images/logo-03-150.png" />
+                <img class="center-block main-logo" height="100" src="images/logo-03-150.png" />
                 </a>
+
+
                 <h1 class="baseline text-center">
-                    Real-time text editor and collaboration API
+                  Create Real-time, Decentralized Apps
                 </h1>
 
-                <h4 class="baseline text-center" style="margin-top: 1em;">
-                    for <strong>HTML</strong>/<strong>JavaScript</strong> and <strong>Android</strong>
-                </h4>                
+
+            </div>
+        </div>
+
+        <div class="row row-bg-blue row-feature-title">
+            <div class="col-md-8 col-md-offset-2 text-center">
+                <h3 style="color:white; margin-bottom:1em;">
+                  SwellRT is an API for handling real-time data in a decentralized network
+                </h3>
+                <h4 style="margin-bottom: 1em">Engage users with <strong>real-time collaborative features</strong>: documents, pads, polls, workflows, canvases, chats...</h4>
+                <h4 style="margin-bottom: 1em"><strong>Give users freedom</strong>: users can choose where their data is stored</h4>
+                <h4 style="margin-bottom: 1em">Build <strong>privacy aware apps</strong> that respect personal data</h4>
+                <h4 style="margin-bottom: 1em">Facilitate <strong>interoperability</strong> and collaboration across apps</h4>
             </div>
         </div>
 
 
         <div class="row row-bg-blue row-feature-title">
-            <div class="col-md-10 col-md-offset-1 text-center">              
-                <p><span style="font-size: 22pt; color: #20686E">Featuring</span> <span class="header-text" style="font-size: 22pt;">Text Pads</span><span style="font-size: 22pt; color: #20686E"> in 4 steps</span></p>
+            <div class="col-md-10 col-md-offset-1 text-center">
+                <h3><span style="color: #FFFFFF">Text pads in 4 steps</span></h3>
             </div>
         </div>
 
@@ -229,7 +244,7 @@
                     You are <span class="badge">offline</span> Ops! Please refresh the page or try later.
                 </div>
                 <div id="pad" class="pad pad-disabled">
-                </div>            
+                </div>
             </div>
 
             <div class="col-md-6 steps">
@@ -238,13 +253,13 @@
                 <pre class="code prettyprint lang-html">&lt;script src="http://demo.swellrt.org/swellrt/swellrt.nocache.js"&gt;&lt;/script&gt;</pre>
 
                 <p class="roll-text"><strong>Step 2</strong>&nbsp;-&nbsp; Start an user session</p>
-                <pre class="code prettyprint lang-js">SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "");</pre>   
+                <pre class="code prettyprint lang-js">SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "");</pre>
 
                 <p class="roll-text"><strong>Step 3</strong>&nbsp;-&nbsp; Open the shared document</p>
                 <pre class="code prettyprint lang-js">SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
     function(dataModel) {
         SwellRT.doc = dataModel.root.get("doc");
-});</pre>   
+});</pre>
 
                 <p class="roll-text"><strong>Step 4</strong>&nbsp;-&nbsp; Set up and run the editor</p>
                 <pre class="code prettyprint lang-html">&lt;div id="editor-panel"/&gt;&lt;/div&gt;
@@ -252,75 +267,62 @@
 &lt;script&gt;
     var editor = SwellRT.editor("editor-panel");
     editor.edit(SwellRT.doc);
-&lt;/script&gt;</pre>   
+&lt;/script&gt;</pre>
 
-            </div>      
+            </div>
         </div>
-   
 
-        <!-- 4 4 4 -->
+
+        <!-- 5 5 -->
         <div class="row row-bg-white row-3-features row-bottom row-top">
-            <div class="col-md-4 col-xs-12 small-feature">              
+            <div class="col-md-5 col-md-offset-1 col-xs-12 small-feature">
                 <h3 class="text-center">
-                    Collaborative Data Models
+                    Real-time Collaboration
                 </h3>
                 <p>
-                    Share arbitrary data structures composed by lists, maps, strings and rich-text. Data changes from one participant are notified to the rest of connected participants. Data models are edited and changed by their participants. They can add or remove other participants also.
+                  Store, edit and share any type of data including files and rich-text documents in real time. Manage access control to objects at the app and user levels.
                 </p>
             </div>
 
-            <div class="col-md-4 col-xs-12 small-feature">              
+            <div class="col-md-5 col-xs-12 small-feature">
                 <h3 class="text-center">
-                    Open Source
+                    Open Source to control your own infrastructure
                 </h3>
-                <p><strong>SwellRT</strong> is a free and Open Source project licensed under the Apache 2.0 license. You can just use it in your project or extend it and make contributions being part of the community. Source code for server and client is avaible on <a href="https://github.com/P2Pvalue/swellrt">GitHub repository</a>. Consider to ask any question with the tag #swellrt in <a href="http://stackoverflow.com/questions/tagged/swellrt">Stack Overflow</a>.
-                </p>                
+                 <p>
+                   Get the benefit of a community-built, reliable and secure platform. Install your own server and control where the data is stored and how it is managed.
+                </p>
             </div>
+        </div>
 
-            <div class="col-md-4 col-xs-12 small-feature">              
+        <div class="row row-bg-white row-3-features row-bottom row-top">
+            <div class="col-md-5 col-md-offset-1 col-xs-12 small-feature">
                 <h3 class="text-center">
-                    Federated Infrastructure
+                     Decentralization Rules!
                 </h3>
                 <p>
-                    <strong>This is the only decentralized-federated framework to build collaborative applications.</strong> A Java server is provided. Different server instances can be interconnected via the XMPP protocol. Make your next app federated!
+                    Building decentralized apps is very difficult. <strong>SwellRT</strong> makes it extremely easy to share objects transparently across servers, apps and users.
+                </p>
+            </div>
+
+            <div class="col-md-5  col-xs-12  small-feature">
+                <h3 class="text-center">
+                    API to go
+                </h3>
+                <p>
+                  A modern API that takes advantage of the latest JavaScript language perks. Just share and edit plain JavaScript objects in real-time. Query objects from your client to the MongoDB based storage.
                 </p>
             </div>
 
         </div>
 
 
-
-
-        <!-- 4 4 4 -->
-        <div class="row row-bg-white row-padding-top  row-3-cols row-bottom">
-            <div class="col-md-4  col-xs-12 col-md-offset-2 small-feature">              
-                <h3 class="text-center">
-                    Demo server
-                </h3>
-                <p>
-                    We provide a public demo/test server to you to connect your apps and web sites. You could share your data across
-                    all the users in the server: <strong>http://demo.swellrt.org</strong>
-                </p>
-            </div>
-
-
-            <div class="col-md-4  col-xs-12 small-feature">              
-                <h3 class="text-center">
-                    Documentation
-                </h3>
-                <p>
-                    Check out the <a href="https://github.com/P2Pvalue/swellrt/wiki">API Documentation</a> or start playing with <a href="https://github.com/P2Pvalue/swellrt/wiki/Step-By-Step-Pad-Example">some examples</a>.
-                </p> 
-            </div>
-
-        </div>        
 
 
         <div class="row row-bg-blue bottom-info">
             <div class="col-md-12">
               <img src="images/logo-white.png" class="center-block" height="70px" style="margin-top: 3em; margin-bottom: 3em" />
               <p class="text-center">
-                <strong>SwellRT</strong> is based on the <a href="https://incubator.apache.org/wave/">Apache Wave Project</a>. 
+                <strong>SwellRT</strong> is based on the <a href="https://incubator.apache.org/wave/">Apache Wave Project</a>.
                 <br/>
                 Thanks to Apache Wave's contributors for their effort along the years!
               </p>
@@ -328,13 +330,13 @@
               <p class="text-center">
                 Copyright <a href="https://github.com/pablojan">@pablojan</a> and <a href="http://grasia.fdi.ucm.es/">University Complutense of Madrid</a>, 2014-2015
                 <br/>
-                 This work has been initially developed as part of the <a href="http://p2pvalue.eu">P2Pvalue project</a>                 
+                 This work has been initially developed as part of the <a href="http://p2pvalue.eu">P2Pvalue project</a>
               </p>
 
               <p class="text-center">
-                 Source code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License v2.0</a>. 
+                 Source code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License v2.0</a>.
                  Documentation licensed under <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>
-              </p>              
+              </p>
             </div>
         </div>
 
@@ -363,7 +365,7 @@
         console.log("v20150825.2 - Add link to logo");
         console.log("v20150826.3 - Start Session and Open Model new callbacks");
         console.log("v20150917.1 - Added piwik analytics");
-        
+
         function setPadEnabled(isEnabled) {
 
             if (!isEnabled) {
@@ -404,33 +406,33 @@
 
             SwellRT.useWebSocket(true);
 
-            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {                
+            SwellRT.on(SwellRT.events.NETWORK_CONNECTED, function() {
                 console.log("Network connected");
                 setPadEnabled(true);
             });
 
             SwellRT.on(SwellRT.events.NETWORK_DISCONNECTED, function(data)   {
                 console.log("Network disconnected ");
-                setPadEnabled(false);               
+                setPadEnabled(false);
 
             });
 
 
             SwellRT.on(SwellRT.events.FATAL_EXCEPTION, function(data) {
                 console.log("Exception "+data.cause);
-                setPadEnabled(false);           
+                setPadEnabled(false);
             });
 
 
 
-            SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "" , 
-                
-               function(session) {              
+            SwellRT.startSession("http://demo.swellrt.org", SwellRT.user.ANONYMOUS, "" ,
+
+               function(session) {
 
                     console.log("Session started");
 
                     SwellRT.openModel("demo.swellrt.org/s+mCDtyYi9oeA",
-                        
+
                         function(model) {
 
                             console.log("Data model opened");
