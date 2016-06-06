@@ -141,6 +141,12 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
    */
   public static final void connect(final WebAPI webapi, final WebAPICallback callback) {
 
+    if (!webapi.isSessionUp()) {
+      callback.onFailure(WebAPIUtils
+          .createCallbackError(WebAPIConstants.ERR_CODE_SESSION_NOT_OPEN));
+      return;
+    }
+
 
     if (webapi.getWebsocketClient() == null || webapi.getWebsocketState().equalsIgnoreCase("ERROR")) {
 
@@ -201,13 +207,6 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
    *
    */
   public static final void live(final WebAPI webapi, final String id, final WebAPICallback callback) {
-
-
-    if (!webapi.isSessionUp()) {
-      callback.onFailure(WebAPIUtils
-          .createCallbackError(WebAPIConstants.ERR_CODE_SESSION_NOT_OPENED));
-      return;
-    }
 
 
     final String seed = WebAPIUtils.getRandomBase64(10);
@@ -300,7 +299,7 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
               },
 
               onFailure: function(o) {
-                reject();
+                reject(o);
               }
 
            });

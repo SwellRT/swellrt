@@ -7,6 +7,6 @@ public class WebAPIConstants {
 
   public final static String ERR_CODE_INVALID_OBJECT_ID = "INVALID_OBJECT_ID";
   public final static String ERR_CODE_INVALID_USER_ID = "INVALID_USER_ID";
-  public final static String ERR_CODE_SESSION_NOT_OPENED = "SESSION_NOT_OPENED";
+  public final static String ERR_CODE_SESSION_NOT_OPEN = "SESSION_NOT_OPEN";
 
 }
