@@ -431,6 +431,11 @@ public class ProxyAdapter {
                   return target._object.@org.swellrt.model.generic.Model::getModelDocument(Ljava/lang/String;)(node);
                 };
 
+             } else if (propKey == "_oid") {
+
+                // TODO make _id property read-only
+                return target._object.@org.swellrt.model.generic.Model::getId()();
+
              } else {
                 return target[propKey];
              }
