@@ -416,7 +416,6 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
 
              console.log(JSON.stringify(_instance.session));
 
-             return _instance._session;
             });
 
     };
