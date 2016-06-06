@@ -56,7 +56,7 @@ public class ProxyAdapter {
 
 
   private native static boolean isJsArray(JavaScriptObject jso) /*-{
-    return jso != null && ((typeof jso == "object") && (jso.constructor == Array));
+    return jso != null && (Array.isArray(jso));
   }-*/;
 
   private native static boolean isJsObject(JavaScriptObject jso) /*-{
