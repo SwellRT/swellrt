@@ -44,20 +44,24 @@ System.register(['angular2/core', './service/swellrt.service', 'angular2/router'
                 UserPanelComponent.prototype.login = function () {
                     var _this = this;
                     this.panelState = "collapsed";
-                    this._swellrt.login(this.nameInput, this.passwordInput).then(function (user) {
+                    this._swellrt.login(this.nameInput + this._swellrt.domain, this.passwordInput).then(function (user) {
                         _this.loggedInUser = user;
                         _this.clearForms();
                     });
                 };
                 UserPanelComponent.prototype.create = function () {
                     var _this = this;
+                    this.panelState = "collapsed";
                     this._swellrt.createUser(this.nameInput, this.passwordInput).then(function () {
-                        _this._swellrt.login(_this.nameInput, _this.passwordInput);
+                        return _this._swellrt.login(_this.nameInput, _this.passwordInput);
+                    }).then(function (user) {
+                        _this.loggedInUser = user;
+                        _this.clearForms();
                     });
                 };
                 UserPanelComponent.prototype.logout = function () {
                     var _this = this;
-                    this._swellrt.logout(true).then(function (user) { _this.loggedInUser = undefined; });
+                    this._swellrt.logout(true).then(function (user) { _this.loggedInUser = user; });
                 };
                 UserPanelComponent.prototype.showLoginForm = function () {
                     this.panelState = "loginForm";

@@ -95,7 +95,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                     var _this = this;
                     var adaptSessionToUser = function (session) { return _this.adaptSessionToUser(session); };
                     this.user = new Promise(function (resolve, reject) {
-                        SwellRT.startSession(_this.server, _name + _this.domain, _password, function (session) {
+                        SwellRT.startSession(_this.server, _name, _password, function (session) {
                             var user = adaptSessionToUser(session);
                             if (!user.anonymous)
                                 jQuery.snackbar({ content: "Welcome " + user.name, timeout: DEFAULT_SNACK_TIMEOUT });

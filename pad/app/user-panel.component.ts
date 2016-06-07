@@ -126,7 +126,7 @@ export class UserPanelComponent implements OnInit {
 
   login() {
     this.panelState = "collapsed";
-    this._swellrt.login(this.nameInput, this.passwordInput).then(
+    this._swellrt.login(this.nameInput + this._swellrt.domain, this.passwordInput).then(
       user => {
         this.loggedInUser = user;
         this.clearForms();
@@ -135,14 +135,20 @@ export class UserPanelComponent implements OnInit {
   }
 
   create() {
+    this.panelState = "collapsed";
     this._swellrt.createUser(this.nameInput, this.passwordInput).then(() => {
-      this._swellrt.login(this.nameInput, this.passwordInput);
-    })
+      return this._swellrt.login(this.nameInput, this.passwordInput);
+    }).then(
+      user => {
+        this.loggedInUser = user;
+        this.clearForms();
+      }
+    );
   }
 
   logout() {
     this._swellrt.logout(true).then(user =>
-      { this.loggedInUser = undefined; }
+      { this.loggedInUser = user; }
     );
   }
 

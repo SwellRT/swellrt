@@ -122,7 +122,7 @@ export class SwellRTService implements OnInit {
     let adaptSessionToUser = (session: any) => { return this.adaptSessionToUser(session) };
     this.user = new Promise<User>((resolve, reject) => {
 
-      SwellRT.startSession(this.server, _name + this.domain, _password,
+      SwellRT.startSession(this.server, _name, _password,
 
         (session) => {
           let user:User = adaptSessionToUser(session);

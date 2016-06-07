@@ -11,7 +11,7 @@ import { SwellRTService } from './service/swellrt.service';
     <div class="row">
 
       <div class="col-md-3">
-        <user-panel></user-panel>
+        <user-panel #userPanel></user-panel>
       </div>
 
       <div class="col-md-6 col-md-offset-1">
@@ -48,7 +48,7 @@ import { SwellRTService } from './service/swellrt.service';
 
         <div class="panel panel-default">
           <div class="panel-body">
-            <a><h3>Sign up</h3></a>
+            <a (click)="userPanel.panelState = 'collapsed'"><h3>Sign up</h3></a>
             <p>
               Take advantage of being a registered user of SwellRT Editor.
               Manage all the documents you collaborate with on the cloud.
