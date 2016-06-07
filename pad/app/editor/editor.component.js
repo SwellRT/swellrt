@@ -57,11 +57,10 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                 });
                 Object.defineProperty(EditorComponent.prototype, "title", {
                     get: function () {
-                        return this._title;
+                        return this._title && this._title.getValue();
                     },
                     set: function (value) {
-                        this._title = value;
-                        console.log(this._title);
+                        this._title && this._title.setValue(value);
                     },
                     enumerable: true,
                     configurable: true
@@ -99,7 +98,7 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                                 cObject.root.put("doc-title", cObject.createString("New document"));
                             }
                             // Open the doc in the editor
-                            _this.title = cObject.root.get("doc-title").getValue();
+                            _this._title = cObject.root.get("doc-title");
                             _this.editor.edit(cObject.root.get("doc"));
                             _this.editor.onSelectionChanged(function (annotations) {
                                 for (var _i = 0, _a = _this.formats; _i < _a.length; _i++) {

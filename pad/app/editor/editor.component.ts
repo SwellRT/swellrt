@@ -4,7 +4,6 @@ import { RouteParams } from 'angular2/router';
 import { SwellRTService } from '../service/swellrt.service';
 import { CObject } from '../data/cobject';
 
-
 @Component({
     selector: 'editor',
     templateUrl: 'app/editor/editor.component.html',
@@ -13,8 +12,8 @@ import { CObject } from '../data/cobject';
 
 export class EditorComponent implements OnInit {
 
+  _title: any;
   editor: any;
-  title: string;
 
   wasError: boolean = false;
   msgError: string;
@@ -43,6 +42,14 @@ export class EditorComponent implements OnInit {
 
   get editorElem() {
     return (<HTMLElement>document.querySelector('#editor-container > div'));
+  }
+
+  get title() {
+    return this._title && this._title.getValue();
+  }
+
+  set title(value) {
+    this._title && this._title.setValue(value);
   }
 
   disableAllButtons() {
@@ -83,7 +90,7 @@ export class EditorComponent implements OnInit {
         }
 
         // Open the doc in the editor
-        this.title = cObject.root.get("doc-title").getValue();
+        this._title = cObject.root.get("doc-title");
         this.editor.edit(cObject.root.get("doc"));
 
         this.editor.onSelectionChanged((annotations) => {
