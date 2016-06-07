@@ -1,0 +1,15 @@
+{
+  "name": "snackbarjs",
+  "version": "1.1.0",
+  "main": [
+    "dist/snackbar.min.js",
+    "dist/snackbar.min.css"
+  ],
+  "ignore": [
+    ".jshintrc",
+    "**/*.txt"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.1"
+  }
+}

@@ -1,0 +1,34 @@
+
+a {
+  cursor: pointer;
+}
+
+#editor-toolbar .btn {
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+#editor-toolbar .btn-group {
+  margin: 0px;
+}
+
+#editor-sidebar .btn {
+  padding-left: 14px;
+  padding-right:14px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+#editor-sidebar .btn-group {
+  margin: 0px;
+}
+
+#editor-container > div {
+  min-height: 600px
+}
+
+.btn:not(.btn-raised).btn-success, .input-group-btn .btn:not(.btn-raised).btn-success {
+  color: #00a897;
+}

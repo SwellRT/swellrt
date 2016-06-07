@@ -1,0 +1,89 @@
+{
+  "name": "angular2",
+  "version": "2.0.0-beta.15",
+  "description": "Angular 2 - a web framework for modern web apps",
+  "homepage": "https://github.com/angular/angular",
+  "bugs": {
+    "url": "https://github.com/angular/angular/issues"
+  },
+  "contributors": [
+    {
+      "name": "Alex Eagle",
+      "email": "alexeagle@google.com"
+    },
+    {
+      "name": "Chirayu Krishnappa",
+      "email": "chirayu@google.com"
+    },
+    {
+      "name": "Jeff Cross",
+      "email": "crossj@google.com"
+    },
+    {
+      "name": "Matias Niemela",
+      "email": "matsko@google.com"
+    },
+    {
+      "name": "Misko Hevery",
+      "email": "misko@google.com"
+    },
+    {
+      "name": "Rado Kirov",
+      "email": "radokirov@google.com"
+    },
+    {
+      "name": "Tobias Bosch",
+      "email": "tbosch@google.com"
+    },
+    {
+      "name": "Victor Savkin",
+      "email": "vsavkin@google.com"
+    },
+    {
+      "name": "Yegor Jbanov",
+      "email": "yjbanov@google.com"
+    },
+    {
+      "name": "Jeremy Elbourn",
+      "email": "jelbourn@google.com"
+    }
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angular/angular.git"
+  },
+  "devDependencies": {},
+  "peerDependencies": {
+    "es6-shim": "^0.35.0",
+    "reflect-metadata": "0.1.2",
+    "rxjs": "5.0.0-beta.2",
+    "zone.js": "^0.6.10"
+  },
+  "_id": "angular2@2.0.0-beta.15",
+  "scripts": {},
+  "_shasum": "d5952c8bc021f75877ed2db36a10d408d4674027",
+  "_from": "angular2@2.0.0-beta.15",
+  "_resolved": "https://registry.npmjs.org/angular2/-/angular2-2.0.0-beta.15.tgz",
+  "_npmVersion": "3.8.3",
+  "_nodeVersion": "5.10.1",
+  "_npmUser": {
+    "name": "angularcore",
+    "email": "angular-core+npm@google.com"
+  },
+  "dist": {
+    "shasum": "d5952c8bc021f75877ed2db36a10d408d4674027",
+    "tarball": "https://registry.npmjs.org/angular2/-/angular2-2.0.0-beta.15.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "angularcore",
+      "email": "angular-core+npm@google.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/angular2-2.0.0-beta.15.tgz_1460580790633_0.0526846400462091"
+  },
+  "directories": {}
+}

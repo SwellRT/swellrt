@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="/">
+    <title>SwellRT Editor</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Material Design fonts -->
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+    <!-- Bootstrap Material Design -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap.material-design/0.5.9/css/bootstrap-material-design.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/bootstrap.material-design/0.5.9/css/ripples.min.css">
+    <link rel="stylesheet" type="text/css" href="node_modules/snackbarjs/dist/snackbar.min.css">
+    <link rel="stylesheet" type="text/css" href="node_modules/snackbarjs/themes-css/material.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+
+
+
+    <!-- 0. Third party Libs -->
+
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap.material-design/0.5.9/js/ripples.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap.material-design/0.5.9/js/material.min.js"></script>
+    <script src="node_modules/snackbarjs/dist/snackbar.min.js"></script>
+
+    <!-- 1. Load libraries -->
+    <!-- IE required polyfills, in this exact order -->
+    <script src="node_modules/es6-shim/es6-shim.min.js"></script>
+    <script src="node_modules/systemjs/dist/system-polyfills.js"></script>
+    <script src="node_modules/angular2/es6/dev/src/testing/shims_for_IE.js"></script>
+    <script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
+    <script src="node_modules/systemjs/dist/system.src.js"></script>
+    <script src="node_modules/rxjs/bundles/Rx.js"></script>
+    <script src="node_modules/angular2/bundles/angular2.dev.js"></script>
+    <script src="node_modules/angular2/bundles/router.dev.js"></script>
+
+
+    <!-- SwellRT -->
+    <script src="http://demo.swellrt.org/swellrt.js"></script>
+
+
+    <script>
+      $.material.init();
+
+
+      SwellRT.ready(function() {
+
+          console.log("SwellRT Loaded!");
+
+          // Fine tunning the SwellRT server connection.
+          // Don't touch!
+          window.__atmosphere_config = {
+                           logLevel: "info", // info, debug
+                           transport: "websocket",
+                           fallbackTransport: "long-polling",
+                           pollingInterval: 0,
+                           trackMessageLength: true,
+                           enableXDR: true,
+                           readResponsesHeaders: false,
+                           withCredentials: true,
+                           dropHeaders: true,
+                           timeout: 27000,
+
+                           connectTimeout: -1,
+                           reconnectInterval: 5000,
+                           maxReconnectOnClose: 5,
+                           reconnectOnServerError: true,
+
+                           clientVersion: "1.0"
+                         };
+
+
+          // Load the Angular2 app, replace the load indicator
+          // Be careful: don't replace the whole body content with the app,
+          // in order to not remove the SwellRT/GWT iframe.
+          var body = document.getElementsByTagName("body")[0];
+          var app = document.createElement("app");
+          var loadIndicator = document.getElementById("loadIndicator");
+          body.replaceChild(app, loadIndicator);
+
+
+          System.config({
+            packages: {
+              app: {
+                format: 'register',
+                defaultExtension: 'js'
+              }
+            }
+          });
+          System.import('app/main')
+                .then(null, console.error.bind(console));
+
+      });
+
+    </script>
+
+  </head>
+  <!-- 3. Display the application -->
+  <body>
+
+    <div id="loadIndicator" class="container">
+
+      <div class="row" style="margin-top: 6em;">
+        <div class="col-md-12 text-center">
+          <img src="images/loading_icon.gif" height="200">
+          <h4>Loading Papel Editor...</h4>
+        <div>
+      </div>
+
+    </div>
+
+  </body>
+
+
+</html>

@@ -1,0 +1,162 @@
+<div class="row">
+
+  <!-- Left bar -->
+  <div class="col-md-3">
+
+    <user-panel></user-panel>
+
+    <!--
+    <div class="panel panel-default">
+
+      <div class="panel-heading">
+
+        <div id="editor-sidebar" class="btn-toolbar">
+          <div class="btn-group">
+            <button type="button" class="btn btn-default">
+              <span class="material-icons">toc</span>
+            </button>
+            <button type="button" class="btn btn-default">
+              <span class="material-icons">people</span>
+            </button>
+            <button type="button" class="btn btn-default">
+              <span class="material-icons">chat</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="panel-body">
+
+        <!-- Outline -->
+        <!--
+
+        <div id="editor-outline">
+          <ul>
+          <li><h4>Introduction</h4></li>
+          <h4>Abstract</h4>
+          <h4>Definitions</h4>
+          <h4>Definitive Solution</h4>
+          </ul>
+        </div>
+
+
+        <!-- Participants -->
+        <!--
+        <div id="editor-participants">
+
+          <div class="media">
+            <div class="media-left media-middle">
+              <a href="#">
+                <img class="media-object" height="40" src="images/user.jpeg" alt="">
+              </a>
+            </div>
+            <div class="media-body">
+              <h5 class="media-heading">Andrés Reyero</h5>
+              <span>
+
+              </span>
+            </div>
+          </div>
+
+          <div class="media">
+            <div class="media-left media-middle">
+              <a href="#">
+                <img class="media-object" height="40" src="images/user.jpeg" alt="">
+              </a>
+            </div>
+            <div class="media-body">
+              <h5 class="media-heading">Juana de Arco</h5>
+              <span>
+
+              </span>
+            </div>
+          </div>
+
+          <div class="media">
+            <div class="media-left media-middle">
+              <a href="#">
+                <img class="media-object" height="40" src="images/user.jpeg" alt="">
+              </a>
+            </div>
+            <div class="media-body">
+              <h5 class="media-heading">Luis Tosar</h5>
+              <span>
+
+              </span>
+            </div>
+          </div>
+
+          <div class="media">
+            <div class="media-left media-middle">
+              <a href="#">
+                <img class="media-object" height="40" src="images/anonymous.png" alt="">
+              </a>
+            </div>
+            <div class="media-body">
+              <h5 class="media-heading">Anonymous #1</h5>
+              <span>
+                <img class="media-object" height="40" src="images/anonymous.png" alt="">
+              </a>
+            </div>
+            <div class="media-body">
+              <h5 class="media-heading">Anonymous #2</h5>
+              <span>
+
+              </span>
+            </div>
+          </div>
+
+
+        </div>
+
+      </div>
+
+    </div>--><!-- panel -->
+
+
+
+  </div><!-- Left bar -->
+
+  <!-- Main area -->
+  <div class="col-md-9">
+
+    <div class="alert alert-dismissible alert-danger" *ngIf="wasError">
+      <button type="button" class="close" data-dismiss="alert" (click)="wasError = false">×</button>
+      <strong>{{msgError}}</strong>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <h4>{{title}}</h4>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div id="editor-toolbar" class="btn-toolbar">
+          <div *ngFor="#formatGroup of formats" class="btn-group">
+            <button *ngFor="#format of formatGroup" type="button"
+            (click)="annotate(format)"
+            class="btn btn-{{buttons[format] ? 'success' : 'default'}}">
+              <span class="material-icons">format_{{format}}</span>
+            </button>
+          </div>
+          <div class="btn-group">
+            <button type="button" (click)="imgUpl.click()" class="btn btn-default">
+              <span class="material-icons">image</span>
+              <input type="file" (change)="addImage($event.target.files[0])" style="display:none" #imgUpl>
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+      <div id="editor-container" class="panel-body">
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
