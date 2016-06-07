@@ -62,7 +62,7 @@ export class EditorComponent implements OnInit {
       let id = this._routeParams.get("id");
       this._swellrt.open(id).then(cObject => {
 
-        cObject.addParticipant('@demo.swellrt.org');
+        cObject.addParticipant(this._swellrt.domain);
 
         // Initialize the doc
         if (!cObject.root.get("doc")) {

@@ -44,7 +44,7 @@ import { Router } from 'angular2/router';
           </div>
 
 
-          <div style="margin-top:4em" *ngIf="panelState == 'loginForm'" (ngSubmit)="login()">
+          <form style="margin-top:4em" *ngIf="panelState == 'loginForm'" (ngSubmit)="login()">
 
             <div class="form-group label-floating">
               <label class="control-label" for="loginNameInput">Name</label>
@@ -57,7 +57,7 @@ import { Router } from 'angular2/router';
 
             <a class="btn btn-default" (click)="cancelForm()">Cancel</a>
             <button class="btn btn-primary">Login</button>
-          </div>
+          </form>
 
 
           <form style="margin-top:4em" *ngIf="panelState == 'registerForm'" (ngSubmit)="create()">

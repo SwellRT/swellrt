@@ -70,7 +70,7 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                     this._swellrt.getUser().then(function (user) {
                         var id = _this._routeParams.get("id");
                         _this._swellrt.open(id).then(function (cObject) {
-                            cObject.addParticipant('@demo.swellrt.org');
+                            cObject.addParticipant(_this._swellrt.domain);
                             // Initialize the doc
                             if (!cObject.root.get("doc")) {
                                 cObject.root.put("doc", cObject.createText(""));

@@ -5,6 +5,7 @@ export interface CObject {
 
   createText(initValue: string);
   createString(initValue: string);
+  addParticipant(participant: string);
 
   root: any;
 

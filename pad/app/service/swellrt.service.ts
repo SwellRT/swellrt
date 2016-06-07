@@ -9,9 +9,13 @@ const DEFAULT_USERNAME = '_anonymous_';
 const DEFAULT_PASSWORD = '';
 const DEFAULT_SNACK_TIMEOUT = 3000;
 const SWELLRT_SERVER = 'http://demo.swellrt.org';
+const SWELLRT_DOMAIN = '@demo.swellrt.org';
 
 @Injectable()
 export class SwellRTService implements OnInit {
+
+  domain: string = SWELLRT_DOMAIN;
+  server: string = SWELLRT_SERVER;
 
   state: string;
   kastSnack: any;
@@ -116,18 +120,18 @@ export class SwellRTService implements OnInit {
 
   login(_name: string, _password: string) {
     let adaptSessionToUser = (session: any) => { return this.adaptSessionToUser(session) };
-    this.user = new Promise<User>(function(resolve, reject) {
+    this.user = new Promise<User>((resolve, reject) => {
 
-      SwellRT.startSession(SWELLRT_SERVER, _name, _password,
+      SwellRT.startSession(this.server, _name + this.domain, _password,
 
-        function(session) {
+        (session) => {
           let user:User = adaptSessionToUser(session);
           if (!user.anonymous)
             jQuery.snackbar({ content: "Welcome "+ user.name, timeout: DEFAULT_SNACK_TIMEOUT  });
           resolve(user);
         },
 
-        function(e) {
+        (e) => {
           reject(e);
         }
       );

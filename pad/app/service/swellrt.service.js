@@ -11,7 +11,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var core_1;
-    var DEFAULT_AVATAR_URL, DEFAULT_USERNAME, DEFAULT_PASSWORD, DEFAULT_SNACK_TIMEOUT, SWELLRT_SERVER, SwellRTService;
+    var DEFAULT_AVATAR_URL, DEFAULT_USERNAME, DEFAULT_PASSWORD, DEFAULT_SNACK_TIMEOUT, SWELLRT_SERVER, SWELLRT_DOMAIN, SwellRTService;
     return {
         setters:[
             function (core_1_1) {
@@ -23,8 +23,11 @@ System.register(['angular2/core'], function(exports_1, context_1) {
             DEFAULT_PASSWORD = '';
             DEFAULT_SNACK_TIMEOUT = 3000;
             SWELLRT_SERVER = 'http://demo.swellrt.org';
+            SWELLRT_DOMAIN = '@demo.swellrt.org';
             SwellRTService = (function () {
                 function SwellRTService() {
+                    this.domain = SWELLRT_DOMAIN;
+                    this.server = SWELLRT_SERVER;
                 }
                 SwellRTService.prototype.ngOnInit = function () {
                     this.object = new Promise(function (resolve, reject) {
@@ -92,7 +95,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                     var _this = this;
                     var adaptSessionToUser = function (session) { return _this.adaptSessionToUser(session); };
                     this.user = new Promise(function (resolve, reject) {
-                        SwellRT.startSession(SWELLRT_SERVER, _name, _password, function (session) {
+                        SwellRT.startSession(_this.server, _name + _this.domain, _password, function (session) {
                             var user = adaptSessionToUser(session);
                             if (!user.anonymous)
                                 jQuery.snackbar({ content: "Welcome " + user.name, timeout: DEFAULT_SNACK_TIMEOUT });
