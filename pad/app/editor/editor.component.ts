@@ -56,6 +56,14 @@ export class EditorComponent implements OnInit {
   ngOnInit() {
 
     this.editor = this._swellrt.editor("editor-container");
+    this.editor.registerWidget('img-link', {
+      onInit: function(parentElement, state) {
+        parentElement.innerHTML='<img src="'+state+'">';
+      },
+      onChangeState: function(parentElement, before, state) {
+        parentElement.innerHTML='<img src="'+state+'">';
+      }
+    });
 
     this._swellrt.getUser().then(user => {
 
@@ -87,19 +95,6 @@ export class EditorComponent implements OnInit {
           }
         });
 
-        this.editor.registerWidget('img', {
-          onInit: function(parentElement, state) {
-            //$scope.project.attachments[state].file.getUrl().then(url => {
-              parentElement.innerHTML='<img src="'+state+'">';
-            //});
-          },
-          onChangeState: function(parentElement, before, state) {
-            //$scope.project.attachments[state].file.getUrl().then(url => {
-              parentElement.innerHTML='<img src="'+state+'">';
-            //});
-          }
-        });
-
         this.editorElem.addEventListener('blur', () => this.disableAllButtons())
 
       })
@@ -126,7 +121,9 @@ export class EditorComponent implements OnInit {
   }
 
   addImage (file) {
-      this.editor.addWidget('img', 'http://lorempixel.com/600/600/');
-
+    let img = prompt('Image URL', 'http://lorempixel.com/600/600/');
+    if (img) {
+      this.editor.addWidget('img-link', img);
+    }
   }
 }

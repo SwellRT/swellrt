@@ -55,6 +55,17 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                     enumerable: true,
                     configurable: true
                 });
+                Object.defineProperty(EditorComponent.prototype, "title", {
+                    get: function () {
+                        return this._title;
+                    },
+                    set: function (value) {
+                        this._title = value;
+                        console.log(this._title);
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 EditorComponent.prototype.disableAllButtons = function () {
                     for (var _i = 0, _a = this.formats; _i < _a.length; _i++) {
                         var formatGroup = _a[_i];
@@ -67,6 +78,14 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                 EditorComponent.prototype.ngOnInit = function () {
                     var _this = this;
                     this.editor = this._swellrt.editor("editor-container");
+                    this.editor.registerWidget('img-link', {
+                        onInit: function (parentElement, state) {
+                            parentElement.innerHTML = '<img src="' + state + '">';
+                        },
+                        onChangeState: function (parentElement, before, state) {
+                            parentElement.innerHTML = '<img src="' + state + '">';
+                        }
+                    });
                     this._swellrt.getUser().then(function (user) {
                         var id = _this._routeParams.get("id");
                         _this._swellrt.open(id).then(function (cObject) {
@@ -92,18 +111,6 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                                     }
                                 }
                             });
-                            _this.editor.registerWidget('img', {
-                                onInit: function (parentElement, state) {
-                                    //$scope.project.attachments[state].file.getUrl().then(url => {
-                                    parentElement.innerHTML = '<img src="' + state + '">';
-                                    //});
-                                },
-                                onChangeState: function (parentElement, before, state) {
-                                    //$scope.project.attachments[state].file.getUrl().then(url => {
-                                    parentElement.innerHTML = '<img src="' + state + '">';
-                                    //});
-                                }
-                            });
                             _this.editorElem.addEventListener('blur', function () { return _this.disableAllButtons(); });
                         })
                             .catch(function (error) {
@@ -125,7 +132,10 @@ System.register(['angular2/core', '../user-panel.component', 'angular2/router', 
                     this.editorElem.focus();
                 };
                 EditorComponent.prototype.addImage = function (file) {
-                    this.editor.addWidget('img', 'http://lorempixel.com/600/600/');
+                    var img = prompt('Image URL', 'http://lorempixel.com/600/600/');
+                    if (img) {
+                        this.editor.addWidget('img-link', img);
+                    }
                 };
                 EditorComponent = __decorate([
                     core_1.Component({
