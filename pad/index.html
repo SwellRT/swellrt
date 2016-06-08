@@ -6,6 +6,21 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+
+    <!-- github pages routing hack. See:
+      * http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/
+      * https://github.com/isaacs/github/issues/408
+    -->
+    <script>
+      (function(){
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect != location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
+
     <!-- Material Design fonts -->
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons">
