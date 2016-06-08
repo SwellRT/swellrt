@@ -8,8 +8,13 @@
   <head>
     <meta charset="utf-8">
     <script>
-      sessionStorage.redirect = location.href;
+      if (location.href.indexOf('swellrt.org/pad') !== -1) {
+        sessionStorage.redirect = location.href;
+        location.href = 'http://swellrt.org/pad';
+      }
     </script>
-    <meta http-equiv="refresh" content="0;URL='http://swellrt.org/pad'"></meta>
   </head>
+  <body>
+    <h1>404 - Page not found</h1>
+  </body>
 </html>
