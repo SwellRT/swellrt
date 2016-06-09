@@ -134,4 +134,8 @@ public class ModelUtils {
     return (t instanceof StringType || t instanceof BooleanType || t instanceof NumberType);
   }
 
+  public static native void log(String m) /*-{
+    console.log(m);
+  }-*/;
+
 }

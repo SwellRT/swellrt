@@ -5,7 +5,6 @@ import org.swellrt.model.ReadableBoolean;
 import org.swellrt.model.ReadableList;
 import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
-import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
 import org.waveprotocol.wave.model.document.Doc;
@@ -266,13 +265,7 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
         "Already attached Type instances can't be put into a List");
 
     Type oldValue = observableList.get(index);
-
-    if (oldValue != null && ModelUtils.isPrimitiveType(oldValue)
-        && ModelUtils.isPrimitiveType(value)) {
-      value.attach(this, oldValue.getValueRefefence());
-    } else {
-      value.attach(this);
-    }
+    value.attach(this);
 
     value = observableList.add(index, value.getListElementInitializer());
     value.setPath(getPath() + "." + index);

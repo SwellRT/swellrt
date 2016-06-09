@@ -8,7 +8,12 @@ import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.media.model.AttachmentIdGenerator;
 import org.waveprotocol.wave.media.model.AttachmentIdGeneratorImpl;
 import org.waveprotocol.wave.model.document.Doc;
+import org.waveprotocol.wave.model.document.Doc.E;
+import org.waveprotocol.wave.model.document.Doc.N;
+import org.waveprotocol.wave.model.document.Doc.T;
 import org.waveprotocol.wave.model.document.ObservableDocument;
+import org.waveprotocol.wave.model.document.indexed.DocumentEvent;
+import org.waveprotocol.wave.model.document.indexed.DocumentHandler;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.parser.XmlParseException;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
@@ -30,6 +35,8 @@ import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -471,7 +478,49 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     return wavelet.getDocument(documentId).toXmlString();
   }
 
+  private Map<String, DocumentHandler<Doc.N, Doc.E, Doc.T>> docHandlers =
+      new HashMap<String, DocumentHandler<Doc.N, Doc.E, Doc.T>>();
 
+
+  public void debugDocumentEvents(final String docId, boolean debug) {
+
+
+    if (!wavelet.getDocumentIds().contains(docId)) return;
+
+    ObservableDocument doc = getDocument(docId);
+
+    if (debug) {
+
+      if (!docHandlers.containsKey(docId)) {
+
+        DocumentHandler<Doc.N, Doc.E, Doc.T> handler = new DocumentHandler<Doc.N, Doc.E, Doc.T>() {
+
+          @Override
+          public void onDocumentEvents(
+              org.waveprotocol.wave.model.document.indexed.DocumentHandler.EventBundle<N, E, T> event) {
+
+            ModelUtils.log("-------- (" + docId + ") --------");
+            for (DocumentEvent<Doc.N, Doc.E, Doc.T> e : event.getEventComponents()) {
+              ModelUtils.log(e.toString());
+            }
+            ModelUtils.log("----------------------------------");
+
+          }
+        };
+
+        docHandlers.put(docId, handler);
+        doc.addListener(handler);
+
+      }
+
+    } else {
+
+      if (docHandlers.containsKey(docId)) docHandlers.remove(docId);
+
+    }
+
+
+  }
 
 
   //

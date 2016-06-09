@@ -5,7 +5,6 @@ import org.swellrt.model.ReadableMap;
 import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.swellrt.model.adt.DocumentBasedBasicRMap;
-import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
@@ -180,23 +179,6 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
       backendDocument = model.getDocument(backendDocumentId);
     }
 
-    // To debug doc operations
-    /*
-    backendDocument.addListener(new DocumentHandler<Doc.N, Doc.E, Doc.T>() {
-
-      @Override
-      public void onDocumentEvents(
-          org.waveprotocol.wave.model.document.indexed.DocumentHandler.EventBundle<N, E, T> event) {
-
-        for (DocumentEvent<Doc.N, Doc.E, Doc.T> e : event.getEventComponents()) {
-          trace("(" + backendDocumentId + ") Doc Event " + e.toString());
-        }
-
-      }
-
-    });
-    */
-
     router = DefaultDocEventRouter.create(backendDocument);
 
     // Metadata section
@@ -313,35 +295,17 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
     Type oldValue = observableMap.get(key);
 
-    // If replacing primitive values, reuse the old value's container slot
-    if (oldValue != null && ModelUtils.isPrimitiveType(oldValue)
-        && ModelUtils.isPrimitiveType(value)) {
-
-      /* TODO consider to update just the value if old a new types are similar
-      boolean isPrimitiveReplace = ModelUtils.isPrimitiveType(oldValue) && ModelUtils.isPrimitiveType(value);
-      if (isPrimitiveReplace && (oldValue instanceof StringType) && (value instanceof StringType)) {
-        ...
-      } */
-
-      value.attach(this, oldValue.getValueRefefence());
-    } else {
-      // Attach to a new substrate document or to a values container
-      value.attach(this);
-    }
+    value.attach(this);
 
     // This should be always a new put, otherwise the !value.isAttached
-    // precondition
-    // would be false
-    if (!observableMap.put(key, value)) {
-      value.deattach();
-      return null;
-    }
+    // precondition would be false
+    observableMap.put(key, value);
 
     value = observableMap.get(key);
+    if (value == null) return null;
+
     value.setPath(getPath() + "." + key);
-
     cachedMap.put(key, value);
-
 
     if (oldValue != null) {
       oldValue.deattach();
