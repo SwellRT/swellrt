@@ -32,33 +32,33 @@ import java.util.List;
  */
 public final class EventBundleImpl<N, E extends N, T extends N> implements EventBundle<N, E, T> {
 
-  final static class Builder<N, E extends N, T extends N> {
+  public final static class Builder<N, E extends N, T extends N> {
     private final List<DocumentEvent<N, E, T>> components = new ArrayList<DocumentEvent<N, E, T>>();
     private Collection<E> inserted;
     private Collection<E> deleted;
 
-    Builder() {
+    public Builder() {
     }
 
-    void addComponent(DocumentEvent<N, E, T> event) {
+    public void addComponent(DocumentEvent<N, E, T> event) {
       components.add(event);
     }
 
-    void addDeletedElement(E e) {
+    public void addDeletedElement(E e) {
       if (deleted == null) {
         deleted = new LinkedHashSet<E>();
       }
       deleted.add(e);
     }
 
-    void addInsertedElement(E e) {
+    public void addInsertedElement(E e) {
       if (inserted == null) {
         inserted = new ArrayList<E>();
       }
       inserted.add(e);
     }
 
-    EventBundleImpl<N, E, T> build() {
+    public EventBundleImpl<N, E, T> build() {
       if (inserted == null) {
         inserted = Collections.emptySet();
       }

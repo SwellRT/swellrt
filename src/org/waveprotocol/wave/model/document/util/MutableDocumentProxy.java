@@ -371,4 +371,14 @@ public class MutableDocumentProxy<N, E extends N, T extends N>
   public String toString() {
     return "MutableDocumentProxy(" + getDelegate().toString() + ")";
   }
+
+  @Override
+  public void beginMutationGroup() {
+    getDelegate().beginMutationGroup();
+  }
+
+  @Override
+  public void endMutationGroup() {
+    getDelegate().endMutationGroup();
+  }
 }

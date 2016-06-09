@@ -23,7 +23,9 @@ import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.MutableDocument;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.ObservableMutableDocument;
+import org.waveprotocol.wave.model.document.indexed.DocumentEvent;
 import org.waveprotocol.wave.model.document.indexed.DocumentHandler;
+import org.waveprotocol.wave.model.document.indexed.EventBundleImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.raw.impl.Element;
@@ -35,6 +37,8 @@ import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.wave.data.DocumentFactory;
 import org.waveprotocol.wave.model.wave.data.ObservableDocumentOperationSink;
+
+import java.util.Iterator;
 
 /**
  * Extension of a mutable-document wrapper that exposes listener addition and
@@ -69,6 +73,10 @@ public class ObservablePluggableMutableDocument extends PluggableMutableDocument
         CopyOnWriteSet.create();
     private boolean isPaused = false;
 
+    private int groupLevel = 0;
+
+    private EventBundleImpl.Builder<Doc.N, Doc.E, Doc.T> groupEventBuilder = null;
+
     // Conversion from Node -> Doc.N, etc. This is safe because Doc<N, E, T> types are
     // covariant in their node type parameters, it's just this cannot be expressed
     // at definition time due to a limitation of java, and must be expressed at use
@@ -78,12 +86,28 @@ public class ObservablePluggableMutableDocument extends PluggableMutableDocument
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void onDocumentEvents(EventBundle event) {
-      if (isPaused) {
-        return;
+
+      if (groupLevel == 0)
+        flush(event);
+      else {
+        assert groupEventBuilder != null;
+
+        Iterator<DocumentEvent<Doc.N, Doc.E, Doc.T>> eventIterator =
+            event.getEventComponents().iterator();
+        while (eventIterator.hasNext())
+          groupEventBuilder.addComponent(eventIterator.next());
+
+        Iterator<Doc.E> elementIterator = event.getDeletedElements().iterator();
+        while (elementIterator.hasNext())
+          groupEventBuilder.addDeletedElement(elementIterator.next());
+
+        elementIterator = event.getInsertedElements().iterator();
+        while (elementIterator.hasNext())
+          groupEventBuilder.addInsertedElement(elementIterator.next());
+
+
       }
-      for (DocumentHandler<Doc.N, Doc.E, Doc.T> handler : handlers) {
-        handler.onDocumentEvents(event);
-      }
+
     }
 
     void addHandler(DocumentHandler<Doc.N, Doc.E, Doc.T> h) {
@@ -97,6 +121,36 @@ public class ObservablePluggableMutableDocument extends PluggableMutableDocument
     private void setPaused(boolean isPaused) {
       this.isPaused = isPaused;
     }
+
+    private void beginEventGroup() {
+
+      if (groupLevel == 0)
+        groupEventBuilder = new EventBundleImpl.Builder<Doc.N, Doc.E, Doc.T>();
+
+      groupLevel++;
+
+    }
+
+    private void endEventGroup() {
+      groupLevel--;
+
+      if (groupLevel == 0) {
+        assert (groupEventBuilder != null);
+        flush(groupEventBuilder.build());
+        groupEventBuilder = null;
+      }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void flush(EventBundle event) {
+      if (isPaused) {
+        return;
+      }
+      for (DocumentHandler<Doc.N, Doc.E, Doc.T> handler : handlers) {
+        handler.onDocumentEvents(event);
+      }
+    }
+
   }
 
   /** The direct listener to inject into the (observable) indexed document. */
@@ -155,5 +209,17 @@ public class ObservablePluggableMutableDocument extends PluggableMutableDocument
     handlerManager.setPaused(true);
     super.createSubstrateDocument();
     handlerManager.setPaused(false);
+  }
+
+  @Override
+  public void beginMutationGroup() {
+    handlerManager.beginEventGroup();
+    getDelegate().beginMutationGroup();
+  }
+
+  @Override
+  public void endMutationGroup() {
+    getDelegate().endMutationGroup();
+    handlerManager.endEventGroup();
   }
 }

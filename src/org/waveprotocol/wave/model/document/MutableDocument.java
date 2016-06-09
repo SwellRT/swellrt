@@ -25,6 +25,7 @@ import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.PointRange;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
+import org.waveprotocol.wave.model.operation.OperationSequencer;
 
 import java.util.Map;
 
@@ -235,4 +236,22 @@ public interface MutableDocument<N, E extends N, T extends N>
   interface Provider<D extends MutableDocument<?,?,?>>
       extends ReadableDocument.Provider<D>, Factory<D> {
   }
+
+  /**
+   * Start a new mutation group.
+   * 
+   * All ops performed between invoking {@link #beginMutationGroup} and
+   * {@link #endMutationGroup} methods will be composed and sent as one op. The
+   * {@link OperationSequencer} of this document must support this behaviour.
+   */
+  public void beginMutationGroup();
+
+  /**
+   * End a mutation group.
+   * 
+   * All ops performed between invoking {@link #beginMutationGroup} and
+   * {@link #endMutationGroup} methods will be composed and sent as one op. The
+   * {@link OperationSequencer} of this document must support this behaviour.
+   */
+  public void endMutationGroup();
 }
