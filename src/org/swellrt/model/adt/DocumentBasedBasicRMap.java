@@ -19,25 +19,28 @@
 
 package org.swellrt.model.adt;
 
-import org.waveprotocol.wave.model.adt.docbased.AbstractDocumentBasedMap;
+
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.util.Serializer;
 
 /**
  * Provides a map of keys to values, as a region of a concurrent document.
- *
- * The implementation behavior of {@link AbstractDocumentBasedMap}
- * inserts new elements at the start of the containing element. Updates are
- * equivalent to deleting any existing entries followed by an insert.
+ * 
+ * The implementation behavior of {@link AbstractDocumentBasedRMap} inserts new
+ * elements at the start of the containing element. Updates are equivalent to
+ * deleting any existing entries followed by an insert.
+ * 
+ * 
  * Consistency is achieved in this context by this class by always interpreting
  * the document-last value for a key as the canonical one.
- *
+ * 
+ * 
  * @param <E> document's element type
  * @param <K> map key type
  * @param <V> map value type
  */
 public final class DocumentBasedBasicRMap<E, K, V>
-    extends AbstractDocumentBasedMap<E, K, V> {
+ extends AbstractDocumentBasedRMap<E, K, V> {
   /**
    * Creates a Basic Map.
    *
@@ -96,4 +99,6 @@ public final class DocumentBasedBasicRMap<E, K, V>
 
     return false;
   }
+
+
 }

@@ -200,15 +200,27 @@ public class NumberType extends Type implements ReadableNumber, SourcesEvents<Nu
   }
 
 
+  private boolean reAttach() {
+
+    if (parent != null && valueRef >= 0) {
+      attach(parent, valueRef);
+      return isAttached();
+    }
+
+    return false;
+  }
+
   //
   // Number operations
   //
 
   public String getValue() {
     if (!isAttached())
-      return initValue;
-    else
-      return observableValue.get();
+      if (!reAttach())
+        return initValue;
+
+
+    return observableValue.get();
   }
 
 

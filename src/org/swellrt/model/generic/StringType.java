@@ -21,7 +21,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   /**
    * Get an instance of StringType. This method is used for deserialization.
-   * 
+   *
    * @param parent the parent Type instance of this string
    * @param valueIndex the index of the value in the parent's value container
    * @return
@@ -43,7 +43,7 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
   private String path;
 
   private Type parent;
-  private int valueRef; // the index of this value in the ValuesContainer
+  private int valueRef = -1; // the index of this value in the ValuesContainer
   private String initValue;
 
 
@@ -184,6 +184,15 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
     listeners.remove(listener);
   }
 
+  private boolean reAttach() {
+
+    if (parent != null && valueRef >= 0) {
+      attach(parent, valueRef);
+      return isAttached();
+    }
+
+    return false;
+  }
 
   //
   // String operations
@@ -191,9 +200,10 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   public String getValue() {
     if (!isAttached())
-      return initValue;
-    else
-      return observableValue.get();
+      if (!reAttach())
+        return initValue;
+
+    return observableValue.get();
   }
 
 

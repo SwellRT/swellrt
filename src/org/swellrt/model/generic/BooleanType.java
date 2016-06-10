@@ -192,6 +192,15 @@ public class BooleanType extends Type implements ReadableBoolean,
     listeners.remove(listener);
   }
 
+  private boolean reAttach() {
+
+    if (parent != null && valueRef >= 0) {
+      attach(parent, valueRef);
+      return isAttached();
+    }
+
+    return false;
+  }
 
   //
   // Number operations
@@ -199,9 +208,10 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   public Boolean getValue() {
     if (!isAttached())
-      return Boolean.valueOf(initValue);
-    else
-      return Boolean.valueOf(observableValue.get());
+      if (!reAttach())
+        return Boolean.valueOf(initValue);
+
+    return Boolean.valueOf(observableValue.get());
   }
 
   public void setValue(boolean value) {

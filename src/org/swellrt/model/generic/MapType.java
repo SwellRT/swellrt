@@ -11,17 +11,37 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
+import org.waveprotocol.wave.model.util.DocumentEventGroupListener;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.Listener> {
+public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.Listener>,
+    DocumentEventGroupListener {
 
+  public class Event {
+
+    protected Event(String key, Type oldValue, Type newValue) {
+      super();
+      this.key = key;
+      this.oldValue = oldValue;
+      this.newValue = newValue;
+    }
+
+    public String key;
+
+    public Type oldValue;
+
+    public Type newValue;
+
+  }
 
   /**
    * Listener to map events.
@@ -89,6 +109,8 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
   private final Map<String, Type> cachedMap = new HashMap<String, Type>();
 
+  private final List<Event> pendingEvents = new ArrayList<Event>();
+
   /**
    * Constructor for MapType instances.
    *
@@ -103,45 +125,30 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
       @Override
       public void onEntrySet(final String key, final Type oldValue, final Type newValue) {
-
-        if (newValue == null) {
-
-          for (Listener l : listeners)
-            l.onValueRemoved(key, oldValue);
-
-
-        } else {
-
-          // Under some circunstances, value's update will reach after map entry
-          // update so the new value is not attached.
-          // To avoid the issue, we wait for the value's update and then
-          // trigger again the event.
-
-          if (newValue.isAttached()) {
-
-            for (Listener l : listeners)
-              l.onValueChanged(key, oldValue, newValue);
-
-          } else {
-
-            final Integer index = newValue.getValueRefefence();
-            if (index != null)
-              values.registerEventHandler(index, new ValuesContainer.EventHandler() {
-
-                @Override
-                public void run(String value) {
-
-                  newValue.attach(MapType.this, "" + index.intValue());
-
-                  for (Listener l : listeners)
-                    l.onValueChanged(key, oldValue, newValue);
-
-                }
-              });
-            }
-          }
-        }
+        // Events are not delivered yet. Wait until all events are delivered.
+        pendingEvents.add(new Event(key, oldValue, newValue));
+      }
     };
+  }
+
+  private void deliverPendingEvents() {
+
+    for (Event e: pendingEvents) {
+
+      if (e.newValue == null) {
+
+        for (Listener l : listeners)
+          l.onValueRemoved(e.key, e.oldValue);
+
+      } else {
+
+        for (Listener l : listeners)
+          l.onValueChanged(e.key, e.oldValue, e.newValue);
+
+      }
+    }
+
+    pendingEvents.clear();
   }
 
   //
@@ -210,6 +217,8 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
             new MapSerializer(this), TAG_ENTRY, KEY_ATTR_NAME, VALUE_ATTR_NAME);
 
     this.observableMap.addListener(observableMapListener);
+
+    router.setEventGroupListener(this);
   }
 
   protected void deattach() {
@@ -436,6 +445,17 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     // for a primitive value update.
     String key = getValueReference(value);
     if (key != null) observableMap.put(key, value);
+  }
+
+  @Override
+  public void onBeginEventGroup(String groupId) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void onEndEventGroup(String groupId) {
+    deliverPendingEvents();
   }
 
 }

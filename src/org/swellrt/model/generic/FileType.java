@@ -226,6 +226,16 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
   }
 
 
+  private boolean reAttach() {
+
+    if (parent != null && valueRef >= 0) {
+      attach(parent, valueRef);
+      return isAttached();
+    }
+
+    return false;
+  }
+
   //
   // File operations
   //
@@ -236,18 +246,18 @@ public class FileType extends Type implements ReadableFile, SourcesEvents<FileTy
 
   public AttachmentId getFileId() {
     if (!isAttached())
-      return initValue.attachmentId;
-    else {
+      if (!reAttach())
+        return initValue.attachmentId;
 
-      String valueString = observableValue.get();
-      if (valueString == null || valueString.isEmpty()) return null;
+    String valueString = observableValue.get();
+    if (valueString == null || valueString.isEmpty()) return null;
 
-      try {
-        return FileType.Value.deserialize(valueString).attachmentId;
-      } catch (InvalidModelStringValue e) {
-        return null;
-      }
+    try {
+      return FileType.Value.deserialize(valueString).attachmentId;
+    } catch (InvalidModelStringValue e) {
+      return null;
     }
+
 
   }
 
