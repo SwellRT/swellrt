@@ -102,6 +102,9 @@ repositories {
     maven {
         url 'https://oss.sonatype.org/content/repositories/google-snapshots/'
     }
+    maven {
+        url 'http://www.openempi.org/nexus/content/repositories/public/'
+    }
 }
 
 dependencies {

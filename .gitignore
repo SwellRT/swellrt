@@ -38,6 +38,7 @@ war/WEB-INF
 ### Gradle
 .gradle
 build/
+wave/wiab-server.log.*
 wave/build/
 wave/war/WEB-INF/
 wave/war/webclient/
