@@ -240,6 +240,8 @@ public interface MutableDocument<N, E extends N, T extends N>
   /**
    * Start a new mutation group.
    * 
+   * Nested groups are not supported!
+   * 
    * All ops performed between invoking {@link #beginMutationGroup} and
    * {@link #endMutationGroup} methods will be composed and sent as one op. The
    * {@link OperationSequencer} of this document must support this behaviour.
@@ -248,6 +250,8 @@ public interface MutableDocument<N, E extends N, T extends N>
 
   /**
    * End a mutation group.
+   * 
+   * Nested groups are not supported!
    * 
    * All ops performed between invoking {@link #beginMutationGroup} and
    * {@link #endMutationGroup} methods will be composed and sent as one op. The

@@ -31,6 +31,7 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.DeletionListener;
 import org.waveprotocol.wave.model.util.ElementListener;
+import org.waveprotocol.wave.model.util.DocumentEventGroupListener;
 
 import java.util.Map;
 
@@ -50,6 +51,8 @@ public class DefaultDocumentEventRouter<N, E extends N, T extends N> implements
   private Map<E, CopyOnWriteSet<AttributeListener<E>>> attributeListenerMap = null;
   private Map<E, CopyOnWriteSet<DeletionListener>> deletionListenerMap = null;
   private int listenerCount = 0;
+
+  private CopyOnWriteSet<DocumentEventGroupListener> eventGroupListenerSet = null;
 
   protected DefaultDocumentEventRouter(ObservableMutableDocument<N, E, T> doc) {
     this.doc = doc;
@@ -113,6 +116,13 @@ public class DefaultDocumentEventRouter<N, E extends N, T extends N> implements
 
   @Override
   public void onDocumentEvents(EventBundle<N, E, T> bundle) {
+
+    if (eventGroupListenerSet != null) {
+      for (DocumentEventGroupListener l: eventGroupListenerSet) {
+        l.onBeginEventGroup(""+bundle.hashCode());
+      }
+    }
+
     if (attributeListenerMap != null) {
       for (DocumentEvent<N, E, T> event : bundle.getEventComponents()) {
         if (event.getType() == Type.ATTRIBUTES) {
@@ -169,6 +179,13 @@ public class DefaultDocumentEventRouter<N, E extends N, T extends N> implements
         }
       }
     }
+
+    if (eventGroupListenerSet != null) {
+      for (DocumentEventGroupListener l : eventGroupListenerSet) {
+        l.onEndEventGroup("" + bundle.hashCode());
+      }
+    }
+
     removeDeadListeners(bundle);
   }
 
@@ -260,6 +277,20 @@ public class DefaultDocumentEventRouter<N, E extends N, T extends N> implements
     if (listenerCount == 1) {
       doc.addListener(this);
     }
+  }
+
+  @Override
+  public void setEventGroupListener(DocumentEventGroupListener listener) {
+    if (eventGroupListenerSet == null) eventGroupListenerSet = CopyOnWriteSet.createListSet();
+
+    eventGroupListenerSet.add(listener);
+  }
+
+  @Override
+  public void removeEventGroupListener(DocumentEventGroupListener listener) {
+    if (eventGroupListenerSet == null) return;
+
+    eventGroupListenerSet.remove(listener);
   }
 
 }

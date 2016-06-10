@@ -23,6 +23,7 @@ import org.waveprotocol.wave.model.document.ObservableMutableDocument;
 import org.waveprotocol.wave.model.util.AttributeListener;
 import org.waveprotocol.wave.model.util.DeletionListener;
 import org.waveprotocol.wave.model.util.ElementListener;
+import org.waveprotocol.wave.model.util.DocumentEventGroupListener;
 
 /**
  * Wrapper around a document that provides filtered abstract event registration
@@ -54,6 +55,21 @@ public interface DocumentEventRouter<N, E extends N, T extends N> {
    * element is deleted.
    */
   ListenerRegistration addChildListener(E parent, ElementListener<E> listener);
+
+
+  /**
+   * Attaches a listener that listen when an event group starts and ends.
+   * 
+   * @param listener
+   */
+  void setEventGroupListener(DocumentEventGroupListener listener);
+
+  /**
+   * Deattaches a listener that listen when an event group starts and ends.
+   * 
+   * @param listener
+   */
+  void removeEventGroupListener(DocumentEventGroupListener listener);
 
   /**
    * Returns the document wrapped by this object.
