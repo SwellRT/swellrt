@@ -142,6 +142,7 @@ dependencies {
             [group: "com.google.inject", name: "guice", version: "3.0"],                                        // [?, ?]
             [group: "com.google.protobuf", name: "protobuf-java", version: "2.6.1"],                            // [?, ?]
             [group: "com.googlecode.protobuf-java-format", name: "protobuf-java-format", version: "1.2"],       // [?, ?]
+            [group: "com.mashape.unirest", name: "unirest-java", version: "1.4.9"],                                          // [?, ?]
             [group: "com.typesafe", name: "config", version: "1.2.1"],                                          // [?, ?]
             [group: "dom4j", name: "dom4j", version: "1.6.1"],                                                  // [?, ?]
             [group: "eu.infomas", name: "annotation-detector", version: "3.0.0"],                               // [?, ?]
@@ -548,6 +549,7 @@ jar {
     include "com/google/inject/**/*"
     include "com/google/protobuf/**/*"
     include "com/google/wave/**/*"
+    include "com/mashape/unirest/**/*"
     include "com/typesafe/**/*"
     include "gnu/inet/**/*"
     include "javax/inject/**/*"
