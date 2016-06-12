@@ -333,7 +333,6 @@ task compileGwt {
 }
 
 compileGwt.mustRunAfter compileJava
-run.dependsOn compileGwt
 
 task compileGwtDemo {
     description = 'Compiles the GWT sources for Demo'
