@@ -232,8 +232,10 @@ public abstract class AbstractDocumentBasedRMap<E, K, V>
       getDocument().deleteNode(e);
     }
 
-    // The callback firing should have emptied the obsoleteEntries collection.
-    assert obsoleteEntries.isEmpty();
+    // The callback firing should have emptied the obsoleteEntries collection
+    // but we cant asset there the emptyness of the obsoletEntries because
+    // this doc events can be trigger later
+    // assert obsoleteEntries.isEmpty();
   }
 
 

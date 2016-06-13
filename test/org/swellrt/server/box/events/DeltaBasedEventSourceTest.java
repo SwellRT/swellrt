@@ -372,14 +372,23 @@ public class DeltaBasedEventSourceTest extends TestCase {
         "root.list.?.field1")
         , "default", "default", new EventAssertionChecker() {
 
-      @Override
-      public void checkAssertions(Event e) {
+          int eventCount = 0;
+
+          @Override
+          public void checkAssertions(Event e) {
 
             LOG.fine(e.getType().toString());
 
             // All updates has the same value (the lastest)
             assertEquals(Event.Type.MAP_ENTRY_UPDATED, e.getType());
-            assertEquals("ro", e.getContextData().get("root.map.field1"));
+            if (eventCount == 0)
+              assertEquals("foo", e.getContextData().get("root.map.field1"));
+            else if (eventCount == 1)
+              assertEquals("bar", e.getContextData().get("root.map.field1"));
+            else if (eventCount == 2)
+              assertEquals("ro", e.getContextData().get("root.map.field1"));
+
+            eventCount++;
 
             assertEquals("hello world", e.getContextData().get("root.map.field0"));
             assertNull(e.getContextData().get("root.list.?.field1"));
@@ -388,8 +397,8 @@ public class DeltaBasedEventSourceTest extends TestCase {
             assertEquals("String One", e.getContextData().get("root.one"));
             assertEquals("String Two", e.getContextData().get("root.two"));
 
-        }
-    });
+          }
+        });
 
   }
 
