@@ -19,7 +19,7 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Provides abstraction between Federation-specific code and the backing Matrix
@@ -31,7 +31,7 @@ import org.json.JSONArray;
 public class MatrixPacketHandler implements IncomingPacketHandler {
 
  	@Override
-	public void receivePacket(JSONArray packet) {
+	public void receivePacket(JSONObject packet) {
 
 	}
 }

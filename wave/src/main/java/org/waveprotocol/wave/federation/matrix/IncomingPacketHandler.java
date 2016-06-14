@@ -19,7 +19,7 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Generic incoming Matrix packet handler interface. This should only be
@@ -33,6 +33,6 @@ public interface IncomingPacketHandler {
   /**
    * Accept a generic Matrix JSON packet from on-the-wire.
    */
-  void receivePacket(JSONArray packet);
+  void receivePacket(JSONObject packet);
 
 }

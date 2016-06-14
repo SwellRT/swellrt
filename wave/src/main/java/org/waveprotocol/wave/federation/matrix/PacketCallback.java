@@ -19,7 +19,7 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 
 /**
@@ -29,6 +29,6 @@ import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
 public interface PacketCallback {
-  void run(JSONArray packet);
+  void run(JSONObject packet);
   void error(FederationError error);
 }

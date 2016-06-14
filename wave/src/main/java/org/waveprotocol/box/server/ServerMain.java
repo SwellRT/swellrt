@@ -61,6 +61,7 @@ import org.waveprotocol.box.stat.StatService;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.federation.FederationTransport;
 import org.waveprotocol.wave.federation.noop.NoOpFederationModule;
+import org.waveprotocol.wave.federation.matrix.MatrixFederationModule;
 import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
@@ -140,7 +141,7 @@ public class ServerMain {
 
   private static Module buildFederationModule(Injector settingsInjector)
       throws ConfigurationException {
-    return settingsInjector.getInstance(NoOpFederationModule.class);
+    return settingsInjector.getInstance(MatrixFederationModule.class);
   }
 
   private static void initializeServer(Injector injector, String waveDomain)

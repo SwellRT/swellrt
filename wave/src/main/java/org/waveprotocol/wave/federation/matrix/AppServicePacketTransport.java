@@ -19,7 +19,13 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 import org.json.JSONArray;
+
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.logging.Logger;
 
 /**
  * Talks to a Matrix server using the Client-Server API.
@@ -30,10 +36,27 @@ import org.json.JSONArray;
  *
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
-public class AppServicePacketTransport implements OutgoingPacketTransport {
+public class AppServicePacketTransport implements Runnable, OutgoingPacketTransport {
 	
+	private static final Logger LOG = 
+	  Logger.getLogger(AppServicePacketTransport.class.getCanonicalName());
+
+	 private final IncomingPacketHandler handler;
+
+	@Inject
+	public AppServicePacketTransport(IncomingPacketHandler handler, Config config) {
+		this.handler = handler;
+	}
+
+	@Override
+    public void run() {
+    	
+    }
+
 	@Override
 	public void sendPacket(JSONArray packet) {
 
 	}
+
+
 }
