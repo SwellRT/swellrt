@@ -178,12 +178,12 @@ public final class ProtoSerializer {
    * @throws SerializationException if there is no serializer for
    *         {@code protoClass}.
    */
-  private <P> ProtoImplSerializer<? extends P, ?> getSerializer(Class<P> protoClass)
+  private <P extends Message, D extends ProtoWrapper<P> & GsonSerializable> ProtoImplSerializer<P, D> getSerializer(Class<P> protoClass)
       throws SerializationException {
     @SuppressWarnings("unchecked")
     // use of serializers map is safe.
-    ProtoImplSerializer<? extends P, ?> serializer =
-        (ProtoImplSerializer<? extends P, ?>) byClass.get(protoClass);
+    ProtoImplSerializer<P, D> serializer =
+        (ProtoImplSerializer<P, D>) byClass.get(protoClass);
     if (serializer == null) {
       throw new SerializationException("Unknown proto class: " + protoClass.getName());
     }
@@ -214,7 +214,7 @@ public final class ProtoSerializer {
    * @throws SerializationException if the class of {@code message} has not been
    *         registered.
    */
-  public JsonElement toJson(MessageLite message) throws SerializationException {
+  public <P extends Message>JsonElement toJson(P message) throws SerializationException {
     return getSerializer(message.getClass()).toGson(message, null, gson);
   }
 

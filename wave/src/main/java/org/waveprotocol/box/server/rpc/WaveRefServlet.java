@@ -49,7 +49,7 @@ public class WaveRefServlet extends HttpServlet {
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
       IOException {
-    ParticipantId user = sessionManager.getLoggedInUser(req);
+    ParticipantId user = sessionManager.getLoggedInUser(req.getSession(false));
     String path = req.getRequestURI().replace("/waveref/", "");
     if (user != null) {
       resp.sendRedirect("/#" + path);

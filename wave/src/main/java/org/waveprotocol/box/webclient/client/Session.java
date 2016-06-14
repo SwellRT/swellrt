@@ -72,7 +72,7 @@ public abstract class Session implements SessionConstants {
   public boolean isLoggedIn() {
     return getAddress() != null;
   }
-
+  
   /**
    * @return the id seed that's going to be used for generating ids for the session
    */

@@ -58,7 +58,7 @@ public class LucenePerUserWaveViewProviderTest extends PerUserWaveViewProviderTe
   @Override
   protected PerUserWaveViewHandler createPerUserWaveViewHandler() {
     handler =
-        new LucenePerUserWaveViewHandlerImpl(directory, waveletProvider, textCollator, DOMAIN,
+        new LucenePerUserWaveViewHandlerImpl(directory, waveletProvider, DOMAIN,
           Executors.newCachedThreadPool());
     return handler;
   }

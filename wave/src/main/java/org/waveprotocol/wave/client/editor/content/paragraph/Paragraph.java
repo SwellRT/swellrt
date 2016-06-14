@@ -46,7 +46,7 @@ public class Paragraph {
   /**
    * Number of headings, h1...h{NUM_HEADING_SIZES}
    */
-  public static final int NUM_HEADING_SIZES = 5;
+  public static final int NUM_HEADING_SIZES = 4;
 
   /**
    * Subtype attribute, for things like headings, bullet points, etc.

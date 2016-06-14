@@ -23,7 +23,6 @@ import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.util.AttributeListener;
 import org.waveprotocol.wave.model.util.DeletionListener;
-import org.waveprotocol.wave.model.util.DocumentEventGroupListener;
 import org.waveprotocol.wave.model.util.ElementListener;
 
 /**
@@ -77,15 +76,5 @@ public class MuteDocEventRouter implements DocEventRouter {
   @Override
   public ListenerRegistration addDeletionListener(Doc.E target, DeletionListener listener) {
     return NULL_REGISTRATION;
-  }
-
-  @Override
-  public void setEventGroupListener(DocumentEventGroupListener listener) {
-    // No op
-  }
-
-  @Override
-  public void removeEventGroupListener(DocumentEventGroupListener listener) {
-    // No op
   }
 }

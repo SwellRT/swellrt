@@ -19,11 +19,12 @@
 
 package org.waveprotocol.wave.model.wave.opbased;
 
-import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
-import org.waveprotocol.wave.model.wave.SourcesEvents;
 import org.waveprotocol.wave.model.wave.WaveView;
 import org.waveprotocol.wave.model.wave.WaveViewListener;
+
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.wave.SourcesEvents;
 
 /**
  * Do NOT extend this interface any further, choose to extend the top level interfaces if you want
@@ -61,8 +62,4 @@ public interface ObservableWaveView extends WaveView, SourcesEvents<WaveViewList
 
   @Override
   public ObservableWavelet createUserData();
-
-  @Override
-  public ObservableWavelet createWavelet(WaveletId waveletId);
-
 }

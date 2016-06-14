@@ -39,7 +39,6 @@ import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -61,8 +60,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
 
   private final WaveletProvider waveletProvider;
   private final WaveletInfo waveletInfo;
-  private final String waveDomain;
-
 
   /**
    * Creates a client frontend and subscribes it to the wave bus.
@@ -70,23 +67,26 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
    * @throws WaveServerException if the server fails during initialization.
    */
   public static ClientFrontendImpl create(WaveletProvider waveletProvider, WaveBus wavebus,
-      WaveletInfo waveletInfo, String waveDomain) throws WaveServerException {
+      WaveletInfo waveletInfo) throws WaveServerException {
 
     ClientFrontendImpl impl =
-        new ClientFrontendImpl(waveletProvider, waveletInfo, waveDomain);
+        new ClientFrontendImpl(waveletProvider, waveletInfo);
 
     wavebus.subscribe(impl);
     return impl;
-
   }
 
-
-
+  /**
+   * Constructor.
+   *
+   * @param waveletProvider
+   * @param waveDomain the server wave domain. It is assumed that the wave domain is valid.
+   */
   @VisibleForTesting
-  ClientFrontendImpl(WaveletProvider waveletProvider, WaveletInfo waveletInfo, String waveDomain) {
+  ClientFrontendImpl(
+      WaveletProvider waveletProvider, WaveletInfo waveletInfo) {
     this.waveletProvider = waveletProvider;
     this.waveletInfo = waveletInfo;
-    this.waveDomain = waveDomain;
   }
 
   @Override
@@ -139,7 +139,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
 
       // TODO(anorth): if the client provides known wavelets, calculate
       // where to start sending deltas from.
-
 
       CommittedWaveletSnapshot snapshotToSend;
 
@@ -262,7 +261,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
 
     Set<ParticipantId> remainingparticipants =
         Sets.newHashSet(waveletInfo.getWaveletParticipants(waveletName));
-    Set<ParticipantId> deletedparticipants = Sets.newHashSet();
     // Participants added during the course of newDeltas.
     Set<ParticipantId> newParticipants = Sets.newHashSet();
     for (int i = 0; i < newDeltas.size(); i++) {
@@ -277,7 +275,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
         if (op instanceof RemoveParticipant) {
           ParticipantId p = ((RemoveParticipant) op).getParticipantId();
           remainingparticipants.remove(p);
-          deletedparticipants.add(p);
           participantUpdate(waveletName, p, newDeltas.subList(0, i + 1), newParticipants.remove(p),
               true);
         }
@@ -290,25 +287,6 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       boolean isNew = newParticipants.contains(p);
       participantUpdate(waveletName, p, newDeltas, isNew, false);
     }
-
-    // If the wavelet is still public, send delta updates to implicit participants
-    if (waveDomain != null
-        && remainingparticipants.contains(ParticipantIdUtil
-            .makeUnsafeSharedDomainParticipantId(waveDomain))) {
-      Set<ParticipantId> explicitparticipants = waveletInfo.getWaveletParticipants(waveletName);
-      Set<ParticipantId> implicitparticipants =
-          waveletInfo.getImplicitWaveletParticipants(waveletName);
-      for (ParticipantId p : implicitparticipants) {
-        // If an implicit participant become explicit,
-        // no need to update it again
-        // We keep it as implicit in case it is
-        // removed and the wavelet is still public
-        if (!explicitparticipants.contains(p) && !deletedparticipants.contains(p))
-          participantUpdate(waveletName, p, newDeltas, false, false);
-      }
-    }
-
-
   }
 
   @VisibleForTesting

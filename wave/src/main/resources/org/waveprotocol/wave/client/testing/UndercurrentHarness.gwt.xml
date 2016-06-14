@@ -27,6 +27,9 @@
   <inherits name="org.waveprotocol.wave.model.conversation.Conversation" />
   <inherits name="org.waveprotocol.wave.model.conversation.Testing" />
   <inherits name="org.waveprotocol.wave.model.util.Util" />
+  <inherits name="com.google.common.collect.Collect"/>
+  <inherits name="org.waveprotocol.box.stat.Stat" />
+  <inherits name='org.waveprotocol.box.webclient.stat.Stat'/>
 
   <entry-point class="org.waveprotocol.wave.client.testing.UndercurrentHarness" />
   <source path=""/>
@@ -43,9 +46,6 @@
 
   <!--  This linker is required for superdev mode -->
   <add-linker name="xsiframe" />
-  <set-configuration-property name="devModeRedirectEnabled" value="true"/>
-  <!--  enable source maps -->
-  <set-property name="compiler.useSourceMaps" value="true" />
 
   <!-- collapse all properties to decrease the amount of time spend compiling -->
   <collapse-all-properties />

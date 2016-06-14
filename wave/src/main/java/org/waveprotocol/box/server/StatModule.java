@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import static com.google.inject.matcher.Matchers.annotatedWith;
 import static com.google.inject.matcher.Matchers.any;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.stat.MultiThreadedRequestScope;
 
 import org.waveprotocol.box.server.stat.TimingInterceptor;
@@ -38,8 +39,8 @@ public class StatModule extends AbstractModule {
   private final boolean enableProfiling;
 
   @Inject
-  public StatModule(@Named(CoreSettings.ENABLE_PROFILING) boolean enableProfiling) {
-    this.enableProfiling = enableProfiling;
+  public StatModule(Config config) {
+    this.enableProfiling = config.getBoolean("core.enable_profiling");
   }
 
   @Override

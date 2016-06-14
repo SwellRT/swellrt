@@ -19,6 +19,9 @@
 
 package org.waveprotocol.wave.model.conversation;
 
+import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
+
 /**
  * Constants useful for annotations
  * Refer to the conversation specification for more detailed information.
@@ -44,6 +47,26 @@ public class AnnotationConstants {
   public static final String STYLE_TEXT_DECORATION = STYLE_PREFIX + "/textDecoration";
 
   public static final String STYLE_VERTICAL_ALIGN = STYLE_PREFIX + "/verticalAlign";
+
+  public static final ReadableStringSet STYLE_KEYS = CollectionUtils.newStringSet(
+      AnnotationConstants.STYLE_BG_COLOR,
+      AnnotationConstants.STYLE_COLOR,
+      AnnotationConstants.STYLE_FONT_FAMILY,
+      AnnotationConstants.STYLE_FONT_SIZE,
+      AnnotationConstants.STYLE_FONT_STYLE,
+      AnnotationConstants.STYLE_FONT_WEIGHT,
+      AnnotationConstants.STYLE_TEXT_DECORATION,
+      AnnotationConstants.STYLE_VERTICAL_ALIGN
+    );
+
+  public static final ReadableStringSet DELETED_STYLE_KEYS = CollectionUtils.newStringSet(
+      AnnotationConstants.STYLE_COLOR,
+      AnnotationConstants.STYLE_FONT_FAMILY,
+      AnnotationConstants.STYLE_FONT_SIZE,
+      AnnotationConstants.STYLE_FONT_STYLE,
+      AnnotationConstants.STYLE_FONT_WEIGHT,
+      AnnotationConstants.STYLE_VERTICAL_ALIGN
+    );
 
   // User
 

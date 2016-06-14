@@ -19,15 +19,16 @@
 
 package org.waveprotocol.wave.model.wave.opbased;
 
+import org.waveprotocol.wave.model.wave.ObservableWavelet;
+import org.waveprotocol.wave.model.wave.WaveViewListener;
+import org.waveprotocol.wave.model.wave.Wavelet;
+
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.WaveViewListener;
-import org.waveprotocol.wave.model.wave.Wavelet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -165,7 +166,6 @@ public final class WaveViewImpl<T extends ObservableWavelet> implements Observab
     triggerOnWaveletRemoved(wavelet);
   }
 
-  @Override
   public T createWavelet(WaveletId id) {
     T wavelet = factory.create(waveId, id, viewer);
     configurator.configure(wavelet);

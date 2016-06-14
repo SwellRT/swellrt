@@ -24,7 +24,7 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.wave.crypto.SignerInfo;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignature;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
@@ -45,7 +45,7 @@ public class NonSigningSignatureHandler implements SignatureHandler {
 
     @Inject
     public NonSigningSignatureHandlerProvider(
-        @Named(CoreSettings.WAVE_SERVER_DOMAIN) String waveDomain) {
+        @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String waveDomain) {
       this.waveDomain = waveDomain;
     }
     

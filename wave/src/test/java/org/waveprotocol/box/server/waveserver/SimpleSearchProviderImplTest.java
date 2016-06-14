@@ -22,6 +22,7 @@ package org.waveprotocol.box.server.waveserver;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.util.concurrent.Futures;
@@ -29,6 +30,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gxp.com.google.common.collect.Maps;
 import com.google.wave.api.SearchResult;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Mock;
@@ -137,7 +140,7 @@ public class SimpleSearchProviderImplTest extends TestCase {
         }
 
         private ParticipantId computeAuthor(SearchResult.Digest digest) {
-          ParticipantId author = null;
+          ParticipantId author;
           author = ParticipantId.ofUnsafe(digest.getParticipants().get(0));
           assert author != null : "Cannot find author for the wave: " + digest.getWaveId();
           return author;
@@ -165,8 +168,6 @@ public class SimpleSearchProviderImplTest extends TestCase {
   @Mock private PerUserWaveViewProvider waveViewProvider;
 
   private SearchProvider searchProvider;
-  private ConversationUtil conversationUtil;
-  private WaveDigester digester;
   private WaveMap waveMap;
 
   @Override
@@ -181,8 +182,8 @@ public class SimpleSearchProviderImplTest extends TestCase {
     when(waveViewProvider.retrievePerUserWaveView(USER2)).thenReturn(wavesViewUser2);
     when(waveViewProvider.retrievePerUserWaveView(SHARED_USER)).thenReturn(wavesViewUser3);
 
-    conversationUtil = new ConversationUtil(idGenerator);
-    digester = new WaveDigester(conversationUtil);
+    ConversationUtil conversationUtil = new ConversationUtil(idGenerator);
+    WaveDigester digester = new WaveDigester(conversationUtil);
 
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
@@ -205,9 +206,15 @@ public class SimpleSearchProviderImplTest extends TestCase {
           }
         };
 
+    Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "core.wave_cache_size", 1000,
+      "core.wave_cache_expire", "60m")
+    );
+
     waveMap =
-        new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, DOMAIN, lookupExecutor);
+        new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
+            remoteWaveletContainerFactory, DOMAIN, config, lookupExecutor);
+
     searchProvider = new SimpleSearchProviderImpl(DOMAIN, digester, waveMap, waveViewProvider);
   }
 

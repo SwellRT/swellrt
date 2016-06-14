@@ -22,17 +22,14 @@ package org.waveprotocol.box.server;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Module;
-import com.google.inject.name.Names;
-
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.waveprotocol.box.server.persistence.PersistenceModule;
 import org.waveprotocol.box.server.persistence.migration.DeltaMigrator;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
-import org.waveprotocol.wave.util.logging.Log;
-import org.waveprotocol.wave.util.settings.Setting;
 
-import java.lang.reflect.Field;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,21 +44,17 @@ import java.util.Map;
  */
 public class DataMigrationTool {
 
-  private static final Log LOG = Log.get(DataMigrationTool.class);
-
-
-
   private static void runDeltasMigration(Injector sourceInjector, Injector targetInjector) {
 
     // We can migrate data from-to any store type,
     // but it is not allowed migrate from-to the same type
     String sourceDeltaStoreType =
         sourceInjector
-            .getInstance(Key.get(String.class, Names.named(CoreSettings.DELTA_STORE_TYPE)));
+            .getInstance(Config.class).getString("core.delta_store_type");
 
     String targetDeltaStoreType =
         targetInjector
-            .getInstance(Key.get(String.class, Names.named(CoreSettings.DELTA_STORE_TYPE)));
+                .getInstance(Config.class).getString("core.delta_store_type");
 
     if (sourceDeltaStoreType.equalsIgnoreCase(targetDeltaStoreType))
       usageError("Source and Target Delta store types must be different");
@@ -75,98 +68,27 @@ public class DataMigrationTool {
 
   }
 
-  private static Map<Setting, Field> getCoreSettings() {
-
-    // Get all method fields
-    Field[] coreSettingFields = CoreSettings.class.getDeclaredFields();
-
-    // Filter only annotated fields
-    Map<Setting, Field> settings = new HashMap<Setting, Field>();
-
-    for (Field f : coreSettingFields) {
-      if (f.isAnnotationPresent(Setting.class)) {
-        Setting setting = f.getAnnotation(Setting.class);
-        settings.put(setting, f);
-      }
-    }
-
-    return settings;
-
-  }
-
   private static Module bindCmdLineSettings(String cmdLineProperties) {
 
     // Get settings from cmd line, e.g.
     // Key = delta_store_type
     // Value = mongodb
-    final Map<String, String> propertyMap = new HashMap<String, String>();
+    final Map<String, String> propertyMap = new HashMap<>();
 
     for (String arg : cmdLineProperties.split(",")) {
       String[] argTokens = arg.split("=");
       propertyMap.put(argTokens[0], argTokens[1]);
     }
 
-    // Validate settings against CoreSettings
-    final Map<Setting, Field> coreSettings = getCoreSettings();
-
-    // Set a suitable map to match cmd line settings
-    final Map<String, Setting> propertyToSettingMap = new HashMap<String, Setting>();
-    for (Setting s : coreSettings.keySet()) {
-      propertyToSettingMap.put(s.name(), s);
-    }
-
-    for (String propertyKey : propertyMap.keySet()) {
-      if (!propertyToSettingMap.containsKey(propertyKey))
-        usageError("Wrong setting '" + propertyKey + "'");
-    }
-
-
-
     return new AbstractModule() {
 
       @Override
       protected void configure() {
-
-        // We must iterate the settings when binding.
-        // Note: do not collapse these loops as that will damage
-        // early error detection. The runtime is still O(n) in setting count.
-        for (Map.Entry<Setting, Field> entry : coreSettings.entrySet()) {
-
-          Setting setting = entry.getKey();
-          Class<?> type = entry.getValue().getType();
-          String value =
-              propertyMap.containsKey(setting.name()) ? propertyMap.get(setting.name()) : setting
-                  .defaultValue();
-          if (int.class.equals(type)) {
-            // Integer defaultValue = null;
-            // if (!setting.defaultValue().isEmpty()) {
-            // defaultValue = Integer.parseInt(setting.defaultValue());
-            // }
-            bindConstant().annotatedWith(Names.named(setting.name())).to(Integer.parseInt(value));
-          } else if (boolean.class.equals(type)) {
-            // Boolean defaultValue = null;
-            // if (!setting.defaultValue().isEmpty()) {
-            // defaultValue = Boolean.parseBoolean(setting.defaultValue());
-            // }
-            bindConstant().annotatedWith(Names.named(setting.name())).to(
-                Boolean.parseBoolean(value));
-          } else if (String.class.equals(type)) {
-            bindConstant().annotatedWith(Names.named(setting.name())).to(value);
-          } else {
-            /** Not supported **/
-            /*
-             * String[] value = config.getStringArray(setting.name()); if
-             * (value.length == 0 && !setting.defaultValue().isEmpty()) { value
-             * = setting.defaultValue().split(","); } bind(new
-             * TypeLiteral<List<String>>()
-             * {}).annotatedWith(Names.named(setting.name()))
-             * .toInstance(ImmutableList.copyOf(value));
-             */
-          }
-        }
+        Config config = ConfigFactory.load().withFallback(
+          ConfigFactory.parseFile(new File("application.conf")).withFallback(
+            ConfigFactory.parseFile(new File("reference.conf"))));
+        bind(Config.class).toInstance(ConfigFactory.parseMap(propertyMap).withFallback(config));
       }
-
-
     };
 
   }
@@ -180,9 +102,11 @@ public class DataMigrationTool {
     System.out.println("Use: DataMigrationTool <data type> <source options> <target options>\n");
     System.out.println("supported data types : deltas");
     System.out
-        .println("source options example : delta_store_type=file,delta_store_directory=./_deltas");
+        .println("source options example : core.delta_store_type=file," +
+                   "core.delta_store_directory=_deltas");
     System.out
-        .println("target options example : delta_store_type=mongodb,mongodb_host=127.0.0.1,mongodb_port=27017,mongodb_database=wiab");
+        .println("target options example : core.delta_store_type=mongodb," +
+                   "core.mongodb_host=127.0.0.1,core.mongodb_port=27017,core.mongodb_database=wiab");
     System.exit(1);
   }
 
@@ -205,9 +129,7 @@ public class DataMigrationTool {
 
 
     if (dataType.equals("deltas")) {
-
       runDeltasMigration(sourceInjector, targetInjector);
-
 
     } else {
       usageError("Wrong data type");

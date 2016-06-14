@@ -19,17 +19,11 @@
 
 package org.waveprotocol.box.server.robots.agent.registration;
 
-import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.CANNOT_CREATE_USER;
-import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.createUser;
-
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Singleton;
-import com.google.inject.name.Names;
-
+import com.typesafe.config.Config;
 import org.apache.commons.cli.CommandLine;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.robots.agent.AbstractCliRobotAgent;
@@ -38,6 +32,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.CANNOT_CREATE_USER;
+import static org.waveprotocol.box.server.robots.agent.RobotAgentUtil.createUser;
 
 /**
  * Robot agent that handles the user registration by an admin
@@ -61,18 +58,17 @@ public final class RegistrationRobot extends AbstractCliRobotAgent {
   public RegistrationRobot(Injector injector) {
     super(injector);
     serverAdminId =
-        injector.getInstance(Key.get(String.class, Names.named(CoreSettings.ADMIN_USER)));
+        injector.getInstance(Config.class).getString("administration.admin_user");
     accountStore = injector.getInstance(AccountStore.class);
   }
 
   @Override
   protected String maybeExecuteCommand(CommandLine commandLine, String modifiedBy) {
-    String robotMessage = null;
-    String adminId = modifiedBy;
+    String robotMessage;
     // Verify that the user that attempts to create a user has admin privileges.
-    if (!adminId.equals(serverAdminId)) {
+    if (!modifiedBy.equals(serverAdminId)) {
       robotMessage =
-          "User " + adminId + " is not authorized to use " + getCommandName() + " command.";
+          "User " + modifiedBy + " is not authorized to use " + getCommandName() + " command.";
     } else {
       String userId = null;
       try {
@@ -84,14 +80,11 @@ public final class RegistrationRobot extends AbstractCliRobotAgent {
         ParticipantId participantId = ParticipantId.of(userId);
         createUser(accountStore, participantId, password);
         robotMessage = String.format("Created user %s, the password is: %s\n", userId, password);
-        LOG.log(Level.INFO, "Created user " + userId + " by " + adminId);
+        LOG.log(Level.INFO, "Created user " + userId + " by " + modifiedBy);
       } catch (IllegalArgumentException e) {
         LOG.log(Level.SEVERE, userId, e);
         robotMessage = e.getMessage();
-      } catch (PersistenceException e) {
-        robotMessage = CANNOT_CREATE_USER + userId;
-        LOG.log(Level.SEVERE, "userId: " + userId, e);
-      } catch (InvalidParticipantAddress e) {
+      } catch (PersistenceException | InvalidParticipantAddress e) {
         robotMessage = CANNOT_CREATE_USER + userId;
         LOG.log(Level.SEVERE, "userId: " + userId, e);
       }

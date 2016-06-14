@@ -29,6 +29,7 @@ import com.google.wave.api.OperationRequest;
 import com.google.wave.api.Range;
 import com.google.wave.api.data.ApiView;
 import com.google.wave.api.data.DocumentHitIterator;
+import com.google.wave.api.data.ElementSerializer;
 import com.google.wave.api.impl.DocumentModifyAction;
 import com.google.wave.api.impl.DocumentModifyAction.BundledAnnotation;
 import com.google.wave.api.impl.DocumentModifyAction.ModifyHow;
@@ -417,6 +418,9 @@ public class DocumentModifyService implements OperationService {
                   gadget.getProperties());
           // TODO (Yuri Z.) Make it possible to specify a location to insert the
           // gadget and implement insertion at the specified location.
+          LineContainers.appendLine(doc, xml);
+        } else if (element.isFormElement()) {
+          XmlStringBuilder xml = ElementSerializer.apiElementToXml(element);
           LineContainers.appendLine(doc, xml);
         } else {
           // TODO(ljvderijk): Inserting other elements.

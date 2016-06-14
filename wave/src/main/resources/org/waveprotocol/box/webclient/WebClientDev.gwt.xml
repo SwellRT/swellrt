@@ -31,20 +31,14 @@
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.waveprotocol.box.webclient.client.WebClient'/>
-  <set-property name="user.agent" value="gecko1_8,safari" />
+  <set-property name="user.agent" value="safari" />
   <set-property name="mobile.user.agent" value="not_mobile" />
   <set-property name="loglevel" value="debug" />
 
   <extend-property name="locale" values="en,ru"/>
 
-  <!-- Uncomment this when socket-io-java is replaced or patched with
-  https://github.com/vjrj/Socket.IO-Java/commit/f7010aee1f5cc5adea0aab3f27e48c37d1b10b5e
-  -->
   <!-- This linker is required for superdev mode -->
-  <!-- <add-linker name="xsiframe" /> -->
-  <!-- <set-configuration-property name="devModeRedirectEnabled" value="true"/> -->
-  <!-- enable source maps -->
-  <!-- <set-property name="compiler.useSourceMaps" value="true" /> -->
+  <add-linker name="xsiframe" />
 
   <!-- collapse all properties to decrease the amount of time spend compiling -->
   <collapse-all-properties />

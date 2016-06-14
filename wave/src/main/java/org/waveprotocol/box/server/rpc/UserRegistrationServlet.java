@@ -22,8 +22,8 @@ package org.waveprotocol.box.server.rpc;
 import com.google.gxp.base.GxpContext;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.box.server.gxp.UserRegistrationPage;
@@ -33,13 +33,12 @@ import org.waveprotocol.box.server.util.RegistrationUtil;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.io.IOException;
-import java.util.Locale;
-
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Locale;
 
 /**
  * The user registration servlet allows new users to register accounts.
@@ -57,15 +56,17 @@ public final class UserRegistrationServlet extends HttpServlet {
   private final String analyticsAccount;
 
   @Inject
-  public UserRegistrationServlet(AccountStore accountStore,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain, WelcomeRobot welcomeBot,
-      @Named(CoreSettings.DISABLE_REGISTRATION) boolean registrationDisabled,
-      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
+  public UserRegistrationServlet(
+    AccountStore accountStore,
+    @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
+    Config config,
+    WelcomeRobot welcomeBot) {
+
     this.accountStore = accountStore;
     this.domain = domain;
     this.welcomeBot = welcomeBot;
-    this.registrationDisabled = registrationDisabled;
-    this.analyticsAccount = analyticsAccount;
+    this.registrationDisabled = config.getBoolean("administration.disable_registration");
+    this.analyticsAccount = config.getString("administration.analytics_account");
   }
 
   @Override
@@ -101,7 +102,7 @@ public final class UserRegistrationServlet extends HttpServlet {
    * returns a string containing an error message. On success, returns null.
    */
   private String tryCreateUser(String username, String password) {
-    ParticipantId id = null;
+    ParticipantId id;
     try {
       id = RegistrationUtil.checkNewUsername(domain, username);
     } catch (InvalidParticipantAddress exception) {
@@ -119,7 +120,7 @@ public final class UserRegistrationServlet extends HttpServlet {
 
     if (!RegistrationUtil.createAccountIfMissing(accountStore, id,
           new PasswordDigest(password.toCharArray()), welcomeBot)) {
-      return "An unexpected error occured while trying to create the account";
+      return "An unexpected error occurred while trying to create the account";
     }
 
     return null;

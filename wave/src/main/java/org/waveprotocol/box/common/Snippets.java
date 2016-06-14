@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.common;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
@@ -44,6 +45,15 @@ import java.util.Set;
  */
 public final class Snippets {
 
+  private final static Function<StringBuilder, Void> DEFAULT_LINE_MODIFIER =
+      new Function<StringBuilder, Void>() {
+
+    @Override
+    public Void apply(StringBuilder resultBuilder) {
+      resultBuilder.append(" ");
+      return null;
+    }
+  };
   public static final int DIGEST_SNIPPET_LENGTH = 140;
 
   /**
@@ -79,9 +89,12 @@ public final class Snippets {
    * Concatenates all of the text of the specified docops into a single String.
    *
    * @param documentops the document operations to concatenate.
+   * @param func the function that will be applied on result when
+   *        DocumentConstants.LINE event is be encountered during parsing.
    * @return A String containing the characters from the operations.
    */
-  public static String collateTextForOps(Iterable<DocOp> documentops) {
+  public static String collateTextForOps(Iterable<? extends DocOp> documentops,
+      final Function<StringBuilder, Void> func) {
     final StringBuilder resultBuilder = new StringBuilder();
     for (DocOp docOp : documentops) {
       docOp.apply(InitializationCursorAdapter.adapt(new DocOpCursor() {
@@ -97,7 +110,7 @@ public final class Snippets {
         @Override
         public void elementStart(String type, Attributes attrs) {
           if (type.equals(DocumentConstants.LINE)) {
-            resultBuilder.append(" ");
+            func.apply(resultBuilder);
           }
         }
 
@@ -134,10 +147,20 @@ public final class Snippets {
   }
 
   /**
+   * Concatenates all of the text of the specified docops into a single String.
+   *
+   * @param documentops the document operations to concatenate.
+   * @return A String containing the characters from the operations.
+   */
+  public static String collateTextForOps(Iterable<? extends DocOp> documentops) {
+    return collateTextForOps(documentops, DEFAULT_LINE_MODIFIER);
+  }
+
+  /**
    * Returns a snippet or null.
    */
   public static String renderSnippet(final ReadableWaveletData wavelet,
- final int maxSnippetLength) {
+      final int maxSnippetLength) {
     final StringBuilder sb = new StringBuilder();
     Set<String> docsIds = wavelet.getDocumentIds();
     long newestLmt = -1;

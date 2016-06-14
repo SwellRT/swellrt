@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import com.google.wave.api.FetchProfilesRequest;
 import com.google.wave.api.FetchProfilesResult;
@@ -61,9 +62,10 @@ import javax.servlet.http.HttpServletResponse;
  * A servlet that enables the client side to fetch user profiles using Data API.
  * Typically will be hosted on /profile.
  * 
- * Valid request is: GET /profile/?addresses=user1@example.com,user2@example.com
- * - in URL encoded format. The format of the returned information is the
- * protobuf-JSON format used by the websocket interface.
+ * Valid request is: GET
+ * /profile/?addresses=user1@example.com,user2@example.com - in URL encoded
+ * format. The format of the returned information is the protobuf-JSON format
+ * used by the websocket interface.
  * 
  * @author yurize@apache.org (Yuri Zelikov)
  */
@@ -79,15 +81,14 @@ public final class FetchProfilesServlet extends HttpServlet {
   private final SessionManager sessionManager;
   private final OperationServiceRegistry operationRegistry;
   private final ProtoSerializer serializer;
-
+  
   /**
    * Extracts profile query params from request.
    * 
    * @param req the request.
    * @param response the response.
    * @return the ProfileRequest with query data.
-   * @throws UnsupportedEncodingException if the request parameters encoding is
-   *         invalid.
+   * @throws UnsupportedEncodingException if the request parameters encoding is invalid.
    */
   private static ProfileRequest parseProfileRequest(HttpServletRequest req,
       HttpServletResponse response) throws UnsupportedEncodingException {
@@ -137,7 +138,7 @@ public final class FetchProfilesServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
-    ParticipantId user = sessionManager.getLoggedInUser(req);
+    ParticipantId user = sessionManager.getLoggedInUser(req.getSession(false));
     if (user == null) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
@@ -183,18 +184,18 @@ public final class FetchProfilesServlet extends HttpServlet {
   /**
    * Writes the json with profile results to Response.
    */
-  private void printJson(MessageLite message, HttpServletResponse resp)
+  private <P extends Message> void printJson(P message, HttpServletResponse resp)
       throws IOException {
     if (message == null) {
       resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
     } else {
       resp.setStatus(HttpServletResponse.SC_OK);
       resp.setContentType("application/json");
-      // This is to make sure the fetched data is fresh - since the w3c spec
-      // is rarely respected.
+      // This is to make sure the fetched data is fresh - since the w3c spec    
+      // is rarely respected.      
       resp.setHeader("Cache-Control", "no-store");
       try {
-        // FIXME (user) Returning JSON directly from an HTTP GET is vulnerable
+        // FIXME (user) Returning JSON directly from an HTTP GET is vulnerable   
         // to XSSI attacks. Issue https://issues.apache.org/jira/browse/WAVE-135
         resp.getWriter().append(serializer.toJson(message).toString());
       } catch (SerializationException e) {

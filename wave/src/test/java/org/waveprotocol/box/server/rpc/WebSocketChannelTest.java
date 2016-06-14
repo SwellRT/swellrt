@@ -19,11 +19,11 @@
 package org.waveprotocol.box.server.rpc;
 
 import com.google.protobuf.Message;
+import com.google.protobuf.UnknownFieldSet;
 
 import junit.framework.TestCase;
 
 import org.waveprotocol.box.common.comms.WaveClientRpc;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * @author arb@google.com
@@ -52,7 +52,7 @@ public class WebSocketChannelTest extends TestCase {
       long sequenceNumber;
 
       @Override
-    public void message(int sequenceNo, final Message message, ParticipantId participantId) {
+      public void message(int sequenceNo, final Message message) {
         this.sequenceNumber = sequenceNo;
         this.savedMessage = message;
       }
@@ -83,7 +83,7 @@ public class WebSocketChannelTest extends TestCase {
     String sentRequest = channel.message;
     assertNotNull(sentRequest);
     System.out.println(sentRequest);
-    channel.handleMessageString(sentRequest, null);
+    channel.handleMessageString(sentRequest);
     assertNotNull(callback.savedMessage);
     assertEquals(SEQUENCE_NUMBER, callback.sequenceNumber);
     assertEquals(sourceRequest, callback.savedMessage);

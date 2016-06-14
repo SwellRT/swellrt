@@ -24,10 +24,10 @@ import com.google.common.base.Strings;
 import com.google.gxp.base.GxpContext;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -39,20 +39,6 @@ import org.waveprotocol.wave.model.id.WaveIdentifiers;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
-import java.security.Principal;
-import java.security.cert.X509Certificate;
 
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
@@ -68,6 +54,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.security.Principal;
+import java.security.cert.X509Certificate;
 
 /**
  * A servlet for authenticating a user's password and giving them a token via a
@@ -102,41 +102,58 @@ private final WelcomeRobot welcomeBot;
 
   @Inject
   public AuthenticationServlet(AccountStore accountStore,
-      Configuration configuration, SessionManager sessionManager,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
-      @Named(CoreSettings.ENABLE_CLIENTAUTH) boolean isClientAuthEnabled,
-      @Named(CoreSettings.CLIENTAUTH_CERT_DOMAIN) String clientAuthCertDomain,
-      @Named(CoreSettings.DISABLE_REGISTRATION) boolean isRegistrationDisabled,
-      @Named(CoreSettings.DISABLE_LOGINPAGE) boolean isLoginPageDisabled,
-    WelcomeRobot welcomeBot,
-      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
+                               Configuration configuration,
+                               SessionManager sessionManager,
+                               @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
+                               Config config,
+                               WelcomeRobot welcomeBot) {
     Preconditions.checkNotNull(accountStore, "AccountStore is null");
     Preconditions.checkNotNull(configuration, "Configuration is null");
     Preconditions.checkNotNull(sessionManager, "Session manager is null");
+
     this.accountStore = accountStore;
     this.configuration = configuration;
     this.sessionManager = sessionManager;
     this.domain = domain.toLowerCase();
-    this.isClientAuthEnabled = isClientAuthEnabled;
-    this.clientAuthCertDomain = clientAuthCertDomain.toLowerCase();
-    this.isRegistrationDisabled = isRegistrationDisabled;
-    this.isLoginPageDisabled = isLoginPageDisabled;
+    this.isClientAuthEnabled = config.getBoolean("security.enable_clientauth");
+    this.clientAuthCertDomain = config.getString("security.clientauth_cert_domain").toLowerCase();
+    this.isRegistrationDisabled = config.getBoolean("administration.disable_registration");
+    this.isLoginPageDisabled = config.getBoolean("administration.disable_loginpage");
     this.welcomeBot = welcomeBot;
-    this.analyticsAccount = analyticsAccount;
+    this.analyticsAccount = config.getString("administration.analytics_account");
   }
 
   @SuppressWarnings("unchecked")
-  private LoginContext login(MultiMap<String> parameters) throws IOException, LoginException {
-    Subject subject = new Subject();
+  private LoginContext login(BufferedReader body) throws IOException, LoginException {
+    try {
+      Subject subject = new Subject();
 
-    CallbackHandler callbackHandler = new HttpRequestBasedCallbackHandler(parameters);
+      String parametersLine = body.readLine();
+      // Throws UnsupportedEncodingException.
+      byte[] utf8Bytes = parametersLine.getBytes("UTF-8");
 
-    LoginContext context = new LoginContext("Wave", subject, callbackHandler, configuration);
+      CharsetDecoder utf8Decoder = Charset.forName("UTF-8").newDecoder();
+      utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
+      utf8Decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
 
-    // If authentication fails, login() will throw a LoginException.
-    context.login();
-    return context;
+      // Throws CharacterCodingException.
+      CharBuffer parsed = utf8Decoder.decode(ByteBuffer.wrap(utf8Bytes));
+      parametersLine = parsed.toString();
 
+      MultiMap<String> parameters = new UrlEncoded(parametersLine);
+      CallbackHandler callbackHandler = new HttpRequestBasedCallbackHandler(parameters);
+
+      LoginContext context = new LoginContext("Wave", subject, callbackHandler, configuration);
+
+      // If authentication fails, login() will throw a LoginException.
+      context.login();
+      return context;
+    } catch (CharacterCodingException cce) {
+      throw new LoginException("Character coding exception (not utf-8): "
+          + cce.getLocalizedMessage());
+    } catch (UnsupportedEncodingException uee) {
+      throw new LoginException("ad character encoding specification: " + uee.getLocalizedMessage());
+    }
   }
 
   /**
@@ -185,91 +202,47 @@ private final WelcomeRobot welcomeBot;
 
     if (!isLoginPageDisabled && loggedInAddress == null) {
       try {
-
-          MultiMap<String> parameters;
-
-          try {
-            parameters = getRequestParameters(req);
-          } catch (CharacterCodingException cce) {
-            throw new LoginException("Character coding exception (not utf-8): "
-                + cce.getLocalizedMessage());
-          } catch (UnsupportedEncodingException uee) {
-            throw new LoginException("Bad character encoding specification: "
-                + uee.getLocalizedMessage());
-          } catch (IOException e) {
-            throw new LoginException("Bad parameters: " + e.getLocalizedMessage());
-          }
-
-          if (!isAnonymousCredentials(parameters)) {
-
-            context = login(parameters);
-            subject = context.getSubject();
-
-            try {
-              loggedInAddress = getLoggedInUser(subject);
-            } catch (InvalidParticipantAddress e1) {
-              throw new IllegalStateException(
-                  "The user provided valid authentication information, but the username"
-                      + " isn't a valid user address.");
-            }
-
-            if (loggedInAddress == null) {
-              try {
-                context.logout();
-              } catch (LoginException e) {
-                // Logout failed. Absorb the error, since we're about to throw an
-                // illegal state exception anyway.
-              }
-
-              throw new IllegalStateException(
-                  "The user provided valid authentication information, but we don't "
-                      + "know how to map their identity to a wave user address.");
-            }
-
-          }
-
-        } catch (LoginException e) {
-          String message = "The username or password you entered is incorrect.";
-          String responseType = RESPONSE_STATUS_FAILED;
-          LOG.info("User authentication failed: " + e.getLocalizedMessage());
-          resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-          resp.setContentType("text/html;charset=utf-8");
-
-          if (checkNoRedirect(req)) {
-            resp.setContentType("text/plain");
-            resp.getWriter().write("login forbidden");
-            resp.getWriter().close();
-            return;
-          }
-
-          AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain,
-              message, responseType, isLoginPageDisabled, analyticsAccount);
-          return;
+        context = login(req.getReader());
+      } catch (LoginException e) {
+        String message = "The username or password you entered is incorrect.";
+        String responseType = RESPONSE_STATUS_FAILED;
+        LOG.info("User authentication failed: " + e.getLocalizedMessage());
+        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        resp.setContentType("text/html;charset=utf-8");
+        AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, message,
+            responseType, isLoginPageDisabled, analyticsAccount);
+        return;
       }
 
+      subject = context.getSubject();
+
+      try {
+        loggedInAddress = getLoggedInUser(subject);
+      } catch (InvalidParticipantAddress e1) {
+        throw new IllegalStateException(
+            "The user provided valid authentication information, but the username"
+                + " isn't a valid user address.");
+      }
+
+      if (loggedInAddress == null) {
+        try {
+          context.logout();
+        } catch (LoginException e) {
+          // Logout failed. Absorb the error, since we're about to throw an
+          // illegal state exception anyway.
+        }
+
+        throw new IllegalStateException(
+            "The user provided valid authentication information, but we don't "
+                + "know how to map their identity to a wave user address.");
+      }
     }
 
-    HttpSession session = sessionManager.getSession(req, true);
-
-    // Anonymous log in
-    if (loggedInAddress == null) {
-      loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
-    }
-
+    HttpSession session = req.getSession(true);
     sessionManager.setLoggedInUser(session, loggedInAddress);
     LOG.info("Authenticated user " + loggedInAddress);
 
-    if (checkNoRedirect(req)) {
-      resp.setStatus(HttpServletResponse.SC_OK);
-      resp.setContentType("text/plain");
-      // Return the address in case of auto completed domain
-      String jsonResponse =
-          "{ \"participantId\" : \"" + loggedInAddress.getAddress() + "\", "
-              + " \"sessionId\" : \"" + session.getId() + "\" }";
-      resp.getWriter().write(jsonResponse);
-      resp.getWriter().close();
-    } else
-      redirectLoggedInUser(req, resp);
+    redirectLoggedInUser(req, resp);
   }
 
   /**
@@ -368,7 +341,8 @@ private final WelcomeRobot welcomeBot;
     // If the user is already logged in, we'll try to redirect them immediately.
     resp.setCharacterEncoding("UTF-8");
     req.setCharacterEncoding("UTF-8");
-    ParticipantId user = sessionManager.getLoggedInUser(req);
+    HttpSession session = req.getSession(false);
+    ParticipantId user = sessionManager.getLoggedInUser(session);
 
     if (user != null) {
       redirectLoggedInUser(req, resp);
@@ -402,7 +376,7 @@ private final WelcomeRobot welcomeBot;
    */
   private void redirectLoggedInUser(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-    Preconditions.checkState(sessionManager.getLoggedInUser(req) != null,
+     Preconditions.checkState(sessionManager.getLoggedInUser(req.getSession(false)) != null,
          "The user is not logged in");
     String query = req.getQueryString();
 
@@ -435,47 +409,4 @@ private final WelcomeRobot welcomeBot;
       resp.sendRedirect(path);
     }
   }
-
-  protected boolean checkNoRedirect(HttpServletRequest req) {
-    String query = req.getQueryString();
-    if (query == null) return false;
-    String encoded_url = query.substring("r=".length());
-    if (encoded_url == null) return false;
-    return encoded_url.equalsIgnoreCase("none");
-  }
-
-  private MultiMap<String> getRequestParameters(HttpServletRequest req)
-      throws CharacterCodingException, UnsupportedEncodingException, IOException {
-
-    MultiMap<String> parameters = null;
-
-    String parametersLine = req.getReader().readLine();
-
-    // Throws UnsupportedEncodingException.
-    byte[] utf8Bytes = parametersLine.getBytes("UTF-8");
-
-    CharsetDecoder utf8Decoder = Charset.forName("UTF-8").newDecoder();
-    utf8Decoder.onMalformedInput(CodingErrorAction.IGNORE);
-    utf8Decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
-
-    // Throws CharacterCodingException.
-    CharBuffer parsed = utf8Decoder.decode(ByteBuffer.wrap(utf8Bytes));
-    parametersLine = parsed.toString();
-
-    parameters = new UrlEncoded(parametersLine);
-
-    return parameters;
-  }
-
-  private boolean isAnonymousCredentials(MultiMap<String> parameters) {
-
-    if (parameters.containsKey(HttpRequestBasedCallbackHandler.ADDRESS_FIELD)) {
-      String address = parameters.get(HttpRequestBasedCallbackHandler.ADDRESS_FIELD).get(0);
-
-      return ParticipantId.isAnonymousName(address);
-    }
-
-    return false;
-  }
-
 }

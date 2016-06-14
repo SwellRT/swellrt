@@ -23,9 +23,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.mockito.Matchers;
@@ -83,6 +86,7 @@ public class WaveServerTest extends TestCase {
   @Mock private WaveletFederationProvider federationRemote;
   @Mock private WaveletNotificationDispatcher notifiee;
   @Mock private RemoteWaveletContainer.Factory remoteWaveletContainerFactory;
+  @Mock private Config config;
 
   private CertificateManager certificateManager;
   private DeltaAndSnapshotStore waveletStore;
@@ -98,7 +102,8 @@ public class WaveServerTest extends TestCase {
     when(localSigner.sign(Matchers.<ByteStringMessage<ProtocolWaveletDelta>>any()))
         .thenReturn(ImmutableList.<ProtocolSignature>of());
 
-    certificateManager = new CertificateManagerImpl(true, localSigner, null, null);
+    when(config.getBoolean("federation.waveserver_disable_verification")).thenReturn(true);
+    certificateManager = new CertificateManagerImpl(config, localSigner, null, null);
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor waveletLoadExecutor = MoreExecutors.sameThreadExecutor();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
@@ -115,9 +120,13 @@ public class WaveServerTest extends TestCase {
 
     waveletStore = new DeltaStoreBasedSnapshotStore(deltaStore);
     Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
+    Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(
+      "core.wave_cache_size", 1000,
+      "core.wave_cache_expire", "60m")
+    );
     waveMap =
-        new WaveMap(waveletStore, notifiee, notifiee, localWaveletContainerFactory,
-            remoteWaveletContainerFactory, "example.com", lookupExecutor);
+        new WaveMap(waveletStore, notifiee, localWaveletContainerFactory,
+            remoteWaveletContainerFactory, "example.com", config, lookupExecutor);
     waveServer =
         new WaveServerImpl(MoreExecutors.sameThreadExecutor(), certificateManager,
             federationRemote, waveMap);

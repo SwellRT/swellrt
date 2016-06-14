@@ -22,7 +22,6 @@ package org.waveprotocol.wave.client.wave;
 
 import com.google.common.base.Preconditions;
 
-import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
@@ -52,9 +51,8 @@ public final class DiffContentDocument implements DiffSink {
   /**
    * Creates a diff-handling wrapper for a content document.
    */
-  public static DiffContentDocument create(ContentDocument doc, DocOperationLog operationLog) {
-    DiffHighlightingFilter differ =
-        new DiffHighlightingFilter(doc.getDiffTarget(), operationLog);
+  public static DiffContentDocument create(ContentDocument doc) {
+    DiffHighlightingFilter differ = new DiffHighlightingFilter(doc.getDiffTarget());
     return new DiffContentDocument(doc, differ);
   }
 

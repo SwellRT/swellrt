@@ -25,15 +25,15 @@ public class WebSocket {
     public static native WebSocketImpl create(WebSocket client, String server)
     /*-{
     var ws = new WebSocket(server);
-    ws.onopen = function() {
+    ws.onopen = $entry(function() {
       client.@com.google.gwt.websockets.client.WebSocket::onOpen()();
-    };
-    ws.onmessage = function(response) {
+    });
+    ws.onmessage = $entry(function(response) {
       client.@com.google.gwt.websockets.client.WebSocket::onMessage(Ljava/lang/String;)(response.data);
-    };
-    ws.onclose = function() {
+    });
+    ws.onclose = $entry(function() {
       client.@com.google.gwt.websockets.client.WebSocket::onClose()();
-    };
+    });
     return ws;
     }-*/;
 

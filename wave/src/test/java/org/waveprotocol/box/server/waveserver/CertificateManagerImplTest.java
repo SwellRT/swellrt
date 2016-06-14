@@ -29,6 +29,8 @@ import static org.waveprotocol.box.server.waveserver.Ticker.EASY_TICKS;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import junit.framework.TestCase;
 
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
@@ -83,6 +85,7 @@ public class CertificateManagerImplTest extends TestCase {
   private CertPathStore store;
   private CertificateManager manager;
   private Ticker ticker;
+  private Config config;
 
   /*
    * These belong to the example.com domain.
@@ -93,7 +96,8 @@ public class CertificateManagerImplTest extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     store = new MemoryStore();
-    manager = new CertificateManagerImpl(false, getSigner(), getVerifier(store, true), store);
+    config = ConfigFactory.parseString("federation.waveserver_disable_verification : " + false);
+    manager = new CertificateManagerImpl(config, getSigner(), getVerifier(store, true), store);
     ticker = new Ticker();
   }
 
@@ -121,7 +125,7 @@ public class CertificateManagerImplTest extends TestCase {
         .setAuthor("bob@example.com")
         .build();
     ByteStringMessage<ProtocolWaveletDelta> canonicalDelta = ByteStringMessage.serializeMessage(delta);
-    manager = new CertificateManagerImpl(false, getSigner(), getVerifier(store, false), store);
+    manager = new CertificateManagerImpl(config, getSigner(), getVerifier(store, false), store);
     ProtocolSignedDelta signedDelta = manager.signDelta(canonicalDelta);
 
     try {
@@ -154,7 +158,7 @@ public class CertificateManagerImplTest extends TestCase {
   }
 
   public void testRealSignature() throws Exception {
-    manager = new CertificateManagerImpl(false, getSigner(), getRealVerifier(store), store);
+    manager = new CertificateManagerImpl(config, getSigner(), getRealVerifier(store), store);
     manager.storeSignerInfo(Certificates.getRealSignerInfo().toProtoBuf());
     ByteStringMessage<ProtocolWaveletDelta> compare = manager.verifyDelta(getFakeSignedDelta());
     assertEquals(compare, getFakeDelta());

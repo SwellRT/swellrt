@@ -24,7 +24,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 
 import org.waveprotocol.wave.client.common.util.SignalEvent.KeySignalType;
-import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.StringMap;
@@ -149,14 +148,6 @@ public final class SignalKeyLogic {
 
     boolean commandKey = commandIsCtrl ? ctrlKey : metaKey;
 
-    // Some trace logging very useful to debug
-    EditorStaticDeps.logger.trace().log(
-        "KEY SIGNAL IN PROCESS identifier = " + keyIdentifier + " code = " + computedKeyCode
-            + " type = "
-            + (typeInt == Event.ONKEYDOWN ? "KeyDown" : "KeyPress") + (ctrlKey ? " CTRL" : "")
-            + (shiftKey ? " SHIFT" : "") + (altKey ? " ALT" : ""));
-
-
     switch (userAgent) {
       case WEBKIT:
         // This is a bit tricky because there are significant differences
@@ -202,18 +193,11 @@ public final class SignalKeyLogic {
           // event (e.g. keyIdentifier might say "Up", but it's certainly not navigation,
           // it's just the user selecting from the IME dialog).
           type = KeySignalType.INPUT;
-        } else if ((DELETE_KEY_IDENTIFIER.equals(keyIdentifier) && typeInt == Event.ONKEYDOWN)
-            || computedKeyCode == KeyCodes.KEY_BACKSPACE) {
-          // WAVE-407 Avoid missing the '.' char (KEYPRESS + CODE 46)
-          // ensuring it's a KEYDOWN event with a DELETE_KEY_IDENTIFIER
+        } else if (DELETE_KEY_IDENTIFIER.equals(keyIdentifier) ||
+            computedKeyCode == KeyCodes.KEY_BACKSPACE) {
 
           type = KeySignalType.DELETE;
-        } else if (NAVIGATION_KEY_IDENTIFIERS.containsKey(keyIdentifier)
-            && typeInt == Event.ONKEYDOWN) {
-          // WAVE-407 Avoid missing chars with NAVIGATION_KEY_IDENTIFIERS but
-          // represeting a SHIFT + key char (! " · ...). Navigation events come
-          // with KEYDOWN, not with KEYPRESS
-
+        } else if (NAVIGATION_KEY_IDENTIFIERS.containsKey(keyIdentifier)) {
           type = KeySignalType.NAVIGATION;
         // Escape, backspace and context-menu-key (U+0010) are, to my knowledge,
         // the only non-navigation keys that

@@ -53,7 +53,7 @@ public class SignOutServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    HttpSession session = sessionManager.getSession(req);
+    HttpSession session = req.getSession(false);
     sessionManager.logout(session);
 
     String redirectUrl = req.getParameter("r");

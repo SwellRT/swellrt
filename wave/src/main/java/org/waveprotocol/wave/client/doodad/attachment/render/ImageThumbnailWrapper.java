@@ -23,6 +23,7 @@ import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
+import org.waveprotocol.wave.client.editor.content.ContentTextNode;
 import org.waveprotocol.wave.client.editor.content.misc.Caption;
 import org.waveprotocol.wave.media.model.Attachment;
 import org.waveprotocol.wave.model.document.util.DocHelper;
@@ -118,8 +119,8 @@ public class ImageThumbnailWrapper {
    *                 or null if this wrapper should produce a builder
    * @return resulting XML builder.
    */
-  public XmlStringBuilderDoc<? super ContentElement, ContentElement, ?>
-      appendInto(XmlStringBuilderDoc<? super ContentElement, ContentElement, ?> builder) {
+  public XmlStringBuilderDoc<ContentNode, ContentElement, ContentTextNode> appendInto
+    (XmlStringBuilderDoc<ContentNode, ContentElement, ContentTextNode> builder) {
     if (builder == null) {
       builder = XmlStringBuilderDoc.createEmpty(element.getMutableDoc());
     }

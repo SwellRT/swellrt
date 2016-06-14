@@ -19,12 +19,9 @@
 
 package org.waveprotocol.box.server.persistence.file;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.apache.commons.codec.binary.Hex;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.SignerInfoStore;
 import org.waveprotocol.wave.crypto.CertPathStore;
@@ -52,9 +49,8 @@ public class FileSignerInfoStore implements SignerInfoStore {
   private static final Log LOG = Log.get(FileSignerInfoStore.class);
 
   @Inject
-  public FileSignerInfoStore(@Named(CoreSettings.SIGNER_INFO_STORE_DIRECTORY) String signerInfoStoreBasePath) {
-    Preconditions.checkNotNull(signerInfoStoreBasePath, "Requested path is null");
-    this.signerInfoStoreBasePath = signerInfoStoreBasePath;
+  public FileSignerInfoStore(Config config) {
+    this.signerInfoStoreBasePath = config.getString("core.signer_info_store_directory");
   }
 
   private String signerIdToFileName(byte[] id) {
@@ -80,10 +76,7 @@ public class FileSignerInfoStore implements SignerInfoStore {
             file = new FileInputStream(signerFile);
             ProtocolSignerInfo data = ProtocolSignerInfo.newBuilder().mergeFrom(file).build();
             signerInfo = new SignerInfo(data);
-          } catch (SignatureException e) {
-            throw new SignatureException("Failed to parse signer info from file: "
-                + signerFile.getAbsolutePath(), e);
-          } catch (IOException e) {
+          } catch (SignatureException | IOException e) {
             throw new SignatureException("Failed to parse signer info from file: "
                 + signerFile.getAbsolutePath(), e);
           } finally {

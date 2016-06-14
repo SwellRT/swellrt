@@ -86,11 +86,4 @@ public interface WaveView {
    */
   Wavelet createUserData();
 
-  /**
-   * Creates a new wavelet in the wave with a custom id
-   * 
-   * @return a new wavelet.
-   */
-  Wavelet createWavelet(WaveletId waveletId);
-
 }

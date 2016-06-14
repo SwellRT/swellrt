@@ -26,13 +26,11 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.waveprotocol.wave.crypto.SignatureException;
 import org.waveprotocol.wave.crypto.SignerInfo;
 import org.waveprotocol.wave.crypto.WaveSigner;
 import org.waveprotocol.wave.crypto.WaveSignerFactory;
-import org.waveprotocol.wave.federation.FederationSettings;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignature;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 
@@ -58,23 +56,14 @@ public class SigningSignatureHandler implements SignatureHandler {
     private SigningSignatureHandler signer = null;
 
     /**
-     * Public constructor.
-     * @param privateKey file name that has the PKCS#8-PEM-encoded private key.
-     * @param certs list of file names that have the certificates of this signer.
-     *   The first file name must have the signer's target certificate. The
-     *   certificates can be DER or PEM encoded.
-     * @param certDomain the domain for which the certificate was issued.
      * @param factory A {@link WaveSignerFactory}.
+     * @param config the configuration.
      */
     @Inject
-    public SigningSignatureHandlerProvider(
-        @Named(FederationSettings.CERTIFICATE_PRIVATE_KEY) String privateKey,
-        @Named(FederationSettings.CERTIFICATE_FILES) List<String> certs,
-        @Named(FederationSettings.CERTIFICATE_DOMAIN) String certDomain,
-        WaveSignerFactory factory) {
-      this.privateKey = privateKey;
-      this.certs = certs;
-      this.certDomain = certDomain;
+    public SigningSignatureHandlerProvider(WaveSignerFactory factory, Config config) {
+      this.privateKey = config.getString("federation.certificate_private_key");
+      this.certs = config.getStringList("federation.certificate_files");
+      this.certDomain = config.getString("federation.certificate_domain");
       this.waveSignerFactory = factory;
     }
 

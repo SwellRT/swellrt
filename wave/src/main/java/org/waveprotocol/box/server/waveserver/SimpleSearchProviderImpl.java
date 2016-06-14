@@ -20,17 +20,15 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
-import com.google.common.collect.HashMultimap;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.google.wave.api.SearchResult;
 
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.util.WaveletDataUtil;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.waveserver.QueryHelper.InvalidQueryException;
-import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -57,17 +55,16 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
   private final PerUserWaveViewProvider waveViewProvider;
 
   @Inject
-  public SimpleSearchProviderImpl(@Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain,
+  public SimpleSearchProviderImpl(@Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain,
       WaveDigester digester, final WaveMap waveMap, PerUserWaveViewProvider userWaveViewProvider) {
     super(waveDomain, digester, waveMap);
     this.waveViewProvider = userWaveViewProvider;
   }
 
   @Override
-  public SearchResult search(final ParticipantId user, String query, int startAt,
-      int numResults) {
+  public SearchResult search(final ParticipantId user, String query, int startAt, int numResults) {
     LOG.fine("Search query '" + query + "' from user: " + user + " [" + startAt + ", "
-        + (startAt + numResults - 1) + "]");
+        + ((startAt + numResults) - 1) + "]");
     Map<TokenQueryType, Set<String>> queryParams = null;
     try {
       queryParams = QueryHelper.parseQuery(query);
@@ -97,9 +94,12 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
       return digester.generateSearchResult(user, query, null);
     }
 
-    Multimap<WaveId, WaveletId> currentUserWavesView =  createWavesViewToFilter(user, isAllQuery);
+    LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView =
+        createWavesViewToFilter(user, isAllQuery);
     Function<ReadableWaveletData, Boolean> filterWaveletsFunction =
         createFilterWaveletsFunction(user, isAllQuery, withParticipantIds, creatorParticipantIds);
+
+    ensureWavesHaveUserDataWavelet(currentUserWavesView, user);
 
     List<WaveViewData> results =
         Lists.newArrayList(filterWavesViewBySearchCriteria(filterWaveletsFunction,
@@ -113,10 +113,10 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
     return digester.generateSearchResult(user, query, searchResult);
   }
 
-  private Multimap<WaveId, WaveletId> createWavesViewToFilter(final ParticipantId user,
+  private LinkedHashMultimap<WaveId, WaveletId> createWavesViewToFilter(final ParticipantId user,
       final boolean isAllQuery) {
-    Multimap<WaveId, WaveletId> currentUserWavesView;
-    currentUserWavesView = HashMultimap.create();
+    LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView;
+    currentUserWavesView = LinkedHashMultimap.create();
     currentUserWavesView.putAll(waveViewProvider.retrievePerUserWaveView(user));
     if (isAllQuery) {
       // If it is the "all" query - we need to include also waves view of the
@@ -133,26 +133,27 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
     return currentUserWavesView;
   }
 
-  private Function<ReadableWaveletData, Boolean> createFilterWaveletsFunction(final ParticipantId user,
-      final boolean isAllQuery, final List<ParticipantId> withParticipantIds,
-      final List<ParticipantId> creatorParticipantIds) {
+  private Function<ReadableWaveletData, Boolean> createFilterWaveletsFunction(
+      final ParticipantId user, final boolean isAllQuery,
+      final List<ParticipantId> withParticipantIds, final List<ParticipantId> creatorParticipantIds) {
     // A function to be applied by the WaveletContainer.
     Function<ReadableWaveletData, Boolean> matchesFunction =
         new Function<ReadableWaveletData, Boolean>() {
 
-          @Override
-          public Boolean apply(ReadableWaveletData wavelet) {
-            try {
-              return isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId, withParticipantIds,
-                  creatorParticipantIds, isAllQuery);
-            } catch (WaveletStateException e) {
-              LOG.warning(
-                  "Failed to access wavelet "
-                      + WaveletName.of(wavelet.getWaveId(), wavelet.getWaveletId()), e);
-              return false;
-            }
-          }
-        };
+      @Override
+      public Boolean apply(ReadableWaveletData wavelet) {
+        try {
+          return wavelet != null
+              && isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId,
+              withParticipantIds, creatorParticipantIds, isAllQuery);
+        } catch (WaveletStateException e) {
+          LOG.warning(
+              "Failed to access wavelet "
+                  + WaveletName.of(wavelet.getWaveId(), wavelet.getWaveletId()), e);
+          return false;
+        }
+      }
+    };
     return matchesFunction;
   }
 
@@ -167,13 +168,10 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
    * @param isAllQuery true if the search results should include shared for this
    *        domain waves.
    */
-  private boolean isWaveletMatchesCriteria(ReadableWaveletData wavelet, ParticipantId user,
+  protected boolean isWaveletMatchesCriteria(ReadableWaveletData wavelet, ParticipantId user,
       ParticipantId sharedDomainParticipantId, List<ParticipantId> withList,
       List<ParticipantId> creatorList, boolean isAllQuery) throws WaveletStateException {
-    // If it is user data wavelet for the user - return true.
-    if (IdUtil.isUserDataWavelet(wavelet.getWaveletId()) && wavelet.getCreator().equals(user)) {
-      return true;
-    }
+    Preconditions.checkNotNull(wavelet);
     // Filter by creator. This is the fastest check so we perform it first.
     for (ParticipantId creator : creatorList) {
       if (!creator.equals(wavelet.getCreator())) {
@@ -181,20 +179,8 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
         return false;
       }
     }
-    // The wavelet should have logged in user as participant for 'in:inbox'
-    // query.
-    if (!isAllQuery && !wavelet.getParticipants().contains(user)) {
-      return false;
-    }
-    // Or if it is an 'all' query - then either logged in user or shared domain
-    // participant should be present in the wave.
-    if (isAllQuery
-        && !WaveletDataUtil.checkAccessPermission(wavelet, user, sharedDomainParticipantId)) {
-      return false;
-    }
-    // If not returned 'false' above - then logged in user is either
-    // explicit or implicit participant and therefore has access permission.
-
+    boolean matches =
+        super.isWaveletMatchesCriteria(wavelet, user, sharedDomainParticipantId, isAllQuery);
     // Now filter by 'with'.
     for (ParticipantId otherUser : withList) {
       if (!wavelet.getParticipants().contains(otherUser)) {
@@ -202,7 +188,7 @@ public class SimpleSearchProviderImpl extends AbstractSearchProviderImpl {
         return false;
       }
     }
-    return true;
+    return matches;
   }
 
   private List<WaveViewData> sort(Map<TokenQueryType, Set<String>> queryParams,

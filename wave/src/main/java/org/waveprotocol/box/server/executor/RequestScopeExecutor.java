@@ -25,6 +25,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.waveprotocol.box.server.shutdown.ShutdownManager;
+import org.waveprotocol.box.server.shutdown.ShutdownPriority;
+import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.stat.RequestScope;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -38,7 +41,7 @@ import org.waveprotocol.wave.model.util.Preconditions;
  * @author akaplanov@gmail.com (A. Kaplanov)
  */
 @SuppressWarnings("rawtypes")
-public class RequestScopeExecutor implements Executor {
+public class RequestScopeExecutor implements Executor, Shutdownable {
   private final static Logger LOG = Logger.getLogger(RequestScopeExecutor.class.getName());
 
   private ExecutorService executor;
@@ -50,6 +53,7 @@ public class RequestScopeExecutor implements Executor {
   public void setExecutor(ExecutorService executor, String name) {
     Preconditions.checkArgument(this.executor == null, "Executor is already defined.");
     this.executor = executor;
+    ShutdownManager.getInstance().register(this, name, ShutdownPriority.Task);
   }
 
   @Override
@@ -74,5 +78,12 @@ public class RequestScopeExecutor implements Executor {
         }
       }
     });
+  }
+
+  @Override
+  public void shutdown() throws Exception {
+    if (executor != null) {
+      executor.shutdown();
+    }
   }
 }

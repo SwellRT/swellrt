@@ -22,9 +22,7 @@ package org.waveprotocol.box.server.robots;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.robots.operations.FetchProfilesService.ProfilesFetcher;
 import org.waveprotocol.box.server.robots.operations.GravatarProfilesFetcher;
 import org.waveprotocol.box.server.robots.operations.InitialsProfilesFetcher;
@@ -40,8 +38,8 @@ public class ProfileFetcherModule extends AbstractModule {
   private String profileFetcherType;
 
   @Inject
-  public ProfileFetcherModule(@Named(CoreSettings.PROFILE_FETCHER_TYPE) String profilerType) {
-    this.profileFetcherType = profilerType;
+  public ProfileFetcherModule(Config config) {
+    this.profileFetcherType = config.getString("core.profile_fetcher_type");
   }
 
   @Override

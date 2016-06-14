@@ -19,11 +19,8 @@
 
 package org.waveprotocol.box.server.persistence;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-
-import java.util.List;
 
 /**
  * Interface for the storage and retrieval of {@link AccountData}s.
@@ -36,7 +33,7 @@ public interface AccountStore {
    * Implementations are expected to validate any configuration values, validate the state of the
    * store, and perform an start-up action needed (e.g. load list of accounts into memory,
    * establish connection to database, etc...).
-   *
+   * 
    * @throws PersistenceException
    */
   void initializeAccountStore() throws PersistenceException;
@@ -48,16 +45,6 @@ public interface AccountStore {
    * @param id participant id of the requested account.
    */
   AccountData getAccount(ParticipantId id) throws PersistenceException;
-
-  /**
-   * Gets the {@link AccountData} of the user with the specified email
-   *
-   * @param email of the searched account
-   *
-   * @return the account that has that email or null if it does not exist
-   */
-  List<AccountData> getAccountByEmail(String email)
-      throws PersistenceException, NotImplementedException;
 
   /**
    * Puts the given {@link AccountData} in the storage, overrides an existing

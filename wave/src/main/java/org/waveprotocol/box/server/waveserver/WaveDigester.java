@@ -42,8 +42,8 @@ import org.waveprotocol.wave.model.supplement.PrimitiveSupplement;
 import org.waveprotocol.wave.model.supplement.PrimitiveSupplementImpl;
 import org.waveprotocol.wave.model.supplement.SupplementedWave;
 import org.waveprotocol.wave.model.supplement.SupplementedWaveImpl;
-import org.waveprotocol.wave.model.supplement.WaveletBasedSupplement;
 import org.waveprotocol.wave.model.supplement.SupplementedWaveImpl.DefaultFollow;
+import org.waveprotocol.wave.model.supplement.WaveletBasedSupplement;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
@@ -58,7 +58,7 @@ import java.util.List;
 
 /**
  * Generates digests for the search service.
- * 
+ *
  * @author yurize@apache.org
  */
 public class WaveDigester {
@@ -85,49 +85,58 @@ public class WaveDigester {
       return result;
     }
     for (WaveViewData wave : results) {
-      // Note: the indexing infrastructure only supports single-conversation
-      // waves, and requires raw wavelet access for snippeting.
-      ObservableWaveletData root = null;
-      ObservableWaveletData other = null;
-      ObservableWaveletData udw = null;
-      for (ObservableWaveletData waveletData : wave.getWavelets()) {
-        WaveletId waveletId = waveletData.getWaveletId();
-        if (IdUtil.isConversationRootWaveletId(waveletId)) {
-          root = waveletData;
-        } else if (IdUtil.isConversationalId(waveletId)) {
-          other = waveletData;
-        } else if (IdUtil.isUserDataWavelet(waveletId)) {
-          // assume this is the user data wavelet for the right user.
-          udw = waveletData;
-        }
-      }
-
-      ObservableWaveletData convWavelet = root != null ? root : other;
-      SupplementedWave supplement = null;
-      ObservableConversationView conversations = null;
-      if (convWavelet != null) {
-        OpBasedWavelet wavelet = OpBasedWavelet.createReadOnly(convWavelet);
-        if (WaveletBasedConversation.waveletHasConversation(wavelet)) {
-          conversations = conversationUtil.buildConversation(wavelet);
-          supplement = buildSupplement(participant, conversations, udw);
-        }
-      }
-      if (conversations != null) {
-        // This is a conversational wave. Produce a conversational digest.
-        result.addDigest(generateDigest(conversations, supplement, convWavelet));
-      } else {
-        // It is unknown how to present this wave.
-        result.addDigest(generateEmptyorUnknownDigest(wave));
-      }
+      result.addDigest(build(participant, wave));
     }
 
     assert result.getDigests().size() == results.size();
     return result;
   }
 
+  public Digest build(ParticipantId participant, WaveViewData wave) {
+
+    Digest digest;
+
+    // Note: the indexing infrastructure only supports single-conversation
+    // waves, and requires raw wavelet access for snippeting.
+    ObservableWaveletData root = null;
+    ObservableWaveletData other = null;
+    ObservableWaveletData udw = null;
+    for (ObservableWaveletData waveletData : wave.getWavelets()) {
+      WaveletId waveletId = waveletData.getWaveletId();
+      if (IdUtil.isConversationRootWaveletId(waveletId)) {
+        root = waveletData;
+      } else if (IdUtil.isConversationalId(waveletId)) {
+        other = waveletData;
+      } else if (IdUtil.isUserDataWavelet(waveletId)
+          && waveletData.getCreator().equals(participant)) {
+        udw = waveletData;
+      }
+    }
+
+    ObservableWaveletData convWavelet = root != null ? root : other;
+    SupplementedWave supplement = null;
+    ObservableConversationView conversations = null;
+    if (convWavelet != null) {
+      OpBasedWavelet wavelet = OpBasedWavelet.createReadOnly(convWavelet);
+      if (WaveletBasedConversation.waveletHasConversation(wavelet)) {
+        conversations = conversationUtil.buildConversation(wavelet);
+        supplement = buildSupplement(participant, conversations, udw);
+      }
+    }
+    if (conversations != null) {
+      // This is a conversational wave. Produce a conversational digest.
+      digest = generateDigest(conversations, supplement, convWavelet);
+    } else {
+      // It is unknown how to present this wave.
+      digest = generateEmptyorUnknownDigest(wave);
+    }
+
+    return digest;
+  }
+
   /**
    * Produces a digest for a set of conversations. Never returns null.
-   * 
+   *
    * @param conversations the conversation.
    * @param supplement the supplement that allows to easily perform various
    *        queries on user related state of the wavelet.
@@ -139,8 +148,8 @@ public class WaveDigester {
       WaveletData rawWaveletData) {
     ObservableConversation rootConversation = conversations.getRoot();
     ObservableConversationBlip firstBlip = null;
-    if (rootConversation != null && rootConversation.getRootThread() != null
-        && rootConversation.getRootThread().getFirstBlip() != null) {
+    if ((rootConversation != null) && (rootConversation.getRootThread() != null)
+        && (rootConversation.getRootThread().getFirstBlip() != null)) {
       firstBlip = rootConversation.getRootThread().getFirstBlip();
     }
     String title;
@@ -167,13 +176,15 @@ public class WaveDigester {
     }
     int unreadCount = 0;
     int blipCount = 0;
+    long lastModified = -1;
     for (ConversationBlip blip : BlipIterators.breadthFirst(rootConversation)) {
       if (supplement.isUnread(blip)) {
         unreadCount++;
       }
+      lastModified = Math.max(blip.getLastModifiedTime(), lastModified);
       blipCount++;
     }
-    return new Digest(title, snippet, waveId, participants, rawWaveletData.getLastModifiedTime(),
+    return new Digest(title, snippet, waveId, participants, lastModified,
         rawWaveletData.getCreationTime(), unreadCount, blipCount);
   }
 
@@ -211,7 +222,7 @@ public class WaveDigester {
   /**
    * Generates an empty digest in case the wave is empty, or an unknown digest
    * otherwise.
-   * 
+   *
    * @param wave the wave.
    * @return the generated digest.
    */
@@ -223,7 +234,7 @@ public class WaveDigester {
 
   /**
    * Builds the supplement model from a wave. Never returns null.
-   * 
+   *
    * @param viewer the participant for which the supplement is constructed.
    * @param conversations conversations in the wave
    * @param udw the user data wavelet for the logged user.
@@ -236,6 +247,6 @@ public class WaveDigester {
     PrimitiveSupplement udwState =
         udw != null ? WaveletBasedSupplement.create(OpBasedWavelet.createReadOnly(udw))
             : new PrimitiveSupplementImpl();
-    return SupplementedWaveImpl.create(udwState, conversations, viewer, DefaultFollow.ALWAYS);
+        return SupplementedWaveImpl.create(udwState, conversations, viewer, DefaultFollow.ALWAYS);
   }
 }

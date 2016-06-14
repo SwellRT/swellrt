@@ -22,22 +22,11 @@ package org.waveprotocol.box.server;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.persistence.lucene.FSIndexDirectory;
 import org.waveprotocol.box.server.persistence.lucene.IndexDirectory;
-import org.waveprotocol.box.server.waveserver.LucenePerUserWaveViewHandlerImpl;
-import org.waveprotocol.box.server.waveserver.LuceneWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.MemoryPerUserWaveViewHandlerImpl;
-import org.waveprotocol.box.server.waveserver.MemoryWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.NoOpWaveIndexerImpl;
-import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
-import org.waveprotocol.box.server.waveserver.PerUserWaveViewHandler;
-import org.waveprotocol.box.server.waveserver.PerUserWaveViewProvider;
-import org.waveprotocol.box.server.waveserver.SearchProvider;
-import org.waveprotocol.box.server.waveserver.SimpleSearchProviderImpl;
-import org.waveprotocol.box.server.waveserver.WaveIndexer;
+import org.waveprotocol.box.server.waveserver.*;
 
 /**
  * @author yurize@apache.org (Yuri Zelikov)
@@ -48,16 +37,15 @@ public class SearchModule extends AbstractModule {
   private final String indexDirectory;
 
   @Inject
-  public SearchModule(@Named(CoreSettings.SEARCH_TYPE) String searchType,
-      @Named(CoreSettings.INDEX_DIRECTORY) String indexDirectory) {
-    this.searchType = searchType;
-    this.indexDirectory = indexDirectory;
+  public SearchModule(Config config) {
+    this.searchType = config.getString("core.search_type");
+    this.indexDirectory = config.getString("core.index_directory");
   }
 
   @Override
   public void configure() {
-    bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
     if ("lucene".equals(searchType)) {
+      bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
       bind(PerUserWaveViewProvider.class).to(LucenePerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(LucenePerUserWaveViewHandlerImpl.class).in(
@@ -70,7 +58,16 @@ public class SearchModule extends AbstractModule {
       } else {
         bind(WaveIndexer.class).to(NoOpWaveIndexerImpl.class);
       }
+    } else if ("solr".equals(searchType)) {
+      bind(SearchProvider.class).to(SolrSearchProviderImpl.class).in(Singleton.class);
+      /*-
+       * (Frank R.) binds to class with dummy methods just because it's required by
+       * org.waveprotocol.box.server.ServerMain.initializeSearch(Injector, WaveBus)
+       */
+      bind(PerUserWaveViewBus.Listener.class).to(SolrWaveIndexerImpl.class).in(Singleton.class);
+      bind(WaveIndexer.class).to(SolrWaveIndexerImpl.class).in(Singleton.class);
     } else if ("memory".equals(searchType)) {
+      bind(SearchProvider.class).to(SimpleSearchProviderImpl.class).in(Singleton.class);
       bind(PerUserWaveViewProvider.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(
           Singleton.class);
       bind(PerUserWaveViewBus.Listener.class).to(MemoryPerUserWaveViewHandlerImpl.class).in(

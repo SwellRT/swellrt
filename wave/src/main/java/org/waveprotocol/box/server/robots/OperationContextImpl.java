@@ -19,7 +19,6 @@
 
 package org.waveprotocol.box.server.robots;
 
-import static org.waveprotocol.box.server.robots.util.OperationUtil.buildUserDataWaveletId;
 import static org.waveprotocol.box.server.robots.util.RobotsUtil.createEmptyRobotWavelet;
 
 import com.google.common.base.Preconditions;
@@ -37,27 +36,28 @@ import com.google.wave.api.event.EventSerializer;
 import com.google.wave.api.event.EventType;
 import com.google.wave.api.event.OperationErrorEvent;
 
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.robots.util.OperationUtil;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
-import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.wave.model.conversation.Conversation;
 import org.waveprotocol.wave.model.conversation.ConversationBlip;
 import org.waveprotocol.wave.model.conversation.ObservableConversationView;
+import org.waveprotocol.wave.model.id.IdUtil;
+import org.waveprotocol.wave.model.id.InvalidIdException;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.schema.SchemaCollection;
+import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.impl.ObservablePluggableMutableDocument;
 import org.waveprotocol.wave.model.wave.data.impl.WaveletDataImpl;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
-import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
-import org.waveprotocol.wave.model.id.InvalidIdException;
-import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.id.WaveletId;
-import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Collections;
@@ -111,7 +111,7 @@ public class OperationContextImpl implements OperationContext, OperationResults 
   private final Map<WaveletName, WaveletName> tempWaveletNameMap = Maps.newHashMap();
   /** Caches {@link ObservableConversationView}s */
   private final Map<WaveletName, Map<ParticipantId, ObservableConversationView>>
-      openedConversations;
+  openedConversations;
 
   /** Used to create conversations. */
   private final ConversationUtil conversationUtil;
@@ -225,7 +225,7 @@ public class OperationContextImpl implements OperationContext, OperationResults 
       // Open a wavelet from the server
       CommittedWaveletSnapshot snapshot = getWaveletSnapshot(waveletName, participant);
       if (snapshot == null) {
-        if (waveletName.waveletId.equals(buildUserDataWaveletId(participant))) {
+        if (waveletName.waveletId.equals(IdUtil.buildUserDataWaveletId(participant))) {
           // Usually the user data is created by the web client whenever user
           // opens a wavelet for the first time. However, if the wavelet is
           // fetched for the first time with Robot/Data API - user data should be
@@ -234,7 +234,7 @@ public class OperationContextImpl implements OperationContext, OperationResults 
         } else {
           throw new InvalidRequestException("Wavelet " + waveletName + " couldn't be retrieved");
         }
-        
+
       } else {
         ObservableWaveletData obsWavelet = FACTORY.create(snapshot.snapshot);
         wavelet = new RobotWaveletData(obsWavelet, snapshot.committedVersion);
@@ -362,7 +362,7 @@ public class OperationContextImpl implements OperationContext, OperationResults 
 
   @Override
   public CommittedWaveletSnapshot getWaveletSnapshot(WaveletName waveletName, ParticipantId participant)
-    throws InvalidRequestException {
+      throws InvalidRequestException {
     try {
       if (!waveletProvider.checkAccessPermission(waveletName, participant)) {
         throw new InvalidRequestException("Access rejected");
@@ -377,7 +377,7 @@ public class OperationContextImpl implements OperationContext, OperationResults 
   @Override
   public void getDeltas(WaveletName waveletName, ParticipantId participant,
       HashedVersion fromVersion, HashedVersion toVersion, Receiver<TransformedWaveletDelta> receiver)
-      throws InvalidRequestException {
+          throws InvalidRequestException {
     try {
       if (!waveletProvider.checkAccessPermission(waveletName, participant)) {
         throw new InvalidRequestException("Access rejected");

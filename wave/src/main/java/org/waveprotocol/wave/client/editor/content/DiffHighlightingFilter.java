@@ -19,21 +19,19 @@
 
 package org.waveprotocol.wave.client.editor.content;
 
-import cc.kune.initials.ColorHelper;
-import cc.kune.initials.ColorProvider;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Style;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
+import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
+
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
+import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
 import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
 import org.waveprotocol.wave.model.document.operation.Attributes;
@@ -46,11 +44,14 @@ import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.ReadableIntMap.ProcV;
+import org.waveprotocol.wave.model.util.ReadableIntMap;
+import org.waveprotocol.wave.model.util.ReadableStringMap;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A wrapper for a content document, for the purpose of displaying diffs.
@@ -58,6 +59,7 @@ import java.util.concurrent.TimeUnit;
  * Operations applied will be rendered as diffs.
  *
  * @author danilatos@google.com (Daniel Danilatos)
+ * @author dyukon@gmail.com (Denis Konovalchik)
  */
 public class DiffHighlightingFilter implements ModifiableDocument {
 
@@ -73,45 +75,6 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     public List<Element> getDeletedHtmlElements() {
       return htmlElements;
     }
-  }
-
-
-  /**
-   * TODO(pablojan) Integrate DiffManager with avatars generator, to sync
-   * colors. A manager of Participants is needed, providing random colors.
-   * Consider to extend ParticipantId?
-   *
-   * A random color provider for authors highlighting.
-   *
-   * @author vjrj@ourproject.org (Vicente J. Ruiz Jurado)
-   */
-  public static ColorProvider colorProvider = new ColorProvider() {
-    @Override
-    public String getColor(final String key) {
-      return colorsCache.getUnchecked(key);
-    }
-  };
-
-  private static LoadingCache<String, String> colorsCache = CacheBuilder.newBuilder()
-      .maximumSize(500).expireAfterAccess(600, TimeUnit.SECONDS)
-      .build(new CacheLoader<String, String>() {
-        @Override
-        public String load(final String name) {
-          return ColorHelper.getRandomClearColor(name);
-        }
-      });
-
-  /**
-   * Removes the anonymous prefix to avoid duplicated colour highlighting.
-   *
-   * @param author
-   * @return
-   */
-  public static String wrapAnonymousAuthor(String author) {
-    String wrappedAuthor = author;
-    if (wrappedAuthor.startsWith("_anonymous_"))
-      wrappedAuthor = wrappedAuthor.substring(11, wrappedAuthor.length());
-    return wrappedAuthor;
   }
 
   /**
@@ -162,25 +125,15 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    */
   public static final String DIFF_DELETE_KEY = DIFF_KEY + "/del";
 
-  @Deprecated
-  private static final Object INSERT_MARKER = new Object(); // Replaced by participantId
-
-  public static final String UKNOWN_PARTICIPANT = "Unknown";
+  private static final Object INSERT_MARKER = new Object();
 
   private final DiffHighlightTarget inner;
-
-  private final DocOperationLog operationLog; // To track op's owners
 
   // Munging to wrap the op
 
   private DocOpCursor target;
 
   private DocOp operation;
-
-  /**
-   * Participant who performs the op.
-   */
-  private String author;
 
   // Diff state
 
@@ -196,33 +149,18 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument) {
     this.inner = contentDocument;
-    this.operationLog = null;
   }
-
-  public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocOperationLog operationLog) {
-    this.inner = contentDocument;
-    this.operationLog = operationLog;
-  }
-
 
   @Override
   public void consume(DocOp op) throws OperationException {
     Preconditions.checkState(target == null, "Diff inner target not initialised");
 
     operation = op;
-
-    if (operationLog != null) {
-      author = operationLog.getAuthorAndForget(op);
-      if (author == null) {
-        author = UKNOWN_PARTICIPANT;
-      }
-    }
-
     inner.consume(opWrapper);
 
     final int size = inner.size();
 
-    deleteInfos.each(new ProcV<Object>() {
+    deleteInfos.each(new ReadableIntMap.ProcV<Object>() {
       public void apply(int location, Object _item) {
         assert location <= size;
 
@@ -279,7 +217,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void elementStart(String tagName, Attributes attributes) {
       if (diffDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
+        inner.startLocalAnnotation(DIFF_INSERT_KEY, INSERT_MARKER);
       }
 
       diffDepth++;
@@ -303,7 +241,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void characters(String characters) {
       if (diffDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
+        inner.startLocalAnnotation(DIFF_INSERT_KEY, INSERT_MARKER);
       }
 
       target.characters(characters);
@@ -326,6 +264,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       currentDeleteLocation = currentLocation;
     }
 
+    @Override
     public void deleteElementStart(String type, Attributes attrs) {
       if (diffDepth == 0 && isOutsideInsertionAnnotation()) {
         ContentElement currentElement = (ContentElement) inner.getCurrentNode();
@@ -375,7 +314,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
         return;
       }
 
-      DiffManager.styleElement(element, DiffType.DELETE, author);
+      DiffManager.styleElement(element, DiffType.DELETE);
       DomHelper.makeUnselectable(element);
 
       for (Node n = element.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -385,18 +324,17 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       }
     }
 
+    @Override
     public void deleteCharacters(String text) {
       if (diffDepth == 0 && isOutsideInsertionAnnotation()) {
-        int location = currentLocation;
-        int endLocation = location + text.length();
+        int endLocation = currentLocation + text.length();
 
         updateDeleteInfo();
 
-        int scanLocation = location;
+        int scanLocation = currentLocation;
         int nextScanLocation;
 
         do {
-
           DeleteInfo surroundedInfo = (DeleteInfo) inner.getAnnotation(scanLocation,
               DIFF_DELETE_KEY);
           nextScanLocation = inner.firstAnnotationChange(scanLocation, endLocation,
@@ -405,14 +343,8 @@ public class DiffHighlightingFilter implements ModifiableDocument {
             nextScanLocation = endLocation;
           }
 
-          int index = scanLocation - location;
-          int nextIndex = nextScanLocation - location;
+          saveDeletedText(text, currentLocation, scanLocation, nextScanLocation);
 
-          Element e = Document.get().createSpanElement();
-          DiffManager.styleElement(e, DiffType.DELETE, author);
-          e.setInnerText(text.substring(index, nextIndex));
-
-          currentDeleteInfo.htmlElements.add(e);
           if (surroundedInfo != null) {
             currentDeleteInfo.htmlElements.addAll(surroundedInfo.htmlElements);
           }
@@ -425,25 +357,89 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       target.deleteCharacters(text);
     }
 
+    @Override
     public void annotationBoundary(AnnotationBoundaryMap map) {
       target.annotationBoundary(map);
     }
 
+    @Override
     public void replaceAttributes(Attributes oldAttrs, Attributes newAttrs) {
       currentLocation++;
       target.replaceAttributes(oldAttrs, newAttrs);
     }
 
+    @Override
     public void retain(int itemCount) {
       currentLocation += itemCount;
       target.retain(itemCount);
     }
 
+    @Override
     public void updateAttributes(AttributesUpdate attrUpdate) {
       currentLocation++;
       target.updateAttributes(attrUpdate);
     }
 
+    /**
+     * Creates text spans reflecting every combination of text formatting annotation values.
+     *
+     * @param text text to be saved
+     * @param textLocation location of the text beginning in the document
+     * @param startLocation start location of the deleted block
+     * @param finishLocation finish location of the deleted block
+     */
+    private void saveDeletedText(String text, int textLocation, int startLocation, int finishLocation) {
+      // TODO(dyukon): This solution supports only text styles (weight, decoration, font etc.)
+      // which can be applied to text SPANs.
+      // It's necessary to add support for paragraph styles (headers ordered/numbered lists,
+      // indents) which cannot be kept in text SPANs.
+      Iterator<AnnotationInterval<Object>> aiIterator = inner.annotationIntervals(
+          startLocation, finishLocation, AnnotationConstants.DELETED_STYLE_KEYS).iterator();
+      if (aiIterator.hasNext()) { // Some annotations are changed throughout deleted text
+        while (aiIterator.hasNext()) {
+          AnnotationInterval<Object> ai = aiIterator.next();
+          createDeleteElement(text.substring(ai.start() - textLocation, ai.end() - textLocation),
+              ai.annotations());
+        }
+      } else { // No annotations are changed throughout deleted text
+        createDeleteElement(text.substring(startLocation - textLocation, finishLocation - textLocation),
+            findDeletedStyleAnnotations(startLocation));
+      }
+    }
+
+    private ReadableStringMap<Object> findDeletedStyleAnnotations(final int location) {
+      final StringMap<Object> annotations = CollectionUtils.createStringMap();
+      AnnotationConstants.DELETED_STYLE_KEYS.each(new ReadableStringSet.Proc() {
+        @Override
+        public void apply(String key) {
+          annotations.put(key, inner.getAnnotation(location, key));
+        }
+      });
+      return annotations;
+    }
+
+    private void createDeleteElement(String innerText, ReadableStringMap<Object> annotations) {
+      Element element = Document.get().createSpanElement();
+      applyAnnotationsToElement(element, annotations);
+      DiffManager.styleElement(element, DiffType.DELETE);
+      element.setInnerText(innerText);
+      currentDeleteInfo.htmlElements.add(element);
+    }
+
+    private void applyAnnotationsToElement(Element element, ReadableStringMap<Object> annotations) {
+      final Style style = element.getStyle();
+      annotations.each(new ReadableStringMap.ProcV<Object>() {
+        @Override
+        public void apply(String key, Object value) {
+          if (value != null && value instanceof String) {
+            String styleValue = (String) value;
+            if (!styleValue.isEmpty()) {
+              style.setProperty(StyleAnnotationHandler.suffix(key), styleValue);
+            }
+          }
+        }
+      });
+    }
   };
 
   /**

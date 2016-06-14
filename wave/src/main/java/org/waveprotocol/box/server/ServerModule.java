@@ -27,6 +27,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
+import com.typesafe.config.Config;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.authentication.SessionManagerImpl;
@@ -96,7 +97,7 @@ public class ServerModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public IdGenerator provideIdGenerator(@Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
+  public IdGenerator provideIdGenerator(@Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
       Seed seed) {
     return new IdGeneratorImpl(domain, seed);
   }
@@ -126,10 +127,9 @@ public class ServerModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public org.eclipse.jetty.server.SessionManager provideSessionManager(
-      @Named(CoreSettings.SESSION_COOKIE_MAX_AGE) int sessionCookieMaxAge) {
+  public org.eclipse.jetty.server.SessionManager provideSessionManager(Config config) {
     HashSessionManager sessionManager = new HashSessionManager();
-    sessionManager.getSessionCookieConfig().setMaxAge(sessionCookieMaxAge);
+    sessionManager.getSessionCookieConfig().setMaxAge(config.getInt("network.session_cookie_max_age"));
     return sessionManager;
   }
 }

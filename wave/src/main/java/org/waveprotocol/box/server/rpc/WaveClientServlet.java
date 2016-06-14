@@ -23,12 +23,12 @@ import com.google.common.collect.Maps;
 import com.google.gxp.base.GxpContext;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.waveprotocol.box.common.SessionConstants;
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.gxp.TopBar;
@@ -40,17 +40,16 @@ import org.waveprotocol.wave.common.bootstrap.FlagConstants;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * The HTTP servlet for serving a wave client along with content generated on
@@ -75,7 +74,6 @@ public class WaveClientServlet extends HttpServlet {
   private final String domain;
   private final String analyticsAccount;
   private final SessionManager sessionManager;
-  private final String websocketAddress;
   private final String websocketPresentedAddress;
 
   /**
@@ -83,25 +81,24 @@ public class WaveClientServlet extends HttpServlet {
    */
   @Inject
   public WaveClientServlet(
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
-      @Named(CoreSettings.HTTP_FRONTEND_ADDRESSES) List<String> httpAddresses,
-      @Named(CoreSettings.HTTP_WEBSOCKET_PUBLIC_ADDRESS) String websocketAddress,
-      @Named(CoreSettings.HTTP_WEBSOCKET_PRESENTED_ADDRESS) String websocketPresentedAddress,
-      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount,
+      @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
+      Config config,
       SessionManager sessionManager) {
+    List<String> httpAddresses = config.getStringList("core.http_frontend_addresses");
+    String websocketAddress = config.getString("core.http_websocket_public_address");
+    String websocketPresentedAddress = config.getString("core.http_websocket_presented_address");
     this.domain = domain;
-    this.websocketAddress = StringUtils.isEmpty(websocketAddress) ?
-        httpAddresses.get(0) : websocketAddress;
+    String websocketAddress1 = StringUtils.isEmpty(websocketAddress) ? httpAddresses.get(0) : websocketAddress;
     this.websocketPresentedAddress = StringUtils.isEmpty(websocketPresentedAddress) ?
-        this.websocketAddress : websocketPresentedAddress;
-    this.analyticsAccount = analyticsAccount;
+                                             websocketAddress1 : websocketPresentedAddress;
+    this.analyticsAccount = config.getString("administration.analytics_account");
     this.sessionManager = sessionManager;
   }
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    ParticipantId id = sessionManager.getLoggedInUser(request);
+    ParticipantId id = sessionManager.getLoggedInUser(request.getSession(false));
 
     // Eventually, it would be nice to show users who aren't logged in the public waves.
     // However, public waves aren't implemented yet. For now, we'll just redirect users
@@ -111,8 +108,7 @@ public class WaveClientServlet extends HttpServlet {
       return;
     }
 
-    HttpSession session = sessionManager.getSession(request);
-    AccountData account = sessionManager.getLoggedInAccount(session);
+    AccountData account = sessionManager.getLoggedInAccount(request.getSession(false));
     if (account != null) {
       String locale = account.asHuman().getLocale();
       if (locale != null) {
@@ -130,7 +126,7 @@ public class WaveClientServlet extends HttpServlet {
 
     try {
       WaveClientPage.write(response.getWriter(), new GxpContext(request.getLocale()),
-          getSessionJson(request), getClientFlags(request), websocketPresentedAddress,
+          getSessionJson(request.getSession(false)), getClientFlags(request), websocketPresentedAddress,
           TopBar.getGxpClosure(username, userDomain), analyticsAccount);
     } catch (IOException e) {
       LOG.warning("Failed to write GXP for request " + request, e);
@@ -174,10 +170,9 @@ public class WaveClientServlet extends HttpServlet {
             }
 
             // Ignore the flag on any exception
-          } catch (SecurityException ex) {
+          } catch (SecurityException | NumberFormatException ignored) {
           } catch (NoSuchMethodException ex) {
             LOG.warning("Failed to find the flag [" + name + "] in ClientFlagsBase.");
-          } catch (NumberFormatException ex) {
           }
         }
       }
@@ -189,9 +184,9 @@ public class WaveClientServlet extends HttpServlet {
     }
   }
 
-  private JSONObject getSessionJson(HttpServletRequest req) {
+  private JSONObject getSessionJson(HttpSession session) {
     try {
-      ParticipantId user = sessionManager.getLoggedInUser(req);
+      ParticipantId user = sessionManager.getLoggedInUser(session);
       String address = (user != null) ? user.getAddress() : null;
 
       // TODO(zdwang): Figure out a proper session id rather than generating a

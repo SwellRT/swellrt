@@ -187,9 +187,11 @@ public class DocumentBasedMonotonicMapTest extends TestCase {
    * @param values list of entries to include in the document state
    * @return a map-context view of the document state
    */
-  private static ValueContext<?, ?> substrate(ListBuilder<String, Integer> values) {
-    return substrate(BasicFactories.observableDocumentProvider().create("data",
-        Collections.<String, String>emptyMap()), values);
+  @SuppressWarnings("unchecked")
+  private static <N, E extends N> ValueContext<N, E> substrate(ListBuilder<String, Integer> values) {
+    ObservableMutableDocument doc =
+      BasicFactories.observableDocumentProvider().create("data",Collections.<String, String>emptyMap());
+    return substrate(doc, values);
   }
 
   /**

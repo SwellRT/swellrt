@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import com.google.wave.api.SearchResult;
 import com.google.wave.api.SearchResult.Digest;
@@ -124,7 +125,7 @@ public class SearchServlet extends AbstractSearchServlet {
   @Override
   @VisibleForTesting
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
-    ParticipantId user = sessionManager.getLoggedInUser(req);
+    ParticipantId user = sessionManager.getLoggedInUser(req.getSession(false));
     if (user == null) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;
@@ -157,7 +158,7 @@ public class SearchServlet extends AbstractSearchServlet {
   /**
    * Writes the json with search results to Response.
    */
-  private void serializeObjectToServlet(MessageLite message, HttpServletResponse resp)
+  private <P extends Message> void serializeObjectToServlet(P message, HttpServletResponse resp)
       throws IOException {
     if (message == null) {
       resp.sendError(HttpServletResponse.SC_FORBIDDEN);

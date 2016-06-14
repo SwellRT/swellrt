@@ -19,12 +19,14 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import org.waveprotocol.wave.util.logging.Log;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.waveprotocol.wave.util.logging.Log;
+
 
 import java.io.IOException;
 
@@ -52,7 +54,7 @@ public class WebSocketChannelImpl extends WebSocketChannel {
 
   @OnWebSocketMessage
   public void onMessage(String data) {
-    handleMessageString(data, null);
+    handleMessageString(data);
   }
 
   @OnWebSocketClose

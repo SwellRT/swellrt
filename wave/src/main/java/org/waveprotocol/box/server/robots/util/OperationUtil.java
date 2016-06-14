@@ -38,7 +38,6 @@ import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.model.conversation.ConversationView;
-import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -168,7 +167,7 @@ public class OperationUtil {
    * Executes an {@link OperationRequest}. If the operation throws an
    * {@link InvalidRequestException} this exception will be used to construct an
    * error response in the {@link OperationContext}.
-   * 
+   *
    * @param operation the operation to be executed. If the operation contains
    *        {@link ParamsProperty.PROXYING_FOR} - then it will be taken in
    *        account.
@@ -210,11 +209,11 @@ public class OperationUtil {
       }
     }
   }
-  
-  
+
+
   /**
    * Appends proxyFor to the participant address.
-   * 
+   *
    * @param proxyFor the proxyFor.
    * @param participant the participant to apply the proxyFor.
    * @return new participant instance in the format
@@ -242,7 +241,7 @@ public class OperationUtil {
   /**
    * Computes participant ID using optional {@link ParamsProperty.PROXYING_FOR}
    * parameter.
-   * 
+   *
    * @param operation the operation to be executed.
    * @param participant the base participant id.
    * @return new participant instance in the format
@@ -260,24 +259,14 @@ public class OperationUtil {
     } catch (InvalidParticipantAddress e) {
       throw new InvalidRequestException(
           participant.getAddress()
-              + (proxyAddress != null ? "+" + proxyAddress : ""
-                  + " is not a valid participant address"), operation);
+          + (proxyAddress != null ? "+" + proxyAddress : ""
+              + " is not a valid participant address"), operation);
     }
   }
-  
-  /**
-   * Builds user data wavelet id.
-   */
-  public static WaveletId buildUserDataWaveletId(ParticipantId participant) {
-    WaveletId udwId =
-      WaveletId.of(participant.getDomain(),
-          IdUtil.join(IdConstants.USER_DATA_WAVELET_PREFIX, participant.getAddress()));
-    return udwId;
-  }
-  
+
   /**
    * Builds the supplement model for a wave.
-   * 
+   *
    * @param operation the operation.
    * @param context the operation context.
    * @param participant the viewer.
@@ -292,7 +281,7 @@ public class OperationUtil {
 
     // TODO (Yuri Z.) Find a way to obtain an instance of IdGenerator and use it
     // to create udwId.
-    WaveletId udwId = buildUserDataWaveletId(participant);
+    WaveletId udwId = IdUtil.buildUserDataWaveletId(participant);
     String waveIdStr = OperationUtil.getRequiredParameter(operation, ParamsProperty.WAVE_ID);
     WaveId waveId = null;
     try {
@@ -305,7 +294,7 @@ public class OperationUtil {
     PrimitiveSupplement udwState = WaveletBasedSupplement.create(udw);
 
     SupplementedWave supplement =
-      SupplementedWaveImpl.create(udwState, conversationView, participant, DefaultFollow.ALWAYS);
+        SupplementedWaveImpl.create(udwState, conversationView, participant, DefaultFollow.ALWAYS);
     return supplement;
   }
 

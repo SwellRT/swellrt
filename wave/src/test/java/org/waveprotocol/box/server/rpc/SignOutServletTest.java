@@ -20,7 +20,6 @@
 package org.waveprotocol.box.server.rpc;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -54,15 +53,14 @@ public class SignOutServletTest extends TestCase {
     MockitoAnnotations.initMocks(this);
     servlet = new SignOutServlet(sessionManager);
 
-    when(req.getSession(eq(false))).thenReturn(session);
-    when(sessionManager.getSession(eq(req))).thenReturn(session);
+    when(req.getSession(false)).thenReturn(session);
     PrintWriter writer = mock(PrintWriter.class);
     when(resp.getWriter()).thenReturn(writer);
   }
 
   public void testUserSignedOut() throws Exception {
     servlet.doGet(req, resp);
-
+    
     verify(sessionManager).logout(session);
     verify(resp).setStatus(HttpServletResponse.SC_OK);
   }
@@ -87,10 +85,9 @@ public class SignOutServletTest extends TestCase {
 
   public void testServletWorksWhenSessionIsMissing() throws Exception {
     when(req.getSession(false)).thenReturn(null);
-    when(sessionManager.getSession(eq(req))).thenReturn(null);
-
+    
     servlet.doGet(req, resp);
-
+    
     verify(resp).setStatus(HttpServletResponse.SC_OK);
   }
 }

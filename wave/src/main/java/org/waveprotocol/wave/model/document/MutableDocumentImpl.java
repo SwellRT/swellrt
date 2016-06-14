@@ -872,14 +872,4 @@ public class MutableDocumentImpl<N, E extends N, T extends N> implements Mutable
     return "MutableDI@" + Integer.toHexString(System.identityHashCode(this))
       + "[" + toDebugString() + "]";
   }
-
-  @Override
-  public void beginMutationGroup() {
-    sequencer.begin();
-  }
-
-  @Override
-  public void endMutationGroup() {
-    sequencer.end();
-  }
 }

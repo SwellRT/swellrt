@@ -47,11 +47,6 @@ public class AnnotationPaint {
   }
 
   /**
-   * Attribute for setting a CSS class
-   */
-  public static final String CLASS_ATTR = "class";
-
-  /**
    * Attribute for mapping callback strings.
    */
   public static final String MOUSE_LISTENER_ATTR = "mouseListener";

@@ -19,7 +19,6 @@
 
 package org.waveprotocol.box.server.persistence.memory;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -30,9 +29,7 @@ import org.waveprotocol.wave.crypto.SignatureException;
 import org.waveprotocol.wave.crypto.SignerInfo;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -50,9 +47,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public class MemoryStore implements SignerInfoStore, AccountStore {
-
-  private static final Log LOG = Log.get(MemoryStore.class);
-
 
   private final CertPathStore certPathStore;
 
@@ -101,11 +95,5 @@ public class MemoryStore implements SignerInfoStore, AccountStore {
   @Override
   public void removeAccount(ParticipantId id) {
     accountStore.remove(id);
-  }
-
-  @Override
-  public List<AccountData> getAccountByEmail(String email) throws PersistenceException {
-    LOG.warning("getAccountByEmail is not supported by MemoryStore current implementation");
-    throw new NotImplementedException();
   }
 }

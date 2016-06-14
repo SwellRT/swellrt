@@ -22,10 +22,7 @@ package org.waveprotocol.box.server.persistence.file;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -34,12 +31,7 @@ import org.waveprotocol.box.server.persistence.protos.ProtoAccountStoreData.Prot
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -55,9 +47,8 @@ public class FileAccountStore implements AccountStore {
   private static final Log LOG = Log.get(FileAccountStore.class);
 
   @Inject
-  public FileAccountStore(@Named(CoreSettings.ACCOUNT_STORE_DIRECTORY) String accountStoreBasePath) {
-    Preconditions.checkNotNull(accountStoreBasePath, "Requested path is null");
-    this.accountStoreBasePath = accountStoreBasePath;
+  public FileAccountStore(Config config) {
+    this.accountStoreBasePath = config.getString("core.account_store_directory");
   }
 
   @Override
@@ -140,11 +131,5 @@ public class FileAccountStore implements AccountStore {
     } finally {
       FileUtils.closeAndIgnoreException(file, accountFile, LOG);
     }
-  }
-
-  @Override
-  public List<AccountData> getAccountByEmail(String email) throws PersistenceException {
-    LOG.warning("getAccountByEmail is not supported by MemoryStore current implementation");
-    throw new NotImplementedException();
   }
 }

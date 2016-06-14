@@ -36,7 +36,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  *
  * @author anorth@google.com (Alex North)
  */
-public class RobotsTestBase extends TestCase {
+public abstract class RobotsTestBase extends TestCase {
 
   protected static final WaveId WAVE_ID = WaveId.of("example.com", "waveid");
   protected static final WaveletId WAVELET_ID = WaveletId.of("example.com", "conv+root");

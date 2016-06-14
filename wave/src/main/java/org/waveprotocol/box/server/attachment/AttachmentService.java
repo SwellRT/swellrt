@@ -21,7 +21,18 @@ package org.waveprotocol.box.server.attachment;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
-
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLConnection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.waveprotocol.box.attachment.AttachmentMetadata;
 import org.waveprotocol.box.attachment.ImageMetadata;
 import org.waveprotocol.box.attachment.impl.AttachmentMetadataImpl;
@@ -34,20 +45,6 @@ import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
 
 /**
  * Serves storing and getting of attachments.
@@ -136,10 +133,6 @@ public class AttachmentService {
     }
     store.storeMetadata(attachmentId, metadata);
     return metadata;
-  }
-
-  public void deleteAttachment(AttachmentId attachmentId) {
-    store.deleteAttachment(attachmentId);
   }
 
   private static BufferedImage makeThumbnail(BufferedImage image) {

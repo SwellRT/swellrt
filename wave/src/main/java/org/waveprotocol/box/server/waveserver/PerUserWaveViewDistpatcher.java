@@ -19,7 +19,6 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -46,9 +45,6 @@ public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWa
   private static final CopyOnWriteArraySet<PerUserWaveViewBus.Listener> listeners =
       new CopyOnWriteArraySet<PerUserWaveViewBus.Listener>();
 
-
-
-
   @Override
   public void waveletUpdate(ReadableWaveletData wavelet, DeltaSequence deltas) {
     WaveletId waveletId = wavelet.getWaveletId();
@@ -57,8 +53,6 @@ public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWa
     if(LOG.isInfoLoggable()) {
       LOG.info("Got update for " + waveId + " " + waveletId);
     }
-
-    boolean wasBlipOperation = false;
 
     // Find whether participants were added/removed and update the views
     // accordingly.
@@ -79,27 +73,14 @@ public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWa
           for (Listener listener : listeners) {
             listener.onParticipantRemoved(waveletName, user);
           }
-        } else {
-          wasBlipOperation = true;
         }
       }
     }
-
-
-
-    if (wasBlipOperation) {
-
-        for (Listener listener : listeners) {
-          listener.onWaveUpdated(wavelet);
-        }
-
-    }
-
   }
 
   @Override
   public void waveletCommitted(WaveletName waveletName, HashedVersion version) {
-
+    // No op.
   }
 
   @Override

@@ -365,11 +365,6 @@ public final class CcBasedWaveViewImpl implements CcBasedWaveView {
   }
 
   @Override
-  public CcBasedWavelet createWavelet(WaveletId waveletId) {
-    return view.createWavelet(waveletId);
-  }
-
-  @Override
   public CcBasedWavelet createUserData() {
     return view.createUserData();
   }

@@ -24,7 +24,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.StyleInjector;
-
 import org.waveprotocol.wave.client.editor.content.TransparentManager;
 import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
 
@@ -45,8 +44,6 @@ public class DiffManager implements TransparentManager<Element> {
   }
 
   private static final String DIFF_KEY = NodeManager.getNextMarkerName("dt");
-
-  private static final String AUTHOR_KEY = NodeManager.getNextMarkerName("au");
 
   /**
    * Type of diff annotation
@@ -73,20 +70,14 @@ public class DiffManager implements TransparentManager<Element> {
         ? null : (DiffType) element.getPropertyObject(DIFF_KEY);
   }
 
-  public String getAuthor(Element element) {
-    return element == null || NodeManager.getTransparentManager(element) != this ? null
-        : (String) element.getPropertyObject(AUTHOR_KEY);
-  }
-
   /**
    * Create a diff annotation element
    * @param type The type of change it will be annotating
    * @return The newly created element
    */
-  public Element createElement(DiffType type, String author) {
+  public Element createElement(DiffType type) {
     SpanElement element = Document.get().createSpanElement();
     element.setPropertyObject(DIFF_KEY, type);
-    element.setPropertyObject(AUTHOR_KEY, author);
     NodeManager.setTransparentBackref(element, this);
 
     // HACK(danilatos): Demo looms, no time for learning how to use resource bundle etc.
@@ -100,14 +91,12 @@ public class DiffManager implements TransparentManager<Element> {
         break;
     }
 
-    styleElement(element, type, author);
+    styleElement(element, type);
 
     elements.add(element);
 
     return element;
   }
-
-
 
   /**
    * Apply styles and other rendering properties to an element to make it look
@@ -116,17 +105,13 @@ public class DiffManager implements TransparentManager<Element> {
    * @param element
    * @param type
    */
-  public static void styleElement(Element element, DiffType type, String author) {
+  public static void styleElement(Element element, DiffType type) {
     switch (type) {
       case INSERT:
         element.addClassName(resources.css().insert());
-        element.addClassName("inserted-text");
-        element.addClassName("author-" + author);
         break;
       case DELETE:
         element.addClassName(resources.css().delete());
-        element.addClassName("deleted-text");
-        element.addClassName("author-" + author);
         NodeManager.setTransparency(element, Skip.DEEP);
         element.setAttribute("contentEditable", "false");
         break;
@@ -158,12 +143,11 @@ public class DiffManager implements TransparentManager<Element> {
    */
   public Element needToSplit(Element transparentNode) {
     DiffType type = (DiffType) transparentNode.getPropertyObject(DIFF_KEY);
-    String author = (String) transparentNode.getPropertyObject(AUTHOR_KEY);
     if (type == null) {
       throw new IllegalArgumentException("No diff type known for given node");
     }
 
-    return createElement(type, author);
+    return createElement(type);
   }
 
 }

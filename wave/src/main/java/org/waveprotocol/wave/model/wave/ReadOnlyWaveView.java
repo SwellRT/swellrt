@@ -19,12 +19,13 @@
 
 package org.waveprotocol.wave.model.wave;
 
+import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
+
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 
 import java.util.Collections;
 import java.util.Map;
@@ -76,11 +77,6 @@ public class ReadOnlyWaveView implements ObservableWaveView {
 
   @Override
   public ObservableWavelet createWavelet() {
-    throw new UnsupportedOperationException("Read only wave views are read-only");
-  }
-
-  @Override
-  public ObservableWavelet createWavelet(WaveletId waveletId) {
     throw new UnsupportedOperationException("Read only wave views are read-only");
   }
 

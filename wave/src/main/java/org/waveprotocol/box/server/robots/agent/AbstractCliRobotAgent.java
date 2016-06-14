@@ -29,6 +29,7 @@ import com.google.wave.api.Blip;
 import com.google.wave.api.event.DocumentChangedEvent;
 import com.google.wave.api.event.WaveletSelfAddedEvent;
 
+import com.typesafe.config.Config;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -37,11 +38,10 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.waveprotocol.box.server.CoreSettings;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.robots.register.RobotRegistrar;
 import org.waveprotocol.box.server.robots.register.RobotRegistrarImpl;
-import org.waveprotocol.wave.model.id.TokenGenerator;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -68,11 +68,12 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
    * @param injector the injector instance.
    */
   public AbstractCliRobotAgent(Injector injector) {
-    this(injector.getInstance(Key.get(String.class, Names.named(CoreSettings.WAVE_SERVER_DOMAIN))),
-        injector.getInstance(TokenGenerator.class), injector
+    this(injector.getInstance(Key.get(String.class, Names.named(CoreSettingsNames.WAVE_SERVER_DOMAIN))),
+
+         injector
             .getInstance(ServerFrontendAddressHolder.class), injector
             .getInstance(AccountStore.class), injector.getInstance(RobotRegistrarImpl.class),
-        injector.getInstance(Key.get(Boolean.class, Names.named(CoreSettings.ENABLE_SSL))));
+        injector.getInstance(Config.class).getBoolean("security.enable_ssl"));
   }
 
   /**
@@ -80,10 +81,10 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
    * {@link #getRobotUri()} and ensures that the agent is registered in the
    * Account store.
    */
-  AbstractCliRobotAgent(String waveDomain, TokenGenerator tokenGenerator,
-      ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
-      RobotRegistrar robotRegistrar, Boolean sslEnabled) {
-    super(waveDomain, tokenGenerator, frontendAddressHolder, accountStore, robotRegistrar, sslEnabled);
+  AbstractCliRobotAgent(String waveDomain,
+                        ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
+                        RobotRegistrar robotRegistrar, Boolean sslEnabled) {
+    super(waveDomain, frontendAddressHolder, accountStore, robotRegistrar, sslEnabled);
     parser = new PosixParser();
     helpFormatter = new HelpFormatter();
     options = initOptions();
@@ -151,7 +152,7 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
       // have to display usage anyway.
       if ((argsNum > 0)
           && (argsNum < getMinNumOfArguments() || argsNum > getMaxNumOfArguments())) {
-        String message = null;
+        String message;
         if (getMinNumOfArguments() == getMaxNumOfArguments()) {
           message =
             String.format("Invalid number of arguments. Expected: %d , actual: %d %s",
@@ -187,8 +188,7 @@ public abstract class AbstractCliRobotAgent extends AbstractBaseRobotAgent {
         + getCmdLineSyntax() + " \n", null, options, helpFormatter.defaultLeftPad,
         helpFormatter.defaultDescPad, "", false);
     pw.flush();
-    String usageStr = stringWriter.toString();
-    return usageStr;
+    return stringWriter.toString();
   }
 
   /**

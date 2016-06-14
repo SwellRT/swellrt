@@ -24,7 +24,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.Registries;
@@ -65,23 +64,15 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
    */
   private boolean isCompleteDiff;
 
-  /**
-   * Tracks operations with contributors
-   */
-  private DocOperationLog operationLog;
-
   @VisibleForTesting
-  LazyContentDocument(Registries base, SimpleDiffDoc initial, boolean isCompleteDiff,
-      DocOperationLog operationLog) {
+  LazyContentDocument(Registries base, SimpleDiffDoc initial, boolean isCompleteDiff) {
     this.base = base;
     this.spec = initial;
     this.isCompleteDiff = isCompleteDiff;
-    this.operationLog = operationLog;
   }
 
-  public static LazyContentDocument create(Registries base, SimpleDiffDoc initial,
-      DocOperationLog operationLog) {
-    return new LazyContentDocument(base, initial, initial.isCompleteDiff(), operationLog);
+  public static LazyContentDocument create(Registries base, SimpleDiffDoc initial) {
+    return new LazyContentDocument(base, initial, initial.isCompleteDiff());
   }
 
   /**
@@ -92,7 +83,7 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
   private void loadWith(Registries registries) {
     assert !isLoaded() : "already loaded";
     ContentDocument core = new ContentDocument(DocumentSchema.NO_SCHEMA_CONSTRAINTS);
-    document = DiffContentDocument.create(core, operationLog);
+    document = DiffContentDocument.create(core);
     if (outputSink != null) {
       core.setOutgoingSink(outputSink);
     }

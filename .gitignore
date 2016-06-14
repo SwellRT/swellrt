@@ -10,31 +10,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-/build
-/test_out
-/dist
-/gen
-/bin
-/server.config
-/_sessions
-/_accounts
-/_deltas
-/_attachments
-/_account_attachments
-/_certificates
-/_indexes
-/gwt-unitCache
+*/server.config
+*/_sessions
+*/_accounts
+*/_deltas
+*/_attachments
+*/_certificates
+*/_indexes
+*/gwt-unitCache
 war/WEB-INF
 *.old
-*.log*
-/third_party/
-/src/org/waveprotocol/box/server/rpc/atmosphere/atmosphere-min.js
-/src/org/waveprotocol/box/server/rpc/atmosphere/atmosphere.js
 .DS_Store
-/war/swellrt
-/selenium/lib/*
-/selenium/driver/*
-/selenium/*.class
-/selenium/.settings
-**/*swp
-/trash.txt
+
+### IntelliJ Idea
+.idea
+*.iml
+*.eml
+*.ipr
+*.iws
+.settings/
+
+### Eclipse
+*.project
+*.classpath
+*/.settings/
+
+### Gradle
+.gradle
+build/
+wave/build/
+wave/war/WEB-INF/
+wave/war/webclient/
+wave/war/org*
+pst/build/
+distributions/
+### Reports
+reports/
+### Generated Sources
+**/generated/
+### Gwt Testing
+### config
+wave/local.net.cfg.lua
+wave/config/wave.conf
+### Vagrant
+.vagrant/
+
+### Backup files
+*~

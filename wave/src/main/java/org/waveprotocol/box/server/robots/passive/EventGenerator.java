@@ -23,53 +23,43 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.wave.api.BlipData;
 import com.google.wave.api.Context;
+import com.google.wave.api.Gadget;
 import com.google.wave.api.data.converter.ContextResolver;
 import com.google.wave.api.data.converter.EventDataConverter;
-import com.google.wave.api.event.AnnotatedTextChangedEvent;
-import com.google.wave.api.event.DocumentChangedEvent;
-import com.google.wave.api.event.Event;
-import com.google.wave.api.event.EventType;
-import com.google.wave.api.event.WaveletBlipCreatedEvent;
-import com.google.wave.api.event.WaveletBlipRemovedEvent;
-import com.google.wave.api.event.WaveletParticipantsChangedEvent;
-import com.google.wave.api.event.WaveletSelfAddedEvent;
-import com.google.wave.api.event.WaveletSelfRemovedEvent;
+import com.google.wave.api.event.*;
 import com.google.wave.api.impl.EventMessageBundle;
 import com.google.wave.api.robot.Capability;
 import com.google.wave.api.robot.RobotName;
-
 import org.waveprotocol.box.server.robots.util.ConversationUtil;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
-import org.waveprotocol.wave.model.conversation.Conversation;
-import org.waveprotocol.wave.model.conversation.ConversationBlip;
-import org.waveprotocol.wave.model.conversation.ConversationListenerImpl;
-import org.waveprotocol.wave.model.conversation.ObservableConversation;
-import org.waveprotocol.wave.model.conversation.ObservableConversationBlip;
-import org.waveprotocol.wave.model.conversation.WaveletBasedConversation;
-import org.waveprotocol.wave.model.document.DocHandler;
-import org.waveprotocol.wave.model.document.ObservableDocument;
+import org.waveprotocol.wave.model.conversation.*;
 import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Doc.T;
+import org.waveprotocol.wave.model.document.DocHandler;
+import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.indexed.DocumentEvent;
 import org.waveprotocol.wave.model.document.indexed.DocumentEvent.AnnotationChanged;
+import org.waveprotocol.wave.model.document.indexed.DocumentEvent.AttributesModified;
+import org.waveprotocol.wave.model.document.indexed.DocumentEvent.ContentInserted;
+import org.waveprotocol.wave.model.document.raw.impl.Node;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.operation.SilentOperationSink;
 import org.waveprotocol.wave.model.operation.wave.BasicWaveletOperationContextFactory;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.WaveletBlipOperation;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
-import org.waveprotocol.wave.model.wave.ObservableWavelet;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.ParticipationHelper;
-import org.waveprotocol.wave.model.wave.WaveletListener;
+import org.waveprotocol.wave.model.wave.*;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 import org.waveprotocol.wave.model.wave.opbased.WaveletListenerImpl;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Generates Robot API Events from operations applied to a Wavelet.
@@ -84,7 +74,7 @@ import java.util.Map;
  * <li>DocumentChanged (DONE)</li>
  * <li>AnnotatedTextChanged (DONE)</li>
  * <li>FormButtonClicked (TBD)</li>
- * <li>GadgetStateChanged (TBD)</li>
+ * <li>GadgetStateChanged (DONE)</li>
  * <li>BlipContributorChanged (TBD)</li>
  * <li>WaveletTagsChanged (TBD)</li>
  * <li>WaveletTitleChanged (TBD)</li>
@@ -255,13 +245,19 @@ public class EventGenerator {
      */
     private boolean documentChangedEventGenerated;
 
+    private EventDataConverter converter;
+    private Wavelet wavelet;
+
     public EventGeneratingDocumentHandler(ObservableDocument doc, ConversationBlip blip,
         Map<EventType, Capability> capabilities, EventMessageBundle messages,
-        ParticipantId deltaAuthor, Long deltaTimestamp) {
+        ParticipantId deltaAuthor, Long deltaTimestamp, Wavelet wavelet,
+        EventDataConverter converter) {
       this.doc = doc;
       this.blip = blip;
       this.capabilities = capabilities;
       this.messages = messages;
+      this.converter = converter;
+      this.wavelet = wavelet;
       setAuthorAndTimeStamp(deltaAuthor, deltaTimestamp);
     }
 
@@ -280,10 +276,81 @@ public class EventGenerator {
             addEvent(apiEvent, capabilities, blip.getId(), messages);
           }
         } else {
+          // used to distinguish between attribute changes and gadget state
+          // changes
+          Boolean gadgetStateChangeEvent = false;
+          if (eventComponent.getType() == DocumentEvent.Type.ATTRIBUTES) {
+            if (capabilities.containsKey(EventType.GADGET_STATE_CHANGED)) {
+              Map<String, String> oldState = new HashMap<>();
+              Integer index = -1;
+              try {
+                AttributesModified<N, E, T> attributesModified =
+                    (AttributesModified<N, E, T>) eventComponent;
+                // When a gadget state changes, the AttributesModifies event has
+                // always
+                // an oldValue map of the form {"value", something} (key is
+                // always value).
+                // To obtain the key of the changed state, the attribute "name"
+                // has to be obtained
+                // from the Element of the AttributesModified event.
+                String name =
+                    ((org.waveprotocol.wave.model.document.raw.impl.Element) attributesModified
+                        .getElement()).getAttribute("name");
+                String oldValue = attributesModified.getOldValues().get("value");
+                if (name != null || oldValue != null) {
+                  oldState.put(name, oldValue);
+                }
+                BlipData b = converter.toBlipData(blip, wavelet, messages);
+                Map<Integer, com.google.wave.api.Element> elements = b.getElements();
+                Set<Integer> keys = elements.keySet();
+                // The gadget element provided by the eventComponent
+                org.waveprotocol.wave.model.document.raw.impl.Element rawGadget =
+                    ((Node) attributesModified.getElement()).getParentElement();
+                for (Integer key : keys) {
+                  try {
+                    Gadget gadget = (Gadget) elements.get(key);
+                    if (sameGadgets(rawGadget, gadget)) {
+                      index = key;
+                      break;
+                    }
+                  } catch (ClassCastException e) {
+                    // if it is not a gadget we do not compare them
+                  }
+                }
+              } catch (ClassCastException e) {
+                e.printStackTrace();
+              }
+              if (oldState.size() != 0 && index != -1) {
+                // if the attribute changed belongs to a gadget
+                gadgetStateChangeEvent = true;
+                final GadgetStateChangedEvent gadgetEvent =
+                    new GadgetStateChangedEvent(null, messages, deltaAuthor.getAddress(),
+                        deltaTimestamp, blip.getId(), index, oldState);
+                addEvent(gadgetEvent, capabilities, blip.getId(), messages);
+              }
+            }
+          }
+          if (capabilities.containsKey(EventType.FORM_BUTTON_CLICKED)) {
+            if (eventComponent.getType() == DocumentEvent.Type.CONTENT_INSERTED) {
+              ContentInserted<N, E, T> contentInserted = (ContentInserted<N, E, T>) eventComponent;
+              org.waveprotocol.wave.model.document.raw.impl.Element elementInserted =
+                ((org.waveprotocol.wave.model.document.raw.impl.Element)
+                  contentInserted.getSubtreeElement());
+              if (elementInserted.getTagName().equals("click")) {
+                FormButtonClickedEvent buttonClickedEvent =
+                    new FormButtonClickedEvent(null, null,
+                        elementInserted.getAttribute("clicker"), Long.decode(elementInserted
+                            .getAttribute("time")), blip.getId(), elementInserted
+                            .getParentElement().getAttribute("name"));
+                addEvent(buttonClickedEvent, capabilities, blip.getId(), messages);
+              }
+            }
+          }
           if (capabilities.containsKey(EventType.DOCUMENT_CHANGED)
-              && !documentChangedEventGenerated) {
-            DocumentChangedEvent apiEvent = new DocumentChangedEvent(
-                null, null, deltaAuthor.getAddress(), deltaTimestamp, blip.getId());
+              && !documentChangedEventGenerated && !gadgetStateChangeEvent) {
+            DocumentChangedEvent apiEvent =
+                new DocumentChangedEvent(null, null, deltaAuthor.getAddress(), deltaTimestamp,
+                    blip.getId());
             addEvent(apiEvent, capabilities, blip.getId(), messages);
             // Only one documentChangedEvent should be generated per bundle.
             documentChangedEventGenerated = true;
@@ -305,6 +372,21 @@ public class EventGenerator {
       Preconditions.checkNotNull(timestamp, "Timestamp should not be null");
       this.deltaAuthor = author;
       this.deltaTimestamp = timestamp;
+    }
+
+    /**
+     * Check if an {@link org.waveprotocol.wave.model.document.raw.impl.Element}
+     * is and a {@link Gadget}
+     *
+     * @param rawElement
+     * @param element
+     * @return
+     */
+    private boolean sameGadgets(org.waveprotocol.wave.model.document.raw.impl.Element rawElement,
+        Gadget element) {
+      String ifr1 = rawElement.getAttribute("ifr");
+      String ifr2 = element.getProperty("ifr");
+      return (ifr1 != null && ifr1.equals(ifr2));
     }
   }
 
@@ -455,7 +537,7 @@ public class EventGenerator {
           // Check if we need to attach a doc handler.
           if ((op instanceof WaveletBlipOperation)) {
             attachDocHandler(conversation, op, docHandlers, capabilities, messages,
-                delta.getAuthor(), timestamp);
+                delta.getAuthor(), timestamp, wavelet, converter);
           }
           op.apply(snapshot);
         }
@@ -497,7 +579,7 @@ public class EventGenerator {
   private void attachDocHandler(ObservableConversation conversation, WaveletOperation op,
       Map<String, EventGeneratingDocumentHandler> docHandlers,
       Map<EventType, Capability> capabilities, EventMessageBundle messages,
-      ParticipantId deltaAuthor, long timestamp) {
+      ParticipantId deltaAuthor, long timestamp, Wavelet wavelet, EventDataConverter converter) {
     WaveletBlipOperation blipOp = (WaveletBlipOperation) op;
     String blipId = blipOp.getBlipId();
     // Ignoring the documents outside the conversation such as tags
@@ -509,8 +591,9 @@ public class EventGenerator {
       EventGeneratingDocumentHandler docHandler = docHandlers.get(blipId1);
       if (docHandler == null) {
         ObservableDocument doc = (ObservableDocument) blip.getContent();
-        docHandler = new EventGeneratingDocumentHandler(
-            doc, blip, capabilities, messages, deltaAuthor, timestamp);
+        docHandler =
+            new EventGeneratingDocumentHandler(doc, blip, capabilities, messages, deltaAuthor,
+                timestamp, wavelet, converter);
         doc.addListener(docHandler);
         docHandlers.put(blipId1, docHandler);
       } else {

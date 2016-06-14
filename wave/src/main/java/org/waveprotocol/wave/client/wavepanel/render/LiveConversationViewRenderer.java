@@ -302,7 +302,7 @@ public class LiveConversationViewRenderer
     wave.removeListener(this);
     conversationRenderers.each(new ProcV<Conversation, LiveConversationRenderer>() {
       @Override
-      public void apply(Conversation _, LiveConversationRenderer value) {
+      public void apply(Conversation c, LiveConversationRenderer value) {
         value.destroy();
       }
     });

@@ -28,8 +28,8 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.wave.api.ApiIdSerializer;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
 
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.robots.OperationContext;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
@@ -61,7 +61,7 @@ public class ImportDeltasService implements OperationService {
 
   @Inject
   public ImportDeltasService(WaveletProvider waveletProvider,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) final String waveDomain) {
+      @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain) {
     this.waveletProvider = waveletProvider;
     this.waveDomain = waveDomain;
   }

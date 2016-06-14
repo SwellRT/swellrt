@@ -25,7 +25,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import org.waveprotocol.box.server.CoreSettings;
+import com.typesafe.config.Config;
+import org.waveprotocol.box.server.CoreSettingsNames;
 import org.waveprotocol.box.server.account.RobotAccountData;
 import org.waveprotocol.box.server.gxp.RobotRegistrationPage;
 import org.waveprotocol.box.server.gxp.RobotRegistrationSuccessPage;
@@ -60,12 +61,12 @@ public class RobotRegistrationServlet extends HttpServlet {
   private final String analyticsAccount;
 
   @Inject
-  private RobotRegistrationServlet(@Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
+  private RobotRegistrationServlet(@Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
       RobotRegistrar robotRegistrar,
-      @Named(CoreSettings.ANALYTICS_ACCOUNT) String analyticsAccount) {
+      Config config) {
     this.robotRegistrar = robotRegistrar;
     this.domain = domain;
-    this.analyticsAccount = analyticsAccount;
+    this.analyticsAccount = config.getString("administration.analytics_account");
   }
 
   @Override
@@ -121,7 +122,7 @@ public class RobotRegistrationServlet extends HttpServlet {
       return;
     }
 
-    RobotAccountData robotAccount = null;
+    RobotAccountData robotAccount;
     try{
       robotAccount = robotRegistrar.registerNew(id, location);
     } catch (RobotRegistrationException e) {

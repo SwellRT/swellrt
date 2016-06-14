@@ -218,9 +218,9 @@ public class WaveSignatureVerifier {
   /**
    * Returns true if the authority given matches a CN with a wildcard
    * expression.
-   * 
+   *
    * @author pablojan (pablojan@gmail.com)
-   * 
+   *
    * @param authority
    * @param certificate
    * @return

@@ -99,12 +99,12 @@ public class DataApiOAuthServletTest extends TestCase {
       closed = true;
     }
 
-    @Override
+    //@Override
     public boolean isReady() {
       return true;
     }
 
-    @Override
+    //@Override
     public void setWriteListener(WriteListener wl) {
     }
   }

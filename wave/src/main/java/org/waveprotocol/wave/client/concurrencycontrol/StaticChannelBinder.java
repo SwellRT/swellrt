@@ -19,7 +19,6 @@
 
 package org.waveprotocol.wave.client.concurrencycontrol;
 
-import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
@@ -40,7 +39,6 @@ public final class StaticChannelBinder {
 
   private final WaveletOperationalizer operationalizer;
   private final WaveDocuments<? extends CcDocument> docRegistry;
-  private final DocOperationLog opRegistry;
 
   /**
    * Creates a binder for a wave.
@@ -52,22 +50,6 @@ public final class StaticChannelBinder {
       WaveletOperationalizer operationalizer, WaveDocuments<? extends CcDocument> docRegistry) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
-    this.opRegistry = null;
-  }
-
-  /**
-   * Creates a binder for a wave with an associated OpRegistry
-   * 
-   * @param operationalizer operationalizer of the wave
-   * @param docRegistry document registry of the wave
-   * @param opRegistry a registry of all incoming ops to track participants and
-   *        ops
-   */
-  public StaticChannelBinder(WaveletOperationalizer operationalizer,
-      WaveDocuments<? extends CcDocument> docRegistry, DocOperationLog opRegistry) {
-    this.operationalizer = operationalizer;
-    this.docRegistry = docRegistry;
-    this.opRegistry = opRegistry;
   }
 
   /**
@@ -93,11 +75,6 @@ public final class StaticChannelBinder {
     return new FlushingOperationSink<WaveletOperation>() {
       @Override
       public void consume(WaveletOperation op) {
-
-        // Register the op first, to be consumed by following sinks.
-        if (opRegistry != null) {
-          opRegistry.register(waveletId, op);
-        }
         target.consume(op);
       }
 

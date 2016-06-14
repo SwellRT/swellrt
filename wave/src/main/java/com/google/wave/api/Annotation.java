@@ -43,6 +43,7 @@ public class Annotation implements Serializable {
   public static final String TEXT_DECORATION = "style/textDecoration";
   public static final String VERTICAL_ALIGN = "style/verticalAlign";
   public static final String LINK = "link/manual";
+  public static final String WAVE_LINK = "link/wave";
 
   /** The annotation name. */
   private final String name;

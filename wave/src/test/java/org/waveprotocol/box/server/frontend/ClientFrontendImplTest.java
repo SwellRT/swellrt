@@ -92,16 +92,14 @@ public class ClientFrontendImplTest extends TestCase {
   private static final WaveletName WN2 = WaveletName.of(WAVE_ID, W2);
 
   private static final ParticipantId USER = new ParticipantId("user@example.com");
-  private static final ParticipantId IMPLICIT_USER = new ParticipantId("implicit@example.com");
-  private static final ParticipantId PUBLIC_USER = new ParticipantId("@example.com");
   private static final DeltaTestUtil UTIL = new DeltaTestUtil(USER);
 
   private static final HashedVersion V0 = HASH_FACTORY.createVersionZero(WN1);
-  private static final HashedVersion V1 = HashedVersion.unsigned(2L);
-  private static final HashedVersion V2 = HashedVersion.unsigned(3L);
+  private static final HashedVersion V1 = HashedVersion.unsigned(1L);
+  private static final HashedVersion V2 = HashedVersion.unsigned(2L);
 
   private static final TransformedWaveletDelta DELTA = TransformedWaveletDelta.cloneOperations(
-      USER, V1, 0, ImmutableList.of(UTIL.addParticipant(USER), UTIL.addParticipant(PUBLIC_USER)));
+      USER, V1, 0, ImmutableList.of(UTIL.addParticipant(USER)));
   private static final DeltaSequence DELTAS = DeltaSequence.of(DELTA);
   private static final ProtocolWaveletDelta SERIALIZED_DELTA =
       CoreWaveletOperationSerializer.serialize(DELTA);
@@ -118,7 +116,7 @@ public class ClientFrontendImplTest extends TestCase {
     when(waveletProvider.getWaveletIds(any(WaveId.class))).thenReturn(ImmutableSet.<WaveletId>of());
 
     WaveletInfo waveletInfo = WaveletInfo.create(HASH_FACTORY, waveletProvider);
-    clientFrontend = new ClientFrontendImpl(waveletProvider, waveletInfo, "example.com");
+    clientFrontend = new ClientFrontendImpl(waveletProvider, waveletInfo);
   }
 
   public void testCannotOpenWavesWhenNotLoggedIn() throws Exception {
@@ -156,9 +154,9 @@ public class ClientFrontendImplTest extends TestCase {
 
     OpenListener listener = openWave(IdFilters.ALL_IDS);
     verify(listener).onUpdate(eq(WN1), eq(snapshot1), eq(DeltaSequence.empty()),
-        eq(V1), isNullMarker(), any(String.class));
+        eq(V0), isNullMarker(), any(String.class));
     verify(listener).onUpdate(eq(WN2), eq(snapshot2), eq(DeltaSequence.empty()),
-        eq(V1), isNullMarker(), any(String.class));
+        eq(V0), isNullMarker(), any(String.class));
     verifyMarker(listener, WAVE_ID);
   }
 
@@ -189,7 +187,7 @@ public class ClientFrontendImplTest extends TestCase {
 
     OpenListener listener = openWave(IdFilters.ALL_IDS);
     verify(listener).onUpdate(eq(WN1), eq(snapshot), eq(DeltaSequence.empty()),
-        eq(V1), isNullMarker(), any(String.class));
+        eq(V0), isNullMarker(), any(String.class));
     verifyMarker(listener, WAVE_ID);
 
     TransformedWaveletDelta delta = TransformedWaveletDelta.cloneOperations(USER, V2, 1234567890L,
@@ -252,43 +250,6 @@ public class ClientFrontendImplTest extends TestCase {
         any(HashedVersion.class), isNullMarker(), anyString());
   }
 
-  public void testImplicitParticipantsReceiveDeltaUpdates() throws WaveServerException,
-      OperationException {
-
-    CommittedWaveletSnapshot snapshot = provideWavelet(WN1);
-    when(waveletProvider.getWaveletIds(WAVE_ID)).thenReturn(ImmutableSet.of(W1));
-    when(waveletProvider.checkAccessPermission(WN1, USER)).thenReturn(true);
-    when(waveletProvider.checkAccessPermission(WN1, IMPLICIT_USER)).thenReturn(true);
-
-    OpenListener listenerUser = openWave(USER, WAVE_ID, IdFilters.ALL_IDS);
-    OpenListener listenerImplicitUser = openWave(IMPLICIT_USER, WAVE_ID, IdFilters.ALL_IDS);
-
-    // Verify that explicit and implicit participants can open the the wavelet
-
-    verify(listenerUser).onUpdate(eq(WN1), eq(snapshot), eq(DeltaSequence.empty()), eq(V1),
-        isNullMarker(), any(String.class));
-    verifyMarker(listenerUser, WAVE_ID);
-
-
-    verify(listenerImplicitUser).onUpdate(eq(WN1), eq(snapshot), eq(DeltaSequence.empty()), eq(V1),
-        isNullMarker(), any(String.class));
-    verifyMarker(listenerImplicitUser, WAVE_ID);
-
-    TransformedWaveletDelta delta =
-        TransformedWaveletDelta.cloneOperations(USER, V2, 1234567890L, Arrays.asList(UTIL.noOp()));
-    DeltaSequence deltas = DeltaSequence.of(delta);
-
-    clientFrontend.waveletUpdate(snapshot.snapshot, deltas);
-
-    // Verify that explicit and implicit participants gets the updates
-
-    verify(listenerUser).onUpdate(eq(WN1), isNullSnapshot(), eq(deltas), isNullVersion(),
-        isNullMarker(), anyString());
-
-    verify(listenerImplicitUser).onUpdate(eq(WN1), isNullSnapshot(), eq(deltas), isNullVersion(),
-        isNullMarker(), anyString());
-  }
-
   /**
    * Opens a wave and returns a mock listener.
    */
@@ -300,12 +261,6 @@ public class ClientFrontendImplTest extends TestCase {
 
   private ClientFrontend.OpenListener openWave(IdFilter filter) {
     return openWave(WAVE_ID, filter);
-  }
-
-  private ClientFrontend.OpenListener openWave(ParticipantId user, WaveId waveId, IdFilter filter) {
-    OpenListener openListener = mock(OpenListener.class);
-    clientFrontend.openRequest(user, waveId, filter, NO_KNOWN_WAVELETS, openListener);
-    return openListener;
   }
 
   private TransformedWaveletDelta makeDelta(ParticipantId author, HashedVersion endVersion,
@@ -333,8 +288,7 @@ public class ClientFrontendImplTest extends TestCase {
       OperationException {
     WaveletData wavelet = WaveletDataUtil.createEmptyWavelet(name, USER, V0, 1234567890L);
     DELTA.get(0).apply(wavelet);
-    DELTA.get(1).apply(wavelet);
-    CommittedWaveletSnapshot snapshot = new CommittedWaveletSnapshot(wavelet, V1);
+    CommittedWaveletSnapshot snapshot = new CommittedWaveletSnapshot(wavelet, V0);
     when(waveletProvider.getSnapshot(name)).thenReturn(snapshot);
     when(waveletProvider.getWaveletIds(name.waveId)).thenReturn(ImmutableSet.of(name.waveletId));
     return snapshot;

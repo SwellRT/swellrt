@@ -263,11 +263,7 @@ public final class FocusManager implements Focusable, KeySignalHandler {
 
     @Override
     public void onKeyDown(KeyDownEvent event) {
-      if (checkStatDialogCondition(event)) {
-        StatDialog.show();
-      } else {
-        dispatch(event);
-      }
+      dispatch(event);
     }
 
     @Override
@@ -281,52 +277,56 @@ public final class FocusManager implements Focusable, KeySignalHandler {
     }
 
     private void dispatch(KeyEvent<?> event) {
-      Timer timer = null;
-      if (Timing.isEnabled()) {
-        Timing.enterScope();
-        Timing.setScopeValue(ExecutionTree.class, new ExecutionTree());
-        timer = Timing.start("Key event dispatch");
-      }
-      try {
-        // Only respond to key events on the body element. Otherwise, the key
-        // event was probably targeted to some editable input element, and that
-        // should own the events.
-        NativeEvent realEvent = event.getNativeEvent();
-        Element target = realEvent.getEventTarget().cast();
-        if (!"body".equals(target.getTagName().toLowerCase())) {
-          return;
+      if (checkStatDialogCondition(event)) {
+        StatDialog.show();
+      } else {
+	Timer timer = null;
+        if (Timing.isEnabled()) {
+          Timing.enterScope();
+          Timing.setScopeValue(ExecutionTree.class, new ExecutionTree());
+          timer = Timing.start("Key event dispatch");
         }
-        // Test that the event is meaningful (and stop bubbling if it is not).
-        SignalEvent signal = SignalEventImpl.create(realEvent.<Event>cast(), true);
-        if (signal != null) {
-          KeyCombo key = EventWrapper.getKeyCombo(signal);
-          if (globalHandler.onKeySignal(key)) {
-            event.preventDefault();
+        try {
+          // Only respond to key events on the body element. Otherwise, the key
+          // event was probably targeted to some editable input element, and that
+          // should own the events.
+          NativeEvent realEvent = event.getNativeEvent();
+          Element target = realEvent.getEventTarget().cast();
+          if (!"body".equals(target.getTagName().toLowerCase())) {
+            return;
           }
+          // Test that the event is meaningful (and stop bubbling if it is not).
+          SignalEvent signal = SignalEventImpl.create(realEvent.<Event>cast(), true);
+          if (signal != null) {
+            KeyCombo key = EventWrapper.getKeyCombo(signal);
+            if (globalHandler.onKeySignal(key)) {
+              event.preventDefault();
+            }
+          }
+        } finally {
+          Timing.stop(timer);
+          Timing.exitScope();
         }
-      } finally {
-        Timing.stop(timer);
-        Timing.exitScope();
       }
     }
 
-    private boolean checkStatDialogCondition(KeyDownEvent event) {
-      int code = event.getNativeEvent().getKeyCode();
-      switch (statDialogCondition) {
-        case 0:
-          if (code == KeyCodes.KEY_CTRL) {
-            statDialogCondition = 1;
-          }
-          break;
-        case 1:
-          statDialogCondition = (code == KeyCodes.KEY_ALT)?2:0;
-          break;
-        case 2:
+    // Press and release one by one Ctrl, Alt and Ctrl again to show statistic dialog.
+    private final static int statDialogKeyCodeSequence[] = { KeyCodes.KEY_CTRL, KeyCodes.KEY_ALT, KeyCodes.KEY_CTRL };
+
+    private static boolean checkStatDialogCondition(int state, int keyCode, boolean down) {
+      return statDialogKeyCodeSequence[state/2] == keyCode && ((state & 1) == 0) == down;
+    }
+
+    private boolean checkStatDialogCondition(KeyEvent<?> event) {
+      boolean down = event instanceof KeyDownEvent;
+      if (checkStatDialogCondition(statDialogCondition, event.getNativeEvent().getKeyCode(), down)) {
+        if (statDialogCondition/2 == statDialogKeyCodeSequence.length-1) {
           statDialogCondition = 0;
-          if (code == KeyCodes.KEY_CTRL) {
-            return true;
-          }
-          break;
+          return true;
+        }
+        statDialogCondition++;
+      } else if (statDialogCondition != 0) {
+        statDialogCondition = checkStatDialogCondition(0, event.getNativeEvent().getKeyCode(), down) ? 1 : 0;
       }
       return false;
     }

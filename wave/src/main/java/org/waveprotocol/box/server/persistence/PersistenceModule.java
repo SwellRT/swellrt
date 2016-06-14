@@ -21,12 +21,8 @@ package org.waveprotocol.box.server.persistence;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.persistence.file.FileAccountAttachmentStore;
+import com.typesafe.config.Config;
 import org.waveprotocol.box.server.persistence.file.FileAccountStore;
 import org.waveprotocol.box.server.persistence.file.FileAttachmentStore;
 import org.waveprotocol.box.server.persistence.file.FileDeltaStore;
@@ -71,26 +67,19 @@ public class PersistenceModule extends AbstractModule {
 
 
   @Inject
-  public PersistenceModule(@Named(CoreSettings.SIGNER_INFO_STORE_TYPE) String signerInfoStoreType,
-      @Named(CoreSettings.ATTACHMENT_STORE_TYPE) String attachmentStoreType,
-      @Named(CoreSettings.ACCOUNT_STORE_TYPE) String accountStoreType,
-      @Named(CoreSettings.DELTA_STORE_TYPE) String deltaStoreType,
-      @Named(CoreSettings.MONGODB_HOST) String mongoDBHost,
-      @Named(CoreSettings.MONGODB_PORT) String mongoDBPort,
-      @Named(CoreSettings.MONGODB_DATABASE) String mongoDBdatabase) {
-    this.signerInfoStoreType = signerInfoStoreType;
-    this.attachmentStoreType = attachmentStoreType;
-    this.accountStoreType = accountStoreType;
-    this.deltaStoreType = deltaStoreType;
-    this.mongoDBHost = mongoDBHost;
-    this.mongoDBPort = mongoDBPort;
-    this.mongoDBdatabase = mongoDBdatabase;
+  public PersistenceModule(Config config) {
+    this.signerInfoStoreType = config.getString("core.signer_info_store_type");
+    this.attachmentStoreType = config.getString("core.attachment_store_type");
+    this.accountStoreType = config.getString("core.account_store_type");
+    this.deltaStoreType = config.getString("core.delta_store_type");
+    this.mongoDBHost = config.getString("core.mongodb_host");
+    this.mongoDBPort = config.getString("core.mongodb_port");
+    this.mongoDBdatabase = config.getString("core.mongodb_database");
   }
 
   /**
    * Returns a {@link MongoDbProvider} instance.
    */
-  @Provides
   public MongoDbProvider getMongoDbProvider() {
     if (mongoDbProvider == null) {
       mongoDbProvider = new MongoDbProvider(mongoDBHost, mongoDBPort, mongoDBdatabase);
@@ -148,8 +137,6 @@ public class PersistenceModule extends AbstractModule {
     } else {
       throw new RuntimeException("Invalid account store type: '" + accountStoreType + "'");
     }
-
-    bind(AccountAttachmentStore.class).to(FileAccountAttachmentStore.class).in(Singleton.class);
   }
 
   private void bindDeltaStore() {
@@ -164,5 +151,4 @@ public class PersistenceModule extends AbstractModule {
       throw new RuntimeException("Invalid delta store type: '" + deltaStoreType + "'");
     }
   }
-
 }

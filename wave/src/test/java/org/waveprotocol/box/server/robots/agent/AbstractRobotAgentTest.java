@@ -46,7 +46,7 @@ public class AbstractRobotAgentTest extends TestCase {
     public FakeRobotAgent(String waveDomain, TokenGenerator tokenGenerator,
         ServerFrontendAddressHolder frontendAddressHolder, AccountStore accountStore,
         RobotRegistrar registrar, Boolean sslEnabled) {
-      super(waveDomain, tokenGenerator, frontendAddressHolder, accountStore, registrar, sslEnabled);
+      super(waveDomain, frontendAddressHolder, accountStore, registrar, sslEnabled);
     }
 
     @Override

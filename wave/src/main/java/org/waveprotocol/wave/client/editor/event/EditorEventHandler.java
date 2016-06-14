@@ -117,9 +117,6 @@ public final class EditorEventHandler {
 
   private final boolean useCompositionEvents;
 
-  private final boolean useMobileChromiunCompositionEvents =
-      QuirksConstants.MOBILE_CHROMIUN_HACK_COMPOSITION_EVENTS;
-
   /**
    * Sets whether we use whitelisting or blacklisting to potentially cancel
    * unhandled keycombos.
@@ -174,10 +171,8 @@ public final class EditorEventHandler {
         editorInteractor, subHandler, router,
         useWhiteListFlag,
         // We may want to turn off composition events for webkit if something goes wrong...
-        // Force turn off in mobile chromiun webkit
-        QuirksConstants.SUPPORTS_COMPOSITION_EVENTS
-            && (UserAgent.isWebkit() ? useWebkitCompositionFlag : true)
-            && !QuirksConstants.MOBILE_CHROMIUN_HACK_COMPOSITION_EVENTS);
+        QuirksConstants.SUPPORTS_COMPOSITION_EVENTS &&
+            (UserAgent.isWebkit() ? useWebkitCompositionFlag : true));
   }
 
   EditorEventHandler(TimerService criticalTimerService, EditorInteractor interactor,
@@ -204,17 +199,6 @@ public final class EditorEventHandler {
    * @return true if its handled
    */
   public boolean handleEvent(EditorEvent signal) {
-
-    if (useMobileChromiunCompositionEvents) {
-      if (signal.asEvent().getType().equalsIgnoreCase(BrowserEvents.COMPOSITIONSTART)) {
-        EditorStaticDeps.startIgnoreMutations();
-      }
-
-      if (signal.asEvent().getType().equalsIgnoreCase(BrowserEvents.COMPOSITIONEND)) {
-        EditorStaticDeps.endIgnoreMutations();
-      }
-    }
-
     if (editorInteractor.notifyListeners(signal)) {
       // The listeners themselves can cancel the event if they wish.
       return false;
@@ -244,7 +228,6 @@ public final class EditorEventHandler {
     }
     return retVal;
   }
-
 
   private boolean handleEventInner(EditorEvent event) throws SelectionLostException {
     // TODO(danilatos): IE IME keycode thingy!!
@@ -293,20 +276,6 @@ public final class EditorEventHandler {
       if (useCompositionEvents) {
         return handleCompositionEvent(event);
       } else {
-
-        // OMG, composition events don't work in Mobile Chromiun!
-        // It seems this works! I just want to capture text input and backspace
-        if (useMobileChromiunCompositionEvents) {
-          if (event.asEvent().getType().equalsIgnoreCase(BrowserEvents.TEXTINPUT)
-              || event.asEvent().getType().equalsIgnoreCase(BrowserEvents.COMPOSITIONUPDATE)) {
-
-            refreshEditorWithCaret(event);
-            Point<ContentNode> caret = maybeSetSelectionLeftAffinity(event.getCaret().asPoint());
-            event.setCaret(ContentPoint.fromPoint(caret));
-            return editorInteractor.notifyTypingExtractor(event.getCaret().asPoint(), false, false);
-          }
-        }
-
         return false;
       }
     } else if (event.isClipboardEvent()) {

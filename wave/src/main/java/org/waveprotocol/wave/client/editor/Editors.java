@@ -26,6 +26,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
 import org.waveprotocol.wave.client.common.util.UserAgent;
+import org.waveprotocol.wave.client.doodad.form.FormDoodads;
 import org.waveprotocol.wave.client.editor.content.ContentDocElement;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.img.ImgDoodad;
@@ -110,6 +111,8 @@ public final class Editors {
     ChunkyElementHandler.register("br", ROOT_HANDLER_REGISTRY);
     AnnotationPaint.register(ROOT_HANDLER_REGISTRY);
     ImgDoodad.register(ROOT_HANDLER_REGISTRY);
+
+    FormDoodads.register(ROOT_HANDLER_REGISTRY);
 
     // after registries, set selection information:
     ValidSelectionStrategy.registerTagForSelections(

@@ -35,9 +35,9 @@ import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint.EventHandler;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint.MutationHandler;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Priority;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
-import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 
 import java.util.HashSet;
@@ -120,9 +120,6 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
       }
     } else if (name.equals(AnnotationPaint.MOUSE_LISTENER_ATTR)) {
       updateEventHandler(element, newValue);
-    } else if (name.equals(AnnotationPaint.CLASS_ATTR)) {
-      // If a class attribute is provided, set as a CSS class name
-      implNodelet.addClassName(newValue);
     } else {
       try {
         implNodelet.getStyle().setProperty(name, newValue);

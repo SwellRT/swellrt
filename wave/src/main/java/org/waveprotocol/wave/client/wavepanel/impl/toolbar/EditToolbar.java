@@ -337,12 +337,13 @@ public class EditToolbar {
         .setIcon(css.insertGadget())
         .applyTo(toolbar.addClickButton(), new ToolbarClickButton.Listener() {
           @Override public void onClicked() {
+            final FocusedRange focusedRange = editor.getSelectionHelper().getSelectionRange();
             GadgetSelectorWidget selector = new GadgetSelectorWidget(new GadgetInfoProviderImpl(new GwtGadgetInfoParser()));
             selector.addFeaturedOptions();
             final UniversalPopup popup = selector.showInPopup();
             selector.setListener(new GadgetSelectorWidget.Listener() {
               @Override public void onSelect(String url) {
-                insertGadget(url);
+                insertGadget(url, focusedRange);
                 popup.hide();
               }
             });
@@ -350,9 +351,8 @@ public class EditToolbar {
         });
   }
 
-  private void insertGadget(String url) {
+  private void insertGadget(String url, FocusedRange focusedRange) {
     int from = -1;
-    FocusedRange focusedRange = editor.getSelectionHelper().getSelectionRange();
     if (focusedRange != null) {
       from = focusedRange.getFocus();
     }

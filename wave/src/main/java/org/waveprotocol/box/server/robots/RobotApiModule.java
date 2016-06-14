@@ -32,13 +32,13 @@ import com.google.wave.api.data.converter.EventDataConverterModule;
 import com.google.wave.api.robot.HttpRobotConnection;
 import com.google.wave.api.robot.RobotConnection;
 
+import com.typesafe.config.Config;
 import net.oauth.OAuthServiceProvider;
 import net.oauth.OAuthValidator;
 import net.oauth.SimpleOAuthValidator;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.robots.active.ActiveApiOperationServiceRegistry;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOAuthServlet;
 import org.waveprotocol.box.server.robots.dataapi.DataApiOperationServiceRegistry;
@@ -131,8 +131,8 @@ public class RobotApiModule extends AbstractModule {
 
   @Provides
   @Singleton
-  protected OAuthServiceProvider provideOAuthServiceProvider(
-      @Named(CoreSettings.HTTP_FRONTEND_PUBLIC_ADDRESS) String publicAddress) {
+  protected OAuthServiceProvider provideOAuthServiceProvider(Config config) {
+      String publicAddress = config.getString("core.http_frontend_public_address");
     // Three urls, first is to get an unauthorized request token, second is to
     // authorize the request token, third is to exchange the authorized request
     // token with an access token.

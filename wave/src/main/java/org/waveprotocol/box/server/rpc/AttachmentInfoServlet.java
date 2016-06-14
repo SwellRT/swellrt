@@ -22,16 +22,10 @@ package org.waveprotocol.box.server.rpc;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import org.waveprotocol.box.attachment.AttachmentMetadata;
-import org.waveprotocol.box.attachment.AttachmentProto.AttachmentsResponse;
-import org.waveprotocol.box.attachment.proto.AttachmentMetadataProtoImpl;
-import org.waveprotocol.box.server.attachment.AttachmentService;
+import java.util.logging.Level;
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AttachmentUtil;
 import org.waveprotocol.box.server.rpc.ProtoSerializer.SerializationException;
-import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
-import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -40,11 +34,17 @@ import org.waveprotocol.wave.util.logging.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.waveprotocol.box.attachment.AttachmentMetadata;
+import org.waveprotocol.box.attachment.AttachmentProto.AttachmentsResponse;
+import org.waveprotocol.box.attachment.proto.AttachmentMetadataProtoImpl;
+import org.waveprotocol.box.server.attachment.AttachmentService;
+import org.waveprotocol.box.server.persistence.AttachmentUtil;
+import org.waveprotocol.box.server.waveserver.WaveServerException;
+import org.waveprotocol.wave.media.model.AttachmentId;
 
 /*
  * Serves attachments info from a provided store.
@@ -82,7 +82,7 @@ public class AttachmentInfoServlet extends HttpServlet {
       return;
     }
 
-    ParticipantId user = sessionManager.getLoggedInUser(request);
+    ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
 
     AttachmentsResponse.Builder attachmentsResponse = AttachmentsResponse.newBuilder();
     for (AttachmentId id : attachmentIds) {

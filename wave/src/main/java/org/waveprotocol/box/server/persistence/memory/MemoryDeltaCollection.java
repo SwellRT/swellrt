@@ -23,16 +23,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
-import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
 import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
+import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -122,32 +120,5 @@ public class MemoryDeltaCollection implements DeltasAccess {
       endVersion = delta.getTransformedDelta().getResultingVersion();
       endDeltas.put(endVersion.getVersion(), delta);
     }
-  }
-
-  @Override
-  public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
-    for (WaveletDeltaRecord delta : deltas.values())
-      receiver.put(delta);
-
-    return deltas.size();
-  }
-
-  @Override
-  public long getDeltasInRange(long startVersion, long endVersion,
-      Receiver<WaveletDeltaRecord> receiver) throws IOException {
-
-    Preconditions
-        .checkState((startVersion >= 0 && startVersion < endVersion && endVersion <= this.endVersion
-            .getVersion()));
-
-    long count = 0;
-    for (long v = startVersion; v <= endVersion; v++) {
-      if (!receiver.put(deltas.get(v))) {
-        throw new IllegalStateException("error processing deltas from memory");
-      }
-      count++;
-    }
-
-    return count;
   }
 }

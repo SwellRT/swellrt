@@ -36,17 +36,11 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 public class HttpRequestBasedCallbackHandler implements CallbackHandler {
   public static final String ADDRESS_FIELD = "address";
   public static final String PASSWORD_FIELD = "password";
-
+  
   private final MultiMap<String> parameters;
 
   public HttpRequestBasedCallbackHandler(MultiMap<String> parameters) {
     this.parameters = parameters;
-  }
-
-  public HttpRequestBasedCallbackHandler(String address, String password) {
-    this.parameters = new MultiMap<String>();
-    this.parameters.add(ADDRESS_FIELD, address);
-    this.parameters.add(PASSWORD_FIELD, password);
   }
 
   @Override

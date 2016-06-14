@@ -27,14 +27,15 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsOb
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.RepeatingCommand;
+import com.google.gwt.user.client.Cookies;
 
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitResponseJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolWaveletUpdateJsoImpl;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.client.events.ClientEvents;
 import org.waveprotocol.wave.client.events.Log;
 import org.waveprotocol.wave.client.events.NetworkStatusEvent;
@@ -45,21 +46,18 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
 import java.util.Queue;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
 
 
 /**
- * Wrapper around Atmosphere connections that handles the Wave client-server
- * protocol.
- *
- * Catch exceptions on handling server messages and provide them to client as
- * events.
- *
- * @author pablojan@gmail.com (Pablo Ojanguren)
- *
+ * Wrapper around WebSocket that handles the Wave client-server protocol.
  */
 public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
+  private static final int MAX_INITIAL_FAILURES = 2;
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
-
+  private static final int RECONNECT_TIME_MS = 5000;
+  private static final String JETTY_SESSION_TOKEN_NAME = "JSESSIONID";
 
   /**
    * Envelope for delivering arbitrary messages. Each envelope has a sequence
@@ -100,16 +98,11 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final IntMap<SubmitResponseCallback> submitRequestCallbacks;
 
   /**
-   * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594;
-   * DISCONNECTED)&#8727; &#8594; ERROR;
-   *
-   * The WaveSocket tries to keep the connection alive continuously. But under
-   * some circumstances severe errors happen like server reboot or session
-   * expiration.
-   *
+   * Lifecycle of a socket is:
+   *   (CONNECTING &#8594; CONNECTED &#8594; DISCONNECTED)&#8727;
    */
   private enum ConnectState {
-    CONNECTED, CONNECTING, DISCONNECTED, ERROR
+    CONNECTED, CONNECTING, DISCONNECTED
   }
 
   private ConnectState connected = ConnectState.DISCONNECTED;
@@ -118,13 +111,33 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   private final Queue<JsonMessage> messages = CollectionUtils.createQueue();
 
+  private final RepeatingCommand reconnectCommand = new RepeatingCommand() {
+    @Override
+    public boolean execute() {
+      if (!connectedAtLeastOnce && !websocketNotAvailable && connectTry > MAX_INITIAL_FAILURES) {
+        // Let's try to use websocket alternative, seems that websocket it's not working
+        // (we are under a proxy or similar)
+        socket = WaveSocketFactory.create(true, urlBase, WaveWebSocketClient.this);
+      }
+      connectTry++;
+      if (connected == ConnectState.DISCONNECTED) {
+        LOG.info("Attemping to reconnect");
+        connected = ConnectState.CONNECTING;
+        socket.connect();
+      }
+      return true;
+    }
+  };
+  private final boolean websocketNotAvailable;
   private boolean connectedAtLeastOnce = false;
+  private long connectTry = 0;
+  private final String urlBase;
 
-  private WaveSocket.WaveSocketStartCallback onStartCallback = null;
-
-  public WaveWebSocketClient(String urlBase, String clientVersion) {
+  public WaveWebSocketClient(boolean websocketNotAvailable, String urlBase) {
+    this.websocketNotAvailable = websocketNotAvailable;
+    this.urlBase = urlBase;
     submitRequestCallbacks = CollectionUtils.createIntMap();
-    socket = WaveSocketFactory.create(urlBase, getSessionToken(), clientVersion, this);
+    socket = WaveSocketFactory.create(websocketNotAvailable, urlBase, this);
   }
 
   /**
@@ -142,93 +155,30 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * Opens this connection.
    */
   public void connect() {
-    connected = ConnectState.CONNECTING;
-    socket.connect();
+    reconnectCommand.execute();
+    Scheduler.get().scheduleFixedDelay(reconnectCommand, RECONNECT_TIME_MS);
   }
-
-  /**
-   * Opens this connection with a callback to know when actually websocket is
-   * opened.
-   */
-  public void connect(WaveSocket.WaveSocketStartCallback callback) {
-    onStartCallback = callback;
-    connected = ConnectState.CONNECTING;
-    socket.connect();
-  }
-
-  /**
-   * Lets app to fully restart the connection.
-   *
-   */
-  public void disconnect(boolean discardInFlightMessages) {
-    connected = ConnectState.DISCONNECTED;
-    socket.disconnect();
-    connectedAtLeastOnce = false;
-    if (discardInFlightMessages) messages.clear();
-
-  }
-
-  private native String getSessionToken() /*-{
-    var token = $wnd.__session['sessionid'];
-    try {
-      if ($wnd.sessionStorage && $wnd.sessionStorage.getItem("x-swellrt-window-id") != null) {
-        token+=":"+$wnd.sessionStorage.getItem("x-swellrt-window-id");
-       }
-     } catch(e) {
-
-     }
-    return token;
-   }-*/;
 
   @Override
   public void onConnect() {
-
     connected = ConnectState.CONNECTED;
+    connectedAtLeastOnce = true;
 
-    try {
-      // Sends the session cookie to the server via an RPC to work around
-      // browser bugs.
-      // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
-      if (!connectedAtLeastOnce) {
-        // Send the auth message if is the first connection
-        // String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
-        String token = getSessionToken();
-        if (token != null) {
-          ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
-          auth.setToken(token);
-          send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
-        }
-      }
-      connectedAtLeastOnce = true;
-      // Flush queued messages.
-      while (!messages.isEmpty() && connected == ConnectState.CONNECTED) {
-        send(messages.poll());
-      }
-    } catch (Exception e) {
-      connected = ConnectState.DISCONNECTED;
-
-      // Report connection error on connection started explicitly
-      if (onStartCallback != null) {
-        onStartCallback.onFailure();
-        onStartCallback = null;
-      } else {
-        // Trigger event on else block cause. onStartCallback is only set for
-        // the first time connection.
-        ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
-      }
-
-      return;
+    // Sends the session cookie to the server via an RPC to work around browser bugs.
+    // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
+    String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
+    if (token != null) {
+      ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
+      auth.setToken(token);
+      send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
     }
 
-    // Report connection success on connection started explicitly
-    if (onStartCallback != null) {
-      onStartCallback.onSuccess();
-      onStartCallback = null;
+    // Flush queued messages.
+    while (!messages.isEmpty() && connected == ConnectState.CONNECTED) {
+      send(messages.poll());
     }
 
-    // Trigger event anyway
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.CONNECTED));
-
   }
 
   @Override
@@ -237,11 +187,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.DISCONNECTED));
   }
 
-
   @Override
   public void onMessage(final String message) {
-
-
     LOG.info("received JSON message " + message);
     Timer timer = Timing.start("deserialize message");
     MessageWrapper wrapper;
@@ -256,27 +203,14 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     String messageType = wrapper.getType();
     if ("ProtocolWaveletUpdate".equals(messageType)) {
       if (callback != null) {
-
-        try {
-          callback.onWaveletUpdate(wrapper.<ProtocolWaveletUpdateJsoImpl> getPayload());
-        } catch (Exception e) {
-          ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
-        }
-
+        callback.onWaveletUpdate(wrapper.<ProtocolWaveletUpdateJsoImpl>getPayload());
       }
     } else if ("ProtocolSubmitResponse".equals(messageType)) {
       int seqno = wrapper.getSequenceNumber();
       SubmitResponseCallback callback = submitRequestCallbacks.get(seqno);
       if (callback != null) {
-
-        try {
-          submitRequestCallbacks.remove(seqno);
-          callback.run(wrapper.<ProtocolSubmitResponseJsoImpl> getPayload());
-        } catch (Exception e) {
-          connected = ConnectState.DISCONNECTED;
-          ClientEvents.get().fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, e));
-        }
-
+        submitRequestCallbacks.remove(seqno);
+        callback.run(wrapper.<ProtocolSubmitResponseJsoImpl>getPayload());
       }
     }
   }
@@ -307,18 +241,6 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       default:
         messages.add(message);
     }
-  }
-
-  public boolean isConnected() {
-    return connected == ConnectState.CONNECTED;
-  }
-
-  @Override
-  public void onError(String errorCode) {
-    // For now, we can't recover exceptions from inner layers. Just let the
-    // client app to reset
-    ClientEvents.get()
-        .fireEvent(new NetworkStatusEvent(ConnectionStatus.PROTOCOL_ERROR, errorCode));
   }
 
 }

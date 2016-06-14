@@ -21,15 +21,13 @@ package org.waveprotocol.box.server.rpc;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
+import com.typesafe.config.Config;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.waveprotocol.box.attachment.AttachmentMetadata;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.attachment.AttachmentService;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AttachmentStore.AttachmentData;
@@ -42,20 +40,15 @@ import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Calendar;
-import java.util.List;
-import java.util.logging.Level;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLDecoder;
+import java.util.Calendar;
+import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Serves attachments from a provided store.
@@ -82,12 +75,11 @@ public class AttachmentServlet extends HttpServlet {
 
   @Inject
   private AttachmentServlet(AttachmentService service, WaveletProvider waveletProvider,
-      SessionManager sessionManager,
-      @Named(CoreSettings.THUMBNAIL_PATTERNS_DIRECTORY) String thumbnailPatternsDirectory) {
+      SessionManager sessionManager, Config config) {
     this.service = service;
     this.waveletProvider = waveletProvider;
     this.sessionManager = sessionManager;
-    this.thumbnailPattternsDirectory = thumbnailPatternsDirectory;
+    this.thumbnailPattternsDirectory = config.getString("core.thumbnail_patterns_directory");
   }
 
   @Override
@@ -117,7 +109,7 @@ public class AttachmentServlet extends HttpServlet {
       waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
     }
 
-    ParticipantId user = sessionManager.getLoggedInUser(request);
+    ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
     boolean isAuthorized = false;
     try {
       isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
@@ -130,14 +122,7 @@ public class AttachmentServlet extends HttpServlet {
     }
 
     if (metadata == null) {
-      try {
-        metadata =
-            service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
-      } catch (IOException e) {
-        LOG.warning(e.getMessage());
-        response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        return;
-      }
+      metadata = service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
     }
 
     String contentType;
@@ -222,17 +207,16 @@ public class AttachmentServlet extends HttpServlet {
         }
 
         WaveletName waveletName = AttachmentUtil.waveRef2WaveletName(waveRefStr);
-        ParticipantId user = sessionManager.getLoggedInUser(request);
+        ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
         boolean isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
         if (!isAuthorized) {
           response.sendError(HttpServletResponse.SC_FORBIDDEN);
           return;
         }
 
-        String fileName = fileItem.getName();
         // Get only the file name not whole path.
-        if (fileName != null) {
-          fileName = FilenameUtils.getName(fileName);
+        if (fileItem != null && fileItem.getName()  != null) {
+          String fileName = FilenameUtils.getName(fileItem.getName());
           service.storeAttachment(id, fileItem.getInputStream(), waveletName, fileName, user);
           response.setStatus(HttpServletResponse.SC_CREATED);
           String msg =
@@ -254,54 +238,6 @@ public class AttachmentServlet extends HttpServlet {
     }
   }
 
-  @Override
-  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
-
-    AttachmentId attachmentId = getAttachmentIdFromRequest(request);
-
-    if (attachmentId == null) {
-      response.sendError(HttpServletResponse.SC_NOT_FOUND);
-      return;
-    }
-
-    String waveRefStr = getWaveRefFromRequest(request);
-
-    AttachmentMetadata metadata = service.getMetadata(attachmentId);
-    WaveletName waveletName;
-
-    if (metadata == null) {
-      // Old attachments does not have metainfo.
-      if (waveRefStr != null) {
-        waveletName = AttachmentUtil.waveRef2WaveletName(waveRefStr);
-      } else {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        return;
-      }
-    } else {
-      waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
-    }
-
-
-    ParticipantId user = sessionManager.getLoggedInUser(request);
-    boolean isAuthorized = false;
-    try {
-      isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
-    } catch (WaveServerException e) {
-      LOG.warning("Problem while authorizing user: " + user + " for wavelet: " + waveletName, e);
-    }
-    if (!isAuthorized) {
-      response.sendError(HttpServletResponse.SC_FORBIDDEN);
-      return;
-    }
-
-    service.deleteAttachment(attachmentId);
-
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.getWriter().print("OK");
-    response.flushBuffer();
-  };
-
   private static AttachmentId getAttachmentIdFromRequest(HttpServletRequest request) {
     if (request.getPathInfo().length() == 0) {
       return null;
@@ -317,12 +253,7 @@ public class AttachmentServlet extends HttpServlet {
 
   private static String getAttachmentIdStringFromRequest(HttpServletRequest request) {
     // Discard the leading '/' in the pathinfo.
-    String path = request.getPathInfo().substring(1);
-    // Remove session parameter
-    int sidDelimiterIndex = path.indexOf(";");
-    if (sidDelimiterIndex != -1) return path.substring(0, sidDelimiterIndex);
-
-    return path;
+    return request.getPathInfo().substring(1);
   }
 
   private AttachmentData getThumbnailByContentType(String contentType) throws IOException {

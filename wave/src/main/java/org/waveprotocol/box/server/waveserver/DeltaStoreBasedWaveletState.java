@@ -25,6 +25,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 
@@ -32,8 +33,6 @@ import org.waveprotocol.box.common.ListReceiver;
 import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -48,6 +47,7 @@ import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -113,14 +113,14 @@ class DeltaStoreBasedWaveletState implements WaveletState {
   public static DeltaStoreBasedWaveletState create(DeltaStore.DeltasAccess deltasAccess,
       Executor persistExecutor) throws PersistenceException {
     if (deltasAccess.isEmpty()) {
-      return new DeltaStoreBasedWaveletState(deltasAccess, null, persistExecutor);
+      return new DeltaStoreBasedWaveletState(deltasAccess, ImmutableList.<WaveletDeltaRecord>of(),
+          null, persistExecutor);
     } else {
       try {
-        Timer t1 =
-            Timing.startRequest("Build Snapshot " + deltasAccess.getWaveletName().toString());
-        WaveletData snapshot = WaveletDataUtil.buildWaveletFromDeltaAccess(deltasAccess);
-        Timing.stop(t1);
-        return new DeltaStoreBasedWaveletState(deltasAccess, snapshot, persistExecutor);
+        ImmutableList<WaveletDeltaRecord> deltas = readAll(deltasAccess, null);
+        WaveletData snapshot = WaveletDataUtil.buildWaveletFromDeltas(deltasAccess.getWaveletName(),
+            Iterators.transform(deltas.iterator(), TRANSFORMED));
+        return new DeltaStoreBasedWaveletState(deltasAccess, deltas, snapshot, persistExecutor);
       } catch (IOException e) {
         throw new PersistenceException("Failed to read stored deltas", e);
       } catch (OperationException e) {
@@ -168,15 +168,10 @@ class DeltaStoreBasedWaveletState implements WaveletState {
   private static WaveletDeltaRecord getDelta(WaveletDeltaRecordReader reader,
       ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas,
       HashedVersion version) throws IOException {
-
-    WaveletDeltaRecord delta = null;
-
-    // try cache first!
-    if (cachedDeltas != null)
+    WaveletDeltaRecord delta = reader.getDelta(version.getVersion());
+    if (delta == null && cachedDeltas != null) {
       delta = cachedDeltas.get(version);
-
-    if (delta == null) delta = reader.getDelta(version.getVersion());
-
+    }
     return delta;
   }
 
@@ -269,8 +264,10 @@ class DeltaStoreBasedWaveletState implements WaveletState {
    * snapshot and will mutate it if appendDelta() is called.
    */
   @VisibleForTesting
-  DeltaStoreBasedWaveletState(DeltaStore.DeltasAccess deltasAccess, WaveletData snapshot,
-      Executor persistExecutor) {
+  DeltaStoreBasedWaveletState(DeltaStore.DeltasAccess deltasAccess,
+      List<WaveletDeltaRecord> deltas, WaveletData snapshot, Executor persistExecutor) {
+    Preconditions.checkArgument(deltasAccess.isEmpty() == deltas.isEmpty());
+    Preconditions.checkArgument(deltas.isEmpty() == (snapshot == null));
     this.persistExecutor = persistExecutor;
     this.versionZero = HASH_FACTORY.createVersionZero(deltasAccess.getWaveletName());
     this.deltasAccess = deltasAccess;

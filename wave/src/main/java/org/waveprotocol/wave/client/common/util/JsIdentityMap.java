@@ -93,14 +93,10 @@ public class JsIdentityMap<K, V> implements IdentityMap<K, V> {
 
   /**
    * Get the unique id for the object
-   *
-   * TODO(danilatos): See if just calling .hashCode() will "Just Work (TM)"
-   * both for jso and "java' objects at the same time. Then we won't need to
-   * do it manually.
    */
-  private native int getId(K key) /*-{
-    return key.x$h || (key.x$h = @com.google.gwt.core.client.impl.Impl::getNextHashId()());
-  }-*/;
+  private int getId(K key) {
+    return key.hashCode();
+  }
 
   /** {@inheritDoc} */
   @Override

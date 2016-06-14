@@ -26,7 +26,6 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.inject.servlet.GuiceFilter;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.google.inject.servlet.ServletModule;
@@ -35,45 +34,32 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.Service;
-
+import com.typesafe.config.Config;
 import org.apache.commons.lang.StringUtils;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.config.service.AtmosphereHandlerService;
-import org.atmosphere.cpr.AtmosphereHandler;
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
-import org.atmosphere.cpr.AtmosphereResourceEvent;
-import org.atmosphere.cpr.Broadcaster;
-import org.atmosphere.cpr.BroadcasterFactory;
+import org.atmosphere.cpr.*;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
+import org.atmosphere.util.IOUtils;
+import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.swellrt.model.generic.Model;
+import org.eclipse.jetty.websocket.servlet.*;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.authentication.HttpWindowSession;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.ClientServerExecutor;
 import org.waveprotocol.box.server.persistence.file.FileUtils;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereChannel;
 import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereClientInterceptor;
-import org.waveprotocol.box.server.rpc.atmosphere.AtmosphereUtil;
 import org.waveprotocol.box.server.util.NetUtils;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
@@ -81,27 +67,18 @@ import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
 import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
-import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 /**
  * ServerRpcProvider can provide instances of type Service over an incoming
@@ -126,11 +103,6 @@ public class ServerRpcProvider {
   private final String sslKeystorePath;
   private final String sslKeystorePassword;
 
-
-
-  private static ConcurrentHashMap<HttpWindowSession, Connection> ATMOSPHERE_CONNECTIONS =
-      new ConcurrentHashMap<HttpWindowSession, Connection>();
-
   // Mapping from incoming protocol buffer type -> specific handler.
   private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices =
       Maps.newHashMap();
@@ -139,15 +111,6 @@ public class ServerRpcProvider {
   private final String[] resourceBases;
 
   private final String sessionStoreDir;
-
-  private int webSocketMaxIdleTime;
-  private int webSocketMaxMessageSize;
-  private int websocketHeartbeat;
-
-  private final int sessionMaxInactiveTime;
-
-  private final static String SESSION_URL_PARAM = "sid";
-  private final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
   /**
    * Internal, static container class for any specific registered service
@@ -183,148 +146,27 @@ public class ServerRpcProvider {
     }
   }
 
-
-  /**
-   * The glue class between the Atmoshphere Framework (communication layer) and
-   * the RPCs for each remote client.
-   *
-   * A connection is associated with an unique pair (HTTP session, browser
-   * window/tab), the {@link HttpWindowSession}
-   *
-   * This implementation supports WebSockets and Long-Polling transports over
-   * Atmosphere.
-   *
-   *
-   * @author pablojan@gmail.com (Pablo Ojanguren)
-   *
-   */
   static class AtmosphereConnection extends Connection {
-
 
     private final AtmosphereChannel atmosphereChannel;
 
-    private HttpWindowSession id;
-    private Broadcaster broadcaster;
+    public AtmosphereConnection(ParticipantId loggedInUser, ServerRpcProvider provider) {
+      super(loggedInUser, provider);
 
-    private TRANSPORT transport;
-
-    public AtmosphereConnection(HttpWindowSession id,
-        ServerRpcProvider provider) {
-
-      super(null, provider);
-
-      this.id = id;
-      this.broadcaster = BroadcasterFactory.getDefault().get(this.id.toString());
-
-      atmosphereChannel = new AtmosphereChannel(this, broadcaster);
+      atmosphereChannel = new AtmosphereChannel(this);
       expectMessages(atmosphereChannel);
 
-
     }
-
-    /**
-     * Handle an incoming request through an {@link AtmosphereResource}.
-     *
-     * @param resource the resource with the incoming message or new connection
-     *        signal
-     */
-    public void onRequest(AtmosphereResource resource, ParticipantId loggedInUser) {
-
-      // Update current transport
-      this.transport = resource.transport();
-
-
-      if (isWebSocket(this.transport)) {
-
-
-        if (isGET(resource)) {
-          // New connection
-          resource.setBroadcaster(broadcaster);
-          resource.suspend();
-        }
-
-
-        if (isPOST(resource)) {
-          String data = AtmosphereUtil.readMessage(resource);
-          atmosphereChannel.handleMessageString(data, loggedInUser);
-        }
-
-
-      }
-
-
-      /*
-       * Responses are always sent back through the GET request (resource). POST
-       * requests are released as soon as the request has been delivered
-       */
-      if (isLongPolling(this.transport)) {
-
-        if (isGET(resource)) {
-          // New connection
-          resource.suspend();
-          broadcaster.addAtmosphereResource(resource);
-        }
-
-
-        if (isPOST(resource)) {
-          String data = AtmosphereUtil.readMessage(resource);
-          atmosphereChannel.handleMessageString(data, loggedInUser);
-          resource.resume();
-        }
-      }
-
-    }
-
-
-    /**
-     * Closes the connection and its RPCs. This method must be invoked when
-     * client closes the communication.
-     */
-    public void close() {
-      this.cancelRpcs();
-      for (AtmosphereResource r : this.broadcaster.getAtmosphereResources()) {
-        try {
-          r.close();
-        } catch (IOException e) {
-          LOG.warning("Error closing resource on session " + id, e);
-        }
-      }
-      this.broadcaster.destroy();
-    }
-
-    //
-    // Send back
-    //
-
 
     @Override
     protected void sendMessage(int sequenceNo, Message message) {
       atmosphereChannel.sendMessage(sequenceNo, message);
-      if (isLongPolling(transport)) {
-        broadcaster.resumeAll();
-      }
     }
 
-    //
-    // Utility methods
-    //
-
-    protected static boolean isWebSocket(TRANSPORT transport) {
-      return transport.equals(TRANSPORT.WEBSOCKET);
+    public AtmosphereChannel getAtmosphereChannel() {
+      return atmosphereChannel;
     }
 
-    protected static boolean isLongPolling(TRANSPORT transport) {
-      return transport.equals(TRANSPORT.LONG_POLLING) || transport.equals(TRANSPORT.POLLING);
-    }
-
-
-    protected static boolean isGET(AtmosphereResource r) {
-      return r.getRequest().getMethod().equalsIgnoreCase("GET");
-    }
-
-    protected static boolean isPOST(AtmosphereResource r) {
-      return r.getRequest().getMethod().equalsIgnoreCase("POST");
-    }
 
   }
 
@@ -332,7 +174,7 @@ public class ServerRpcProvider {
 
   static abstract class Connection implements ProtoCallback {
     private final Map<Integer, ServerRpcController> activeRpcs =
-        new ConcurrentHashMap<Integer, ServerRpcController>();
+        new ConcurrentHashMap<>();
 
     // The logged in user.
     // Note: Due to this bug:
@@ -342,14 +184,10 @@ public class ServerRpcProvider {
 
     private final ServerRpcProvider provider;
 
-    private boolean isFirstRequest = true;
-
-    private boolean isStatusOk = true;
-
     /**
      * @param loggedInUser The currently logged in user, or null if no user is
      *        logged in.
-     * @param provider
+     * @param provider the provider
      */
     public Connection(ParticipantId loggedInUser, ServerRpcProvider provider) {
       this.loggedInUser = loggedInUser;
@@ -370,61 +208,13 @@ public class ServerRpcProvider {
 
     private ParticipantId authenticate(String token) {
       HttpSession session = provider.sessionManager.getSessionFromToken(token);
-      ParticipantId user = provider.sessionManager.getLoggedInUser(session);
-      return user;
-    }
-
-    protected boolean isStatusOk() {
-      return isStatusOk;
-    }
-
-    public ParticipantId getParticipantId() {
-      return loggedInUser;
-    }
-
-    protected void cancelRpcs() {
-      if (!activeRpcs.isEmpty()) {
-        LOG.info("Cleaning up RPCs");
-        for (ServerRpcController controller : activeRpcs.values()) {
-          if (!controller.isCanceled()) {
-            controller.cancel();
-          }
-        }
-        activeRpcs.clear();
-      }
+      return provider.sessionManager.getLoggedInUser(session);
     }
 
     @Override
-    public void message(final int sequenceNo, Message message, ParticipantId loggedInUser) {
+    public void message(final int sequenceNo, Message message) {
       final String messageName = "/" + message.getClass().getSimpleName();
       final Timer profilingTimer = Timing.startRequest(messageName);
-
-      if (isFirstRequest && sequenceNo != 0) {
-        // On server's reboot, clients can get reconnected (sequenceNo !=0) but
-        // server won't be able to process the request.
-        LOG.info("First RPC request but sequence number >0");
-        throw new IllegalStateException("First RPC request nut sequence number >0");
-      }
-
-      isFirstRequest = false;
-
-      // Clean up ServerRpcControllers if remote client starts a new
-      // sequence of protocol messages.
-      // This allows dirty reconnections, resuming current sessions...
-      // This should been handle before, detecting new logins for the same
-      if (sequenceNo == 0) {
-
-        // Don't update on null to keep backwards compat.
-        if (loggedInUser != null) this.loggedInUser = loggedInUser;
-        cancelRpcs();
-      } else {
-        if (!this.loggedInUser.equals(loggedInUser)) {
-          LOG.info("Request's participant doesn't match connection's participant. Spoofing?");
-          throw new IllegalStateException(
-              "Request's participant doesn't match connection's participant.");
-        }
-      }
-
       if (message instanceof Rpc.CancelRpc) {
         final ServerRpcController controller = activeRpcs.get(sequenceNo);
         if (controller == null) {
@@ -445,7 +235,13 @@ public class ServerRpcProvider {
 
         ProtocolAuthenticate authMessage = (ProtocolAuthenticate) message;
         ParticipantId authenticatedAs = authenticate(authMessage.getToken());
+
         Preconditions.checkArgument(authenticatedAs != null, "Auth token invalid");
+        Preconditions.checkState(loggedInUser == null || loggedInUser.equals(authenticatedAs),
+            "Session already authenticated as a different user");
+
+        loggedInUser = authenticatedAs;
+        LOG.info("Session authenticated as " + loggedInUser);
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
@@ -464,8 +260,7 @@ public class ServerRpcProvider {
                       if (message instanceof Rpc.RpcFinished
                           || !serviceMethod.method.getOptions().getExtension(Rpc.isStreamingRpc)) {
                         // This RPC is over - remove it from the map.
-                        boolean failed = message instanceof Rpc.RpcFinished
-                            ? ((Rpc.RpcFinished) message).getFailed() : false;
+                        boolean failed = message instanceof Rpc.RpcFinished && ((Rpc.RpcFinished) message).getFailed();
                         LOG.fine("RPC " + sequenceNo + " is now finished, failed = " + failed);
                         if (failed) {
                           LOG.info("error = " + ((Rpc.RpcFinished) message).getErrorText());
@@ -500,9 +295,7 @@ public class ServerRpcProvider {
   public ServerRpcProvider(InetSocketAddress[] httpAddresses,
       String[] resourceBases, Executor threadPool, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
-      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
-      int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
-      int sessionMaxInactiveTime) {
+      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword) {
     this.httpAddresses = httpAddresses;
     this.resourceBases = resourceBases;
     this.threadPool = threadPool;
@@ -512,44 +305,35 @@ public class ServerRpcProvider {
     this.sslEnabled = sslEnabled;
     this.sslKeystorePath = sslKeystorePath;
     this.sslKeystorePassword = sslKeystorePassword;
-    this.webSocketMaxIdleTime = webSocketMaxIdleTime;
-    this.webSocketMaxMessageSize = webSocketMaxMessageSize;
-    this.websocketHeartbeat = websocketHeartbeat;
-    this.sessionMaxInactiveTime = sessionMaxInactiveTime;
   }
 
   /**
    * Constructs a new ServerRpcProvider with a default ExecutorService.
    */
-  public ServerRpcProvider(InetSocketAddress[] httpAddresses, String[] resourceBases,
-      SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
-      String sessionStoreDir, boolean sslEnabled, String sslKeystorePath,
-      String sslKeystorePassword, Executor executor, int webSocketMaxIdleTime,
-      int webSocketMaxMessageSize, int websocketHeartbeat, int sessionMaxInactiveTime) {
-    this(httpAddresses, resourceBases, executor, sessionManager, jettySessionManager,
-        sessionStoreDir, sslEnabled, sslKeystorePath, sslKeystorePassword, webSocketMaxIdleTime,
-        webSocketMaxMessageSize, websocketHeartbeat, sessionMaxInactiveTime);
+  public ServerRpcProvider(InetSocketAddress[] httpAddresses,
+      String[] resourceBases, SessionManager sessionManager,
+      org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
+      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
+      Executor executor) {
+    this(httpAddresses, resourceBases, executor,
+        sessionManager, jettySessionManager, sessionStoreDir, sslEnabled, sslKeystorePath,
+        sslKeystorePassword);
   }
 
   @Inject
-  public ServerRpcProvider(@Named(CoreSettings.HTTP_FRONTEND_ADDRESSES) List<String> httpAddresses,
-      @Named(CoreSettings.HTTP_WEBSOCKET_PUBLIC_ADDRESS) String websocketAddress,
-      @Named(CoreSettings.RESOURCE_BASES) List<String> resourceBases,
-      SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
-      @Named(CoreSettings.SESSIONS_STORE_DIRECTORY) String sessionStoreDir,
-      @Named(CoreSettings.ENABLE_SSL) boolean sslEnabled,
-      @Named(CoreSettings.SSL_KEYSTORE_PATH) String sslKeystorePath,
-      @Named(CoreSettings.SSL_KEYSTORE_PASSWORD) String sslKeystorePassword,
-      @ClientServerExecutor Executor executorService,
-      @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int webSocketMaxIdleTime,
-      @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int webSocketMaxMessageSize,
-      @Named(CoreSettings.WEBSOCKET_HEARTBEAT) int websocketHeartbeat,
-      @Named(CoreSettings.SESSION_SERVER_MAX_INACTIVE_TIME) int sessionMaxInactiveTime) {
-    this(parseAddressList(httpAddresses, websocketAddress), resourceBases
-        .toArray(new String[0]), sessionManager, jettySessionManager, sessionStoreDir,
- sslEnabled, sslKeystorePath,
-        sslKeystorePassword, executorService, webSocketMaxIdleTime, webSocketMaxMessageSize,
-        websocketHeartbeat, sessionMaxInactiveTime);
+  public ServerRpcProvider(Config config,
+                           SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
+                           @ClientServerExecutor Executor executorService) {
+    this(parseAddressList(config.getStringList("core.http_frontend_addresses"),
+                    config.getString("core.http_websocket_public_address")),
+            config.getStringList("core.resource_bases").toArray(new String[0]),
+            sessionManager,
+            jettySessionManager,
+            config.getString("core.sessions_store_directory"),
+            config.getBoolean("security.enable_ssl"),
+            config.getString("security.ssl_keystore_path"),
+            config.getString("security.ssl_keystore_password"),
+            executorService);
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -559,56 +343,33 @@ public class ServerRpcProvider {
     if (connectors.isEmpty()) {
       LOG.severe("No valid http end point address provided!");
     }
-
-
     for (Connector connector : connectors) {
       httpServer.addConnector(connector);
     }
-
     final WebAppContext context = new WebAppContext();
 
     context.setParentLoaderPriority(true);
 
     if (jettySessionManager != null) {
+      // This disables JSessionIDs in URLs redirects
+      // see: http://stackoverflow.com/questions/7727534/how-do-you-disable-jsessionid-for-jetty-running-with-the-eclipse-jetty-maven-plu
+      // and: http://jira.codehaus.org/browse/JETTY-467?focusedCommentId=114884&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-114884
+      jettySessionManager.setSessionIdPathParameterName(null);
+
       context.getSessionHandler().setSessionManager(jettySessionManager);
-      context.getSessionHandler().getSessionManager()
-          .setMaxInactiveInterval(sessionMaxInactiveTime);
-
-      Set<SessionTrackingMode> sessionTrackingModes = new HashSet<SessionTrackingMode>();
-      sessionTrackingModes.add(SessionTrackingMode.URL);
-      sessionTrackingModes.add(SessionTrackingMode.COOKIE);
-      context.getSessionHandler().getSessionManager().setSessionTrackingModes(sessionTrackingModes);
-      context.getSessionHandler().getSessionManager()
-          .setSessionIdPathParameterName(SESSION_URL_PARAM);
-
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
 
-    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", SESSION_COOKIE_NAME);
-
-    FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
-    corsFilterHolder.setInitParameter("allowedOrigins", "*");
-    // Set explicit methods to allow CORS with DELETE
-    corsFilterHolder.setInitParameter("allowedMethods", "GET,POST,DELETE,PUT,HEAD");
-    corsFilterHolder.setInitParameter("allowedHeaders",
-        "X-Requested-With,Content-Type,Accept,Origin,X-window-id");
-    context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
-
-    // Set cache header rewriter filter
-    FilterHolder cacheFilterHolder = new FilterHolder(CacheHeaderFilter.class);
-    context.addFilter(cacheFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
-
     addWebSocketServlets();
 
     try {
-      final Injector parentInjector = injector;
 
-      final ServletModule servletModule = getServletModule(parentInjector);
+      final ServletModule servletModule = getServletModule();
 
       ServletContextListener contextListener = new GuiceServletContextListener() {
 
-        private final Injector childInjector = parentInjector.createChildInjector(servletModule);
+        private final Injector childInjector = injector.createChildInjector(servletModule);
 
         @Override
         protected Injector getInjector() {
@@ -619,18 +380,9 @@ public class ServerRpcProvider {
       context.addEventListener(contextListener);
       context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
       context.addFilter(GzipFilter.class, "/webclient/*", EnumSet.allOf(DispatcherType.class));
-
-      /*
-       * String[] hosts = new String[httpAddresses.length]; for (int i = 0; i <
-       * httpAddresses.length; i++) { hosts[i] =
-       * httpAddresses[i].getHostString(); hosts[i] =
-       * httpAddresses[i].getHostString(); } context.addVirtualHosts(hosts);
-       */
-
       httpServer.setHandler(context);
 
       httpServer.start();
-
       restoreSessions();
 
     } catch (Exception e) { // yes, .start() throws "Exception"
@@ -657,49 +409,9 @@ public class ServerRpcProvider {
     // TODO(zamfi): fix to let messages span frames.
     wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
-    //
     // Atmosphere framework. Replacement of Socket.IO
     // See https://issues.apache.org/jira/browse/WAVE-405
-    //
     ServletHolder atholder = addServlet("/atmosphere*", AtmosphereGuiceServlet.class);
-
-    // Avoid loading defualt CORS interceptor which is in conflict with general
-    // jetty CORS filter
-    atholder.setInitParameter("org.atmosphere.cpr.AtmosphereInterceptor.disableDefaults", "true");
-
-    // Setting a low HeartBeat frequency to avoid network issues. Let clients to
-    // set a hihger value.
-    atholder.setInitParameter(
-        "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", ""
-            + websocketHeartbeat);
-
-
-    //
-    // Configure Atmosphere Broadcaster class
-    //
-    // Comment out following line to enable Threaded broadcasters
-    atholder.setInitParameter("org.atmosphere.cpr.broadcasterClass",
-        "org.atmosphere.util.SimpleBroadcaster");
-
-    //
-    // Configuring Atmosphere threads: this config is considered if
-    // SimpleBroadcaster is not used
-    //
-
-    // Use same thread pool for all brodcaster (AtmosphereConnection)
-    atholder.setInitParameter("org.atmosphere.cpr.broadcaster.shareableThreadPool", "true");
-    // Set number of threads for atmosphere
-    atholder.setInitParameter("org.atmosphere.cpr.broadcaster.maxProcessingThreads", "4");
-
-
-    // Setting all buffers at least to 2MB
-    atholder.setInitParameter("org.atmosphere.websocket.maxTextMessageSize", ""
-        + (BUFFER_SIZE * webSocketMaxMessageSize));
-    atholder.setInitParameter("org.atmosphere.websocket.maxBinaryMessageSize", ""
-        + (BUFFER_SIZE * webSocketMaxMessageSize));
-    atholder.setInitParameter("org.atmosphere.websocket.webSocketBufferingMaxSize", ""
-        + (BUFFER_SIZE * webSocketMaxMessageSize));
-
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
     atholder.setInitParameter("org.atmosphere.cpr.objectFactory",
@@ -707,28 +419,13 @@ public class ServerRpcProvider {
     atholder.setAsyncSupported(true);
     atholder.setInitOrder(0);
 
-    jettySessionManager.addEventListener(new HttpSessionListener() {
-
-      @Override
-      public void sessionCreated(HttpSessionEvent arg0) {
-        LOG.info("Session created: " + arg0.getSession().getId());
-        arg0.getSession().setMaxInactiveInterval(sessionMaxInactiveTime);
-      }
-
-      @Override
-      public void sessionDestroyed(HttpSessionEvent arg0) {
-        LOG.info("Session destroyed: " + arg0.getSession().getId());
-      }
-
-    });
-
     // Serve the static content and GWT web client with the default servlet
     // (acts like a standard file-based web server).
-    // addServlet("/static/*", DefaultServlet.class);
-    // addServlet("/webclient/*", DefaultServlet.class);
+    addServlet("/static/*", DefaultServlet.class);
+    addServlet("/webclient/*", DefaultServlet.class);
   }
 
-  public ServletModule getServletModule(final Injector injector) {
+  public ServletModule getServletModule() {
 
     return new ServletModule() {
       @Override
@@ -758,7 +455,7 @@ public class ServerRpcProvider {
     } else {
       Set<InetSocketAddress> addresses = Sets.newHashSet();
       // We add the websocketAddress as another listening address.
-      ArrayList<String> mergedAddressList = new ArrayList<String>(addressList);
+      ArrayList<String> mergedAddressList = new ArrayList<>(addressList);
       if (!StringUtils.isEmpty(websocketAddress)) {
         mergedAddressList.add(websocketAddress);
       }
@@ -780,12 +477,12 @@ public class ServerRpcProvider {
           }
         }
       }
-      return addresses.toArray(new InetSocketAddress[0]);
+      return addresses.toArray(new InetSocketAddress[addresses.size()]);
     }
   }
 
   /**
-   * @return a list of {@link SelectChannelConnector} each bound to a host:port
+   * @return a list of {@link Connector} each bound to a host:port
    *         pair form the list addresses.
    */
   private List<Connector> getSelectChannelConnectors(
@@ -821,7 +518,6 @@ public class ServerRpcProvider {
       } else {
         connector = new ServerConnector(httpServer);
       }
-      // Allow access by IP and Hostname
       connector.setHost(address.getAddress().getHostAddress());
       connector.setPort(address.getPort());
       connector.setIdleTimeout(0);
@@ -840,13 +536,11 @@ public class ServerRpcProvider {
     final int websocketMaxMessageSize;
 
     @Inject
-    public WaveWebSocketServlet(ServerRpcProvider provider,
-        @Named(CoreSettings.WEBSOCKET_MAX_IDLE_TIME) int websocketMaxIdleTime,
-        @Named(CoreSettings.WEBSOCKET_MAX_MESSAGE_SIZE) int websocketMaxMessageSize) {
+    public WaveWebSocketServlet(ServerRpcProvider provider, Config config) {
       super();
       this.provider = provider;
-      this.websocketMaxIdleTime = websocketMaxIdleTime;
-      this.websocketMaxMessageSize = websocketMaxMessageSize;
+      this.websocketMaxIdleTime = config.getInt("network.websocket_max_idle_time");
+      this.websocketMaxMessageSize = config.getInt("network.websocket_max_message_size");
     }
 
     @SuppressWarnings("cast")
@@ -863,7 +557,7 @@ public class ServerRpcProvider {
         @Override
         public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
           ParticipantId loggedInUser =
-              provider.sessionManager.getLoggedInUser((HttpSession) req.getSession());
+              provider.sessionManager.getLoggedInUser(req.getSession());
 
           return new WebSocketConnection(loggedInUser, provider).getWebSocketServerChannel();
         }
@@ -872,183 +566,165 @@ public class ServerRpcProvider {
   }
 
   /**
-   * The Atmosphere handler. Dispatchs incoming requests from remote clients to
-   * the right {@link AtmosphereConnection}.
-   *
-   * It handles transport-level events:
-   *
-   * <ul>
-   * <li>Session expiration: close remote clients properly.</li>
-   * <li>Server reboot refusing further operations. Close remote clientes
-   * properly.</li>
-   * <li>Allow reconnection of remote clients if HTTP session is still active
-   * despite the transport failure.</li>
-   * <li>Keep connections opened sending heartbeat signal</li>
-   * <li>Remote clients reconnection on timeout to avoid silent network
-   * failures.</li>
-   * </ul>
-   *
-   * Atmosphere interceptors are set manually here, to avoid duplicated CORS
-   * response headers.
-   *
-   * About session tracking: The session token is expected to be stored as a
-   * cookie by default. In some cases where cookies are not available (Browser
-   * previnting 3rd party cookies,...) the session token can be propagated as a
-   * path element /atmosphere/sessionId.
-   *
+   * Manange atmosphere connections and dispatch messages to
+   * wave channels.
    *
    * @author pablojan@gmail.com <Pablo Ojanguren>
    *
    */
   @Singleton
   @AtmosphereHandlerService(path = "/atmosphere",
- interceptors = {
-      AtmosphereClientInterceptor.class, org.atmosphere.interceptor.CacheHeadersInterceptor.class,
-      org.atmosphere.interceptor.PaddingAtmosphereInterceptor.class,
-      org.atmosphere.interceptor.AndroidAtmosphereInterceptor.class,
-      org.atmosphere.interceptor.HeartbeatInterceptor.class,
-      org.atmosphere.interceptor.SSEAtmosphereInterceptor.class,
-      org.atmosphere.interceptor.JSONPAtmosphereInterceptor.class,
-      org.atmosphere.interceptor.JavaScriptProtocol.class,
-      org.atmosphere.interceptor.OnDisconnectInterceptor.class,
-      org.atmosphere.interceptor.IdleResourceInterceptor.class,
-      org.atmosphere.interceptor.WebSocketMessageSuspendInterceptor.class,
-      org.atmosphere.interceptor.TrackMessageSizeB64Interceptor.class},
+      interceptors = {AtmosphereClientInterceptor.class},
       broadcasterCache = UUIDBroadcasterCache.class)
   public static class WaveAtmosphereService implements AtmosphereHandler {
 
+
     private static final Log LOG = Log.get(WaveAtmosphereService.class);
 
-    private static final String EXT_CLIENT_VERSION_HEADER = "X-client-version";
-
-    /** Header name for extensions of the wave socket protocol */
-    private static final String EXT_RESPONSE_HEADER = "X-RESPONSE:";
-
-    private static final String EXT_RESPONSE_CLIENT_NOT_SUPPORTED = "CLIENT_NOT_SUPPORTED";
-    private static final String EXT_RESPONSE_INVALID_SESSION = "INVALID_SESSION";
-    private static final String EXT_RESPONSE_SERVER_EXCEPTION = "SERVER_EXCEPTION";
+    private static final String WAVE_CHANNEL_ATTRIBUTE = "WAVE_CHANNEL_ATTRIBUTE";
+    private static final String MSG_SEPARATOR = "|";
+    private static final String MSG_CHARSET = "UTF-8";
 
     @Inject
     public ServerRpcProvider provider;
 
 
-    /**
-     * Get the session for the Atmosphere resource based on the session token
-     * passes as path part.
-     * 
-     * We ignore cookies explicity here. If request come from an iframe, the
-     * websocket request can send parent's window cookie session causing a
-     * mismatch with session id given in a login request.
-     * 
-     * @param resource
-     * @return
-     */
-    private HttpSession getSession(AtmosphereResource resource) {
-
-      /*
-       * Cookie[] cookies = resource.getRequest().getCookies(); String
-       * cookieSessionId = null; if (cookies != null) for (Cookie c : cookies) {
-       * if (c.getName().equals(SESSION_COOKIE_NAME)) cookieSessionId =
-       * c.getValue(); }
-       */
-
-      // Get the session URL path /atmosphere/<sessionId>:<windowId>
-      String urlToken = null;
-
-      int lastPathSeparatorIndex = resource.getRequest().getPathInfo().lastIndexOf("/");
-      if (lastPathSeparatorIndex >= 0) {
-        urlToken = resource.getRequest().getPathInfo().substring(lastPathSeparatorIndex + 1);
-      }
-
-      // Trust first in the session token passed as URL path.
-      // Inside IFrames, we could get the wrong cookie!
-      if (urlToken != null) {
-        return provider.sessionManager.getSessionFromToken(urlToken);
-      }
-
-
-      return null;
-    }
-
-
-
     @Override
     public void onRequest(AtmosphereResource resource) throws IOException {
 
-      // Check if SwellRT client is compatible with server
-      String clientVersionHeader = resource.getRequest().getHeader(EXT_CLIENT_VERSION_HEADER);
+      AtmosphereResourceSession resourceSession =
+          AtmosphereResourceSessionFactory.getDefault().getSession(resource);
 
-      if ((clientVersionHeader == null) || (!clientVersionHeader.equals(Model.MODEL_VERSION))) {
-        AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER
-            + EXT_RESPONSE_CLIENT_NOT_SUPPORTED);
-        resource.close();
-        return;
+      AtmosphereChannel resourceChannel =
+          resourceSession.getAttribute(WAVE_CHANNEL_ATTRIBUTE, AtmosphereChannel.class);
+
+      if (resourceChannel == null) {
+
+        ParticipantId loggedInUser =
+            provider.sessionManager.getLoggedInUser(resource.getRequest().getSession(false));
+
+        AtmosphereConnection connection = new AtmosphereConnection(loggedInUser, provider);
+        resourceChannel = connection.getAtmosphereChannel();
+        resourceSession.setAttribute(WAVE_CHANNEL_ATTRIBUTE, resourceChannel);
+        resourceChannel.onConnect(resource);
       }
 
-      // Atmosphere requires specialized HttpWindowSession instances. See
-      // SessionServerImpl class.
+      resource.setBroadcaster(resourceChannel.getBroadcaster()); // on every
+                                                                 // request
 
-      HttpSession httpSession = getSession(resource);
-      HttpWindowSession windowSession = null;
-      if (httpSession != null && httpSession instanceof HttpWindowSession)
-        windowSession = (HttpWindowSession) httpSession;
+      if (resource.getRequest().getMethod().equalsIgnoreCase("GET")) {
 
-      //
-      if (windowSession == null) {
-        AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER + EXT_RESPONSE_INVALID_SESSION);
-        resource.close();
-        return;
+        resource.suspend();
+
       }
 
 
-      ParticipantId participantId = provider.sessionManager.getLoggedInUser(httpSession);
+      if (resource.getRequest().getMethod().equalsIgnoreCase("POST")) {
 
+        StringBuilder b = IOUtils.readEntirely(resource);
+        resourceChannel.onMessage(b.toString());
 
-      if (!ATMOSPHERE_CONNECTIONS.containsKey(windowSession)) {
-        ATMOSPHERE_CONNECTIONS
-            .put(windowSession, new AtmosphereConnection(windowSession, provider));
       }
 
-      AtmosphereConnection connection =
-          (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(windowSession);
-
-      try {
-        connection.onRequest(resource, participantId);
-      } catch (Exception e) {
-        LOG.warning("Error handling request for session " + windowSession, e);
-        AtmosphereUtil.writeMessage(resource, EXT_RESPONSE_HEADER + EXT_RESPONSE_SERVER_EXCEPTION);
-        resource.close();
-        return;
-      }
     }
-
 
 
     @Override
     public void onStateChange(AtmosphereResourceEvent event) throws IOException {
 
+
+      AtmosphereResponse response = event.getResource().getResponse();
       AtmosphereResource resource = event.getResource();
-      HttpSession session = getSession(resource);
 
       if (event.isSuspended()) {
-        AtmosphereUtil.writeMessage(resource, event.getMessage());
 
-      } else if (event.isCancelled()) {
-        LOG.info("Resource cancelled by remote client, session " + session);
+        // Set content type before do response.getWriter()
+        // http://docs.oracle.com/javaee/5/api/javax/servlet/ServletResponse.html#setContentType(java.lang.String)
+        response.setContentType("text/plain; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
+
+        if (event.getMessage().getClass().isArray()) {
+
+          LOG.fine("SEND MESSAGE ARRAY " + event.getMessage().toString());
+
+          List<Object> list = Collections.singletonList(event.getMessage());
+
+          response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
+          for (Object object : list) {
+            String message = (String) object;
+            message += MSG_SEPARATOR;
+            response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+          }
+
+        } else if (event.getMessage() instanceof List) {
+
+          LOG.fine("SEND MESSAGE LIST " + event.getMessage().toString());
+
+          @SuppressWarnings("unchecked")
+          List<Object> list = List.class.cast(event.getMessage());
+
+          response.getOutputStream().write(MSG_SEPARATOR.getBytes(MSG_CHARSET));
+          for (Object object : list) {
+            String message = (String) object;
+            message += MSG_SEPARATOR;
+            response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+          }
+
+        } else if (event.getMessage() instanceof String) {
+
+          LOG.fine("SEND MESSAGE " + event.getMessage().toString());
+
+          String message = (String) event.getMessage();
+          response.getOutputStream().write(message.getBytes(MSG_CHARSET));
+        }
+
+
+
+        try {
+
+          response.flushBuffer();
+
+          switch (resource.transport()) {
+            case JSONP:
+            case LONG_POLLING:
+              event.getResource().resume();
+              break;
+            case WEBSOCKET:
+            case STREAMING:
+            case SSE:
+              response.getOutputStream().flush();
+              break;
+            default:
+              LOG.info("Unknown transport");
+              break;
+          }
+        } catch (IOException e) {
+          LOG.info("Error resuming resource response", e);
+        }
+
+
+      } else if (event.isResuming()) {
+
+        LOG.fine("RESUMING");
 
       } else if (event.isResumedOnTimeout()) {
-        LOG.fine("Resource resumed on timeout, session " + session);
 
-      } else if (event.isClosedByClient()) {
-        LOG.info("Resource closed by client, session " + session);
+        LOG.fine("RESUMED ON TIMEOUT");
 
-        AtmosphereConnection connection =
-            (AtmosphereConnection) ATMOSPHERE_CONNECTIONS.get(session);
+      } else if (event.isClosedByApplication() || event.isClosedByClient()) {
 
-        if (connection != null) connection.close();
+        LOG.fine("CONNECTION CLOSED");
 
-      } else if (event.isResumedOnTimeout()) {
-        LOG.info("Resource resumed by timeout, session " + session);
+        AtmosphereResourceSession resourceSession =
+            AtmosphereResourceSessionFactory.getDefault().getSession(resource);
+
+        AtmosphereChannel resourceChannel =
+            resourceSession.getAttribute(WAVE_CHANNEL_ATTRIBUTE, AtmosphereChannel.class);
+
+        if (resourceChannel != null) {
+          resourceChannel.onDisconnect();
+        }
       }
     }
 
@@ -1122,7 +798,7 @@ public class ServerRpcProvider {
     if (initParams != null) {
       servletHolder.setInitParameters(initParams);
     }
-    servletRegistry.add(new Pair<String, ServletHolder>(urlPattern, servletHolder));
+    servletRegistry.add(Pair.of(urlPattern, servletHolder));
     return servletHolder;
   }
 
@@ -1146,5 +822,24 @@ public class ServerRpcProvider {
    */
   public void addFilter(String urlPattern, Class<? extends Filter> filter) {
     filterRegistry.add(new Pair<String, Class<? extends Filter>>(urlPattern, filter));
+  }
+
+  /**
+   * Add a transparent proxy to the servlet registry. The servlet will proxy to the
+   * specified URL pattern.
+   * For example: addTransparentProxy("/gadgets/*","http://gmodules:80/gadgets", "/gadgets")
+   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   * @param proxyTo the URL to proxy to.
+   * @param prefix the prefix that should be proxied.
+   */
+  public void addTransparentProxy(String urlPattern, String proxyTo, String prefix) {
+    Preconditions.checkNotNull(urlPattern);
+    Preconditions.checkNotNull(proxyTo);
+    Preconditions.checkNotNull(prefix);
+
+    ServletHolder proxy = new ServletHolder(ProxyServlet.Transparent.class);
+    proxy.setInitParameter("proxyTo", proxyTo);
+    proxy.setInitParameter("prefix", prefix);
+    servletRegistry.add(Pair.of(urlPattern, proxy));
   }
 }

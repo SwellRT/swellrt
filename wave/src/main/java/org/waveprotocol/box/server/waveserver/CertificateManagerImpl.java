@@ -20,33 +20,21 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-
+import com.typesafe.config.Config;
 import org.apache.commons.codec.binary.Hex;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
-import org.waveprotocol.wave.crypto.CertPathStore;
-import org.waveprotocol.wave.crypto.SignatureException;
-import org.waveprotocol.wave.crypto.SignerInfo;
-import org.waveprotocol.wave.crypto.UnknownSignerException;
-import org.waveprotocol.wave.crypto.WaveSignatureVerifier;
-import org.waveprotocol.wave.federation.FederationErrors;
-import org.waveprotocol.wave.federation.WaveletFederationProvider;
+import org.waveprotocol.wave.crypto.*;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
+import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignature;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignedDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
+import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.federation.WaveletFederationProvider.DeltaSignerInfoResponseListener;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.version.HashedVersion;
@@ -79,10 +67,9 @@ public class CertificateManagerImpl implements CertificateManager {
       signerInfoRequests;
 
   @Inject
-  public CertificateManagerImpl(
-      @Named(CoreSettings.WAVESERVER_DISABLE_VERIFICATION) boolean disableVerfication,
-      SignatureHandler signer, WaveSignatureVerifier verifier, CertPathStore certPathStore) {
-    this.disableVerfication = disableVerfication;
+  public CertificateManagerImpl(Config config, SignatureHandler signer,
+    WaveSignatureVerifier verifier, CertPathStore certPathStore) {
+    this.disableVerfication = config.getBoolean("federation.waveserver_disable_verification");
     this.waveSigner = signer;
     // for now, we just support a single signer
     this.localDomains = ImmutableSet.of(signer.getDomain());
@@ -92,7 +79,7 @@ public class CertificateManagerImpl implements CertificateManager {
 
     if (disableVerfication) {
       LOG.warning("** SIGNATURE VERIFICATION DISABLED ** "
-          + "see flag \"" + CoreSettings.WAVESERVER_DISABLE_VERIFICATION + "\"");
+          + "see configuration federation.waveserver_disable_verification");
     }
   }
 

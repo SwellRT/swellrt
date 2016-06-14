@@ -20,24 +20,29 @@
 package org.waveprotocol.box.server.waveserver;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
+import org.waveprotocol.box.server.util.WaveletDataUtil;
+import org.waveprotocol.wave.model.id.IdConstants;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
+import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.model.wave.data.WaveViewData;
 import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * Base implementation of search provider.
@@ -57,7 +62,7 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     this.waveMap = waveMap;
   }
 
-  protected Collection<WaveViewData> computeSearchResult(final ParticipantId user, int startAt,
+  protected List<WaveViewData> computeSearchResult(final ParticipantId user, int startAt,
       int numResults, List<WaveViewData> results) {
     int searchResultSize = results.size();
     // Check if we have enough results to return.
@@ -69,70 +74,50 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
     }
   }
 
-  protected Map<WaveId, WaveViewData> filterWavesViewBySearchCriteria(
+  // TODO (yurize) : Refactor this method. It does two things: filtering and
+  // building waves.
+  protected LinkedHashMap<WaveId, WaveViewData> filterWavesViewBySearchCriteria(
       Function<ReadableWaveletData, Boolean> matchesFunction,
-      Multimap<WaveId, WaveletId> currentUserWavesView) {
+      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView) {
     // Must use a map with stable ordering, since indices are meaningful.
-    Map<WaveId, WaveViewData> results = Maps.newLinkedHashMap();
+    LinkedHashMap<WaveId, WaveViewData> results = Maps.newLinkedHashMap();
 
     // Loop over the user waves view.
     for (WaveId waveId : currentUserWavesView.keySet()) {
-      Collection<WaveletId> waveletIds = currentUserWavesView.get(waveId);
+      Set<WaveletId> waveletIds = currentUserWavesView.get(waveId);
       WaveViewData view = buildWaveViewData(waveId, waveletIds, matchesFunction, waveMap);
-      if (view != null) {
+      Iterable<? extends ObservableWaveletData> wavelets = view.getWavelets();
+      boolean hasConversation = false;
+      for (ObservableWaveletData waveletData : wavelets) {
+        if (IdUtil.isConversationalId(waveletData.getWaveletId())) {
+          hasConversation = true;
+          break;
+        }
+      }
+      if ((view != null) && hasConversation) {
         results.put(waveId, view);
       }
     }
     return results;
   }
 
-  public static WaveViewData buildWaveViewData(WaveId waveId, Collection<WaveletId> waveletIds,
+  public static WaveViewData buildWaveViewData(WaveId waveId, Set<WaveletId> waveletIds,
       Function<ReadableWaveletData, Boolean> matchesFunction, WaveMap waveMap) {
 
-    WaveViewData view = null; // Copy of the wave built up for search hits.
+    WaveViewData view = WaveViewDataImpl.create(waveId); // Copy of the wave built up for search hits.
     for (WaveletId waveletId : waveletIds) {
       WaveletContainer waveletContainer = null;
       WaveletName waveletname = WaveletName.of(waveId, waveletId);
 
-      // TODO (alown): Find some way to use isLocalWavelet to do this properly!
-      try {
-        if (LOG.isFineLoggable()) {
-          LOG.fine("Trying as a remote wavelet");
-        }
-        waveletContainer = waveMap.getRemoteWavelet(waveletname);
-      } catch (WaveletStateException e) {
-        LOG.severe(String.format("Failed to get remote wavelet %s", waveletname.toString()), e);
-      } catch (NullPointerException e) {
-        // This is a fairly normal case of it being a local-only wave.
-        // Yet this only seems to appear in the test suite.
-        // Continuing is completely harmless here.
-        LOG.info(
-            String.format("%s is definitely not a remote wavelet. (Null key)",
-                waveletname.toString()), e);
-      }
-
-      if (waveletContainer == null) {
-        try {
-          if (LOG.isFineLoggable()) {
-            LOG.fine("Trying as a local wavelet");
-          }
-          waveletContainer = waveMap.getLocalWavelet(waveletname);
-        } catch (WaveletStateException e) {
-          LOG.severe(String.format("Failed to get local wavelet %s", waveletname.toString()), e);
-        }
-      }
 
       // TODO (Yuri Z.) This loop collects all the wavelets that match the
       // query, so the view is determined by the query. Instead we should
       // look at the user's wave view and determine if the view matches the
       // query.
       try {
-        if (waveletContainer == null || !waveletContainer.applyFunction(matchesFunction)) {
-          LOG.fine("----doesn't match: " + waveletContainer);
+        waveletContainer = waveMap.getWavelet(waveletname);
+        if ((waveletContainer == null) || !waveletContainer.applyFunction(matchesFunction)) {
           continue;
-        }
-        if (view == null) {
-          view = WaveViewDataImpl.create(waveId);
         }
         // Just keep adding all the relevant wavelets in this wave.
         view.addWavelet(waveletContainer.copyWaveletData());
@@ -141,5 +126,54 @@ public abstract class AbstractSearchProviderImpl implements SearchProvider {
       }
     }
     return view;
+  }
+
+  /**
+   * Verifies whether the wavelet matches the filter criteria.
+   *
+   * @param wavelet the wavelet.
+   * @param user the logged in user.
+   * @param sharedDomainParticipantId the shared domain participant id.
+   * @param isAllQuery true if the search results should include shared for this
+   *        domain waves.
+   */
+  protected boolean isWaveletMatchesCriteria(ReadableWaveletData wavelet, ParticipantId user,
+      ParticipantId sharedDomainParticipantId, boolean isAllQuery)
+          throws WaveletStateException {
+    Preconditions.checkNotNull(wavelet);
+    // If it is user data wavelet for the user - return true.
+    if (IdUtil.isUserDataWavelet(wavelet.getWaveletId()) && wavelet.getCreator().equals(user)) {
+      return true;
+    }
+    // The wavelet should have logged in user as participant for 'in:inbox'
+    // query.
+    if (!isAllQuery && !wavelet.getParticipants().contains(user)) {
+      return false;
+    }
+    // Or if it is an 'all' query - then either logged in user or shared domain
+    // participant should be present in the wave.
+    if (isAllQuery
+        && !WaveletDataUtil.checkAccessPermission(wavelet, user, sharedDomainParticipantId)) {
+      return false;
+    }
+    // If not returned 'false' above - then logged in user is either
+    // explicit or implicit participant and therefore has access permission.
+    return true;
+  }
+
+  /**
+   * Ensures that each wave in the current waves view has the user data wavelet by always adding
+   *  it to the view.
+   */
+  protected void ensureWavesHaveUserDataWavelet(
+      LinkedHashMultimap<WaveId, WaveletId> currentUserWavesView, ParticipantId user) {
+    WaveletId udw =
+        WaveletId.of(user.getDomain(),
+            IdUtil.join(IdConstants.USER_DATA_WAVELET_PREFIX, user.getAddress()));
+    Set<WaveId> waveIds = currentUserWavesView.keySet();
+    for (WaveId waveId : waveIds) {
+      Set<WaveletId> waveletIds = currentUserWavesView.get(waveId);
+      waveletIds.add(udw);
+    }
   }
 }
