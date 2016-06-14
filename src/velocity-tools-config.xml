@@ -1,5 +1,0 @@
-<tools>
-  <toolbox scope="request" xhtml="true">
-    <tool class="org.swellrt.server.velocity.CustomResourceTool"/>
-  </toolbox>
-</tools>

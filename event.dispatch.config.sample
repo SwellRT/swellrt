@@ -1,7 +1,0 @@
-{
-    "gcm"   :
-                {
-                    "authKey" : "none",
-                    "url"   :   "https://gcm-http.googleapis.com/gcm/send"
-                }
-}

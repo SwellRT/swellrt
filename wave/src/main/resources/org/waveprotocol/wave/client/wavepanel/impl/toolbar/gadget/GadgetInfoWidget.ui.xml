@@ -1,0 +1,57 @@
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ -->
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common">
+
+  <ui:style>
+    .self {
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      margin: 15px 0px;
+    }
+
+    .img {
+      float: left;
+    }
+
+    .img img {
+      width: 120px;
+      height: 120px;
+    }
+
+    .description {
+      overflow: hidden;
+      color: #888;
+    }
+
+    .img, .description, .self h3 {
+      margin: 15px;
+    }
+  </ui:style>
+
+  <w:ImplPanel ui:field="self" styleName="{style.self}">
+    <div class="{style.img}">
+      <img ui:field="image" />
+    </div>
+    <h3 ui:field="title"></h3>
+    <div ui:field="description" class="{style.description}"></div>
+    <div ui:field="author" class="{style.description}"></div>
+  </w:ImplPanel>
+</ui:UiBinder>

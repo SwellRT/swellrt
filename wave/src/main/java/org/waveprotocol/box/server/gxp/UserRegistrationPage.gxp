@@ -1,0 +1,217 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+
+  GXP template for the user registration page.
+  Generate "ant gen_gxp".
+  Author: gentle@google.com (Joseph Gentle)
+-->
+
+<gxp:template
+  name='org.waveprotocol.box.server.gxp.UserRegistrationPage'
+  xmlns='http://www.w3.org/1999/xhtml'
+  xmlns:expr='http://google.com/2001/gxp/expressions'
+  xmlns:call='http://google.com/2001/gxp/call'
+  xmlns:gxp='http://google.com/2001/gxp'>
+
+  <gxp:param name='domain' type='String' />
+  <gxp:param name='message' type='String' />
+  <gxp:param name='responseType' type='String' />
+  <gxp:param name='disableRegistration' type='Boolean' />
+  <gxp:param name='analyticsAccount' type='String'/>
+
+  <html dir="ltr">
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <link type="text/css" rel="stylesheet" href="/static/auth.css" />
+  <title>Register a New Account - Wave in a Box</title>
+  <link rel="shortcut icon" href="/static/favicon.ico" />
+  <call:AnalyticsFragment expr:account='analyticsAccount'/>
+  </head>
+  <body onload="init()">
+  <table width="100%" border="0" align="center" cellpadding="0"
+    cellspacing="0" style="margin-top: 15px">
+    <tr>
+      <td valign="top" style="padding-left: 20px; padding-right: 10px"><img
+        src="/static/logo.png" border="0" width="45px" height="30"
+        align="left" vspace="10" alt='Wave in a Box logo' /></td>
+      <td width="95%">
+      <table width="100%" align="right" cellspacing="0"
+        bgcolor="#C3D9FF" dir="ltr">
+        <tr>
+          <td class="bubble"
+            style='font-family: arial; text-align: left; font-weight: bold; padding-right: 10px;'
+            dir="ltr"><span><b>Wave in a Box - Register a New  Account 
+           </b> @<gxp:eval expr='domain' /></span></td>
+        </tr>
+      </table>
+      </td>
+    </tr>
+  </table>
+  <table border="0" width="100%" cellpadding="1" cellspacing="1"
+    style="margin-top: 10px; padding-left: 20px;">
+    <tr>
+      <td align="left" style="height: 20px; padding-right: 10;"><label
+        id="messageLbl" style="display: none;"></label><span
+        id="loginLink" style="display: none;">&#160;Please <a
+        href="/auth/signin">sign in</a>.</span></td>
+    </tr>
+    <tr>
+      <td id="wiab_loginbox_td" valign="top" align="center">
+      <gxp:if cond='disableRegistration == true'>
+      Registration disabled by administrator.
+      </gxp:if>
+      <gxp:if cond='disableRegistration == false'>
+      <form id="regForm" name="regForm" method="post" action="">
+      <table align="left">
+        <tr>
+          <td>
+          <table class="form-noindent" align="center" cellspacing="5"
+            cellpadding="5" width="100%" border="0">
+            <tbody>
+              <tr>
+                <td>Username:</td>
+                <td><input id="address" name="address"
+                  class='wiab le val' tabindex="1" value="" type="text"
+                  style="padding-bottom: 0px;" /></td>
+              </tr>
+              <tr>
+                <td style="padding: 0px; margin: 0px"></td>
+                <td align="right"
+                  style="color: #444444; font-size: 75%; overflow: hidden; padding-top: 0px; margin-top: 0px; vertical-align: top;"
+                  dir="ltr">@<gxp:eval expr='domain' /></td>
+              </tr>
+              <tr>
+                <td><label for="password">Password:</label></td>
+                <td><input id="password" name="password"
+                  tabindex="2" autocomplete="OFF" type="password"
+                  class='wiab le val' /></td>
+              </tr>
+              <tr>
+                <td><label for="verifypass">Re-enter
+                Password: </label></td>
+                <td><input id="verifypass" name="verifypass"
+                  tabindex="3" autocomplete="OFF" type="password"
+                  class='wiab le val' /></td>
+              </tr>
+            </tbody>
+          </table>
+          <table>
+            <tbody>
+              <tr>
+                <td align="center"><input class="wiab le button"
+                  value="Cancel" id="buttonStyle"
+                  onclick="history.go(-1)" tabindex="4" type="button" /></td>
+                <td align="center"><input class="wiab le button"
+                  value="Register" id="buttonStyle" tabindex="5"
+                  type="button" onclick="validate()" /></td>
+              </tr>
+            </tbody>
+          </table>
+          </td>
+        </tr>
+      </table>
+      </form>
+      </gxp:if>
+      </td>
+    </tr>
+  </table>
+  <table width="100%" border="0" align="center" cellpadding="0"
+    cellspacing="0" style="margin-top: 10px">
+    <tr>
+      <td width="95%">
+      <table width="100%" align="right" cellspacing="0" dir="ltr">
+        <tr>
+          <td class="bubble"
+            style='font-family: arial; text-align: left; font-weight: bold; padding-right: 10px;'
+            dir="ltr"></td>
+        </tr>
+      </table>
+      </td>
+    </tr>
+  </table>
+  <script type="text/javascript">
+	var RESPONSE_STATUS_NONE = "NONE";
+	var RESPONSE_STATUS_FAILED = "FAILED";
+	var RESPONSE_STATUS_SUCCESS = "SUCCESS";
+	
+	var message = <gxp:eval expr='message'/>;
+	var responseType =  <gxp:eval expr='responseType'/>;
+	var domain = <gxp:eval expr='domain'/>;
+	
+	function init() {
+	    setFocus();
+	    handleResponse(responseType, message);
+	}
+	
+	function setFocus() {
+	    document.getElementById("address").focus();
+	}
+	
+	function handleResponse(responseType,message) {
+	    var messageLbl = document.getElementById("messageLbl");
+	    if(responseType == RESPONSE_STATUS_SUCCESS) {
+	        messageLbl.style.display = "inline";
+	        messageLbl.style.color = "green";
+	        messageLbl.innerHTML = message;
+	        document.getElementById("loginLink").style.display = "inline";
+	    } else if(responseType == RESPONSE_STATUS_FAILED) {
+	        messageLbl.style.display = "inline";
+	        messageLbl.style.color = "red";
+	        messageLbl.innerHTML = message;
+	    }
+	}
+	
+	function validate() {
+	    var address = document.getElementById("address").value;
+	    if (address.length &lt; 1) {
+	        message = "Username portion of address cannot be empty";
+	        responseType = RESPONSE_STATUS_FAILED;
+	        handleResponse(responseType,message);
+	        return;
+	    }
+	    if (!isAlphaNumeric(address)) {
+	        message = "Only letters (a-z), numbers (0-9), and periods (.) are allowed in Username";
+	        responseType = RESPONSE_STATUS_FAILED;
+	        handleResponse(responseType,message);
+	        return;
+	    }
+	    var password = document.getElementById("password").value;
+	    var verifypass = document.getElementById("verifypass").value;
+	    if((password != null &amp;&amp;  verifypass != null) &amp;&amp; (password != verifypass)) {
+	        message = "Password and password verification do not match!";
+	        responseType = RESPONSE_STATUS_FAILED;
+	        handleResponse(responseType,message);
+	        return;
+	    }
+	    document.getElementById("address").value = address + "@" + domain;
+	    document.getElementById("regForm").submit();
+	}
+	
+	function isAlphaNumeric(alphanumericChar) {
+	    if(alphanumericChar.length == 0 || alphanumericChar.search(/[^a-zA-Z0-9\.]/g) != -1 )
+	    {
+	        return false;
+	    }
+	    else
+	        return true;
+	}
+  </script>  
+  </body>
+  </html>
+
+</gxp:template>

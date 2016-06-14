@@ -1,0 +1,110 @@
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ -->
+<ui:UiBinder
+  xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:g="urn:import:com.google.gwt.user.client.ui"
+  xmlns:w="urn:import:org.waveprotocol.wave.client.widget.common" >
+
+  <ui:with field='msg'
+           type='org.waveprotocol.wave.client.wavepanel.impl.toolbar.gadget.i18n.GadgetSelectorMessages' />
+
+  <ui:style>
+    .self {
+    padding: 0 15px;
+    height: 700px;
+    }
+
+    .custom, .self label {
+    margin: 15px 0;
+    }
+
+    .self label {
+    display: block;
+    font-weight: bold;
+    }
+
+    .self input {
+    width: 503px;
+    }
+
+    .dock {
+    width: 600px;
+    }
+
+    .param {
+    width: 100%;
+    }
+
+    .left {
+    overflow: hidden;
+    }
+
+    .right {
+    float: right;
+    margin-left: 5px;
+    }
+  </ui:style>
+
+  <w:ImplPanel ui:field="self" styleName="{style.self}">
+    <!-- Custom gadget -->
+    <g:DockLayoutPanel unit="PX" ui:field="dockPanel"
+                     styleName="{style.dock}">
+      <g:north size="200">
+        <g:HTMLPanel>
+          <div class="{style.custom}">
+            <label>
+              <ui:text from="{msg.enterCustomGadgetURL}"/>
+            </label>
+            <div class="{style.param}">
+              <div class="{style.right}">
+                <g:Button ui:field="useCustom">
+                  <ui:text from="{msg.use}"/>
+                </g:Button>
+              </div>
+              <div class="{style.left}">
+                <g:TextBox width="100%" ui:field="gadgetUrl" />
+              </div>
+            </div>
+          </div>
+
+          <label>
+            <ui:text from="{msg.orChooseOneOfTheseGadgets}"/>
+          </label>
+          <label>
+            <ui:text from="{msg.filter}"/>
+          </label>
+          <div class="{style.param}">
+            <div class="{style.right}">
+              <g:ListBox ui:field="categoryDropBox" />
+            </div>
+            <div class="{style.left}">
+              <g:TextBox width="100%" ui:field="gadgetFilter" />
+            </div>
+          </div>
+        </g:HTMLPanel>
+      </g:north>
+      <g:center>
+        <!-- featured/recently used gadgets go here -->
+        <g:ScrollPanel>
+          <g:FlowPanel ui:field="options" />
+        </g:ScrollPanel>
+      </g:center>
+    </g:DockLayoutPanel>
+  </w:ImplPanel>
+</ui:UiBinder>

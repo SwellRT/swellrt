@@ -1,0 +1,84 @@
+<?xml version='1.0'?>
+<!--
+
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<module><inherits name="com.google.gwt.user.User" /><inherits name="org.waveprotocol.wave.client.common.util.Util" /><inherits name="org.waveprotocol.wave.common.logging.Logging" /> <source path=""/>
+
+<!--
+  There are three levels of logging: none, error, and debug, in that order.
+
+  There are two levels of error handling and defensive validation: noop and debug,
+  in that order.
+
+  Both are controlled through the "loglevel" property, as follows:
+
+    loglevel      Logging       Errors & Validation
+    ===============================================
+    none          none          noop
+    error         error         debug
+    debug         debug         debug
+-->
+
+<define-property name="loglevel" values="error,debug,none"/>
+<property-provider name="loglevel">
+  <![CDATA[
+    var logLevel = __gwt_getMetaProperty("loglevel");
+
+    if (logLevel == null) {
+      var args = location.search;
+      var startLogLevel = args.indexOf("ll");
+      if (startLogLevel >= 0) {
+        var value = args.substring(startLogLevel);
+        var begin = value.indexOf("=") + 1;
+        var end = value.indexOf("&");
+        if (end == -1) {
+          end = value.length;
+        }
+        logLevel = value.substring(begin, end);
+      }
+    }
+
+    if (logLevel == null) {
+      logLevel = "none";
+    }
+
+    return logLevel.toLowerCase();
+  ]]>
+</property-provider>
+
+<!--  Allow #ifdef-style guards:  -->
+<!--  e.g. "if (LogLevel.showDebug()) { ... debug code ... }" -->
+
+<replace-with class="org.waveprotocol.wave.client.debug.logger.LogLevel.NoneImpl">
+  <when-type-is class="org.waveprotocol.wave.client.debug.logger.LogLevel" />
+  <when-property-is name="loglevel" value="none" />
+</replace-with>
+
+<replace-with class="org.waveprotocol.wave.client.debug.logger.LogLevel.ErrorImpl">
+  <when-type-is class="org.waveprotocol.wave.client.debug.logger.LogLevel" />
+  <when-property-is name="loglevel" value="error" />
+</replace-with>
+
+<replace-with class="org.waveprotocol.wave.client.debug.logger.LogLevel.DebugImpl">
+  <when-type-is class="org.waveprotocol.wave.client.debug.logger.LogLevel" />
+  <when-property-is name="loglevel" value="debug" />
+</replace-with>
+</module>

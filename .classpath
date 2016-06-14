@@ -11,7 +11,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/bcprov-jdk16-1.45.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-cli-1.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-codec-1.4.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-httpclient-3.1.jar"/>
@@ -51,8 +50,8 @@
 	<classpathentry kind="lib" path="third_party/runtime/oauth-provider-20100527-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/oauth-provider-20100527.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/protobuf-format-java-1.1.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/protobuf-java-2.5.0.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/servlet-api-3.1.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/protobuf-java-2.5.0.jar" sourcepath="/home/pablojan/.m2/repository/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0-sources.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/servlet-api-3.1.jar" sourcepath="/home/pablojan/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-client-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-common-9.1.1.v20140108.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/websocket-server-9.1.1.v20140108.jar"/>
@@ -79,10 +78,6 @@
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-shared-1.0-20140324.102812-16-sources.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/gwt-initials-avatars-server-1.0-20140324.102825-10.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/atmosphere-guice-0.8.3.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/atmosphere-runtime-2.1.0.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/slf4j-api-1.6.1.jar"/>
-	<classpathentry kind="lib" path="third_party/runtime/slf4j-simple-1.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-codeserver-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-dev-2.6.1.jar"/>
 	<classpathentry kind="lib" path="third_party/codegen/gwt-user-2.6.1.jar" sourcepath="/home/pablojan/.m2/repository/com/google/gwt/gwt-user/2.6.1/gwt-user-2.6.1-sources.jar"/>
@@ -95,5 +90,10 @@
 	<classpathentry kind="lib" path="third_party/runtime/velocity-tools-2.0.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-digester-1.8.1.jar"/>
 	<classpathentry kind="lib" path="third_party/runtime/commons-beanutils-1.7.0.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/annotation-detector-3.0.5.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/slf4j-api-1.7.21.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/slf4j-jdk14-1.7.21.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/atmosphere-guice-0.8.3.jar"/>
+	<classpathentry kind="lib" path="third_party/runtime/atmosphere-runtime-2.1.0.jar" sourcepath="/home/pablojan/.m2/repository/org/atmosphere/atmosphere-runtime/2.1.0/atmosphere-runtime-2.1.0-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
