@@ -166,6 +166,7 @@ public final class WaveViewImpl<T extends ObservableWavelet> implements Observab
     triggerOnWaveletRemoved(wavelet);
   }
 
+  @Override
   public T createWavelet(WaveletId id) {
     T wavelet = factory.create(waveId, id, viewer);
     configurator.configure(wavelet);

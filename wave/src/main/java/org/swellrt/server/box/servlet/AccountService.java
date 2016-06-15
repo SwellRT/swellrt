@@ -3,10 +3,10 @@ package org.swellrt.server.box.servlet;
 import com.google.gson.JsonParseException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.waveprotocol.box.server.CoreSettings;
+import org.apache.commons.validator.EmailValidator;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
@@ -95,12 +95,16 @@ public class AccountService extends SwellRTService {
   @Inject
   public AccountService(SessionManager sessionManager, AccountStore accountStore,
       AccountAttachmentStore attachmentAccountStore,
-      @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain) {
-
-    super(sessionManager);
-    this.accountStore = accountStore;
-    this.attachmentAccountStore = attachmentAccountStore;
-    this.domain = domain;
+      Config config) {
+	  this(sessionManager, accountStore, attachmentAccountStore, config.getString("core.wave_server_domain"));
+  }
+  
+  protected AccountService(SessionManager sessionManager, AccountStore accountStore,
+      AccountAttachmentStore attachmentAccountStore, String waveDomain) {
+	    super(sessionManager);
+	    this.accountStore = accountStore;
+	    this.attachmentAccountStore = attachmentAccountStore;
+	    this.domain = waveDomain;
   }
 
   protected ParticipantId getParticipantFromRequest(HttpServletRequest req)

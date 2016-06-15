@@ -43,6 +43,12 @@ public class HttpRequestBasedCallbackHandler implements CallbackHandler {
     this.parameters = parameters;
   }
 
+  public HttpRequestBasedCallbackHandler(String address, String password) {
+    this.parameters = new MultiMap<String>();
+    this.parameters.add(ADDRESS_FIELD, address);
+    this.parameters.add(PASSWORD_FIELD, password);
+  }
+
   @Override
   public void handle(Callback[] callbacks) throws UnsupportedCallbackException {
     for (Callback c : callbacks) {

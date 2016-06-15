@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
@@ -79,5 +80,16 @@ public abstract class ForwardingWaveletDeltaRecordReader implements WaveletDelta
   @Override
   public TransformedWaveletDelta getTransformedDelta(long version) throws IOException {
     return delegate().getTransformedDelta(version);
+  }
+
+  @Override
+  public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
+    return delegate().getAllDeltas(receiver);
+  }
+
+  @Override
+  public long getDeltasInRange(long startVersion, long endVersion,
+      Receiver<WaveletDeltaRecord> receiver) throws IOException {
+      return delegate().getDeltasInRange(startVersion, endVersion, receiver);
   }
 }

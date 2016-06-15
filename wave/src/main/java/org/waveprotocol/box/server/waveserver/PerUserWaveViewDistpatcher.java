@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -54,6 +55,8 @@ public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWa
       LOG.info("Got update for " + waveId + " " + waveletId);
     }
 
+    boolean wasBlipOperation = false;
+
     // Find whether participants were added/removed and update the views
     // accordingly.
     for (TransformedWaveletDelta delta : deltas) {
@@ -73,9 +76,22 @@ public class PerUserWaveViewDistpatcher implements WaveBus.Subscriber, PerUserWa
           for (Listener listener : listeners) {
             listener.onParticipantRemoved(waveletName, user);
           }
+        } else {
+          wasBlipOperation = true;
         }
       }
     }
+
+
+
+    if (wasBlipOperation) {
+
+        for (Listener listener : listeners) {
+          listener.onWaveUpdated(wavelet);
+        }
+
+    }
+
   }
 
   @Override

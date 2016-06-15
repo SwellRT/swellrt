@@ -18,7 +18,7 @@
  */
 
 
-package org.waveprotocol.wave.client.wavepanel.block.xml;
+package org.waveprotocol.wave.client.wavepanel.block.xml.xml;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;

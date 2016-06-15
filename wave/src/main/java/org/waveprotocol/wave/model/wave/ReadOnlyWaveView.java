@@ -80,6 +80,11 @@ public class ReadOnlyWaveView implements ObservableWaveView {
     throw new UnsupportedOperationException("Read only wave views are read-only");
   }
 
+  @Override
+  public ObservableWavelet createWavelet(WaveletId waveletId) {
+    throw new UnsupportedOperationException("Read only wave views are read-only");
+  }
+
   /**
    * @throws UnsupportedOperationException always
    */

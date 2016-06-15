@@ -44,6 +44,13 @@ public interface HumanAccountData extends AccountData {
   PasswordDigest getPasswordDigest();
 
   /**
+   * Enable password changes for the account.
+   *
+   * @param digest
+   */
+  void setPasswordDigest(PasswordDigest digest);
+
+  /**
    * Gets user's locale.
    *
    * @return The user's locale.
@@ -55,4 +62,69 @@ public interface HumanAccountData extends AccountData {
    *
    */
   void setLocale(String locale);
+
+  /**
+   * Sets the user's email.
+   *
+   * @param email
+   * @throws InvalidEmailException
+   */
+  void setEmail(String email);
+
+  /**
+   * Get the user's email
+   *
+   * @return the user's email or null if not set.
+   */
+  String getEmail();
+
+  /**
+   * Sets the recovery secret token for password restore
+   *
+   * @param token
+   */
+  void setRecoveryToken(String token);
+
+  /**
+   * Sets the recovery secret token for password restore
+   *
+   * @param token
+   */
+  void setRecoveryToken(SecretToken token);
+
+
+  /**
+   * Gets the recovery secret token for password restore
+   *
+   * @return
+   */
+  SecretToken getRecoveryToken();
+
+
+  /**
+   * Sets the name of the avatar's image file including its mime type:
+   * 
+   * image/png;02DE23425235SDFED2341A.png
+   * 
+   * @param the mime type and the file name separated by a ;
+   */
+  void setAvatarFileId(String fileName);
+
+
+  /**
+   * Gets the name of the avatar's image file
+   * 
+   */
+  String getAvatarFileName();
+
+
+  /**
+   * Gets the avatar's file mime type
+   * 
+   * @return
+   */
+  String getAvatarMimeType();
+
+  String getAvatarFileId();
+
 }

@@ -22,6 +22,7 @@ package org.waveprotocol.wave.client.concurrencycontrol;
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;
 
+import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.channel.Accessibility;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
@@ -104,8 +105,9 @@ public final class LiveChannelBinder
       WaveDocuments<? extends CcDocument> docRegistry,
       OperationChannelMultiplexer mux,
       IdFilter filter,
-      Command whenOpened) {
-    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry);
+      Command whenOpened,
+      DocOperationLog operationLog) {
+    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry, operationLog);
     LiveChannelBinder liveBinder =
         new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened);
 

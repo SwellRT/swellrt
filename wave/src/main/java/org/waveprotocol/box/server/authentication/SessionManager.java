@@ -22,6 +22,9 @@ package org.waveprotocol.box.server.authentication;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 
@@ -29,11 +32,15 @@ import javax.servlet.http.HttpSession;
  * Utility class for managing the session's authentication status.
  *
  * @author josephg@gmail.com (Joseph Gentle)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface SessionManager {
   static final String USER_FIELD = "user";
 
   static final String SIGN_IN_URL = "/auth/signin";
+
+  public final static String SESSION_URL_PARAM = "sid";
+  public final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
 
   /**
@@ -94,9 +101,59 @@ public interface SessionManager {
 
   /**
    * Get a user's HttpSession from their session token.
-   *
-   * @param token the session token. Eg, "JSESSION=abcdef123567890"
+   * 
+   * A token may include an optional window Id.
+   * 
+   * @param token the session token with optional window id. Eg,
+   *        "JSESSION=abcdef123567890:23"
    * @return the user's HttpSession, or null if the token is invalid.
    */
   HttpSession getSessionFromToken(String token);
+
+
+  /**
+   * Get the session for the provided request, create a new one if it doesn't
+   * exist.
+   * 
+   * @param request
+   * @return
+   */
+  HttpSession getSession(HttpServletRequest request, boolean create);
+
+  /**
+   * Get the session for the provided request, return null if it doesn't exist.
+   * 
+   * @param request
+   * @return
+   */
+  HttpSession getSession(HttpServletRequest request);
+
+
+  /**
+   * A convinience method to extract the logged in participant from the request
+   * in only one step.
+   * 
+   * @param request
+   * @return
+   */
+  ParticipantId getLoggedInUser(HttpServletRequest request);
+
+
+  /**
+   * Get all the participants sharing the same HTTP session.
+   * 
+   * @param session the HTTP session object
+   * @return a set of participants, maybe empty, but never null.
+   */
+  Set<ParticipantId> getAllLoggedInUser(HttpSession session);
+
+  /**
+   * Return the last user who has opened a session on the browser.
+   * 
+   * @param session
+   * @return
+   */
+  ParticipantId getOtherLoggedInUser(HttpSession session);
+
+
 }

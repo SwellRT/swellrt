@@ -211,8 +211,14 @@ public class PluggableMutableDocument extends MutableDocumentProxy.DocumentProxy
           }
         };
       }
+
+      // DocumentImpl delegate =
+      // new DocumentImpl(new BasicSequencer(getDocument(), delegateSink),
+      // getDocument());
+
       DocumentImpl delegate =
-          new DocumentImpl(new BasicSequencer(getDocument(), delegateSink), getDocument());
+          new DocumentImpl(new GroupOperationSequencer(getDocument(), delegateSink), getDocument());
+
       setDelegate(delegate);
     }
     return super.getDelegate();

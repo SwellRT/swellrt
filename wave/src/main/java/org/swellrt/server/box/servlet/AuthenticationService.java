@@ -4,9 +4,9 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonParseException;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 import org.apache.commons.io.IOUtils;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
 import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -104,16 +104,14 @@ public class AuthenticationService extends SwellRTService {
 
   @Inject
   public AuthenticationService(AccountStore accountStore, Configuration configuration,
-      SessionManager sessionManager, @Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
-      @Named(CoreSettings.ENABLE_CLIENTAUTH) boolean isClientAuthEnabled,
-      @Named(CoreSettings.CLIENTAUTH_CERT_DOMAIN) String clientAuthCertDomain) {
+      SessionManager sessionManager, Config config) {
 
     super(sessionManager);
     this.accountStore = accountStore;
     this.configuration = configuration;
-    this.domain = domain.toLowerCase();
-    this.isClientAuthEnabled = isClientAuthEnabled;
-    this.clientAuthCertDomain = clientAuthCertDomain.toLowerCase();
+    this.domain = config.getString("core.wave_server_domain");
+    this.isClientAuthEnabled = config.getBoolean("security.enable_clientauth");
+    this.clientAuthCertDomain = config.getString("security.clientauth_cert_domain").toLowerCase();
 
   }
 

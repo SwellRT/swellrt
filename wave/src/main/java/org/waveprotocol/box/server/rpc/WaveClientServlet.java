@@ -98,7 +98,7 @@ public class WaveClientServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    ParticipantId id = sessionManager.getLoggedInUser(request.getSession(false));
+    ParticipantId id = sessionManager.getLoggedInUser(request);
 
     // Eventually, it would be nice to show users who aren't logged in the public waves.
     // However, public waves aren't implemented yet. For now, we'll just redirect users
@@ -108,7 +108,8 @@ public class WaveClientServlet extends HttpServlet {
       return;
     }
 
-    AccountData account = sessionManager.getLoggedInAccount(request.getSession(false));
+    HttpSession session = sessionManager.getSession(request);
+    AccountData account = sessionManager.getLoggedInAccount(session);
     if (account != null) {
       String locale = account.asHuman().getLocale();
       if (locale != null) {
@@ -126,7 +127,7 @@ public class WaveClientServlet extends HttpServlet {
 
     try {
       WaveClientPage.write(response.getWriter(), new GxpContext(request.getLocale()),
-          getSessionJson(request.getSession(false)), getClientFlags(request), websocketPresentedAddress,
+          getSessionJson(request), getClientFlags(request), websocketPresentedAddress,
           TopBar.getGxpClosure(username, userDomain), analyticsAccount);
     } catch (IOException e) {
       LOG.warning("Failed to write GXP for request " + request, e);
@@ -184,9 +185,9 @@ public class WaveClientServlet extends HttpServlet {
     }
   }
 
-  private JSONObject getSessionJson(HttpSession session) {
+  private JSONObject getSessionJson(HttpServletRequest req) {
     try {
-      ParticipantId user = sessionManager.getLoggedInUser(session);
+      ParticipantId user = sessionManager.getLoggedInUser(req);
       String address = (user != null) ? user.getAddress() : null;
 
       // TODO(zdwang): Figure out a proper session id rather than generating a

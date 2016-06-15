@@ -25,6 +25,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
+import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
@@ -78,6 +79,19 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   }
 
   /**
+   * Removes the anonymous prefix to avoid duplicated colour highlighting.
+   *
+   * @param author
+   * @return
+   */
+  public static String wrapAnonymousAuthor(String author) {
+    String wrappedAuthor = author;
+    if (wrappedAuthor.startsWith("_anonymous_"))
+      wrappedAuthor = wrappedAuthor.substring(11, wrappedAuthor.length());
+    return wrappedAuthor;
+  }
+
+  /**
    * Dependencies for implementing the diff filter
    */
   public interface DiffHighlightTarget extends MutableAnnotationSet<Object>, ModifiableDocument {
@@ -125,15 +139,25 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    */
   public static final String DIFF_DELETE_KEY = DIFF_KEY + "/del";
 
-  private static final Object INSERT_MARKER = new Object();
+  @Deprecated
+  private static final Object INSERT_MARKER = new Object(); // Replaced by participantId
+
+  public static final String UKNOWN_PARTICIPANT = "Unknown";
 
   private final DiffHighlightTarget inner;
+
+  private final DocOperationLog operationLog; // To track op's owners
 
   // Munging to wrap the op
 
   private DocOpCursor target;
 
   private DocOp operation;
+
+  /**
+   * Participant who performs the op.
+   */
+  private String author;
 
   // Diff state
 
@@ -149,13 +173,28 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument) {
     this.inner = contentDocument;
+    this.operationLog = null;
   }
+
+  public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocOperationLog operationLog) {
+    this.inner = contentDocument;
+    this.operationLog = operationLog;
+  }
+
 
   @Override
   public void consume(DocOp op) throws OperationException {
     Preconditions.checkState(target == null, "Diff inner target not initialised");
 
     operation = op;
+
+    if (operationLog != null) {
+      author = operationLog.getAuthorAndForget(op);
+      if (author == null) {
+        author = UKNOWN_PARTICIPANT;
+      }
+    }
+
     inner.consume(opWrapper);
 
     final int size = inner.size();
@@ -217,7 +256,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void elementStart(String tagName, Attributes attributes) {
       if (diffDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, INSERT_MARKER);
+        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
       diffDepth++;
@@ -241,7 +280,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void characters(String characters) {
       if (diffDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, INSERT_MARKER);
+        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
       target.characters(characters);
@@ -314,7 +353,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
         return;
       }
 
-      DiffManager.styleElement(element, DiffType.DELETE);
+      DiffManager.styleElement(element, DiffType.DELETE, author);
       DomHelper.makeUnselectable(element);
 
       for (Node n = element.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -421,7 +460,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     private void createDeleteElement(String innerText, ReadableStringMap<Object> annotations) {
       Element element = Document.get().createSpanElement();
       applyAnnotationsToElement(element, annotations);
-      DiffManager.styleElement(element, DiffType.DELETE);
+      DiffManager.styleElement(element, DiffType.DELETE, author);
       element.setInnerText(innerText);
       currentDeleteInfo.htmlElements.add(element);
     }

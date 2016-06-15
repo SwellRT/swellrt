@@ -62,4 +62,8 @@ public interface ObservableWaveView extends WaveView, SourcesEvents<WaveViewList
 
   @Override
   public ObservableWavelet createUserData();
+
+  @Override
+  public ObservableWavelet createWavelet(WaveletId waveletId);
+
 }

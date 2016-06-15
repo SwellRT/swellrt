@@ -41,7 +41,11 @@ public class LuceneWaveIndexerImpl extends AbstractWaveIndexer {
 
   @Override
   protected void processWavelet(WaveletName waveletName) {
-    listener.onWaveInit(waveletName);
+    try {
+      listener.onWaveUpdated(waveletProvider.getSnapshot(waveletName).snapshot);
+    } catch (WaveServerException e) {
+      throw new IndexException("Problem encountered processing wavelet " + waveletName, e);
+    }
   }
 
   @Override

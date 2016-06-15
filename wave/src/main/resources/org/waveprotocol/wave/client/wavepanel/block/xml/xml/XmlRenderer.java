@@ -18,7 +18,7 @@
  */
 
 
-package org.waveprotocol.wave.client.wavepanel.block.xml;
+package org.waveprotocol.wave.client.wavepanel.block.xml.xml;
 
 import org.waveprotocol.wave.client.render.ConversationRenderer;
 import org.waveprotocol.wave.client.render.RendererHelper;

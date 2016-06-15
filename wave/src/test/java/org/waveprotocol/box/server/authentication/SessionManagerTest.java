@@ -73,7 +73,7 @@ public class SessionManagerTest extends TestCase {
   }
 
   public void testNullSessionReturnsNull() {
-    assertNull(sessionManager.getLoggedInUser(null));
+    assertNull(sessionManager.getLoggedInUser((HttpSession) null));
     assertNull(sessionManager.getLoggedInAccount(null));
   }
 

@@ -168,10 +168,15 @@ class DeltaStoreBasedWaveletState implements WaveletState {
   private static WaveletDeltaRecord getDelta(WaveletDeltaRecordReader reader,
       ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas,
       HashedVersion version) throws IOException {
-    WaveletDeltaRecord delta = reader.getDelta(version.getVersion());
-    if (delta == null && cachedDeltas != null) {
+
+    WaveletDeltaRecord delta = null;
+
+    // try cache first!
+    if (cachedDeltas != null)
       delta = cachedDeltas.get(version);
-    }
+
+    if (delta == null) delta = reader.getDelta(version.getVersion());
+
     return delta;
   }
 

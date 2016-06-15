@@ -21,6 +21,8 @@
 war/WEB-INF
 *.old
 .DS_Store
+wave/.gitignore
+pst/.gitignore
 
 ### IntelliJ Idea
 .idea

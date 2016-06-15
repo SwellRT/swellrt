@@ -61,7 +61,7 @@ public final class LocaleServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     try {
-      ParticipantId participant = sessionManager.getLoggedInUser(req.getSession(false));
+      ParticipantId participant = sessionManager.getLoggedInUser(req);
       if (participant == null) {
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
         return;

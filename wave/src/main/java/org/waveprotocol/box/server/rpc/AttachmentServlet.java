@@ -109,7 +109,7 @@ public class AttachmentServlet extends HttpServlet {
       waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
     }
 
-    ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
+    ParticipantId user = sessionManager.getLoggedInUser(request);
     boolean isAuthorized = false;
     try {
       isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
@@ -122,7 +122,14 @@ public class AttachmentServlet extends HttpServlet {
     }
 
     if (metadata == null) {
-      metadata = service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
+      try {
+        metadata =
+            service.buildAndStoreMetadataWithThumbnail(attachmentId, waveletName, fileName, null);
+      } catch (IOException e) {
+        LOG.warning(e.getMessage());
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
     }
 
     String contentType;
@@ -207,16 +214,17 @@ public class AttachmentServlet extends HttpServlet {
         }
 
         WaveletName waveletName = AttachmentUtil.waveRef2WaveletName(waveRefStr);
-        ParticipantId user = sessionManager.getLoggedInUser(request.getSession(false));
+        ParticipantId user = sessionManager.getLoggedInUser(request);
         boolean isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
         if (!isAuthorized) {
           response.sendError(HttpServletResponse.SC_FORBIDDEN);
           return;
         }
 
+        String fileName = fileItem.getName();
         // Get only the file name not whole path.
-        if (fileItem != null && fileItem.getName()  != null) {
-          String fileName = FilenameUtils.getName(fileItem.getName());
+        if (fileName != null) {
+          fileName = FilenameUtils.getName(fileName);
           service.storeAttachment(id, fileItem.getInputStream(), waveletName, fileName, user);
           response.setStatus(HttpServletResponse.SC_CREATED);
           String msg =
@@ -238,6 +246,54 @@ public class AttachmentServlet extends HttpServlet {
     }
   }
 
+  @Override
+  protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+
+    AttachmentId attachmentId = getAttachmentIdFromRequest(request);
+
+    if (attachmentId == null) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+      return;
+    }
+
+    String waveRefStr = getWaveRefFromRequest(request);
+
+    AttachmentMetadata metadata = service.getMetadata(attachmentId);
+    WaveletName waveletName;
+
+    if (metadata == null) {
+      // Old attachments does not have metainfo.
+      if (waveRefStr != null) {
+        waveletName = AttachmentUtil.waveRef2WaveletName(waveRefStr);
+      } else {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return;
+      }
+    } else {
+      waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
+    }
+
+
+    ParticipantId user = sessionManager.getLoggedInUser(request);
+    boolean isAuthorized = false;
+    try {
+      isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
+    } catch (WaveServerException e) {
+      LOG.warning("Problem while authorizing user: " + user + " for wavelet: " + waveletName, e);
+    }
+    if (!isAuthorized) {
+      response.sendError(HttpServletResponse.SC_FORBIDDEN);
+      return;
+    }
+
+    service.deleteAttachment(attachmentId);
+
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.getWriter().print("OK");
+    response.flushBuffer();
+  };
+
   private static AttachmentId getAttachmentIdFromRequest(HttpServletRequest request) {
     if (request.getPathInfo().length() == 0) {
       return null;
@@ -253,7 +309,12 @@ public class AttachmentServlet extends HttpServlet {
 
   private static String getAttachmentIdStringFromRequest(HttpServletRequest request) {
     // Discard the leading '/' in the pathinfo.
-    return request.getPathInfo().substring(1);
+    String path = request.getPathInfo().substring(1);
+    // Remove session parameter
+    int sidDelimiterIndex = path.indexOf(";");
+    if (sidDelimiterIndex != -1) return path.substring(0, sidDelimiterIndex);
+
+    return path;
   }
 
   private AttachmentData getThumbnailByContentType(String contentType) throws IOException {

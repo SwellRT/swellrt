@@ -43,6 +43,7 @@ import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.title.TitleAnnotationHandler;
+import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.gadget.Gadget;
@@ -226,6 +227,8 @@ public interface StageTwo {
     private WaveletOperationalizer wavelets;
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
+
+    private DocOperationLog operationLog; // tracks ops and contributors
 
     // Model objects
 
@@ -505,13 +508,13 @@ public interface StageTwo {
       DocumentFactory<LazyContentDocument> blipDocFactory =
           new DocumentFactory<LazyContentDocument>() {
             private final Registries registries = RegistriesHolder.get();
-
+            private final DocOperationLog opLog = DefaultProvider.this.getDocOperationLog();
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff);
+              return LazyContentDocument.create(registries, noDiff, opLog);
             }
           };
 
@@ -577,7 +580,8 @@ public interface StageTwo {
               getDocumentRegistry(),
               mux,
               filter,
-              onOpened);
+              onOpened,
+              getDocOperationLog());
         }
 
         @Override
@@ -756,5 +760,24 @@ public interface StageTwo {
       reader = Reader.install(getSupplement(), stageOne.getFocusFrame(), getModelAsViewProvider(),
           getDocumentRegistry());
     }
+
+    /**
+     * Get the shared wavelet operation logger
+     * 
+     * @return
+     */
+    protected DocOperationLog getDocOperationLog() {
+      return operationLog == null ? operationLog = createOperationLog() : operationLog;
+    }
+
+    /**
+     * Create the shared wavelet operation logger
+     * 
+     * @return
+     */
+    protected DocOperationLog createOperationLog() {
+      return new DocOperationLog();
+    }
+
   }
 }

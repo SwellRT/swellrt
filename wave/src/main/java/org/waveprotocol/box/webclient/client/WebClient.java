@@ -194,7 +194,7 @@ public class WebClient implements EntryPoint {
     HistorySupport.init(new HistoryProviderDefault());
     HistoryChangeListener.init();
 
-    websocket = new WaveWebSocketClient(websocketNotAvailable(), getWebSocketBaseUrl());
+    websocket = new WaveWebSocketClient(getWebSocketBaseUrl(), "1.0");
     websocket.connect();
 
     if (Session.get().isLoggedIn()) {

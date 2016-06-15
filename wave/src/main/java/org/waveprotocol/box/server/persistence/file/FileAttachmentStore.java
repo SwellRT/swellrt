@@ -29,6 +29,7 @@ import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.util.CharBase64;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * An implementation of AttachmentStore which uses files on disk
@@ -38,8 +39,10 @@ import java.io.*;
  */
 public class FileAttachmentStore implements AttachmentStore {
 
-  private final static String META_EXT = ".meta";
-  private final static String THUMBNAIL_EXT = ".thumbnail";
+  private static final Logger LOG = Logger.getLogger(FileAttachmentStore.class.getName());
+
+  private final String META_EXT = ".meta";
+  private final String THUMBNAIL_EXT = ".thumbnail";
 
   /**
    * The directory in which the attachments are stored.
@@ -139,9 +142,22 @@ public class FileAttachmentStore implements AttachmentStore {
 
   @Override
   public void deleteAttachment(AttachmentId attachmentId) {
-    File file = new File(getAttachmentPath(attachmentId));
-    if (file.exists()) {
-      file.delete();
+    String attachmentPath = getAttachmentPath(attachmentId);
+    try {
+      File file = new File(attachmentPath);
+      if (file.exists()) {
+        file.delete();
+        LOG.info("Delete attachment " + attachmentPath);
+      }
+
+      String thumbnailPath = getThumbnailPath(attachmentId);
+      file = new File(thumbnailPath);
+      if (file.exists()) {
+        file.delete();
+        LOG.info("Delete attachment thumbnail " + thumbnailPath);
+      }
+    } catch (RuntimeException e) {
+      LOG.warning("Error deleting attachment " + attachmentPath);
     }
   }
 

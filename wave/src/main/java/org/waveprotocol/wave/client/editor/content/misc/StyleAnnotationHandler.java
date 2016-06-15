@@ -29,6 +29,8 @@ import org.waveprotocol.wave.model.document.AnnotationBehaviour.AnnotationFamily
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.DefaultAnnotationBehaviour;
 import org.waveprotocol.wave.model.document.AnnotationMutationHandler;
 import org.waveprotocol.wave.model.document.util.DocumentContext;
+import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -72,7 +74,7 @@ public class StyleAnnotationHandler implements AnnotationMutationHandler {
     registries.getAnnotationHandlerRegistry().registerHandler(AnnotationConstants.STYLE_PREFIX, handler);
     registries.getAnnotationHandlerRegistry().registerBehaviour(AnnotationConstants.STYLE_PREFIX,
         new DefaultAnnotationBehaviour(AnnotationFamily.CONTENT));
-    painterRegistry.registerPaintFunction(AnnotationConstants.STYLE_KEYS, renderFunc);
+    painterRegistry.registerPaintFunction(KEYS, renderFunc);
   }
 
   private final AnnotationPainter painter;
@@ -89,6 +91,17 @@ public class StyleAnnotationHandler implements AnnotationMutationHandler {
       return map;
     }
   };
+
+  public static final ReadableStringSet KEYS = CollectionUtils.newStringSet(
+      AnnotationConstants.STYLE_BG_COLOR,
+      AnnotationConstants.STYLE_COLOR,
+      AnnotationConstants.STYLE_FONT_FAMILY,
+      AnnotationConstants.STYLE_FONT_SIZE,
+      AnnotationConstants.STYLE_FONT_STYLE,
+      AnnotationConstants.STYLE_FONT_WEIGHT,
+      AnnotationConstants.STYLE_TEXT_DECORATION,
+      AnnotationConstants.STYLE_VERTICAL_ALIGN
+    );
 
   /**
    * @param painter painter to use for rendering

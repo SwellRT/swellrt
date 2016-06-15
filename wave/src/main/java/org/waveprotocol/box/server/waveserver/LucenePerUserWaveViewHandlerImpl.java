@@ -24,6 +24,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -240,6 +241,14 @@ public class LucenePerUserWaveViewHandlerImpl implements PerUserWaveViewHandler,
       }
     });
     executor.execute(task);
+    return task;
+  }
+
+  @Override
+  public ListenableFuture<Void> onWaveUpdated(final ReadableWaveletData waveletData) {
+    // No op.
+    SettableFuture<Void> task = SettableFuture.create();
+    task.set(null);
     return task;
   }
 

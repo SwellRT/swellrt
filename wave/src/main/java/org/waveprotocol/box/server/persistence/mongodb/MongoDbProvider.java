@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
@@ -36,6 +37,7 @@ import java.net.UnknownHostException;
  * Class to lazily setup and manage the MongoDb connection.
  *
  * @author ljvderijk@google.com (Lennard de Rijk)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
 public class MongoDbProvider {
@@ -164,4 +166,13 @@ public class MongoDbProvider {
 
   }
 
+  /**
+   * Expose MongoDB collections
+   * 
+   * @param name Collection name
+   * @return the DBCollection object
+   */
+  public DBCollection getDBCollection(String name) {
+    return getDatabase().getCollection(name);
+  }
 }

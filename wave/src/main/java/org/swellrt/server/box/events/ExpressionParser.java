@@ -2,10 +2,10 @@ package org.swellrt.server.box.events;
 
 import com.google.common.base.Preconditions;
 
-import org.waveprotocol.wave.federation.xmpp.Base64Util;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 
 import java.math.BigInteger;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,7 +59,7 @@ public class ExpressionParser {
   }
 
   protected static String base64ToIntString(String s) {
-    return (new BigInteger(Base64Util.decodeFromArray(s)).mod(new BigInteger("1000000000")))
+    return (new BigInteger(Base64.getDecoder().decode(s)).mod(new BigInteger("1000000000")))
         .toString();
   }
 

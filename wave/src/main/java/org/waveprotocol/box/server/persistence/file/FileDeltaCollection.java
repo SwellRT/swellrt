@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
 import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreData.ProtoTransformedWaveletDelta;
@@ -253,6 +254,27 @@ public class FileDeltaCollection implements DeltasAccess {
     } finally {
       lifeCycle.leave();
     }
+  }
+
+  @Override
+  public long getDeltasInRange(long startVersion, long endVersion,
+      Receiver<WaveletDeltaRecord> receiver) throws IOException {
+    checkIsOpen();
+
+    if (this.endVersion == null) return 0;
+
+    Preconditions.checkState(0 <= startVersion && startVersion < endVersion
+        && endVersion <= this.endVersion.getVersion(),
+        "Invalid delta range");
+
+    long version = startVersion;
+    while (seekToRecord(version) && version <= endVersion) {
+      if (!receiver.put(readRecord())) {
+        throw new IllegalStateException("Error processing deltas from file");
+      }
+      version++;
+    }
+    return version--;
   }
 
   @Override
@@ -618,4 +640,10 @@ public class FileDeltaCollection implements DeltasAccess {
     // trailing junk such as from a partially completed write.
     file.setLength(file.getFilePointer());
   }
+
+@Override
+public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
+	// TODO Auto-generated method stub
+	return 0;
+}
 }

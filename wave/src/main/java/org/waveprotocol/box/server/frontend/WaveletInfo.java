@@ -229,7 +229,7 @@ public class WaveletInfo {
   public Set<ParticipantId> getImplicitWaveletParticipants(WaveletName waveletName) {
     PerWavelet waveletInfo = getWavelet(waveletName);
     synchronized (waveletInfo) {
-      return ImmutableSet.copyOf(waveletInfo.explicitParticipants);
+      return ImmutableSet.copyOf(waveletInfo.implicitParticipants);
     }
   }
 

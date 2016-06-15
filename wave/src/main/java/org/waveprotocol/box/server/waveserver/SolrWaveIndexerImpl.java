@@ -301,4 +301,10 @@ public class SolrWaveIndexerImpl extends AbstractWaveIndexer implements WaveBus.
       getMethod.releaseConnection();
     }
   }
+
+@Override
+public ListenableFuture<Void> onWaveUpdated(ReadableWaveletData waveletData) {
+	// TODO Auto-generated method stub
+	return null;
+}
 }

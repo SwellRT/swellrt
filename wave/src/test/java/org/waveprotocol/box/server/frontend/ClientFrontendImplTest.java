@@ -116,7 +116,7 @@ public class ClientFrontendImplTest extends TestCase {
     when(waveletProvider.getWaveletIds(any(WaveId.class))).thenReturn(ImmutableSet.<WaveletId>of());
 
     WaveletInfo waveletInfo = WaveletInfo.create(HASH_FACTORY, waveletProvider);
-    clientFrontend = new ClientFrontendImpl(waveletProvider, waveletInfo);
+    clientFrontend = new ClientFrontendImpl(waveletProvider, waveletInfo ,"example.com");
   }
 
   public void testCannotOpenWavesWhenNotLoggedIn() throws Exception {

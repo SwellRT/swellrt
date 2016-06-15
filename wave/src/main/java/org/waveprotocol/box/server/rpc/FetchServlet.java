@@ -19,10 +19,12 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.Inject;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageLite;
+import java.io.IOException;
+
+import javax.inject.Singleton;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.waveprotocol.box.common.comms.WaveClientRpc.DocumentSnapshot;
 import org.waveprotocol.box.common.comms.WaveClientRpc.WaveViewSnapshot;
@@ -42,12 +44,9 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.IOException;
-
-import javax.inject.Singleton;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.Inject;
+import com.google.protobuf.Message;
 
 /**
  * A servlet for static fetching of wave data. Typically, the servlet will be

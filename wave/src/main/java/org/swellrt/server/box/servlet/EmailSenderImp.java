@@ -2,6 +2,7 @@ package org.swellrt.server.box.servlet;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
@@ -9,7 +10,6 @@ import org.apache.velocity.context.Context;
 import org.apache.velocity.tools.ToolManager;
 import org.apache.velocity.tools.generic.ResourceTool;
 import org.swellrt.server.velocity.CustomResourceTool;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.wave.util.logging.Log;
@@ -55,16 +55,13 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
   private static URLClassLoader loader;
 
   @Inject
-  public EmailSenderImp(SessionManager sessionManager, AccountStore accountStore,
-      @Named(CoreSettings.VELOCITY_PATH) String velocityPath, VelocityEngine ve,
-      @Named(CoreSettings.EMAIL_HOST) String host,
-      @Named(CoreSettings.EMAIL_FROM_ADDRESS) String from) {
+  public EmailSenderImp(SessionManager sessionManager, AccountStore accountStore, VelocityEngine ve, Config config) {
 
     this.accountStore = accountStore;
     this.ve = ve;
-    this.velocityPath = velocityPath;
-    this.host = host;
-    this.from = from;
+    this.velocityPath = config.getString("email.template_path");
+    this.host = config.getString("email.host");
+    this.from = config.getString("email.from_email_address");
 
     Properties p = new Properties();
     p.put("resource.loader", "file, class");

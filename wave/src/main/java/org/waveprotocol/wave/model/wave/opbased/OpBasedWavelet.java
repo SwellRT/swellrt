@@ -41,6 +41,7 @@ import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.Constants;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.model.wave.ParticipationHelper;
 import org.waveprotocol.wave.model.wave.WaveletListener;
 import org.waveprotocol.wave.model.wave.data.BlipData;
@@ -353,15 +354,24 @@ public class OpBasedWavelet implements ObservableWavelet {
   private AddParticipant authorise(WaveletOperation op) {
     ParticipantId author = op.getContext().getCreator();
     Set<ParticipantId> participantIds = getParticipantIds();
+    ParticipantId sharedDomain =
+        ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(author.getDomain());
     if (participantIds.contains(author)) {
       // Users on the participant list may submit ops directly.
     } else if (participantIds.isEmpty()) {
       // Model is unaware of how participants are allowed to join a wave when
       // there is no one to authorise them. Assume the op is authorised, leaving
       // it to another part of the system to reject it if necessary.
+
+    } else if (participantIds.contains(sharedDomain)) {
+      // If the wavelet is public, we allow anybody to
+      // make changes even if they are not in participant's list.
+
     } else {
       ParticipantId authoriser = null;
       authoriser = participationHelper.getAuthoriser(author, participantIds);
+      // Anonymous users are not added in the participant list ever.
+      // Let's the server to check if the wavelet grant access.
       if (authoriser != null) {
         AddParticipant authorisation =
             new AddParticipant(contextFactory.createContext(authoriser), author);

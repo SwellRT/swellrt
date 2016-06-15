@@ -66,7 +66,7 @@ public final class NotificationServlet extends AbstractSearchServlet {
   @Override
   @VisibleForTesting
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
-    ParticipantId user = sessionManager.getLoggedInUser(req.getSession(false));
+    ParticipantId user = sessionManager.getLoggedInUser(req);
     if (user == null) {
       response.setStatus(HttpServletResponse.SC_FORBIDDEN);
       return;

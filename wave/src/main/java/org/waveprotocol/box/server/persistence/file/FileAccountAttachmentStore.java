@@ -2,9 +2,9 @@ package org.waveprotocol.box.server.persistence.file;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 import org.apache.commons.codec.binary.Base64;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.persistence.AccountAttachmentStore;
 import org.waveprotocol.box.server.persistence.AttachmentUtil;
 import org.waveprotocol.wave.model.util.CharBase64;
@@ -37,10 +37,9 @@ public class FileAccountAttachmentStore implements AccountAttachmentStore {
   private final String domainAsPath;
 
   @Inject
-  public FileAccountAttachmentStore(@Named(CoreSettings.WAVE_SERVER_DOMAIN) String domain,
-      @Named(CoreSettings.ACCOUNT_ATTACHMENT_STORE_DIRECTORY) String basePath) {
-    this.basePath = basePath;
-    this.domainAsPath = getDomainAsPath(domain);
+  public FileAccountAttachmentStore(Config config) {
+    this.basePath = config.getString("core.account_store_directory");
+    this.domainAsPath = getDomainAsPath(config.getString("core.wave_server_domain"));
     new File(basePath + File.separatorChar + AVATAR_DIR).mkdirs();
 
   }

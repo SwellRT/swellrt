@@ -1,20 +1,18 @@
 package org.swellrt.server.box.events.gcm;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
+import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
+
+import com.google.inject.Inject;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-
-import org.waveprotocol.box.server.CoreSettings;
-import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
+import com.typesafe.config.Config;
 
 public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
 
@@ -35,8 +33,9 @@ public class GCMSubscriptionStoreMongoDb implements GCMSubscriptionStore {
 
 
   @Inject
-  public GCMSubscriptionStoreMongoDb(MongoDbProvider mongoDbProvider,
-      @Named(CoreSettings.ACCOUNT_STORE_TYPE) String accountStoreType) {
+  public GCMSubscriptionStoreMongoDb(MongoDbProvider mongoDbProvider, Config config) {
+	String accountStoreType = config.getString("core.account_store_type");
+	
     if (accountStoreType.equalsIgnoreCase("mongodb")) {
       this.accountStore = mongoDbProvider.getDBCollection("account");
       this.modelStore = mongoDbProvider.getDBCollection("models");

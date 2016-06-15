@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 
 /**
  * Provides a subscription service for changes to wavelets that can cause
@@ -62,6 +63,15 @@ public interface PerUserWaveViewBus {
      * @return the future that allows to be notified of the update completion.
      */
     ListenableFuture<Void> onWaveInit(WaveletName waveletName);
+
+    /**
+     * Notifies the subscriber of changes in a wavelet that should be indexed.
+     * It pass forward the wavelet snapshot.
+     * 
+     * @param waveletData the wavelet snapshot.
+     * @return the future that allows to be notified of the update completion.
+     */
+    ListenableFuture<Void> onWaveUpdated(ReadableWaveletData waveletData);
   }
 
   /**

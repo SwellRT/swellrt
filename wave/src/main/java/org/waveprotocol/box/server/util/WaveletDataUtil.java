@@ -21,6 +21,9 @@ package org.waveprotocol.box.server.util;
 
 import com.google.common.base.Preconditions;
 
+import org.waveprotocol.box.common.Receiver;
+import org.waveprotocol.box.server.waveserver.DeltaStore;
+import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.wave.model.document.util.EmptyDocument;
 import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -40,6 +43,7 @@ import org.waveprotocol.wave.model.wave.data.impl.EmptyWaveletSnapshot;
 import org.waveprotocol.wave.model.wave.data.impl.ObservablePluggableMutableDocument;
 import org.waveprotocol.wave.model.wave.data.impl.WaveletDataImpl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -177,6 +181,45 @@ public final class WaveletDataUtil {
     }
     return wavelet;
   }
+
+  public static ObservableWaveletData buildWaveletFromDeltaAccess(
+      DeltaStore.DeltasAccess deltaAccess) throws OperationException, IOException {
+    Preconditions.checkArgument(!deltaAccess.isEmpty(), "empty deltas");
+
+
+    WaveletDeltaRecord initDelta = deltaAccess.getDelta(0);
+
+    final ObservableWaveletData wavelet =
+        createEmptyWavelet(
+            deltaAccess.getWaveletName(),
+            initDelta.getAuthor(), // creator
+            HashedVersion.unsigned(0), // garbage hash, is overwritten by first delta below
+            initDelta.getApplicationTimestamp()); // creation time
+
+    try {
+
+    deltaAccess.getAllDeltas(new Receiver<WaveletDeltaRecord>() {
+
+      @Override
+      public boolean put(WaveletDeltaRecord deltaRecord) {
+        try {
+            applyWaveletDelta(deltaRecord.getTransformedDelta(), wavelet);
+        } catch (OperationException e) {
+            return false;
+        } catch (IllegalStateException e) {
+          return false;
+        }
+        return true;
+      }
+    });
+
+    } catch (Exception e) {
+      throw new OperationException(e);
+    }
+
+    return wavelet;
+  }
+
 
   /**
    * Copies a wavelet.

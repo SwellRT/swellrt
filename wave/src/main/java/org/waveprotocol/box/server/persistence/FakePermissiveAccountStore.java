@@ -19,12 +19,15 @@
 
 package org.waveprotocol.box.server.persistence;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +41,8 @@ import java.util.Map;
  */
 public class FakePermissiveAccountStore implements AccountStore {
   Map<ParticipantId, AccountData> accounts = CollectionUtils.newHashMap();
+
+  private static final Log LOG = Log.get(FakePermissiveAccountStore.class);
 
   @Override
   public AccountData getAccount(ParticipantId id) {
@@ -64,5 +69,13 @@ public class FakePermissiveAccountStore implements AccountStore {
   @Override
   public void removeAccount(ParticipantId id) {
     accounts.remove(id);
+  }
+
+  @Override
+  public List<AccountData> getAccountByEmail(String email)
+      throws PersistenceException, NotImplementedException {
+    LOG.warning(
+        "getAccountByEmail is not supported by FakePermissiveAccountStore current implementation");
+    throw new NotImplementedException();
   }
 }

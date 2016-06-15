@@ -3,6 +3,7 @@ package org.swellrt.server.box.servlet;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NotImplementedException;
@@ -10,7 +11,6 @@ import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.tools.ConversionUtils;
 import org.apache.velocity.tools.ToolManager;
-import org.waveprotocol.box.server.CoreSettings;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -81,15 +81,13 @@ public class EmailService extends SwellRTService {
   private DecoupledTemplates decTemplates;
 
   @Inject
-  public EmailService(SessionManager sessionManager, AccountStore accountStore,
-      @Named(CoreSettings.EMAIL_HOST) String host,
-      @Named(CoreSettings.EMAIL_FROM_ADDRESS) String from,
-      @Named(CoreSettings.VELOCITY_PATH) String velocityPath, EmailSender emailSender,
-      DecoupledTemplates decTemplates) {
+  public EmailService(SessionManager sessionManager, AccountStore accountStore, Config config, 
+      EmailSender emailSender, DecoupledTemplates decTemplates) {
     super(sessionManager);
     this.accountStore = accountStore;
-    this.host = host;
-    this.from = from;
+    String velocityPath = config.getString("email.template_path");
+    this.host = config.getString("email.host");
+    this.from = config.getString("email.from_email_address");
     this.emailSender = emailSender;
     this.decTemplates = decTemplates;
 
