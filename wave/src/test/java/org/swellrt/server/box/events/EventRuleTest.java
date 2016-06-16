@@ -25,8 +25,7 @@ public class EventRuleTest extends TestCase {
   protected EventRule createEventRule() throws UnsupportedEncodingException {
 
 
-      InputStreamReader isr = new InputStreamReader(this.getClass().getClassLoader()
-            .getResourceAsStream("org/swellrt/server/box/events/EventRuleTest_Rule_1.json"),
+      InputStreamReader isr = new InputStreamReader(this.getClass().getResourceAsStream("EventRuleTest_Rule_1.json"),
             "UTF-8");
 
 
