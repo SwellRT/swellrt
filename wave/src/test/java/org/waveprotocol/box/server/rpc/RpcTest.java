@@ -60,6 +60,8 @@ public class RpcTest extends TestCase {
   public void setUp() throws Exception {
     super.setUp();
     SessionManager sessionManager = Mockito.mock(SessionManager.class);
+    org.eclipse.jetty.server.SessionManager jettySessionManager =
+        Mockito.mock(org.eclipse.jetty.server.SessionManager.class);
     /*
      * NOTE: Specifying port zero (0) causes the OS to select a random port.
      * This allows the test to run without clashing with any potentially in-use port.

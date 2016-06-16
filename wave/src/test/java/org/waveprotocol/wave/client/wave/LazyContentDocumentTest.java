@@ -45,6 +45,7 @@ public class LazyContentDocumentTest extends TestCase {
   private Registries registries;
   private LazyContentDocument document;
   private SimpleDiffDoc state;
+  private DocOperationLog operationLog;
 
   //
   //
@@ -77,13 +78,13 @@ public class LazyContentDocumentTest extends TestCase {
   private void startWithCompleteState() {
     state = SimpleDiffDoc.create(X, null);
     assert state.isCompleteState() : "invalid test assumptions";
-    document = LazyContentDocument.create(registries, state, new DocOperationLog());
+    document = LazyContentDocument.create(registries, state, operationLog);
   }
 
   private void startWithStateAndDiff() {
     state = SimpleDiffDoc.create(X, D_X);
     assert !state.isCompleteDiff() && !state.isCompleteState() : "invalid test assumptions";
-    document = LazyContentDocument.create(registries, state, new DocOperationLog());
+    document = LazyContentDocument.create(registries, state, operationLog);
   }
 
   public void testOpOnCompleteStateIsADiff() {

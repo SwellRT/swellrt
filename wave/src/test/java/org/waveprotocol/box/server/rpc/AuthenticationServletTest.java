@@ -62,6 +62,8 @@ import javax.servlet.http.HttpSession;
  */
 public class AuthenticationServletTest extends TestCase {
   private static final ParticipantId USER = ParticipantId.ofUnsafe("frodo@example.com");
+  private static final ParticipantId ANONYMOUS_USER = ParticipantId
+      .ofUnsafe("_anonymous_null@example.com");
 
   private AuthenticationServlet servlet;
 
@@ -99,7 +101,7 @@ public class AuthenticationServletTest extends TestCase {
   }
 
   public void testGetReturnsSomething() throws IOException {
-    when(req.getSession(false)).thenReturn(null);
+    when(req.getSession(eq(false))).thenReturn(null);
 
     PrintWriter writer = mock(PrintWriter.class);
     when(resp.getWriter()).thenReturn(writer);
@@ -112,8 +114,9 @@ public class AuthenticationServletTest extends TestCase {
 
   public void testGetRedirects() throws IOException {
     String location = "/abc123?nested=query&string";
-    when(req.getSession(false)).thenReturn(session);
-    when(manager.getLoggedInUser(session)).thenReturn(USER);
+    when(req.getSession(eq(false))).thenReturn(session);
+    when(manager.getLoggedInUser(eq(session))).thenReturn(USER);
+    when(manager.getLoggedInUser(eq(req))).thenReturn(USER);
     configureRedirectString(location);
 
     servlet.doGet(req, resp);
@@ -159,6 +162,19 @@ public class AuthenticationServletTest extends TestCase {
     verify(session, never()).setAttribute(eq("address"), anyString());
   }
 
+
+  public void testUserWithNoDomainReturnAddress() throws Exception {
+    configureRedirectString("none");
+    attemptLogin("frodo", "password", true);
+    verify(resp.getWriter()).write(
+        "{ \"participantId\" : \"" + "frodo@example.com" + "\", " + " \"sessionId\" : \"" + "null"
+            + "\" }");
+  }
+
+  public void testAnonymousLogin() throws IOException {
+    attemptLogin(ParticipantId.ANONYMOUS_NAME, "", true);
+  }
+
   // *** Utility methods
 
   private void configureRedirectString(String location) {
@@ -178,19 +194,31 @@ public class AuthenticationServletTest extends TestCase {
     when(req.getReader()).thenReturn(new BufferedReader(reader));
     PrintWriter writer = mock(PrintWriter.class);
     when(resp.getWriter()).thenReturn(writer);
-    when(req.getSession(false)).thenReturn(null);
-    when(req.getSession(true)).thenReturn(session);
+    when(req.getSession(eq(false))).thenReturn(null);
+    when(req.getSession(eq(true))).thenReturn(session);
     when(req.getLocale()).thenReturn(Locale.ENGLISH);
+    when(manager.getSession(eq(req), Mockito.anyBoolean())).thenReturn(session);
+    when(manager.getSession(eq(req))).thenReturn(session);
 
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.
     if (expectSuccess) {
-      when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(USER);
-      when(session.getAttribute("user")).thenReturn(USER);
+      if (ParticipantId.isAnonymousName(address)) {
+        when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(ANONYMOUS_USER);
+        when(manager.getLoggedInUser(eq(req))).thenReturn(ANONYMOUS_USER);
+        when(session.getAttribute(eq("user"))).thenReturn(ANONYMOUS_USER);
+      } else {
+        when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(USER);
+        when(manager.getLoggedInUser(eq(req))).thenReturn(USER);
+        when(session.getAttribute(eq("user"))).thenReturn(USER);
+      }
     }
     servlet.doPost(req, resp);
     if (expectSuccess) {
-      verify(manager).setLoggedInUser(session, USER);
+      if (ParticipantId.isAnonymousName(address))
+        verify(manager).setLoggedInUser(session, ANONYMOUS_USER);
+      else
+        verify(manager).setLoggedInUser(session, USER);
     }
   }
 }

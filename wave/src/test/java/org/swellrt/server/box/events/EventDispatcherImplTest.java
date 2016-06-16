@@ -73,10 +73,8 @@ public class EventDispatcherImplTest extends TestCase {
 
     InputStreamReader reader =
         new InputStreamReader(
-            this.getClass()
-                .getClassLoader()
-                .getResourceAsStream(
-                    "org/swellrt/server/box/events/EventDispatcherImplTest_Rules.json"), "UTF-8");
+            this.getClass().getResourceAsStream("EventDispatcherImplTest_Rules.json"),"UTF-8");
+                
 
     Collection<EventRule> rules = EventRule.fromReader(reader);
 
