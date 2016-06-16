@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+<?xml version="1.0" encoding="UTF-8"?>
 <!--                                                                        -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License"); you    -->
 <!-- may not use this file except in compliance with the License. You may   -->
@@ -12,8 +11,6 @@
 <!-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or        -->
 <!-- implied. License for the specific language governing permissions and   -->
 <!-- limitations under the License.                                         -->
-
->>>>>>> remotes/wave/master
 <module>
     <source path=""/>
     <source path="org.waveprotocol.box.stat"/>
