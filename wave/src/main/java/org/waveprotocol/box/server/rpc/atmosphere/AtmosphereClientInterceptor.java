@@ -77,8 +77,7 @@ import java.io.OutputStream;
         if (parts.length > 0 && "GET".equals(resource.getRequest().getMethod()) && "atmosphere.js".equals(parts[0])) {
           resource.getResponse().setContentType("text/javascript");
           InputStream is =
-              this.getClass().getClassLoader()
-                  .getResourceAsStream("org/waveprotocol/box/server/rpc/atmosphere/atmosphere.js");
+              this.getClass().getResourceAsStream("atmosphere.js");
           OutputStream os = resource.getResponse().getOutputStream();
           ByteStreams.copy(is, os);
           return Action.CANCELLED;
