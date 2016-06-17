@@ -97,7 +97,7 @@ public class AuthenticationServlet extends HttpServlet {
   private final boolean isRegistrationDisabled;
   private final boolean isLoginPageDisabled;
   private boolean failedClientAuth = false;
-private final WelcomeRobot welcomeBot;
+  // private final WelcomeRobot welcomeBot;
   private final String analyticsAccount;
 
   @Inject
@@ -105,8 +105,8 @@ private final WelcomeRobot welcomeBot;
                                Configuration configuration,
                                SessionManager sessionManager,
                                @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String domain,
-                               Config config,
-                               WelcomeRobot welcomeBot) {
+                               Config config
+                               /* ,WelcomeRobot welcomeBot */) {
     Preconditions.checkNotNull(accountStore, "AccountStore is null");
     Preconditions.checkNotNull(configuration, "Configuration is null");
     Preconditions.checkNotNull(sessionManager, "Session manager is null");
@@ -119,7 +119,7 @@ private final WelcomeRobot welcomeBot;
     this.clientAuthCertDomain = config.getString("security.clientauth_cert_domain").toLowerCase();
     this.isRegistrationDisabled = config.getBoolean("administration.disable_registration");
     this.isLoginPageDisabled = config.getBoolean("administration.disable_loginpage");
-    this.welcomeBot = welcomeBot;
+    // this.welcomeBot = welcomeBot;
     this.analyticsAccount = config.getString("administration.analytics_account");
   }
 
@@ -322,7 +322,7 @@ private final WelcomeRobot welcomeBot;
             ParticipantId id = ParticipantId.of(email);
             if (!RegistrationUtil.doesAccountExist(accountStore, id)) {
               if (!isRegistrationDisabled) {
-                if (!RegistrationUtil.createAccountIfMissing(accountStore, id, null, welcomeBot)) {
+                if (!RegistrationUtil.createAccountIfMissing(accountStore, id, null, /* welcomeBot */ null)) {
                   return null;
                 }
               } else {
