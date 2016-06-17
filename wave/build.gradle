@@ -28,9 +28,9 @@ apply plugin: 'com.google.protobuf'
 // Project Level Settings
 //=============================================================================
 /* Meta Data Info */
-def title = 'Apache Wave Server'
-def vendor = 'The Apache Software Foundation'
-version = "0.4.2"
+def title = 'SwellRT'
+def vendor = 'SwellRT Community'
+version = "0.5.0-alpha"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
@@ -303,10 +303,11 @@ task generateGXP {
 }
 
 //=============================================================================
-// Gwt Compilation Options
+// JavaScript Web Client (Gwt)
 //=============================================================================
-task compileGwt {
-    description = 'Compiles the GWT sources for production'
+
+task compileJsWeb {
+    description = 'Compiles the SwellRT Javascript Web Client (Production)'
     doLast {
         javaexec {
             main = "com.google.gwt.dev.Compiler"
@@ -326,17 +327,14 @@ task compileGwt {
                     "-XdisableClassMetadata",
                     "-XdisableCastChecking",
                     "-localWorkers", "4",
-                    "org.waveprotocol.box.webclient.WebClientProd"
+                    "org.swellrt.api.SwellRT"
             ]
         }
     }
 }
 
-compileGwt.mustRunAfter compileJava
-run.dependsOn compileGwt
-
-task compileGwtDemo {
-    description = 'Compiles the GWT sources for Demo'
+task compileJsWebDev {
+    description = 'Compiles the SwellRT Javascript Web Client (Development)'
     doLast {
         javaexec {
             main = "com.google.gwt.dev.Compiler"
@@ -348,39 +346,22 @@ task compileGwtDemo {
                         configurations.gwt
                 ]
             }
-            args = [
-                    "-style", "Pretty",
-                    "-ea",
-                    "org.waveprotocol.box.webclient.WebClientDemo"
+            jvmArgs = [
+                    "-Xmx1024M"
             ]
-        }
-    }
-}
-
-task compileGwtDev {
-    description = 'Compiles the GWT sources for Development'
-    doLast {
-        javaexec {
-            main = "com.google.gwt.dev.Compiler"
-            classpath {
-                [
-                        sourceSets.main.java.srcDirs,
-                        sourceSets.main.compileClasspath,
-                        sourceSets.main.resources.srcDirs,
-                        configurations.gwt
-                ]
-            }
             args = [
                     "-style", "PRETTY",
                     "-draftCompile",
                     "-ea",
                     "-strict",
-                    "org.waveprotocol.box.webclient.WebClientDev"
+                    "org.swellrt.api.SwellRT"
             ]
         }
     }
 }
-
+// Don't force to recompile the client anytime compile server code
+// compileJsWeb.mustRunAfter compileJava
+run.dependsOn compileJsWeb
 
 
 compileJava.dependsOn = [generateMessages, generateGXP]
@@ -414,7 +395,7 @@ task gwtDev {
                     "-bindAddress", "127.0.0.1",
                     "-startupUrl", "http://localhost:9898",
                     "-logLevel", "DEBUG",
-                    "org.waveprotocol.box.webclient.WebClientDev",
+                    "org.swellrt.api.SwellRT",
             ]
         }
     }
@@ -441,26 +422,6 @@ test {
         println ''
     }
 }
-
-/* TODO(wisebaldone) not working due to gwt conflict talked about above, cant
-    have everything on classpath because 2 jetty versions. */
-task testGwt(type: Test) {
-    include "**/*GwtTest*"
-
-    minHeapSize = "512m"
-    maxHeapSize = "1024m"
-    forkEvery = 1
-
-    doFirst {
-        println ''
-        println '--------------------'
-        println ' Running Gwt tests. '
-        println '--------------------'
-        println ''
-    }
-}
-
-testGwt.dependsOn compileGwt
 
 task testMongo(type: Test) {
     include "**/server/persistence/mongodb/**/*Test*"
@@ -501,10 +462,9 @@ task testAll() {
     }
 }
 
-testAll.dependsOn compileJava, compileGwt
-testAll.dependsOn test, testMongo, testLarge, testGwt
+testAll.dependsOn compileJava
+testAll.dependsOn test, testMongo, testLarge
 
-testGwt.mustRunAfter compileGwt, testLarge
 testMongo.mustRunAfter compileJava, test
 testLarge.mustRunAfter test
 
@@ -605,7 +565,7 @@ jar {
     exclude "com/google/api/client/**/*"
 }
 
-jar.dependsOn compileJava, compileGwt, extractApi
+jar.dependsOn compileJava, extractApi
 
 //=============================================================================
 // Binary Distribution
@@ -703,7 +663,7 @@ createDistBin.dependsOn createDistBinZip, createDistBinTar
 // Additional Clean
 clean {
     delete "war/WEB-INF"
-    delete "war/webclient"
+    delete "war/swellrt"
     delete "generated/"
     delete "gwt-unitCache"
 }
