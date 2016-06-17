@@ -23,7 +23,7 @@ war/WEB-INF
 .DS_Store
 wave/.gitignore
 pst/.gitignore
-
+*.log.*
 ### IntelliJ Idea
 .idea
 *.iml
@@ -44,6 +44,7 @@ wave/build/
 wave/war/WEB-INF/
 wave/war/webclient/
 wave/war/org*
+wave/war/swellrt/
 pst/build/
 distributions/
 ### Reports
