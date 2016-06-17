@@ -20,7 +20,7 @@
 # This script will start the Wave in a Box server.
 
 # The version of Wave in a Box, extracted from the build.properties file
-WAVEINABOX_VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" config/wave.conf | grep ^version= | cut -f2 -d=`
+VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" config/wave.conf | grep ^version= | cut -f2 -d=`
 
 . process-script-args.sh
 
@@ -28,4 +28,4 @@ exec java $DEBUG_FLAGS \
   -Djava.util.logging.config.file=config/wiab-logging.conf \
   -Djava.security.auth.login.config=config/jaas.config \
   -Dwave.server.config=config/server.config \
-  -jar bin/wave-$WAVEINABOX_VERSION.jar
+  -jar bin/swellrt-$VERSION.jar

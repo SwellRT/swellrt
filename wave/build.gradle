@@ -31,6 +31,8 @@ apply plugin: 'com.google.protobuf'
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
 version = "0.5.0-alpha"
+archivesBaseName = "swellrt"
+def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
@@ -586,28 +588,28 @@ task createDistBinZip(type: Zip) {
     baseName = binName
     destinationDir = file('../distributions')
     from(jar) {
-        into 'apache-wave/bin'
+        into distFolder + '/bin'
     }
     from('dist') {
-        into 'apache-wave'
+        into distFolder
     }
     from('config') {
-        into 'apache-wave/config'
+        into distFolder + '/config'
     }
     from('war') {
-        into 'apache-wave/war'
+        into distFolder + '/war'
     }
     from('../THANKS') {
-        into 'apache-wave'
+        into distFolder
     }
     from('../RELEASE-NOTES') {
-        into 'apache-wave'
+        into distFolder
     }
     from('../KEYS') {
-        into 'apache-wave'
+        into distFolder
     }
     from('../DISCLAIMER') {
-        into 'apache-wave'
+        into distFolder
     }
 }
 
@@ -617,28 +619,28 @@ task createDistBinTar(type: Tar) {
     baseName = binName
     destinationDir = file('../distributions')
     from(jar) {
-        into 'apache-wave/bin'
+        into distFolder + '/bin'
     }
     from('dist') {
-        into 'apache-wave'
+        into distFolder
     }
     from('config') {
-        into 'apache-wave/config'
+        into distFolder + '/config'
     }
     from('war') {
-        into 'apache-wave/war'
+        into distFolder + '/war'
     }
     from('../THANKS') {
-        into 'apache-wave'
+        into distFolder
     }
     from('../RELEASE-NOTES') {
-        into 'apache-wave'
+        into distFolder
     }
     from('../KEYS') {
-        into 'apache-wave'
+        into distFolder
     }
     from('../DISCLAIMER') {
-        into 'apache-wave'
+        into distFolder
     }
 }
 

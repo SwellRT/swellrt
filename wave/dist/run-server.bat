@@ -15,9 +15,9 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 
 for /F "tokens=1* delims==" %%A IN (config/wave.conf) DO (
-    IF "%%A"=="version" set WAVEINABOX_VERSION=%%B
+    IF "%%A"=="version" set VERSION=%%B
     )
 echo on
 
-java -Djava.util.logging.config.file=config/wiab-logging.conf -Djava.security.auth.login.config=config/jaas.config -Dwave.server.config=config/server.config  -jar bin/wave-%WAVEINABOX_VERSION%.jar
+java -Djava.util.logging.config.file=config/wiab-logging.conf -Djava.security.auth.login.config=config/jaas.config -Dwave.server.config=config/server.config  -jar bin/swellrt-%VERSION%.jar
 pause
