@@ -21,6 +21,7 @@ package org.waveprotocol.box.server.persistence;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 
@@ -82,6 +83,7 @@ public class PersistenceModule extends AbstractModule {
   /**
    * Returns a {@link MongoDbProvider} instance.
    */
+  @Provides
   public MongoDbProvider getMongoDbProvider() {
     if (mongoDbProvider == null) {
       mongoDbProvider = new MongoDbProvider(mongoDBHost, mongoDBPort, mongoDBdatabase);
