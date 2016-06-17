@@ -138,16 +138,17 @@ public class ServerMain {
 
     Module serverModule = injector.getInstance(ServerModule.class);
     Module federationModule = buildFederationModule(injector);
-    Module robotApiModule = new RobotApiModule();
+    // Module robotApiModule = new RobotApiModule();
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
-    Module searchModule = injector.getInstance(SearchModule.class);
+    // Module searchModule = injector.getInstance(SearchModule.class);
     Module modelIndexerModule = injector.getInstance(ModelIndexerModule.class); // SwellRT
     Module eventsModule = injector.getInstance(EventsModule.class); // SwellRT
-    Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
+    // Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
     Module emailModule = injector.getInstance(EmailModule.class); // SwellRT
-    injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
-        federationModule, searchModule, profileFetcherModule);
-
+    // injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
+    //    federationModule, searchModule, profileFetcherModule);
+    injector = injector.createChildInjector(serverModule, persistenceModule, federationModule, eventsModule, modelIndexerModule);
+    
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
 
@@ -158,11 +159,11 @@ public class ServerMain {
 
     initializeServer(injector, domain);
     initializeServlets(server, config);
-    initializeRobotAgents(server);
-    initializeRobots(injector, waveBus);
+    // initializeRobotAgents(server);
+    // initializeRobots(injector, waveBus);
     initializeFrontend(injector, server, waveBus);
     initializeFederation(injector);
-    initializeSearch(injector, waveBus);
+    // initializeSearch(injector, waveBus);
     initializeShutdownHandler(server);
 	initializeSwellRt(injector, waveBus);
 
@@ -193,15 +194,15 @@ public class ServerMain {
   }
 
   private static void initializeServlets(ServerRpcProvider server, Config config) {
-    server.addServlet("/gadget/gadgetlist", GadgetProviderServlet.class);
+    // server.addServlet("/gadget/gadgetlist", GadgetProviderServlet.class);
 
     server.addServlet(AttachmentServlet.ATTACHMENT_URL + "/*", AttachmentServlet.class);
     server.addServlet(AttachmentServlet.THUMBNAIL_URL + "/*", AttachmentServlet.class);
     server.addServlet(AttachmentInfoServlet.ATTACHMENTS_INFO_URL, AttachmentInfoServlet.class);
 
     server.addServlet(SessionManager.SIGN_IN_URL, AuthenticationServlet.class);
-    server.addServlet("/auth/signout*", SignOutServlet.class);
-    server.addServlet("/auth/register*", UserRegistrationServlet.class);
+    // server.addServlet("/auth/signout*", SignOutServlet.class);
+    // server.addServlet("/auth/register*", UserRegistrationServlet.class);
 
     // server.addServlet("/locale/*", LocaleServlet.class);
     // server.addServlet("/fetch/*", FetchServlet.class);
@@ -216,17 +217,17 @@ public class ServerMain {
     // server.addServlet("/robot/rpc", ActiveApiServlet.class);
     // server.addServlet("/webclient/remote_logging",
     // RemoteLoggingServiceImpl.class);
-    server.addServlet("/profile/*", FetchProfilesServlet.class);
-    server.addServlet("/iniavatars/*", InitialsAvatarsServlet.class);
+    // server.addServlet("/profile/*", FetchProfilesServlet.class);
+    // server.addServlet("/iniavatars/*", InitialsAvatarsServlet.class);
     // server.addServlet("/waveref/*", WaveRefServlet.class);
 
-    String gadgetServerHostname = config.getString("core.gadget_server_hostname");
-    int gadgetServerPort = config.getInt("core.gadget_server_port");
-    LOG.info("Starting GadgetProxyServlet for " + gadgetServerHostname + ":" + gadgetServerPort);
-    server.addTransparentProxy("/gadgets/*",
-        "http://" + gadgetServerHostname + ":" + gadgetServerPort + "/gadgets", "/gadgets");
-
-    server.addServlet("/", WaveClientServlet.class);
+	//    String gadgetServerHostname = config.getString("core.gadget_server_hostname");
+	//    int gadgetServerPort = config.getInt("core.gadget_server_port");
+	//    LOG.info("Starting GadgetProxyServlet for " + gadgetServerHostname + ":" + gadgetServerPort);
+	//    server.addTransparentProxy("/gadgets/*",
+	//        "http://" + gadgetServerHostname + ":" + gadgetServerPort + "/gadgets", "/gadgets");
+	//
+	//    server.addServlet("/", WaveClientServlet.class);
 
     // Profiling
     server.addFilter("/*", RequestScopeFilter.class);
@@ -237,7 +238,7 @@ public class ServerMain {
     }
 
     // DSWG experimental
-    server.addServlet("/shared/*", DSFileServlet.class);
+    // server.addServlet("/shared/*", DSFileServlet.class);
 
     // SwellRt
     server.addServlet("/swell/*", SwellRtServlet.class);

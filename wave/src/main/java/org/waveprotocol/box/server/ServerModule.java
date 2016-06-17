@@ -90,7 +90,7 @@ public class ServerModule extends AbstractModule {
 
     bind(ServerRpcProvider.class).in(Singleton.class);
 
-    bind(RobotRegistrar.class).to(RobotRegistrarImpl.class);
+    // bind(RobotRegistrar.class).to(RobotRegistrarImpl.class);
 
     requestStaticInjection(WebSocketChannel.class);
   }
