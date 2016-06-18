@@ -19,7 +19,6 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +35,7 @@ public class Request {
   private final String method;
   private final String url;
   private final Map<String, String> headers;
-  private final Map<String, String> queryStrings;
+  private final Map<String, Object> queryStrings;
   private final JSONObject body;
 
   public Request(String method, String url) {
@@ -44,10 +43,8 @@ public class Request {
     this.url = url;
 
     headers = new HashMap<String, String>();
-    queryStrings = new HashMap<String, String>();
+    queryStrings = new HashMap<String, Object>();
     body = new JSONObject();
-
-    headers.put("Content-Type","application/json");
   }
 
   public void addHeader(String key, String value) {
@@ -62,11 +59,19 @@ public class Request {
     body.put(name, value);
   }
 
-  public Map getHeaders() {
+  public String getMethod() {
+    return method;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public Map<String, String> getHeaders() {
     return headers;
   }
 
-  public Map getQueryStrings() {
+  public Map<String, Object> getQueryStrings() {
     return queryStrings;
   }
 

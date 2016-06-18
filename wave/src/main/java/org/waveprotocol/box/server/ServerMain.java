@@ -144,7 +144,7 @@ public class ServerMain {
       throws ConfigurationException {
     Module federationModule;
     if (enableFederation) {
-      federationModule = settingsInjector.getInstance(XmppFederationModule.class);
+      federationModule = settingsInjector.getInstance(MatrixFederationModule.class);
     } else {
       federationModule = settingsInjector.getInstance(NoOpFederationModule.class);
     }
