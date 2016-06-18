@@ -108,9 +108,10 @@ public class ServerMain {
     injector = injector.createChildInjector(profilingModule, executorsModule);
 
     Config config = injector.getInstance(Config.class);
+    boolean enableFederation = config.getBoolean("federation.enable_federation");
 
     Module serverModule = injector.getInstance(ServerModule.class);
-    Module federationModule = buildFederationModule(injector);
+    Module federationModule = buildFederationModule(injector, enableFederation);
     Module robotApiModule = new RobotApiModule();
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
     Module searchModule = injector.getInstance(SearchModule.class);
@@ -139,9 +140,15 @@ public class ServerMain {
     server.startWebSocketServer(injector);
   }
 
-  private static Module buildFederationModule(Injector settingsInjector)
+  private static Module buildFederationModule(Injector settingsInjector, boolean enableFederation)
       throws ConfigurationException {
-    return settingsInjector.getInstance(MatrixFederationModule.class);
+    Module federationModule;
+    if (enableFederation) {
+      federationModule = settingsInjector.getInstance(XmppFederationModule.class);
+    } else {
+      federationModule = settingsInjector.getInstance(NoOpFederationModule.class);
+    }
+    return federationModule;
   }
 
   private static void initializeServer(Injector injector, String waveDomain)

@@ -53,36 +53,40 @@ import java.util.logging.Logger;
  */
 public class MatrixFederationRemote implements WaveletFederationProvider {
 
-	@Override
-  	public void submitRequest(final WaveletName waveletName,
-                            final ProtocolSignedDelta signedDelta,
-                            final SubmitResultListener listener) {
+  @Override
+  public void submitRequest(
+      final WaveletName waveletName,
+      final ProtocolSignedDelta signedDelta,
+      final SubmitResultListener listener) {
 
-  	}
+  }
 
-  	@Override
-  	public void requestHistory(final WaveletName waveletName,
-                             final String domain,
-                             ProtocolHashedVersion startVersion,
-                             ProtocolHashedVersion endVersion,
-                             long lengthLimit,
-                             final WaveletFederationProvider.HistoryResponseListener listener) {
+  @Override
+  public void requestHistory(
+      final WaveletName waveletName,
+      final String domain,
+      ProtocolHashedVersion startVersion,
+      ProtocolHashedVersion endVersion,
+      long lengthLimit,
+      final WaveletFederationProvider.HistoryResponseListener listener) {
 
-  	}
+  }
 
-  	@Override
-  	public void getDeltaSignerInfo(ByteString signerId, WaveletName waveletName,
-                                 ProtocolHashedVersion deltaEndVersion,
-                                 final DeltaSignerInfoResponseListener listener) {
+  @Override
+  public void getDeltaSignerInfo(
+      ByteString signerId,
+      WaveletName waveletName,
+      ProtocolHashedVersion deltaEndVersion,
+      final DeltaSignerInfoResponseListener listener) {
 
-  	}
+  }
 
-  	@Override
-  	public void postSignerInfo(
+  @Override
+  public void postSignerInfo(
       final String remoteDomain,
       ProtocolSignerInfo signerInfo,
       final WaveletFederationProvider.PostSignerInfoResponseListener listener) {
 
-  	}
+  }
 
 }

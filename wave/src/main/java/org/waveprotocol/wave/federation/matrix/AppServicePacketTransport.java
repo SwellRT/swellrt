@@ -38,25 +38,49 @@ import java.util.logging.Logger;
  */
 public class AppServicePacketTransport implements Runnable, OutgoingPacketTransport {
 	
-	private static final Logger LOG = 
-	  Logger.getLogger(AppServicePacketTransport.class.getCanonicalName());
+  private static final Logger LOG = 
+      Logger.getLogger(AppServicePacketTransport.class.getCanonicalName());
 
-	 private final IncomingPacketHandler handler;
+  private final IncomingPacketHandler handler;
+  private final String appServiceName;
+  private final String appServiceToken;
+  private final String serverDomain;
+  private final String serverAddress;
+  private final int serverPort;
 
-	@Inject
-	public AppServicePacketTransport(IncomingPacketHandler handler, Config config) {
-		this.handler = handler;
-	}
+  // Contains packets queued but not sent (while offline).
+  private final Queue<Request> queuedPackets;
 
-	@Override
-    public void run() {
-    	
-    }
+  // Object used to lock around online/offline state changes.
+  private final Object connectionLock = new Object();
 
-	@Override
-	public void sendPacket(JSONArray packet) {
+  private ExternalComponentManager componentManager = null;
+  private boolean connected = false;
 
-	}
+  @Inject
+  public AppServicePacketTransport(IncomingPacketHandler handler, Config config) {
+    this.handler = handler;
+    this.appServiceName = config.getString("federation.matrix_appservice_name");
+    this.appServiceToken = config.getString("federation.matrix_appservice_token");
+    this.serverDomain = config.getString("federation.matrix_server_hostname");
+    this.serverAddress = config.getString("federation.matrix_server_ip");
+    this.serverPort = config.getInt("federation.xmpp_server_component_port");
 
+    queuedPackets = new LinkedList<>();
+  }
+
+  @Override
+  public void run() {
+  	
+  }
+
+  @Override
+  public void sendPacket(Request packet) {
+
+  }
+
+  public void setUp() {
+
+  }
 
 }

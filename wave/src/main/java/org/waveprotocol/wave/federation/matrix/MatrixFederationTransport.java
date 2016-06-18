@@ -31,27 +31,27 @@ import org.waveprotocol.wave.util.logging.Log;
  */
 public class MatrixFederationTransport implements FederationTransport {
 
-	private static final Log LOG = Log.get(MatrixFederationTransport.class);
-  	private final AppServicePacketTransport transport;
-  
-	@Inject
-	MatrixFederationTransport(AppServicePacketTransport transport) {
-		this.transport = transport;
-	}
+  private static final Log LOG = Log.get(MatrixFederationTransport.class);
+  private final AppServicePacketTransport transport;
 
-	@Override
-	public void startFederation() {
-		Thread transportThread = new Thread(transport);		
+  @Inject
+  MatrixFederationTransport(AppServicePacketTransport transport) {
+    this.transport = transport;
+  }
 
-		Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
-		    public void uncaughtException(Thread th, Throwable ex) {
-		        LOG.warning("couldn't connect to Matrix server:", ex);
-		    }
-		};
-		
-		transportThread.setUncaughtExceptionHandler(handler);
-		transportThread.setDaemon(true);
-		transportThread.start();		
-	}
+  @Override
+  public void startFederation() {
+    Thread transportThread = new Thread(transport);		
+
+    Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
+      public void uncaughtException(Thread th, Throwable ex) {
+        LOG.warning("couldn't connect to Matrix server:", ex);
+      }
+    };
+
+    transportThread.setUncaughtExceptionHandler(handler);
+    transportThread.setDaemon(true);
+    transportThread.start();		
+  }
 
 }

@@ -35,26 +35,27 @@ import org.waveprotocol.wave.federation.WaveletFederationProvider;
  */
 public class MatrixFederationModule extends AbstractModule {
 
-	@Override
-  	protected void configure() {
-	    // Request history and submit deltas to the outside world *from* our local
-	    // Wave Server.
-	    bind(WaveletFederationProvider.class).annotatedWith(FederationRemoteBridge.class).to(
-	        MatrixFederationRemote.class).in(Singleton.class);
+  @Override
+  protected void configure() {
+    // Request history and submit deltas to the outside world *from* our local
+    // Wave Server.
+    bind(WaveletFederationProvider.class).annotatedWith(FederationRemoteBridge.class).to(
+        MatrixFederationRemote.class).in(Singleton.class);
 
-	    // Serve updates to the outside world about local waves.
-	    bind(WaveletFederationListener.Factory.class).annotatedWith(FederationHostBridge.class).to(
-	        MatrixFederationHost.class).in(Singleton.class);
+    // Serve updates to the outside world about local waves.
+    bind(WaveletFederationListener.Factory.class).annotatedWith(FederationHostBridge.class).to(
+        MatrixFederationHost.class).in(Singleton.class);
 
-	    bind(MatrixRoomManager.class).in(Singleton.class);
-	    bind(MatrixFederationRemote.class).in(Singleton.class);
-	    bind(MatrixFederationHost.class).in(Singleton.class);
+    bind(MatrixRoomManager.class).in(Singleton.class);
+    bind(MatrixFederationRemote.class).in(Singleton.class);
+    bind(MatrixFederationHost.class).in(Singleton.class);
 
-	    bind(MatrixPacketHandler.class).in(Singleton.class);
-	    bind(IncomingPacketHandler.class).to(MatrixPacketHandler.class);
-	    bind(AppServicePacketTransport.class).in(Singleton.class);
-	    bind(OutgoingPacketTransport.class).to(AppServicePacketTransport.class);
+    bind(MatrixPacketHandler.class).in(Singleton.class);
+    bind(IncomingPacketHandler.class).to(MatrixPacketHandler.class);
+    bind(AppServicePacketTransport.class).in(Singleton.class);
+    bind(OutgoingPacketTransport.class).to(AppServicePacketTransport.class);
 
-	    bind(FederationTransport.class).to(MatrixFederationTransport.class).in(Singleton.class);
-  	}
+    bind(FederationTransport.class).to(MatrixFederationTransport.class).in(Singleton.class);
+  }
+
 }

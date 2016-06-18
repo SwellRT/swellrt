@@ -33,45 +33,45 @@ import java.util.Map;
  */
 public class Request {
 
-	private final String method;
-	private final String url;
-	private final Map<String, String> headers;
-	private final Map<String, String> queryStrings;
-	private final JSONObject body;
+  private final String method;
+  private final String url;
+  private final Map<String, String> headers;
+  private final Map<String, String> queryStrings;
+  private final JSONObject body;
 
-    public Request(String method, String url) {
-        this.method = method;
-        this.url = url;
+  public Request(String method, String url) {
+    this.method = method;
+    this.url = url;
 
-        headers = new HashMap<String, String>();
-        queryStrings = new HashMap<String, String>();
-        body = new JSONObject();
+    headers = new HashMap<String, String>();
+    queryStrings = new HashMap<String, String>();
+    body = new JSONObject();
 
-        headers.put("Content-Type","application/json");
-    }
+    headers.put("Content-Type","application/json");
+  }
 
-    public void addHeader(String key, String value) {
-    	headers.put(key, value);
-    }
+  public void addHeader(String key, String value) {
+    headers.put(key, value);
+  }
 
-    public void addQueryString(String key, String value) {
-    	queryStrings.put(key, value);
-    }
+  public void addQueryString(String key, String value) {
+    queryStrings.put(key, value);
+  }
 
-    public void addBody(String name, Object value) throws JSONException {
-    	body.put(name, value);
-    }
+  public void addBody(String name, Object value) throws JSONException {
+    body.put(name, value);
+  }
 
-    public Map getHeaders() {
-    	return headers;
-    }
+  public Map getHeaders() {
+    return headers;
+  }
 
-    public Map getQueryStrings() {
-    	return queryStrings;
-    }
+  public Map getQueryStrings() {
+    return queryStrings;
+  }
 
-    public JSONObject getBody() {
-    	return body;
-    }
-
+  public JSONObject getBody() {
+    return body;
+  }
+  
 }

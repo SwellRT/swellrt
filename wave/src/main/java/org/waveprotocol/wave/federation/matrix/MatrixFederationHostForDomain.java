@@ -35,15 +35,16 @@ import java.util.List;
  */
 class MatrixFederationHostForDomain implements WaveletFederationListener {
 
-	@Override
-  	public void waveletCommitUpdate(WaveletName waveletName, ProtocolHashedVersion committedVersion,
+  @Override
+  public void waveletCommitUpdate(WaveletName waveletName, ProtocolHashedVersion committedVersion, 
       WaveletUpdateCallback callback) {
 
-  	}
+  }
 
-  	@Override
-  	public void waveletDeltaUpdate(WaveletName waveletName, List<ByteString> appliedDeltas,
+  @Override
+  public void waveletDeltaUpdate(WaveletName waveletName, List<ByteString> appliedDeltas,
       WaveletUpdateCallback callback) {
 
-  	}
+  }
+	
 }

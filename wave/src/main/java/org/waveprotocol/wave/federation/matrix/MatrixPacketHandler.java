@@ -30,8 +30,8 @@ import org.json.JSONObject;
  */
 public class MatrixPacketHandler implements IncomingPacketHandler {
 
- 	@Override
-	public void receivePacket(JSONObject packet) {
+  @Override
+  public void receivePacket(JSONObject packet) {
 
-	}
+  }
 }

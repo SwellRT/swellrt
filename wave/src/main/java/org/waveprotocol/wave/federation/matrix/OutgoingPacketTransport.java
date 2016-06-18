@@ -19,8 +19,6 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import org.json.JSONArray;
-
 /**
  * Generic outgoing Matrix packet transport interface. Should be implemented by
  * the handling Matrix transport (e.g. application service system).
@@ -33,6 +31,6 @@ public interface OutgoingPacketTransport {
    * Send a packet over-the-wire to its prescribed destination address. Provides
    * no guarantees of delivery or callback.
    */
-  void sendPacket(JSONArray packet);
+  void sendPacket(Request packet);
 
 }
