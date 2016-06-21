@@ -15,6 +15,7 @@ import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,14 +46,16 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 
   private String from;
 
-  private static Session mailSession;
-  private static ToolManager manager;
+  private Session mailSession;
+  private ToolManager manager;
 
   private VelocityEngine ve;
 
   private String velocityPath;
 
-  private static URLClassLoader loader;
+  private ClassLoader propertyClassloader;
+  private boolean isExternalPropertyClassLoader = false;
+
 
   @Inject
   public EmailSenderImp(SessionManager sessionManager, AccountStore accountStore, VelocityEngine ve, Config config) {
@@ -71,13 +74,9 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
     p.put("class.resource.loader.class",
         "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 
-
-
     ve.init(p);
 
-
     Properties properties = new Properties();
-
 
     // Get the default Session object.
     mailSession = Session.getDefaultInstance(properties, null);
@@ -95,11 +94,15 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
     try {
       // based on http://stackoverflow.com/a/15654598/4928558
       File file = new File(velocityPath);
+      if (!file.exists())
+    	  throw new IOException("Folder for email template files not found!");
       URL[] urls = {file.toURI().toURL()};
-      loader = new URLClassLoader(urls);
-    } catch (MalformedURLException e) {
-      LOG.warning("Error constructing classLoader for velocity internationalization resources:"
-          + e.getMessage());
+      propertyClassloader = new URLClassLoader(urls);
+      isExternalPropertyClassLoader = true;
+    } catch (IOException e) {
+      LOG.warning("Loading default email template files"+e.getMessage());
+      propertyClassloader = getClass().getClassLoader();
+      isExternalPropertyClassLoader = false;
     }
 
   }
@@ -139,15 +142,17 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
     if (locale == null) {
       locale = Locale.getDefault();
     }
-
-    return ResourceBundle.getBundle(getDecoupledBundleName(messageBundleName), locale, loader);
+    	
+    return ResourceBundle.getBundle(getDecoupledBundleName(messageBundleName), locale, propertyClassloader);
 
   }
 
   @Override
   public String getDecoupledBundleName(String messageBundleName) {
-    return new File(velocityPath + messageBundleName + ".properties").exists() ? messageBundleName
-        : CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleName;
+	  if (!isExternalPropertyClassLoader)
+    	return CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleName;
+	   else 
+	    return  messageBundleName;
   }
 
   @Override
@@ -163,7 +168,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 
     ctx.put(ResourceTool.BUNDLES_KEY, getDecoupledBundleName(messageBundleName));
 
-    ctx.put(CustomResourceTool.CLASS_LOADER_KEY, loader);
+    ctx.put(CustomResourceTool.CLASS_LOADER_KEY, propertyClassloader);
 
     Context context = manager.createContext(ctx);
 
