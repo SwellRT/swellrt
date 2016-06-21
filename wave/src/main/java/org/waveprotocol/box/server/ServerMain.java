@@ -127,17 +127,20 @@ public class ServerMain {
       throw new WaveServerException("Invalid wave domain: " + domain);
     }
 
-    initializeServer(injector, domain);
-    initializeServlets(server, config);
-    initializeRobotAgents(server);
-    initializeRobots(injector, waveBus);
-    initializeFrontend(injector, server, waveBus);
+    // initializeServer(injector, domain);
+    // initializeServlets(server, config);
+    // initializeRobotAgents(server);
+    // initializeRobots(injector, waveBus);
+    // initializeFrontend(injector, server, waveBus);
     initializeFederation(injector);
-    initializeSearch(injector, waveBus);
-    initializeShutdownHandler(server);
+    // initializeSearch(injector, waveBus);
+    // initializeShutdownHandler(server);
+
 
     LOG.info("Starting server");
-    server.startWebSocketServer(injector);
+    while(true)
+      ;
+    //server.startWebSocketServer(injector);
   }
 
   private static Module buildFederationModule(Injector settingsInjector, boolean enableFederation)

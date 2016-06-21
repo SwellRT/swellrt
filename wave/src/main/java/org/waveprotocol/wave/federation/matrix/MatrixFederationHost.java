@@ -32,6 +32,7 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
 
   @Override
   public WaveletFederationListener listenerForDomain(String domain) {
+    
     return null;
   }
 

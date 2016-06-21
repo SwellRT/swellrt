@@ -30,8 +30,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -53,7 +55,12 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   private static final Logger LOG = 
       Logger.getLogger(AppServicePacketTransport.class.getCanonicalName());
 
+  static final int MATRIX_SOCKET_TIMEOUT = 10000;
+  static final int MATRIX_CONNECT_TIMEOUT = 10000;
+  static final int MATRIX_RECONNECT_TIMEOUT = 20000;
+
   private final IncomingPacketHandler handler;
+  private final String userId;
   private final String apiAddress;
   private final String appServiceName;
   private final String appServiceToken;
@@ -71,6 +78,7 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   @Inject
   public AppServicePacketTransport(IncomingPacketHandler handler, Config config) {
     this.handler = handler;
+    this.userId = config.getString("federation.matrix_id");
     this.apiAddress = config.getString("federation.matrix_api_address");
     this.appServiceName = config.getString("federation.matrix_appservice_name");
     this.appServiceToken = config.getString("federation.matrix_appservice_token");
@@ -82,26 +90,30 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   @Override
   public void run() {
-  	setUp();
-    Request req = new Request("GET", "/sync");
-    req.addQueryString("access_token", "wfghWEGh3wgWHEf3478sHFWE");
-    
-    try {
-      sendPacket(req);
-    } catch (Exception e) {
-      System.out.println("\n\n" + e+"\n\n");
-    }
+  	setUp();    
   }
 
   @Override
-  public void sendPacket(Request packet) throws Exception {
+  public void sendPacket(Request packet) {
+    // packet.addQueryString("access_token", matrix_appservice_token);
 
-    BaseRequest request = formRequest(packet);
+    // BaseRequest request = formRequest(packet);
 
-    HttpResponse<JsonNode> jsonResponse = request.asJson();
-    JSONObject myObj = jsonResponse.getBody().getObject();
+    // Future<HttpResponse<JsonNode>> future jsonResponse = request.asJsonAsync(
+    //     new Callback<JsonNode>() {
 
-    System.out.println(myObj);
+    //       public void completed(HttpResponse<JsonNode> response) {
+    //            JSONObject myObj = response.getBody().getObject();
+
+    //         System.out.println("\n\n\n"+myObj);
+    //       }
+
+    //       public void failed(UnirestException e) {
+    //           System.out.println("The request has failed" + e);
+    //       }
+
+    // });
+
   }
 
   private BaseRequest formRequest(Request packet) {
@@ -141,23 +153,26 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   } 
 
   private void setUp() {
-    try {
       httpConfig();
-    } catch (Exception e) {
-      System.out.println("\n\n" + e +"\n\n");
-    }
+      start();
   }
 
-  private void httpConfig() throws Exception {
+  private void httpConfig() {
+    LOG.info("Setting up http Matrix Federation for id: " + userId);
 
     RequestConfig requestConfig = RequestConfig.custom()
-        .setSocketTimeout(10000)
-        .setConnectTimeout(10000)
+        .setSocketTimeout(MATRIX_SOCKET_TIMEOUT)
+        .setConnectTimeout(MATRIX_CONNECT_TIMEOUT)
         .build();
+    SSLContext sslcontext;
 
-    SSLContext sslcontext = SSLContexts.custom()
-        .loadTrustMaterial(null, new TrustSelfSignedStrategy())
-        .build();
+    try {
+      sslcontext = SSLContexts.custom()
+          .loadTrustMaterial(null, new TrustSelfSignedStrategy())
+          .build();
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
 
     CloseableHttpClient httpclient = HttpClients.custom()
         .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
@@ -176,6 +191,78 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
     Unirest.setAsyncHttpClient(client);
 
     Unirest.setDefaultHeader("Content-Type","application/json");
+  }
+
+  private void start() {
+    synchronized (connectionLock) {
+      Request req = new Request("GET", "/sync");
+      req.addQueryString("access_token", appServiceToken);
+      BaseRequest request = formRequest(req);
+      try {
+        HttpResponse<JsonNode> jsonResponse = request.asJson();
+
+        JSONObject sync = jsonResponse.getBody().getObject();
+
+        JSONObject joinedRooms = sync.getJSONObject("rooms").getJSONObject("join");
+
+        long minimum_ts = Long.MAX_VALUE;
+        String minimum_eventid = null;
+        String minimum_roomid = null;
+
+        Iterator<String> room_it = joinedRooms.keys();
+
+        while(room_it.hasNext()) {
+          String roomId = room_it.next();
+
+          if(roomId.split(":")[1].equals(serverDomain)) {
+            JSONObject roomInfo = joinedRooms.getJSONObject(roomId);
+            
+            JSONArray arr = roomInfo.getJSONObject("ephemeral").getJSONArray("events");
+
+            for (int i=0; i < arr.length(); i++) {
+                JSONObject x = arr.getJSONObject(i);
+                
+                if(x.getString("type").equals("m.receipt")) {
+
+                  JSONObject content = x.getJSONObject("content");
+
+                  String eventid = ((Iterator<String>)(content.keys())).next();
+
+                  Long timestamp = content.getJSONObject(eventid).getJSONObject("m.read").getJSONObject(userId).getLong("ts");
+
+                  if(timestamp < minimum_ts) {
+                    minimum_ts = timestamp;
+                    minimum_roomid = roomId;
+                    minimum_eventid = eventid;
+                  }
+                }
+
+            }
+
+          }
+        }
+
+        if(minimum_eventid!=null && minimum_roomid!=null) {
+          req = new Request("GET", "/rooms/" + minimum_roomid + "/context/" + minimum_eventid);
+          req.addQueryString("limit", "0");
+          req.addQueryString("access_token", appServiceToken);
+          request = formRequest(req);
+          
+          jsonResponse = request.asJson();
+
+          JSONObject obj = jsonResponse.getBody().getObject();
+
+          String nextID = obj.getString("end");
+
+          System.out.println("\n\n"+nextID+"\n\n");
+      
+        }
+      } catch (Exception ex) {
+          System.out.println("\n\n"+ex+"\n\n");
+      }
+
+      
+    }
   }
 
 }

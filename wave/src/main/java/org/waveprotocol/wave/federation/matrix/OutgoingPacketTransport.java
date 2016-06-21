@@ -31,6 +31,6 @@ public interface OutgoingPacketTransport {
    * Send a packet over-the-wire to its prescribed destination address. Provides
    * no guarantees of delivery or callback.
    */
-  void sendPacket(Request packet) throws Exception;
+  void sendPacket(Request packet);
 
 }
