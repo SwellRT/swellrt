@@ -147,7 +147,7 @@ public class ServerMain {
     Module emailModule = injector.getInstance(EmailModule.class); // SwellRT
     // injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
     //    federationModule, searchModule, profileFetcherModule);
-    injector = injector.createChildInjector(serverModule, persistenceModule, federationModule, eventsModule, modelIndexerModule);
+    injector = injector.createChildInjector(serverModule, persistenceModule, federationModule, eventsModule, modelIndexerModule, emailModule);
     
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
