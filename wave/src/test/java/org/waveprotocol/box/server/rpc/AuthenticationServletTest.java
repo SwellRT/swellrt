@@ -91,7 +91,7 @@ public class AuthenticationServletTest extends TestCase {
     );
 
     servlet = new AuthenticationServlet(store, AuthTestUtil.makeConfiguration(),
-        manager, "examPLe.com", config, welcomeBot);
+        manager, "examPLe.com", config);
     AccountStoreHolder.init(store, "eXaMple.com");
   }
 
