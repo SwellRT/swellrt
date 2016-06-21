@@ -316,12 +316,12 @@ public class ServerMain {
 
     // Initialize Events
     GCMDispatcher gcmDispatcher = injector.getInstance(GCMDispatcher.class);
-    gcmDispatcher.initialize(System.getProperty("event.dispatch.config.file", "event.dispatch.config"));
+    gcmDispatcher.initialize(System.getProperty("event-dispatch.config.file", "config/event-dispatch.config"));
 
     DummyDispatcher dummyDispatcher = injector.getInstance(DummyDispatcher.class);
 
     Collection<EventRule> rules =
-        EventRule.fromFile(System.getProperty("event.rules.config.file", "event.rules.config"));
+        EventRule.fromFile(System.getProperty("event-rules.config.file", "config/event-rules.config"));
 
     EventDispatcher eventDispatcher = injector.getInstance(EventDispatcher.class);
     eventDispatcher.initialize(CollectionUtils.<String, EventDispatcherTarget> immutableMap(
