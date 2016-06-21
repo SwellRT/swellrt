@@ -625,9 +625,9 @@ public class ServerRpcProvider {
   }
   public void addWebSocketServlets() {
     // Servlet where the websocket connection is served from.
-    // ServletHolder wsholder = addServlet("/socket", WaveWebSocketServlet.class);
+    ServletHolder wsholder = addServlet("/socket", WaveWebSocketServlet.class);
     // TODO(zamfi): fix to let messages span frames.
-    // wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
+    wsholder.setInitParameter("bufferSize", "" + BUFFER_SIZE);
 
     //
     // Atmosphere framework. Replacement of Socket.IO
