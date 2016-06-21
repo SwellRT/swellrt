@@ -38,7 +38,7 @@ public class FileAccountAttachmentStore implements AccountAttachmentStore {
 
   @Inject
   public FileAccountAttachmentStore(Config config) {
-    this.basePath = config.getString("core.account_store_directory");
+    this.basePath = config.getString("core.avatar_store_directory");
     this.domainAsPath = getDomainAsPath(config.getString("core.wave_server_domain"));
     new File(basePath + File.separatorChar + AVATAR_DIR).mkdirs();
 
