@@ -4,11 +4,13 @@ SwellRT is a **real-time storage platform**. This project includes the server ru
 
 SwellRT enables **real-time collaboration** in your Web applications: multiple users can share and edit JavaScript objects in real-time with transparent conflict resolution (*eventual consistency*). Changes are distributed in real-time to any user or App instance using a shared object.
 
-SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs (R) or Etherpad) through an extensible **text editor Web component** and API.
+Objects are stored in the server and can be query using the API.
+
+SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs (R) or Etherpad) through an extensible **text editor Web component and API**.
 
 ## Getting Started
 
-These instructions will get you the latest version of the server up and running in you machine.
+These instructions will get you the latest version of the server up and running in your machine.
 
 ### Prerequisites 
 
@@ -32,7 +34,7 @@ These instructions will get you the latest version of the server up and running 
 ### Server configuration
 
 Default configuration is provided in the file ``swellrt/config/reference.conf``. 
-To overwrite a property just copy it to a new file ``swellrt/config/server.config`` with the new value.
+To overwrite a property, do create a new file named ``swellrt/config/application.config`` and put there the property with the new value.
 
 ## Documentation
 
