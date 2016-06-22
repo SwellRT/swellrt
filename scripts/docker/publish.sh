@@ -33,9 +33,9 @@ if [ $? -ne 0 ]; then exit 1; fi
 
 echo "Tagging image.."
 
-VERSION=`ant -f build-swellrt.xml version | sed -n -e 's/^.*Version=//p'` 
+VERSION=`cat wave/config/wave.conf | sed -n -e 's/^.*version=//p'` 
 
-echo "  current version is $VERSION Need docker tagging?"
+echo "  Current version is $VERSION Need docker tagging?"
 
 docker inspect $NAME:$VERSION > /dev/null 2>&1
 
@@ -68,7 +68,7 @@ push_tag $NAME:latest
 
 if [ $PUSH_TAG -eq 1 ]
 then
-  echo "Pushing tag.."
+  echo "Pushing tag..."
   push_tag $NAME:$VERSION
 fi
 
