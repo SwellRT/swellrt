@@ -73,7 +73,7 @@ task createDistSourceZip(type: Zip) {
     baseName = srcName
     destinationDir = file('distributions')
     from('./') {
-        into 'apache-wave-src'
+        into 'swellrt-src'
     }
     excludes = srcExcludes
 }
@@ -84,7 +84,7 @@ task createDistSourceTar(type: Tar) {
     baseName = srcName
     destinationDir = file('distributions')
     from('./') {
-        into 'apache-wave-src'
+        into 'swellrt-src'
     }
     excludes = srcExcludes
 }

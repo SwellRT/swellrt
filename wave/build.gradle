@@ -361,8 +361,8 @@ task compileJsWebDev {
         }
     }
 }
-// Don't force to recompile the client anytime compile server code
-// compileJsWeb.mustRunAfter compileJava
+
+compileJsWeb.mustRunAfter compileJava
 run.dependsOn compileJsWeb
 
 
@@ -516,6 +516,7 @@ jar {
     include "javax/inject/**/*"
     include "javax/servlet/**/*"
     include "javax/xml/**/*"
+    include "javax/mail/**/*"
     include "net/oauth/**/*"
     include "org/aopalliance/**/*"
     include "org/apache/commons/cli/**/*"
@@ -528,8 +529,14 @@ jar {
     include "org/apache/commons/logging/**/*"
     include "org/apache/lucene/**/*"
     include "org/apache/commons/io/**/*"
+    include "org/apache/commons/validator/**/*"
+    include "org/apache/commons/digester/**/*" 
+    include "org/apache/velocity/**/*"
     include "org/apache/xerces/**/*"
     include "org/apache/wave/**/*"
+    include "org/apache/jasper/**/*"
+    include "org/apache/tomcat/**/*"
+    include "org/apache/juli/logging/**/*"
     include "org/bson/**/*"
     include "org/dom4j/**/*"
     include "org/eclipse/**/*"
@@ -540,7 +547,12 @@ jar {
     include "org/waveprotocol/**/*"
     include "org/xmlpull/**/*"
     include "org/xmpp/**/*"
-    include "cc/kune/initials/**/*"
+    include "cc/kune/initials/**/*"    
+            
+    include "org/swellrt/model/**/*"
+    include "org/swellrt/server/**/*"
+    include "velocity-tools-config.xml"
+    
     exclude "org/waveprotocol/box/webclient/**/*"
     exclude "org/waveprotocol/box/consoleclient/**/*"
     exclude "org/waveprotocol/box/expimp/**/*"
@@ -599,18 +611,7 @@ task createDistBinZip(type: Zip) {
     from('war') {
         into distFolder + '/war'
     }
-    from('../THANKS') {
-        into distFolder
-    }
-    from('../RELEASE-NOTES') {
-        into distFolder
-    }
-    from('../KEYS') {
-        into distFolder
-    }
-    from('../DISCLAIMER') {
-        into distFolder
-    }
+
 }
 
 task createDistBinTar(type: Tar) {
@@ -630,22 +631,11 @@ task createDistBinTar(type: Tar) {
     from('war') {
         into distFolder + '/war'
     }
-    from('../THANKS') {
-        into distFolder
-    }
-    from('../RELEASE-NOTES') {
-        into distFolder
-    }
-    from('../KEYS') {
-        into distFolder
-    }
-    from('../DISCLAIMER') {
-        into distFolder
-    }
+
 }
 
-createDistBinZip.dependsOn jar, createPropertiesFile
-createDistBinTar.dependsOn jar, createPropertiesFile
+createDistBinZip.dependsOn jar, compileJsWeb, createPropertiesFile
+createDistBinTar.dependsOn jar, compileJsWeb, createPropertiesFile
 
 //=============================================================================
 // Distribution's
