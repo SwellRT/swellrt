@@ -25,7 +25,6 @@ VERSION=`sed "s/[\\t ]*=[\\t ]*/=/g" config/wave.conf | grep ^version= | cut -f2
 . process-script-args.sh
 
 exec java $DEBUG_FLAGS \
-  -Djava.util.logging.config.file=config/wiab-logging.conf \
+  -Djava.util.logging.config.file=config/swellrt-logging.conf \
   -Djava.security.auth.login.config=config/jaas.config \
-  -Dwave.server.config=config/server.config \
   -jar bin/swellrt-$VERSION.jar
