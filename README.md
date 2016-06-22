@@ -31,6 +31,29 @@ These instructions will get you the latest version of the server up and running 
 4. Check out demo app
 `http://localhost:9898/demo`
 
+### Docker
+
+A docker image of the latest release of SwellRT is provided at [Docker Hub](https://hub.docker.com/r/p2pvalue/swellrt/):
+
+`docker pull p2pvalue/swellrt`
+
+This image doesn't include a MongoDB server. To pass connection data for a MongoDB instance to the container pass following environment variables to the container:
+
+`docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db name> -p 9898:9898 -h swellrt -d p2pvalue/swellrt`
+
+Some SwellRT's configuration and data files must be stored out of the Docker container to avoid losing data when the image is updated. Map these folders in your host machine use following parameters:
+
+`docker run -e -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt`
+
+List of docker's image folders that should be placed outside the container (in your host machine):
+
+- `/usr/local/swellrt/config` Folder storing all config files. See documentation for details.
+- `/usr/local/swellrt/log` Folder storing server log.
+- `/usr/local/swellrt/sessions` Folder storing Web sessions.
+- `/usr/local/swellrt/avatars` Folder storing user's avatar.
+- `/usr/local/swellrt/attachments` Folder storing attachment files. (When MongoDB is not used as attachment storage)
+
+
 ### Server configuration
 
 Default configuration is provided in the file ``swellrt/config/reference.conf``. 
