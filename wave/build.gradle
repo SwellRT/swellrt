@@ -104,9 +104,6 @@ repositories {
     maven {
         url 'https://oss.sonatype.org/content/repositories/google-snapshots/'
     }
-    flatDir {
-    	dirs '../pst/build/libs'
-    }
 }
 
 dependencies {
@@ -117,9 +114,8 @@ dependencies {
             [group: "com.google.gwt", name: "gwt-user", version: "2.8.0-SNAPSHOT"],                             // [?, ?]
             [group: "com.google.gwt", name: "gwt-codeserver", version: "2.8.0-SNAPSHOT"],                       // [?, ?]
     )
-    compile (
-    		[name: "pst-0.1"],
-    		[name: "wave-pst-0.1"],
+    compile project(":pst")
+    compile (    		    	
             [group: "com.google.gwt", name: "gwt-dev", version: "2.8.0-SNAPSHOT"],                              // [?, ?]
             [group: "com.google.gwt", name: "gwt-user", version: "2.8.0-SNAPSHOT"],                             // [?, ?]
             [group: "com.google.gwt", name: "gwt-codeserver", version: "2.8.0-SNAPSHOT"],                       // [?, ?]
