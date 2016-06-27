@@ -33,7 +33,7 @@ if [ $? -ne 0 ]; then exit 1; fi
 
 echo "Tagging image.."
 
-VERSION=`basename wave/build/libs/swellrt-*.jar | sed 's/^swellrt-/v/' | sed 's/.jar//'` 
+VERSION=`basename wave/build/libs/swellrt-*.jar | sed 's/^swellrt-//' | sed 's/.jar//'` 
 
 echo "  Current version is $VERSION Need docker tagging?"
 
