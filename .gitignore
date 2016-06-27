@@ -17,6 +17,12 @@
 */_attachments
 */_certificates
 */_indexes
+*/sessions
+*/accounts
+*/deltas
+*/attachments
+*/certificates
+*/indexes
 */gwt-unitCache
 war/WEB-INF
 *.old

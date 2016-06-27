@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.5.0-alpha"
+version = "0.50.0-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -104,6 +104,9 @@ repositories {
     maven {
         url 'https://oss.sonatype.org/content/repositories/google-snapshots/'
     }
+    flatDir {
+    	dirs '../pst/build/libs'
+    }
 }
 
 dependencies {
@@ -115,6 +118,8 @@ dependencies {
             [group: "com.google.gwt", name: "gwt-codeserver", version: "2.8.0-SNAPSHOT"],                       // [?, ?]
     )
     compile (
+    		[name: "pst-0.1"],
+    		[name: "wave-pst-0.1"],
             [group: "com.google.gwt", name: "gwt-dev", version: "2.8.0-SNAPSHOT"],                              // [?, ?]
             [group: "com.google.gwt", name: "gwt-user", version: "2.8.0-SNAPSHOT"],                             // [?, ?]
             [group: "com.google.gwt", name: "gwt-codeserver", version: "2.8.0-SNAPSHOT"],                       // [?, ?]
@@ -192,8 +197,7 @@ dependencies {
 			[group: "org.apache.velocity", name: "velocity", version: "1.7"],                                  	// [?, ?]
 			[group: "org.apache.velocity", name: "velocity-tools", version: "2.0"]                         		// [?, ?]
     )
-    compile fileTree(dir: 'dependencies/compile', include: "**/*.jar")                                          // [?, ?]
-    compile fileTree(dir: '../pst/build/libs', include: '**/*.jar')                                             // [?, ?]
+    compile fileTree(dir: 'dependencies/compile', include: "**/*.jar")                                          // [?, ?]    
     generateGXP (
         [group: "com.google.gxp", name: "google-gxp", version: "0.2.4-beta"]                                    // [?, ?]
     )

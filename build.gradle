@@ -39,7 +39,7 @@ allprojects {
 //=============================================================================
 // Project Level Settings
 //=============================================================================
-version = 0.5 //only applies to the wave server & client, should be changed once split
+version = 0.50 //only applies to the wave server & client, should be changed once split
 
 
 //=============================================================================
