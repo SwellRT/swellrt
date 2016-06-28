@@ -409,7 +409,6 @@ task gwtDev {
 
 test {
     include "**/*Test*"    
-    exclude "**/RpcTest.java"
     exclude "**/*GwtTest*"
     exclude "**/server/persistence/mongodb/**/*Test*"
     exclude "**/*LargeTest*"
@@ -442,7 +441,6 @@ task testMongo(type: Test) {
 testMongo.dependsOn compileJava
 
 task testLarge(type: Test) {
-	include "**/RpcTest.java"
     include "**/*LargeTest*"
 
     doFirst {
