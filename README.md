@@ -6,44 +6,46 @@ SwellRT enables **real-time collaboration** in your Web applications: multiple u
 
 Objects are stored in the server and can be query using the API.
 
-SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs (R) or Etherpad) through an extensible **text editor Web component and API**.
+SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs® or Etherpad) through an extensible **text editor Web component and API**.
 
 ## Getting Started
 
 These instructions will get you the latest version of the server up and running in your machine.
 
-### Prerequisites 
+### Prerequisites
 
 - [Java JDK 8](http://openjdk.java.net/install/)
 - [MongoDB 2.4](https://www.mongodb.com/download-center#community)
 
 ### Install and run
 
-1. Download latest binary release (tar or zip) from [GitHub](https://github.com/P2Pvalue/swellrt/releases/latest)
+1. Download latest binary release (tar or zip) from [GitHub](https://github.com/P2Pvalue/swellrt/releases/latest).
 
-2. Extract server binary files
-``tar zxvf swellrt-bin-X.Y.Z.tar.gz``
+2. Extract server binary files with ``tar zxvf swellrt-bin-X.Y.Z.tar.gz`` .
 
-3. Run the server
-``swellrt/run-server.sh`` (Linux)
-``swellrt/run-server.bat`` (Windows)
+3. Run the server ``swellrt/run-server.sh`` (Linux) or ``swellrt/run-server.bat`` (Windows).
 
-4. Check out demo app
-`http://localhost:9898/demo`
+4. Check out demo app at <http://localhost:9898/demo>.
 
 ### Docker
 
 A docker image of the latest release of SwellRT is provided at [Docker Hub](https://hub.docker.com/r/p2pvalue/swellrt/):
 
-`docker pull p2pvalue/swellrt`
+```sh
+$ docker pull p2pvalue/swellrt
+```
 
 This image doesn't include a MongoDB server. To pass connection data for a MongoDB instance to the container pass following environment variables to the container:
 
-`docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db name> -p 9898:9898 -h swellrt -d p2pvalue/swellrt`
+```sh
+$ docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db name> -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+```
 
 Some SwellRT's configuration and data files must be stored out of the Docker container to avoid losing data when the image is updated. Map these folders in your host machine use following parameters:
 
-`docker run -e -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt`
+```sh
+$ docker run -e -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+```
 
 List of docker's image folders that should be placed outside the container (in your host machine):
 
@@ -51,17 +53,17 @@ List of docker's image folders that should be placed outside the container (in y
 - `/usr/local/swellrt/log` Folder storing server log.
 - `/usr/local/swellrt/sessions` Folder storing Web sessions.
 - `/usr/local/swellrt/avatars` Folder storing user's avatar.
-- `/usr/local/swellrt/attachments` Folder storing attachment files. (When MongoDB is not used as attachment storage)
+- `/usr/local/swellrt/attachments` Folder storing attachment files (when MongoDB is not used as attachment storage).
 
 
 ### Server configuration
 
-Default configuration is provided in the file ``swellrt/config/reference.conf``. 
-To overwrite a property, do create a new file named ``swellrt/config/application.config`` and put there the property with the new value.
+Default configuration is provided in the file `swellrt/config/reference.conf`.
+To overwrite a property, do create a new file named `swellrt/config/application.config` and put there the property with the new value.
 
 ## Documentation
 
-For SwellRT development guide and API reference please visit our [Wiki](https://github.com/P2Pvalue/swellrt/wiki)
+For SwellRT development guide and API reference, please visit our [Wiki](https://github.com/P2Pvalue/swellrt/wiki).
 
 
 ## Contributing
@@ -69,7 +71,10 @@ For SwellRT development guide and API reference please visit our [Wiki](https://
 ### Getting the source
 
 Clone the SwellRT source code from the GitHub repo:
-`git clone git@github.com:P2Pvalue/swellrt.git`
+
+```sh
+$ git clone https://github.com/P2Pvalue/swellrt
+```
 
 ### Setup Dev
 
@@ -82,9 +87,13 @@ run `./gradlew cleanEclipse` or `./gradlew cleanIdea` depending on your IDE.
 
 ### Gradle Tasks
 
-Java 8 & Gradle 2.8+ is required to build the project
+Java 8 and Gradle 2.8+ are required to build the project.
 
-Gradle tasks can be run by `./gradlew [task name]`
+Gradle tasks can be run by:
+
+```sh
+$ ./gradlew [task name]
+```
 
 Test Tasks:
 
@@ -98,8 +107,8 @@ Compile Tasks:
 - **generateMessages**: Generates the message source files from the .st sources.
 - **generateGXP**: Compiles sources from the gxp files.
 - **compileJava**: Compiles all java sources.
-- **compileJsWebDev**: Compiles all the Gwt sources for development (Javascript Web client)
-- **compileJsWeb**: Compiles all the Gwt sources. (Javascript Web client)
+- **compileJsWebDev**: Compiles all the Gwt sources for development (Javascript Web client).
+- **compileJsWeb**: Compiles all the Gwt sources (Javascript Web client).
 
 
 Run Tasks:
@@ -122,29 +131,34 @@ Distribution Tasks:
 ### Build
 
 To build the client and server:
-    `./gradlew jar`
-It will be created in wave/build/libs/wave-*version*.jar
 
-The sources can also be packaged into a jar by doing
-    `./gradlew sourcesJar`
-This will create a `project name`-sources.jar in each projects build/libs directory.
+```sh
+$ ./gradlew jar
+```
+
+It will be created in `wave/build/libs/wave-*version*.jar`.
+
+The sources can also be packaged into a jar by doing:
+
+ ```sh
+ $ ./gradlew sourcesJar
+ ```
+
+This will create a *project name*-sources.jar in each projects build/libs directory.
 
 Note:
 
-- if pst-`version`.jar is unable to be found run `./gradlew pst:jar` then retry.
+- if pst-*version*.jar is unable to be found run `./gradlew pst:jar` then retry.
 - if a jar is unable to be unzipped with wave:extractApi then delete the jar from your cache and try again.
     You may need to restart.
 
 Take a look at the reference.conf to learn about configuration and possible/default values.
 
-The server can be started (on Linux/MacOS) by running
-    ./run-server.sh
-Or on Windows by running
-    run-server.bat
-    Note: must be cd'ed into the root directory
-Or, you can run the server from the compiled classes with Gradle:
-    gradle run
-The web client will be accessible by default at http://localhost:9898/.
+The server can be started (on Linux/MacOS) by running `./run-server.sh` or on Windows by running `run-server.bat`. *Note: must be cd'ed into the root directory*.
+
+Or, you can run the server from the compiled classes with Gradle: `gradle run`.
+
+The web client will be accessible by default at <http://localhost:9898/>.
 
 
 
@@ -180,7 +194,3 @@ software:
 
   Wave requires the BouncyCastle Java cryptography APIs:
     http://www.bouncycastle.org/java.html
-
-
-
-
