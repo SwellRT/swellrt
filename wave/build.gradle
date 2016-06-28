@@ -408,13 +408,14 @@ task gwtDev {
 //=============================================================================
 
 test {
-    include "**/*Test*"
+    include "**/*Test*"    
     exclude "**/*GwtTest*"
     exclude "**/server/persistence/mongodb/**/*Test*"
     exclude "**/*LargeTest*"
 
     minHeapSize = "512m"
     maxHeapSize = "1024m"
+    forkEvery = 50
 
     doFirst {
         println ''
