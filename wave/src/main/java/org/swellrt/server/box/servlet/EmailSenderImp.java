@@ -1,23 +1,8 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
-
-import org.apache.velocity.Template;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.context.Context;
-import org.apache.velocity.tools.ToolManager;
-import org.apache.velocity.tools.generic.ResourceTool;
-import org.swellrt.server.velocity.CustomResourceTool;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.wave.util.logging.Log;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -35,6 +20,19 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
+import org.apache.velocity.Template;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.context.Context;
+import org.apache.velocity.tools.ToolManager;
+import org.apache.velocity.tools.generic.ResourceTool;
+import org.swellrt.server.velocity.CustomResourceTool;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 

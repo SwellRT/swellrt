@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.50.1-alpha"
+version = "0.50.2-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -518,6 +518,7 @@ jar {
     include "javax/servlet/**/*"
     include "javax/xml/**/*"
     include "javax/mail/**/*"
+    include "com/sun/mail/**/*"
     include "net/oauth/**/*"
     include "org/aopalliance/**/*"
     include "org/apache/commons/cli/**/*"
