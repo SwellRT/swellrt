@@ -215,7 +215,7 @@ public class EmailService extends SwellRTService {
 
               for (AccountData a : accounts) {
 
-                String userAddress = a.getId().getAddress();
+            	String userAddress = a.getId().getAddress().split("@")[0];
 
                 double random = Math.random();
 
