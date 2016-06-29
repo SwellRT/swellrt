@@ -16,7 +16,7 @@ WORKDIR $home
 # the default storage but this way is more robust.
 
 RUN mkdir config \
- log \
+ logs \
  sessions \ 
  avatars \ 
  attachments \
@@ -42,7 +42,7 @@ RUN chown -R swellrt:swellrt $home
 
 # All folders can be exported
 VOLUME $home/config \
- $home/log \
+ $home/logs \
  $home/sessions \
  $home/avatars \
  $home/attachments \
