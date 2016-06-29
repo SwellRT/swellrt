@@ -65,6 +65,9 @@ To overwrite a property, do create a new file named `swellrt/config/application.
 
 For SwellRT development guide and API reference, please visit our [Wiki](https://github.com/P2Pvalue/swellrt/wiki).
 
+### Contact and Support
+
+Visit our [Gitter Channel](https://gitter.im/P2Pvalue/swellrt).
 
 ## Contributing
 
