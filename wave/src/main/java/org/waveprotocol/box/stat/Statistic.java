@@ -20,6 +20,7 @@ package org.waveprotocol.box.stat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.shared.GwtIncompatible;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -72,7 +73,7 @@ public class Statistic {
      */
     public abstract String getValue();
   }
-
+  @GwtIncompatible
   private static class FieldEntry extends Entry {
     final Field field;
     final Object ref;
@@ -105,12 +106,14 @@ public class Statistic {
    * @param clazz the class type to track.
    */
   public static void trackClass(Class<?> clazz) {
+	/*
     for (Field field : clazz.getDeclaredFields()) {
       Stat stat = field.getAnnotation(Stat.class);
       if (stat != null) {
         trackedStats.add(new FieldEntry(stat, field, null));
       }
     }
+    */
   }
 
   /**

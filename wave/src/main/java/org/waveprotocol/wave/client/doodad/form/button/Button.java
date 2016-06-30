@@ -21,7 +21,6 @@ package org.waveprotocol.wave.client.doodad.form.button;
 
 import com.google.gwt.user.client.Event;
 
-import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.common.util.DomHelper.HandlerReference;
 import org.waveprotocol.wave.client.common.util.DomHelper.JavaScriptEventListener;
@@ -78,7 +77,7 @@ public final class Button {
             }
               HashMap<String, String> attr = new HashMap<String, String>();
               attr.put("time", Long.toString(System.currentTimeMillis()));
-              attr.put("clicker", Session.get().getAddress());
+              //attr.put("clicker", Session.get().getAddress());
               ev.getMutableDoc().createChildElement(ev.asElement(), "click", attr);
             }
 
