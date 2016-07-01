@@ -67,6 +67,8 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   private final String serverDomain;
   private final String serverAddress;
 
+  private String syncTime;
+
   // Contains packets queued but not sent (while offline).
   private final Queue<Request> queuedPackets;
 
@@ -90,30 +92,27 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   @Override
   public void run() {
-  	setUp();    
+  	setUp();
+    while(true)
+      processPacket();
+
+  }
+
+  public void processPacket() {
+    JSONObject packet = sendPacket(MatrixUtil.syncRequest(syncTime));
+    syncTime = packet.getString("next_batch");
+
+    System.out.println(packet);
   }
 
   @Override
-  public void sendPacket(Request packet) {
-    // packet.addQueryString("access_token", matrix_appservice_token);
-
-    // BaseRequest request = formRequest(packet);
-
-    // Future<HttpResponse<JsonNode>> future jsonResponse = request.asJsonAsync(
-    //     new Callback<JsonNode>() {
-
-    //       public void completed(HttpResponse<JsonNode> response) {
-    //            JSONObject myObj = response.getBody().getObject();
-
-    //         System.out.println("\n\n\n"+myObj);
-    //       }
-
-    //       public void failed(UnirestException e) {
-    //           System.out.println("The request has failed" + e);
-    //       }
-
-    // });
-
+  public JSONObject sendPacket(Request packet) {
+    try {
+      BaseRequest request = formRequest(packet);
+      HttpResponse<JsonNode> jsonResponse = request.asJson();
+      return jsonResponse.getBody().getObject();
+    }catch (Exception e)
+    ;
   }
 
   private BaseRequest formRequest(Request packet) {
@@ -153,17 +152,20 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   } 
 
   private void setUp() {
+    synchronized (connectionLock) {
       httpConfig();
-      start();
+      try {
+        JSONObject rooms = getRooms();
+        findMinTS(rooms);
+      } catch (Exception e)
+      ;
+
+    }
   }
 
   private void httpConfig() {
     LOG.info("Setting up http Matrix Federation for id: " + userId);
 
-    RequestConfig requestConfig = RequestConfig.custom()
-        .setSocketTimeout(MATRIX_SOCKET_TIMEOUT)
-        .setConnectTimeout(MATRIX_CONNECT_TIMEOUT)
-        .build();
     SSLContext sslcontext;
 
     try {
@@ -180,89 +182,72 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
         .build();
     Unirest.setHttpClient(httpclient);
 
-    CloseableHttpAsyncClient client = HttpAsyncClients.custom()
-        .setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
-        .setSSLContext(sslcontext)
-        .setDefaultRequestConfig(requestConfig)
-        .setMaxConnPerRoute(1000)
-        .setMaxConnTotal(1000)
-        .build();
-
-    Unirest.setAsyncHttpClient(client);
-
     Unirest.setDefaultHeader("Content-Type","application/json");
+
+    MatrixUtil.access_token = appServiceToken;
   }
 
-  private void start() {
-    synchronized (connectionLock) {
-      Request req = new Request("GET", "/sync");
-      req.addQueryString("access_token", appServiceToken);
-      BaseRequest request = formRequest(req);
-      try {
-        HttpResponse<JsonNode> jsonResponse = request.asJson();
+  private JSONObject getRooms() throws Exception {
 
-        JSONObject sync = jsonResponse.getBody().getObject();
+    JSONObject sync = sendPacket(MatrixUtil.syncRequest());
 
-        JSONObject joinedRooms = sync.getJSONObject("rooms").getJSONObject("join");
+    JSONObject joinedRooms = sync.getJSONObject("rooms").getJSONObject("join");
 
-        long minimum_ts = Long.MAX_VALUE;
-        String minimum_eventid = null;
-        String minimum_roomid = null;
+    return joinedRooms;
+  }
 
-        Iterator<String> room_it = joinedRooms.keys();
+  private void findMinTS(JSONObject rooms) throws Exception {
+    
+    long min_ts = Long.MAX_VALUE;
+    String min_eventid = null;
+    String min_roomid = null;
 
-        while(room_it.hasNext()) {
-          String roomId = room_it.next();
+    Iterator<String> room_it = rooms.keys();
 
-          if(roomId.split(":")[1].equals(serverDomain)) {
-            JSONObject roomInfo = joinedRooms.getJSONObject(roomId);
+    while(room_it.hasNext()) {
+      String roomId = room_it.next();
+
+      if(roomId.split(":")[1].equals(serverDomain)) {
+        JSONObject roomInfo = rooms.getJSONObject(roomId);
+        
+        JSONArray arr = roomInfo.getJSONObject("ephemeral").getJSONArray("events");
+
+        for (int i=0; i < arr.length(); i++) {
+            JSONObject x = arr.getJSONObject(i);
             
-            JSONArray arr = roomInfo.getJSONObject("ephemeral").getJSONArray("events");
+            if(x.getString("type").equals("m.receipt")) {
 
-            for (int i=0; i < arr.length(); i++) {
-                JSONObject x = arr.getJSONObject(i);
-                
-                if(x.getString("type").equals("m.receipt")) {
+              JSONObject content = x.getJSONObject("content");
 
-                  JSONObject content = x.getJSONObject("content");
+              String eventId = ((Iterator<String>)(content.keys())).next();
 
-                  String eventid = ((Iterator<String>)(content.keys())).next();
+              Long timestamp = content.getJSONObject(eventId).getJSONObject("m.read").getJSONObject(userId).getLong("ts");
 
-                  Long timestamp = content.getJSONObject(eventid).getJSONObject("m.read").getJSONObject(userId).getLong("ts");
-
-                  if(timestamp < minimum_ts) {
-                    minimum_ts = timestamp;
-                    minimum_roomid = roomId;
-                    minimum_eventid = eventid;
-                  }
-                }
-
+              if(timestamp < min_ts) {
+                min_ts = timestamp;
+                min_roomid = roomId;
+                min_eventid = eventId;
+              }
             }
 
-          }
         }
 
-        if(minimum_eventid!=null && minimum_roomid!=null) {
-          req = new Request("GET", "/rooms/" + minimum_roomid + "/context/" + minimum_eventid);
-          req.addQueryString("limit", "0");
-          req.addQueryString("access_token", appServiceToken);
-          request = formRequest(req);
-          
-          jsonResponse = request.asJson();
-
-          JSONObject obj = jsonResponse.getBody().getObject();
-
-          String nextID = obj.getString("end");
-
-          System.out.println("\n\n"+nextID+"\n\n");
-      
-        }
-      } catch (Exception ex) {
-          System.out.println("\n\n"+ex+"\n\n");
       }
-
-      
     }
+
+    if(min_eventid!=null && min_roomid!=null)
+      findSyncTime(min_roomid, min_eventid);
+  }
+
+  private void findSyncTime(String roomId, String eventId) throws Exception{
+      JSONObject obj = sendPacket(MatrixUtil.syncTimeRequest(roomId, eventId));
+
+      String nextID = obj.getString("end");
+
+      syncTime = nextID;
+
+      System.out.println("\n\n"+syncTime+"\n\n");
+   
   }
 
 }

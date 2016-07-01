@@ -19,11 +19,37 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
+import org.json.JSONObject;
+
 /**
  * Common utility code for Matrix JSON packet generation and parsing.
  *
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
 public class MatrixUtil {
+
+  public static String access_token = null;
+
+  public static Request syncRequest() {
+    Request request = new Request("GET", "/sync");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static Request syncRequest(String syncTime) {
+    Request request = new Request("GET", "/sync");
+    request.addQueryString("access_token", access_token);
+    request.addQueryString("since", syncTime);
+    request.addQueryString("timeout", "30000");
+    return request;
+  }
+
+  public static Request syncTimeRequest(String roomId, String eventId) {
+    Request request = new Request("GET", "/rooms/" + roomId + "/context/" + eventId);
+    request.addQueryString("limit", "0");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
 
 }
