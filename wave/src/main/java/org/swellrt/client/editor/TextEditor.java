@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.Element;
 
 import org.swellrt.api.SwellRTUtils;
 import org.swellrt.client.editor.TextEditorAnnotation.ParagraphAnnotation;
-import org.swellrt.model.doodad.ExternalAnnotationHandler;
 import org.swellrt.model.doodad.WidgetController;
 import org.swellrt.model.doodad.WidgetDoodad;
 import org.swellrt.model.generic.TextType;
@@ -354,7 +353,7 @@ public class TextEditor implements EditorUpdateListener {
       }
     });
 
-    ExternalAnnotationHandler.register(registries);
+    //AnnotationHandler.register(registries);
 
     // Add additional doodas here
     WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);

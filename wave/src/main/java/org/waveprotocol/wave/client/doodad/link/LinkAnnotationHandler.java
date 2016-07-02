@@ -89,7 +89,6 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
    * @param registries set of editor registries
    * @param augmenter paint function with wave link handling logic
    */
-  @SuppressWarnings("deprecation")
   public static void register(Registries registries,
       LinkAttributeAugmenter augmenter) {
     PainterRegistry painterRegistry = registries.getPaintRegistry();
@@ -137,7 +136,6 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
 
   private final AnnotationPainter painter;
 
-  @SuppressWarnings("deprecation")
   public static String getLink(Map<String, Object> map) {
     Object ret = null;
     if (map.containsKey(AnnotationConstants.LINK_PREFIX)) {

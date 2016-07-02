@@ -57,6 +57,12 @@ public class AnnotationPaint {
   public static final String MOUSE_LISTENER_ATTR = "mouseListener";
 
   /**
+   * Attribute for setting the annotation value 
+   */
+  public static final String VALUE_ATTR_PREFIX = "value";
+  
+  
+  /**
    * Handlers may register callback for mutation events over painted regions.
    */
   public interface MutationHandler {

@@ -250,6 +250,9 @@ public enum KeyCombo {
   CTRL_SHIFT_5,
   /***/
   ORDER_SHIFT_5,
+  
+  /** Comments */
+  CTRL_ALT_C,
 
   OTHER,
 }

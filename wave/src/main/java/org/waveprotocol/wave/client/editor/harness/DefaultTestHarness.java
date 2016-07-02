@@ -28,6 +28,9 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import org.waveprotocol.wave.client.common.util.KeyCombo;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationController;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail.ThumbnailActionHandler;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
@@ -37,9 +40,17 @@ import org.waveprotocol.wave.client.doodad.form.FormDoodads;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.suggestion.Suggestion;
+import org.waveprotocol.wave.client.editor.EditorAction;
+import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.testtools.TestConstants;
+import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
+import org.waveprotocol.wave.model.document.util.FocusedRange;
+import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.Map;
 
@@ -104,8 +115,62 @@ public class DefaultTestHarness implements EntryPoint {
         Suggestion.register(registries.getElementHandlerRegistry());
         DiffDeleteRenderer.register(registries.getElementHandlerRegistry());
 
+        //
+        // Custom annotations
+        //
+		StringMap<AnnotationController> annotationControlers = CollectionUtils.createStringMap();
+		annotationControlers.put("annotation/custom", AnnotationController.getDefault());
+		AnnotationHandler.register(registries, annotationControlers);
+
       }
 
+	@Override
+	public void extendKeyBindings(KeyBindingRegistry registry) {
+	
+		//
+		// Links
+		//
+		registry.registerAction(KeyCombo.ORDER_K, new EditorAction() {
+			@Override
+			public void execute(EditorContext context) {
+				LinkerHelper.onCreateLink(context);
+			}
+		});
+		registry.registerAction(KeyCombo.ORDER_SHIFT_K, new EditorAction() {
+			@Override
+			public void execute(EditorContext context) {
+				LinkerHelper.onClearLink(context);
+			}
+		});
+	
+        //
+        // Custom annotations
+        //
+		registry.registerAction(KeyCombo.CTRL_ALT_C, new EditorAction() {
+			@Override
+			public void execute(EditorContext context) {
+	
+				FocusedRange range = context.getSelectionHelper().getSelectionRange();
+				if (range == null || range.isCollapsed()) {
+					logger.trace().log("Empty selection, default annotation can't be created");
+					return;
+				}
+				Range rg = range.asRange();
+				String annotationValue = EditorAnnotationUtil.getAnnotationOverRangeIfFull(
+						context.getDocument(), context.getCaretAnnotations(), "annotation/custom", rg.getStart(),
+						rg.getEnd());
+	
+				if (annotationValue == null) {
+					EditorAnnotationUtil.setAnnotationOverSelection(context, "annotation/custom",
+							"some-value");
+				} else {
+					EditorAnnotationUtil.clearAnnotationsOverSelection(context, "annotation/custom");
+				}
+			}
+		});
+	
+		}
+      
       @Override
       public String[] extendSampleContent() {
         String hills = "pics/hills.jpg";

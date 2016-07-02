@@ -135,6 +135,8 @@ public class EventWrapper {
       put('D' + CTRL + ALT, KeyCombo.CTRL_ALT_D);
       put('G' + CTRL + ALT, KeyCombo.CTRL_ALT_G);
       put('S' + CTRL + ALT, KeyCombo.CTRL_ALT_S);
+      
+      put('C' + CTRL + ALT, KeyCombo.CTRL_ALT_C);
 
       // Canned responses
       put('!' + CTRL + SHIFT, KeyCombo.CTRL_SHIFT_1);
