@@ -44,7 +44,7 @@ $ docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db nam
 Some SwellRT's configuration and data files must be stored out of the Docker container to avoid losing data when the image is updated. Map these folders in your host machine use following parameters:
 
 ```sh
-$ docker run -e -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+$ docker run -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt
 ```
 
 List of docker's image folders that should be placed outside the container (in your host machine):
@@ -58,8 +58,8 @@ List of docker's image folders that should be placed outside the container (in y
 
 ### Server configuration
 
-Default configuration is provided in the file `swellrt/config/reference.conf`.
-To overwrite a property, do create a new file named `swellrt/config/application.config` and put there the property with the new value.
+Default configuration is provided in the file [reference.conf](https://github.com/P2Pvalue/swellrt/blob/master/wave/config/reference.conf).
+To overwrite a property, do create a new file named `application.config` in the config folder and put there the property with the new value.
 
 ## Documentation
 
