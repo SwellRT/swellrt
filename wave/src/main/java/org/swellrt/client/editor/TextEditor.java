@@ -4,18 +4,22 @@ import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 
 import org.swellrt.api.SwellRTUtils;
 import org.swellrt.client.editor.TextEditorAnnotation.ParagraphAnnotation;
-import org.swellrt.model.doodad.WidgetController;
-import org.swellrt.model.doodad.WidgetDoodad;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationContent;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationController;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
+import org.waveprotocol.wave.client.doodad.widget.WidgetController;
+import org.waveprotocol.wave.client.doodad.widget.WidgetDoodad;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorSettings;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
@@ -23,8 +27,12 @@ import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint.EventHandler;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint.MutationHandler;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
@@ -40,11 +48,14 @@ import org.waveprotocol.wave.client.widget.popup.simple.Popup;
 import org.waveprotocol.wave.common.logging.AbstractLogger;
 import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
+import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.Collection;
 import java.util.Date;
@@ -137,14 +148,15 @@ public class TextEditor implements EditorUpdateListener {
 
   private TextEditorListener listener;
 
-  private int widgetCounter = 0;
-
   /**
-   * Registry of JavaScript controllers for each Widget type
+   * Registry of JavaScript controllers for widgets
    */
-  private final Map<String, WidgetController> widgetRegistry =
-      new HashMap<String, WidgetController>();
-
+  private final StringMap<WidgetController> widgetRegistry;
+ 
+  /**
+   * Registry of JavaScript controllers for annotations
+   */
+  private final StringMap<AnnotationController> annotationRegistry;
 
   {
     EditorStaticDeps.setPopupProvider(Popup.LIGHTWEIGHT_POPUP_PROVIDER);
@@ -157,23 +169,23 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
-  public static TextEditor create(String containerElementId) {
-
+  public static TextEditor create(String containerElementId, StringMap<WidgetController> widgetControllers, StringMap<AnnotationController> annotationControllers) {
     Element e = Document.get().getElementById(containerElementId);
-
     Preconditions.checkNotNull(e, "Editor's parent element doesn't exist");
-
-    TextEditor editor = new TextEditor(e);
+    
+    TextEditor editor = new TextEditor(e, widgetControllers, annotationControllers);
     editor.registerDoodads();
     return editor;
   }
 
-  protected TextEditor(final Element containerElement) {
+  protected TextEditor(final Element containerElement, StringMap<WidgetController> widgetControllers, StringMap<AnnotationController> annotationControllers) {
     this.editorPanel = new LogicalPanel.Impl() {
       {
         setElement(containerElement);
       }
     };
+    this.widgetRegistry = widgetControllers;
+    this.annotationRegistry = annotationControllers;
   }
 
 
@@ -217,7 +229,7 @@ public class TextEditor implements EditorUpdateListener {
       editor = Editors.attachTo(doc);
       editor.init(null, KEY_REGISTRY, EditorSettings.DEFAULT);
     } else {
-      // Reuse exsiting editor.
+      // Reuse existing editor.
       if (editor.hasDocument()) {
         editor.removeContentAndUnrender();
         editor.reset();
@@ -250,10 +262,6 @@ public class TextEditor implements EditorUpdateListener {
     return documentRegistry.getBlipDocument(ModelUtils.serialize(text.getModel().getWaveletId()),
         text.getDocumentId()).getDocument();
   }
-
-
-
-
 
 
   public void setEditing(boolean isEditing) {
@@ -291,6 +299,9 @@ public class TextEditor implements EditorUpdateListener {
     widgetRegistry.put(name, controller);
   }
 
+  public void registerAnnotation(String name, AnnotationController controller) {
+	   
+  }
 
   /**
    * Insert a Widget at the current cursor position or at the end iff the type
@@ -345,17 +356,43 @@ public class TextEditor implements EditorUpdateListener {
         registries.getPaintRegistry());
     DiffDeleteRenderer.register(registries.getElementHandlerRegistry());
 
-    LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
-      @Override
-      public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,
-          Map<String, String> current) {
-        return current;
-      }
-    });
+    LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {		
+		@Override
+		public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,
+				Map<String, String> current) {
+			return current;
+		}
+	});
+    
+	if (annotationRegistry.containsKey(AnnotationConstants.LINK_PREFIX)) {
 
-    //AnnotationHandler.register(registries);
+		final AnnotationController controller = annotationRegistry.get(AnnotationConstants.LINK_PREFIX);
+		
+		AnnotationPaint.registerEventHandler(AnnotationConstants.LINK_PREFIX, new EventHandler() {
 
-    // Add additional doodas here
+			@Override
+			public void onEvent(ContentElement node, Event event) {
+				if (controller != null)
+					controller.onEvent(AnnotationContent.get(node), event);
+			}
+		});
+
+		AnnotationPaint.setMutationHandler(AnnotationConstants.LINK_PREFIX, new MutationHandler() {
+
+			@Override
+			public void onMutation(ContentElement node) {
+				if (controller != null)
+					controller.onChange(AnnotationContent.get(node));
+			}
+		});
+
+		// Remove the link annotation controller to prevent duplicated register
+		// in following line:
+		annotationRegistry.remove(AnnotationConstants.LINK_PREFIX);
+	}
+
+    AnnotationHandler.register(registries, annotationRegistry);
+
     WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);
 
   }

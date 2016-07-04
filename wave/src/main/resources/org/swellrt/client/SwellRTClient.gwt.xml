@@ -38,8 +38,6 @@
  <!-- Super Dev Mode -->
  <add-linker name="xsiframe"/>
 
- <source path="" />
-
  <!-- Those comments beginning with the words "comment" or "Uncomment" have
   special meaning to the PRESUBMIT.py script. -->
  <!-- To avoid name clashes with class names in client-generated and server-generated

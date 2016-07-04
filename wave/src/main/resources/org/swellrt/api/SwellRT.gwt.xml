@@ -52,5 +52,6 @@
   <source path="js" />
   <source path="js/adt" />
   <source path="js/generic" />
+  <source path="js/editor" />
 
 </module>

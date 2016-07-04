@@ -18,6 +18,8 @@ import org.swellrt.client.WaveLoader;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationController;
+import org.waveprotocol.wave.client.doodad.widget.WidgetController;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener.UnsavedDataInfo;
@@ -380,11 +382,13 @@ public class WaveClient implements SwellRT.Listener {
   }
 
 
-  public TextEditorJS getTextEditor(String elementId) {
+  public TextEditorJS getTextEditor(String elementId, JavaScriptObject widgets, JavaScriptObject annotations) {
     Preconditions.checkArgument(Document.get().getElementById(elementId) != null,
         "Element id is not provided");
-
-    TextEditor textEditor = TextEditor.create(elementId);
+    
+    TextEditor textEditor = TextEditor.create(elementId,
+    		WidgetController.fromJso(widgets),
+    		AnnotationController.fromJso(annotations));
     return TextEditorJS.create(textEditor, this);
   }
 

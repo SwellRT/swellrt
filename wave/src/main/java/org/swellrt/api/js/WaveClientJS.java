@@ -353,8 +353,8 @@ public class WaveClientJS extends JavaScriptObject {
          // Editor
          //
 
-         editor: function(elementId) {
-           return delegate.@org.swellrt.api.WaveClient::getTextEditor(Ljava/lang/String;)(elementId);
+         editor: function(elementId, widgets, annotations) {
+           return delegate.@org.swellrt.api.WaveClient::getTextEditor(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/core/client/JavaScriptObject;)(elementId, widgets, annotations);
          },
 
 
