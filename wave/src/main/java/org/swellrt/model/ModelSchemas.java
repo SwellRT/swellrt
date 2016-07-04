@@ -1,6 +1,6 @@
 package org.swellrt.model;
 
-import org.swellrt.model.doodad.WidgetDoodad;
+import org.waveprotocol.wave.client.doodad.widget.WidgetDoodad;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
 
