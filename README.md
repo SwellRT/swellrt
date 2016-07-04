@@ -58,8 +58,8 @@ List of docker's image folders that should be placed outside the container (in y
 
 ### Server configuration
 
-Default configuration is provided in the file `swellrt/config/reference.conf`.
-To overwrite a property, do create a new file named `swellrt/config/application.config` and put there the property with the new value.
+Default configuration is provided in the file [reference.conf](https://github.com/P2Pvalue/swellrt/blob/master/wave/config/reference.conf).
+To overwrite a property, do create a new file named `application.config` in the config folder and put there the property with the new value.
 
 ## Documentation
 
