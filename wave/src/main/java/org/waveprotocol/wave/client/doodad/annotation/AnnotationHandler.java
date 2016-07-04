@@ -60,18 +60,16 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 				
 				if (controller != null) {
 					//
-					// <l:s value-annot-comment="234235"> ... </l:s>
+					// <l:s value-comment="234235"> ... </l:s>
 					//
-					String valAttrName = AnnotationPaint.VALUE_ATTR_PREFIX + "-" + key.replace("/", "-");
-					String valAttrValue = from.get(key).toString();
-					ret.put(valAttrName, valAttrValue);
+					ret.put(AnnotationPaint.VALUE_ATTR+"-"+(key.replace("/", "-")), from.get(key).toString());
 
 					//
-					// <l:s mouseListener="annot-comment"> ... </l:s>
+					// <l:s mouseListener="comment"> ... </l:s>
 					//
 					ret.put(AnnotationPaint.MOUSE_LISTENER_ATTR, key);
 
-					// <l:s mutationListener="annot-comment"> ... </l:s>
+					// <l:s mutationListener="comment"> ... </l:s>
 					ret.put(AnnotationPaint.MUTATION_LISTENER_ATTR, key);
 					
 					//
@@ -79,7 +77,11 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 					//
 					ret.put(AnnotationPaint.CLASS_ATTR, controller.getCSSClass());
 				
-
+					// CSS inline styles
+					for (int i = 0; i < controller.getStyleNames().length(); i++) {
+						String styleName = controller.getStyleNames().get(i);
+						ret.put(styleName, controller.getStyleValue(styleName));
+					}
 					
 				}
 			}
@@ -91,38 +93,31 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 
   public static void register(Registries registries, final StringMap<AnnotationController> annotationControllers) {
   
-    PainterRegistry painterRegistry = registries.getPaintRegistry();
-    
+    PainterRegistry painterRegistry = registries.getPaintRegistry();    
     AnnotationHandler handler = new AnnotationHandler(painterRegistry.getPainter());
 
-    registries.getAnnotationHandlerRegistry().registerHandler(ANNOTATION_PREFIX, handler);    
-    registries.getAnnotationHandlerRegistry().registerBehaviour(ANNOTATION_PREFIX,
-        new DefaultAnnotationBehaviour(AnnotationFamily.CONTENT));
-
-    final StringSet KEYS = CollectionUtils.copyStringSet(annotationControllers.keySet());
-     
-    //
-    // Register event behavior for each annotation
+    final StringSet KEYS = CollectionUtils.copyStringSet(annotationControllers.keySet());     
     //
     // NOTE: AnnotationPaint.registerEventHandler should be cleared every time the editor is initialized
     //
 	KEYS.each(new Proc() {
 		@Override
 		public void apply(final String key) {
+			
+			registries.getAnnotationHandlerRegistry().registerHandler(key, handler);    
+		    registries.getAnnotationHandlerRegistry().registerBehaviour(key,
+		        new DefaultAnnotationBehaviour(AnnotationFamily.CONTENT));
 
-			registries.getAnnotationHandlerRegistry().registerBehaviour(key,
-		            new DefaultAnnotationBehaviour(AnnotationFamily.CONTENT));
 			
 			AnnotationPaint.registerEventHandler(key, new EventHandler() {
 
 				@Override
 				public void onEvent(ContentElement node, Event event) {					
-					AnnotationController controller = annotationControllers.get(key);
+					AnnotationController controller = annotationControllers.get(key);					
 					if (controller != null) {
-						controller.onEvent(node.getImplNodelet(), event);
+						controller.onEvent(AnnotationContent.get(node), event);
 					}
 				}
-
 			});
 			
 
@@ -132,7 +127,7 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 				public void onMutation(ContentElement node) {
 					AnnotationController controller = annotationControllers.get(key);
 					if (controller != null) {
-						controller.onChange(node.getImplNodelet());
+						controller.onChange(AnnotationContent.get(node));
 					}
 					
 				}
@@ -143,8 +138,7 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 	});
     
     // Register painter to update attributes of the local view
-    KEYS.add(ANNOTATION_PREFIX);
-    
+   
     painterRegistry.registerPaintFunction(KEYS, new RenderFunc(new LinkAttributeAugmenter() {
         @Override
         public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,

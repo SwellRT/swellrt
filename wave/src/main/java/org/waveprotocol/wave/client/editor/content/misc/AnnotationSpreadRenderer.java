@@ -123,8 +123,9 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     } else if (name.equals(AnnotationPaint.CLASS_ATTR)) {
       // If a class attribute is provided, set as a CSS class name
       implNodelet.addClassName(newValue);
-    } else if (name.startsWith(AnnotationPaint.VALUE_ATTR_PREFIX)) {
-      implNodelet.setAttribute(name, newValue);      
+    } else if (name.startsWith(AnnotationPaint.VALUE_ATTR)) {
+      String shortName = name.replaceFirst(AnnotationPaint.VALUE_ATTR+"-", "");
+      implNodelet.setAttribute(shortName, newValue);      
     } else {
       try {
         implNodelet.getStyle().setProperty(name, newValue);

@@ -55,12 +55,11 @@ public class AnnotationPaint {
    * Attribute for mapping callback strings.
    */
   public static final String MOUSE_LISTENER_ATTR = "mouseListener";
-
+        
   /**
-   * Attribute for setting the annotation value 
+   * Generic annotation prefix
    */
-  public static final String VALUE_ATTR_PREFIX = "value";
-  
+  public static final String ANNOTATION_PREFIX = "annotation";
   
   /**
    * Handlers may register callback for mutation events over painted regions.
@@ -84,6 +83,11 @@ public class AnnotationPaint {
    * The link attribute, i.e. an url.
    */
   public static final String LINK_ATTR = "link";
+  
+  /**
+   * The value attribute, i.e. a comment id
+   */
+  public static final String VALUE_ATTR = "value";
 
   /**
    * "l" for "local" (as in non-persistent)

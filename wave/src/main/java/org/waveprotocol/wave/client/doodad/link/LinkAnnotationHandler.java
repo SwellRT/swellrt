@@ -18,7 +18,6 @@
  */
 
 package org.waveprotocol.wave.client.doodad.link;
-
 import org.waveprotocol.wave.client.doodad.suggestion.Suggestion;
 import org.waveprotocol.wave.client.doodad.suggestion.SuggestionRenderer;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
@@ -27,8 +26,7 @@ import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFuncti
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.PainterRegistry;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
-import org.waveprotocol.wave.client.editor.sugg.SuggestionsManager.HasSuggestions;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;import org.waveprotocol.wave.client.editor.sugg.SuggestionsManager.HasSuggestions;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.AnnotationFamily;
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.DefaultAnnotationBehaviour;
@@ -41,9 +39,13 @@ import org.waveprotocol.wave.model.util.Box;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
+
+import com.google.gwt.user.client.Event;
+
 import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -167,7 +169,10 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
       Map<String, String> ret;
       String content = getLink(from);
       if (content != null) {
-        ret = Collections.singletonMap(AnnotationPaint.LINK_ATTR, content);
+        ret = new HashMap<String, String>();
+        ret.put(AnnotationPaint.LINK_ATTR, content);
+        ret.put(AnnotationPaint.MOUSE_LISTENER_ATTR, AnnotationPaint.LINK_ATTR);
+        ret.put(AnnotationPaint.MUTATION_LISTENER_ATTR, AnnotationPaint.LINK_ATTR);
       } else {
         ret = Collections.emptyMap();
       }
