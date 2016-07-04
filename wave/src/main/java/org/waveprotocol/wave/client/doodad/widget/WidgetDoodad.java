@@ -1,4 +1,4 @@
-package org.swellrt.model.doodad;
+package org.waveprotocol.wave.client.doodad.widget;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
@@ -9,6 +9,7 @@ import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.NodeEventHandlerImpl;
 import org.waveprotocol.wave.client.editor.RenderingMutationHandler;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.Map;
 
@@ -48,11 +49,11 @@ public class WidgetDoodad {
         _element: element,
 
         getState: function() {
-          return @org.swellrt.model.doodad.WidgetDoodad.WidgetContext::getState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;)(element);
+          return @org.waveprotocol.wave.client.doodad.widget.WidgetDoodad.WidgetContext::getState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;)(element);
         },
 
         setState: function(state) {
-          @org.swellrt.model.doodad.WidgetDoodad.WidgetContext::setState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;Ljava/lang/String;)(element,state);
+          @org.waveprotocol.wave.client.doodad.widget.WidgetDoodad.WidgetContext::setState(Lorg/waveprotocol/wave/client/editor/content/ContentElement;Ljava/lang/String;)(element,state);
         }
 
       };
@@ -80,9 +81,9 @@ public class WidgetDoodad {
   static class RendererHandler extends RenderingMutationHandler {
 
 
-    final Map<String, WidgetController> controllers;
+    final StringMap<WidgetController> controllers;
 
-    public RendererHandler(Map<String, WidgetController> controllers) {
+    public RendererHandler(StringMap<WidgetController> controllers) {
       this.controllers = controllers;
     }
 
@@ -128,9 +129,9 @@ public class WidgetDoodad {
   static class EventHandler extends NodeEventHandlerImpl {
 
 
-    final Map<String, WidgetController> controllers;
+    final StringMap<WidgetController> controllers;
 
-    public EventHandler(Map<String, WidgetController> controllers) {
+    public EventHandler(StringMap<WidgetController> controllers) {
       this.controllers = controllers;
     }
 
@@ -155,7 +156,7 @@ public class WidgetDoodad {
 
 
   public static void register(ElementHandlerRegistry registry,
-      Map<String, WidgetController> controllers) {
+      StringMap<WidgetController> controllers) {
 
     RendererHandler renderer = new RendererHandler(controllers);
     EventHandler eventHandler = new EventHandler(controllers);

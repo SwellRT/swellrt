@@ -1,4 +1,9 @@
-package org.swellrt.model.doodad;
+package org.waveprotocol.wave.client.doodad.widget;
+
+import org.waveprotocol.wave.client.common.util.JsoView;
+import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
@@ -32,6 +37,23 @@ import com.google.gwt.dom.client.Element;
 public class WidgetController extends JavaScriptObject {
 
 
+  public final static StringMap<WidgetController> fromJso(JavaScriptObject controllers) {
+	  
+	  final StringMap<WidgetController> map = CollectionUtils.createStringMap();
+	  if (controllers != null) {
+		  JsoView jsoView = JsoView.as(controllers);
+		  jsoView.each(new ProcV<WidgetController>() {
+	
+			@Override
+			public void apply(String key, WidgetController value) {
+				map.put(key, value);			
+			}
+			  
+		  });
+	  }
+	  return map;
+  }
+	
   /**
    * For demo only purposes. An example of (stupid) Widget controller. It shows
    * the state as a text with a strong background color. On click you can change
