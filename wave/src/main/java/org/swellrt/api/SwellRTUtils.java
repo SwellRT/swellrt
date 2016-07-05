@@ -174,7 +174,7 @@ public class SwellRTUtils {
    */
   public static native String getWindowId() /*-{
     try {
-      return $wnd.sessionStorage.getItem("x-swellrt-window-id");
+      return $wnd.xsid;
     } catch (e) {
       return null;
     }
@@ -208,7 +208,7 @@ public class SwellRTUtils {
       request.withCredentials = true;
 
       try {
-        request.setRequestHeader("X-window-id", $wnd.sessionStorage.getItem("x-swellrt-window-id") );
+        request.setRequestHeader("X-window-id", $wnd.xsid);
       } catch (e) {
       }
       return request;

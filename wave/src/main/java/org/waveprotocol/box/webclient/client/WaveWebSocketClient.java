@@ -171,8 +171,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private native String getSessionToken() /*-{
     var token = $wnd.__session['sessionid'];
     try {
-      if ($wnd.sessionStorage && $wnd.sessionStorage.getItem("x-swellrt-window-id") != null) {
-        token+=":"+$wnd.sessionStorage.getItem("x-swellrt-window-id");
+      if ($wnd.xsid) {
+        token+=":"+$wnd.xsid;
        }
      } catch(e) {
 
