@@ -37,7 +37,7 @@ mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
         "-Dorg.eclipse.jetty.LEVEL=DEBUG",
-        "-Djava.util.logging.config.file=config/wiab-logging.conf",
+        "-Djava.util.logging.config.file=config/swellrt-logging.conf",
         "-Djava.security.auth.login.config=config/jaas.config"
 ]
 sourceCompatibility = 1.8
@@ -394,6 +394,7 @@ task gwtDev {
             }
             args = [
                     "-noserver",
+                    "-noincremental",
                     "-bindAddress", "127.0.0.1",
                     "-startupUrl", "http://localhost:9898",
                     "-logLevel", "DEBUG",
