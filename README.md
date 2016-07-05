@@ -131,6 +131,14 @@ Distribution Tasks:
 - **createDistSourceTar**: builds the tar for distributing the source.
 
 
+### Debugging server
+
+Server can be debugged launching the *run* gradle task with following parameters:
+
+```./gradlew run --debug-jvm```
+
+The Java process will get suspended for the remote debugger connection on the port 5005.
+
 ### Build
 
 To build the client and server:
