@@ -53,13 +53,11 @@ import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
-import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 import org.waveprotocol.wave.model.util.StringMap;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -373,7 +371,7 @@ public class TextEditor implements EditorUpdateListener {
 			@Override
 			public void onEvent(ContentElement node, Event event) {
 				if (controller != null)
-					controller.onEvent(AnnotationContent.get(node), event);
+					controller.onEvent(AnnotationContent.get(node, AnnotationConstants.LINK_PREFIX), event);
 			}
 		});
 
@@ -382,7 +380,7 @@ public class TextEditor implements EditorUpdateListener {
 			@Override
 			public void onMutation(ContentElement node) {
 				if (controller != null)
-					controller.onChange(AnnotationContent.get(node));
+					controller.onChange(AnnotationContent.get(node, AnnotationConstants.LINK_PREFIX));
 			}
 		});
 

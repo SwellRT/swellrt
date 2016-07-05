@@ -115,7 +115,7 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 				public void onEvent(ContentElement node, Event event) {					
 					AnnotationController controller = annotationControllers.get(key);					
 					if (controller != null) {
-						controller.onEvent(AnnotationContent.get(node), event);
+						controller.onEvent(AnnotationContent.get(node, key), event);
 					}
 				}
 			});
@@ -127,7 +127,7 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 				public void onMutation(ContentElement node) {
 					AnnotationController controller = annotationControllers.get(key);
 					if (controller != null) {
-						controller.onChange(AnnotationContent.get(node));
+						controller.onChange(AnnotationContent.get(node, key));
 					}
 					
 				}
