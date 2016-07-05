@@ -345,8 +345,8 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
               r.withCredentials = true;
               r.setRequestHeader("Content-Type", "text/plain; charset=utf-8");
 
-              if ($wnd._xsid) {
-                r.setRequestHeader("X-window-id", $wnd._xsid);
+              if ($wnd.xsid) {
+                r.setRequestHeader("X-window-id", $wnd.xsid);
               }
 
               r.onreadystatechange = function() {
@@ -407,8 +407,8 @@ public final class WebAPI extends JavaScriptObject implements WaveWebSocketClien
              _instance._session = response;
 
              try {
-               if ($wnd._xsid) {
-                 _instance._session.sessionId+=":"+$wnd._xsid;
+               if ($wnd.xsid) {
+                 _instance._session.sessionId+=":"+$wnd.xsid;
                 }
              } catch(e) {
                console.log("Warning: session storage not available. Disabled per tab/window sessions.");
