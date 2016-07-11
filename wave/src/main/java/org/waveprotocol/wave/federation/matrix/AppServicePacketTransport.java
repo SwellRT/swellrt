@@ -99,10 +99,15 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   }
 
   public void processPacket() {
-    JSONObject packet = sendPacket(MatrixUtil.syncRequest(syncTime));
-    syncTime = packet.getString("next_batch");
+    try {
+      JSONObject packet = sendPacket(MatrixUtil.syncRequest(syncTime));
+      System.out.println(packet);
+      syncTime = packet.getString("next_batch");
 
-    System.out.println(packet);
+      
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   @Override
@@ -111,8 +116,9 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
       BaseRequest request = formRequest(packet);
       HttpResponse<JsonNode> jsonResponse = request.asJson();
       return jsonResponse.getBody().getObject();
-    }catch (Exception e)
-    ;
+    } catch (Exception ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   private BaseRequest formRequest(Request packet) {
@@ -152,14 +158,12 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   } 
 
   private void setUp() {
-    synchronized (connectionLock) {
-      httpConfig();
-      try {
-        JSONObject rooms = getRooms();
-        findMinTS(rooms);
-      } catch (Exception e)
-      ;
-
+    httpConfig();
+    try {
+      JSONObject rooms = getRooms();
+      findMinTS(rooms);
+    } catch (Exception e) {
+      System.out.println("Exception : " + e);
     }
   }
 
@@ -187,20 +191,23 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
     MatrixUtil.access_token = appServiceToken;
   }
 
-  private JSONObject getRooms() throws Exception {
+  private JSONObject getSync() throws Exception {
 
     JSONObject sync = sendPacket(MatrixUtil.syncRequest());
 
-    JSONObject joinedRooms = sync.getJSONObject("rooms").getJSONObject("join");
 
-    return joinedRooms;
+    syncTime = sync.getString("next_batch");
+
+    return sync;
   }
 
-  private void findMinTS(JSONObject rooms) throws Exception {
+  private void findMinTS(JSONObject sync) throws Exception {
     
     long min_ts = Long.MAX_VALUE;
     String min_eventid = null;
     String min_roomid = null;
+
+    JSONObject rooms = sync.getJSONObject("rooms").getJSONObject("join");
 
     Iterator<String> room_it = rooms.keys();
 
@@ -239,7 +246,7 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
       findSyncTime(min_roomid, min_eventid);
   }
 
-  private void findSyncTime(String roomId, String eventId) throws Exception{
+  private void findSyncTime(String roomId, String eventId) throws Exception {
       JSONObject obj = sendPacket(MatrixUtil.syncTimeRequest(roomId, eventId));
 
       String nextID = obj.getString("end");

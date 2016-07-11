@@ -19,6 +19,9 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
+
 import org.json.JSONObject;
 
 /**
@@ -29,6 +32,28 @@ import org.json.JSONObject;
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
 public class MatrixPacketHandler implements IncomingPacketHandler {
+
+  private final MatrixFederationHost host;
+  private final MatrixFederationRemote remote;
+  private final MatrixRoomManager room;
+  private final OutgoingPacketTransport transport;
+  private final String id;
+
+  @Inject
+  public MatrixPacketHandler(MatrixFederationHost host, MatrixFederationRemote remote,
+      MatrixRoomManager room, OutgoingPacketTransport transport, Config config) {
+    this.host = host;
+    this.remote = remote;
+    this.room = room;
+    this.transport = transport;
+    this.id = config.getString("federation.matrix_id");
+
+    // Configure all related objects with this manager. Eventually, this should
+    // be replaced by better Guice interface bindings.
+    //host.setManager(this);
+    //remote.setManager(this);
+    room.setPacketHandler(this);
+  }
 
   @Override
   public void receivePacket(JSONObject packet) {

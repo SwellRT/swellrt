@@ -51,5 +51,18 @@ public class MatrixUtil {
     return request;
   }
 
+  public static Request joinRoom(String roomId) {
+    Request request = new Request("POST", "/rooms/" + roomId + "/join");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static String encodeDomain(String domain) {
+    return domain.replace(":", "%3A");
+  }
+
+  public static String decodeDomain(String domain) {
+    return domain.replace("%3A", ":");
+  }
 
 }
