@@ -1287,7 +1287,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       String email = emails.get(i);
 
-      String query = "email=" + URL.encodeQueryString(email);
+      String query = "id-or-email=" + URL.encodeQueryString(email);
       query += "&url=" + URL.encodeQueryString(inviteUrl);
       query += "&url_text=" + URL.encodeQueryString(urlText);
       String url = baseUrl + "?" + query;
