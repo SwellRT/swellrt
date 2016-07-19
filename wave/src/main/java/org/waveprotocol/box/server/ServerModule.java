@@ -129,7 +129,6 @@ public class ServerModule extends AbstractModule {
   @Singleton
   public org.eclipse.jetty.server.SessionManager provideSessionManager(Config config) {
     HashSessionManager sessionManager = new HashSessionManager();
-    sessionManager.getSessionCookieConfig().setMaxAge(config.getInt("network.session_cookie_max_age"));
     return sessionManager;
   }
 }

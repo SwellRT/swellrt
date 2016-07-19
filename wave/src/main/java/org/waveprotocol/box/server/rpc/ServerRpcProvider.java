@@ -80,6 +80,9 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -129,6 +132,7 @@ public class ServerRpcProvider {
   private int websocketHeartbeat;
 
   private final int sessionMaxInactiveTime;
+  private final int sessionCookieMaxAge;
 
   private final static String SESSION_URL_PARAM = "sid";
   private final static String SESSION_COOKIE_NAME = "WSESSIONID";
@@ -485,7 +489,7 @@ public class ServerRpcProvider {
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
       int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
-      int sessionMaxInactiveTime) {
+      int sessionMaxInactiveTime, int sessionCookieMaxAge) {
     this.httpAddresses = httpAddresses;
     this.resourceBases = resourceBases;
     this.threadPool = threadPool;
@@ -499,6 +503,7 @@ public class ServerRpcProvider {
     this.webSocketMaxMessageSize = webSocketMaxMessageSize;
     this.websocketHeartbeat = websocketHeartbeat;
     this.sessionMaxInactiveTime = sessionMaxInactiveTime;
+    this.sessionCookieMaxAge = sessionCookieMaxAge;
   }
 
   /**
@@ -509,11 +514,11 @@ public class ServerRpcProvider {
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
       Executor executor, int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
-      int sessionMaxInactiveTime) {
+      int sessionMaxInactiveTime, int sessionCookieMaxAge) {
     this(httpAddresses, resourceBases, executor,
         sessionManager, jettySessionManager, sessionStoreDir, sslEnabled, sslKeystorePath,
         sslKeystorePassword, webSocketMaxIdleTime, webSocketMaxMessageSize, websocketHeartbeat,
-        sessionMaxInactiveTime);
+        sessionMaxInactiveTime, sessionCookieMaxAge);
   }
 
   @Inject
@@ -533,7 +538,8 @@ public class ServerRpcProvider {
             config.getInt("network.websocket_max_idle_time"),
             config.getInt("network.websocket_max_message_size"),
             config.getInt("network.websocket_heartbeat"),
-            config.getInt("network.session_max_inactive_time")
+            config.getInt("network.session_max_inactive_time"),
+            config.getInt("network.session_cookie_max_age")
             );
   }
 
@@ -552,10 +558,27 @@ public class ServerRpcProvider {
     context.setParentLoaderPriority(true);
 
     if (jettySessionManager != null) {
+    	
+		jettySessionManager.addEventListener(new HttpSessionListener() {
+		
+			@Override
+			public void sessionCreated(HttpSessionEvent arg0) {
+				LOG.info("Session created, id=" + arg0.getSession().getId() + " t=" + System.currentTimeMillis());
+				if (sessionMaxInactiveTime == 0)
+					arg0.getSession().setMaxInactiveInterval(Integer.MAX_VALUE);
+			      else
+			    	arg0.getSession().setMaxInactiveInterval(sessionMaxInactiveTime);
+			}
+		
+			@Override
+			public void sessionDestroyed(HttpSessionEvent arg0) {
+				LOG.info("Session destroyed, id=" + arg0.getSession().getId() + " t=" + System.currentTimeMillis());
+			}
+		
+		});
+      
       context.getSessionHandler().setSessionManager(jettySessionManager);
-      context.getSessionHandler().getSessionManager()
-          .setMaxInactiveInterval(sessionMaxInactiveTime);
-
+      
       Set<SessionTrackingMode> sessionTrackingModes = new HashSet<SessionTrackingMode>();
       sessionTrackingModes.add(SessionTrackingMode.URL);
       sessionTrackingModes.add(SessionTrackingMode.COOKIE);
@@ -568,6 +591,10 @@ public class ServerRpcProvider {
     context.setBaseResource(resources);
 
     context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", SESSION_COOKIE_NAME);
+    if (sessionCookieMaxAge == 0)
+    	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(Integer.MAX_VALUE));
+    else
+    	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(sessionCookieMaxAge));
 
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
     corsFilterHolder.setInitParameter("allowedOrigins", "*");
@@ -645,6 +672,12 @@ public class ServerRpcProvider {
         "org.atmosphere.interceptor.HeartbeatInterceptor.heartbeatFrequencyInSeconds", ""
             + websocketHeartbeat);
 
+    // Set websocket max idle time
+    if (webSocketMaxIdleTime == 0)
+    	atholder.setInitParameter("org.atmosphere.websocket.maxIdleTime", String.valueOf(Integer.MAX_VALUE));
+    else
+    	atholder.setInitParameter("org.atmosphere.websocket.maxIdleTime", String.valueOf(webSocketMaxIdleTime));
+    	
 
     //
     // Configure Atmosphere Broadcaster class
@@ -672,6 +705,8 @@ public class ServerRpcProvider {
     atholder.setInitParameter("org.atmosphere.websocket.webSocketBufferingMaxSize", ""
         + (BUFFER_SIZE * webSocketMaxMessageSize));
 
+    
+    
     // Enable guice. See
     // https://github.com/Atmosphere/atmosphere/wiki/Configuring-Atmosphere%27s-Classes-Creation-and-Injection
     atholder.setInitParameter("org.atmosphere.cpr.objectFactory",
