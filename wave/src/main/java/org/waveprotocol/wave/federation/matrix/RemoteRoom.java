@@ -31,6 +31,8 @@ import com.google.common.collect.Sets;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 import org.joda.time.DateTimeUtils;
+import org.json.JSONObject;
+import org.json.JSONArray;
 import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 
@@ -148,7 +150,7 @@ public class RemoteRoom {
   private void complete(SuccessFailCallback<String, String> callback) {
     Preconditions.checkState(status.get().equals(Status.COMPLETE));
     if (remoteId != null) {
-      callback.onSuccess(remoteJid);
+      callback.onSuccess(remoteId);
     } else {
       // TODO(thorogood): better toString, or change failure type to FederationError
       callback.onFailure(error.toString());
@@ -157,6 +159,106 @@ public class RemoteRoom {
 
   private void startDisco() {
 
+    final Runnable requester = new Runnable() {
+
+      final PacketCallback callback = new PacketCallback() {
+        @Override
+        public void run(JSONObject result) {
+          String roomID = result.getString("room_id");
+          finish(roomID, null);
+        }
+
+        @Override
+        public void error(FederationError error) {
+          LOG.info("Remote server " + RemoteId + " failed on disco items: "
+              + error.getErrorCode());
+          finish(null, error);
+        }
+      };
+
+      @Override
+      public void run() {
+
+        //Checking if room exists
+        LOG.info("Checking room existance for: " + remoteId);
+
+        String roomAlias = "%23" + MatrixUtil.encodeDomain(remoteId) + ":" + handler.getDomain();
+        JSONObject packet = handler.sendBlocking(MatrixUtil.getRoom(roomAlias);
+
+        Request request = null;
+
+        if(packet) {
+
+          roomId = packet.getString("room_id");
+
+          JSONObject packet = handler.sendBlocking(MatrixUtil.getMembers(room);
+          JSONArray members = packet.getJSONArray("chunk");
+
+          if(members.length() == 2) {
+            //Sending Ping
+            LOG.info("Pinging room  for: " + remoteId);
+
+            request = MatrixUtil.createMessage(roomId);
+            request.addBody("msgtype", "m.notice");
+            request.addBody("body", "ping");
+          }
+          else {
+            request = MatrixUtil.inviteRoom(roomId);
+            request.addBody("user_id","@wave:" + remoteId);
+          }
+        }
+        else {
+          //Creating new room
+          LOG.info("Creating room  for: " + remoteId);
+
+          request = MatrixUtil.createRoom();
+          request.addBody("room_alias_name", MatrixUtil.encodeDomain(remoteId));
+          packet = handler.sendBlocking(request);
+
+          roomId = packet.getString("room_id");
+
+          request = MatrixUtil.inviteRoom(roomId);
+          request.addBody("user_id","@wave:" + remoteId);
+        }
+
+        handler.send(request, callback);
+      }
+    };
+
+    // Kick off requester!
+    requester.run();
+  }
+
+  boolean finish(String roomId, FederationError error) {
+    Preconditions.checkArgument((roomId != null)^(error != null));
+    if (!status.compareAndSet(Status.PENDING, Status.COMPLETE)) {
+      return false;
+    }
+
+    // Set either the result room or error state.
+
+    try {
+      if (roomId != null) {
+        this.remoteRoom = roomId;
+        LOG.info("Discovered remote Room: " + remoteRoom + " for " + remoteId);
+          statDiscoSuccess.get(remoteId).incrementAndGet();
+      } else if (error != null) {
+        this.error = error;
+        LOG.info("Could not discover remote Room: " + error + " for " + remoteId);
+        statDiscoFailed.get(remoteId).incrementAndGet();
+      } else {
+        throw new IllegalArgumentException("At least one of id/error must be set");
+      }
+    } catch (ExecutionException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    // Complete all available callbacks.
+    SuccessFailCallback<String, String> item;
+    while ((item = pending.poll()) != null) {
+      complete(item);
+    }
+    return true;
   }
 
 }

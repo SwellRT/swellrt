@@ -51,18 +51,63 @@ public class MatrixUtil {
     return request;
   }
 
-  public static Request joinRoom(String roomId) {
-    Request request = new Request("POST", "/rooms/" + roomId + "/join");
+  public static Request createRoom(String roomAlias) {
+    Request request = new Request("POST", "/createRoom");
     request.addQueryString("access_token", access_token);
     return request;
   }
 
+  public static Request joinRoom(String roomId) {
+    Request request = new Request("POST", "/rooms/" + encodeRoomId(roomId) + "/join");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static Request getRoom(String roomAlias) {
+    Request request = new Request("POST", "/directory/room/" + encodeRoomAlias(roomAlias));
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static Request inviteRoom(String roomId) {
+    Request request = new Request("POST", "/rooms/" + encodeRoomId(roomId) + "/invite");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static Request getMembers(String roomId) {
+    Request request = new Request("POST", "/rooms/" + encodeRoomId(roomId) + "/members");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static Request createMessage(String roomId) {
+    Request request = new Request("POST", "/rooms/" + encodeRoomId(roomId) + "/send/m.room.message");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+  public static Request createMessageFeedback(String roomId) {
+    Request request = new Request("POST", "/rooms/" + encodeRoomId(roomId) + "/send/m.room.message.feedback");
+    request.addQueryString("access_token", access_token);
+    return request;
+  }
+
+
   public static String encodeDomain(String domain) {
-    return domain.replace(":", "%3A");
+    return domain.replace(":", "&");
   }
 
   public static String decodeDomain(String domain) {
-    return domain.replace("%3A", ":");
+    return domain.replace("&", ":");
+  }
+
+  public static String encodeRoomId(String domain) {
+    return domain.replace("!", "%21");
+  }
+
+  public static String encodeRoomAlias(String domain) {
+    return domain.replace("#", "%23");
   }
 
 }

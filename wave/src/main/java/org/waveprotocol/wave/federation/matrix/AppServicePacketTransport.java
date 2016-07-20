@@ -100,9 +100,9 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   public void processPacket() {
     try {
-      JSONObject packet = sendPacket(MatrixUtil.syncRequest(syncTime));
-      System.out.println(packet);
-      syncTime = packet.getString("next_batch");
+      JSONObject packets = sendPacket(MatrixUtil.syncRequest(syncTime));
+      handler.processPacket(packets);
+      syncTime = packets.getString("next_batch");
 
       
     } catch (Exception ex) {
@@ -115,7 +115,11 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
     try {
       BaseRequest request = formRequest(packet);
       HttpResponse<JsonNode> jsonResponse = request.asJson();
-      return jsonResponse.getBody().getObject();
+      if(jsonResponse.getStatus() == 400 || jsonResponse.getStatus() == 404
+        || jsonResponse.getStatus() == 500)
+        return null;
+      else
+        return jsonResponse.getBody().getObject();
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
@@ -214,28 +218,28 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
     while(room_it.hasNext()) {
       String roomId = room_it.next();
 
-      if(roomId.split(":")[1].equals(serverDomain)) {
+      if(roomId.split(":", 2)[1].equals(serverDomain)) {
         JSONObject roomInfo = rooms.getJSONObject(roomId);
         
-        JSONArray arr = roomInfo.getJSONObject("ephemeral").getJSONArray("events");
+        JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
 
         for (int i=0; i < arr.length(); i++) {
-            JSONObject x = arr.getJSONObject(i);
-            
-            if(x.getString("type").equals("m.receipt")) {
+          JSONObject x = arr.getJSONObject(i);
+          
+          if(x.getString("type").equals("m.room.message.feedback")
+            || (x.getString("type").equals("m.room.member") && x.getString("sender").equals(userId)) ) {
 
-              JSONObject content = x.getJSONObject("content");
 
-              String eventId = ((Iterator<String>)(content.keys())).next();
+            String eventId = x.getString("event_id");
 
-              Long timestamp = content.getJSONObject(eventId).getJSONObject("m.read").getJSONObject(userId).getLong("ts");
+            Long timestamp = x.getLong("origin_server_ts");
 
-              if(timestamp < min_ts) {
-                min_ts = timestamp;
-                min_roomid = roomId;
-                min_eventid = eventId;
-              }
+            if(timestamp < min_ts) {
+              min_ts = timestamp;
+              min_roomid = roomId;
+              min_eventid = eventId;
             }
+          }
 
         }
 

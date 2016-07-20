@@ -89,10 +89,8 @@ public class MatrixRoomManager {
     this.handler = handler;
   }
 
-  void processRoomInvite(JSONObject room, PacketCallback responseCallback) {
-    
+  public void processRoomInvite(String roomId, PacketCallback responseCallback) {
     Request response = MatrixUtil.joinRoom(roomId);
-
     responseCallback.run(response);
   }
 
