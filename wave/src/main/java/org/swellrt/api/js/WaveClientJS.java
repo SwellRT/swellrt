@@ -97,7 +97,11 @@ public class WaveClientJS extends JavaScriptObject {
 
          on: function(event, handler) {
 
-           this.handlers[event] = handler;
+		   if (!this.handlers[event]) {
+		   	this.handlers[event] = new Array();
+		   }
+
+           this.handlers[event].push(handler);
 
            return this;
          },
@@ -472,8 +476,12 @@ public class WaveClientJS extends JavaScriptObject {
 
   public final native void triggerEvent(String event, Object parameter) /*-{
 
-    if (this.handlers[event] !== undefined)
-      this.handlers[event](parameter);
+    if (Array.isArray(this.handlers[event])) {
+    	for (var i = 0; i < this.handlers[event].length; i++) {
+    		 this.handlers[event][i](parameter);
+    	}
+    }
+      
 
   }-*/;
 
