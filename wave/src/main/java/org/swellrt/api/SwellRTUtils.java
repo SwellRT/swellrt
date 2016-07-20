@@ -7,7 +7,6 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestBuilder.Method;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Random;
 
 import org.swellrt.api.js.generic.AdapterTypeJS;
@@ -162,23 +161,6 @@ public class SwellRTUtils {
     return u;
   }
 
-  public static native String getSessionId() /*-{
-    return $wnd.__session.sessionid;
-  }-*/;
-
-  /**
-   * Return the window id generated when SwellRT is loaded in a browser's
-   * window. See {@link WaveClient#onReady()}
-   *
-   * @return
-   */
-  public static native String getWindowId() /*-{
-    try {
-      return $wnd.xsid;
-    } catch (e) {
-      return null;
-    }
-  }-*/;
 
   /**
    * A factory of {@link RequestBuilder} objects tthat performs common
@@ -191,8 +173,8 @@ public class SwellRTUtils {
   public static RequestBuilder newRequestBuilder(Method method, String url) {
     RequestBuilder rb = new RequestBuilder(method, url);
     rb.setIncludeCredentials(true);
-    String windowId = getWindowId();
-    if (windowId != null) rb.setHeader("X-window-id", windowId);
+    String windowId = BrowserSession.getWindowId();
+    if (windowId != null) rb.setHeader(BrowserSession.HTTP_HEADER_WINDOW_ID, BrowserSession.getWindowId());
     return rb;
   }
 
@@ -205,26 +187,22 @@ public class SwellRTUtils {
    */
   public static native JavaScriptObject addCommonRequestHeaders(JavaScriptObject request) /*-{
 
+	  var HEADER_WINDOW_ID = @org.swellrt.api.BrowserSession::HTTP_HEADER_WINDOW_ID;
+	  var windowId = @org.swellrt.api.BrowserSession::getWindowId()();
+
       request.withCredentials = true;
 
-      try {
-        request.setRequestHeader("X-window-id", $wnd.xsid);
-      } catch (e) {
-      }
+	  if (windowId != null)
+        request.setRequestHeader(HEADER_WINDOW_ID, windowId);
+
       return request;
 
   }-*/;
 
   public static String buildAttachmentUploadUrl(String simpleAttachmentId) {
-    return getBaseUrl() + "/attachment/" + simpleAttachmentId + getSessionURLparameter();
+    return getBaseUrl() + "/attachment/" + simpleAttachmentId + BrowserSession.getSessionURLparameter();
   }
 
-  public static String getSessionURLparameter() {
-    if (Cookies.getCookie(SwellRT.SESSION_COOKIE_NAME) == null) {
-      return ";" + SwellRT.SESSION_PATH_PARAM + "=" + getSessionId();
-    }
-    return "";
-  }
 
   public static String buildAttachmentUrl(FileType file) {
     Preconditions.checkArgument(file != null, "File can't be null");
@@ -233,9 +211,9 @@ public class SwellRTUtils {
     Preconditions.checkArgument(file.getModel() != null, "File is not in a model");
 
 
-    return getBaseUrl() + "/attachment/" + file.getValue().getId() + getSessionURLparameter()
+    return getBaseUrl() + "/attachment/" + file.getValue().getId() + BrowserSession.getSessionURLparameter()
         + "?waveRef=" + encodeWaveRefUri(file.getModel().getWaveRef())
-        + (getWindowId() != null ? "&wid=" + getWindowId() : "");
+        + BrowserSession.getWindowURLparameter();
   }
 
   public static String encodeWaveRefUri(WaveRef waveRef) {

@@ -28,6 +28,7 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsSt
 
 import com.google.common.base.Preconditions;
 
+import org.swellrt.api.BrowserSession;
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
@@ -124,7 +125,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   public WaveWebSocketClient(String urlBase, String clientVersion) {
     submitRequestCallbacks = CollectionUtils.createIntMap();
-    socket = WaveSocketFactory.create(urlBase, getSessionToken(), clientVersion, this);
+    socket = WaveSocketFactory.create(urlBase, BrowserSession.getToken(), clientVersion, this);
   }
 
   /**
@@ -168,17 +169,6 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   }
 
-  private native String getSessionToken() /*-{
-    var token = $wnd.__session['sessionid'];
-    try {
-      if ($wnd.xsid) {
-        token+=":"+$wnd.xsid;
-       }
-     } catch(e) {
-
-     }
-    return token;
-   }-*/;
 
   @Override
   public void onConnect() {
@@ -191,7 +181,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       if (!connectedAtLeastOnce) {
         // Send the auth message if is the first connection
         // String token = Cookies.getCookie(JETTY_SESSION_TOKEN_NAME);
-        String token = getSessionToken();
+        String token = BrowserSession.getToken();
         if (token != null) {
           ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
           auth.setToken(token);

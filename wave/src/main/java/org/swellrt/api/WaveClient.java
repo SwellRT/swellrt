@@ -592,34 +592,9 @@ public class WaveClient implements SwellRT.Listener {
 
   }-*/;
 
-  private static native void setupWindowId() /*-{
-
-    try {
-
-      if (!$wnd.localStorage) return;
-
-      // Generate a browser window/tab id
-      if (!$wnd.xsid) {
-
-        if (!$wnd.localStorage.getItem("x-swellrt-window-count")) {
-          $wnd.localStorage.setItem("x-swellrt-window-count", 0);
-        }
-
-        var windowCount = $wnd.localStorage.getItem("x-swellrt-window-count");
-        $wnd.xsid = windowCount++;
-        $wnd.localStorage.setItem("x-swellrt-window-count", windowCount);
-      }
-
-    } catch (e) {
-      console.log("Ignoring session storage: "+e);
-    }
-
-
-  }-*/;
-
   @Override
   public void onReady() {
-    setupWindowId();
+    BrowserSession.init();
     callOnSwellRTReady();
   }
 
