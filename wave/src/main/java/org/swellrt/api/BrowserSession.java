@@ -69,13 +69,14 @@ public class BrowserSession {
 		var PROP_SESSION_WINDOW_ID = @org.swellrt.api.BrowserSession::PROP_SESSION_WINDOW_ID;
 		
 		var token = $wnd.__session['sessionid'];
-	    	    
+			    	    
 	    try {
 	      if ($wnd[PROP_SESSION_WINDOW_ID] != null) {
 	        token+=":"+$wnd[PROP_SESSION_WINDOW_ID];
 	       }
 	     } catch(e) {
 			console.log("Error getting session token: "+e);
+			return null;
 	     }
 	    return token;
 	
@@ -83,13 +84,20 @@ public class BrowserSession {
 	
 	
 	public static native String getSessionId() /*-{
-		return $wnd.__session['sessionid'];
+		if ($wnd.__session && $wnd.__session['sessionid'] != null)		
+			return $wnd.__session['sessionid'];
+			
+		return null;
 	}-*/;
 	
 	
 	public static native String getWindowId() /*-{
 		var PROP_SESSION_WINDOW_ID = @org.swellrt.api.BrowserSession::PROP_SESSION_WINDOW_ID;
-		return $wnd[PROP_SESSION_WINDOW_ID];
+		
+		if ($wnd[PROP_SESSION_WINDOW_ID] != null)
+			return $wnd[PROP_SESSION_WINDOW_ID];
+			
+		return null;
 	}-*/;
 	
 	
