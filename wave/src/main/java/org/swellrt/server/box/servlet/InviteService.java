@@ -1,17 +1,9 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.inject.Inject;
-
-import org.apache.velocity.Template;
-import org.apache.velocity.tools.ConversionUtils;
-import org.waveprotocol.box.server.account.HumanAccountData;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -22,9 +14,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.velocity.Template;
+import org.apache.velocity.tools.ConversionUtils;
+import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.box.server.account.HumanAccountData;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import com.google.inject.Inject;
+
 public class InviteService extends SwellRTService {
 
-  private static final String EMAIL = "email";
+  private static final String ID_OR_EMAIL = "id-or-email";
   private static final String INVITATION_EMAIL_BUNDLE = "EmailMessages";
   private static final String INVITATION_TEMPLATE = "Invitation.vm";
   public static final String URL = "url";
@@ -74,7 +78,7 @@ public class InviteService extends SwellRTService {
 
     }
 
-    String email = req.getParameter(EMAIL);
+    String email = req.getParameter(ID_OR_EMAIL);
 
     String url = req.getParameter(URL);
 
@@ -82,10 +86,38 @@ public class InviteService extends SwellRTService {
 
     HashMap<String, Object> params = new HashMap<String, Object>();
 
+    String idOrEmail = req.getParameter(ID_OR_EMAIL);
+
+    String emailAddress = "";
+
+    List<AccountData> accounts = null;
+
+    try {
+
+      try {
+        accounts = accountStore.getAccountByEmail(idOrEmail);
+      } catch (NotImplementedException e) {
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      }
+
+      // try to find by username if not found by email
+      if (accounts == null || accounts.isEmpty()) {
+        AccountData acc = accountStore.getAccount(new ParticipantId(idOrEmail));
+        if (acc != null && !acc.getId().isAnonymous()) {
+          accounts.add(acc);
+          emailAddress = acc.asHuman().getEmail();
+        }
+      } else {
+        emailAddress = idOrEmail;
+      }
+    } catch (PersistenceException e) {
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
     String inviter = participantId.getAddress().split("@")[0];
     params.put("inviter", inviter);
     params.put("url", url);
-    params.put("email", email);
+    params.put("email", emailAddress);
     params.put("url_text", urlText);
 
     try {
@@ -97,7 +129,7 @@ public class InviteService extends SwellRTService {
 
       String body = decTemplates.getTemplateMessage(t, INVITATION_EMAIL_BUNDLE, params, locale);
 
-      emailSender.send(new InternetAddress(email), subject, body);
+      emailSender.send(new InternetAddress(emailAddress), subject, body);
     } catch (AddressException e) {
         // TODO Auto-generated catch block
       e.printStackTrace();

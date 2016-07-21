@@ -69,7 +69,7 @@ public class RpcTest extends TestCase {
     server =
         new ServerRpcProvider(new InetSocketAddress[] {new InetSocketAddress("localhost", 0)},
             new String[] {"./war"}, sessionManager, null, null, false, null, null,
-            MoreExecutors.sameThreadExecutor(), 0, 2, 60, 3600);
+            MoreExecutors.sameThreadExecutor(), 0, 2, 60, 3600, 3600);
     final Map<String, Object> props = new HashMap<>();
     props.put("network.websocket_max_idle_time", 0);
     props.put("network.websocket_max_message_size", 2);

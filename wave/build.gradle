@@ -30,14 +30,14 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.50.0-alpha"
+version = "0.50.6-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
 applicationDefaultJvmArgs = [
         "-Xmx1024M",
         "-Dorg.eclipse.jetty.LEVEL=DEBUG",
-        "-Djava.util.logging.config.file=config/wiab-logging.conf",
+        "-Djava.util.logging.config.file=config/swellrt-logging.conf",
         "-Djava.security.auth.login.config=config/jaas.config"
 ]
 sourceCompatibility = 1.8
@@ -181,7 +181,7 @@ dependencies {
             [group: "net.oauth.core", name: "oauth-provider", version: "20100527"],                             // [?, ?]
             [group: "net.oauth.core", name: "oauth", version: "20100527"],                                      // [?, ?]
             [group: "net.oauth.core", name: "oauth-consumer", version: "20100527"],                             // [?, ?]
-            [group: "xerces", name: "xerces", version: "2.4.0"],                                                // [?, ?]
+            [group: "xerces", name: "xercesImpl", version: "2.11.0"],                                                // [?, ?]
             [group: "xpp3", name: "xpp3", version: "1.1.4c"],                                                   // [?, ?]
             [group: "xpp3", name: "xpp3_xpath", version: "1.1.4c"],                                             // [?, ?]
             //TODO: Following are included due to tests being in the main src directory
@@ -394,6 +394,7 @@ task gwtDev {
             }
             args = [
                     "-noserver",
+                    "-noincremental",
                     "-bindAddress", "127.0.0.1",
                     "-startupUrl", "http://localhost:9898",
                     "-logLevel", "DEBUG",
@@ -518,6 +519,7 @@ jar {
     include "javax/servlet/**/*"
     include "javax/xml/**/*"
     include "javax/mail/**/*"
+    include "com/sun/mail/**/*"
     include "net/oauth/**/*"
     include "org/aopalliance/**/*"
     include "org/apache/commons/cli/**/*"
@@ -528,6 +530,7 @@ jar {
     include "org/apache/commons/httpclient/**/*"
     include "org/apache/commons/lang/**/*"
     include "org/apache/commons/logging/**/*"
+    include "org/apache/commons/beanutils/**/*"
     include "org/apache/lucene/**/*"
     include "org/apache/commons/io/**/*"
     include "org/apache/commons/validator/**/*"

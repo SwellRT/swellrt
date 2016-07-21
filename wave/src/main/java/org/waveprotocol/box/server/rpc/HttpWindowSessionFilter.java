@@ -47,7 +47,8 @@ public class HttpWindowSessionFilter implements Filter {
         s = s.substring(0, s.indexOf("&"));
       }
 
-      req.setAttribute(HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR, s);
+      if (s != null && !s.isEmpty())
+    	  req.setAttribute(HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR, s);
 
     }
 

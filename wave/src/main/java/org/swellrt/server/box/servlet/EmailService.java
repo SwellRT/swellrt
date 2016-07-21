@@ -215,7 +215,8 @@ public class EmailService extends SwellRTService {
 
               for (AccountData a : accounts) {
 
-                String userAddress = a.getId().getAddress();
+            	String userAddress = a.getId().getAddress();
+            	String userName = a.getId().getAddress().split("@")[0];
 
                 double random = Math.random();
 
@@ -241,7 +242,7 @@ public class EmailService extends SwellRTService {
                 Map<String, Object> ctx = new HashMap<String, Object>();
 
                 ctx.put("recoverUrl", recoverUrlCp);
-                ctx.put("userName", userAddress);
+                ctx.put("userName", userName);
 
                 Locale locale = null;
 
@@ -257,7 +258,7 @@ public class EmailService extends SwellRTService {
                 ResourceBundle b = decTemplates.getBundleFromName(RECOVER_PASSWORD_BUNDLE, locale);
 
                 String subject =
-                    MessageFormat.format(b.getString("restoreEmailSubject"), userAddress);
+                    MessageFormat.format(b.getString("restoreEmailSubject"), userName);
 
                 String body =
                     decTemplates.getTemplateMessage(t, RECOVER_PASSWORD_BUNDLE, ctx, locale);

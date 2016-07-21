@@ -9,6 +9,7 @@ import org.waveprotocol.box.server.authentication.PasswordDigest;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class PasswordService extends SwellRTService {
 
     try {
 
-      ParticipantId pId = new ParticipantId(id);
+      ParticipantId pId = ParticipantId.of(id);
 
       if (pId.isAnonymous()) {
         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "User is anonymous");
@@ -93,7 +94,9 @@ public class PasswordService extends SwellRTService {
 
     } catch (PersistenceException e) {
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
+    } catch (InvalidParticipantAddress e) {
+    	response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "User id is not valid");
+	}
 
   }
 }
