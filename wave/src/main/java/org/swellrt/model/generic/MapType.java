@@ -287,8 +287,17 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     Preconditions.checkArgument(isAttached, "Unable to get values from an unattached Map");
 
     if (observableMap.keySet().contains(key)) {
-
-      if (!cachedMap.containsKey(key)) cachedMap.put(key, observableMap.get(key));
+    	
+      if (!cachedMap.containsKey(key)) {
+    	  Type value = observableMap.get(key);
+    	  // For no container types, set the path in runtime
+    	  if (!value.getType().equals(MapType.TYPE_NAME) &&
+    		  !value.getType().equals(ListType.TYPE_NAME)) {
+    		  value.setPath(getPath()+"."+key);
+    	  }
+    	  cachedMap.put(key, value);
+    	  
+      }
 
       return cachedMap.get(key);
     }
@@ -386,10 +395,11 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
     return values;
   }
 
-  @Override
   protected String getValueReference(Type value) {
+	if (observableMap == null) return null;
     for (String key : observableMap.keySet()) {
-      if (observableMap.get(key).equals(value)) return key;
+      Type thisValue = observableMap.get(key);
+      if (thisValue != null && thisValue.equals(value)) return key;
     }
     return null;
   }
@@ -457,5 +467,31 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
   public void onEndEventGroup(String groupId) {
     deliverPendingEvents();
   }
+
+  
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((backendDocumentId == null) ? 0 : backendDocumentId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MapType other = (MapType) obj;
+		if (backendDocumentId == null) {
+			if (other.backendDocumentId != null)
+				return false;
+		} else if (!backendDocumentId.equals(other.backendDocumentId))
+			return false;
+		return true;
+	}
 
 }

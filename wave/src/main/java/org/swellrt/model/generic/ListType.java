@@ -294,7 +294,9 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
     Preconditions.checkArgument(isAttached, "Unable to get values from an unattached List");
     Preconditions.checkArgument(index >= 0 && index < observableList.size(),
         "Index out of list bounds");
-    return observableList.get(index);
+    Type value = observableList.get(index);
+    value.setPath(getPath()+"."+String.valueOf(index));
+    return value;
   }
 
   public int indexOf(Type type) {
@@ -348,12 +350,6 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
   }
 
   @Override
-  protected String getValueReference(Type value) {
-    int index = observableList.indexOf(value);
-    return index >= 0 ? "" + index : null;
-  }
-
-  @Override
   public void accept(ReadableTypeVisitor visitor) {
     visitor.visit(this);
   }
@@ -393,4 +389,30 @@ public class ListType extends Type implements ReadableList<Type>, SourcesEvents<
     return null;
   }
 
+  
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((backendDocumentId == null) ? 0 : backendDocumentId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ListType other = (ListType) obj;
+		if (backendDocumentId == null) {
+			if (other.backendDocumentId != null)
+				return false;
+		} else if (!backendDocumentId.equals(other.backendDocumentId))
+			return false;
+		return true;
+	}
+  
 }

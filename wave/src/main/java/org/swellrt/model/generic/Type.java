@@ -93,9 +93,6 @@ public abstract class Type implements ReadableType {
   /** Get the container of primitive values of this instance. Null otherwise. */
   protected abstract ValuesContainer getValuesContainer();
 
-  /** Get the reference string of the value stored in this instance. */
-  protected abstract String getValueReference(Type value);
-
   /** Get the reference string of this value. For primitive values only. */
   protected Integer getValueRefefence() {
     return null;

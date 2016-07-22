@@ -235,9 +235,6 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   public String getPath() {
-    if (path == null && parent != null && isAttached) {
-      path = parent.getPath() + "." + parent.getValueReference(this);
-    }
     return path;
   }
 
@@ -248,11 +245,6 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
 
   @Override
   protected ValuesContainer getValuesContainer() {
-    return null;
-  }
-
-  @Override
-  protected String getValueReference(Type value) {
     return null;
   }
 
@@ -305,17 +297,36 @@ public class StringType extends Type implements ReadableString, SourcesEvents<St
     return null;
   }
 
-  @Override
-  public boolean equals(Object obj) {
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+		result = prime * result + valueRef;
+		return result;
+	}
 
-    if (obj instanceof StringType) {
-      StringType other = (StringType) obj;
-      // It's suppossed comparasion between types in the same container
-      return (other.valueRef == this.valueRef);
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		StringType other = (StringType) obj;
+		if (parent == null) {
+			if (other.parent != null)
+				return false;
+		} else if (!parent.equals(other.parent))
+			return false;
+		if (valueRef != other.valueRef)
+			return false;
+		return true;
+	}
 
 
-    return false;
-  }
 
+
+  
 }

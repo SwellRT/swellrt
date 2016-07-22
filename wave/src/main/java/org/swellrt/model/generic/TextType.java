@@ -5,6 +5,7 @@ import org.swellrt.model.ReadableNumber;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableTypeVisitor;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
+import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
@@ -164,6 +165,15 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
 
   @Override
   protected void setPath(String path) {
+	
+	// Ensure path is stored in the xml.
+	Document doc = blip.getContent();
+	Doc.E bodyElement = DocHelper.getFirstChildElement(doc, doc.getDocumentElement());
+	String contentPath = doc.getAttribute(bodyElement, "path");
+	if (contentPath == null || !path.equals(contentPath)) {
+		doc.setElementAttribute(bodyElement, "path", path);
+	}
+	
     this.path = path;
   }
 
@@ -178,15 +188,7 @@ public class TextType extends Type implements ReadableText, SourcesEvents<TextTy
   }
 
   @Override
-  protected String getValueReference(Type value) {
-    return null;
-  }
-
-  @Override
   public String getPath() {
-    if (path == null && parent != null && isAttached) {
-      path = parent.getPath() + "." + parent.getValueReference(this);
-    }
     return path;
   }
 

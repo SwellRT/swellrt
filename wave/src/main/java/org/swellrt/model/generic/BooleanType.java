@@ -246,9 +246,6 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   @Override
   public String getPath() {
-    if (path == null && parent != null && isAttached) {
-      path = parent.getPath() + "." + parent.getValueReference(this);
-    }
     return path;
   }
 
@@ -259,11 +256,6 @@ public class BooleanType extends Type implements ReadableBoolean,
 
   @Override
   protected ValuesContainer getValuesContainer() {
-    return null;
-  }
-
-  @Override
-  protected String getValueReference(Type value) {
     return null;
   }
 
@@ -316,18 +308,32 @@ public class BooleanType extends Type implements ReadableBoolean,
     return this;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-
-    if (obj instanceof BooleanType) {
-      BooleanType other = (BooleanType) obj;
-      // It's suppossed comparasion between types in the same container
-      return (other.valueRef == this.valueRef);
-    }
-
-
-    return false;
-  }
-
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+		result = prime * result + valueRef;
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BooleanType other = (BooleanType) obj;
+		if (parent == null) {
+			if (other.parent != null)
+				return false;
+		} else if (!parent.equals(other.parent))
+			return false;
+		if (valueRef != other.valueRef)
+			return false;
+		return true;
+	}
 
 }

@@ -130,6 +130,12 @@ public class ModelUtils {
     return null;
   }
 
+	public static String getTextTypePath(Document doc) {
+		// Get path from <body path=""> tag
+		Doc.E bodyElement = DocHelper.getFirstChildElement(doc, doc.getDocumentElement());
+		return doc.getAttribute(bodyElement, "path");
+	}
+
   public static boolean isPrimitiveType(Type t) {
     return (t instanceof StringType || t instanceof BooleanType || t instanceof NumberType);
   }

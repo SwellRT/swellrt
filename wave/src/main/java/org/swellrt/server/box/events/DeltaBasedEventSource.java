@@ -555,6 +555,7 @@ public class DeltaBasedEventSource implements Subscriber {
           if (ModelUtils.isTextBlip(wbop.getBlipId())) {
             // TODO get path of text objects from a suitable metadata attribute
             // on <body> tag ?
+        	path = ModelUtils.getTextTypePath(blipData.getContent().getMutableDocument());
           } else {
             path = ModelUtils.getMetadataPath(blipData.getContent().getMutableDocument());
           }
