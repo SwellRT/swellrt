@@ -7,6 +7,7 @@ import org.swellrt.server.box.events.dummy.DummyDispatcher;
 import org.swellrt.server.box.events.gcm.GCMDispatcher;
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStoreMongoDb;
+import org.swellrt.server.box.events.http.HttpDispatcher;
 
 /**
  * Events module provides generation of data model events (map entry updated,
@@ -28,6 +29,7 @@ public class EventsModule extends AbstractModule {
     bind(GCMDispatcher.class).in(Singleton.class);
     bind(DummyDispatcher.class).in(Singleton.class);
     bind(GCMSubscriptionStore.class).to(GCMSubscriptionStoreMongoDb.class).in(Singleton.class);
+    bind(HttpDispatcher.class).in(Singleton.class);
   }
 
 }

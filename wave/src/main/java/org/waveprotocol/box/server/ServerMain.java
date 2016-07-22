@@ -21,6 +21,9 @@ package org.waveprotocol.box.server;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.swellrt.server.box.events.DeltaBasedEventSource;
@@ -30,6 +33,7 @@ import org.swellrt.server.box.events.EventRule;
 import org.swellrt.server.box.events.EventsModule;
 import org.swellrt.server.box.events.dummy.DummyDispatcher;
 import org.swellrt.server.box.events.gcm.GCMDispatcher;
+import org.swellrt.server.box.events.http.HttpDispatcher;
 import org.swellrt.server.box.index.ModelIndexerDispatcher;
 import org.swellrt.server.box.index.ModelIndexerModule;
 import org.swellrt.server.box.servlet.EmailModule;
@@ -319,13 +323,17 @@ public class ServerMain {
     gcmDispatcher.initialize(System.getProperty("event-dispatch.config.file", "config/event-dispatch.config"));
 
     DummyDispatcher dummyDispatcher = injector.getInstance(DummyDispatcher.class);
+    HttpDispatcher httpDispatcher = injector.getInstance(HttpDispatcher.class);
 
     Collection<EventRule> rules =
         EventRule.fromFile(System.getProperty("event-rules.config.file", "config/event-rules.config"));
 
     EventDispatcher eventDispatcher = injector.getInstance(EventDispatcher.class);
-    eventDispatcher.initialize(CollectionUtils.<String, EventDispatcherTarget> immutableMap(
-        GCMDispatcher.NAME, gcmDispatcher, DummyDispatcher.NAME, dummyDispatcher), rules);
+    Map<String, EventDispatcherTarget> targets = new HashMap<String, EventDispatcherTarget>();
+    targets.put(DummyDispatcher.NAME, dummyDispatcher);
+    targets.put(GCMDispatcher.NAME, gcmDispatcher);
+    targets.put(HttpDispatcher.NAME, httpDispatcher);
+    eventDispatcher.initialize(Collections.unmodifiableMap(targets), rules);
 
 
     DeltaBasedEventSource eventSource = injector.getInstance(DeltaBasedEventSource.class);

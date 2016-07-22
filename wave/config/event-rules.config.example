@@ -1,0 +1,229 @@
+[
+    {
+
+        "id":"rule_map_entry_create",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"MAP_ENTRY_UPDATED",
+        "path":"root.map.fieldtestnew",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data1":"A value at the end ${root.map.field1}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_map_entry_update",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"MAP_ENTRY_UPDATED",
+        "path":"root.map.fieldtestupdate",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data1":"A value at the end ${root.map.field1}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+    {
+
+        "id":"rule_map_entry_removed",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"MAP_ENTRY_REMOVED",
+        "path":"root.map.fieldtestremove",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data1":"A value at the end ${root.map.field1}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_list_item_added",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"LIST_ITEM_ADDED",
+        "path":"root.list",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data1":"A value at the end ${root.list.?.value}",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_list_item_removed",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"LIST_ITEM_REMOVED",
+        "path":"root.list",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_doc_change",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"DOC_CHANGE",
+        "path":"root.doc",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"A value ${root.map.field2} in between",
+                "data3":"${root.map.field3} at the $author beginning"
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_add_participant",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"ADD_PARTICIPANT",
+        "path":"",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"${participant} was added",
+                "data3":"${root.map.field3} at the $author beginning"
+
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_remove_participant",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[
+            {
+                "root.cond1":"yes"
+            },
+            {
+                "root.cond2":"yes"
+            }
+        ],
+        "type":"ADD_PARTICIPANT",
+        "path":"",
+        "targets":{
+            "dummy":{
+                "none":"A static value $timestamp",
+                "data2":"${participant} was removed",
+                "data3":"${root.map.field3} at the $author beginning"
+
+            }
+        }
+
+    },
+
+{
+
+        "id":"rule_list_item_added_nested",
+        "app":"default",
+        "dataType":"default",
+        "conditions":[],
+        "type":"LIST_ITEM_ADDED",
+        "path":"root.list.?.nested",
+        "targets":{
+            "dummy":{
+                "waveid": "$objectId",
+                "type": "$objectType",
+                "app": "$app",
+                "path": "$path",
+                "hash":"A value hashed $hash{root.map.field2} as decimal int",
+                "item":"A value in the list ${root.list.?.nested.?.value} with author $author"
+            }
+        }
+
+}
+
+]
