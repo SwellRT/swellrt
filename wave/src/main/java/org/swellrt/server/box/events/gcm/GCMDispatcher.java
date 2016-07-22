@@ -14,6 +14,7 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.swellrt.server.box.events.Event;
+import org.swellrt.server.box.events.EventDispatcher;
 import org.swellrt.server.box.events.EventDispatcherTarget;
 import org.swellrt.server.box.events.EventRule;
 import org.waveprotocol.wave.util.logging.Log;
@@ -48,9 +49,10 @@ public class GCMDispatcher implements EventDispatcherTarget {
   @Inject
   public GCMDispatcher(GCMSubscriptionStore subscriptionManager) {
     this.subscriptionManager = subscriptionManager;
+    initialize(System.getProperty("event-dispatch.config.file", "config/event-dispatch.config"));
   }
 
-  public void initialize(String confFilePath) {
+  protected void initialize(String confFilePath) {
 
     FileReader fr;
     try {

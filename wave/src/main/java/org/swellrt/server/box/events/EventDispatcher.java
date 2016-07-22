@@ -12,7 +12,6 @@ import java.util.Map;
  * 
  */
 public interface EventDispatcher extends EventQueueListener, EventQueueConfigurator {
-
-  public void initialize(Map<String, EventDispatcherTarget> targets, Collection<EventRule> rules);
-
+  public void setRules(Collection<EventRule> rules);
+  public void subscribe(EventDispatcherTarget dispatcher, String name);
 }

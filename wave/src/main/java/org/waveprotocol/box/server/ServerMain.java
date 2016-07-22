@@ -316,26 +316,19 @@ public class ServerMain {
 //      LOG.warning("Error initializating SwellRtIndexerDispatcher", e);
     // }
     waveBus.subscribe(indexerDispatcher);
-
-
+    
     // Initialize Events
-    GCMDispatcher gcmDispatcher = injector.getInstance(GCMDispatcher.class);
-    gcmDispatcher.initialize(System.getProperty("event-dispatch.config.file", "config/event-dispatch.config"));
-
-    DummyDispatcher dummyDispatcher = injector.getInstance(DummyDispatcher.class);
-    HttpDispatcher httpDispatcher = injector.getInstance(HttpDispatcher.class);
-
+    // TODO get rules as inject. dependency
     Collection<EventRule> rules =
-        EventRule.fromFile(System.getProperty("event-rules.config.file", "config/event-rules.config"));
-
+            EventRule.fromFile(System.getProperty("event-rules.config.file", "config/event-rules.config"));
+    
     EventDispatcher eventDispatcher = injector.getInstance(EventDispatcher.class);
-    Map<String, EventDispatcherTarget> targets = new HashMap<String, EventDispatcherTarget>();
-    targets.put(DummyDispatcher.NAME, dummyDispatcher);
-    targets.put(GCMDispatcher.NAME, gcmDispatcher);
-    targets.put(HttpDispatcher.NAME, httpDispatcher);
-    eventDispatcher.initialize(Collections.unmodifiableMap(targets), rules);
+    eventDispatcher.setRules(rules);
+    eventDispatcher.subscribe(injector.getInstance(DummyDispatcher.class), DummyDispatcher.NAME);
+    eventDispatcher.subscribe(injector.getInstance(GCMDispatcher.class), GCMDispatcher.NAME);
+    eventDispatcher.subscribe(injector.getInstance(HttpDispatcher.class), HttpDispatcher.NAME);
 
-
+    
     DeltaBasedEventSource eventSource = injector.getInstance(DeltaBasedEventSource.class);
     waveBus.subscribe(eventSource);
   }

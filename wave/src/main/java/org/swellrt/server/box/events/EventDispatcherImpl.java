@@ -1,6 +1,7 @@
 package org.swellrt.server.box.events;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -16,6 +17,7 @@ import java.util.Set;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  * 
  */
+@Singleton
 public class EventDispatcherImpl implements EventDispatcher {
 
   private static final Log LOG = Log.get(EventDispatcherImpl.class);
@@ -39,9 +41,8 @@ public class EventDispatcherImpl implements EventDispatcher {
 
 
   @Override
-  public void initialize(Map<String, EventDispatcherTarget> targets, Collection<EventRule> rules) {
+  public void setRules(Collection<EventRule> rules) {
 
-    this.targets = targets;
 
     for (EventRule r : rules) {
 
@@ -85,7 +86,7 @@ public class EventDispatcherImpl implements EventDispatcher {
           if (targets.containsKey(t))
             targets.get(t).dispatch(rule, event, rule.getEventPayload(t, event));
           else
-            LOG.warning("Event rule has a not registered target " + t);
+            LOG.warning("Event rule doesn't match a target dispatcher " + t);
         }
       }
     }
@@ -106,5 +107,12 @@ public class EventDispatcherImpl implements EventDispatcher {
   protected Map<String, EventDispatcherTarget> getTargets() {
     return targets;
   }
+
+
+	@Override
+	public void subscribe(EventDispatcherTarget dispatcher, String name) {
+		LOG.info("Registered event dispatcher target "+name);
+		this.targets.put(name, dispatcher);
+	}
 
 }

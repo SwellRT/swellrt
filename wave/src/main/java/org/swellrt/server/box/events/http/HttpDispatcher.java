@@ -16,6 +16,7 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.swellrt.server.box.events.Event;
+import org.swellrt.server.box.events.EventDispatcher;
 import org.swellrt.server.box.events.EventDispatcherTarget;
 import org.swellrt.server.box.events.EventRule;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.DispatcherExecutor;
