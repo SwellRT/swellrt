@@ -83,4 +83,10 @@ public interface ExecutorAnnotations {
   @BindingAnnotation
   public @interface SolrExecutor {
   }
+  
+  @Retention(RUNTIME)
+  @BindingAnnotation
+  public @interface DispatcherExecutor {
+  }
+  
 }

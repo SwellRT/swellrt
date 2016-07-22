@@ -23,6 +23,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.*;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.*;
 
 import java.util.concurrent.*;
@@ -176,4 +178,21 @@ public class ExecutorsModule extends AbstractModule {
     scopeExecutor.setExecutor(executor, name);
     return scopeExecutor;
   }
+  
+  @Provides
+  @Singleton
+  @DispatcherExecutor
+  protected Executor provideDispatcherExecutor(Provider<RequestScopeExecutor> executorProvider,
+      Config config) {
+	
+	int threadCount = 2;
+	try {
+		threadCount =  config.getInt("threads.dispatcher_thread_count");
+	} catch (ConfigException e) {
+		// Config not available
+	}
+    return provideThreadPoolExecutor(executorProvider, threadCount,
+        DispatcherExecutor.class.getSimpleName());
+  }
+
 }
