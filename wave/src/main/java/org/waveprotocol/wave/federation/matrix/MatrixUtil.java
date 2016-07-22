@@ -39,7 +39,8 @@ public class MatrixUtil {
   public static Request syncRequest(String syncTime) {
     Request request = new Request("GET", "/sync");
     request.addQueryString("access_token", access_token);
-    request.addQueryString("since", syncTime);
+    if(syncTime != null)
+      request.addQueryString("since", syncTime);
     request.addQueryString("timeout", "30000");
     return request;
   }
@@ -51,7 +52,7 @@ public class MatrixUtil {
     return request;
   }
 
-  public static Request createRoom(String roomAlias) {
+  public static Request createRoom() {
     Request request = new Request("POST", "/createRoom");
     request.addQueryString("access_token", access_token);
     return request;
@@ -64,7 +65,7 @@ public class MatrixUtil {
   }
 
   public static Request getRoom(String roomAlias) {
-    Request request = new Request("POST", "/directory/room/" + encodeRoomAlias(roomAlias));
+    Request request = new Request("GET", "/directory/room/" + encodeRoomAlias(roomAlias));
     request.addQueryString("access_token", access_token);
     return request;
   }
@@ -76,7 +77,7 @@ public class MatrixUtil {
   }
 
   public static Request getMembers(String roomId) {
-    Request request = new Request("POST", "/rooms/" + encodeRoomId(roomId) + "/members");
+    Request request = new Request("GET", "/rooms/" + encodeRoomId(roomId) + "/members");
     request.addQueryString("access_token", access_token);
     return request;
   }

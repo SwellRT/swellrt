@@ -35,4 +35,6 @@ public interface IncomingPacketHandler {
    */
   void receivePacket(JSONObject packet);
 
+  void testDiscovery();
+
 }

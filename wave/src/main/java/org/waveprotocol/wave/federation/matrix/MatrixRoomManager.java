@@ -27,6 +27,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import org.dom4j.Element;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
@@ -58,29 +59,32 @@ public class MatrixRoomManager {
             }
   });
 
-  // private final LoadingCache<String, RemoteRoom> roomRequests;
+  private final LoadingCache<String, RemoteRoom> roomRequests;
   private final String serverDescription;
 
   private MatrixPacketHandler handler = null;
 
+  final long failExpirySecs;
+  final long successExpirySecs;
   final long roomExpirationHours;
 
   @Inject
   public MatrixRoomManager(Config config) {
     this.serverDescription = config.getString("federation.matrix_server_description");
-
+    this.failExpirySecs = config.getDuration("federation.matrix_room_search_failed_expiry", TimeUnit.SECONDS);
+    this.successExpirySecs = config.getDuration("federation.matrix_room_search_successful_expiry", TimeUnit.SECONDS);
     this.roomExpirationHours = config.getDuration("federation.room_search_expiration", TimeUnit.HOURS);
 
     //noinspection NullableProblems
     roomRequests =
         CacheBuilder.newBuilder().expireAfterWrite(
                 roomExpirationHours, TimeUnit.HOURS).build(
-        new CacheLoader<String, RemoteId>() {
+        new CacheLoader<String, RemoteRoom>() {
 
           @Override
           public RemoteRoom load(String id) throws Exception {
-            statDiscoStarted.get(id).incrementAndGet();
-            return new RemoteRoom(manager, id);
+            statSearchStarted.get(id).incrementAndGet();
+            return new RemoteRoom(handler, id, failExpirySecs, successExpirySecs);
           }
         });
   }
@@ -89,13 +93,22 @@ public class MatrixRoomManager {
     this.handler = handler;
   }
 
-  public void processRoomInvite(String roomId, PacketCallback responseCallback) {
+  public void processRoomInvite(String roomId) {
     Request response = MatrixUtil.joinRoom(roomId);
-    responseCallback.run(response);
+    handler.sendBlocking(response);
+  }
+
+  public void processPing(JSONObject packet) throws JSONException {
+    String roomId = packet.getString("room_id");
+    String eventId = packet.getString("event_id");
+    Request response = MatrixUtil.createMessageFeedback(roomId);
+    response.addBody("target_event_id", eventId);
+    response.addBody("type", "processed");
+    handler.sendBlocking(response);
   }
 
   public void searchRemoteId(String remoteId, SuccessFailCallback<String, String> callback) {
-    Preconditions.checkNotNull("Must call setManager first", manager);
+    Preconditions.checkNotNull("Must call setHandler first", handler);
     RemoteRoom search = roomRequests.getIfPresent(remoteId);
     if (search != null) {
       // This is a race condition, but we don't care if we lose it, because the ttl timestamp

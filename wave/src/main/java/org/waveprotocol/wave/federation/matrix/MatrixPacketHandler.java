@@ -25,15 +25,14 @@ import com.google.common.collect.MapMaker;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import org.dom4j.Element;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
-import org.xmpp.packet.IQ;
-import org.xmpp.packet.Message;
-import org.xmpp.packet.Packet;
-import org.xmpp.packet.PacketError;
 
 import java.util.concurrent.*;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,36 +45,22 @@ import java.util.logging.Logger;
  */
 public class MatrixPacketHandler implements IncomingPacketHandler {
 
-  private static final Logger LOG = Logger.getLogger(XmppManager.class.getCanonicalName());
+  private static final Logger LOG = Logger.getLogger(MatrixPacketHandler.class.getCanonicalName());
 
   /**
-   * Inner non-static class representing a single incoming call. These are not
-   * cancellable and do not time out; this is just a helper class so success and
-   * failure responses may be more cleanly invoked.
+   * Inner static class representing a single outgoing call.
    */
-  private class IncomingCallback implements PacketCallback {
-    private final JSONObject request;
-    private boolean complete = false;
+  private static class OutgoingCall {
+    PacketCallback callback;
+    ScheduledFuture<?> timeout;
 
-    IncomingCallback(JSONObject request) {
-      this.request = request;
+    OutgoingCall(PacketCallback callback) {
+      this.callback = callback;
     }
 
-    @Override
-    public void error(FederationError error) {
-      Preconditions.checkState(!complete,
-          "Must not callback multiple times for incoming packet: %s", request);
-      complete = true;
-      //sendErrorResponse(request, error);
-    }
-
-    @Override
-    public void run(Request response) {
-      Preconditions.checkState(!complete,
-          "Must not callback multiple times for incoming packet: %s", request);
-
-      complete = true;
-      transport.sendPacket(response);
+    void start(ScheduledFuture<?> timeout) {
+      Preconditions.checkState(this.timeout == null);
+      this.timeout = timeout;
     }
   }
 
@@ -87,7 +72,9 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
   private final String serverDomain;
 
   // Pending callbacks to outgoing requests.
-  private final ConcurrentMap<String, PacketCallback> callbacks = new MapMaker().makeMap();
+  private final ConcurrentMap<String, OutgoingCall> callbacks = new MapMaker().makeMap();
+  private final ScheduledExecutorService timeoutExecutor =
+    Executors.newSingleThreadScheduledExecutor();
 
   @Inject
   public MatrixPacketHandler(MatrixFederationHost host, MatrixFederationRemote remote,
@@ -107,101 +94,179 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
   }
 
   @Override
-  public void receivePacket(JSONObject packet) {
+  public void testDiscovery() {
+    room.searchRemoteId("localhost:20000", new SuccessFailCallback<String, String>() {
+      @Override
+      public void onSuccess(String remoteJid) {
+        System.out.println("Success :" + remoteJid);
+        room.searchRemoteId("localhost:20000", new SuccessFailCallback<String, String>() {
+          @Override
+          public void onSuccess(String remoteJid) {
+            System.out.println("Success again:" + remoteJid);
+          }
 
-    JSONObject rooms = sync.getJSONObject("rooms");
-    JSONObject invites = rooms.getJSONObject("invite");
-
-    Iterator<String> invite_it = invites.keys();
-    while(invite_it.hasNext()) {
-      String roomId = invite_it.next();
-
-      if (LOG.isLoggable(Level.FINE)) {
-        LOG.fine("Received incoming invite: " + roomId);
+          @Override
+          public void onFailure(String errorMessage) {
+            System.out.println("Fail again: localhost:20000");
+          }
+        });
       }
 
-      room.processRoomInvite(roomId, new IncomingCallback(rooms.getJSONObject(roomId)));
-    }
-
-    JSONObject joined_rooms = rooms.getJSONObject("join");
-
-    Iterator<String> joined_it = joined_rooms.keys();
-    while(joined_it.hasNext()) {
-      String roomId = joined_it.next();
-
-      if(!roomId.split(":", 2)[1].equals(serverDomain)) {
-        JSONObject roomInfo = rooms.getJSONObject(roomId);
-        
-        JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
-
-        for (int i=0; i < arr.length(); i++) {
-          JSONObject message = arr.getJSONObject(i);
-
-          message.put("room_id", room_id);
-
-          if(message.getString("type").equals("m.room.message"))
-            processMessage(message);
-          else if(message.getString("type").equals("m.room.message.feedback")
-            || (message.getString("type").equals("m.room.member") 
-              && !message.getString("sender").equals(id)) ) {
-            processResponse(message);
-          }
-        }
-    }
-    
+      @Override
+      public void onFailure(String errorMessage) {
+        System.out.println("Fail : localhost:20000");
+      }
+    });
   }
 
-  public void send(Request request, final PacketCallback callback) {
+  @Override
+  public void receivePacket(JSONObject packet) {
 
-    JSONObject packet = transport.sendPacket(request);
+    try {
 
-    if(packet == null)
-      callback.error(null);
-    else {
+      JSONObject rooms = packet.getJSONObject("rooms");
+      JSONObject invites = rooms.getJSONObject("invite");
 
-      String key = null;
+      Iterator<String> invite_it = invites.keys();
+      while(invite_it.hasNext()) {
+        String roomId = invite_it.next();
 
-      if(packet.has("event_id")) {
-        key = packet.getString("room_id");
+        System.out.println(roomId);
+
+        if (LOG.isLoggable(Level.FINE)) {
+          LOG.fine("Received incoming invite: " + roomId);
+        }
+
+        room.processRoomInvite(roomId);
       }
+
+      JSONObject joined_rooms = rooms.optJSONObject("join");
+
+      if(joined_rooms != null) {
+        Iterator<String> joined_it = joined_rooms.keys();
+        while(joined_it.hasNext()) {
+          String roomId = joined_it.next();
+
+          JSONObject roomInfo = joined_rooms.getJSONObject(roomId);
+          
+          JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
+
+          for (int i=0; i < arr.length(); i++) {
+            JSONObject message = arr.getJSONObject(i);
+
+            message.put("room_id", roomId);
+
+            if(!roomId.split(":", 2)[1].equals(serverDomain)) {
+              if(message.getString("type").equals("m.room.message"))
+                processMessage(message);
+            }
+            else {
+              if(message.getString("type").equals("m.room.member") 
+                  && !message.getString("sender").equals(id))
+              processResponse(message);
+            }
+
+            if(message.getString("type").equals("m.room.message.feedback")
+              && !message.getString("sender").equals(id))
+              processResponse(message);
+          }
+        }
+        
+      }
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public void send(Request request, final PacketCallback callback, int timeout) {
+
+    try {
+ 
+      JSONObject packet = transport.sendPacket(request);
+
+      if(packet == null)
+        callback.error(FederationErrors.internalServerError("UserId Not Found"));
       else {
-        key = packet.getString("event_id");
-      }
 
-      callbacks.putIfAbsent(key, call);
+        String temp_key = null;
+
+        if(packet.has("event_id")) {
+          temp_key = packet.getString("event_id");
+        }
+        else {
+          temp_key = request.getBody().getString("user_id");
+        }
+
+        final String key = temp_key;
+        final OutgoingCall call = new OutgoingCall(callback);
+
+        if (callbacks.putIfAbsent(key, call) == null) {
+          // Timeout runnable to be invoked on packet expiry.
+          Runnable timeoutTask = new Runnable() {
+            @Override
+            public void run() {
+              if (callbacks.remove(key, call)) {
+                callback.error(
+                    FederationErrors.newFederationError(FederationError.Code.REMOTE_SERVER_TIMEOUT));
+              } else {
+                // Likely race condition where success has actually occurred. Ignore.
+              }
+            }
+          };
+          call.start(timeoutExecutor.schedule(timeoutTask, timeout, TimeUnit.SECONDS));
+        } else {
+          String msg = "Could not send packet, ID already in-flight: " + key;
+          LOG.warning(msg);
+
+          // Invoke the callback with an internal error.
+          callback.error(
+              FederationErrors.newFederationError(FederationError.Code.UNDEFINED_CONDITION, msg));
+        }
+
+      }
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
     }
   }
 
   private void processResponse(JSONObject packet) {
-    String key = null;
+    try {
 
-    if(packet.getString("type").equals("m.room.member")) {
-      key = packet.getString("room_id");
-    }
-    else {
-      key = packet.getJSONObject("content").getString("target_event_id");
-    }
+      String key = null;
 
-    PacketCallback callback = callbacks.remove(key);
+      if(packet.getString("type").equals("m.room.member")) {
+        key = packet.getString("sender");
+      }
+      else {
+        key = packet.getJSONObject("content").getString("target_event_id");
+      }
 
-    if (callback == null) {
-      LOG.warning("Received response packet without paired request: " + key);
-    } else {
+      OutgoingCall call = callbacks.remove(key);
 
-    
-      LOG.fine("Invoking normal callback for: " + key);
-      call.callback.run(packet);
-        
-      // Clear call's reference to callback, otherwise callback only
-      // becomes eligible for GC once the timeout expires, because
-      // timeoutExecutor holds on to the call object till then, even
-      // though we cancelled the timeout.
-      call.callback = null;
+      if (call == null) {
+        LOG.warning("Received response packet without paired request: " + key);
+      }
+      else {
+        // Cancel the outstanding timeout.
+        call.timeout.cancel(false);
+
+        LOG.fine("Invoking normal callback for: " + key);
+        call.callback.run(packet);
+
+        call.callback = null;
+      }
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
     }
   }
 
   private void processMessage(JSONObject packet) {
-
+    try {
+      if(packet.getJSONObject("content").getString("msgtype").equals("m.notice"))
+        room.processPing(packet);
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
+    } 
   }
 
   public JSONObject sendBlocking(Request packet) {

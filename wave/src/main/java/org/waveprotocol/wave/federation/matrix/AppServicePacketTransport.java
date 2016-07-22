@@ -31,6 +31,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
@@ -101,9 +102,8 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   public void processPacket() {
     try {
       JSONObject packets = sendPacket(MatrixUtil.syncRequest(syncTime));
-      handler.processPacket(packets);
+      handler.receivePacket(packets);
       syncTime = packets.getString("next_batch");
-
       
     } catch (Exception ex) {
       throw new RuntimeException(ex);
@@ -163,11 +163,20 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   private void setUp() {
     httpConfig();
-    try {
-      JSONObject rooms = getRooms();
-      findMinTS(rooms);
-    } catch (Exception e) {
-      System.out.println("Exception : " + e);
+    initialSync();
+    handler.testDiscovery();
+  }
+
+  private void initialSync() {
+    try{
+      JSONObject sync = sendPacket(MatrixUtil.syncRequest());
+      syncTime = sync.getString("next_batch");
+      JSONObject rooms = sync.getJSONObject("rooms");
+      if(rooms.has("join"))
+        rooms.remove("join");
+      handler.receivePacket(sync);
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
     }
   }
 
@@ -195,70 +204,62 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
     MatrixUtil.access_token = appServiceToken;
   }
 
-  private JSONObject getSync() throws Exception {
-
-    JSONObject sync = sendPacket(MatrixUtil.syncRequest());
-
-
-    syncTime = sync.getString("next_batch");
-
-    return sync;
-  }
-
-  private void findMinTS(JSONObject sync) throws Exception {
+  // private void findMinTS() throws Exception {
     
-    long min_ts = Long.MAX_VALUE;
-    String min_eventid = null;
-    String min_roomid = null;
+  //   long min_ts = Long.MAX_VALUE;
+  //   String min_eventid = null;
+  //   String min_roomid = null;
 
-    JSONObject rooms = sync.getJSONObject("rooms").getJSONObject("join");
+    
 
-    Iterator<String> room_it = rooms.keys();
+  //   JSONObject rooms = sync.getJSONObject("rooms").getJSONObject("join");
 
-    while(room_it.hasNext()) {
-      String roomId = room_it.next();
+  //   Iterator<String> room_it = rooms.keys();
 
-      if(roomId.split(":", 2)[1].equals(serverDomain)) {
-        JSONObject roomInfo = rooms.getJSONObject(roomId);
+  //   while(room_it.hasNext()) {
+  //     String roomId = room_it.next();
+
+  //     if(roomId.split(":", 2)[1].equals(serverDomain)) {
+  //       JSONObject roomInfo = rooms.getJSONObject(roomId);
         
-        JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
+  //       JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
 
-        for (int i=0; i < arr.length(); i++) {
-          JSONObject x = arr.getJSONObject(i);
+  //       for (int i=0; i < arr.length(); i++) {
+  //         JSONObject x = arr.getJSONObject(i);
           
-          if(x.getString("type").equals("m.room.message.feedback")
-            || (x.getString("type").equals("m.room.member") && x.getString("sender").equals(userId)) ) {
+  //         if(x.getString("type").equals("m.room.message.feedback") ) {
 
 
-            String eventId = x.getString("event_id");
+  //           String eventId = x.getString("event_id");
 
-            Long timestamp = x.getLong("origin_server_ts");
+  //           Long timestamp = x.getLong("origin_server_ts");
 
-            if(timestamp < min_ts) {
-              min_ts = timestamp;
-              min_roomid = roomId;
-              min_eventid = eventId;
-            }
-          }
+  //           if(timestamp < min_ts) {
+  //             min_ts = timestamp;
+  //             min_roomid = roomId;
+  //             min_eventid = eventId;
+  //           }
+  //         }
 
-        }
+  //       }
 
-      }
-    }
+  //     }
+  //   }
 
-    if(min_eventid!=null && min_roomid!=null)
-      findSyncTime(min_roomid, min_eventid);
-  }
+  //   if(min_eventid!=null && min_roomid!=null)
+  //     findSyncTime(min_roomid, min_eventid);
+  // }
 
-  private void findSyncTime(String roomId, String eventId) throws Exception {
-      JSONObject obj = sendPacket(MatrixUtil.syncTimeRequest(roomId, eventId));
+  // private void findSyncTime(String roomId, String eventId) throws Exception {
+  //   System.out.println("\n\n"+eventId+"\n\n");
+  //   JSONObject obj = sendPacket(MatrixUtil.syncTimeRequest(roomId, eventId));
 
-      String nextID = obj.getString("end");
+  //   String nextID = obj.getString("end");
 
-      syncTime = nextID;
+  //   syncTime = nextID;
 
-      System.out.println("\n\n"+syncTime+"\n\n");
+  //   System.out.println("\n\n"+syncTime+"\n\n");
    
-  }
+  // }
 
 }
