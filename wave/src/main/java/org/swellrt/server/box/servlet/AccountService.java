@@ -57,7 +57,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * GET /account?p=user1@domain;user2@domain
  */
-public class AccountService extends SwellRTService {
+public class AccountService extends BaseService {
 
 
   public static class AccountServiceData extends ServiceData {

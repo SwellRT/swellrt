@@ -65,7 +65,7 @@ import javax.servlet.http.HttpSession;
  *
  */
 @Singleton
-public class AuthenticationService extends SwellRTService {
+public class AuthenticationService extends BaseService {
 
 
 

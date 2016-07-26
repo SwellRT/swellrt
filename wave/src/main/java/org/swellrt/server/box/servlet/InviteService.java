@@ -26,7 +26,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.inject.Inject;
 
-public class InviteService extends SwellRTService {
+public class InviteService extends BaseService {
 
   private static final String ID_OR_EMAIL = "id-or-email";
   private static final String INVITATION_EMAIL_BUNDLE = "EmailMessages";

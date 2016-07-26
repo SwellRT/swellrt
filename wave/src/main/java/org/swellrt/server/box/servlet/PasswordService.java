@@ -18,7 +18,7 @@ import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class PasswordService extends SwellRTService {
+public class PasswordService extends BaseService {
 
   public static final String ID = "id";
 

@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-public class EmailService extends SwellRTService {
+public class EmailService extends BaseService {
 
   public static final String EMAIL = "email";
 

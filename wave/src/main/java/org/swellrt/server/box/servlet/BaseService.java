@@ -10,7 +10,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class SwellRTService {
+public abstract class BaseService {
 
 
   protected static final String RC_ACCOUNT_ALREADY_EXISTS = "ACCOUNT_ALREADY_EXISTS";
@@ -36,7 +36,7 @@ public abstract class SwellRTService {
 
   protected final SessionManager sessionManager;
 
-  public SwellRTService(SessionManager sessionManager) {
+  public BaseService(SessionManager sessionManager) {
     this.sessionManager = sessionManager;
   }
 
