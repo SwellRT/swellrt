@@ -1,6 +1,7 @@
 package org.swellrt.server.box.servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -58,7 +59,16 @@ public abstract class BaseService {
     response.getWriter().flush(); // Commit the response
   }
 
+  protected void sendResponse(HttpServletResponse response, JsonElement responseData) throws IOException {
 
+	    response.setStatus(HttpServletResponse.SC_OK);
+	    response.setContentType("application/json");
+	    response.setCharacterEncoding("UTF-8");
+	    response.setHeader("Cache-Control", "no-store");
+	    response.getWriter().append(responseData.toString());
+	    response.getWriter().flush(); // Commit the response
+	  }
+  
   protected void sendResponseError(HttpServletResponse response, int httpStatus,
       final String appErrorCode) throws IOException {
 

@@ -76,8 +76,7 @@ public class ObjectApiService extends BaseService {
 		
 		try {
 			
-			JsonParser jsonParser = new JsonParser();
-			JsonElement jsonBody = jsonParser.parse(new InputStreamReader(req.getInputStream()));
+
 			
 			ParticipantId participantId = getLoggedInUser(req);	
 					
@@ -87,7 +86,7 @@ public class ObjectApiService extends BaseService {
 			String path = extractObjectPath(requestPath);
 			String method = req.getMethod();
 			
-			if (!method.equalsIgnoreCase("POST")) {
+			if (!method.equalsIgnoreCase("POST") || !method.equalsIgnoreCase("GET") ) {
 				new ServiceException("Invalid HTTP method",  HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_HTTP_METHOD);
 			}
 			
@@ -103,10 +102,18 @@ public class ObjectApiService extends BaseService {
 
 			});
 
-			if (method.equalsIgnoreCase("POST"))
-				ObjectApi.doUpdate(model, req.getMethod(), path, jsonBody);
-			else if (method.equalsIgnoreCase("GET")) {
-				// TODO implement
+			JsonParser jsonParser = new JsonParser();
+			JsonElement jsonBody = null;
+			
+			if (method.equalsIgnoreCase("POST")) {
+				jsonBody = jsonParser.parse(new InputStreamReader(req.getInputStream()));
+				ObjectApi.doUpdate(model, path, jsonBody);
+				
+			} else if (method.equalsIgnoreCase("GET")) {
+				JsonElement json = ObjectApi.doGet(model, path);
+				response.setContentType("application/json");
+				sendResponse(response, json);
+				
 			} else if (method.equalsIgnoreCase("DELETE")) {
 				// TODO implement
 			}
@@ -126,7 +133,7 @@ public class ObjectApiService extends BaseService {
 
 					@Override
 					public void onFailure(String errorMessage) {
-						LOG.info("Object Operation error ("+method+","+requestPath+") "+errorMessage+"  Data = "+jsonBody.getAsString());
+						LOG.info("Object Operation error ("+method+","+requestPath+") "+errorMessage);
 					}
 				});
 

@@ -6,6 +6,7 @@ import org.swellrt.model.generic.ListType;
 import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.Type;
+import org.swellrt.model.shared.ModelToJsonVisitor;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -24,7 +25,17 @@ public class ObjectApi {
 
 	private final static String APPEND_MARKER = "$";
 	
-	public static void doUpdate(Model model, String method, String path, JsonElement jsonData)
+	
+	public static JsonElement doGet(Model model, String path) throws ObjectApiException {
+		ModelToJsonVisitor toJson = new ModelToJsonVisitor();
+		Type base = (Model.getField(model.getRoot(), path));
+		if (base != null)
+			base.accept(toJson);
+			
+		return toJson.getResult();
+	}
+	
+	public static void doUpdate(Model model, String path, JsonElement jsonData)
 			throws ObjectApiException {
 
 		Type parent = model.getRoot();
