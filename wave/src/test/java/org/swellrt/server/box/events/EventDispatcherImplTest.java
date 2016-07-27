@@ -51,36 +51,33 @@ public class EventDispatcherImplTest extends TestCase {
   }
 
   protected EventDispatcherImpl initialize(EventDispatcherImpl dispatcher)
-      throws UnsupportedEncodingException {
+		  throws UnsupportedEncodingException {
 
 
-    Map<String, EventDispatcherTarget> targets = new HashMap<String, EventDispatcherTarget>();
-    targets.put("test_dispatcher",
-            new EventDispatcherTarget() {
+	  InputStreamReader reader =
+			  new InputStreamReader(
+					  this.getClass().getResourceAsStream("EventDispatcherImplTest_Rules.json"),"UTF-8");
 
 
-          @Override
-          public String getName() {
-            return "test_dispatcher";
-          }
+	  Collection<EventRule> rules = EventRule.fromReader(reader);
+	  dispatcher.setRules(rules);
+	  dispatcher.subscribe(new EventDispatcherTarget() {
 
-          @Override
-      public void dispatch(EventRule rule, Event event, String payload) {
 
-          }
+		  @Override
+		  public String getName() {
+			  return "test_dispatcher";
+		  }
 
-        });
+		  @Override
+		  public void dispatch(EventRule rule, Event event, String payload) {
 
-    InputStreamReader reader =
-        new InputStreamReader(
-            this.getClass().getResourceAsStream("EventDispatcherImplTest_Rules.json"),"UTF-8");
-                
+		  }
 
-    Collection<EventRule> rules = EventRule.fromReader(reader);
+	  }, "test_dispatcher");
 
-    dispatcher.initialize(targets, rules);
 
-    return dispatcher;
+	  return dispatcher;
 
   }
 

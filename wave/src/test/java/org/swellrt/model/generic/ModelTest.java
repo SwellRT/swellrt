@@ -66,7 +66,7 @@ public class ModelTest extends TestCase {
     assertEquals("Hello World Three", ((StringType) root.get("r4")).getValue());
 
     assertTrue(root.get("r5") instanceof TextType);
-    assertEquals("<body><line/>foo</body>", ((TextType) root.get("r5")).getXml());
+    assertEquals("<body path=\"root.r5\"><line/>foo</body>", ((TextType) root.get("r5")).getXml());
 
     // List
 
@@ -87,7 +87,7 @@ public class ModelTest extends TestCase {
     assertEquals("String 1", ((StringType) list.get(1)).getValue());
     assertTrue(list.get(2) instanceof ListType);
     assertTrue(list.get(3) instanceof MapType);
-    assertEquals("<body><line/>bar</body>", ((TextType) list.get(4)).getXml());
+    assertEquals("<body path=\"root.r1.4\"><line/>bar</body>", ((TextType) list.get(4)).getXml());
     assertEquals("String 2", ((StringType) list.get(5)).getValue());
     assertEquals("String 3", ((StringType) list.get(6)).getValue());
 
