@@ -113,4 +113,8 @@ public class UnmutableText implements ReadableText, ReadableTypeVisitable {
     return null;
   }
 
+  @Override
+  public String toString() {
+	  return getText(0, getSize());
+  }
 }

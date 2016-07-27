@@ -463,8 +463,8 @@ public class DeltaBasedEventSource implements Subscriber {
     for (String path : contextData.keySet()) {
       if (!path.contains("?")) {
         ReadableType value = dataModel.fromPath(path);
-        if (value != null && value.asString() != null) {
-          contextData.put(path, value.asString().getValue());
+        if (value != null) {
+          contextData.put(path, value.toString());
         }
 
       }

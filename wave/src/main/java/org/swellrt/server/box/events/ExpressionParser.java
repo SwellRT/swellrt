@@ -121,6 +121,10 @@ public class ExpressionParser {
       value = base64ToIntString(value);
     }
 
+    // Secure JSON, delete string delimeter chars
+    value = value.replaceAll("\"", "");
+    value = value.replaceAll("'", "");
+    
     return value;
   }
 
