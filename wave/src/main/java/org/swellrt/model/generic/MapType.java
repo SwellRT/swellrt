@@ -135,6 +135,9 @@ public class MapType extends Type implements ReadableMap, SourcesEvents<MapType.
 
     for (Event e: pendingEvents) {
 
+      // Invalidate cache
+      cachedMap.remove(e.key);	
+    	
       if (e.newValue == null) {
 
         for (Listener l : listeners)
