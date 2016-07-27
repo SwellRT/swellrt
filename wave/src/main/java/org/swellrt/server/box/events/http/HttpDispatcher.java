@@ -16,7 +16,6 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.swellrt.server.box.events.Event;
-import org.swellrt.server.box.events.EventDispatcher;
 import org.swellrt.server.box.events.EventDispatcherTarget;
 import org.swellrt.server.box.events.EventRule;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.DispatcherExecutor;
@@ -84,8 +83,8 @@ public class HttpDispatcher implements EventDispatcherTarget {
 					JSONObject jsonData = new JSONObject();
 
 					jsonData.put("waveid", event.getWaveId().serialise());
-					jsonData.put("waveletid", event.getWaveletId().serialise());
-					jsonData.put("blipid", event.getBlipId());
+					// jsonData.put("waveletid", event.getWaveletId().getId());
+					// jsonData.put("blipid", event.getBlipId());
 					jsonData.put("path", event.getPath());
 					jsonData.put("data", new JSONObject(payload));
 
