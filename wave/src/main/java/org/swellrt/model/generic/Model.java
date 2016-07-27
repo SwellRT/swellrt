@@ -632,9 +632,12 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
 
   public static Type getField(Type parent, String path) {
 
-	  Preconditions.checkArgument(path != null && !path.isEmpty(), "Can't get field from null path");
+	  Preconditions.checkArgument(path != null, "Can't get field from null path");
 	  Preconditions.checkArgument(parent != null, "Can't field from null parent");
 
+	  if (path.isEmpty())
+		  return parent;
+	  
 	  int pathSeparatorIndex = path.indexOf(".");	  
 	  String keyOrIndex = pathSeparatorIndex != -1 ? path.substring(0, pathSeparatorIndex) : path;
 

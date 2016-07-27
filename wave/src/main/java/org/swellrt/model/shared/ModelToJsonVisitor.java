@@ -12,6 +12,7 @@ import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableText;
 import org.swellrt.model.ReadableType;
 import org.swellrt.model.ReadableTypeVisitor;
+import org.waveprotocol.wave.media.model.AttachmentId;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -77,7 +78,11 @@ public class ModelToJsonVisitor implements ReadableTypeVisitor {
 
 	@Override
 	public void visit(ReadableFile instance) {
-		stack.push(parser.parse("\""+instance.getValue().serialise()+"\""));
+		AttachmentId id = instance.getValue();
+		if (id != null)
+			stack.push(parser.parse("\""+id.serialise()+"\""));
+		else
+			stack.push(parser.parse(""));
 	}
 
 	@Override
@@ -88,7 +93,7 @@ public class ModelToJsonVisitor implements ReadableTypeVisitor {
 
 	@Override
 	public void visit(ReadableBoolean instance) {
-		stack.push(parser.parse(instance.toString()));
+		stack.push(parser.parse(Boolean.toString(instance.getValue())));
 	}
 
 }

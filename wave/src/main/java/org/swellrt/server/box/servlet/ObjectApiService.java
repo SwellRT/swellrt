@@ -109,9 +109,30 @@ public class ObjectApiService extends BaseService {
 				jsonBody = jsonParser.parse(new InputStreamReader(req.getInputStream()));
 				ObjectApi.doUpdate(model, path, jsonBody);
 				
+				
+				for (WaveletDelta delta : recorderWavelet.getDeltas()) {
+					ProtocolWaveletDelta protocolDelta = CoreWaveletOperationSerializer.serialize(delta);
+
+					waveletProvider.submitRequest(waveletName, protocolDelta, new WaveletProvider.SubmitRequestListener() {
+
+						@Override
+						public void onSuccess(int operationsApplied, HashedVersion hashedVersionAfterApplication,
+								long applicationTimestamp) {
+							LOG.info("Object Operation ["+method+","+requestPath+"] applied "+operationsApplied+" operations, resulting version "+hashedVersionAfterApplication.getVersion()+" by "+participantId.getAddress());
+
+						}
+
+						@Override
+						public void onFailure(String errorMessage) {
+							LOG.info("Object Operation error ["+method+","+requestPath+"] "+errorMessage);
+						}
+					});
+
+				}
+				
 			} else if (method.equalsIgnoreCase("GET")) {
 				JsonElement json = ObjectApi.doGet(model, path);
-				response.setContentType("application/json");
+				LOG.info("Object Operation ["+method+","+requestPath+"] by "+participantId.getAddress());
 				sendResponse(response, json);
 				
 			} else if (method.equalsIgnoreCase("DELETE")) {
@@ -119,25 +140,7 @@ public class ObjectApiService extends BaseService {
 			}
 				
 
-			for (WaveletDelta delta : recorderWavelet.getDeltas()) {
-				ProtocolWaveletDelta protocolDelta = CoreWaveletOperationSerializer.serialize(delta);
 
-				waveletProvider.submitRequest(waveletName, protocolDelta, new WaveletProvider.SubmitRequestListener() {
-
-					@Override
-					public void onSuccess(int operationsApplied, HashedVersion hashedVersionAfterApplication,
-							long applicationTimestamp) {
-						LOG.info("Object Operation ("+method+","+requestPath+") applied "+operationsApplied+" operations, resulting version "+hashedVersionAfterApplication.getVersion()+" by "+participantId.getAddress());
-
-					}
-
-					@Override
-					public void onFailure(String errorMessage) {
-						LOG.info("Object Operation error ("+method+","+requestPath+") "+errorMessage);
-					}
-				});
-
-			}
 
 
 		} catch (ServiceException e) {
