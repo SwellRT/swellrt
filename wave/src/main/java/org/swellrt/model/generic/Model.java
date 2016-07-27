@@ -1,6 +1,8 @@
 package org.swellrt.model.generic;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.swellrt.model.ReadableModel;
 import org.swellrt.model.shared.ModelUtils;
@@ -21,6 +23,8 @@ import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.IdGeneratorImpl;
+import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
@@ -35,9 +39,7 @@ import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A model is a Wavelet wrapper storing a tree-like structure of data objects of
@@ -257,6 +259,20 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
 
     return new Model(wavelet, TypeIdGenerator.get(idGenerator), loggedInUser);
 
+  }
+
+  /**
+   * Create a model from an existing wavelet. Don't perform integrity checks.
+   * This method is intended for server-side logic.
+   * 
+   * @param wavelet the substrate of the object data model
+   * @param participantId the user who will operates the object
+   */
+  public static Model create(ObservableWavelet wavelet, ParticipantId participantId, Seed seed) {
+
+	  return new Model(wavelet,
+			  TypeIdGenerator.get(new IdGeneratorImpl(participantId.getDomain(), seed)),
+			  participantId);
   }
 
 
@@ -613,5 +629,40 @@ public class Model implements ReadableModel, SourcesEvents<Model.Listener> {
     }
 
   };
+
+  public static Type getField(Type parent, String path) {
+
+	  Preconditions.checkArgument(path != null && !path.isEmpty(), "Can't get field from null path");
+	  Preconditions.checkArgument(parent != null, "Can't field from null parent");
+
+	  int pathSeparatorIndex = path.indexOf(".");	  
+	  String keyOrIndex = pathSeparatorIndex != -1 ? path.substring(0, pathSeparatorIndex) : path;
+
+
+	  if (pathSeparatorIndex == -1) {
+		  return getFromContainerField(parent, keyOrIndex);		
+	  } else {
+		  String nextPath = path.substring(pathSeparatorIndex+1);
+		  Type nextParent = getFromContainerField(parent, keyOrIndex);					
+		  return getField(nextParent, nextPath);
+	  }
+
+  }
+  
+  
+  private static Type getFromContainerField(Type container, String keyOrIndex) {
+	  if (container instanceof MapType) {
+		  MapType map = (MapType) container;
+		  return map.get(keyOrIndex);
+	  } else if (container instanceof ListType) {
+		  try {
+			  int index = Integer.valueOf(keyOrIndex);
+			  ListType list = (ListType) container;
+			  return list.get(index);
+		  } catch (NumberFormatException e) {
+		  }
+	  }
+	  return null;
+  }
 
 }
