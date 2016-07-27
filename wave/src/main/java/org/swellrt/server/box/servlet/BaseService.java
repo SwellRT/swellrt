@@ -22,6 +22,9 @@ public abstract class BaseService {
   protected static final String RC_ACCOUNT_NOT_LOGGED_IN = "ACCOUNT_NOT_LOGGED_IN";
   protected static final String RC_LOGIN_FAILED = "LOGIN_FAILED";
   protected static final String RC_MISSING_PARAMETER = "MISSING_PARAMETER";
+  protected static final String RC_INVALID_HTTP_METHOD = "INVALID_HTTP_METHOD";
+  protected static final String RC_INVALID_OBJECT_ID = "INVALID_OBJECT_ID";
+  protected static final String RC_INVALID_OBJECT_PATH = "INVALID_OBJECT_PATH";
 
 
   public static class ServiceError {
@@ -77,11 +80,14 @@ public abstract class BaseService {
    * Check if request has a valid user session, if so return the participant
    * object. Send a HTTP response error otherwise.
    * 
+   * @deprecated use {{@link #getLoggedInUser(HttpServletRequest)}
+   * 
    * @param req
    * @param response
    * @return
    * @throws IOException
    */
+  @Deprecated
   protected ParticipantId checkForLoggedInUser(HttpServletRequest req, HttpServletResponse response)
       throws IOException {
     ParticipantId pid = sessionManager.getLoggedInUser(req);
@@ -91,6 +97,14 @@ public abstract class BaseService {
     return pid;
 
   }
+  
+	protected ParticipantId getLoggedInUser(HttpServletRequest req) throws ServiceException {
+		ParticipantId pid = sessionManager.getLoggedInUser(req);
+		if (pid == null) {
+			throw new ServiceException("Can't retrieve logged in user", HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
+		}
+		return pid;
+	}
 
   /**
    * Check if a participant is in the HTTP current session. It means that at
