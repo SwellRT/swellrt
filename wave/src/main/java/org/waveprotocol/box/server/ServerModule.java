@@ -19,25 +19,26 @@
 
 package org.waveprotocol.box.server;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
 
-import com.typesafe.config.Config;
+import javax.security.auth.login.Configuration;
+
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.authentication.SessionManagerImpl;
-import org.waveprotocol.box.server.robots.register.RobotRegistrar;
-import org.waveprotocol.box.server.robots.register.RobotRegistrarImpl;
+import org.waveprotocol.box.server.frontend.ClientFrontend;
+import org.waveprotocol.box.server.frontend.ClientFrontendImpl;
+import org.waveprotocol.box.server.frontend.WaveletInfo;
 import org.waveprotocol.box.server.rpc.ProtoSerializer;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.rpc.WebSocketChannel;
+import org.waveprotocol.box.server.waveserver.WaveBus;
+import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveServerImpl;
 import org.waveprotocol.box.server.waveserver.WaveServerModule;
+import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.wave.federation.FederationHostBridge;
 import org.waveprotocol.wave.federation.FederationRemoteBridge;
 import org.waveprotocol.wave.federation.WaveletFederationListener;
@@ -47,12 +48,16 @@ import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
 import org.waveprotocol.wave.model.id.TokenGenerator;
 import org.waveprotocol.wave.model.id.TokenGeneratorImpl;
+import org.waveprotocol.wave.model.version.HashedVersionFactory;
 
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.security.auth.login.Configuration;
+import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+import com.typesafe.config.Config;
 
 /**
  * Guice Module for the prototype Server.
@@ -130,5 +135,17 @@ public class ServerModule extends AbstractModule {
   public org.eclipse.jetty.server.SessionManager provideSessionManager(Config config) {
     HashSessionManager sessionManager = new HashSessionManager();
     return sessionManager;
+  }
+  
+  @Provides
+  @Singleton
+  public ClientFrontend provideClientFrontend(WaveBus waveBus, HashedVersionFactory hashFactory, WaveletProvider provider, @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) String waveDomain) {
+	WaveletInfo waveletInfo = WaveletInfo.create(hashFactory, provider);
+    try {
+		return ClientFrontendImpl.create(provider, waveBus, waveletInfo, waveDomain);
+	} catch (WaveServerException e) {
+		e.printStackTrace();
+		throw new IllegalStateException(e);
+	}
   }
 }

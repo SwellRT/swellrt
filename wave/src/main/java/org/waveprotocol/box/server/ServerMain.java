@@ -21,14 +21,10 @@ package org.waveprotocol.box.server;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.swellrt.server.box.events.DeltaBasedEventSource;
 import org.swellrt.server.box.events.EventDispatcher;
-import org.swellrt.server.box.events.EventDispatcherTarget;
 import org.swellrt.server.box.events.EventRule;
 import org.swellrt.server.box.events.EventsModule;
 import org.swellrt.server.box.events.dummy.DummyDispatcher;
@@ -38,21 +34,16 @@ import org.swellrt.server.box.index.ModelIndexerDispatcher;
 import org.swellrt.server.box.index.ModelIndexerModule;
 import org.swellrt.server.box.servlet.EmailModule;
 import org.swellrt.server.box.servlet.SwellRtServlet;
-import org.swellrt.server.ds.DSFileServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
 import org.waveprotocol.box.server.authentication.AccountStoreHolder;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.executor.ExecutorsModule;
 import org.waveprotocol.box.server.frontend.ClientFrontend;
-import org.waveprotocol.box.server.frontend.ClientFrontendImpl;
 import org.waveprotocol.box.server.frontend.WaveClientRpcImpl;
-import org.waveprotocol.box.server.frontend.WaveletInfo;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.PersistenceModule;
 import org.waveprotocol.box.server.persistence.SignerInfoStore;
-import org.waveprotocol.box.server.robots.ProfileFetcherModule;
-import org.waveprotocol.box.server.robots.RobotApiModule;
 import org.waveprotocol.box.server.robots.agent.passwd.PasswordAdminRobot;
 import org.waveprotocol.box.server.robots.agent.passwd.PasswordRobot;
 import org.waveprotocol.box.server.robots.agent.registration.RegistrationRobot;
@@ -61,13 +52,8 @@ import org.waveprotocol.box.server.robots.passive.RobotsGateway;
 import org.waveprotocol.box.server.rpc.AttachmentInfoServlet;
 import org.waveprotocol.box.server.rpc.AttachmentServlet;
 import org.waveprotocol.box.server.rpc.AuthenticationServlet;
-import org.waveprotocol.box.server.rpc.FetchProfilesServlet;
-import org.waveprotocol.box.server.rpc.GadgetProviderServlet;
 import org.waveprotocol.box.server.rpc.HttpWindowSessionFilter;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
-import org.waveprotocol.box.server.rpc.SignOutServlet;
-import org.waveprotocol.box.server.rpc.UserRegistrationServlet;
-import org.waveprotocol.box.server.rpc.WaveClientServlet;
 import org.waveprotocol.box.server.shutdown.ShutdownManager;
 import org.waveprotocol.box.server.shutdown.ShutdownPriority;
 import org.waveprotocol.box.server.shutdown.Shutdownable;
@@ -83,8 +69,6 @@ import org.waveprotocol.box.stat.StatService;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.federation.FederationTransport;
 import org.waveprotocol.wave.federation.noop.NoOpFederationModule;
-import org.waveprotocol.wave.model.util.CollectionUtils;
-import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -96,8 +80,6 @@ import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-
-import cc.kune.initials.InitialsAvatarsServlet;
 
 /**
  * Wave Server entrypoint.
@@ -165,7 +147,7 @@ public class ServerMain {
     initializeServlets(server, config);
     // initializeRobotAgents(server);
     // initializeRobots(injector, waveBus);
-    initializeFrontend(injector, server, waveBus);
+    initializeFrontend(injector, server);
     initializeFederation(injector);
     // initializeSearch(injector, waveBus);
     initializeShutdownHandler(server);
@@ -263,15 +245,8 @@ public class ServerMain {
     server.addServlet(RegistrationRobot.ROBOT_URI + "/*", RegistrationRobot.class);
   }
 
-  private static void initializeFrontend(Injector injector, ServerRpcProvider server,
-      WaveBus waveBus) throws WaveServerException {
-    HashedVersionFactory hashFactory = injector.getInstance(HashedVersionFactory.class);
-
-    WaveletProvider provider = injector.getInstance(WaveletProvider.class);
-    WaveletInfo waveletInfo = WaveletInfo.create(hashFactory, provider);
-    String waveDomain = injector.getInstance(Key.get(String.class, Names.named(CoreSettingsNames.WAVE_SERVER_DOMAIN)));
-    ClientFrontend frontend = ClientFrontendImpl.create(provider, waveBus, waveletInfo, waveDomain);
-
+  private static void initializeFrontend(Injector injector, ServerRpcProvider server) throws WaveServerException {
+    ClientFrontend frontend = injector.getInstance(ClientFrontend.class);
     ProtocolWaveClientRpc.Interface rpcImpl = WaveClientRpcImpl.create(frontend, false);
     server.registerService(ProtocolWaveClientRpc.newReflectiveService(rpcImpl));
   }
