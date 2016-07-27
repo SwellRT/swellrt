@@ -74,10 +74,6 @@ public class SwellRtServlet extends HttpServlet {
   }
 
 
-
-  /**
-   * Create an http response to the fetch query. Main entrypoint for this class.
-   */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
@@ -95,6 +91,10 @@ public class SwellRtServlet extends HttpServlet {
     } else if (entity.equals("auth")) {
 
       injector.getInstance(AuthenticationService.class).execute(req, response);
+
+    } else if (entity.equals("object")) {
+
+       injector.getInstance(ObjectApiService.class).execute(req, response);
 
     } else {
 
@@ -137,7 +137,11 @@ public class SwellRtServlet extends HttpServlet {
 
       injector.getInstance(InviteService.class).execute(req, response);
 
-    } else {
+    } else if (entity.equals("object")) {
+
+        injector.getInstance(ObjectApiService.class).execute(req, response);
+
+     } else {
 
       response.sendError(HttpServletResponse.SC_BAD_REQUEST);
       return;
