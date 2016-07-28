@@ -96,10 +96,11 @@ class MatrixFederationHostForDomain implements WaveletFederationListener {
       throw new IllegalArgumentException("Must send at least one delta, or a last committed " +
           "version notice, for the target wavelet: " + waveletName);
     }
-
+    System.out.println("\n\nwavelet domain: " + remoteDomain);
     room.searchRemoteId(remoteDomain, new SuccessFailCallback<String, String>() {
       @Override
       public void onSuccess(String roomId) {
+        System.out.println("\n\nroomId: " + roomId);
         internalWaveletUpdate(waveletName, deltaList, committedVersion, callback, roomId);
       }
 
@@ -130,9 +131,10 @@ class MatrixFederationHostForDomain implements WaveletFederationListener {
     try{
       Request message = MatrixUtil.createMessage(roomId);
       message.addBody("msgtype", "m.message");
+      message.addBody("body", "");
 
-      JSONObject body = new JSONObject();
-      message.addBody("body", body);
+      JSONObject data = new JSONObject();
+      message.addBody("data", data);
 
       final String encodedWaveletName;
       try {
@@ -143,7 +145,7 @@ class MatrixFederationHostForDomain implements WaveletFederationListener {
       }
 
       JSONObject event = new JSONObject();
-      body.putOpt("event", event);
+      data.putOpt("event", event);
 
       JSONObject items = new JSONObject();
       event.putOpt("items", items);
@@ -173,6 +175,11 @@ class MatrixFederationHostForDomain implements WaveletFederationListener {
         commitNotice.putOpt("version", Long.toString(committedVersion.getVersion()));
         commitNotice.putOpt("history-hash", Base64Util.encode(committedVersion.getHistoryHash()));
       }
+
+      System.out.println(message.getBody());
+
+      if(handler == null)
+        System.out.println("\n\nfml\n\n");
 
       // Send the generated message through to the foreign Matrix server.
       handler.send(message, new PacketCallback() {

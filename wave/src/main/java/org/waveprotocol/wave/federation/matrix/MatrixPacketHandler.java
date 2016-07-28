@@ -70,7 +70,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
     private boolean complete = false;
 
     IncomingCallback(String domain, String eventId) {
-      this.domain = domain;
+      this.domain = domain.split(":")[1];
       this.eventId = eventId;
     }
 
@@ -95,7 +95,8 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
         public void onSuccess(String roomId) {
           Request response = MatrixUtil.createMessageFeedback(roomId);
           response.addBody("target_event_id", eventId);
-          response.addBody("body", packet);
+          response.addBody("body", "");
+          response.addBody("data", packet);
           transport.sendPacket(response);
         }
 
@@ -130,9 +131,9 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
 
     // Configure all related objects with this manager. Eventually, this should
     // be replaced by better Guice interface bindings.
-    //host.setManager(this);
-    //remote.setManager(this);
-    room.setPacketHandler(this);
+    host.setHandler(this);
+    remote.setHandler(this);
+    room.setHandler(this);
   }
 
   @Override
@@ -220,6 +221,8 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
         callback.error(FederationErrors.internalServerError("UserId Not Found"));
       else {
 
+        System.out.println("\n\n return:-\n"+packet+"\n\n");
+
         String temp_key = null;
 
         if(packet.has("event_id")) {
@@ -302,19 +305,21 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
       else if(content.getString("msgtype").equals("m.message"))
         remote.update(packet, responseCallback);
       else if(content.getString("msgtype").equals("m.set")) {
-        JSONObject pubsub = content.getJSONObject("publish");
+        JSONObject pubsub = content.getJSONObject("data").getJSONObject("pubsub");
+        JSONObject element = pubsub.getJSONObject("publish");
 
-        if (pubsub.getString("node").equals("wavelet"))
+        if (element.getString("node").equals("wavelet"))
           host.processSubmitRequest(packet, responseCallback);
-        else if (pubsub.getString("node").equals("signer"))
+        else if (element.getString("node").equals("signer"))
           host.processPostSignerRequest(packet, responseCallback);
       }
       else if(content.getString("msgtype").equals("m.get")) {
-        JSONObject pubsub = content.getJSONObject("items");
+        JSONObject pubsub = content.getJSONObject("data").getJSONObject("pubsub");
+        JSONObject element = pubsub.getJSONObject("items");
 
-        if (pubsub.getString("node").equals("wavelet"))
+        if (element.getString("node").equals("wavelet"))
             host.processHistoryRequest(packet, responseCallback);
-        else if (pubsub.getString("node").equals("signer"))
+        else if (element.getString("node").equals("signer"))
             host.processGetSignerRequest(packet, responseCallback);
       }
       

@@ -102,8 +102,11 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   public void processPacket() {
     try {
       JSONObject packets = sendPacket(MatrixUtil.syncRequest(syncTime));
+      System.out.println("\n\n\n packet:-\n"+packets+"\n\n");
       handler.receivePacket(packets);
       syncTime = packets.getString("next_batch");
+
+
       
     } catch (Exception ex) {
       throw new RuntimeException(ex);

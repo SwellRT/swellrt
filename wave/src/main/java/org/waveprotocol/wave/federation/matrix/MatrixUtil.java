@@ -160,15 +160,6 @@ public class MatrixUtil {
     return request;
   }
 
-
-  public static String encodeDomain(String domain) {
-    return domain.replace(":", "&");
-  }
-
-  public static String decodeDomain(String domain) {
-    return domain.replace("&", ":");
-  }
-
   public static String encodeRoomId(String domain) {
     return domain.replace("!", "%21");
   }

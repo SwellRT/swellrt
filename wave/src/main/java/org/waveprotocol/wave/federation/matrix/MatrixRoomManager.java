@@ -89,7 +89,7 @@ public class MatrixRoomManager {
         });
   }
 
-  public void setPacketHandler(MatrixPacketHandler handler) {
+  public void setHandler(MatrixPacketHandler handler) {
     this.handler = handler;
   }
 

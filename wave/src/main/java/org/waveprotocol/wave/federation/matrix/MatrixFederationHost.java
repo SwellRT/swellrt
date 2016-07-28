@@ -81,6 +81,7 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
     listeners = CacheBuilder.newBuilder().build(new CacheLoader<String, WaveletFederationListener>() {
       @Override
       public WaveletFederationListener load(@SuppressWarnings("NullableProblems") String domain) {
+        System.out.println("loading hosts");
         return new MatrixFederationHostForDomain(domain, handler, room, config);
       }
     });
@@ -93,6 +94,7 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
    */
   public void setHandler(MatrixPacketHandler handler) {
     this.handler = handler;
+    System.out.println("handler set");
   }
 
   /**
@@ -118,8 +120,8 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
    */
   void processHistoryRequest(final JSONObject request, final PacketCallback responseCallback) {
     JSONObject items = null, historyDelta = null;
-    JSONObject body = request.optJSONObject("content").optJSONObject("body");
-    JSONObject pubsubRequest = body.optJSONObject("pubsub");
+    JSONObject data = request.optJSONObject("content").optJSONObject("data");
+    JSONObject pubsubRequest = data.optJSONObject("pubsub");
     if (pubsubRequest != null) {
       items = pubsubRequest.optJSONObject("items");
       if (items != null) {
@@ -127,11 +129,11 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
       }
     }
     if (items == null || historyDelta == null
-            || historyDelta.optString("start-version") == null
-            || historyDelta.optString("start-version-hash") == null
-            || historyDelta.optString("end-version") == null
-            || historyDelta.optString("end-version-hash") == null
-            || historyDelta.optString("wavelet-name") == null) {
+            || historyDelta.optString("start-version").isEmpty()
+            || historyDelta.optString("start-version-hash").isEmpty()
+            || historyDelta.optString("end-version").isEmpty()
+            || historyDelta.optString("end-version-hash").isEmpty()
+            || historyDelta.optString("wavelet-name").isEmpty()) {
       responseCallback.error(FederationErrors.badRequest("Malformed history request"));
       return;
     }
@@ -155,7 +157,7 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
     }
 
     final long responseLengthLimit;
-    if (historyDelta.optString("response-length-limit") != null) {
+    if (!historyDelta.optString("response-length-limit").isEmpty()) {
       try {
         responseLengthLimit = Long.parseLong(historyDelta.optString("response-length-limit"));
       } catch (NumberFormatException e) {
@@ -250,8 +252,8 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
    */
   void processSubmitRequest(final JSONObject request, final PacketCallback responseCallback) {
     JSONObject item = null, submitRequest = null, deltaElement = null;
-    JSONObject body = request.optJSONObject("content").optJSONObject("body");
-    JSONObject pubsubRequest = body.optJSONObject("pubsub");
+    JSONObject data = request.optJSONObject("content").optJSONObject("data");
+    JSONObject pubsubRequest = data.optJSONObject("pubsub");
     // TODO: check for correct elements.
     JSONObject publish = pubsubRequest.optJSONObject("publish");
     if (publish != null) {
@@ -265,8 +267,8 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
     }
     if (publish == null || item == null || submitRequest == null
             || deltaElement == null
-            || deltaElement.optString("wavelet-name") == null
-            || deltaElement.optString("value") == null) {
+            || deltaElement.optString("wavelet-name").isEmpty()
+            || deltaElement.optString("value").isEmpty()) {
       responseCallback.error(FederationErrors.badRequest("Malformed submit request"));
       return;
     }
@@ -308,9 +310,9 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
               JSONObject publish = new JSONObject();
               pubsub.putOpt("publish", publish);
               JSONObject item = new JSONObject();
-              pubsub.putOpt("item", item);
+              publish.putOpt("item", item);
               JSONObject submitResponse = new JSONObject();
-              pubsub.putOpt("submit-response", submitResponse);
+              item.putOpt("submit-response", submitResponse);
 
               submitResponse.putOpt("application-timestamp", String.valueOf(timestamp));
               submitResponse.putOpt("operations-applied", String.valueOf(operations));
@@ -338,15 +340,15 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
    * @param responseCallback the callback to send the response back
    */
   void processGetSignerRequest(final JSONObject request, final PacketCallback responseCallback) {
-    JSONObject body = request.optJSONObject("content").optJSONObject("body");
-    JSONObject items = body.optJSONObject("pubsub").optJSONObject("items");
+    JSONObject data = request.optJSONObject("content").optJSONObject("data");
+    JSONObject items = data.optJSONObject("pubsub").optJSONObject("items");
     JSONObject signerRequest = items != null ? items.optJSONObject("signer-request") : null;
 
     if (items == null || signerRequest == null
-            || signerRequest.optString("wavelet-name") == null
-            || signerRequest.optString("signer-id") == null
-            || signerRequest.optString("version") == null
-            || signerRequest.optString("history-hash") == null) {
+            || signerRequest.optString("wavelet-name").isEmpty()
+            || signerRequest.optString("signer-id").isEmpty()
+            || signerRequest.optString("version").isEmpty()
+            || signerRequest.optString("history-hash").isEmpty()) {
       //manager.sendErrorResponse(request, FederationErrors.badRequest("Malformed signer request"));
       return;
     }
@@ -413,8 +415,9 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
    * @param responseCallback the callback to send the response back
    */
   void processPostSignerRequest(final JSONObject request, final PacketCallback responseCallback) {
+    JSONObject data = request.optJSONObject("content").optJSONObject("data");
     JSONObject item = null, signatureElement = null;
-    JSONObject pubsubRequest = request.optJSONObject("pubsub");
+    JSONObject pubsubRequest = data.optJSONObject("pubsub");
     JSONObject publish = pubsubRequest.optJSONObject("publish");
     if (publish != null) {
       item = publish.optJSONObject("item");
@@ -424,9 +427,9 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
     }
 
     if (publish == null || item == null || signatureElement == null
-            || signatureElement.optString("domain") == null
-            || signatureElement.optString("algorithm") == null
-            || signatureElement.optString("certificate") == null) {
+            || signatureElement.optString("domain").isEmpty()
+            || signatureElement.optString("algorithm").isEmpty()
+            || signatureElement.optString("certificate").isEmpty()) {
       responseCallback.error(FederationErrors.badRequest("Malformed post signer request"));
       return;
     }

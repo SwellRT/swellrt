@@ -192,7 +192,7 @@ public class RemoteRoom {
           //Checking if room exists
           LOG.info("Checking room existance for: " + remoteId);
 
-          String roomAlias = "%23" + MatrixUtil.encodeDomain(remoteId) + ":" + handler.getDomain();
+          String roomAlias = "%23" + remoteId + ":" + handler.getDomain();
           System.out.println(roomAlias);
           JSONObject packet = handler.sendBlocking(MatrixUtil.getRoom(roomAlias));
 
@@ -203,7 +203,7 @@ public class RemoteRoom {
             LOG.info("Creating room  for: " + remoteId);
 
             request = MatrixUtil.createRoom();
-            request.addBody("room_alias_name", MatrixUtil.encodeDomain(remoteId));
+            request.addBody("room_alias_name", remoteId);
             packet = handler.sendBlocking(request);
 
             String roomId = packet.getString("room_id");
@@ -223,7 +223,8 @@ public class RemoteRoom {
 
               request = MatrixUtil.createMessage(roomId);
               request.addBody("msgtype", "m.notice");
-              request.addBody("body", "ping");
+              request.addBody("body", "");
+              request.addBody("data", "ping");
             }
             else {
               request = MatrixUtil.inviteRoom(roomId);

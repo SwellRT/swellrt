@@ -152,7 +152,8 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
             Preconditions.checkNotNull(roomId);
             Request request = MatrixUtil.createMessage(roomId);
             request.addBody("msgtype", "m.set");
-            request.addBody("body", submitIq);
+            request.addBody("body", "");
+            request.addBody("data", submitIq);
             handler.send(request, callback, MATRIX_PROVIDER_TIMEOUT);
           }
 
@@ -243,7 +244,8 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
           Preconditions.checkNotNull(roomId);
           Request request = MatrixUtil.createMessage(roomId);
           request.addBody("msgtype", "m.get");
-          request.addBody("body", submitIq);
+          request.addBody("body", "");
+          request.addBody("data", submitIq);
           handler.send(request, callback, MATRIX_PROVIDER_TIMEOUT);
         }
 
@@ -312,7 +314,8 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
               Preconditions.checkNotNull(roomId);
               Request request = MatrixUtil.createMessage(roomId);
               request.addBody("msgtype", "m.get");
-              request.addBody("body", getSignerIq);
+              request.addBody("body", "");
+              request.addBody("data", getSignerIq);
               handler.send(request, callback, MATRIX_PROVIDER_TIMEOUT);
             }
 
@@ -367,7 +370,8 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
               Preconditions.checkNotNull(roomId);
               Request request = MatrixUtil.createMessage(roomId);
               request.addBody("msgtype", "m.set");
-              request.addBody("body", signerIq);
+              request.addBody("body", "");
+              request.addBody("data", signerIq);
               handler.send(request, callback, MATRIX_PROVIDER_TIMEOUT);
             }
 
@@ -391,10 +395,10 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
    */
   public void update(final JSONObject updateMessage, final PacketCallback responseCallback) {
 
-    JSONObject body = updateMessage.optJSONObject("content").optJSONObject("body");
+    JSONObject data = updateMessage.optJSONObject("content").optJSONObject("data");
 
     // Check existence of <event>
-    JSONObject event = body.optJSONObject("event");
+    JSONObject event = data.optJSONObject("event");
     if (event == null) {
       responseCallback.error(FederationErrors.badRequest("Event element missing from message"));
       return;
@@ -478,9 +482,10 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
       // Submit all applied deltas to the domain-focused listener.
       List<ByteString> deltas = Lists.newArrayList();
       String deltaBody = waveletUpdate.optString("applied-delta");
-      deltas.add(Base64Util.decode(deltaBody));
-
-      if (!deltas.isEmpty()) {
+      System.out.println("wait");
+      if (!deltaBody.isEmpty()) {
+        System.out.println("wtf");
+        deltas.add(Base64Util.decode(deltaBody));
         callbackCount.incrementAndGet(); // Increment required callbacks.
         listener.waveletDeltaUpdate(waveletName, deltas, callback);
       }
@@ -512,13 +517,13 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
    */
   private void processSubmitResponse(JSONObject result, SubmitResultListener listener) {
 
-    JSONObject body = result.optJSONObject("content").optJSONObject("body");
+    JSONObject data = result.optJSONObject("content").optJSONObject("data");
 
     JSONObject publish = null;
     JSONObject item = null;
     JSONObject submitResponse = null;
     JSONObject hashedVersionElement = null;
-    JSONObject pubsub = body.optJSONObject("pubsub");
+    JSONObject pubsub = data.optJSONObject("pubsub");
     if (pubsub != null) {
       publish = pubsub.optJSONObject("publish");
       if (publish != null) {
@@ -534,10 +539,10 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
 
     if (pubsub == null || publish == null || item == null
         || submitResponse == null || hashedVersionElement == null
-        || hashedVersionElement.optString("history-hash") == null
-        || hashedVersionElement.optString("version") == null
-        || submitResponse.optString("application-timestamp") == null
-        || submitResponse.optString("operations-applied") == null) {
+        || hashedVersionElement.optString("history-hash").isEmpty()
+        || hashedVersionElement.optString("version").isEmpty()
+        || submitResponse.optString("application-timestamp").isEmpty()
+        || submitResponse.optString("operations-applied").isEmpty()) {
       LOG.severe("Unexpected submitResponse to submit request: " + result);
       listener.onFailure(FederationErrors.badRequest("Invalid submitResponse: " + result));
       return;
@@ -564,8 +569,8 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
   private void processHistoryResponse(JSONObject historyResponse,
       WaveletFederationProvider.HistoryResponseListener listener) {
 
-    JSONObject body = historyResponse.optJSONObject("content").optJSONObject("body");
-    JSONObject pubsubResponse = body.optJSONObject("pubsub");
+    JSONObject data = historyResponse.optJSONObject("content").optJSONObject("data");
+    JSONObject pubsubResponse = data.optJSONObject("pubsub");
     JSONArray items = pubsubResponse.optJSONArray("items");
     long versionTruncatedAt = -1;
     long lastCommittedVersion = -1;
@@ -584,7 +589,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
             break;
           case "commit-notice":
             String commitVersion = element.optJSONObject(elementName).optString("version");
-            if (commitVersion != null) {
+            if (!commitVersion.isEmpty()) {
               try {
                 lastCommittedVersion = Long.parseLong(commitVersion);
               } catch (NumberFormatException e) {
@@ -594,7 +599,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
             break;
           case "history-truncated":
             String truncVersion = element.optJSONObject(elementName).optString("version");
-            if (truncVersion != null) {
+            if (!truncVersion.isEmpty()) {
               try {
                 versionTruncatedAt = Long.parseLong(truncVersion);
               } catch (NumberFormatException e) {
@@ -634,8 +639,8 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
    * @param listener the interface to the wave server
    */
   private void processGetSignerResponse(JSONObject packet, DeltaSignerInfoResponseListener listener) {
-    JSONObject body = packet.optJSONObject("content").optJSONObject("body");
-    JSONObject items = body.optJSONObject("pubsub").optJSONObject("items");
+    JSONObject data = packet.optJSONObject("content").optJSONObject("data");
+    JSONObject items = data.optJSONObject("pubsub").optJSONObject("items");
     JSONObject signature = items.optJSONObject("signature");
     if (signature == null) {
       LOG.severe("Empty getDeltaSignerRequest response: " + packet);
@@ -644,7 +649,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
     }
     String domain = signature.optString("domain");
     String hashName = signature.optString("algorithm");
-    if (domain == null || hashName == null || signature.optJSONArray("certificate") == null) {
+    if (domain.isEmpty() || hashName.isEmpty() || signature.optJSONArray("certificate") == null) {
       LOG.severe("Bad getDeltaSignerRequest response: " + packet);
       listener.onFailure(FederationErrors.badRequest("Bad getDeltaSignatureRequest response"));
       return;
@@ -662,10 +667,10 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
   private void processPostSignerResponse(
       JSONObject packet,
       WaveletFederationProvider.PostSignerInfoResponseListener listener) {
-    JSONObject body = packet.optJSONObject("content").optJSONObject("body");
-    JSONObject pubsub = body.optJSONObject("pubsub");
+    JSONObject data = packet.optJSONObject("content").optJSONObject("data");
+    JSONObject pubsub = data.optJSONObject("pubsub");
     JSONObject item = pubsub.optJSONObject("publish").optJSONObject("item");
-    if (item.optString("signature-response") != null) {
+    if (!item.optString("signature-response").isEmpty()) {
       listener.onSuccess();
     } else {
       listener.onFailure(FederationErrors.badRequest("No valid response"));
