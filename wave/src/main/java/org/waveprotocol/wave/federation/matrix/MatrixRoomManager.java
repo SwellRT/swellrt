@@ -103,12 +103,12 @@ public class MatrixRoomManager {
     String eventId = packet.getString("event_id");
     Request response = MatrixUtil.createMessageFeedback(roomId);
     response.addBody("target_event_id", eventId);
-    response.addBody("type", "processed");
     handler.sendBlocking(response);
   }
 
   public void searchRemoteId(String remoteId, SuccessFailCallback<String, String> callback) {
     Preconditions.checkNotNull("Must call setHandler first", handler);
+    LOG.info("searching: " + remoteId);
     RemoteRoom search = roomRequests.getIfPresent(remoteId);
     if (search != null) {
       // This is a race condition, but we don't care if we lose it, because the ttl timestamp
@@ -126,5 +126,5 @@ public class MatrixRoomManager {
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
-}
+  }
 }

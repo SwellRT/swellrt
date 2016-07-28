@@ -164,7 +164,6 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   private void setUp() {
     httpConfig();
     initialSync();
-    handler.testDiscovery();
   }
 
   private void initialSync() {

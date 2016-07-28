@@ -23,7 +23,7 @@ import org.json.JSONObject;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 
 /**
- * Simple callback type used for sending and receiving reliable Matrix JSON
+ * Simple callback type used for receiving reliable Matrix JSON
  * packets. This allows for clearly defined success and failure states.
  *
  * @author khwaqee@gmail.com (Waqee Khalid)

@@ -55,8 +55,12 @@ public class Request {
     queryStrings.put(key, value);
   }
 
-  public void addBody(String name, Object value) throws JSONException {
-    body.put(name, value);
+  public void addBody(String name, Object value) {
+    try {
+      body.put(name, value);
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   public String getMethod() {

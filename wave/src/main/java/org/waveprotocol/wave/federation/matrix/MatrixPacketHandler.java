@@ -64,6 +64,48 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
     }
   }
 
+  private class IncomingCallback implements PacketCallback {
+    private final String domain;
+    private final String eventId;
+    private boolean complete = false;
+
+    IncomingCallback(String domain, String eventId) {
+      this.domain = domain;
+      this.eventId = eventId;
+    }
+
+    @Override
+    public void error(FederationError error) {
+      Preconditions.checkState(!complete,
+          "Must not callback multiple times for incoming packet: %s", eventId);
+      complete = true;
+      //sendErrorResponse(request, error);
+    }
+
+    @Override
+    public void run(JSONObject packet) {
+      Preconditions.checkState(!complete,
+          "Must not callback multiple times for incoming packet: %s", eventId);
+      // TODO(thorogood): Check outgoing response versus stored incoming request
+      // to ensure that to/from are paired correctly?
+      complete = true;
+
+      room.searchRemoteId(domain, new SuccessFailCallback<String, String>() {
+        @Override
+        public void onSuccess(String roomId) {
+          Request response = MatrixUtil.createMessageFeedback(roomId);
+          response.addBody("target_event_id", eventId);
+          response.addBody("body", packet);
+          transport.sendPacket(response);
+        }
+
+        @Override
+        public void onFailure(String errorMessage) {
+        }
+      });
+    }
+  }
+
   private final MatrixFederationHost host;
   private final MatrixFederationRemote remote;
   private final MatrixRoomManager room;
@@ -99,17 +141,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
       @Override
       public void onSuccess(String remoteJid) {
         System.out.println("Success :" + remoteJid);
-        room.searchRemoteId("localhost:20000", new SuccessFailCallback<String, String>() {
-          @Override
-          public void onSuccess(String remoteJid) {
-            System.out.println("Success again:" + remoteJid);
-          }
-
-          @Override
-          public void onFailure(String errorMessage) {
-            System.out.println("Fail again: localhost:20000");
-          }
-        });
+        
       }
 
       @Override
@@ -262,11 +294,33 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
 
   private void processMessage(JSONObject packet) {
     try {
-      if(packet.getJSONObject("content").getString("msgtype").equals("m.notice"))
+      PacketCallback responseCallback = 
+          new IncomingCallback(packet.getString("sender"), packet.getString("event_id"));
+      JSONObject content = packet.getJSONObject("content");
+      if(content.getString("msgtype").equals("m.notice"))
         room.processPing(packet);
+      else if(content.getString("msgtype").equals("m.message"))
+        remote.update(packet, responseCallback);
+      else if(content.getString("msgtype").equals("m.set")) {
+        JSONObject pubsub = content.getJSONObject("publish");
+
+        if (pubsub.getString("node").equals("wavelet"))
+          host.processSubmitRequest(packet, responseCallback);
+        else if (pubsub.getString("node").equals("signer"))
+          host.processPostSignerRequest(packet, responseCallback);
+      }
+      else if(content.getString("msgtype").equals("m.get")) {
+        JSONObject pubsub = content.getJSONObject("items");
+
+        if (pubsub.getString("node").equals("wavelet"))
+            host.processHistoryRequest(packet, responseCallback);
+        else if (pubsub.getString("node").equals("signer"))
+            host.processGetSignerRequest(packet, responseCallback);
+      }
+      
     } catch (JSONException ex) {
       throw new RuntimeException(ex);
-    } 
+    }
   }
 
   public JSONObject sendBlocking(Request packet) {

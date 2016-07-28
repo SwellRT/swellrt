@@ -19,7 +19,23 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.ByteString;
+
+import org.dom4j.Element;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.waveprotocol.wave.federation.Proto.ProtocolSignerInfo;
+import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
+import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
+
+import java.nio.ByteBuffer;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Common utility code for Matrix JSON packet generation and parsing.
@@ -29,6 +45,56 @@ import org.json.JSONObject;
 public class MatrixUtil {
 
   public static String access_token = null;
+
+  public static final IdURIEncoderDecoder waveletNameCodec =
+      new IdURIEncoderDecoder(new JavaUrlCodec());
+
+  /**
+   * Convert the signer information to JSON and place the result within the
+   * passed JSONObject. This method should never fail.
+   */
+  public static void protocolSignerInfoToJson(ProtocolSignerInfo signerInfo, JSONObject parent) {
+    try {
+      JSONObject signature = new JSONObject();
+      parent.putOpt("signature", signature);
+      signature.putOpt("domain", signerInfo.getDomain());
+      ProtocolSignerInfo.HashAlgorithm hashValue = signerInfo.getHashAlgorithm();
+
+      signature.putOpt("algorithm", hashValue.name());
+      JSONArray certificate = new JSONArray();
+      signature.putOpt("certificate", certificate);
+      for (ByteString cert : signerInfo.getCertificateList()) {
+        certificate.put(Base64Util.encode(cert));
+      }
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  /**
+   * Convert the given Element to a signer information JSONObject.
+   *
+   * @throws UnknownSignerType when the given hash algorithm is not understood
+   */
+  public static ProtocolSignerInfo jsonToProtocolSignerInfo(JSONObject signature) {
+    ProtocolSignerInfo.HashAlgorithm hash;
+    String algorithm = signature.optString("algorithm").toUpperCase();
+    try {
+      hash = ProtocolSignerInfo.HashAlgorithm.valueOf(algorithm);
+    } catch (IllegalArgumentException ex) {
+      throw new RuntimeException(ex);
+    }
+
+    ProtocolSignerInfo.Builder builder = ProtocolSignerInfo.newBuilder();
+    builder.setHashAlgorithm(hash);
+    builder.setDomain(signature.optString("domain"));
+    JSONArray certificate = signature.optJSONArray("certificate");
+    for (int i=0; i<certificate.length(); i++) {
+      String cert = certificate.optString(i);
+      builder.addCertificate(Base64Util.decode(cert));
+    }
+    return builder.build();
+  }
 
   public static Request syncRequest() {
     Request request = new Request("GET", "/sync");
