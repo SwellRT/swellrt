@@ -62,6 +62,8 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   private final IncomingPacketHandler handler;
   private final String userId;
+  private final String userName;
+  private final String userPass;
   private final String apiAddress;
   private final String appServiceName;
   private final String appServiceToken;
@@ -82,6 +84,8 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   public AppServicePacketTransport(IncomingPacketHandler handler, Config config) {
     this.handler = handler;
     this.userId = config.getString("federation.matrix_id");
+    this.userName = config.getString("federation.matrix_name");
+    this.userPass = config.getString("federation.matrix_pass");
     this.apiAddress = config.getString("federation.matrix_api_address");
     this.appServiceName = config.getString("federation.matrix_appservice_name");
     this.appServiceToken = config.getString("federation.matrix_appservice_token");
@@ -166,7 +170,21 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   private void setUp() {
     httpConfig();
+    login();
     initialSync();
+  }
+
+  private void login() {
+    try {
+      Request request = MatrixUtil.login();
+      request.addBody("type", "m.login.password");
+      request.addBody("user", userName);
+      request.addBody("password", userPass);
+      JSONObject credentials = sendPacket(request);
+      MatrixUtil.access_token = credentials.getString("access_token");
+    } catch (JSONException ex) {
+      throw new RuntimeException(ex);
+    }
   }
 
   private void initialSync() {
@@ -202,8 +220,6 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
     Unirest.setHttpClient(httpclient);
 
     Unirest.setDefaultHeader("Content-Type","application/json");
-
-    MatrixUtil.access_token = appServiceToken;
   }
 
   // private void findMinTS() throws Exception {

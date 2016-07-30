@@ -96,6 +96,11 @@ public class MatrixUtil {
     return builder.build();
   }
 
+  public static Request login() {
+    Request request = new Request("POST", "/login");
+    return request;
+  }
+
   public static Request syncRequest() {
     Request request = new Request("GET", "/sync");
     request.addQueryString("access_token", access_token);
