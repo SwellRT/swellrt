@@ -31,7 +31,10 @@
   -->
   <!-- DTO deps below. -->
   <inherits name="org.waveprotocol.wave.communication.Communication"/>
-  <source path=""
-          includes="Protocol* impl/* jso/*"
-          excludes="ProtocolHashedVersionFactory.java"/>
+  <source path="">
+  	<include name="Protocol*.*" />  	
+  	<include name="impl/*.*" />
+  	<include name="jso/*.*" />
+    <exclude name="ProtocolHashedVersionFactory.java"/>
+   </source>
 </module>

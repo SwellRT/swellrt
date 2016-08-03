@@ -24,5 +24,10 @@
   <inherits name="org.waveprotocol.wave.federation.Federation"/>
   <!-- DTO deps below. -->
   <inherits name="org.waveprotocol.wave.communication.Communication"/>
-  <source path="" excludes="gson/** proto/**"/>
+  <source path="">
+  	<include name="**/*.*" />
+  	<exclude name="gson/**/*.*" />
+  	<exclude name="proto/**/*.*" />
+  	<exclude name="SearchProto.java" />
+  </source>
 </module>
