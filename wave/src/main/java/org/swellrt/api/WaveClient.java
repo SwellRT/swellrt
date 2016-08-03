@@ -10,6 +10,9 @@ import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.RequestException;
+import com.google.gwt.logging.impl.StackTracePrintStream;
+
+import java.io.PrintStream;
 
 import org.swellrt.api.js.WaveClientJS;
 import org.swellrt.api.js.editor.TextEditorJS;
@@ -629,10 +632,15 @@ public class WaveClient implements SwellRT.Listener {
       exceptionCode = "REQUEST_EXCEPTION";
     else if (e instanceof UmbrellaException) {
       exceptionCode = "UMBRELLA_EXCEPTION";
-    }     else if (e instanceof NetworkException) {
+    }  else if (e instanceof NetworkException) {
       exceptionCode = "NETWORK_EXCEPTION";
     }
-
+    
+    StringBuilder sb = new StringBuilder();
+	PrintStream ps = new StackTracePrintStream(sb);
+	((Exception) e).printStackTrace(ps);
+	GWT.log(sb.toString());
+    
     return exceptionCode;
   }
 
