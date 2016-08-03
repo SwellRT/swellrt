@@ -26,5 +26,8 @@
 
   <add-linker name="xsiframe"/>
 
-  <source path="" excludes="js/**" />
+  <source path="">
+  	<exclude name="js/**/*.*" />
+  	<exclude name="shared/ModelToJsonVisitor.java" />
+  </source>
 </module>

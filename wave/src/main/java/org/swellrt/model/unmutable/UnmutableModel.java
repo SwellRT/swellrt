@@ -11,7 +11,6 @@ import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
-import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.Set;
 
@@ -23,9 +22,6 @@ import java.util.Set;
  *
  */
 public class UnmutableModel implements ReadableModel {
-
-  private static final Log LOG = Log.get(UnmutableModel.class);
-
 
   private final ReadableWaveletData waveletData;
 
@@ -54,8 +50,8 @@ public class UnmutableModel implements ReadableModel {
   protected Document getDocument(String documentId) {
 
     if (waveletData.getDocument(documentId) == null
-        || waveletData.getDocument(documentId).getContent() == null) {
-      LOG.info(ModelUtils.serialize(this.getWaveId())
+        || waveletData.getDocument(documentId).getContent() == null) {    	
+    	ModelUtils.log(ModelUtils.serialize(this.getWaveId())
           + " wavelet doesn't have content document for blip " + documentId);
       return null;
     }
