@@ -174,7 +174,7 @@ public class SwellRTUtils {
     RequestBuilder rb = new RequestBuilder(method, url);
     rb.setIncludeCredentials(true);
     String windowId = BrowserSession.getWindowId();
-    if (windowId != null) rb.setHeader(BrowserSession.HTTP_HEADER_WINDOW_ID, BrowserSession.getWindowId());
+    if (windowId != null) rb.setHeader(BrowserSession.HTTP_HEADER_WINDOW_ID, windowId);
     return rb;
   }
 

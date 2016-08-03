@@ -95,7 +95,7 @@ public class BrowserSession {
 		var PROP_SESSION_WINDOW_ID = @org.swellrt.api.BrowserSession::PROP_SESSION_WINDOW_ID;
 		
 		if ($wnd[PROP_SESSION_WINDOW_ID] != null)
-			return $wnd[PROP_SESSION_WINDOW_ID];
+			return $wnd[PROP_SESSION_WINDOW_ID].toString();
 			
 		return null;
 	}-*/;
