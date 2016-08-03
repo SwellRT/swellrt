@@ -320,6 +320,18 @@ task generateGXP {
 // JavaScript Web Client (Gwt)
 //=============================================================================
 
+
+//
+// Warning: excluding sources from GWT modules doesn't seem to work properly. 
+// see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
+//
+// Workaround:
+//
+// Add "-noincremental"
+// Remove "-strict"
+// 
+
+
 task compileJsWeb {
     description = 'Compiles the SwellRT Javascript Web Client (Production)'
     doLast {
@@ -336,10 +348,12 @@ task compileJsWeb {
             jvmArgs = [
                     "-Xmx1024M"
             ]
-            args = [
+            args = [            		
                     "-style", "OBFUSCATED",
-                    "-XdisableClassMetadata",
-                    "-XdisableCastChecking",
+                    "-XnoclassMetadata",
+                    "-XnocheckCasts",
+                    "-noincremental",
+                    "-optimize", "9",
                     "-localWorkers", "4",
                     "org.swellrt.api.SwellRT"
             ]
@@ -365,14 +379,18 @@ task compileJsWebDev {
             ]
             args = [
                     "-style", "PRETTY",
-                    "-draftCompile",
-                    "-ea",
-                    "-strict",
+                    "-noincremental",
+                    "-logLevel", "TRACE",
+                    "-saveSource",
+                    "-draftCompile",                   
                     "org.swellrt.api.SwellRT"
             ]
         }
     }
 }
+
+// compileJsWebDev.mustRunAfter compileJava
+// run.dependsOn compileJsWebDev
 
 compileJsWeb.mustRunAfter compileJava
 run.dependsOn compileJsWeb
@@ -382,20 +400,18 @@ compileJava.dependsOn = [generateMessages, generateGXP]
 
 /* Gwt Dev Tasks */
 
+/* 
+	Use CodeServer instead of DevMode to have the
+	-style property available.  
+*/
+
+
 task gwtDev {
     description = 'Runs the hosted mode server, for debugging the Gwt client ' +
             'in a JVM.'
-    doFirst {
-        println ''
-        println '----------------------------------------------'
-        println '           Running Gwt Dev mode.              '
-        println 'Note: This currently has a classpath conflict.'
-        println '----------------------------------------------'
-        println ''
-    }
     doLast {
         javaexec {
-            main = "com.google.gwt.dev.DevMode"
+            main = "com.google.gwt.dev.codeserver.CodeServer"
             classpath {
                 [
                         sourceSets.main.java.srcDirs,
@@ -405,11 +421,12 @@ task gwtDev {
                 ]
             }
             args = [
-                    "-noserver",
-                    "-noincremental",
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",                               
                     "-bindAddress", "127.0.0.1",
-                    "-startupUrl", "http://localhost:9898",
-                    "-logLevel", "DEBUG",
+                    "-logLevel", "DEBUG",                 
                     "org.swellrt.api.SwellRT",
             ]
         }
@@ -422,24 +439,15 @@ gwtDev.dependsOn compileJava
 // Warning: excluding sources from GWT modules doesn't seem to work properly. 
 // see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
 //
-// Use "-noincremental" as workaround 
-//
 
 
 task gwtEditorDev {
     description = 'Runs the hosted mode server, for debugging the Editor Harness client ' +
             'in a JVM.'
-    doFirst {
-        println ''
-        println '----------------------------------------------'
-        println '           Running Gwt Dev mode.              '
-        println 'Note: This currently has a classpath conflict.'
-        println '----------------------------------------------'
-        println ''
-    }
+
     doLast {
         javaexec {
-            main = "com.google.gwt.dev.DevMode"
+            main = "com.google.gwt.dev.codeserver.CodeServer"
             classpath {
                 [
                         sourceSets.main.java.srcDirs,
@@ -448,12 +456,13 @@ task gwtEditorDev {
                         configurations.gwt,
                 ]
             }
-            args = [
-                    "-noserver",
-                    "-noincremental",
-                    "-bindAddress", "127.0.0.1",
-                    "-startupUrl", "org.waveprotocol.wave.client.editor.harness.EditorTest/EditorTest.html",
-                    "-logLevel", "DEBUG",
+            args = [            		
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",                               
+                    "-bindAddress", "127.0.0.1",                                        
+                    "-logLevel", "TRACE",
                     "org.waveprotocol.wave.client.editor.harness.EditorTest",
             ]
         }
