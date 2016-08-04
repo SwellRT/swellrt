@@ -74,9 +74,11 @@ public class NativeSelectionUtil {
     if (UserAgent.isIE()) {
       impl = new SelectionImplIE();
       coordinateGetter = new SelectionCoordinatesHelperIEImpl();
-    } else if (UserAgent.isMobileWebkit()) {
-      // TODO(patcoleman/mtsui/macpherson): adapt to perform as desired on browsers:
-      impl = new SelectionImplDisabled();
+    } else if (UserAgent.isMobileWebkit()) { 
+      // Trying to use standard selection helper in mobile,
+      // I guess mobile browsers have evolved so much
+      // impl = new SelectionImplDisabled();
+      impl = new SelectionImplW3C();	
       coordinateGetter = new SelectionCoordinatesHelperDisabled();
     } else {
       // avoid casting:
