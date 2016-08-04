@@ -1,4 +1,4 @@
-System.register(['angular2/core'], function(exports_1, context_1) {
+System.register(['@angular/core'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -23,7 +23,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                 }
                 UserSpaceComponent = __decorate([
                     core_1.Component({
-                        selector: 'user-space',
+                        selector: 'app-user-space',
                         template: "\n\n        <div class=\"row\">\n\n          <!-- Left bar -->\n          <div class=\"col-md-4\">\n            <p>Here User Widget</p>\n          </div>\n\n          <!-- Main area -->\n          <div class=\"col-md-8\">\n\n            <!-- Space Navigation & Title Area -->\n            <div class=\"row\">\n              <h3>Your Documents</h3>\n            </div>\n\n            <!-- Space Content Area -->\n            <div class=\"row\">\n              <p>Here document listing</p>\n            </div>\n\n          </div>\n\n        </div>\n\n    "
                     }), 
                     __metadata('design:paramtypes', [])

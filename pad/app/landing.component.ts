@@ -1,17 +1,17 @@
-import { Component } from 'angular2/core';
-import { Router } from 'angular2/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router-deprecated';
 import { UserPanelComponent } from './user-panel.component';
 import { SwellRTService } from './service/swellrt.service';
 
 @Component({
-    selector: 'landing',
+    selector: 'app-landing',
     template: `
 
 
     <div class="row">
 
       <div class="col-md-3">
-        <user-panel #userPanel></user-panel>
+        <app-user-panel #userPanel></app-user-panel>
       </div>
 
       <div class="col-md-6 col-md-offset-1">
@@ -31,18 +31,18 @@ import { SwellRTService } from './service/swellrt.service';
         </div>
 
         <div class="panel panel-default">
-          <form class="panel-body" (ngSubmit)="openDocument(documentId);">
-            <a (click)="openDocument(documentId)"><h3>Open a Document</h3></a>
+          <form class="panel-body" (ngSubmit)="openDocument(documentId);" #documentIdForm="ngForm">
+            <a (click)="documentIdInput.focus()"><h3>Open a Document</h3></a>
             <p>
               Do you have a shared document ID? Use it to open the document again...
             </p>
 
             <div class="form-group label-floating">
               <label class="control-label" for="documentIdInput">Document ID here</label>
-              <input [(ngModel)]="documentId" class="form-control" id="documentIdInput" type="text">
+              <input [(ngModel)]="documentId" name="documentId" #documentIdInput required class="form-control" id="documentIdInput">
             </div>
 
-            <button class="btn btn-primary pull-right">Open</button>
+            <button class="btn btn-primary pull-right" [disabled]="!documentIdForm.form.valid">Open</button>
           </form>
         </div>
 
@@ -61,7 +61,7 @@ import { SwellRTService } from './service/swellrt.service';
     </div>
     `,
 
-    directives:[UserPanelComponent]
+    directives: [UserPanelComponent]
   })
 
 

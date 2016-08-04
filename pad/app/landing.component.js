@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', './user-panel.component', './service/swellrt.service'], function(exports_1, context_1) {
+System.register(['@angular/core', '@angular/router-deprecated', './user-panel.component', './service/swellrt.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,15 +10,15 @@ System.register(['angular2/core', 'angular2/router', './user-panel.component', '
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, user_panel_component_1, swellrt_service_1;
+    var core_1, router_deprecated_1, user_panel_component_1, swellrt_service_1;
     var LandingComponent;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
             },
-            function (router_1_1) {
-                router_1 = router_1_1;
+            function (router_deprecated_1_1) {
+                router_deprecated_1 = router_deprecated_1_1;
             },
             function (user_panel_component_1_1) {
                 user_panel_component_1 = user_panel_component_1_1;
@@ -49,11 +49,11 @@ System.register(['angular2/core', 'angular2/router', './user-panel.component', '
                 };
                 LandingComponent = __decorate([
                     core_1.Component({
-                        selector: 'landing',
-                        template: "\n\n\n    <div class=\"row\">\n\n      <div class=\"col-md-3\">\n        <user-panel #userPanel></user-panel>\n      </div>\n\n      <div class=\"col-md-6 col-md-offset-1\">\n\n        <div class=\"alert alert-dismissible alert-danger\" *ngIf=\"wasError\">\n          <button type=\"button\" class=\"close\" data-dismiss=\"alert\" (click)=\"wasError = false\">\u00D7</button>\n          <strong>{{msgError}}</strong>\n        </div>\n\n        <div class=\"panel panel-default\">\n          <div class=\"panel-body\">\n            <a (click)=\"createDocument()\"><h3>Create a new Document</h3></a>\n            <p>\n              Write a document. Share and edit it with others.\n            </p>\n          </div>\n        </div>\n\n        <div class=\"panel panel-default\">\n          <form class=\"panel-body\" (ngSubmit)=\"openDocument(documentId);\">\n            <a (click)=\"openDocument(documentId)\"><h3>Open a Document</h3></a>\n            <p>\n              Do you have a shared document ID? Use it to open the document again...\n            </p>\n\n            <div class=\"form-group label-floating\">\n              <label class=\"control-label\" for=\"documentIdInput\">Document ID here</label>\n              <input [(ngModel)]=\"documentId\" class=\"form-control\" id=\"documentIdInput\" type=\"text\">\n            </div>\n\n            <button class=\"btn btn-primary pull-right\">Open</button>\n          </form>\n        </div>\n\n        <div class=\"panel panel-default\">\n          <div class=\"panel-body\">\n            <a (click)=\"userPanel.panelState = 'collapsed'\"><h3>Sign up</h3></a>\n            <p>\n              Take advantage of being a registered user of SwellRT Editor.\n              Manage all the documents you collaborate with on the cloud.\n            </p>\n          </div>\n        </div>\n\n      </div>\n\n    </div>\n    ",
+                        selector: 'app-landing',
+                        template: "\n\n\n    <div class=\"row\">\n\n      <div class=\"col-md-3\">\n        <app-user-panel #userPanel></app-user-panel>\n      </div>\n\n      <div class=\"col-md-6 col-md-offset-1\">\n\n        <div class=\"alert alert-dismissible alert-danger\" *ngIf=\"wasError\">\n          <button type=\"button\" class=\"close\" data-dismiss=\"alert\" (click)=\"wasError = false\">\u00D7</button>\n          <strong>{{msgError}}</strong>\n        </div>\n\n        <div class=\"panel panel-default\">\n          <div class=\"panel-body\">\n            <a (click)=\"createDocument()\"><h3>Create a new Document</h3></a>\n            <p>\n              Write a document. Share and edit it with others.\n            </p>\n          </div>\n        </div>\n\n        <div class=\"panel panel-default\">\n          <form class=\"panel-body\" (ngSubmit)=\"openDocument(documentId);\" #documentIdForm=\"ngForm\">\n            <a (click)=\"documentIdInput.focus()\"><h3>Open a Document</h3></a>\n            <p>\n              Do you have a shared document ID? Use it to open the document again...\n            </p>\n\n            <div class=\"form-group label-floating\">\n              <label class=\"control-label\" for=\"documentIdInput\">Document ID here</label>\n              <input [(ngModel)]=\"documentId\" name=\"documentId\" #documentIdInput required class=\"form-control\" id=\"documentIdInput\">\n            </div>\n\n            <button class=\"btn btn-primary pull-right\" [disabled]=\"!documentIdForm.form.valid\">Open</button>\n          </form>\n        </div>\n\n        <div class=\"panel panel-default\">\n          <div class=\"panel-body\">\n            <a (click)=\"userPanel.panelState = 'collapsed'\"><h3>Sign up</h3></a>\n            <p>\n              Take advantage of being a registered user of SwellRT Editor.\n              Manage all the documents you collaborate with on the cloud.\n            </p>\n          </div>\n        </div>\n\n      </div>\n\n    </div>\n    ",
                         directives: [user_panel_component_1.UserPanelComponent]
                     }), 
-                    __metadata('design:paramtypes', [swellrt_service_1.SwellRTService, router_1.Router])
+                    __metadata('design:paramtypes', [swellrt_service_1.SwellRTService, router_deprecated_1.Router])
                 ], LandingComponent);
                 return LandingComponent;
             }());

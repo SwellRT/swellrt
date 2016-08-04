@@ -1,14 +1,13 @@
 
-import { Component } from 'angular2/core';
-import { OnInit } from 'angular2/core';
+import { Component, OnInit } from '@angular/core';
 import { LandingComponent } from './landing.component';
 import { UserSpaceComponent } from './user-space/user-space.component';
 import { EditorComponent } from './editor/editor.component';
-import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from 'angular2/router';
+import { RouteConfig, ROUTER_DIRECTIVES, ROUTER_PROVIDERS } from '@angular/router-deprecated';
 import { SwellRTService } from './service/swellrt.service';
 
 @Component({
-  selector: 'app',
+  selector: 'app-root',
   template: `
     <div class="container">
 

@@ -3,7 +3,7 @@
   <!-- Left bar -->
   <div class="col-md-3">
 
-    <user-panel></user-panel>
+    <app-user-panel></app-user-panel>
 
     <!--
     <div class="panel panel-default">
@@ -132,8 +132,8 @@
       </div>
       <div class="panel-heading">
         <div id="editor-toolbar" class="btn-toolbar">
-          <div *ngFor="#formatGroup of formats" class="btn-group">
-            <button *ngFor="#format of formatGroup" type="button"
+          <div *ngFor="let formatGroup of formats" class="btn-group">
+            <button *ngFor="let format of formatGroup" type="button"
             (click)="annotate(format)"
             class="btn btn-{{buttons[format] ? 'success' : 'default'}}">
               <span class="material-icons">format_{{format}}</span>

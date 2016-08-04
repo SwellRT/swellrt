@@ -1,5 +1,5 @@
 export class User {
-     name : string;
-     avatarUrl : string;
+     name: string;
+     avatarUrl: string;
      anonymous: boolean;
 }

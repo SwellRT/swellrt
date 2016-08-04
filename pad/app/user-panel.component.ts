@@ -1,12 +1,11 @@
-import { Component } from 'angular2/core';
-import { OnInit } from 'angular2/core';
+import { Component, OnInit } from '@angular/core';
 import { SwellRTService } from './service/swellrt.service';
 import { User } from './data/user';
-import { Router } from 'angular2/router';
+import { Router } from '@angular/router-deprecated';
 
 
 @Component({
-    selector: 'user-panel',
+    selector: 'app-user-panel',
     template: `
 
       <div class="panel panel-default" *ngIf="loggedInUser">
@@ -48,11 +47,11 @@ import { Router } from 'angular2/router';
 
             <div class="form-group label-floating">
               <label class="control-label" for="loginNameInput">Name</label>
-              <input class="form-control" id="loginNameInput" type="text" [(ngModel)]="nameInput">
+              <input class="form-control" id="loginNameInput" name="name" [(ngModel)]="nameInput">
             </div>
             <div class="form-group label-floating">
               <label class="control-label" for="loginPasswordInput">Password</label>
-              <input class="form-control" id="loginPasswordInput" type="password" [(ngModel)]="passwordInput">
+              <input class="form-control" id="loginPasswordInput" name="password" type="password" [(ngModel)]="passwordInput">
             </div>
 
             <a class="btn btn-default" (click)="cancelForm()">Cancel</a>
@@ -64,15 +63,15 @@ import { Router } from 'angular2/router';
 
             <div class="form-group label-floating">
               <label class="control-label" for="registerNameInput">Name</label>
-              <input class="form-control" id="registerNameInput" type="text" [(ngModel)]="nameInput">
+              <input class="form-control" id="registerNameInput" name="name" [(ngModel)]="nameInput">
             </div>
             <div class="form-group label-floating">
               <label class="control-label" for="registerPasswordInput">Password</label>
-              <input class="form-control" id="registerPasswordInput" type="password" [(ngModel)]="passwordInput">
+              <input class="form-control" id="registerPasswordInput" name="password" type="password" [(ngModel)]="passwordInput">
             </div>
             <div class="form-group label-floating">
               <label class="control-label" for="registerRepasswordInput">Repeat Password</label>
-              <input class="form-control" id="registerRepasswordInput" type="password" [(ngModel)]="repasswordInput">
+              <input class="form-control" id="registerRepasswordInput" name="repassword" type="password" [(ngModel)]="repasswordInput">
             </div>
 
             <a class="btn btn-default" (click)="cancelForm()">Cancel</a>
@@ -97,18 +96,18 @@ import { Router } from 'angular2/router';
 export class UserPanelComponent implements OnInit {
 
   // The logged in user
-  loggedInUser : User;
+  loggedInUser: User;
   // panelState = "collapsed | loginForm | registerForm"
-  panelState : string;
+  panelState: string;
   // Form fields
-  nameInput : string;
-  passwordInput : string;
-  repasswordInput : string;
+  nameInput: string;
+  passwordInput: string;
+  repasswordInput: string;
 
 
   constructor(private _router: Router,
     private _swellrt: SwellRTService) {
-        this.panelState = "collapsed";
+        this.panelState = 'collapsed';
     }
 
   ngOnInit() {
@@ -125,7 +124,7 @@ export class UserPanelComponent implements OnInit {
   }
 
   login() {
-    this.panelState = "collapsed";
+    this.panelState = 'collapsed';
     this._swellrt.login(this.nameInput + this._swellrt.domain, this.passwordInput).then(
       user => {
         this.loggedInUser = user;
@@ -135,7 +134,7 @@ export class UserPanelComponent implements OnInit {
   }
 
   create() {
-    this.panelState = "collapsed";
+    this.panelState = 'collapsed';
     this._swellrt.createUser(this.nameInput, this.passwordInput).then(() => {
       return this._swellrt.login(this.nameInput, this.passwordInput);
     }).then(
@@ -147,21 +146,19 @@ export class UserPanelComponent implements OnInit {
   }
 
   logout() {
-    this._swellrt.logout(true).then(user =>
-      { this.loggedInUser = user; }
-    );
+    this._swellrt.logout(true).then(user => this.loggedInUser = user);
   }
 
   showLoginForm() {
-    this.panelState = "loginForm";
+    this.panelState = 'loginForm';
   }
 
   showRegisterForm() {
-    this.panelState = "registerForm";
+    this.panelState = 'registerForm';
   }
 
   cancelForm() {
-    this.panelState = "collapsed";
+    this.panelState = 'collapsed';
   }
 
 }

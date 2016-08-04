@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base href="/swellrt/pad/">
+    <base href="/swellrt/pad">
     <title>SwellRT Editor</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
 
     <!-- github pages routing hack. See:
       * http://www.backalleycoder.com/2016/05/13/sghpa-the-single-page-app-hack-for-github-pages/
@@ -20,6 +19,7 @@
         }
       })();
     </script>
+
 
     <!-- Material Design fonts -->
     <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
@@ -48,18 +48,14 @@
     <script src="https://cdn.jsdelivr.net/bootstrap.material-design/0.5.9/js/material.min.js"></script>
     <script src="node_modules/snackbarjs/dist/snackbar.min.js"></script>
 
-    <!-- 1. Load libraries -->
-    <!-- IE required polyfills, in this exact order -->
-    <script src="node_modules/es6-shim/es6-shim.min.js"></script>
-    <script src="node_modules/systemjs/dist/system-polyfills.js"></script>
-    <script src="node_modules/angular2/es6/dev/src/testing/shims_for_IE.js"></script>
-    <script src="node_modules/angular2/bundles/angular2-polyfills.js"></script>
+    <!-- Polyfill(s) for older browsers -->
+    <script src="node_modules/core-js/client/shim.min.js"></script>
+
+    <script src="node_modules/zone.js/dist/zone.js"></script>
+    <script src="node_modules/reflect-metadata/Reflect.js"></script>
     <script src="node_modules/systemjs/dist/system.src.js"></script>
-    <script src="node_modules/rxjs/bundles/Rx.js"></script>
-    <script src="node_modules/angular2/bundles/angular2.dev.js"></script>
-    <script src="node_modules/angular2/bundles/router.dev.js"></script>
 
-
+    <script src="systemjs.config.js"></script>
     <!-- SwellRT -->
     <script src="http://demo.swellrt.org/swellrt.js"></script>
 
@@ -94,16 +90,6 @@
                            clientVersion: "1.0"
                          };
 
-
-          // Load the Angular2 app, replace the load indicator
-          // Be careful: don't replace the whole body content with the app,
-          // in order to not remove the SwellRT/GWT iframe.
-          var body = document.getElementsByTagName("body")[0];
-          var app = document.createElement("app");
-          var loadIndicator = document.getElementById("loadIndicator");
-          body.replaceChild(app, loadIndicator);
-
-
           System.config({
             packages: {
               app: {
@@ -112,7 +98,7 @@
               }
             }
           });
-          System.import('app/main')
+          System.import('app')
                 .then(null, console.error.bind(console));
 
       });
@@ -123,16 +109,16 @@
   <!-- 3. Display the application -->
   <body>
 
-    <div id="loadIndicator" class="container">
+    <app-root id="loadIndicator" class="container">
 
       <div class="row" style="margin-top: 6em;">
         <div class="col-md-12 text-center">
           <img src="images/loading_icon.gif" height="200">
           <h4>Loading Papel Editor...</h4>
-        <div>
+        </div>
       </div>
 
-    </div>
+    </app-root>
 
   </body>
 
