@@ -1,3 +1,4 @@
+"use strict";
 var FormData = require('form-data');
 function form(obj) {
     var form = new FormData();

@@ -2,9 +2,7 @@
 exports.PROJECT_NAME = 'typings';
 exports.PRETTY_PROJECT_NAME = 'Typings';
 exports.CONFIG_FILE = exports.PROJECT_NAME + ".json";
-exports.TYPINGS_DIR = exports.PROJECT_NAME;
-exports.DTS_MAIN_FILE = 'main.d.ts';
-exports.DTS_BROWSER_FILE = 'browser.d.ts';
+exports.DEFAULT_TYPINGS_DIR = exports.PROJECT_NAME;
 exports.HOMEPAGE = 'https://github.com/typings/typings';
 exports.ISSUES_HOMEPAGE = 'https://github.com/typings/typings/issues';
 exports.DEPENDENCY_SEPARATOR = '~';

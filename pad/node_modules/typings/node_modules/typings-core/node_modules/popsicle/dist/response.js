@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -15,9 +16,6 @@ var Response = (function (_super) {
     Response.prototype.statusType = function () {
         return ~~(this.status / 100);
     };
-    Response.prototype.error = function (message, type, error) {
-        return this.request.error(message, type, error);
-    };
     Response.prototype.toJSON = function () {
         return {
             url: this.url,
@@ -29,7 +27,7 @@ var Response = (function (_super) {
         };
     };
     return Response;
-})(base_1.default);
+}(base_1.default));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Response;
 //# sourceMappingURL=response.js.map

@@ -10,7 +10,7 @@ interface SwellRT {
   openModel(id: string, onLoad: Function);
   closeModel(id: string);
 
-  editor(parentElementId: string);
+  editor(parentElementId: string, widgets: any, annotations: any);
 
   createUser(parameters: {id: string, password: string, email?: string, locale?: string, avatarData?: string}, onComplete: Function): Promise<any>;
 

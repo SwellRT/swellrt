@@ -1,14 +1,18 @@
-"use strict"
-var registered = {
-  Promise: window.Promise,
-  implementation: 'window.Promise'
-}
+"use strict";
+module.exports = require('./loader')(window, loadImplementation)
 
 /**
- * any-promise in browser is always global
- * polyfill as necessary
+ * Browser specific loadImplementation.  Always uses `window.Promise`
+ *
+ * To register a custom implementation, must register with `Promise` option.
  */
-module.exports = register
-function register(){
-  return registered
+function loadImplementation(){
+  if(typeof window.Promise === 'undefined'){
+    throw new Error("any-promise browser requires a polyfill or explicit registration"+
+      " e.g: require('any-promise/register/bluebird')")
+  }
+  return {
+    Promise: window.Promise,
+    implementation: 'window.Promise'
+  }
 }

@@ -10,7 +10,7 @@ export interface Emitter extends EventEmitter {
     on(event: 'compiled', listener: (e: CompiledEvent) => any): this;
     on(event: 'hastypings', listener: (e: HasTypingsEvent) => any): this;
     on(event: 'postmessage', listener: (e: PostMessageEvent) => any): this;
-    on(event: 'ambientdependencies', listener: (e: AmbientDependenciesEvent) => any): this;
+    on(event: 'globaldependencies', listener: (e: GlobalDependenciesEvent) => any): this;
     on(event: 'badlocation', listener: (e: BadLocationEvent) => any): this;
     on(event: 'prune', listener: (e: PruneEvent) => any): this;
     on(event: string, listener: Function): this;
@@ -22,7 +22,7 @@ export interface Emitter extends EventEmitter {
     emit(event: 'compiled', e: CompiledEvent): boolean;
     emit(event: 'hastypings', e: HasTypingsEvent): boolean;
     emit(event: 'postmessage', e: PostMessageEvent): boolean;
-    emit(event: 'ambientdependencies', e: AmbientDependenciesEvent): boolean;
+    emit(event: 'globaldependencies', e: GlobalDependenciesEvent): boolean;
     emit(event: 'badlocation', e: BadLocationEvent): boolean;
     emit(event: 'prune', e: PruneEvent): boolean;
     emit(event: string, ...args: any[]): boolean;
@@ -31,7 +31,7 @@ export interface ReferenceEvent {
     name: string;
     path: string;
     tree: DependencyTree;
-    browser: boolean;
+    resolution: string;
     reference: string;
 }
 export interface ResolveEvent {
@@ -50,7 +50,7 @@ export interface CompileEvent {
     name: string;
     path: string;
     tree: DependencyTree;
-    browser: boolean;
+    resolution: boolean;
 }
 export interface CompiledEvent extends CompileEvent {
     contents: string;
@@ -65,7 +65,7 @@ export interface PostMessageEvent {
     name: string;
     message: string;
 }
-export interface AmbientDependenciesEvent {
+export interface GlobalDependenciesEvent {
     name: string;
     raw: string;
     dependencies: Dependencies;
@@ -77,6 +77,6 @@ export interface BadLocationEvent {
 }
 export interface PruneEvent {
     name: string;
-    ambient: boolean;
-    browser: boolean;
+    global: boolean;
+    resolution: string;
 }

@@ -4,7 +4,8 @@ import { InstallResult } from './install';
 export interface BundleOptions {
     name?: string;
     cwd: string;
-    ambient?: boolean;
+    global?: boolean;
+    resolution?: string;
     out: string;
     emitter?: Emitter;
 }

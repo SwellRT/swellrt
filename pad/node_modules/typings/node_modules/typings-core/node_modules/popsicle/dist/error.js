@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -13,7 +14,7 @@ var PopsicleError = (function (_super) {
         this.popsicle = popsicle;
     }
     return PopsicleError;
-})(makeErrorCause.BaseError);
+}(makeErrorCause.BaseError));
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = PopsicleError;
 //# sourceMappingURL=error.js.map

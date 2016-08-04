@@ -4,7 +4,7 @@ export interface UninstallDependencyOptions {
     save?: boolean;
     saveDev?: boolean;
     savePeer?: boolean;
-    ambient?: boolean;
+    global?: boolean;
     cwd: string;
     emitter?: Emitter;
 }

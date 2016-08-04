@@ -1,0 +1,67 @@
+{
+  "name": "karma-htmlfile-reporter",
+  "version": "0.2.3",
+  "description": "A Karma plugin. Report results in styled html format.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/matthias-schuetz/karma-htmlfile-reporter.git"
+  },
+  "keywords": [
+    "karma-plugin",
+    "karma-reporter",
+    "html"
+  ],
+  "author": {
+    "name": "Matthias Schuetz",
+    "email": "MatthiasSchuetz@gmx.de"
+  },
+  "dependencies": {
+    "xmlbuilder": "3.1.0"
+  },
+  "peerDependencies": {
+    "karma": ">=0.10"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-npm": "~0.0.2",
+    "grunt-bump": "~0.0.7",
+    "grunt-auto-release": "~0.0.2"
+  },
+  "contributors": [],
+  "gitHead": "e04573dd9118fd8b3f2707a9cf23a3b144fe02a9",
+  "bugs": {
+    "url": "https://github.com/matthias-schuetz/karma-htmlfile-reporter/issues"
+  },
+  "homepage": "https://github.com/matthias-schuetz/karma-htmlfile-reporter#readme",
+  "_id": "karma-htmlfile-reporter@0.2.3",
+  "_shasum": "e7d31ea9ab6c7ec2bd92ca98fcbc21c9eae7ea5c",
+  "_from": "karma-htmlfile-reporter@>=0.2.2 <0.3.0",
+  "_npmVersion": "3.9.3",
+  "_nodeVersion": "5.5.0",
+  "_npmUser": {
+    "name": "matthias-schuetz",
+    "email": "MatthiasSchuetz@gmx.de"
+  },
+  "dist": {
+    "shasum": "e7d31ea9ab6c7ec2bd92ca98fcbc21c9eae7ea5c",
+    "tarball": "https://registry.npmjs.org/karma-htmlfile-reporter/-/karma-htmlfile-reporter-0.2.3.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "matthias-schuetz",
+      "email": "MatthiasSchuetz@gmx.de"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/karma-htmlfile-reporter-0.2.3.tgz_1464721639142_0.6674929661676288"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/karma-htmlfile-reporter/-/karma-htmlfile-reporter-0.2.3.tgz",
+  "readme": "ERROR: No README data found!"
+}
