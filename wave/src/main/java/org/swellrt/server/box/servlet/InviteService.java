@@ -78,8 +78,6 @@ public class InviteService extends BaseService {
 
     }
 
-    String email = req.getParameter(ID_OR_EMAIL);
-
     String url = req.getParameter(URL);
 
     String urlText = req.getParameter(URL_TEXT);
@@ -89,6 +87,8 @@ public class InviteService extends BaseService {
     String idOrEmail = req.getParameter(ID_OR_EMAIL);
 
     String emailAddress = "";
+
+    String nickOrEmail = "";
 
     List<AccountData> accounts = null;
 
@@ -106,9 +106,11 @@ public class InviteService extends BaseService {
         if (acc != null && !acc.getId().isAnonymous()) {
           accounts.add(acc);
           emailAddress = acc.asHuman().getEmail();
+          nickOrEmail = acc.getId().getName();
         }
       } else {
         emailAddress = idOrEmail;
+        nickOrEmail = idOrEmail;
       }
     } catch (PersistenceException e) {
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -117,7 +119,7 @@ public class InviteService extends BaseService {
     String inviter = participantId.getAddress().split("@")[0];
     params.put("inviter", inviter);
     params.put("url", url);
-    params.put("email", emailAddress);
+    params.put("nick_or_email", nickOrEmail);
     params.put("url_text", urlText);
 
     try {
