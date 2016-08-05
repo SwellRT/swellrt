@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.51.2-alpha"
+version = "0.51.3-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -55,6 +55,15 @@ configurations {
     gwt
 }
 
+//
+// Workaround for validation API conflicts (GWT has not updated the dependency)
+// https://groups.google.com/forum/#!topic/google-web-toolkit/KtdRAWNotXE
+//
+configurations.gwt {
+  resolutionStrategy {
+    force 'javax.validation:validation-api:1.0.0.GA'
+  }
+}
 //=============================================================================
 // Source's
 //=============================================================================
@@ -104,6 +113,9 @@ repositories {
     maven {
         url 'https://oss.sonatype.org/content/repositories/google-snapshots/'
     }
+    maven {
+        url 'https://oss.sonatype.org/service/local/repositories/snapshots/content/'
+    }
 }
 
 dependencies {
@@ -134,8 +146,8 @@ dependencies {
             [group: "commons-logging", name: "commons-logging", version: "1.1.1"],                              // [?, ?]
             [group: "com.google.code.findbugs", name: "jsr305", version: "2.0.1"],                              // [?, ?]
             [group: "com.google.code.gson", name: "gson", version: "2.2.4"],                                    // [?, ?]
-            [group: "com.google.guava", name: "guava", version: "15.0"],                                        // [?, ?]
-            [group: "com.google.guava", name: "guava-gwt", version: "15.0"],                                    // [?, ?]
+            [group: "com.google.guava", name: "guava", version: "20.0-SNAPSHOT"],                               // [?, ?]
+            [group: "com.google.guava", name: "guava-gwt", version: "20.0-SNAPSHOT"],                           // [?, ?]
             [group: "com.google.gxp", name: "google-gxp", version: "0.2.4-beta"],                               // [?, ?]
             [group: "com.google.inject.extensions", name: "guice-assistedinject", version: "3.0"],              // [?, ?]
             [group: "com.google.inject.extensions", name: "guice-servlet", version: "3.0"],                     // [?, ?]
@@ -308,6 +320,18 @@ task generateGXP {
 // JavaScript Web Client (Gwt)
 //=============================================================================
 
+
+//
+// Warning: excluding sources from GWT modules doesn't seem to work properly. 
+// see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
+//
+// Workaround:
+//
+// Add "-noincremental"
+// Remove "-strict"
+// 
+
+
 task compileJsWeb {
     description = 'Compiles the SwellRT Javascript Web Client (Production)'
     doLast {
@@ -324,10 +348,12 @@ task compileJsWeb {
             jvmArgs = [
                     "-Xmx1024M"
             ]
-            args = [
+            args = [            		
                     "-style", "OBFUSCATED",
-                    "-XdisableClassMetadata",
-                    "-XdisableCastChecking",
+                    "-XnoclassMetadata",
+                    "-XnocheckCasts",
+                    "-noincremental",
+                    "-optimize", "9",
                     "-localWorkers", "4",
                     "org.swellrt.api.SwellRT"
             ]
@@ -353,37 +379,39 @@ task compileJsWebDev {
             ]
             args = [
                     "-style", "PRETTY",
-                    "-draftCompile",
-                    "-ea",
-                    "-strict",
+                    "-noincremental",
+                    "-logLevel", "TRACE",
+                    "-saveSource",
+                    "-draftCompile",                   
                     "org.swellrt.api.SwellRT"
             ]
         }
     }
 }
 
-compileJsWeb.mustRunAfter compileJava
-run.dependsOn compileJsWeb
+// compileJsWebDev.mustRunAfter compileJava
+// run.dependsOn compileJsWebDev
+
+// compileJsWeb.mustRunAfter compileJava
+// run.dependsOn compileJsWeb
 
 
 compileJava.dependsOn = [generateMessages, generateGXP]
 
 /* Gwt Dev Tasks */
 
+/* 
+	Use CodeServer instead of DevMode to have the
+	-style property available.  
+*/
+
+
 task gwtDev {
     description = 'Runs the hosted mode server, for debugging the Gwt client ' +
             'in a JVM.'
-    doFirst {
-        println ''
-        println '----------------------------------------------'
-        println '           Running Gwt Dev mode.              '
-        println 'Note: This currently has a classpath conflict.'
-        println '----------------------------------------------'
-        println ''
-    }
     doLast {
         javaexec {
-            main = "com.google.gwt.dev.DevMode"
+            main = "com.google.gwt.dev.codeserver.CodeServer"
             classpath {
                 [
                         sourceSets.main.java.srcDirs,
@@ -393,16 +421,55 @@ task gwtDev {
                 ]
             }
             args = [
-                    "-noserver",
-                    "-noincremental",
-                    "-bindAddress", "127.0.0.1",
-                    "-startupUrl", "http://localhost:9898",
-                    "-logLevel", "DEBUG",
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",                               
+                    "-bindAddress", "0.0.0.0",
+                    "-logLevel", "DEBUG",                 
                     "org.swellrt.api.SwellRT",
             ]
         }
     }
 }
+
+gwtDev.dependsOn compileJava
+
+//
+// Warning: excluding sources from GWT modules doesn't seem to work properly. 
+// see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
+//
+
+
+task gwtEditorDev {
+    description = 'Runs the hosted mode server, for debugging the Editor Harness client ' +
+            'in a JVM.'
+
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.codeserver.CodeServer"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt,
+                ]
+            }
+            args = [            		
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",                               
+                    "-bindAddress", "0.0.0.0",                                        
+                    "-logLevel", "TRACE",
+                    "org.waveprotocol.wave.client.editor.harness.EditorTest",
+            ]
+        }
+    }
+}
+
+gwtEditorDev.dependsOn compileJava
 
 //=============================================================================
 // Tests

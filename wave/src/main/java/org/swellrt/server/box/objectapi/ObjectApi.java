@@ -7,11 +7,12 @@ import org.swellrt.model.generic.MapType;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.Type;
 import org.swellrt.model.shared.ModelToJsonVisitor;
+import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+
 
 /**
  * Perform operations in collaborative objects using JSON data
