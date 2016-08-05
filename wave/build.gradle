@@ -30,7 +30,11 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
+<<<<<<< HEAD
 version = "0.53.0-alpha"
+=======
+version = "0.51.3-alpha"
+>>>>>>> Fixes class dependency in ObjectApi
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -425,7 +429,7 @@ task gwtDev {
             		"-XmethodNameDisplayMode", "FULL",
                     "-noprecompile",
                     "-noincremental",                               
-                    "-bindAddress", "127.0.0.1",
+                    "-bindAddress", "0.0.0.0",
                     "-logLevel", "DEBUG",                 
                     "org.swellrt.api.SwellRT",
             ]
@@ -461,7 +465,7 @@ task gwtEditorDev {
             		"-XmethodNameDisplayMode", "FULL",
                     "-noprecompile",
                     "-noincremental",                               
-                    "-bindAddress", "127.0.0.1",                                        
+                    "-bindAddress", "0.0.0.0",                                        
                     "-logLevel", "TRACE",
                     "org.waveprotocol.wave.client.editor.harness.EditorTest",
             ]
