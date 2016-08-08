@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.51.3-alpha"
+version = "0.51.4-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -322,14 +322,14 @@ task generateGXP {
 
 
 //
-// Warning: excluding sources from GWT modules doesn't seem to work properly. 
+// Warning: excluding sources from GWT modules doesn't seem to work properly.
 // see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
 //
 // Workaround:
 //
 // Add "-noincremental"
 // Remove "-strict"
-// 
+//
 
 
 task compileJsWeb {
@@ -348,7 +348,7 @@ task compileJsWeb {
             jvmArgs = [
                     "-Xmx1024M"
             ]
-            args = [            		
+            args = [
                     "-style", "OBFUSCATED",
                     "-XnoclassMetadata",
                     "-XnocheckCasts",
@@ -382,7 +382,7 @@ task compileJsWebDev {
                     "-noincremental",
                     "-logLevel", "TRACE",
                     "-saveSource",
-                    "-draftCompile",                   
+                    "-draftCompile",
                     "org.swellrt.api.SwellRT"
             ]
         }
@@ -400,9 +400,9 @@ compileJava.dependsOn = [generateMessages, generateGXP]
 
 /* Gwt Dev Tasks */
 
-/* 
+/*
 	Use CodeServer instead of DevMode to have the
-	-style property available.  
+	-style property available.
 */
 
 
@@ -424,9 +424,9 @@ task gwtDev {
             		"-style", "PRETTY",
             		"-XmethodNameDisplayMode", "FULL",
                     "-noprecompile",
-                    "-noincremental",                               
+                    "-noincremental",
                     "-bindAddress", "0.0.0.0",
-                    "-logLevel", "DEBUG",                 
+                    "-logLevel", "DEBUG",
                     "org.swellrt.api.SwellRT",
             ]
         }
@@ -436,7 +436,7 @@ task gwtDev {
 gwtDev.dependsOn compileJava
 
 //
-// Warning: excluding sources from GWT modules doesn't seem to work properly. 
+// Warning: excluding sources from GWT modules doesn't seem to work properly.
 // see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
 //
 
@@ -456,12 +456,12 @@ task gwtEditorDev {
                         configurations.gwt,
                 ]
             }
-            args = [            		
+            args = [
             		"-style", "PRETTY",
             		"-XmethodNameDisplayMode", "FULL",
                     "-noprecompile",
-                    "-noincremental",                               
-                    "-bindAddress", "0.0.0.0",                                        
+                    "-noincremental",
+                    "-bindAddress", "0.0.0.0",
                     "-logLevel", "TRACE",
                     "org.waveprotocol.wave.client.editor.harness.EditorTest",
             ]
