@@ -86,9 +86,9 @@ public class InviteService extends BaseService {
 
     String idOrEmail = req.getParameter(ID_OR_EMAIL);
 
-    String emailAddress = "";
+    String emailAddress = idOrEmail;
 
-    String nickOrEmail = "";
+    String nickOrEmail = idOrEmail;
 
     List<AccountData> accounts = null;
 
@@ -108,9 +108,6 @@ public class InviteService extends BaseService {
           emailAddress = acc.asHuman().getEmail();
           nickOrEmail = acc.getId().getName();
         }
-      } else {
-        emailAddress = idOrEmail;
-        nickOrEmail = idOrEmail;
       }
     } catch (PersistenceException e) {
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
