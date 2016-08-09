@@ -21,7 +21,7 @@ import org.swellrt.client.WaveLoader;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
-import org.waveprotocol.wave.client.doodad.annotation.AnnotationController;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.doodad.widget.WidgetController;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
@@ -391,7 +391,7 @@ public class WaveClient implements SwellRT.Listener {
     
     TextEditor textEditor = TextEditor.create(elementId,
     		WidgetController.fromJso(widgets),
-    		AnnotationController.fromJso(annotations));
+    		JsoAnnotationController.fromJso(annotations));
     return TextEditorJS.create(textEditor, this);
   }
 
