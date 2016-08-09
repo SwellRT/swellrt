@@ -29,8 +29,8 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import org.waveprotocol.wave.client.common.util.KeyCombo;
-import org.waveprotocol.wave.client.doodad.annotation.AnnotationController;
 import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail.ThumbnailActionHandler;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
@@ -118,8 +118,9 @@ public class DefaultTestHarness implements EntryPoint {
         //
         // Custom annotations
         //
-		StringMap<AnnotationController> annotationControlers = CollectionUtils.createStringMap();
-		annotationControlers.put("annotation/custom", AnnotationController.getDefault());
+                
+		StringMap<JsoAnnotationController> annotationControlers = CollectionUtils.createStringMap();
+		annotationControlers.put("generic/custom", JsoAnnotationController.getDefault());
 		AnnotationHandler.register(registries, annotationControlers);
 
       }
@@ -157,14 +158,14 @@ public class DefaultTestHarness implements EntryPoint {
 				}
 				Range rg = range.asRange();
 				String annotationValue = EditorAnnotationUtil.getAnnotationOverRangeIfFull(
-						context.getDocument(), context.getCaretAnnotations(), "annotation/custom", rg.getStart(),
+						context.getDocument(), context.getCaretAnnotations(), "generic/custom", rg.getStart(),
 						rg.getEnd());
 	
 				if (annotationValue == null) {
-					EditorAnnotationUtil.setAnnotationOverSelection(context, "annotation/custom",
+					EditorAnnotationUtil.setAnnotationOverSelection(context, "generic/custom",
 							"some-value");
 				} else {
-					EditorAnnotationUtil.clearAnnotationsOverSelection(context, "annotation/custom");
+					EditorAnnotationUtil.clearAnnotationsOverSelection(context, "generic/custom");
 				}
 			}
 		});

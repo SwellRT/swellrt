@@ -9,7 +9,7 @@ import org.waveprotocol.wave.model.util.ReadableStringSet;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TextEditorAnnotation {
+public class TextEditorDefinitions {
 
   public interface LineStyleFactory {
    public Map<String, Paragraph.LineStyle> getStyles();
@@ -17,6 +17,7 @@ public class TextEditorAnnotation {
 
 
   public static final String PARAGRAPH_ANNOTATION_PREFIX = "paragraph";
+  public static final String STYLE_ANNOTATION_PREFIX = "style";
 
   public enum ParagraphAnnotation {
 
@@ -46,7 +47,7 @@ public class TextEditorAnnotation {
 
     }),
 
-    HEADER(PARAGRAPH_ANNOTATION_PREFIX + "/" + "header", "h5", new LineStyleFactory() {
+    HEADER(PARAGRAPH_ANNOTATION_PREFIX + "/" + "header", null, new LineStyleFactory() {
 
       @Override
       public Map<String, LineStyle> getStyles() {
@@ -116,6 +117,10 @@ public class TextEditorAnnotation {
 
   public static boolean isParagraphAnnotation(String annotationName) {
     return annotationName != null && annotationName.startsWith(PARAGRAPH_ANNOTATION_PREFIX);
+  }
+  
+  public static boolean isStyleAnnotation(String annotationName) {
+	return annotationName != null && annotationName.startsWith(STYLE_ANNOTATION_PREFIX);
   }
 
 }

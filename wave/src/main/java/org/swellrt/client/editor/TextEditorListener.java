@@ -1,11 +1,11 @@
 package org.swellrt.client.editor;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
 
 
 public interface TextEditorListener {
 
-  public void onSelectionChange(int start, int end, JavaScriptObject annotations);
+  public void onSelectionChange(JsoEditorRange annotationsInRage);
 
 
 }

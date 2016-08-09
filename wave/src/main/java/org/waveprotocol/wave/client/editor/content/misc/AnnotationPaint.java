@@ -21,6 +21,7 @@ package org.waveprotocol.wave.client.editor.content.misc;
 
 import com.google.gwt.user.client.Event;
 
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.extract.PasteFormatRenderers;
@@ -46,6 +47,36 @@ public class AnnotationPaint {
     void onEvent(ContentElement node, Event event);
   }
 
+  
+  //
+  // Below, local node attributes for generic annotations
+  //
+  
+  /**
+   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
+   */
+  public static final String VALUE_ATTR_PREFIX = "value-";
+
+  /**
+   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
+   */
+  public static final String EVENT_LISTENER_ATTR_PREFIX = "eventListener-";
+  
+  /**
+   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
+   */
+  public static final String MUTATION_LISTENER_ATTR_PREFIX = "mutationListener-";
+  
+  /**
+   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
+   */
+  public static final String CLASS_ATTR_PREFIX = "class-";
+
+  
+  //
+  // Below, local node attributes for original annotations (style, links...)
+  //
+  
   /**
    * Attribute for setting a CSS class
    */
@@ -56,11 +87,6 @@ public class AnnotationPaint {
    */
   public static final String MOUSE_LISTENER_ATTR = "mouseListener";
         
-  /**
-   * Generic annotation prefix
-   */
-  public static final String ANNOTATION_PREFIX = "annotation";
-  
   /**
    * Handlers may register callback for mutation events over painted regions.
    */
@@ -75,7 +101,7 @@ public class AnnotationPaint {
    * Attribute for mapping callback strings.
    */
   public static final String MUTATION_LISTENER_ATTR = "mutationListener";
-
+  
   static final Map<String, EventHandler> eventHandlerRegistry =
       new HashMap<String, EventHandler>();
 
@@ -84,10 +110,6 @@ public class AnnotationPaint {
    */
   public static final String LINK_ATTR = "link";
   
-  /**
-   * The value attribute, i.e. a comment id
-   */
-  public static final String VALUE_ATTR = "value";
 
   /**
    * "l" for "local" (as in non-persistent)

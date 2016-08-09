@@ -28,6 +28,7 @@ import com.google.gwt.user.client.EventListener;
 import org.waveprotocol.wave.client.common.scrub.Scrub;
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.common.util.UserAgent;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.RenderingMutationHandler;
 import org.waveprotocol.wave.client.editor.content.ClientDocumentContext;
@@ -65,18 +66,34 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
           continue;
         }
 
-        MutationHandler handler = getMutationHandler(element);
-        if (handler != null) {
-          handler.onMutation(element);
+        Set<MutationHandler> handlers = getMutationHandlers(element);
+        for (MutationHandler h: handlers) {
+        	h.onMutation(element);
         }
+
       }
       mutatedElements.clear();
     }
   };
 
-  private static MutationHandler getMutationHandler(ContentElement element) {
-    String handlerId = element.getAttribute(AnnotationPaint.MUTATION_LISTENER_ATTR);
-    return handlerId == null ? null : AnnotationPaint.mutationHandlerRegistry.get(handlerId);
+  private static Set<MutationHandler> getMutationHandlers(ContentElement element) {
+	
+	Set<MutationHandler> handlers = new HashSet<MutationHandler>();  
+	  
+	element.getAttributes().each(new ProcV<String>() {
+		@Override
+		public void apply(String key, String value) {
+			
+			if (key.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR)) {
+				MutationHandler h = AnnotationPaint.mutationHandlerRegistry.get(key);
+				if (h != null)
+					handlers.add(h);
+			}
+			
+		}		
+	});
+	
+	return handlers;
   }
 
   @Override
@@ -123,10 +140,29 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     } else if (name.equals(AnnotationPaint.CLASS_ATTR)) {
       // If a class attribute is provided, set as a CSS class name
       implNodelet.addClassName(newValue);
-    } else if (name.startsWith(AnnotationPaint.VALUE_ATTR)) {
-      String shortName = name.replaceFirst(AnnotationPaint.VALUE_ATTR+"-", "");
-      implNodelet.setAttribute(shortName, newValue);      
-    } else {
+    }
+    //
+    // Attributes for generic annotations
+    //    
+    else if (name.startsWith(AnnotationPaint.VALUE_ATTR_PREFIX)) {    	
+    	
+    	// By default, set a CSS class with the annotation name to identify the node
+    	String annotationName = name
+    			.replace(AnnotationPaint.VALUE_ATTR_PREFIX, "");
+    			
+    	implNodelet.addClassName(annotationName);
+    	
+    	implNodelet.setAttribute("data-"+annotationName, newValue);   
+    	
+    } else if (name.startsWith(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX)) {    	
+    	updateEventHandler(element, newValue);    	
+    
+    } else if (name.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR)) {
+    	// Ignore mutation listener attributes
+    } else { 	
+    //
+    // Rest of local node attributes are meant to be inline styles
+    //	
       try {
         implNodelet.getStyle().setProperty(name, newValue);
       } catch (RuntimeException e) {
@@ -209,8 +245,8 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   }
 
   private void scheduleMutationNotification(ContentElement element) {
-    MutationHandler handler = getMutationHandler(element);
-    if (handler != null) {
+    Set<MutationHandler> handlers = getMutationHandlers(element);
+    if (!handlers.isEmpty()) {
       mutatedElements.add(element);
     }
 

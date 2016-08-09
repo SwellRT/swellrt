@@ -10,7 +10,7 @@ public class TextEditorJS extends JavaScriptObject {
 
   public native static TextEditorJS create(TextEditor delegate, WaveClient client) /*-{
 
-    var jsWrapper = {
+    var jso = {
 
       onSelectionChanged: function(handler) {
         var _handler = @org.swellrt.api.js.editor.TextEditorJSListener::create(Lcom/google/gwt/core/client/JavaScriptObject;)(handler);
@@ -50,11 +50,36 @@ public class TextEditorJS extends JavaScriptObject {
 
       getSelection: function() {
         return delegate.@org.swellrt.client.editor.TextEditor::getSelection()();
-      }
+      },
+      
+      getAnnotationSet: function(name) {
+      	return delegate.@org.swellrt.client.editor.TextEditor::getAnnotationSet(Ljava/lang/String;)(name);
+      },
 
-    }; // jsWrapper
+      clearAnnotation: function(a, b) {
+      
+      	 if (a && b && typeof a == 'string' && typeof b == 'object') {      	       	  
+		  
+		  	// a -> annotation key
+		    // b -> editor range
+		    delegate.@org.swellrt.client.editor.TextEditor::clearAnnotation(Lorg/waveprotocol/wave/client/doodad/annotation/jso/JsoEditorRange;Ljava/lang/String;)(b, a);			  
 
-    return jsWrapper;
+      	 } else if (a && typeof a == 'string') {
+
+  	  		// a -> annotation key
+  	  		delegate.@org.swellrt.client.editor.TextEditor::clearAnnotation(Ljava/lang/String;)(a);
+  	  		      	  		
+      	  } else if (a && typeof a == 'object') {
+      	  	
+      	  	// a -> editor range
+			delegate.@org.swellrt.client.editor.TextEditor::clearAnnotation(Lorg/waveprotocol/wave/client/doodad/annotation/jso/JsoEditorRange;)(a);      	  	
+      	 }
+      
+      },
+
+    }; 
+
+    return jso;
 
   }-*/;
 
