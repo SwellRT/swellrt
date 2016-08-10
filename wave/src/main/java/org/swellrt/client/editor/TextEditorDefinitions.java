@@ -106,7 +106,8 @@ public class TextEditorDefinitions {
       AnnotationConstants.STYLE_TEXT_DECORATION,
       AnnotationConstants.STYLE_VERTICAL_ALIGN,
       AnnotationConstants.LINK_AUTO,
-      AnnotationConstants.LINK_MANUAL
+      AnnotationConstants.LINK_MANUAL,
+      AnnotationConstants.LINK_PREFIX
     );
 
   public static final ReadableStringSet PARAGRAPH_ANNOTATIONS = CollectionUtils.newStringSet(

@@ -1,7 +1,6 @@
 package org.swellrt.client.editor;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -18,8 +17,9 @@ import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
-import org.waveprotocol.wave.client.doodad.widget.WidgetController;
 import org.waveprotocol.wave.client.doodad.widget.WidgetDoodad;
+import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidget;
+import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorSettings;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
@@ -50,17 +50,15 @@ import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 import org.waveprotocol.wave.model.util.StringMap;
 
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
@@ -157,7 +155,7 @@ public class TextEditor implements EditorUpdateListener {
   /**
    * Registry of JavaScript controllers for widgets
    */
-  private final StringMap<WidgetController> widgetRegistry;
+  private final StringMap<JsoWidgetController> widgetRegistry;
  
   /**
    * Registry of JavaScript controllers for annotations
@@ -175,7 +173,7 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
-  public static TextEditor create(String containerElementId, StringMap<WidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
+  public static TextEditor create(String containerElementId, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
     Element e = Document.get().getElementById(containerElementId);
     Preconditions.checkNotNull(e, "Editor's parent element doesn't exist");
     
@@ -184,7 +182,7 @@ public class TextEditor implements EditorUpdateListener {
     return editor;
   }
 
-  protected TextEditor(final Element containerElement, StringMap<WidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
+  protected TextEditor(final Element containerElement, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
     this.editorPanel = new LogicalPanel.Impl() {
       {
         setElement(containerElement);
@@ -294,7 +292,7 @@ public class TextEditor implements EditorUpdateListener {
   }
 
   /**
-   * Insert a Widget at the current cursor position or at the end iff the type
+   * Insert or append a Widget at the current cursor position or at the end iff the type
    * is registered.
    * 
    * @param type
@@ -302,33 +300,25 @@ public class TextEditor implements EditorUpdateListener {
    * 
    * @return The widget as DOM element
    */
-  public Element addWidget(String type, String state) {
-
-    if (!widgetRegistry.containsKey(type)) return null;
-
-    Point<ContentNode> currentPoint = null;
-
+  public JsoWidget addWidget(String type, String state) {
+	Point<ContentNode> currentPoint = null;
     if (editor.getSelectionHelper().getOrderedSelectionPoints() != null)
-      currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
+    	currentPoint = editor.getSelectionHelper().getOrderedSelectionPoints().getFirst();
 
-    // For now, the widget id will be a timestamp
-    String id = String.valueOf(new Date().getTime());
-
-    XmlStringBuilder xml = XmlStringBuilder.createFromXmlString("<widget type='" + type + "' state='" + state
-            + "' id='" + id + "' />");
-
-    if (currentPoint != null) {
-      editor.getContent().getMutableDoc().insertXml(currentPoint, xml);
-    } else {
-      editor.getContent().getMutableDoc().appendXml(xml);
-      editor.flushSaveSelection();
-    }
-
-    String widgetElementId = WidgetDoodad.getWidgetElementId(type, id);
-    return editor.getDocumentHtmlElement().getOwnerDocument().getElementById(widgetElementId);
-
+    ContentElement w = WidgetDoodad.addWidget(editor.getDocument(), currentPoint, type, state);
+    return JsoWidget.create(w.getImplNodelet(), w);
   }
 
+  
+  
+  /**
+   * Get the widget associated with the DOM element
+   * 
+   * @param domElement the widget element or a descendant
+   */
+  public JsoWidget getWidget(Element domElement) {
+	 return WidgetDoodad.getWidget(editor.getDocument(), domElement);	 
+  }
 
   protected void registerDoodads() {
 

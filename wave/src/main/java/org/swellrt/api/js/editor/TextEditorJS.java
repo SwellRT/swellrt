@@ -43,6 +43,10 @@ public class TextEditorJS extends JavaScriptObject {
       addWidget: function(name, state) {
         return delegate.@org.swellrt.client.editor.TextEditor::addWidget(Ljava/lang/String;Ljava/lang/String;)(name,state);
       },
+      
+      getWidget: function(element) {
+      	return delegate.@org.swellrt.client.editor.TextEditor::getWidget(Lcom/google/gwt/dom/client/Element;)(element);
+      },
 
       setAnnotation: function(name, value) {
          delegate.@org.swellrt.client.editor.TextEditor::setAnnotation(Ljava/lang/String;Ljava/lang/String;)(name, value);

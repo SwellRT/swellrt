@@ -335,6 +335,9 @@ public class DomHelper {
 
       JsoView.as(element.getStyle()).setString("-webkit-user-modify",
           isEditable ? "read-write-plaintext-only" : "read-only");
+      
+      // Works in Safari since v9.1 
+      element.setAttribute("contentEditable", isEditable ? "true" : "false");
     } else {
       element.setAttribute("contentEditable", isEditable ? "true" : "false");
     }

@@ -22,7 +22,7 @@ import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
-import org.waveprotocol.wave.client.doodad.widget.WidgetController;
+import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener.UnsavedDataInfo;
@@ -390,7 +390,7 @@ public class WaveClient implements SwellRT.Listener {
         "Element id is not provided");
     
     TextEditor textEditor = TextEditor.create(elementId,
-    		WidgetController.fromJso(widgets),
+    		JsoWidgetController.fromJso(widgets),
     		JsoAnnotationController.fromJso(annotations));
     return TextEditorJS.create(textEditor, this);
   }
