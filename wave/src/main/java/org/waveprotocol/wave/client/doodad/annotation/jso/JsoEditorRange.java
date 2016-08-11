@@ -93,7 +93,7 @@ public class JsoEditorRange extends JavaScriptObject {
 		
 		private native void functionize(JavaScriptObject jso, CMutableDocument doc) /*-{
 		
-			jso.text = function() {
+			jso.getText = function() {
 				return @org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange::getRangeText(IILorg/waveprotocol/wave/client/editor/content/CMutableDocument;)(jso.start, jso.end, doc);
 			};
 			

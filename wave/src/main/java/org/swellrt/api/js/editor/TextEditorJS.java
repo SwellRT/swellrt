@@ -59,6 +59,10 @@ public class TextEditorJS extends JavaScriptObject {
       getAnnotationSet: function(name) {
       	return delegate.@org.swellrt.client.editor.TextEditor::getAnnotationSet(Ljava/lang/String;)(name);
       },
+      
+      getAnnotation: function(range, key) {
+      	return delegate.@org.swellrt.client.editor.TextEditor::getAnnotation(Lorg/waveprotocol/wave/client/doodad/annotation/jso/JsoEditorRange;Ljava/lang/String;)(range, key);      
+      },
 
       clearAnnotation: function(a, b) {
       

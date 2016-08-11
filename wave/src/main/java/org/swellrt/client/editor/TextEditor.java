@@ -11,6 +11,7 @@ import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
@@ -387,7 +388,8 @@ public class TextEditor implements EditorUpdateListener {
   protected boolean isValidAnnotationKey(String key) {
 		return (TextEditorDefinitions.isParagraphAnnotation(key) || 
 				TextEditorDefinitions.isStyleAnnotation(key) ||
-				annotationRegistry.containsKey(key));
+				annotationRegistry.containsKey(key) ||
+				key.equals("link"));
   }
 
   /**
@@ -537,23 +539,22 @@ public class TextEditor implements EditorUpdateListener {
   /**
    * Return the list of all ranges in the document having the annotation.
    * 
-   * @param annotationName the annotation name to list.
+   * @param key the annotation name to list.
    */
-  public JsArray<JsoEditorRange> getAnnotationSet(String annotationName) {
+  public JsArray<JsoAnnotation> getAnnotationSet(String key) {
 	  
-	  Preconditions.checkNotNull(annotationName, "Annotation key not defined");
-	  Preconditions.checkArgument(isValidAnnotationKey(annotationName), "Unknown annotation key");
+	  Preconditions.checkArgument(isValidAnnotationKey(key), "Invalid annotation key");
 	  
 	  JsoStringSet annotationNames = JsoStringSet.create();
-	  annotationNames.add(annotationName);
+	  annotationNames.add(key);
 	  
 	  @SuppressWarnings("unchecked")
-	  JsArray<JsoEditorRange> ranges = (JsArray<JsoEditorRange>) JsArray.createArray();
+	  JsArray<JsoAnnotation> ranges = (JsArray<JsoAnnotation>) JsArray.createArray();
 	  
-	  for(AnnotationInterval<String> annotationInterval: editor.getDocument().annotationIntervals(0, editor.getDocument().size(), annotationNames)) {
+	  for(AnnotationInterval<String> interval: editor.getDocument().annotationIntervals(0, editor.getDocument().size(), annotationNames)) {
 		 // TODO(pablojan) checking for intervals with actual value for the annotation, if not, void intervals are returned
-		 if (annotationInterval.annotations().get(annotationName) != null)  
-			 ranges.push(JsoEditorRange.Builder.create(editor.getDocument()).annotationInterval(annotationInterval).build());
+		 if (interval.annotations().get(key) != null)  				 
+			 ranges.push(JsoAnnotation.create(editor, new Range(interval.start(), interval.end()), key));
 	  }
 	  
 	  return ranges;
@@ -586,6 +587,7 @@ public class TextEditor implements EditorUpdateListener {
    * @param annotationName
    */
   public void clearAnnotation(String annotationName) {
+	  Preconditions.checkNotNull(annotationName, "Annotation key can't be null");
 	  EditorAnnotationUtil.clearAnnotationsOverSelection(editor, annotationName);
   }  
   
@@ -596,6 +598,8 @@ public class TextEditor implements EditorUpdateListener {
    * @param key annotation key
    */
   public void clearAnnotation(JsoEditorRange editorRange, String key) {
+	  Preconditions.checkNotNull(editorRange, "Range can't be null");
+	  Preconditions.checkArgument(isValidAnnotationKey(key), "Invalid annotation key");
 	  EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), new String[] { key }, editorRange.start(), editorRange.end());
   }
   
@@ -605,9 +609,21 @@ public class TextEditor implements EditorUpdateListener {
    * @param editorRange the range in the doc
    */
   public void clearAnnotation(JsoEditorRange editorRange) {
+	  Preconditions.checkNotNull(editorRange, "Range can't be null");
 	  EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), editorRange.getAnnotationKeys(), editorRange.start(), editorRange.end());
   }
 
+  
+  public JsoAnnotation getAnnotation(JsoEditorRange editorRange, String key) {
+	  Preconditions.checkNotNull(editorRange, "Range can't be null");
+	  Preconditions.checkArgument(isValidAnnotationKey(key), "Invalid annotation key");
+	  Range range = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), key, editorRange.start());	
+	  if (range == null)
+		  return null;
+	  
+	  return JsoAnnotation.create(editor, range, key);
+  }
+  
   /**
    * Gets the current selection. See {@link JsoEditorRange} for methods to
    * update the document's selection.
