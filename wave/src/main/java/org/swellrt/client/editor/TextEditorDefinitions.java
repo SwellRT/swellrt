@@ -21,7 +21,7 @@ public class TextEditorDefinitions {
 
   public enum ParagraphAnnotation {
 
-    LIST_STYLE_TYPE(PARAGRAPH_ANNOTATION_PREFIX + "/" + "listStyleType", "unordered",
+    LIST_STYLE_TYPE(PARAGRAPH_ANNOTATION_PREFIX + "/" + "listStyleType", null,
        new LineStyleFactory() {
       @Override
       public Map<String, LineStyle> getStyles() {
