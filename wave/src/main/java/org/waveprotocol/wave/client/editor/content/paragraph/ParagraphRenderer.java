@@ -20,6 +20,7 @@
 package org.waveprotocol.wave.client.editor.content.paragraph;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -170,7 +171,7 @@ public class ParagraphRenderer extends RenderingMutationHandler {
       scheduleRenderUpdate(p);
     }
     
-   	updateEventHandler(p, b);
+    updateEventHandler(p, b);
     
   }
   
@@ -183,6 +184,9 @@ public class ParagraphRenderer extends RenderingMutationHandler {
    * @param paragraphType
    */
   private void updateEventHandler(final ContentElement element, ParagraphBehaviour paragraphType) {
+    
+    if (!GWT.isClient()) return;
+    
     Element implNodelet = element.getImplNodelet();
     
     final EventHandler handler = paragraphType == null ? null
