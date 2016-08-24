@@ -19,16 +19,12 @@
 
 package org.waveprotocol.wave.client.editor.content.misc;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.EventListener;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.waveprotocol.wave.client.common.scrub.Scrub;
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.common.util.UserAgent;
-import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.RenderingMutationHandler;
 import org.waveprotocol.wave.client.editor.content.ClientDocumentContext;
@@ -41,8 +37,11 @@ import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 
 /**
  * Renderer for the bits of paint that spread over text

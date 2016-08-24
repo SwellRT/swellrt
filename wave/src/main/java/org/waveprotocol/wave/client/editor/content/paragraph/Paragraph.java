@@ -19,6 +19,10 @@
 
 package org.waveprotocol.wave.client.editor.content.paragraph;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.NodeEventHandler;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
@@ -27,17 +31,38 @@ import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.model.document.indexed.LocationMapper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.util.ValueUtils;
+
+import com.google.gwt.user.client.Event;
 
 /**
  * An editable paragraph element
  *
  */
 public class Paragraph {
+  
+  /** Callback for browser events over paragraphs  */
+  public interface EventHandler {
+    void onEvent(ContentElement node, Event event);
+  }
+  
+  /**
+   * Callback for mutation events within a paragraph.
+   */
+  public interface MutationHandler {
+    void onMutation(ContentElement node);
+  }
 
+  /** A registry of event handlers by paragraph type */
+  protected static final Map<ParagraphBehaviour, EventHandler> eventHandlerRegistry = new HashMap<ParagraphBehaviour, EventHandler>(3);
+
+  /** A registry of mutation handlers by paragraph type */
+  protected static final Map<ParagraphBehaviour, MutationHandler> mutationHandlerRegistry = new HashMap<ParagraphBehaviour, MutationHandler>(3);
+  
   /**
    * Tag name for regular paragraphs
    */
@@ -465,4 +490,55 @@ public class Paragraph {
   static int getIndent(ContentElement p) {
     return getIndent(p.getAttribute(INDENT_ATTR));
   }
+  
+  /**
+   * Apply an action over all paragraphs in the doc
+   *
+   * @param doc the document to traverse
+   * @param action action to perform on paragraphs/line (other nodes ignored)
+   */
+	public static void traverseDoc(CMutableDocument doc, ContentElement.RangedAction action) {
+
+		List<Range> lineRanges = LineContainers.getLineRanges(doc);
+
+		for (Range r : lineRanges) {
+			ContentElement lineElement = LineContainers.getRelatedLineElement(doc, doc.locate(r.getStart()));
+			if (!LineRendering.isLineElement(lineElement))
+				continue;
+			action.execute(lineElement, r);			
+		}
+	}
+	
+	/**
+	 * Register an event handler for each type of paragraph
+	 * 
+	 * @param b type of paragraph
+	 * @param h handler
+	 */
+	public static void registerEventHandler(ParagraphBehaviour b, EventHandler h) {
+	  Preconditions.checkArgument(b != null, "Paragraph Behaviour can't be null");
+	  
+	  if (h == null)
+	    eventHandlerRegistry.remove(b);
+	  
+	  eventHandlerRegistry.put(b, h);
+	}
+	
+	 /**
+   * Register a mutation handler for each type of paragraph
+   * 
+   * @param b type of paragraph
+   * @param h handler
+   */
+  public static void registerMutationHandler(ParagraphBehaviour b, MutationHandler h) {
+    Preconditions.checkArgument(b != null, "Paragraph Behaviour can't be null");
+    
+    if (h == null)
+      mutationHandlerRegistry.remove(b);
+    
+    mutationHandlerRegistry.put(b, h);
+  }
+	
+	
+	  
 }

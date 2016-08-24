@@ -21,18 +21,19 @@ package org.waveprotocol.wave.client.editor.content.paragraph;
 
 import static org.waveprotocol.wave.client.editor.content.paragraph.constants.ParagraphRenderingConstants.INDENT_UNIT_SIZE_PX;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.dom.client.Style.Unit;
-
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.HasImplNodelets;
 import org.waveprotocol.wave.client.editor.content.Renderer;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Alignment;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Direction;
+
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.http.client.URL;
 
 /**
  * @author danilatos@google.com (Daniel Danilatos)
@@ -198,6 +199,25 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
         style.clearMarginRight();
       }
     }
+    
+    //// Heading logic ////
+    
+    // NOTE(pablojan): add CSS class for headings
+    if (behaviour.equals(ParagraphBehaviour.HEADING)) {
+    	implNodelet.addClassName("heading");
+    	implNodelet.addClassName("heading-"+type);
+    	implNodelet.setId(getIdFromNodeletText(implNodelet));
+    } else 	if (!implNodelet.hasClassName("heading")) {
+    	String classes = implNodelet.getClassName();
+    	int s = classes.indexOf("heading-");
+    	int e = s + 10;
+    	String hClass = classes.substring(s, e);
+    	
+    	implNodelet.removeClassName("heading");
+    	implNodelet.removeClassName(hClass);
+    	implNodelet.removeAttribute("id");
+    }
+    
   }
 
   @Override
@@ -218,5 +238,17 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
 
   private Element createNodeletInner(boolean isListItem) {
     return Document.get().createElement(isListItem ? LIST_IMPL_TAGNAME : implTagName);
+  }
+  
+  private static final int NODE_TEXT_ID_LENGTH = 64;
+  
+  protected String getIdFromNodeletText(Element implNodelet) {
+	  
+	  String text = implNodelet.getInnerText();
+	  text = text.substring(0, text.length() > NODE_TEXT_ID_LENGTH ? NODE_TEXT_ID_LENGTH : text.length());
+	  String encoded = URL.encodePathSegment(text);
+	  encoded += "-" + implNodelet.getAbsoluteTop();
+	  
+	  return encoded;
   }
 }

@@ -20,22 +20,18 @@ public class JsoAnnotation extends JavaScriptObject {
 		var jso = {
 		
 			key: _key, 
+			
+			id: null, 
 						
-			getValue: function() {
-				return @org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation::getValue(Lorg/waveprotocol/wave/client/editor/Editor;Lorg/waveprotocol/wave/model/document/util/Range;Ljava/lang/String;)(editor, range, _key);
-			}, 
-			
-			setValue: function(value) {
-				@org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation::setValue(Lorg/waveprotocol/wave/client/editor/Editor;Lorg/waveprotocol/wave/model/document/util/Range;Ljava/lang/String;Ljava/lang/String;)(editor, range, _key, value);
-			},
-			
-			getText: function() {
-				return @org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation::getText(Lorg/waveprotocol/wave/client/editor/Editor;Lorg/waveprotocol/wave/model/document/util/Range;)(editor, range);
-			},
-			
+			value: @org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation::getValue(Lorg/waveprotocol/wave/client/editor/Editor;Lorg/waveprotocol/wave/model/document/util/Range;Ljava/lang/String;)(editor, range, _key),
+		
+			text:  @org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation::getText(Lorg/waveprotocol/wave/client/editor/Editor;Lorg/waveprotocol/wave/model/document/util/Range;)(editor, range),
+		
 			start : range.@org.waveprotocol.wave.model.document.util.Range::getStart()(),
 			
-			end : range.@org.waveprotocol.wave.model.document.util.Range::getEnd()()
+			end : range.@org.waveprotocol.wave.model.document.util.Range::getEnd()(),
+			
+			element : null
 
 		};
 
@@ -51,13 +47,10 @@ public class JsoAnnotation extends JavaScriptObject {
 		return EditorAnnotationUtil.getAnnotationOverRangeIfFull(editor.getDocument(), editor.getCaretAnnotations(), key, range.getStart(), range.getEnd());
 	}
 
-	protected static void setValue(Editor editor, Range range, String key, String value) {
-		EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(), editor.getCaretAnnotations(), key, value, range.getStart(), range.getEnd());
-	}
-	
 	protected static String getText(Editor editor, Range range) {
 		return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
 	}
 
+	
 
 }

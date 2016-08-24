@@ -23,14 +23,17 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.KeyCombo;
 import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail.ThumbnailActionHandler;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
@@ -44,6 +47,7 @@ import org.waveprotocol.wave.client.editor.EditorAction;
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.testtools.TestConstants;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
@@ -83,45 +87,43 @@ public class DefaultTestHarness implements EntryPoint {
 
         ImageThumbnail.register(registries.getElementHandlerRegistry(), attachmentManager,
             new ThumbnailActionHandler() {
-          @Override
-          public boolean onClick(ImageThumbnailWrapper thumbnail) {
-            ContentElement e = thumbnail.getElement();
-            String newId = Window.prompt("New attachment id, or 'remove' to remove the attribute",
-                e.getAttribute(ImageThumbnail.ATTACHMENT_ATTR));
-
-            if (newId == null) {
-              // They hit escape
-              return true;
-            }
-
-            if ("remove".equals(newId)) {
-              newId = null;
-            }
-
-            e.getMutableDoc().setElementAttribute(e, ImageThumbnail.ATTACHMENT_ATTR, newId);
-            return true;
-          }
-        });
-
-
-        LinkAnnotationHandler.register(registries,
-            new LinkAttributeAugmenter() {
               @Override
-              public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,
-                  Map<String, String> current) {
-                return current;
+              public boolean onClick(ImageThumbnailWrapper thumbnail) {
+                ContentElement e = thumbnail.getElement();
+                String newId = Window.prompt(
+                    "New attachment id, or 'remove' to remove the attribute",
+                    e.getAttribute(ImageThumbnail.ATTACHMENT_ATTR));
+
+                if (newId == null) {
+                  // They hit escape
+                  return true;
+                }
+
+                if ("remove".equals(newId)) {
+                  newId = null;
+                }
+
+                e.getMutableDoc().setElementAttribute(e, ImageThumbnail.ATTACHMENT_ATTR, newId);
+                return true;
               }
             });
+
+        LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
+          @Override
+          public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,
+              Map<String, String> current) {
+            return current;
+          }
+        });
         Suggestion.register(registries.getElementHandlerRegistry());
         DiffDeleteRenderer.register(registries.getElementHandlerRegistry());
 
         //
         // Custom annotations
         //
-                
-		StringMap<JsoAnnotationController> annotationControlers = CollectionUtils.createStringMap();
-		annotationControlers.put("generic/custom", JsoAnnotationController.getDefault());
-		AnnotationHandler.register(registries, annotationControlers);
+
+        JsoAnnotationController customController = JsoAnnotationController.getDefault();
+        AnnotationHandler.register(registries, "generic/custom", customController);
 
       }
 

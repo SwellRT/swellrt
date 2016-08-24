@@ -30,7 +30,7 @@ import org.waveprotocol.wave.model.util.ValueUtils;
  *
  * @author danilatos@google.com (Daniel Danilatos)
  */
-enum ParagraphBehaviour {
+public enum ParagraphBehaviour {
 
   /** Normal paragraph */
   DEFAULT,

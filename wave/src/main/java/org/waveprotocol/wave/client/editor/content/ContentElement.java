@@ -33,6 +33,7 @@ import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.indexed.NodeType;
 import org.waveprotocol.wave.model.document.util.ElementManager;
 import org.waveprotocol.wave.model.document.util.Property;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -772,6 +773,14 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
     void execute(ContentElement e);
   }
 
+  /**
+   * Action to perform on an element
+   */
+  public interface RangedAction {
+    /** Run action on paragraph */
+    void execute(ContentElement e, Range r);
+  }
+  
   /**
    * This must be called whenever this element's children have mutated.
    * Calls onDescendantsMutated() on this node and all ancestors.

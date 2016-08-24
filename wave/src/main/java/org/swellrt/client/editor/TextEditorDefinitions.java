@@ -6,6 +6,8 @@ import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +49,7 @@ public class TextEditorDefinitions {
 
     }),
 
-    HEADER(PARAGRAPH_ANNOTATION_PREFIX + "/" + "header", null, new LineStyleFactory() {
+    HEADER(PARAGRAPH_ANNOTATION_PREFIX + "/" + "header", "none", new LineStyleFactory() {
 
       @Override
       public Map<String, LineStyle> getStyles() {
@@ -57,6 +59,7 @@ public class TextEditorDefinitions {
         m.put("h3", Paragraph.regularStyle("h3"));
         m.put("h4", Paragraph.regularStyle("h4"));
         m.put("h5", Paragraph.regularStyle("h5"));
+        m.put("none", Paragraph.regularStyle(""));
         return m;
       }
 
@@ -81,10 +84,14 @@ public class TextEditorDefinitions {
     }
 
     public LineStyle getLineStyleForValue(String value) {
-      if (value == null || value.isEmpty()) return values.get(defaultValue);
-      return values.get(value);
+	  if (value == null || value.isEmpty()) return values.get(defaultValue);
+	  return values.get(value);
     }
 
+    public Map<String, LineStyle> getLineStyles() {
+    	return Collections.unmodifiableMap(values);
+    }
+    
     @Override
     public String toString() {
       return this.name;

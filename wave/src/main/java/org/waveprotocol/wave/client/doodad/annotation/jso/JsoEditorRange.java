@@ -92,16 +92,10 @@ public class JsoEditorRange extends JavaScriptObject {
 		}
 		
 		private native void functionize(JavaScriptObject jso, CMutableDocument doc) /*-{
-		
-			jso.getText = function() {
-				return @org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange::getRangeText(IILorg/waveprotocol/wave/client/editor/content/CMutableDocument;)(jso.start, jso.end, doc);
-			};
-			
-			jso.remove = function() {
-				@org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange::deleteRangeText(IILorg/waveprotocol/wave/client/editor/content/CMutableDocument;)(jso.start, jso.end, doc);
-			};
-			
-			
+			if (jso != null && typeof jso.start == "number" && typeof jso.end == "number")
+				jso.text = @org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange::getRangeText(IILorg/waveprotocol/wave/client/editor/content/CMutableDocument;)(jso.start, jso.end, doc);
+			else
+				jso = "";			
 		}-*/;
 		
 	}

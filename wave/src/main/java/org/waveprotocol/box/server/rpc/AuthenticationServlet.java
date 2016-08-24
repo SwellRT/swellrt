@@ -19,26 +19,19 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.gxp.base.GxpContext;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
-import org.eclipse.jetty.util.MultiMap;
-import org.eclipse.jetty.util.UrlEncoded;
-import org.waveprotocol.box.server.CoreSettingsNames;
-import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
-import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.gxp.AuthenticationPage;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
-import org.waveprotocol.box.server.util.RegistrationUtil;
-import org.waveprotocol.wave.model.id.WaveIdentifiers;
-import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.security.Principal;
+import java.security.cert.X509Certificate;
 
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
@@ -54,20 +47,26 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
-import java.security.Principal;
-import java.security.cert.X509Certificate;
+
+import org.eclipse.jetty.util.MultiMap;
+import org.eclipse.jetty.util.UrlEncoded;
+import org.waveprotocol.box.server.CoreSettingsNames;
+import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
+import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.box.server.util.RegistrationUtil;
+import org.waveprotocol.wave.model.id.WaveIdentifiers;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.gxp.base.GxpContext;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 /**
  * A servlet for authenticating a user's password and giving them a token via a
@@ -240,8 +239,6 @@ public class AuthenticationServlet extends HttpServlet {
             return;
           }
 
-          AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain,
-              message, responseType, isLoginPageDisabled, analyticsAccount);
           return;
       }
 
@@ -385,8 +382,6 @@ public class AuthenticationServlet extends HttpServlet {
         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
       }
       resp.setContentType("text/html;charset=utf-8");
-      AuthenticationPage.write(resp.getWriter(), new GxpContext(req.getLocale()), domain, "",
-          RESPONSE_STATUS_NONE, isLoginPageDisabled, analyticsAccount);
     }
   }
 

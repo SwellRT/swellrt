@@ -89,6 +89,11 @@ public class JsoAnnotationController extends JavaScriptObject {
 		return new Array();
 	}-*/;
 	
+	public native final JsoView getStylesInline() /*-{
+	  if (this.style)
+	    return this.style;
+	}-*/;
+	
 	/**
 	 * Handle events raised in the rendered annotation element. 
 	 */
