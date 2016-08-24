@@ -58,7 +58,7 @@ public class WidgetDoodad {
     public Element createDomImpl(Renderable element) {
       Element widgetElement = Document.get().createDivElement();
       widgetElement.addClassName(CSS_CLASS);
-      DomHelper.setContentEditable(widgetElement, true, true);
+      // DomHelper.setContentEditable(widgetElement, false, false);
       return widgetElement;
     }
 
