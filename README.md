@@ -23,7 +23,7 @@ These instructions will get you the latest version of the server up and running 
 
 2. Extract server binary files with ``tar zxvf swellrt-bin-X.Y.Z.tar.gz`` .
 
-3. Run the server ``swellrt/run-server.sh`` (Linux) or ``swellrt/run-server.bat`` (Windows).
+3. Run the server from the swellrt folder ``cd swellrt; ./run-server.sh`` (Linux) or ``swellrt/run-server.bat`` (Windows).
 
 4. Check out demo app at <http://localhost:9898/demo>.
 
