@@ -4,12 +4,17 @@ import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
+import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
+import org.waveprotocol.wave.model.util.StringMap;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Node;
 
 /**
  * A single native Js class to handle different document and editor ranged stuff.
@@ -17,13 +22,20 @@ import com.google.gwt.core.client.JavaScriptObject;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class JsoEditorRange extends JavaScriptObject {
+public class JsoRange extends JavaScriptObject {
 	
 	
 	public static class Builder {
 		
 		JsoView jso;
-		CMutableDocument doc;
+		JsoView annotations;
+		
+
+    CMutableDocument doc;
+		int start;
+		int end;
+		int length;
+		
 		
 		public static Builder create(CMutableDocument doc) {
 			return new Builder(doc);
@@ -35,9 +47,9 @@ public class JsoEditorRange extends JavaScriptObject {
 		}
 		
 		public Builder range(int start, int end, int length) {
-			jso.setNumber("start", start);
-			jso.setNumber("end", end);
-			jso.setNumber("lenght", length);
+			this.start = start;
+			this.end = end;
+			this.length = length;
 			return this;
 		}
 		
@@ -46,28 +58,26 @@ public class JsoEditorRange extends JavaScriptObject {
 		}
 		
 		public Builder range(ContentElement contentElement) {
-			int start = contentElement.getContext().locationMapper().getLocation(contentElement);
-			int end = contentElement.getContext().locationMapper().getLocation(contentElement.getNextSibling());
-			int lenght = DocHelper.getItemSize(doc, contentElement);
-			return range(start, end, lenght);			
+			start = contentElement.getContext().locationMapper().getLocation(contentElement);
+			end = contentElement.getContext().locationMapper().getLocation(contentElement.getNextSibling());
+			length = DocHelper.getItemSize(doc, contentElement);
+			return this;			
 		}
 		
 
 		public Builder annotation(String key, String value) {
 			
-			JsoView annotations;
-			
-			if (jso.getJso("annotations") == null) {
-				jso.setJso("annotations", JsoView.create());
+			if (annotations == null) {
+			  annotations = JsoView.create();
 			}
-			annotations = jso.getJsoView("annotations");
+	
 			annotations.setString(key, value);
 			return this;
 		}
 		
 
 		public Builder annotations(JsoStringMap<String> map) {
-			jso.setJso("annotations", map.backend);			
+		  annotations = map.backend;	
 			return this;
 		}
 		
@@ -86,14 +96,30 @@ public class JsoEditorRange extends JavaScriptObject {
 		}
 		
 		
-		public JsoEditorRange build() {			
+		public JsoRange build() {			
+		  
+      jso.setNumber("start", start);
+      jso.setNumber("end", end);
+      jso.setNumber("lenght", length);
+		  
+		  if (annotations != null)
+		    jso.setJso("annotations", annotations);
+		  
+		  Node node = null;
+		  Point<ContentNode> point = doc.locate(start);
+		  if (point != null)
+		    node = point.getCanonicalNode().getImplNodeletRightwards();	    
+		    
+		  jso.setJso("node", node);
+		    
+      
 			functionize(jso, doc);
 			return jso.cast();
 		}
 		
 		private native void functionize(JavaScriptObject jso, CMutableDocument doc) /*-{
 			if (jso != null && typeof jso.start == "number" && typeof jso.end == "number")
-				jso.text = @org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange::getRangeText(IILorg/waveprotocol/wave/client/editor/content/CMutableDocument;)(jso.start, jso.end, doc);
+				jso.text = @org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange::getRangeText(IILorg/waveprotocol/wave/client/editor/content/CMutableDocument;)(jso.start, jso.end, doc);
 			else
 				jso = "";			
 		}-*/;
@@ -112,18 +138,20 @@ public class JsoEditorRange extends JavaScriptObject {
 		return this.annotations;
 	}-*/;
 	
-	public final String[] getAnnotationKeys() {
-		JsoView jsoKeys = getAnnotationsJsoView();
-		String[] keys = new String[jsoKeys.countEntries()];
-		jsoKeys.each(new ProcV<Object>() {
-			int c = 0;
-			@Override
-			public void apply(String key, Object value) {
-				keys[c++] = key;			
-			}
-			
-		});
-		return keys;
+	public final StringMap<String> getAnnotations() {
+	  StringMap<String> map = CollectionUtils.<String>createStringMap();
+	  JsoView annotations = getAnnotationsJsoView();
+		
+	  annotations.each(new ProcV<String>(){
+
+      @Override
+      public void apply(String key, String value) {
+        map.put(key, value);       
+      }
+	    
+	  });
+	  
+		return map;
 	}
 	 
 	private static String getRangeText(int start, int end, CMutableDocument doc) {
@@ -134,7 +162,7 @@ public class JsoEditorRange extends JavaScriptObject {
 		doc.deleteRange(start, end);
 	}
 			
-	protected JsoEditorRange() {
+	protected JsoRange() {
 		
 	}
 

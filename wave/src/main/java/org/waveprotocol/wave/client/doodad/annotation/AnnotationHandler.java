@@ -3,10 +3,9 @@ package org.waveprotocol.wave.client.doodad.annotation;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
-import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFunction;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
@@ -22,11 +21,7 @@ import org.waveprotocol.wave.model.document.AnnotationMutationHandler;
 import org.waveprotocol.wave.model.document.util.AnnotationRegistry;
 import org.waveprotocol.wave.model.document.util.DocumentContext;
 import org.waveprotocol.wave.model.util.CollectionUtils;
-import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
-import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
-import org.waveprotocol.wave.model.util.StringMap;
-import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.user.client.Event;
 
@@ -39,6 +34,10 @@ import com.google.gwt.user.client.Event;
  */
 public class AnnotationHandler implements AnnotationMutationHandler {
 
+  public interface Activator {
+    public boolean shouldFireEvent();
+  }
+  
   private static AnnotationHandler handlerInstance = null;
   
   private final AnnotationPainter painter;
@@ -128,9 +127,7 @@ public class AnnotationHandler implements AnnotationMutationHandler {
     annotationRegistry.registerBehaviour(key, new DefaultAnnotationBehaviour(AnnotationFamily.CONTENT));
 		
     // Register painter to update attributes of the local view
-    JsoStringSet keySet = JsoStringSet.create();
-    keySet.add(key);
-    painterRegistry.registerPaintFunction(keySet, new RenderFunc(key, styleClass, stylesInline));
+    painterRegistry.registerPaintFunction(CollectionUtils.newStringSet(key), new RenderFunc(key, styleClass, stylesInline));
     
     if (eventHandler != null) 
       AnnotationPaint.registerEventHandler(key, eventHandler);
@@ -144,7 +141,7 @@ public class AnnotationHandler implements AnnotationMutationHandler {
 	}
 
 	
-	public static void register(Registries registries, String key, JsoAnnotationController controller) {
+	public static void register(Registries registries, String key, JsoAnnotationController controller, Activator activator) {
 	  
     AnnotationHandler.register(registries, key, 
         new AnnotationPaint.MutationHandler() {
@@ -153,8 +150,22 @@ public class AnnotationHandler implements AnnotationMutationHandler {
           @Override
           public void onMutation(ContentElement node) {
             String valueAttr = AnnotationPaint.VALUE_ATTR_PREFIX + AnnotationHandler.getSafeKey(key);
-            if (controller != null)
-              controller.onChange(JsoEditorRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(valueAttr)).build());
+            if (controller != null && activator.shouldFireEvent())
+              controller.onChange(JsoRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(valueAttr)).build());
+          }
+
+          @Override
+          public void onAdded(ContentElement node) {
+            String valueAttr = AnnotationPaint.VALUE_ATTR_PREFIX + AnnotationHandler.getSafeKey(key);
+            if (controller != null && activator.shouldFireEvent())
+              controller.onAdd(JsoRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(valueAttr)).build());            
+          }
+
+          @Override
+          public void onRemoved(ContentElement node) {
+            String valueAttr = AnnotationPaint.VALUE_ATTR_PREFIX + AnnotationHandler.getSafeKey(key);
+            if (controller != null && activator.shouldFireEvent())
+              controller.onRemove(JsoRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(valueAttr)).build());            
           }
         }, 
         
@@ -163,8 +174,8 @@ public class AnnotationHandler implements AnnotationMutationHandler {
           @Override
           public void onEvent(ContentElement node, Event event) {
             String valueAttr = AnnotationPaint.VALUE_ATTR_PREFIX + AnnotationHandler.getSafeKey(key);
-            if (controller != null)
-              controller.onEvent(JsoEditorRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(valueAttr)).build(), event);
+            if (controller != null && activator.shouldFireEvent())
+              controller.onEvent(JsoRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(valueAttr)).build(), event);
           }
         }, 
         controller != null ? controller.getStyleClass() : null, 

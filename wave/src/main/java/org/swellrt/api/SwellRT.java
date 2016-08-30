@@ -7,6 +7,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
@@ -17,7 +18,9 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import org.swellrt.api.ServiceCallback.JavaScriptResponse;
+import org.swellrt.api.js.generic.ModelJS;
 import org.swellrt.client.WaveLoader;
+import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.box.stat.Timing;
@@ -25,6 +28,9 @@ import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
+import org.waveprotocol.wave.client.common.util.JsoView;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
+import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
 import org.waveprotocol.wave.client.events.ClientEvents;
 import org.waveprotocol.wave.client.events.NetworkStatusEvent;
 import org.waveprotocol.wave.client.events.NetworkStatusEventHandler;
@@ -37,12 +43,14 @@ import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -133,12 +141,20 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
   /** List of living waves for the active session. */
-  private Map<WaveId, WaveLoader> waveWrappers = CollectionUtils.newHashMap();;
+  private Map<WaveId, WaveLoader> waveRegistry = CollectionUtils.newHashMap();
+  
+  /** List of living collab objects with waves as substrate  */
+  private Map<WaveId, ModelJS> objectRegistry = CollectionUtils.newHashMap();
+  
+  /** List of editors created in the app */
+  private Map<Element, TextEditor> editorRegistry = CollectionUtils.newHashMap();
 
   /** A listener to global data/network/runtime events */
   private SwellRT.Listener listener = null;
 
   private boolean useWebSocket = true;
+  
+  private boolean shouldOpenWebsocket = true;
 
 
   /**
@@ -166,10 +182,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   protected void cleanChannelData() {
     // Destroy all waves
-    for (Entry<WaveId, WaveLoader> entry : waveWrappers.entrySet())
+    for (Entry<WaveId, WaveLoader> entry : waveRegistry.entrySet())
       entry.getValue().destroy();
 
-    waveWrappers.clear();
+    waveRegistry.clear();
     websocket.disconnect(true);
     channel = null;
   }
@@ -192,8 +208,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         else {
 
           // Clean everything before setting new session
-          cleanChannelData();
           cleanSessionData();
+          shouldOpenWebsocket = true;
+          if (websocket != null)
+            websocket.disconnect(true);
 
           JavaScriptResponse responseData =
               ServiceCallback.JavaScriptResponse.success(response.getText());
@@ -241,8 +259,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         else {
 
           // Clean everything before setting new session
-          cleanChannelData();
-          cleanSessionData();
+          shouldOpenWebsocket = true;
+          if (websocket != null)
+            websocket.disconnect(true);
 
           JavaScriptResponse responseData =
               ServiceCallback.JavaScriptResponse.success(response.getText());
@@ -276,10 +295,34 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   public void logout(final ServiceCallback callback) throws RequestException {
 
-    // Clean up session data
-    cleanChannelData();
+    //
+    // Clean session, websocket ,objects and registries
+    //
     cleanSessionData();
-
+   
+    shouldOpenWebsocket = true;
+    
+    for (ModelJS co: objectRegistry.values())
+       SwellRTUtils.deleteJsObject(co);
+    
+    objectRegistry.clear();
+    
+    for (WaveLoader wave: waveRegistry.values())
+      wave.destroy();
+    
+    waveRegistry.clear();
+    websocket.disconnect(false);
+    
+    for (TextEditor editor: editorRegistry.values())
+      editor.cleanUp();
+    
+    editorRegistry.clear();
+    
+    
+    //
+    // Call server to close remote session
+    // 
+    
     String url = baseServerUrl + "/swell/auth";
     url = BrowserSession.addSessionToUrl(url);
 
@@ -306,6 +349,183 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     });
 
   }
+  
+  protected void openWebsocket(final Callback<Void, Void> callback) {
+    Preconditions.checkArgument(loggedInUser != null, "User not logged in. Can't open websocket.");
+    
+    // this is needed to atmosphere to work
+    setWebsocketAddress(baseServerUrl);
+
+    // Use Model.MODEL_VERSION to get the client version
+    websocket = new WaveWebSocketClient(SwellRTUtils.toWebsocketAddress(baseServerUrl), "1.0");
+    websocket.connect(new WaveSocketStartCallback() {
+
+      @Override
+      public void onSuccess() {
+        channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
+        shouldOpenWebsocket = false;
+        callback.onSuccess((Void) null);
+      }
+
+      @Override
+      public void onFailure() {
+        callback.onFailure((Void) null);
+
+      }
+    });    
+    
+  }
+  
+  private void openProc(WaveId waveId, final Callback<WaveLoader, String> callback) {
+    
+     final WaveLoader wave =
+          new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
+              .getUnderlyingGenerator(), waveDomain, Collections.<ParticipantId> emptySet(),
+              loggedInUser, this);
+
+    if (wave.isLoaded()) {
+      callback.onSuccess(wave);
+    } else {
+      
+      try {
+              
+        wave.load(new Command() {
+          @Override
+          public void execute() {
+            callback.onSuccess(wave);
+          }
+        });
+  
+        } catch(RuntimeException e) {
+            callback.onFailure(e.getMessage());
+        }
+    }
+
+    
+  }
+  
+  /**
+   * Open or create a collaborative object. 
+   * The underlying websocket will be openend if it is necessary.
+   * 
+   * @param parameters field "id" for collab object id or void to create a new one 
+   * @param callback
+   * @throws RequestException
+   */
+  public void open(JavaScriptObject parameters, final ServiceCallback callback) throws RequestException {
+    
+    Preconditions.checkArgument(loggedInUser != null, "Login is not present");
+    
+    JsoView p = JsoView.as(parameters);
+   
+    WaveId id = null;
+    if (p.getString("id") != null) {
+      id = WaveId.deserialise(p.getString("id"));
+    } else {
+      id = TypeIdGenerator.get().newWaveId();
+    }
+    
+    final WaveId waveId = id;
+   
+    final Callback<WaveLoader, String> openProcCallback = new  Callback<WaveLoader, String>() {
+
+      @Override
+      public void onFailure(String reason) {
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION", reason));
+      }
+
+      @Override
+      public void onSuccess(WaveLoader wave) {
+        
+        waveRegistry.put(waveId, wave);
+        
+        ModelJS cobJsFacade = null;
+
+        Model cob =
+          Model.create(wave.getWave().getWave(), wave.getLocalDomain(),
+                  wave.getLoggedInUser(),
+                wave.isNewWave(), wave.getIdGenerator());
+
+          cobJsFacade = ModelJS.create(cob);
+          cob.addListener(cobJsFacade);
+          
+          objectRegistry.put(waveId, cobJsFacade);
+          
+          callback.onComplete(ServiceCallback.JavaScriptResponse.success(cobJsFacade));
+      }
+      
+    };
+    
+    
+    if (shouldOpenWebsocket) {
+      openWebsocket(new Callback<Void, Void>() {
+        
+        
+        @Override
+        public void onFailure(Void reason) {
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error("WEBSOCKET_ERROR", "Websocket can't be open"));
+        }
+
+        @Override
+        public void onSuccess(Void result) {
+          openProc(waveId, openProcCallback);          
+        }
+      });
+    } else {
+      openProc(waveId, openProcCallback);
+    }
+    
+  }
+  
+  private native String extractWaveIdParameter(JavaScriptObject parameters) /*-{
+  
+    if (parameters == null || parameters === undefined)
+      return null;
+  
+    if (typeof parameters == "string")
+      return parameters;
+      
+    if (parameters.id && typeof parameters.id == "function")
+       return parameters.id();
+    
+    if (parameters.id && typeof parameters.id == "string")
+       return parameters.id;
+       
+    return null;
+  }-*/;
+
+  
+  public void close(JavaScriptObject parameters, final ServiceCallback callback) throws RequestException {
+    String id = extractWaveIdParameter(parameters);
+    Preconditions.checkArgument(id != null, "Missing object or id");
+    WaveId waveId = WaveId.deserialise(id);
+    Preconditions.checkArgument(waveRegistry.containsKey(waveId), "Object is not opened");    
+    
+    for (TextEditor e: editorRegistry.values())
+      if (e.getWaveId().equals(waveId))
+        e.cleanUp();
+    
+    waveRegistry.remove(waveId).destroy();
+    ModelJS co = objectRegistry.remove(waveId);
+    SwellRTUtils.deleteJsObject(co);
+   
+  }
+
+  
+  public TextEditor createTextEditor(Element parent, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
+            
+    TextEditor textEditor = TextEditor.create(parent,
+        widgetControllers,
+        annotationControllers);
+   
+    editorRegistry.put(parent, textEditor);
+    
+    return textEditor;
+  }
+  
+  //
+  // *******************************************************************************
+  //
 
   /**
    * Performs a login against Wave's /auth servlet. This method doesn't start a
@@ -424,7 +644,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
-  public void stopComms() {
+  private void stopComms() {
     websocket.disconnect(true);
     channel = null;
   }
@@ -630,10 +850,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     if (loggedInUser == null) throw new SessionNotStartedException();
 
     // Destroy all waves
-    for (Entry<WaveId, WaveLoader> entry : waveWrappers.entrySet())
+    for (Entry<WaveId, WaveLoader> entry : waveRegistry.entrySet())
       entry.getValue().destroy();
 
-    waveWrappers.clear();
+    waveRegistry.clear();
 
     // Disconnect from Wave's websocket
     stopComms();
@@ -646,15 +866,15 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   protected WaveLoader getWaveWrapper(WaveId waveId, boolean isNew) {
 
-    if (!waveWrappers.containsKey(waveId) || waveWrappers.get(waveId).isClosed()) {
+    if (!waveRegistry.containsKey(waveId) || waveRegistry.get(waveId).isClosed()) {
       WaveLoader ww =
           new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
               .getUnderlyingGenerator(), waveDomain, Collections.<ParticipantId> emptySet(),
               loggedInUser, this);
-      waveWrappers.put(waveId, ww);
+      waveRegistry.put(waveId, ww);
     }
 
-    return waveWrappers.get(waveId);
+    return waveRegistry.get(waveId);
   }
 
 
@@ -748,21 +968,23 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new InvalidIdException();
     }
 
-    WaveLoader waveWrapper = waveWrappers.get(waveId);
+    WaveLoader waveWrapper = waveRegistry.get(waveId);
 
     if (waveWrapper == null) throw new InvalidIdException();
 
     waveWrapper.destroy();
-    waveWrappers.remove(waveId);
+    waveRegistry.remove(waveId);
 
   }
 
-  protected WaveDocuments<? extends InteractiveDocument> getDocumentRegistry(Model model) {
-    Preconditions.checkArgument(model != null,
-        "Unable to get document registry from a null data model");
-    Preconditions.checkArgument(waveWrappers.containsKey(model.getWaveId()),
-        "Wave wrapper is not avaiable for the model");
-    return waveWrappers.get(model.getWaveId()).getDocumentRegistry();
+
+  protected WaveDocuments<? extends InteractiveDocument> getDocumentRegistry(WaveId waveId) {
+    Preconditions.checkArgument(waveId != null,
+        "Can't get document registry from null object id");
+    Preconditions.checkArgument(waveRegistry.containsKey(waveId),
+        "No object registered for the id. Can't get document registry.");
+
+    return waveRegistry.get(waveId).getDocumentRegistry();
   }
 
 
@@ -808,7 +1030,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       @Override
       public void onNetworkStatus(NetworkStatusEvent event) {
 
-        if (listener == null) return;
+        // Don't fire events if user is not logged in
+        if (listener == null || loggedInUser == null) return;
 
         switch (event.getStatus()) {
           case CONNECTED:

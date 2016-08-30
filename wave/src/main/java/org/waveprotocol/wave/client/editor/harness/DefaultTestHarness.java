@@ -32,8 +32,9 @@ import com.google.gwt.user.client.ui.RootPanel;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.KeyCombo;
 import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
+import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler.Activator;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail.ThumbnailActionHandler;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
@@ -123,7 +124,13 @@ public class DefaultTestHarness implements EntryPoint {
         //
 
         JsoAnnotationController customController = JsoAnnotationController.getDefault();
-        AnnotationHandler.register(registries, "generic/custom", customController);
+        AnnotationHandler.register(registries, "generic/custom", customController, new Activator() {
+          
+          @Override
+          public boolean shouldFireEvent() {
+            return true;
+          }
+        });
 
       }
 

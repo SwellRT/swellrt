@@ -8,6 +8,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.logging.impl.StackTracePrintStream;
@@ -26,6 +27,7 @@ import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener.UnsavedDataInfo;
+import org.waveprotocol.wave.model.id.WaveId;
 
 /**
  * SwellRT client API entrypoint
@@ -138,12 +140,12 @@ public class WaveClient implements SwellRT.Listener {
     coreClient.logout(onComplete);
   }
 
-  public void openChannel() {
-
+  public void open(JavaScriptObject parameters, ServiceCallback onComplete) throws RequestException {
+    coreClient.open(parameters, onComplete);
   }
 
-  public void closeChannel() {
-
+  public void close(JavaScriptObject parameters, ServiceCallback onComplete) throws RequestException {
+    coreClient.close(parameters, onComplete);
   }
 
 
@@ -386,26 +388,23 @@ public class WaveClient implements SwellRT.Listener {
 
 
   public TextEditorJS getTextEditor(String elementId, JavaScriptObject widgets, JavaScriptObject annotations) {
-    Preconditions.checkArgument(Document.get().getElementById(elementId) != null,
-        "Element id is not provided");
+    Element parent = Document.get().getElementById(elementId);
+    Preconditions.checkArgument(parent != null, "Can't hook editor in a null element");
     
-    TextEditor textEditor = TextEditor.create(elementId,
-    		JsoWidgetController.fromJso(widgets),
-    		JsoAnnotationController.fromJso(annotations));
-    return TextEditorJS.create(textEditor, this);
+    TextEditor textEditor = coreClient.createTextEditor(parent, JsoWidgetController.fromJso(widgets),
+        JsoAnnotationController.fromJso(annotations));
+    
+    TextEditorJS textEditorJS = TextEditorJS.create(textEditor, this);
+    textEditor.initialize(textEditorJS);
+    
+    return textEditorJS;
   }
 
   /**
-   * Set TextEditor dependencies from current wave/model. In particular, set the
-   * document registry associated with TextType's Model before editing.
-   *
-   * @param text
+   * Get the document registry of a object's sustrate wave
    */
-  public void configureTextEditor(TextEditor editor, TextType text) {
-    WaveDocuments<? extends InteractiveDocument> documentRegistry =
-        coreClient.getDocumentRegistry(text.getModel());
-
-    editor.setDocumentRegistry(documentRegistry);
+  public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry(WaveId waveId) {
+    return coreClient.getDocumentRegistry(waveId);
   }
 
   /**
@@ -622,7 +621,7 @@ public class WaveClient implements SwellRT.Listener {
         GWT.log("Exception: " +  ((Throwable) e).getMessage());
     }
 
-    String exceptionCode = "UNWRAPPED_EXCEPTION";
+    String exceptionCode = "EXCEPTION";
 
     if (e instanceof InvalidIdException)
       exceptionCode = "INVALID_ID_EXCEPTION";

@@ -224,4 +224,19 @@ public class SwellRTUtils {
     return encodeWaveRefUri(model.getWaveRef());
   }
 
+  public static String toWebsocketAddress(String httpAddress) {
+   
+    String websocketAddress = httpAddress + "/";
+
+    if (websocketAddress.startsWith("http://"))
+      websocketAddress = websocketAddress.replace("http://", "ws://");
+    else if (websocketAddress.startsWith("https://"))
+      websocketAddress = websocketAddress.replace("https://", "wss://");
+    
+    return websocketAddress;
+  }
+  
+  public static native void deleteJsObject(JavaScriptObject o) /*-{
+    delete o;
+  }-*/;
 }

@@ -84,7 +84,11 @@ public class ParagraphRenderer extends RenderingMutationHandler {
   
   protected static MutationHandler getMutationHandler(ContentElement element) {
     ParagraphBehaviour b = ParagraphBehaviour.of(element.getAttribute(Paragraph.SUBTYPE_ATTR));
-    return b == null ? null : Paragraph.mutationHandlerRegistry.get(b);
+    return getMutationHandler(b);
+  }
+  
+  protected static MutationHandler getMutationHandler(ParagraphBehaviour paragraphBehaviour) {
+    return paragraphBehaviour == null ? null : Paragraph.mutationHandlerRegistry.get(paragraphBehaviour);
   }
   
   // ---- Mutation Notification stuff end ----
@@ -158,6 +162,7 @@ public class ParagraphRenderer extends RenderingMutationHandler {
     }
 
     ParagraphBehaviour b = ParagraphBehaviour.of(newValue);
+    ParagraphBehaviour oldb = ParagraphBehaviour.of(oldValue);
     
     if (Paragraph.SUBTYPE_ATTR.equals(name) || Paragraph.LIST_STYLE_ATTR.equals(name)) {      
       scheduleRenderUpdate(p);
@@ -172,6 +177,20 @@ public class ParagraphRenderer extends RenderingMutationHandler {
     }
     
     updateEventHandler(p, b);
+
+    if (!b.equals(oldb)) {     
+      MutationHandler h = getMutationHandler(ParagraphBehaviour.HEADING);
+      if (h != null) {
+        if (b.equals(ParagraphBehaviour.HEADING)) {        
+          // header is activated
+          h.onAdded(p);        
+        } else if (oldb.equals(ParagraphBehaviour.HEADING)) {        
+          // header is deactivated
+          h.onRemoved(p);          
+        }
+      }
+    }
+      
     
   }
   
@@ -278,7 +297,6 @@ public class ParagraphRenderer extends RenderingMutationHandler {
     }
   }
 
-
   /**
    * Notify mutation handlers
    *  
@@ -302,6 +320,5 @@ public class ParagraphRenderer extends RenderingMutationHandler {
   public void onDescendantsMutated(ContentElement element) {
     scheduleMutationNotification(element);
   }
-
   
 }

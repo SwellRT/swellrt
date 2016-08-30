@@ -91,7 +91,9 @@ public class AnnotationPaint {
    * Handlers may register callback for mutation events over painted regions.
    */
   public interface MutationHandler {
+    void onAdded(ContentElement node);
     void onMutation(ContentElement node);
+    void onRemoved(ContentElement node);
   }
 
   static final Map<String, MutationHandler> mutationHandlerRegistry =

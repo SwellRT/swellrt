@@ -3,7 +3,7 @@ package org.swellrt.api.js.editor;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import org.swellrt.client.editor.TextEditorListener;
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange;
 import org.waveprotocol.wave.client.gadget.StateMap;
 
 public class TextEditorJSListener extends JavaScriptObject implements TextEditorListener {
@@ -17,7 +17,7 @@ public class TextEditorJSListener extends JavaScriptObject implements TextEditor
   }-*/;
 
 	@Override
-	public final native void onSelectionChange(JsoEditorRange editorRange)  /*-{
+	public final native void onSelectionChange(JsoRange editorRange)  /*-{
 	   if (this.executor !== undefined)
     		this.executor(editorRange);
 	}-*/;
