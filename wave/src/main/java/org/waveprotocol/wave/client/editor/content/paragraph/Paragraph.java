@@ -54,7 +54,9 @@ public class Paragraph {
    * Callback for mutation events within a paragraph.
    */
   public interface MutationHandler {
+    void onAdded(ContentElement node);
     void onMutation(ContentElement node);
+    void onRemoved(ContentElement node);
   }
 
   /** A registry of event handlers by paragraph type */

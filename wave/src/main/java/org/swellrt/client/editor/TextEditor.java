@@ -6,22 +6,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.swellrt.api.BrowserSession;
 import org.swellrt.client.editor.TextEditorDefinitions.ParagraphAnnotation;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
+import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
 import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotation;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoParagraphAnnotation;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
+import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler;
+import org.waveprotocol.wave.client.doodad.selection.SelectionExtractor;
 import org.waveprotocol.wave.client.doodad.widget.WidgetDoodad;
 import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidget;
 import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
@@ -40,13 +43,14 @@ import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint.EventHandler;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint.MutationHandler;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
-import org.waveprotocol.wave.client.editor.content.paragraph.Line;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
+import org.waveprotocol.wave.client.scheduler.TimerService;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.RegistriesHolder;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
@@ -62,15 +66,17 @@ import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 import org.waveprotocol.wave.model.util.StringMap;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.Event;
 
 /**
@@ -82,6 +88,15 @@ import com.google.gwt.user.client.Event;
  */
 public class TextEditor implements EditorUpdateListener {
 
+  public interface Configurator {
+    
+    /**
+     * The gateway to get UI-versions of Blips. Registry is GWT related, so must
+     * be injected in the Editor by the JS API. Model's classes have to ignore it.
+     */
+    public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry();
+  
+  }
 
   public static class JSLogSink extends LogSink {
 
@@ -104,7 +119,7 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
-
+  
   public static class CustomLogger extends AbstractLogger {
 
     public CustomLogger(LogSink sink) {
@@ -151,17 +166,18 @@ public class TextEditor implements EditorUpdateListener {
   private LogicalPanel.Impl docPanel;
   private ContentDocument doc;
 
-
-  /**
-   * The gateway to get UI-versions of Blips. Registry is GWT related, so must
-   * be injected in the Editor by the JS API. Model's classes have to ignore it.
-   */
-  private WaveDocuments<? extends InteractiveDocument> documentRegistry;
-
+  private SelectionExtractor selectionExtractor;
+      
+  /** The actual implementation of the editor */
   private Editor editor;
 
+  /** Listener for editor events */
   private TextEditorListener listener;
+  
+  private WaveId containerWaveId;
 
+  private boolean shouldFireEvents = false;
+  
   /**
    * Registry of JavaScript controllers for widgets
    */
@@ -183,14 +199,12 @@ public class TextEditor implements EditorUpdateListener {
 
   }
 
-  public static TextEditor create(String containerElementId, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
-    Element e = Document.get().getElementById(containerElementId);
-    Preconditions.checkNotNull(e, "Editor's parent element doesn't exist");
-    
-    TextEditor editor = new TextEditor(e, widgetControllers, annotationControllers);
-    editor.registerDoodads();
+  public static TextEditor create(Element parent, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
+    Preconditions.checkNotNull(parent, "Element to hook editor canvas doesn't exist");    
+    TextEditor editor = new TextEditor(parent, widgetControllers, annotationControllers);
     return editor;
   }
+  
 
   protected TextEditor(final Element containerElement, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
     this.editorPanel = new LogicalPanel.Impl() {
@@ -202,26 +216,223 @@ public class TextEditor implements EditorUpdateListener {
     this.annotationRegistry = annotationControllers;
   }
 
-
-
   /**
-   * Inject document registry which manages UI versions of blips. Registry must
-   * be only injected by the JS API.
-   *
-   * @param documentRegistry
+   * This is a nasty method to pass a reference of editor's js facade 
+   * to widget and annotation controllers.
+   * 
+   * So there is a circular reference between TextEditor and TextEditorJS.
+   * 
+   * @param editorJsFacade editor's pure JavaScript facade
    */
-  public void setDocumentRegistry(WaveDocuments<? extends InteractiveDocument> documentRegistry) {
-    this.documentRegistry = documentRegistry;
+  public void initialize(JavaScriptObject editorJsFacade) {
+      registerDoodads(editorJsFacade);
+      registerAnnotations(editorJsFacade);
   }
 
+  
+  protected void registerDoodads(final JavaScriptObject editorJsFacade) {
 
-  public void edit(TextType text) {
-    Preconditions.checkNotNull(text, "Text object is null");
-    Preconditions.checkNotNull(documentRegistry, "Document registry hasn't been initialized");
+
+    // TOPLEVEL_CONTAINER_TAGNAME
+    LineRendering.registerContainer(TOPLEVEL_CONTAINER_TAGNAME,
+        registries.getElementHandlerRegistry());
+
+    StyleAnnotationHandler.register(registries);
+
+    // Listen for Diff annotations to paint new content or to insert a
+    // delete-content tag
+    // to be rendered by the DiffDeleteRendere
+    DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),
+        registries.getPaintRegistry());
+    DiffDeleteRenderer.register(registries.getElementHandlerRegistry());
+        
+    //
+    // Reuse existing link annotation handler, but also support external
+    // controller to get notified on mutation or input events
+    //
+    LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
+      @Override
+      public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,
+          Map<String, String> current) {
+        return current;
+      }
+    });
+    
+    // Set reference to js editor's facade to controllers.
+    widgetRegistry.each(new ProcV<JsoWidgetController>() {
+
+      @Override
+      public void apply(String key, JsoWidgetController value) {
+        value.setEditorJsFacade(editorJsFacade);
+      }
+      
+    });
+
+    WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);
+
+    
+  }
+
+ 
+  protected void registerAnnotations(final JavaScriptObject editorJsFacade) {
+
+    // Configure annotations.
+    // For shake of encapsulation, we don't expose native JS type
+    // JsoAnntationController to inner editor classes.
+   
+    annotationRegistry.each(new ProcV<JsoAnnotationController>() {
+
+      @Override
+      public void apply(String key, JsoAnnotationController controller) {
+
+        // sets the circular reference to the editor's js facade
+        controller.setEditorJsFacade(editorJsFacade);
+        
+        if (key.contains(AnnotationConstants.LINK_PREFIX)) {
+          
+          // Link annotations are actually registered in registerDoodads() method
+          // here only handlers are registered 
+
+          AnnotationPaint.registerEventHandler(AnnotationConstants.LINK_PREFIX, new EventHandler() {
+
+            @Override
+            public void onEvent(ContentElement node, Event event) {
+              if (controller != null && shouldFireEvents)
+                controller.onEvent(JsoRange.Builder.create(node.getMutableDoc()).range(node)
+                    .annotation(AnnotationConstants.LINK_PREFIX, null).build(), event);
+            }
+          });
+
+          AnnotationPaint.setMutationHandler(AnnotationConstants.LINK_PREFIX,
+              new MutationHandler() {
+
+                @Override
+                public void onMutation(ContentElement node) {
+                  if (controller != null  && shouldFireEvents)
+                    controller.onChange(JsoRange.Builder.create(node.getMutableDoc())
+                        .range(node).annotation(AnnotationConstants.LINK_PREFIX, null).build());
+                }
+                
+                @Override
+                public void onAdded(ContentElement node) {
+                  if (controller != null  && shouldFireEvents)
+                    controller.onAdd(JsoRange.Builder.create(node.getMutableDoc())
+                        .range(node).annotation(AnnotationConstants.LINK_PREFIX, null).build());        
+                }
+
+                @Override
+                public void onRemoved(ContentElement node) {
+                  if (controller != null  && shouldFireEvents)
+                    controller.onRemove(JsoRange.Builder.create(node.getMutableDoc())
+                        .range(node).annotation(AnnotationConstants.LINK_PREFIX, null).build());        
+                }
+                
+              });
+
+        } else if (TextEditorDefinitions.isParagraphAnnotation(key)) {
+
+          if (key.equals(ParagraphAnnotation.HEADER.toString())) {
+
+            Paragraph.registerEventHandler(ParagraphBehaviour.HEADING,
+                new Paragraph.EventHandler() {
+
+                  @Override
+                  public void onEvent(ContentElement node, Event event) {
+                    if (controller != null  && shouldFireEvents)
+                      controller.onEvent(
+                          JsoRange.Builder.create(node.getMutableDoc()).range(node)
+                              .annotation(key, node.getAttribute(Paragraph.SUBTYPE_ATTR)).build(),
+                          event);
+                  }
+                });
+
+            Paragraph.registerMutationHandler(ParagraphBehaviour.HEADING,
+                new Paragraph.MutationHandler() {
+
+                  @Override
+                  public void onMutation(ContentElement node) {
+                    if (controller != null && shouldFireEvents)
+                      controller
+                          .onChange(JsoRange.Builder.create(node.getMutableDoc()).range(node)
+                              .annotation(key, node.getAttribute(Paragraph.SUBTYPE_ATTR)).build());
+                  }
+
+                  @Override
+                  public void onAdded(ContentElement node) {
+                    if (controller != null && shouldFireEvents)
+                      controller
+                          .onAdd(JsoRange.Builder.create(node.getMutableDoc()).range(node)
+                              .annotation(key, node.getAttribute(Paragraph.SUBTYPE_ATTR)).build());                   
+                  }
+
+                  @Override
+                  public void onRemoved(ContentElement node) {
+                    if (controller != null && shouldFireEvents)
+                      controller
+                          .onRemove(JsoRange.Builder.create(node.getMutableDoc()).range(node)
+                              .annotation(key, node.getAttribute(Paragraph.SUBTYPE_ATTR)).build());     
+                    
+                  }
+                  
+                  
+                  
+                  
+                });
+
+          }
+
+        } else if (TextEditorDefinitions.isStyleAnnotation(key)) {
+
+          // Nothing to do with style annotations
+
+        } else {
+
+          // Register custom annotations
+          AnnotationHandler.register(registries, key, controller, new AnnotationHandler.Activator() {            
+            @Override
+            public boolean shouldFireEvent() {
+              return shouldFireEvents;
+            }
+          });
+
+        }
+
+      }
+
+    });
+
+  }
+  
+  
+  public void setListener(TextEditorListener listener) {
+    this.listener = listener;
+  }
+  
+  public WaveId getWaveId() {
+    return containerWaveId;
+  }
+  
+
+  /**
+   * Start an editing session.
+   * 
+   * @param text the TextType instance to edit
+   * @param configurator editor dependencies not related with text
+   */
+  public void edit(TextType text, Configurator configurator) {
+    Preconditions.checkNotNull(text, "Text object can't be null");
+    Preconditions.checkNotNull(configurator, "Editor configurator can't be null");
+    
+    shouldFireEvents = false;
 
     if (!isClean()) cleanUp();
 
-    doc = getContentDocument(text);
+    // Place here selection extractor to ensure session id and user id are refreshed
+    SelectionAnnotationHandler.register(registries, BrowserSession.getWindowSessionId(), new ProfileManagerImpl());
+    TimerService clock = SchedulerInstance.getLowPriorityTimer();
+    selectionExtractor = new SelectionExtractor(clock, BrowserSession.getUserAddress(), BrowserSession.getWindowSessionId());
+    
+    doc = getContentDocument(text, configurator.getDocumentRegistry());
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");
 
     doc.setRegistries(registries);
@@ -257,21 +468,21 @@ public class TextEditor implements EditorUpdateListener {
 
     editor.setEditing(true);
     editor.focus(true);
-
+    
+    selectionExtractor.start(editor);
+    
+    containerWaveId = text.getModel().getWaveId();
+    
+    shouldFireEvents = true;
   }
 
 
 
-  /* ---------------------------------------------------------- */
-
-
-
-  private ContentDocument getContentDocument(TextType text) {
+  private ContentDocument getContentDocument(TextType text, WaveDocuments<? extends InteractiveDocument> documentRegistry) {
     Preconditions.checkArgument(text != null,
         "Unable to get ContentDocument from null TextType");
     Preconditions.checkArgument(documentRegistry != null,
         "Unable to get ContentDocument from null DocumentRegistry");
-
 
     return documentRegistry.getBlipDocument(ModelUtils.serialize(text.getModel().getWaveletId()),
         text.getDocumentId()).getDocument();
@@ -286,10 +497,13 @@ public class TextEditor implements EditorUpdateListener {
 
   public void cleanUp() {
     if (editor != null) {
+      if (selectionExtractor != null)
+        selectionExtractor.start(editor);
       editor.removeUpdateListener(this);
       editor.removeContentAndUnrender();
       editor.reset();
       doc = null;
+      containerWaveId = null;
     }
   }
 
@@ -319,125 +533,16 @@ public class TextEditor implements EditorUpdateListener {
     return JsoWidget.create(w.getImplNodelet(), w);
   }
 
-  
-  
   /**
    * Get the widget associated with the DOM element
    * 
    * @param domElement the widget element or a descendant
    */
   public JsoWidget getWidget(Element domElement) {
-	 return WidgetDoodad.getWidget(editor.getDocument(), domElement);	 
+   return WidgetDoodad.getWidget(editor.getDocument(), domElement);  
   }
-
-  protected void registerDoodads() {
-
-
-    // TOPLEVEL_CONTAINER_TAGNAME
-    LineRendering.registerContainer(TOPLEVEL_CONTAINER_TAGNAME,
-        registries.getElementHandlerRegistry());
-
-    StyleAnnotationHandler.register(registries);
-
-    // Listen for Diff annotations to paint new content or to insert a
-    // delete-content tag
-    // to be rendered by the DiffDeleteRendere
-    DiffAnnotationHandler.register(registries.getAnnotationHandlerRegistry(),
-        registries.getPaintRegistry());
-    DiffDeleteRenderer.register(registries.getElementHandlerRegistry());
-
-    //
-    // Reuse existing link annotation handler, but also support external
-    // controller to
-    // get notified on mutation or input events
-    //
-    LinkAnnotationHandler.register(registries, new LinkAttributeAugmenter() {
-      @Override
-      public Map<String, String> augment(Map<String, Object> annotations, boolean isEditing,
-          Map<String, String> current) {
-        return current;
-      }
-    });
-
-    WidgetDoodad.register(registries.getElementHandlerRegistry(), widgetRegistry);
-
-    
-    // Configure annotations. 
-    // For shake of encapsulation, we don't expose native JS type JsoAnntationController to inner editor classes.
-    
-   annotationRegistry.each(new ProcV<JsoAnnotationController>() {
-
-    @Override
-    public void apply(String key, JsoAnnotationController controller) {
-      
-      
-      if (key.contains(AnnotationConstants.LINK_PREFIX)) {
-        
-        AnnotationPaint.registerEventHandler(AnnotationConstants.LINK_PREFIX, new EventHandler() {
-
-          @Override
-          public void onEvent(ContentElement node, Event event) {
-            if (controller != null)
-              controller.onEvent(JsoEditorRange.Builder.create(node.getMutableDoc()).range(node).annotation(AnnotationConstants.LINK_PREFIX, null).build(), event);
-          }
-        });
-
-        AnnotationPaint.setMutationHandler(AnnotationConstants.LINK_PREFIX, new MutationHandler() {
-
-          @Override
-          public void onMutation(ContentElement node) {
-            if (controller != null)
-              controller.onChange(JsoEditorRange.Builder.create(node.getMutableDoc()).range(node).annotation(AnnotationConstants.LINK_PREFIX, null).build());
-          }
-        });
-        
-      } else if (TextEditorDefinitions.isParagraphAnnotation(key)) {
-      
-          if (key.equals(ParagraphAnnotation.HEADER.toString())) {
-            
-            Paragraph.registerEventHandler(ParagraphBehaviour.HEADING, new Paragraph.EventHandler() {
-              
-              @Override
-              public void onEvent(ContentElement node, Event event) {
-                if (controller != null)
-                  controller.onEvent(JsoEditorRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(Paragraph.SUBTYPE_ATTR)).build(), event);
-              }
-            });
-            
-            Paragraph.registerMutationHandler(ParagraphBehaviour.HEADING, new Paragraph.MutationHandler() {
-
-              @Override
-              public void onMutation(ContentElement node) {
-                if (controller != null)                  
-                  controller.onChange(JsoEditorRange.Builder.create(node.getMutableDoc()).range(node).annotation(key, node.getAttribute(Paragraph.SUBTYPE_ATTR)).build());                
-              }              
-            });
-            
-          }
-        
-      } else if (TextEditorDefinitions.isStyleAnnotation(key)) {
-        
-        // Nothing to do with style annotations
-        
-      } else {
-            
-        // Register custom annotations        
-        AnnotationHandler.register(registries, key, controller);  
-        
-      }
-      
-    }
-     
-   });
-    
-    
-  }
-
   
-  
-  public void setListener(TextEditorListener listener) {
-    this.listener = listener;
-  }
+
 
   protected boolean isValidAnnotationKey(String key) {
 		return (TextEditorDefinitions.isParagraphAnnotation(key) || 
@@ -454,7 +559,7 @@ public class TextEditor implements EditorUpdateListener {
    *
    * @return a native JS object having a property for each annotation.
    */
-  protected JsoStringMap<String> getAnnotationsOverRange(final Range range) {
+  protected JsoStringMap<String> getAllAnnotationsInRange(final Range range) {
 	  
 	  
 	  // Map to contain the current state of each annotation
@@ -611,50 +716,37 @@ public class TextEditor implements EditorUpdateListener {
 		return ranges;
   }
   
-  
-  @Override
-  public void onUpdate(final EditorUpdateEvent event) {
-    if (event.selectionLocationChanged()) {
-        Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-        JsoEditorRange.Builder editorRangeBuilder = JsoEditorRange.Builder.create(editor.getDocument());
-        if (range != null) {
-        	editorRangeBuilder.range(range)
-					.annotations(getAnnotationsOverRange(range)).build();
-        } else {
-        	editorRangeBuilder.annotations(getAnnotationsByDefault());
+    
+  public JsoAnnotation getAnnotationInRange(JsoRange editorRange, String key) {
+    Preconditions.checkNotNull(editorRange, "Range can't be null");
+    Preconditions.checkArgument(isValidAnnotationKey(key), "Invalid annotation key");
+    
+    if (TextEditorDefinitions.isParagraphAnnotation(key)) {
+      
+      for(Entry<String, LineStyle> ls: ParagraphAnnotation.fromString(key).getLineStyles().entrySet()) {
+      
+        if (Paragraph.appliesEntirely(editor.getDocument(), editorRange.start(), editorRange.end(), ls.getValue())) {
+        Point<ContentNode> point = editor.getDocument().locate(editorRange.start());
+          ContentNode lineNode = LineContainers.getRelatedLineElement(editor.getDocument(), point);                  
+          return JsoParagraphAnnotation.create(editor.getDocument(), editorRange.start(), editorRange.end(), key, ls.getKey(), lineNode.asElement().getImplNodelet());
         }
         
-        
-		if (listener != null)
-			listener.onSelectionChange(editorRangeBuilder.build());
-        
-    }
-  }
-  
-  protected void getParagraphAnnotations(int start, int end, JsoStringMap<String> annotations) {
+      }
       
-	  TextEditorDefinitions.PARAGRAPH_ANNOTATIONS.each(new Proc() {
-
-          @Override
-          public void apply(String annotationName) {
-
-            Collection<Entry<String, LineStyle>> styles =
-                TextEditorDefinitions.ParagraphAnnotation.fromString(annotationName).values
-                    .entrySet();
-
-            String annotationValue = null;
-            for (Entry<String, LineStyle> s : styles) {
-              if (Paragraph.appliesEntirely(editor.getDocument(), start, end,
-                  s.getValue())) {
-                annotationValue = s.getKey();
-                break;
-              }
-            }
-            annotations.put(annotationName, annotationValue); 
-          }
-        });
-	  
-  }
+    } else {
+      
+      Range range = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), key, editorRange.start());  
+      if (range == null)
+        return null;
+      
+      return JsoAnnotation.create(editor, range, key);
+    }
+    
+  return null;
+    
+    
+  }  
+  
   
   
   /**
@@ -689,19 +781,20 @@ public class TextEditor implements EditorUpdateListener {
    * @param key
    * @param value
    */
-	public void setAnnotation(String key, String value) {
+	public JsoAnnotation setAnnotation(String key, String value) {
 	
 		Preconditions.checkArgument(isValidAnnotationKey(key), "Unknown annotation key");
-	
+		final Range range = editor.getSelectionHelper().getOrderedSelectionRange();
+		if (range == null) return null;
+		
 		if (TextEditorDefinitions.isParagraphAnnotation(key)) {
-			final Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-			if (range != null) {
-				setParagraphAnnotation(key, value, range.getStart(), range.getEnd());
-			}
+			setParagraphAnnotation(key, value, range.getStart(), range.getEnd());
 		} else {
 			EditorAnnotationUtil.setAnnotationOverSelection(editor, key, value);
 		}
-	
+		
+		
+		return JsoAnnotation.create(editor, range, key);
 	}
 	
 	/**
@@ -711,7 +804,7 @@ public class TextEditor implements EditorUpdateListener {
 	 * @param key
 	 * @param value
 	 */
-	public void setAnnotationOverRange(JsoEditorRange range, String key, String value) {	
+	public JsoAnnotation setAnnotationInRange(JsoRange range, String key, String value) {	
 		Preconditions.checkArgument(isValidAnnotationKey(key), "Unknown annotation key");
 		Preconditions.checkArgument(range != null && range.start() <= range.end(), "Invalid range object");
 		
@@ -721,110 +814,141 @@ public class TextEditor implements EditorUpdateListener {
 			EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(), editor.getCaretAnnotations(), key, value, range.start(), range.end());
 		}		
 		
+		return JsoAnnotation.create(editor, new Range(range.start(), range.end()), key);
 	}
   
   /**
    * Clear the annotation in the current selection or caret position.
    * 
-   * @param annotationName
+   * @param keyPrefix
    */
-  public void clearAnnotation(String annotationName) {
-	  Preconditions.checkNotNull(annotationName, "Annotation key can't be null");
-	  
-	  if (TextEditorDefinitions.isParagraphAnnotation(annotationName)) {
-		  final Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-    	  setParagraphAnnotation(annotationName, null, range.getStart(), range.getEnd());
-      } else {
-    	  EditorAnnotationUtil.clearAnnotationsOverSelection(editor, annotationName);
-      }
+  public void clearAnnotation(String keyPrefix) {      
+    Range r = editor.getSelectionHelper().getOrderedSelectionRange();
+    if (r == null) {
+      return;
+    }   
+    clearAnnotationInRange(JsoRange.Builder.create(editor.getDocument()).range(r).build(), keyPrefix);
   }  
   
-  /**
-   * Clear an annotation in the caret or document range. 
-   * 
-   * @param editorRange the range in the doc
-   * @param key annotation key
-   */
-  public void clearAnnotation(JsoEditorRange editorRange, String key) {
-	  Preconditions.checkNotNull(editorRange, "Range can't be null");
-	  Preconditions.checkArgument(isValidAnnotationKey(key), "Invalid annotation key");
-	  
-	  if (TextEditorDefinitions.isParagraphAnnotation(key)) {		  
-    	  setParagraphAnnotation(key, null, editorRange.start(), editorRange.end());
-      } else {
-    	  EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), new String[] { key }, editorRange.start(), editorRange.end());
-      }
-	  
-  }
   
   /**
-   * Clear all annotations in the range
+   * Clear all annotations in the range starting with the prefix
    * 
-   * @param editorRange the range in the doc
+   * @param range the range in the doc
    */
-  public void clearAnnotation(JsoEditorRange editorRange) {
-	  Preconditions.checkNotNull(editorRange, "Range can't be null");
-	  
-	  // Separate paragraph annotations
-	  List<String> textAnnotations = new ArrayList<String>();
-	  for (String s: editorRange.getAnnotationKeys()) {
-		  if (TextEditorDefinitions.isParagraphAnnotation(s))
-			  setParagraphAnnotation(s, null, editorRange.start(), editorRange.end());
-		  else
-			  textAnnotations.add(s);
+  public void clearAnnotationInRange(JsoRange range, String keyPrefix) {
+    Preconditions.checkNotNull(keyPrefix, "Annotation key or prefix can't be null");    
+	  Preconditions.checkNotNull(range, "Range can't be null");
+	 	
+	  StringMap<String> annotations = range.getAnnotations();
+	  if (annotations.isEmpty()) {
+	    annotations = getAllAnnotationsInRange(new Range(range.start(), range.end()));
 	  }
 	  	  
-	  if (!textAnnotations.isEmpty())
-		  EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), (String[]) textAnnotations.toArray(), editorRange.start(), editorRange.end());
+	  List<String> textAnnotations = new ArrayList<String>();
+	  
+	  annotations.each(new ProcV<String>() {
+
+      @Override
+      public void apply(String key, String value) {
+        if (key.startsWith(keyPrefix)) {
+          if (TextEditorDefinitions.isParagraphAnnotation(key))
+            setParagraphAnnotation(key, null, range.start(), range.end());
+          else
+            textAnnotations.add(key);
+        }
+      }
+	    
+	  });
+
+	  	  
+	  if (!textAnnotations.isEmpty()) {
+	    String[] anotArray = (String[]) textAnnotations.toArray(new String[]{});
+		  EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), anotArray, range.start(), range.end());
+	  }
   }
 
-  
-  public JsoAnnotation getAnnotation(JsoEditorRange editorRange, String key) {
-	  Preconditions.checkNotNull(editorRange, "Range can't be null");
-	  Preconditions.checkArgument(isValidAnnotationKey(key), "Invalid annotation key");
-	  
-	  if (TextEditorDefinitions.isParagraphAnnotation(key)) {
-		  
-		  for(Entry<String, LineStyle> ls: ParagraphAnnotation.fromString(key).getLineStyles().entrySet()) {
-		  
-			  if (Paragraph.appliesEntirely(editor.getDocument(), editorRange.start(), editorRange.end(), ls.getValue())) {
-				Point<ContentNode> point = editor.getDocument().locate(editorRange.start());
-			    ContentNode lineNode = LineContainers.getRelatedLineElement(editor.getDocument(), point);			    			   
-			    return JsoParagraphAnnotation.create(editor.getDocument(), editorRange.start(), editorRange.end(), key, ls.getKey(), lineNode.asElement().getImplNodelet());
-			  }
-			  
-		  }
-		  
-	  } else {
-		  
-		  Range range = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), key, editorRange.start());	
-		  if (range == null)
-			  return null;
-		  
-		  return JsoAnnotation.create(editor, range, key);
-	  }
-	  
-	return null;
-	  
-	  
+  /**
+   * Insert o replace text over range in the document
+   *  
+   * @param range
+   * @param text
+   */
+  public JsoRange setText(JsoRange range, String text) {
+    Preconditions.checkNotNull(range, "Range can't be null");
+    CMutableDocument doc = editor.getDocument();
+    if (range.start() == range.end()) {
+      doc.insertText(range.start(), text);
+    } else if (range.start() > 0 && range.start() < range.end() && range.end() < editor.getDocument().size()) {
+      doc.beginMutationGroup();
+      doc.deleteRange(range.start(), range.end());
+      doc.insertText(range.start(), text);
+      doc.endMutationGroup();
+    } else {
+      Preconditions.checkArgument(false, "Range is not correct");
+    }
+    
+    
+    return JsoRange.Builder.create(doc).range(range.start(), range.start()+text.length(), text.length()).build();
+    
   }
   
   /**
-   * Gets the current selection. See {@link JsoEditorRange} for methods to
+   * Delete text in a range
+   * 
+   * @param range
+   * @return
+   */
+  public void deleteText(JsoRange range) {
+    Preconditions.checkNotNull(range, "Range can't be null");
+    CMutableDocument doc = editor.getDocument();
+    doc.deleteRange(range.start(), range.end());
+  }
+  
+  
+  public String getText(JsoRange range) {
+    Preconditions.checkNotNull(range, "Range can't be null");
+    CMutableDocument doc = editor.getDocument();
+    Preconditions.checkArgument(range.start() >= 0 && range.start() <= range.end() && range.end() < doc.size(), "Range is not correct");
+    return DocHelper.getText(doc, range.start(), range.end());
+  }
+ 
+  /**
+   * Gets the current selection. See {@link JsoRange} for methods to
    * update the document's selection.
    * 
    *  Includes annotations.
    * 
    * @return
    */
-  public JsoEditorRange getSelection() {
+  public JsoRange getSelection() {
     Range r = editor.getSelectionHelper().getOrderedSelectionRange();
     if (r == null) {
       return null;
-    }
-    return JsoEditorRange.Builder.create(editor.getDocument()).range(r)
-        .annotations(getAnnotationsOverRange(r)).build();
-
+    }   
+    return JsoRange.Builder.create(editor.getDocument()).range(r)
+        .annotations(getAllAnnotationsInRange(r)).build();
   }
+  
+  
 
+  @Override
+  public void onUpdate(final EditorUpdateEvent event) {
+    if (event.selectionLocationChanged()) {
+        Range range = editor.getSelectionHelper().getOrderedSelectionRange();
+        JsoRange.Builder editorRangeBuilder = JsoRange.Builder.create(editor.getDocument());
+        if (range != null) {
+          editorRangeBuilder.range(range)
+          .annotations(getAllAnnotationsInRange(range)).build();
+        } else {
+          editorRangeBuilder.annotations(getAnnotationsByDefault());
+        }
+        
+        
+    if (listener != null)
+      listener.onSelectionChange(editorRangeBuilder.build());
+        
+    }
+  }
+  
 }

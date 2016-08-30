@@ -97,15 +97,35 @@ public class JsoAnnotationController extends JavaScriptObject {
 	/**
 	 * Handle events raised in the rendered annotation element. 
 	 */
-	public native final void onEvent(JsoEditorRange annotationContent, Event event) /*-{
+	public native final void onEvent(JsoRange annotationContent, Event event) /*-{
 		if (this.onEvent) 
 			this.onEvent(annotationContent, event);
 	}-*/;
 	
-	public native final void onChange(JsoEditorRange annotationContent) /*-{
+	public native final void onChange(JsoRange annotationContent) /*-{
 		if (this.onChange)
 			this.onChange(annotationContent);
 	}-*/;
 	
+	
+  public native final void onAdd(JsoRange annotationContent) /*-{
+    if (this.onAdd)
+      this.onAdd(annotationContent);
+  }-*/;
+
+  public native final void onRemove(JsoRange annotationContent) /*-{
+    if (this.onRemove)
+      this.onRemove(annotationContent);
+  }-*/;	
+  
+	/**
+	 * Sets the reference to the editor's pure javascript facade.
+	 * Allows handlers to interact with the editor.
+	 * 
+	 * @param jsEditorFacade
+	 */
+	public final native void setEditorJsFacade(JavaScriptObject jsEditorFacade) /*-{
+	  this.editor = jsEditorFacade;
+	}-*/;
 
 }

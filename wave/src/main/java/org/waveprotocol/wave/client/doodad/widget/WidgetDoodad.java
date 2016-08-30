@@ -93,7 +93,14 @@ public class WidgetDoodad {
         }
       }
     }
+    
+
+    @Override
+    public void onRemovedFromParent(ContentElement element, ContentElement newParent) {
+    }    
+    
   }
+  
 
 
   static class WidgetEventHandler extends NodeEventHandlerImpl {
@@ -188,7 +195,7 @@ public class WidgetDoodad {
   public static void register(ElementHandlerRegistry registry,
       StringMap<JsoWidgetController> controllers) {
 
-	widgetControllers = controllers;  
+    widgetControllers = controllers;  
 	  
     WidgetRendererHandler renderer = new WidgetRendererHandler(controllers);
     WidgetEventHandler eventHandler = new WidgetEventHandler(controllers);

@@ -78,17 +78,17 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   private static Set<MutationHandler> getMutationHandlers(ContentElement element) {
 	
 	Set<MutationHandler> handlers = new HashSet<MutationHandler>();  
-	  
+	
+	
 	element.getAttributes().each(new ProcV<String>() {
 		@Override
 		public void apply(String key, String value) {
 			
-			if (key.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR)) {
-				MutationHandler h = AnnotationPaint.mutationHandlerRegistry.get(key);
-				if (h != null)
-					handlers.add(h);
-			}
-			
+		  if (key.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX)) {		    
+		    MutationHandler h = AnnotationPaint.mutationHandlerRegistry.get(value);
+        if (h != null)
+          handlers.add(h);		    
+		  }		
 		}		
 	});
 	
@@ -223,12 +223,26 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
       element.setBothNodelets(newNodelet);
     }
   }
+    
+  @Override
+  public void onAddedToParent(ContentElement element, ContentElement oldParent) {
+    Set<MutationHandler> handlers = getMutationHandlers(element);
+    for (MutationHandler h : handlers) {
+      h.onAdded(element);
+    }
+  }  
 
   @Override
   public void onRemovedFromParent(ContentElement element, ContentElement newParent) {
     if (newParent != null) {
       return;
     }
+    
+    Set<MutationHandler> handlers = getMutationHandlers(element);
+    for (MutationHandler h: handlers) {
+      h.onRemoved(element);
+    }
+    
     removeListener(DomHelper.castToOld(element.getImplNodelet()));
     super.onRemovedFromParent(element, newParent);
   }

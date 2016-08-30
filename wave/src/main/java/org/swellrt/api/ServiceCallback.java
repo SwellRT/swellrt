@@ -1,5 +1,7 @@
 package org.swellrt.api;
 
+import org.swellrt.api.js.generic.ModelJS;
+
 import com.google.gwt.core.client.JavaScriptObject;
 
 public class ServiceCallback extends JavaScriptObject {
@@ -23,6 +25,9 @@ public class ServiceCallback extends JavaScriptObject {
       return r;
     }-*/;
 
+    public static native JavaScriptResponse success(ModelJS cObject) /*-{
+      return cObject;
+    }-*/;
 
     public static native JavaScriptResponse error(String json) /*-{
       var r;

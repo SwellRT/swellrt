@@ -73,13 +73,13 @@ public class JsoWidgetController extends JavaScriptObject {
         element.innerHTML="<span style='background: #FFD677;'>"+after+"</span>";
       },
 
-	  onActivated: function(element) {
-	   	// attach event handlers
-	  },
-	  
-	  onDeactivated: function(element) {
-	  	// deattach event handlers
-	  }
+  	  onActivated: function(element) {
+  	   	// attach event handlers
+  	  },
+  	  
+  	  onDeactivated: function(element) {
+  	  	// deattach event handlers
+  	  }
 
     };
 
@@ -113,5 +113,14 @@ public class JsoWidgetController extends JavaScriptObject {
     	this.onDeactivated(parent);  
   }-*/;
 
+  /**
+   * Sets the reference to the editor's pure javascript facade.
+   * Allows handlers to interact with the editor.
+   * 
+   * @param jsEditorFacade
+   */
+  public final native void setEditorJsFacade(JavaScriptObject jsEditorFacade) /*-{
+    this.editor = jsEditorFacade;
+  }-*/;
 
 }

@@ -81,6 +81,10 @@ public class BrowserSession {
 	    return token;
 	
 	}-*/;
+
+	public static String getWindowSessionId() {
+	  return getToken();
+	}
 	
 	
 	public static native String getSessionId() /*-{
@@ -100,6 +104,12 @@ public class BrowserSession {
 		return null;
 	}-*/;
 	
+	public static native String getUserAddress() /*-{
+	  if ($wnd.__session && $wnd.__session['address'] != null)   
+      return $wnd.__session['address'];
+      
+    return null;
+	}-*/;
 	
 	/**
 	 * Define session data in a window object.

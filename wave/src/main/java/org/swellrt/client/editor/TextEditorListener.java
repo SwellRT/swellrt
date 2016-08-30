@@ -1,11 +1,11 @@
 package org.swellrt.client.editor;
 
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoEditorRange;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange;
 
 
 public interface TextEditorListener {
 
-  public void onSelectionChange(JsoEditorRange annotationsInRage);
+  public void onSelectionChange(JsoRange annotationsInRage);
 
 
 }
