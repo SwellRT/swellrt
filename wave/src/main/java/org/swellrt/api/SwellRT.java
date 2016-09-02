@@ -298,55 +298,64 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     //
     // Clean session, websocket ,objects and registries
     //
-    cleanSessionData();
-   
-    shouldOpenWebsocket = true;
-    
-    for (ModelJS co: objectRegistry.values())
-       SwellRTUtils.deleteJsObject(co);
-    
-    objectRegistry.clear();
-    
-    for (WaveLoader wave: waveRegistry.values())
-      wave.destroy();
-    
-    waveRegistry.clear();
-    websocket.disconnect(false);
-    
-    for (TextEditor editor: editorRegistry.values())
-      editor.cleanUp();
-    
-    editorRegistry.clear();
-    
-    
-    //
-    // Call server to close remote session
-    // 
-    
-    String url = baseServerUrl + "/swell/auth";
-    url = BrowserSession.addSessionToUrl(url);
 
-    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
-    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
-    builder.sendRequest("{}", new RequestCallback() {
+    try {
 
-      @Override
-      public void onResponseReceived(Request request, Response response) {
+      for (ModelJS co : objectRegistry.values())
+        SwellRTUtils.deleteJsObject(co);
 
-        if (response.getStatusCode() != 200)
-          callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
-        else {
-          callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+      objectRegistry.clear();
+
+      for (WaveLoader wave : waveRegistry.values())
+        wave.destroy();
+
+      waveRegistry.clear();
+
+      for (TextEditor editor : editorRegistry.values())
+        editor.cleanUp();
+      editorRegistry.clear();
+
+      shouldOpenWebsocket = true;
+      if (websocket != null)
+        websocket.disconnect(false);
+
+      //
+      // Call server to close remote session
+      //
+
+      String url = baseServerUrl + "/swell/auth";
+      url = BrowserSession.addSessionToUrl(url);
+
+      RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
+      builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+      builder.sendRequest("{}", new RequestCallback() {
+
+        @Override
+        public void onResponseReceived(Request request, Response response) {
+
+          if (response.getStatusCode() != 200)
+            callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
+          else {
+            callback.onComplete(ServiceCallback.JavaScriptResponse.success(response.getText()));
+          }
+
         }
 
-      }
+        @Override
+        public void onError(Request request, Throwable exception) {
+          callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
+              exception.getMessage()));
+        }
+      });
 
-      @Override
-      public void onError(Request request, Throwable exception) {
-        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION",
-            exception.getMessage()));
-      }
-    });
+    } catch (RuntimeException e) {
+      
+      // TODO 
+
+    } finally {
+
+      cleanSessionData();
+    }
 
   }
   
