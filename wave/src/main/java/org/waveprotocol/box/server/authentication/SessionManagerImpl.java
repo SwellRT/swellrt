@@ -124,8 +124,6 @@ public final class SessionManagerImpl implements SessionManager {
 
   @Override
   public void logout(HttpSession session) {
-    if (session != null) {
-
       String windowId = null;
       if (session instanceof HttpWindowSession) {
         HttpWindowSession wSession = (HttpWindowSession) session;
@@ -138,7 +136,8 @@ public final class SessionManagerImpl implements SessionManager {
         session.removeAttribute(USER_FIELD + "_" + windowId);
       else
         session.removeAttribute(USER_FIELD);
-    }
+      
+      session.invalidate();
   }
 
   @Override

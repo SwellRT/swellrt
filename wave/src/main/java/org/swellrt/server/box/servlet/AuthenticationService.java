@@ -1,23 +1,5 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.common.base.Preconditions;
-import com.google.gson.JsonParseException;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
-
-import org.apache.commons.io.IOUtils;
-import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
-import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.box.server.util.RegistrationUtil;
-import org.waveprotocol.wave.model.id.WaveIdentifiers;
-import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
@@ -38,6 +20,23 @@ import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.io.IOUtils;
+import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
+import org.waveprotocol.box.server.authentication.ParticipantPrincipal;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.util.RegistrationUtil;
+import org.waveprotocol.wave.model.id.WaveIdentifiers;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.common.base.Preconditions;
+import com.google.gson.JsonParseException;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * A servlet for authenticating a user's password and giving them a token via a
@@ -233,7 +232,7 @@ public class AuthenticationService extends BaseService {
 
 
       } else if (!authData.isParsedField("id") || !authData.isParsedField("password")) {
-        // Don't throw error, close the current session if it exists
+        // Nothing to do here, close session later  
       } else {
         sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_MISSING_PARAMETER);
         return;
@@ -252,8 +251,7 @@ public class AuthenticationService extends BaseService {
         if (context != null)
           context.logout();
       } catch (LoginException e) {
-        // Logout failed. Absorb the error, since we're about to throw an
-        // illegal state exception anyway.
+        LOG.info("An error ocurred during logout request", e);
       }
 
       sendResponse(resp, new AuthenticationServiceData("SESSION_CLOSED"));
