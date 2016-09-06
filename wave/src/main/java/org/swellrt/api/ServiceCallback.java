@@ -49,6 +49,26 @@ public class ServiceCallback extends JavaScriptObject {
 
   }
 
+  
+  private static ServiceCallback VOID_SERVICE_CALLBACK = null;
+  
+  private static native ServiceCallback createVoidCallback() /*-{
+  
+    var callback = function(x) {
+      console.log("Default callback invoked. Did you forget a callback argument?");
+    };
+    
+    return callback;
+  
+  }-*/;
+  
+  public static ServiceCallback getVoidCallback() {
+    
+    if (VOID_SERVICE_CALLBACK == null)
+      VOID_SERVICE_CALLBACK = createVoidCallback();
+    
+    return VOID_SERVICE_CALLBACK;    
+  }
 
   protected ServiceCallback() {
   }

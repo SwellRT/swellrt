@@ -190,10 +190,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     channel = null;
   }
 
-  public void login(JavaScriptObject parameters, final ServiceCallback callback)
+  public void login(JavaScriptObject parameters, ServiceCallback _callback)
       throws RequestException {
 
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
 
+    final ServiceCallback callback = _callback;
+    
     String url = baseServerUrl + "/swell/auth";
 
     RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
@@ -241,8 +245,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
-  public void resume(final ServiceCallback callback)
+  public void resume(ServiceCallback _callback)
       throws RequestException {
+    
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
 
     String url = baseServerUrl + "/swell/auth";
     url = BrowserSession.addSessionToUrl(url);
@@ -293,8 +302,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public void logout(final ServiceCallback callback) throws RequestException {
+  public void logout(ServiceCallback _callback) throws RequestException {
 
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
+    
     //
     // Clean session, websocket ,objects and registries
     //
@@ -421,7 +435,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
    * @param callback
    * @throws RequestException
    */
-  public void open(JavaScriptObject parameters, final ServiceCallback callback) throws RequestException {
+  public void open(JavaScriptObject parameters, ServiceCallback _callback) throws RequestException {
+    
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
     
     Preconditions.checkArgument(loggedInUser != null, "Login is not present");
     
@@ -515,7 +534,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }-*/;
 
   
-  public void close(JavaScriptObject parameters, final ServiceCallback callback) throws RequestException {
+  public void close(JavaScriptObject parameters, ServiceCallback callback) throws RequestException {
+    
+    if (callback == null)
+      callback = ServiceCallback.getVoidCallback();
+    
     String id = extractWaveIdParameter(parameters);
     Preconditions.checkArgument(id != null, "Missing object or id");
     WaveId waveId = WaveId.deserialise(id);
@@ -1346,9 +1369,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
 
 
-  public void createUser(JavaScriptObject parameters, final ServiceCallback callback)
+  public void createUser(JavaScriptObject parameters, ServiceCallback _callback)
       throws RequestException {
 
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
 
     String url = baseServerUrl + "/swell/account";
     url = BrowserSession.addSessionToUrl(url);
@@ -1378,9 +1405,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
-  public void updateUserProfile(JavaScriptObject parameters, final ServiceCallback callback)
+  public void updateUserProfile(JavaScriptObject parameters, ServiceCallback _callback)
       throws RequestException {
 
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
+    
     String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
     url = BrowserSession.addSessionToUrl(url);
 
@@ -1409,8 +1441,13 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public void getUserProfile(final ServiceCallback callback)
+  public void getUserProfile(ServiceCallback _callback)
       throws RequestException {
+    
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
 
     String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
     url = BrowserSession.addSessionToUrl(url);
@@ -1437,9 +1474,14 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     });
   }
 
-  public void getUserProfile(JsArrayString participants, final ServiceCallback callback)
+  public void getUserProfile(JsArrayString participants, ServiceCallback _callback)
       throws RequestException {
 
+    if (_callback == null)
+      _callback = ServiceCallback.getVoidCallback();
+
+    final ServiceCallback callback = _callback;
+    
     String url = baseServerUrl + "/swell/account/";
     url = BrowserSession.addSessionToUrl(url);
 
