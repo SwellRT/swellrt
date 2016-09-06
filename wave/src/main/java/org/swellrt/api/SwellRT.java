@@ -465,6 +465,17 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       
     };
     
+    if (waveRegistry.containsKey(waveId)) {    
+      ModelJS cobJsFacade = objectRegistry.get(waveId);
+      
+      if (cobJsFacade != null)
+        callback.onComplete(ServiceCallback.JavaScriptResponse.success(cobJsFacade));
+      else
+        callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION", "Object is open but no native facade found"));
+      
+      return; // don't continue
+    }
+    
     
     if (shouldOpenWebsocket) {
       openWebsocket(new Callback<Void, Void>() {
@@ -508,16 +519,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String id = extractWaveIdParameter(parameters);
     Preconditions.checkArgument(id != null, "Missing object or id");
     WaveId waveId = WaveId.deserialise(id);
-    Preconditions.checkArgument(waveRegistry.containsKey(waveId), "Object is not opened");    
+    Preconditions.checkArgument(waveRegistry.containsKey(waveId), "Object is not open");    
     
     for (TextEditor e: editorRegistry.values())
       if (e.getWaveId().equals(waveId))
         e.cleanUp();
     
     waveRegistry.remove(waveId).destroy();
-    ModelJS co = objectRegistry.remove(waveId);
-    SwellRTUtils.deleteJsObject(co);
-   
+    ModelJS co = objectRegistry.get(waveId);
+    objectRegistry.remove(waveId);
+    SwellRTUtils.deleteJsObject(co);   
   }
 
   
