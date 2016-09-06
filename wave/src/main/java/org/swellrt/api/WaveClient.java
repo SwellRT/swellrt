@@ -631,14 +631,16 @@ public class WaveClient implements SwellRT.Listener {
       exceptionCode = "REQUEST_EXCEPTION";
     else if (e instanceof UmbrellaException) {
       exceptionCode = "UMBRELLA_EXCEPTION";
-    }  else if (e instanceof NetworkException) {
+    } else if (e instanceof NetworkException) {
       exceptionCode = "NETWORK_EXCEPTION";
+    } else if (e instanceof IllegalArgumentException) {
+      exceptionCode = "ILLEGAL_ARGUMENT_EXCEPTION";
+    } else if (e instanceof RuntimeException) {
+
+    } else if (e instanceof Throwable) {
+
     }
-    
-    StringBuilder sb = new StringBuilder();
-	PrintStream ps = new StackTracePrintStream(sb);
-	((Exception) e).printStackTrace(ps);
-	GWT.log(sb.toString());
+ 
     
     return exceptionCode;
   }
