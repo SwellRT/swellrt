@@ -77,7 +77,7 @@ public interface SessionManager {
    *        request.getSession(true);
    * @param id the user who has been logged in
    */
-  void login(HttpSession session, ParticipantId id);
+  void setLoggedInUser(HttpSession session, ParticipantId id);
 
   /**
    * Log the user out.
@@ -87,27 +87,7 @@ public interface SessionManager {
    * @param session The user's HTTP session, obtainable from
    *        request.getSession(false);
    */
-  boolean logout(HttpSession session);
-  
-  /**
-   * Log the user out.
-   *
-   * If session is null, this function has no effect.
-   *
-   * @param session The user's HTTP session, obtainable from
-   *        request.getSession(false); 
-   * @param participant to be log out
-   */
-  boolean logout(HttpSession session, ParticipantId id);
-  
-  /**
-   * Resume a session, with the last user log in any 
-   * window session.
-   * 
-   * @param request
-   * @return the participant or null
-   */
-  ParticipantId resume(HttpServletRequest request);
+  void logout(HttpSession session);
 
   /**
    * Get the relative URL to redirect the user to the login page.
@@ -166,6 +146,14 @@ public interface SessionManager {
    * @return a set of participants, maybe empty, but never null.
    */
   Set<ParticipantId> getAllLoggedInUser(HttpSession session);
+
+  /**
+   * Return the last user who has opened a session on the browser.
+   * 
+   * @param session
+   * @return
+   */
+  ParticipantId getOtherLoggedInUser(HttpSession session);
 
 
 }

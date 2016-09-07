@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.54.0-alpha"
+version = "0.53.1-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -389,11 +389,11 @@ task compileJsWebDev {
     }
 }
 
-compileJsWebDev.mustRunAfter compileJava
-run.dependsOn compileJsWebDev
+// compileJsWebDev.mustRunAfter compileJava
+// run.dependsOn compileJsWebDev
 
-// compileJsWeb.mustRunAfter compileJava
-// run.dependsOn compileJsWeb
+compileJsWeb.mustRunAfter compileJava
+run.dependsOn compileJsWeb
 
 
 compileJava.dependsOn = [generateMessages, generateGXP]

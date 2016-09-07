@@ -216,9 +216,9 @@ public class AuthenticationServletTest extends TestCase {
     servlet.doPost(req, resp);
     if (expectSuccess) {
       if (ParticipantId.isAnonymousName(address))
-        verify(manager).login(session, ANONYMOUS_USER);
+        verify(manager).setLoggedInUser(session, ANONYMOUS_USER);
       else
-        verify(manager).login(session, USER);
+        verify(manager).setLoggedInUser(session, USER);
     }
   }
 }
