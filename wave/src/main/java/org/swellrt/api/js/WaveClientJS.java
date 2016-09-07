@@ -219,20 +219,30 @@ public class WaveClientJS extends JavaScriptObject {
 
          },
 
-         resume: function(onComplete) {
+         resume: function(parameters, onComplete) {
+
+            if (!onComplete) {
+              onComplete = parameters;
+              parameters = "{}";
+            }
 
             try {
-              return delegate.@org.swellrt.api.WaveClient::resume(Lorg/swellrt/api/ServiceCallback;)(onComplete);
+              return delegate.@org.swellrt.api.WaveClient::resume(Lcom/google/gwt/core/client/JavaScriptObject;Lorg/swellrt/api/ServiceCallback;)(parameters, onComplete);
             } catch (e) {
               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
             }
 
          },
 
-         logout: function(onComplete) {
+         logout: function(parameters, onComplete) {
+
+            if (!onComplete) {
+              onComplete = parameters;
+              parameters = "{}";
+            }
 
             try {
-              return delegate.@org.swellrt.api.WaveClient::logout(Lorg/swellrt/api/ServiceCallback;)(onComplete);
+              return delegate.@org.swellrt.api.WaveClient::logout(Lcom/google/gwt/core/client/JavaScriptObject;Lorg/swellrt/api/ServiceCallback;)(parameters, onComplete);
             } catch (e) {
               throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
             }

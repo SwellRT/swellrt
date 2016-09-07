@@ -129,15 +129,15 @@ public class WaveClient implements SwellRT.Listener {
     coreClient.login(parameters, onComplete);
   }
 
-  public void resume(ServiceCallback onComplete)
+  public void resume(JavaScriptObject parameters, ServiceCallback onComplete)
       throws RequestException {
-    coreClient.resume(onComplete);
+    coreClient.resume(parameters, onComplete);
   }
 
 
-  public void logout(ServiceCallback onComplete)
+  public void logout(JavaScriptObject parameters, ServiceCallback onComplete)
       throws RequestException {
-    coreClient.logout(onComplete);
+    coreClient.logout(parameters, onComplete);
   }
 
   public void open(JavaScriptObject parameters, ServiceCallback onComplete) throws RequestException {

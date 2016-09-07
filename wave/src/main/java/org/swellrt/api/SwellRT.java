@@ -198,7 +198,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     final ServiceCallback callback = _callback;
     
-    String url = baseServerUrl + "/swell/auth";
+    JsoView jsParameters = JsoView.as(parameters);
+    String participantId = null;
+    if (jsParameters != null) 
+      participantId = jsParameters.getString("id");
+    
+    String url = baseServerUrl + "/swell/auth/"+(participantId != null ? participantId : "");
 
     RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
@@ -245,7 +250,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   }
 
-  public void resume(ServiceCallback _callback)
+  public void resume(JavaScriptObject parameters, ServiceCallback _callback)
       throws RequestException {
     
     if (_callback == null)
@@ -253,7 +258,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     final ServiceCallback callback = _callback;
 
-    String url = baseServerUrl + "/swell/auth";
+    JsoView jsParameters = JsoView.as(parameters);
+    String participantId = null;
+    if (jsParameters != null) 
+      participantId = jsParameters.getString("id");
+ 
+    String url = baseServerUrl + "/swell/auth/"+(participantId != null ? participantId : "");
     url = BrowserSession.addSessionToUrl(url);
 
     RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
@@ -302,7 +312,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   }
 
 
-  public void logout(ServiceCallback _callback) throws RequestException {
+  public void logout(JavaScriptObject parameters, ServiceCallback _callback) throws RequestException {
 
     if (_callback == null)
       _callback = ServiceCallback.getVoidCallback();
@@ -336,11 +346,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       //
       // Call server to close remote session
       //
+      
+      JsoView jsParameters = JsoView.as(parameters);    
+      String participantId = null;
+      if (jsParameters != null)
+       participantId = jsParameters.getString("id");    
 
-      String url = baseServerUrl + "/swell/auth";
+      String url = baseServerUrl + "/swell/auth/"+ (participantId != null ? participantId : "");
       url = BrowserSession.addSessionToUrl(url);
 
-      RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
+      RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.DELETE, url);
       builder.setHeader("Content-Type", "text/plain; charset=utf-8");
       builder.sendRequest("{}", new RequestCallback() {
 

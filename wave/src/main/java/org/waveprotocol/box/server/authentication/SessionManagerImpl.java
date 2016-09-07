@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
+import org.eclipse.jetty.security.authentication.LoginAuthenticator;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.persistence.AccountStore;
@@ -106,7 +107,7 @@ public final class SessionManagerImpl implements SessionManager {
   }
 
   @Override
-  public void setLoggedInUser(HttpSession session, ParticipantId id) {
+  public void login(HttpSession session, ParticipantId id) {
     Preconditions.checkNotNull(session, "Session is null");
     Preconditions.checkNotNull(id, "Participant id is null");
 
@@ -123,21 +124,140 @@ public final class SessionManagerImpl implements SessionManager {
   }
 
   @Override
-  public void logout(HttpSession session) {
-      String windowId = null;
-      if (session instanceof HttpWindowSession) {
-        HttpWindowSession wSession = (HttpWindowSession) session;
-        windowId = wSession.getWindowId();
+  public boolean logout(HttpSession session) {
+    
+    // Remove all window sessions
+    Enumeration<String> attributes = session.getAttributeNames();
+    
+    while (attributes.hasMoreElements()) {
+      String attr = attributes.nextElement(); 
+      if (attr.startsWith(USER_FIELD)); {               
+        session.removeAttribute(attr);      
+      }
+    }
+    
+    return true;
+  }
+  
+  @Override
+  public boolean logout(HttpSession session, ParticipantId id) {
+    
+    // remove all attributes storing window sessions
+    
+    boolean wasDeleted = false;
+    
+    String windowId = null;
+    if (session instanceof HttpWindowSession) {
+      HttpWindowSession wSession = (HttpWindowSession) session;
+      windowId = wSession.getWindowId();
+    }
+    
+    if (windowId != null) {
+      // Remove all window sessions with this user
+      Enumeration<String> attributes = session.getAttributeNames();
+      
+      while (attributes.hasMoreElements()) {
+        String attr = attributes.nextElement();
+        if (attr.startsWith(USER_FIELD)) {
+          ParticipantId participantIdAttr = (ParticipantId) session.getAttribute(attr);
+          if (participantIdAttr != null && participantIdAttr.equals(id)) {
+            session.removeAttribute(attr);      
+            wasDeleted = true;
+          }
+        }       
+      }
+      
+    } else {      
+      // Remove the session if user is in attribute
+      Object userAttrObject = session.getAttribute(USER_FIELD);
+      if (userAttrObject != null) {
+        ParticipantId participantIdAttr = (ParticipantId) userAttrObject;
+        if (participantIdAttr != null && participantIdAttr.equals(id)) {
+          session.removeAttribute(USER_FIELD);
+          wasDeleted = true;
+        }
       }
 
-      // This function should also remove any other bound fields in the session
-      // object.
-      if (windowId != null)
-        session.removeAttribute(USER_FIELD + "_" + windowId);
-      else
-        session.removeAttribute(USER_FIELD);
-      
-      session.invalidate();
+    }
+    return wasDeleted;
+  }
+  
+  @Override
+  public ParticipantId resume(ParticipantId participant, HttpServletRequest request) {
+    
+    // if participant is null, 
+    //    check for previous window session
+    //    or 
+    //    resume with the last log in participant
+    //
+    // if participant no null, resume with her if it has an open session
+   
+    HttpSession session = getSession(request);
+    
+    if (session == null) return null;
+
+
+    String windowId = null;
+    if (session instanceof HttpWindowSession) {
+      HttpWindowSession wSession = (HttpWindowSession) session;
+      windowId = wSession.getWindowId();
+    }
+    
+    if (participant == null && windowId != null) {
+      Object o = session.getAttribute(USER_FIELD+"_"+windowId);
+      if (o != null) {
+        login(session, (ParticipantId) o);
+        return (ParticipantId) o;
+      }
+    }
+    
+    
+    ParticipantId matchedParticipant = null;
+    int matchedParticipantIndex = -1;
+    Enumeration<String> names = session.getAttributeNames();
+    
+    // Found the last participant among all the session attributes
+    while (names.hasMoreElements()) {
+      String name = names.nextElement();
+      if (name.startsWith(USER_FIELD)) {
+        if (name.contains(USER_FIELD + "_")) {
+
+          int index = Integer.valueOf(name.split("_")[1]);
+
+          if (index > matchedParticipantIndex) {
+            matchedParticipantIndex = index;
+            matchedParticipant = (ParticipantId) session.getAttribute(name);
+            if (participant != null && matchedParticipant.equals(participant)) {
+              break;
+            }
+          }
+
+        } else {
+
+          if (matchedParticipantIndex < 0) {
+            matchedParticipantIndex = 0;
+            matchedParticipant = (ParticipantId) session.getAttribute(name);
+            if (participant != null && matchedParticipant.equals(participant)) {
+              break;
+            }
+          }
+
+        }
+      }
+    }
+    
+    if (participant != null) {
+      if (matchedParticipant != null && matchedParticipant.equals(participant)) {
+        login(session, matchedParticipant);
+        return participant;
+      } else 
+        return null;      
+    }
+    
+    if (matchedParticipant != null)
+      login(session, matchedParticipant);
+    
+    return matchedParticipant;
   }
 
   @Override
@@ -210,40 +330,4 @@ public final class SessionManagerImpl implements SessionManager {
     return participants;
   }
 
-
-  @Override
-  public ParticipantId getOtherLoggedInUser(HttpSession session) {
-
-    if (session == null) return null;
-
-    ParticipantId lastParticipant = null;
-    int lastParticipantIndex = -1;
-    Enumeration<String> names = session.getAttributeNames();
-
-    // Found the last participant among all the session attributes
-    while (names.hasMoreElements()) {
-      String name = names.nextElement();
-      if (name.contains(USER_FIELD)) {
-        if (name.contains(USER_FIELD + "_")) {
-
-          int index = Integer.valueOf(name.split("_")[1]);
-
-          if (index > lastParticipantIndex) {
-            lastParticipantIndex = index;
-            lastParticipant = (ParticipantId) session.getAttribute(name);
-          }
-
-        } else {
-
-          if (lastParticipantIndex < 0) {
-            lastParticipantIndex = 0;
-            lastParticipant = (ParticipantId) session.getAttribute(name);
-          }
-
-        }
-      }
-    }
-
-    return lastParticipant;
-  }
 }

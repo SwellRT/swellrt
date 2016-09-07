@@ -148,6 +148,24 @@ public class SwellRtServlet extends HttpServlet {
 
     }
 
+  }
+  
+  @Override
+  protected void doDelete(HttpServletRequest req, HttpServletResponse response) throws IOException {
+    
+    String[] pathTokens = getCleanPathInfo(req).split("/");
+    String entity = pathTokens[1];
+    
+    if (entity.equals("auth")) {
 
+      injector.getInstance(AuthenticationService.class).execute(req, response);
+
+    } else {
+
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+
+    }
+    
   }
 }

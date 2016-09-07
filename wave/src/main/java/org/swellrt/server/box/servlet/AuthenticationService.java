@@ -123,6 +123,8 @@ public class AuthenticationService extends BaseService {
         doPost(request, response);
       else if (request.getMethod().equals("GET"))
         doGet(request, response);
+      else if (request.getMethod().equals("DELETE"))
+        doDelete(request, response);
 
     } catch (PersistenceException e) {
       sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -229,37 +231,14 @@ public class AuthenticationService extends BaseService {
           loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
 
         }
-
-
-      } else if (!authData.isParsedField("id") || !authData.isParsedField("password")) {
-        // Nothing to do here, close session later  
       } else {
         sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_MISSING_PARAMETER);
         return;
       }
-
-
     }
 
-    // If we have reach this point with a no login, close current session
-    if (loggedInAddress == null) {
-
-      try {
-        session = sessionManager.getSession(req);
-        LOG.info("Closing session " + (session != null ? session.getId() : ""));
-        sessionManager.logout(session);
-        if (context != null)
-          context.logout();
-      } catch (LoginException e) {
-        LOG.info("An error ocurred during logout request", e);
-      }
-
-      sendResponse(resp, new AuthenticationServiceData("SESSION_CLOSED"));
-      return;
-
-    }
-
-    sessionManager.setLoggedInUser(session, loggedInAddress);
+ 
+    sessionManager.login(session, loggedInAddress);
     LOG.info("Authenticated user " + loggedInAddress);
 
     AccountService.AccountServiceData accountData;
@@ -277,6 +256,45 @@ public class AuthenticationService extends BaseService {
     sendResponse(resp, accountData);
 
   }
+
+  /**
+   * DELETE a session
+   * 
+   * @param req
+   * @param resp
+   * @throws IOException
+   */
+  protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+    String[] pathTokens = SwellRtServlet.getCleanPathInfo(req).split("/");
+    String participantToken =  pathTokens.length > 2 ? pathTokens[2] : null;
+    
+    HttpSession session = sessionManager.getSession(req);
+    
+    boolean wasDelete = false;
+    
+    if (participantToken != null && !participantToken.isEmpty()) {      
+      ParticipantId participantId;
+      try {
+        participantId = ParticipantId.of(participantToken);
+      } catch (InvalidParticipantAddress e) {
+        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
+        return;
+      }  
+      wasDelete = sessionManager.logout(session, participantId);            
+    } else {      
+      wasDelete = sessionManager.logout(session);      
+    }
+    
+    if (wasDelete) {
+      sendResponse(resp, new AuthenticationServiceData("SESSION_CLOSED"));
+      return;
+    } else {
+      sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_ACCOUNT_NOT_LOGGED_IN);
+      return;
+    }
+
+}
 
   /**
    * Get the participant id of the given subject.
@@ -381,19 +399,23 @@ public class AuthenticationService extends BaseService {
    */
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException,
       PersistenceException {
-    // If the user is already logged in, we'll try to redirect them immediately.
-    resp.setCharacterEncoding("UTF-8");
-    req.setCharacterEncoding("UTF-8");
 
-    HttpSession session = sessionManager.getSession(req, false);
-    ParticipantId participantId = sessionManager.getLoggedInUser(req);
+    String[] pathTokens = SwellRtServlet.getCleanPathInfo(req).split("/");
+    String participantToken = pathTokens.length > 2 ? pathTokens[2] : null;
+    
+    ParticipantId participantId = null;
 
-    // Resume last user session from other browser's tab or window.
-    if (participantId == null && session != null) {
-      participantId = sessionManager.getOtherLoggedInUser(session);
-      if (participantId != null) sessionManager.setLoggedInUser(session, participantId);
-    }
-
+    if (participantToken != null && !participantToken.isEmpty()) {
+      try {
+        participantId = ParticipantId.of(participantToken);
+      } catch (InvalidParticipantAddress e) {
+        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
+        return;
+      }  
+    } 
+    
+    participantId = sessionManager.resume(participantId, req);
+   
     if (participantId != null) {
 
       AccountService.AccountServiceData accountData;
@@ -432,7 +454,7 @@ public class AuthenticationService extends BaseService {
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
-
+    
     String json = writer.toString();
 
     if (json == null)

@@ -595,12 +595,11 @@ public class ServerRpcProvider {
     	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(Integer.MAX_VALUE));
     else
     	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(sessionCookieMaxAge));
-
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
-    corsFilterHolder.setInitParameter("allowedOrigins", "*");
+    corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
     // Set explicit methods to allow CORS with DELETE
-    corsFilterHolder.setInitParameter("allowedMethods", "GET,POST,DELETE,PUT,HEAD");
-    corsFilterHolder.setInitParameter("allowedHeaders",
+    corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,POST,DELETE,PUT,HEAD");
+    corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM,
         "X-Requested-With,Content-Type,Accept,Origin,X-window-id");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
 
