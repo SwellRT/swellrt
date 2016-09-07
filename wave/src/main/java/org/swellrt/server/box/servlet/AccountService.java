@@ -82,6 +82,20 @@ public class AccountService extends BaseService {
 
   }
 
+  public static class ListAccountData extends ServiceData {
+
+    public List<AccountServiceData> accounts;
+
+    public ListAccountData() {
+      accounts = new ArrayList<AccountServiceData>();
+    }
+
+    public String toJson() {
+      return gson.toJson(accounts);
+    }
+
+  }
+
 
 
   private static final Log LOG = Log.get(AccountService.class);

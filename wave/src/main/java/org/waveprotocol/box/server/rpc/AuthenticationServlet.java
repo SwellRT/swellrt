@@ -251,7 +251,7 @@ public class AuthenticationServlet extends HttpServlet {
       loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
     }
 
-    sessionManager.setLoggedInUser(session, loggedInAddress);
+    sessionManager.login(session, loggedInAddress);
     LOG.info("Authenticated user " + loggedInAddress);
 
     if (checkNoRedirect(req)) {

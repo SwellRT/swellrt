@@ -11,7 +11,7 @@ import com.google.gson.JsonParser;
 public abstract class ServiceData {
 
   private static JsonParser jsonParser = new JsonParser();
-  private static Gson gson = new Gson();
+  protected static Gson gson = new Gson();
 
 
   public static ServiceData fromJson(String json, Class<? extends ServiceData> classOf)
