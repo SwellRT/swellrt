@@ -114,6 +114,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
 
   private static final String ACCOUNT_AVATAR_FILE = "avatarFile";
   private static final String ACCOUNT_LOCALE = "locale";
+  private static final String NAME_FIELD = "name";
 
   private final DB database;
   private final GridFS attachmentGrid;
@@ -359,6 +360,11 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       object.put(ACCOUNT_AVATAR_FILE, account.getAvatarFileId());
     }
 
+    if (account.getName() != null) {
+      object.put(NAME_FIELD, account.getName());
+    }
+
+    
     return object;
   }
 
@@ -368,6 +374,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     SecretToken token = null;
     String locale = null;
     String avatarFileName = null;
+    String name = null;
 
     DBObject digestObj = (DBObject) object.get(HUMAN_PASSWORD_FIELD);
     if (digestObj != null) {
@@ -382,8 +389,9 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
 
     locale = (String) object.get(ACCOUNT_LOCALE);
     avatarFileName = (String) object.get(ACCOUNT_AVATAR_FILE);
-
-    return new HumanAccountDataImpl(id, passwordDigest, email, token, locale, avatarFileName);
+    name = (String) object.get(NAME_FIELD);
+    
+    return new HumanAccountDataImpl(id, passwordDigest, email, token, locale, avatarFileName, name);
   }
 
   // ****** RobotAccountData serialization

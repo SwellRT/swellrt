@@ -1,9 +1,16 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.gson.JsonParseException;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.EmailValidator;
@@ -21,17 +28,9 @@ import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.google.gson.JsonParseException;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * Service for creating and editing accounts.
@@ -43,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
  * POST /account { id : <ParticipantId>, password : <String>, ... }
  *
  *
- * Edit accound profile (empty values are deleted)
+ * Edit accoun profile (empty values are deleted)
  *
  * POST /account/{ParticipantId.name} { ... }
  *
@@ -63,7 +62,7 @@ public class AccountService extends BaseService {
   public static class AccountServiceData extends ServiceData {
 
     public String id;
-    public String name; // For future use
+    public String name;
     public String password;
     public String email;
     public String avatarData;
@@ -302,6 +301,8 @@ public class AccountService extends BaseService {
           account.setAvatarFileId(avatarFileId);
         }
       }
+       
+      if (userData.isParsedField("name")) account.setName(userData.name);
 
       accountStore.putAccount(account);
 
@@ -580,9 +581,9 @@ public class AccountService extends BaseService {
     String avatarUrl = getAvatarUrl(urlBuilder, account);
     data.avatarUrl = avatarUrl == null ? "" : avatarUrl;
     data.locale = account.getLocale() == null ? "" : account.getLocale();
+    data.name = account.getName() == null ? "" : account.getName();
 
     return data;
-
   }
 
   protected static AccountServiceData toPublicServiceData(UrlBuilder urlBuilder,
@@ -594,9 +595,9 @@ public class AccountService extends BaseService {
     String avatarUrl = getAvatarUrl(urlBuilder, account);
     data.avatarUrl = avatarUrl == null ? "" : avatarUrl;
     data.locale = account.getLocale() == null ? "" : account.getLocale();
-
+    data.name = account.getName() == null ? "" : account.getName();
+    
     return data;
-
   }
 
 

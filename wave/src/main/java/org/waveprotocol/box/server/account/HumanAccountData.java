@@ -29,6 +29,7 @@ import org.waveprotocol.box.server.authentication.PasswordDigest;
  * @author ljvderijk@google.com (Lennard de Rijk)
  * @author josephg@gmail.com (Joseph Gentle)
  * @author akaplanov@gmail.com (Andrew Kaplanov)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface HumanAccountData extends AccountData {
   /**
@@ -125,6 +126,23 @@ public interface HumanAccountData extends AccountData {
    */
   String getAvatarMimeType();
 
+  /**
+   * 
+   * @return
+   */
   String getAvatarFileId();
+  
+  /**
+   * Get the participant name
+   * @return
+   */
+  String getName();
+  
+  /**
+   * Set the participant name
+   * @return
+   */
+  void setName(String name);
+
 
 }

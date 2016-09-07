@@ -32,6 +32,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * @author akaplanov@gmail.com (Andrew kaplanov)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
+@SuppressWarnings("deprecation")
 public final class HumanAccountDataImpl implements HumanAccountData {
   private final ParticipantId id;
   private PasswordDigest passwordDigest;
@@ -39,6 +40,7 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   private String email;
   private SecretToken recoveryToken;
   private String avatarFileId;
+  private String name;
 
   /**
    * Creates an {@link HumanAccountData} for the given username, with no
@@ -75,10 +77,11 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   }
 
   public HumanAccountDataImpl(ParticipantId id, PasswordDigest passwordDigest, String email,
-      SecretToken token, String locale, String avatarFileId) {
+      SecretToken token, String locale, String avatarFileId, String name) {
     this(id, passwordDigest, email, token);
     this.locale = locale;
     this.avatarFileId = avatarFileId;
+    this.name = name;
   }
 
   @Override
@@ -209,6 +212,16 @@ public final class HumanAccountDataImpl implements HumanAccountData {
   public String getAvatarMimeType() {
     String[] parts = avatarFileId != null ? avatarFileId.split(";") : null;
     return parts != null && parts.length >= 1 ? parts[0] : null;
+  }
+
+  @Override
+  public String getName() {    
+    return name;
+  }
+
+  @Override
+  public void setName(String name) {
+   this.name = name;
   }
 
 
