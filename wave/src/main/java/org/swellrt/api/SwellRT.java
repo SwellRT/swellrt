@@ -325,23 +325,23 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     try {
 
+      for (TextEditor editor : editorRegistry.values())
+        editor.cleanUp();
+      editorRegistry.clear();
+      
       for (ModelJS co : objectRegistry.values())
         SwellRTUtils.deleteJsObject(co);
-
       objectRegistry.clear();
 
       for (WaveLoader wave : waveRegistry.values())
         wave.destroy();
-
       waveRegistry.clear();
 
-      for (TextEditor editor : editorRegistry.values())
-        editor.cleanUp();
-      editorRegistry.clear();
-
       shouldOpenWebsocket = true;
-      if (websocket != null)
+      if (websocket != null) {
         websocket.disconnect(false);
+        websocket = null;
+      }
 
       //
       // Call server to close remote session
