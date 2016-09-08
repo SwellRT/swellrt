@@ -497,8 +497,10 @@ public class TextEditor implements EditorUpdateListener {
 
   public void cleanUp() {
     if (editor != null) {
-      if (selectionExtractor != null)
-        selectionExtractor.start(editor);
+      if (selectionExtractor != null) {
+        selectionExtractor.stop(editor);
+        selectionExtractor = null;
+      }
       editor.removeUpdateListener(this);
       editor.removeContentAndUnrender();
       editor.reset();
