@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.model.util;
 
+import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 
 import java.util.ArrayList;
@@ -515,12 +516,38 @@ public class CollectionUtils {
 
     @Override
     public void addAll(ReadableStringSet set) {
-      backend.addAll(((StringSetAdapter) set).backend);
+      
+      if (set instanceof StringSetAdapter) {
+        backend.addAll(((StringSetAdapter) set).backend);
+      } else if (set instanceof JsoStringSet) {
+        JsoStringSet jsoSet = (JsoStringSet) set;
+        jsoSet.each(new Proc() {
+
+          @Override
+          public void apply(String element) {
+            backend.add(element);            
+          }
+          
+        });
+      }
     }
 
     @Override
     public void removeAll(ReadableStringSet set) {
-      backend.removeAll(((StringSetAdapter) set).backend);
+      
+      if (set instanceof StringSetAdapter) {
+        backend.removeAll(((StringSetAdapter) set).backend);
+      } else if (set instanceof JsoStringSet) {
+        JsoStringSet jsoSet = (JsoStringSet) set;
+        jsoSet.each(new Proc() {
+
+          @Override
+          public void apply(String element) {
+            backend.remove(element);            
+          }
+          
+        });
+      }     
     }
 
     @Override
