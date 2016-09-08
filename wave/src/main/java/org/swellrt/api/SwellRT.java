@@ -557,16 +557,20 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     String id = extractWaveIdParameter(parameters);
     Preconditions.checkArgument(id != null, "Missing object or id");
     WaveId waveId = WaveId.deserialise(id);
-    Preconditions.checkArgument(waveRegistry.containsKey(waveId), "Object is not open");    
+    
+    if (!waveRegistry.containsKey(waveId)) {
+      return;
+    }
     
     for (TextEditor e: editorRegistry.values())
       if (e.getWaveId().equals(waveId))
         e.cleanUp();
-    
-    waveRegistry.remove(waveId).destroy();
+
     ModelJS co = objectRegistry.get(waveId);
     objectRegistry.remove(waveId);
     SwellRTUtils.deleteJsObject(co);   
+    
+    waveRegistry.remove(waveId).destroy();
   }
 
   
