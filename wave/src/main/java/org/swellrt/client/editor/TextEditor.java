@@ -496,7 +496,7 @@ public class TextEditor implements EditorUpdateListener {
   }
 
   public void cleanUp() {
-    if (editor != null) {
+    if (editor != null && doc != null) {
       if (selectionExtractor != null) {
         selectionExtractor.stop(editor);
         selectionExtractor = null;
