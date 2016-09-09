@@ -326,7 +326,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     try {
 
       for (TextEditor editor : editorRegistry.values())
-        editor.cleanUp();
+        if (!editor.isClean())
+          editor.cleanUp();
       editorRegistry.clear();
       
       for (ModelJS co : objectRegistry.values())
@@ -563,8 +564,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     }
     
     for (TextEditor e: editorRegistry.values())
-      if (e.getWaveId().equals(waveId))
-        e.cleanUp();
+      if (!e.isClean()) 
+        if (e.getWaveId().equals(waveId))
+          e.cleanUp();
 
     ModelJS co = objectRegistry.get(waveId);
     objectRegistry.remove(waveId);

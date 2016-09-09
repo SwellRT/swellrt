@@ -509,7 +509,7 @@ public class TextEditor implements EditorUpdateListener {
     }
   }
 
-  protected boolean isClean() {
+  public boolean isClean() {
     return doc == null;
   }
 
