@@ -9,14 +9,14 @@
    <table align="center" cellpadding="0" cellspacing="0" width="600">
      <tr>
       <td style="color: #20686e; font-size: 20px; font-family: Helvetica, Arial, sans-serif; padding: 10px 10px 10px 10px;">
-       $text.joinUnnamedEmailSubject.insert($joiner)
+       $text.joinUnnamedEmailSubject.insert($url_text)
       </td>
      </tr>
      <tr>
       <td style="padding: 15px 30px 15px 30px; font-size: 15px">
 
        <p style="margin: 0 0 9px">
-        $text.joinEmailBody.insert($admin, $joiner, $joinerEmail, $url, $url_text, $message)
+        $text.joinEmailBody.insert($admin, $joinerEmail, $joiner, $url, $url_text, $message)
        </p>
       </td>
      </tr>
