@@ -62,11 +62,13 @@ public class QueryModelService extends BaseService {
 
     objectQuery.put("$or", limitPartQuery);
 
-    // exclude internal mongoDb _id
-
-    objectProjection.put("_id", 0);
     // You cannot currently mix including and excluding fields
     if (!objectProjection.toMap().containsValue(1)) {
+
+      // exclude internal mongoDb _id
+      objectProjection.put("_id", 0);
+
+      // exclude wavelet id
       objectProjection.put("wavelet_id", 0);
     }
 
