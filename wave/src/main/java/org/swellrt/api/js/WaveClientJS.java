@@ -472,6 +472,22 @@ public class WaveClientJS extends JavaScriptObject {
          },
 
          //
+         // Join
+         //
+         join: function(email, url, urlText, message, admin, onSuccess, onFailure){
+           var callback = new Object();
+           callback.success = onSuccess;
+           callback.failure = onFailure;
+
+           try {
+             delegate.@org.swellrt.api.WaveClient::join(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(email, url, urlText, message, admin, callback);
+           } catch (e) {
+             throw @org.swellrt.api.WaveClient::wrapJavaException(Ljava/lang/Object;)(e);
+           }
+         },
+
+
+         //
          // Utils
          //
 

@@ -1,12 +1,5 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.inject.Injector;
-
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
-import org.waveprotocol.box.server.waveserver.WaveletProvider;
-import org.waveprotocol.wave.util.logging.Log;
-
 import java.io.IOException;
 
 import javax.inject.Inject;
@@ -14,6 +7,13 @@ import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
+import org.waveprotocol.box.server.waveserver.WaveletProvider;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.inject.Injector;
 
 /**
  * A Servlet providing SwellRT REST operations on /swell context
@@ -137,6 +137,10 @@ public class SwellRtServlet extends HttpServlet {
 
       injector.getInstance(InviteService.class).execute(req, response);
 
+    } else if (entity.equals("join")) {
+
+      injector.getInstance(JoinMessageService.class).execute(req, response);
+
     } else if (entity.equals("object")) {
 
         injector.getInstance(ObjectApiService.class).execute(req, response);
@@ -149,13 +153,13 @@ public class SwellRtServlet extends HttpServlet {
     }
 
   }
-  
+
   @Override
   protected void doDelete(HttpServletRequest req, HttpServletResponse response) throws IOException {
-    
+
     String[] pathTokens = getCleanPathInfo(req).split("/");
     String entity = pathTokens[1];
-    
+
     if (entity.equals("auth")) {
 
       injector.getInstance(AuthenticationService.class).execute(req, response);
@@ -166,6 +170,6 @@ public class SwellRtServlet extends HttpServlet {
       return;
 
     }
-    
+
   }
 }

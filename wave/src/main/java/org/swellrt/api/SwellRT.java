@@ -142,10 +142,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /** List of living waves for the active session. */
   private Map<WaveId, WaveLoader> waveRegistry = CollectionUtils.newHashMap();
-  
+
   /** List of living collab objects with waves as substrate  */
   private Map<WaveId, ModelJS> objectRegistry = CollectionUtils.newHashMap();
-  
+
   /** List of editors created in the app */
   private Map<Element, TextEditor> editorRegistry = CollectionUtils.newHashMap();
 
@@ -153,7 +153,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
   private SwellRT.Listener listener = null;
 
   private boolean useWebSocket = true;
-  
+
   private boolean shouldOpenWebsocket = true;
 
 
@@ -197,12 +197,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       _callback = ServiceCallback.getVoidCallback();
 
     final ServiceCallback callback = _callback;
-    
+
     JsoView jsParameters = JsoView.as(parameters);
     String participantId = null;
-    if (jsParameters != null) 
+    if (jsParameters != null)
       participantId = jsParameters.getString("id");
-    
+
     String url = baseServerUrl + "/swell/auth/"+(participantId != null ? participantId : "");
 
     RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
@@ -229,7 +229,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           sessionId = responseData.getValue("sessionId");
           waveDomain = responseData.getValue("domain");
           seed = SwellRTUtils.nextBase64(10);
-          
+
           BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
                   sessionId);
 
@@ -252,7 +252,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   public void resume(JavaScriptObject parameters, ServiceCallback _callback)
       throws RequestException {
-    
+
     if (_callback == null)
       _callback = ServiceCallback.getVoidCallback();
 
@@ -260,9 +260,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     JsoView jsParameters = JsoView.as(parameters);
     String participantId = null;
-    if (jsParameters != null) 
+    if (jsParameters != null)
       participantId = jsParameters.getString("id");
- 
+
     String url = baseServerUrl + "/swell/auth/"+(participantId != null ? participantId : "");
     url = BrowserSession.addSessionToUrl(url);
 
@@ -318,7 +318,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       _callback = ServiceCallback.getVoidCallback();
 
     final ServiceCallback callback = _callback;
-    
+
     //
     // Clean session, websocket ,objects and registries
     //
@@ -329,7 +329,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         if (!editor.isClean())
           editor.cleanUp();
       editorRegistry.clear();
-      
+
       for (ModelJS co : objectRegistry.values())
         SwellRTUtils.deleteJsObject(co);
       objectRegistry.clear();
@@ -347,11 +347,11 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       //
       // Call server to close remote session
       //
-      
-      JsoView jsParameters = JsoView.as(parameters);    
+
+      JsoView jsParameters = JsoView.as(parameters);
       String participantId = null;
       if (jsParameters != null)
-       participantId = jsParameters.getString("id");    
+       participantId = jsParameters.getString("id");
 
       String url = baseServerUrl + "/swell/auth/"+ (participantId != null ? participantId : "");
       url = BrowserSession.addSessionToUrl(url);
@@ -379,8 +379,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       });
 
     } catch (RuntimeException e) {
-      
-      // TODO 
+
+      // TODO
 
     } finally {
 
@@ -388,10 +388,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     }
 
   }
-  
+
   protected void openWebsocket(final Callback<Void, Void> callback) {
     Preconditions.checkArgument(loggedInUser != null, "User not logged in. Can't open websocket.");
-    
+
     // this is needed to atmosphere to work
     setWebsocketAddress(baseServerUrl);
 
@@ -411,12 +411,12 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         callback.onFailure((Void) null);
 
       }
-    });    
-    
+    });
+
   }
-  
+
   private void openProc(WaveId waveId, final Callback<WaveLoader, String> callback) {
-    
+
      final WaveLoader wave =
           new WaveLoader(WaveRef.of(waveId), channel, TypeIdGenerator.get()
               .getUnderlyingGenerator(), waveDomain, Collections.<ParticipantId> emptySet(),
@@ -425,52 +425,52 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     if (wave.isLoaded()) {
       callback.onSuccess(wave);
     } else {
-      
+
       try {
-              
+
         wave.load(new Command() {
           @Override
           public void execute() {
             callback.onSuccess(wave);
           }
         });
-  
+
         } catch(RuntimeException e) {
             callback.onFailure(e.getMessage());
         }
     }
 
-    
+
   }
-  
+
   /**
-   * Open or create a collaborative object. 
+   * Open or create a collaborative object.
    * The underlying websocket will be openend if it is necessary.
-   * 
-   * @param parameters field "id" for collab object id or void to create a new one 
+   *
+   * @param parameters field "id" for collab object id or void to create a new one
    * @param callback
    * @throws RequestException
    */
   public void open(JavaScriptObject parameters, ServiceCallback _callback) throws RequestException {
-    
+
     if (_callback == null)
       _callback = ServiceCallback.getVoidCallback();
 
     final ServiceCallback callback = _callback;
-    
+
     Preconditions.checkArgument(loggedInUser != null, "Login is not present");
-    
+
     JsoView p = JsoView.as(parameters);
-   
+
     WaveId id = null;
     if (p.getString("id") != null) {
       id = WaveId.deserialise(p.getString("id"));
     } else {
       id = TypeIdGenerator.get().newWaveId();
     }
-    
+
     final WaveId waveId = id;
-   
+
     final Callback<WaveLoader, String> openProcCallback = new  Callback<WaveLoader, String>() {
 
       @Override
@@ -480,9 +480,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       @Override
       public void onSuccess(WaveLoader wave) {
-        
+
         waveRegistry.put(waveId, wave);
-        
+
         ModelJS cobJsFacade = null;
 
         Model cob =
@@ -492,30 +492,30 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
           cobJsFacade = ModelJS.create(cob);
           cob.addListener(cobJsFacade);
-          
+
           objectRegistry.put(waveId, cobJsFacade);
-          
+
           callback.onComplete(ServiceCallback.JavaScriptResponse.success(cobJsFacade));
       }
-      
+
     };
-    
-    if (waveRegistry.containsKey(waveId)) {    
+
+    if (waveRegistry.containsKey(waveId)) {
       ModelJS cobJsFacade = objectRegistry.get(waveId);
-      
+
       if (cobJsFacade != null)
         callback.onComplete(ServiceCallback.JavaScriptResponse.success(cobJsFacade));
       else
         callback.onComplete(ServiceCallback.JavaScriptResponse.error("SERVICE_EXCEPTION", "Object is open but no native facade found"));
-      
+
       return; // don't continue
     }
-    
-    
+
+
     if (shouldOpenWebsocket) {
       openWebsocket(new Callback<Void, Void>() {
-        
-        
+
+
         @Override
         public void onFailure(Void reason) {
           callback.onComplete(ServiceCallback.JavaScriptResponse.error("WEBSOCKET_ERROR", "Websocket can't be open"));
@@ -523,70 +523,70 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
         @Override
         public void onSuccess(Void result) {
-          openProc(waveId, openProcCallback);          
+          openProc(waveId, openProcCallback);
         }
       });
     } else {
       openProc(waveId, openProcCallback);
     }
-    
+
   }
-  
+
   private native String extractWaveIdParameter(JavaScriptObject parameters) /*-{
-  
+
     if (parameters == null || parameters === undefined)
       return null;
-  
+
     if (typeof parameters == "string")
       return parameters;
-      
+
     if (parameters.id && typeof parameters.id == "function")
        return parameters.id();
-    
+
     if (parameters.id && typeof parameters.id == "string")
        return parameters.id;
-       
+
     return null;
   }-*/;
 
-  
+
   public void close(JavaScriptObject parameters, ServiceCallback callback) throws RequestException {
-    
+
     if (callback == null)
       callback = ServiceCallback.getVoidCallback();
-    
+
     String id = extractWaveIdParameter(parameters);
     Preconditions.checkArgument(id != null, "Missing object or id");
     WaveId waveId = WaveId.deserialise(id);
-    
+
     if (!waveRegistry.containsKey(waveId)) {
       return;
     }
-    
+
     for (TextEditor e: editorRegistry.values())
-      if (!e.isClean()) 
+      if (!e.isClean())
         if (e.getWaveId().equals(waveId))
           e.cleanUp();
 
     ModelJS co = objectRegistry.get(waveId);
     objectRegistry.remove(waveId);
-    SwellRTUtils.deleteJsObject(co);   
-    
+    SwellRTUtils.deleteJsObject(co);
+
     waveRegistry.remove(waveId).destroy();
   }
 
-  
+
   public TextEditor createTextEditor(Element parent, StringMap<JsoWidgetController> widgetControllers, StringMap<JsoAnnotationController> annotationControllers) {
-            
+
     TextEditor textEditor = TextEditor.create(parent,
         widgetControllers,
         annotationControllers);
-   
+
     editorRegistry.put(parent, textEditor);
-    
+
     return textEditor;
   }
-  
+
   //
   // *******************************************************************************
   //
@@ -1433,7 +1433,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       _callback = ServiceCallback.getVoidCallback();
 
     final ServiceCallback callback = _callback;
-    
+
     String url = baseServerUrl + "/swell/account/" + loggedInUser.getName();
     url = BrowserSession.addSessionToUrl(url);
 
@@ -1464,7 +1464,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   public void getUserProfile(ServiceCallback _callback)
       throws RequestException {
-    
+
     if (_callback == null)
       _callback = ServiceCallback.getVoidCallback();
 
@@ -1502,7 +1502,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       _callback = ServiceCallback.getVoidCallback();
 
     final ServiceCallback callback = _callback;
-    
+
     String url = baseServerUrl + "/swell/account/";
     url = BrowserSession.addSessionToUrl(url);
 
@@ -1578,4 +1578,43 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     }
   }
+
+  public void join(String email, String inviteUrl, String urlText, String message, String admin,
+    final Callback<String, String> callback)
+    throws RequestException {
+
+    String baseUrl = baseServerUrl + "/swell/join/";
+    baseUrl = BrowserSession.addSessionToUrl(baseUrl);
+
+    String query = "id-or-email=" + URL.encodeQueryString(email);
+    query += "&url=" + URL.encodeQueryString(inviteUrl);
+    query += "&url_text=" + URL.encodeQueryString(urlText);
+    query += "&message=" + URL.encodeQueryString(message);
+    query += "&admin=" + URL.encodeQueryString(admin);
+    String url = baseUrl + "?" + query;
+
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.POST, url);
+
+    builder.sendRequest(null, new RequestCallback() {
+
+      @Override
+      public void onResponseReceived(Request request, Response response) {
+
+        if (response.getStatusCode() != 200)
+          callback.onFailure("SERVICE_EXCEPTION " + response.getText());
+        else
+          callback.onSuccess(response.getText());
+      }
+
+      @Override
+      public void onError(Request request, Throwable exception) {
+        callback.onFailure("SERVICE_EXCEPTION " + exception.getMessage());
+
+      }
+
+    });
+
+
+  }
+
 }
