@@ -134,7 +134,7 @@ public class JoinMessageService extends BaseService {
         String inviter = participantId.getAddress().split("@")[0];
         subject = MessageFormat.format(b.getString("joinNamedEmailSubject"), inviter, urlText);
       } else {
-        subject = MessageFormat.format(b.getString("unnamedEmailSubject"), urlText);
+        subject = MessageFormat.format(b.getString("joinUnnamedEmailSubject"), urlText);
       }
 
 
