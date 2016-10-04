@@ -130,7 +130,7 @@ public class JoinMessageService extends BaseService {
 
       String subject;
 
-      if (participantId != null && !acc.getId().isAnonymous()){
+      if (participantId != null && hum != null && !hum.getId().isAnonymous()) {
         String inviter = participantId.getAddress().split("@")[0];
         subject = MessageFormat.format(b.getString("joinNamedEmailSubject"), inviter, urlText);
       } else {
