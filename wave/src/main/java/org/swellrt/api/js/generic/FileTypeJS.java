@@ -59,6 +59,10 @@ public class FileTypeJS extends JavaScriptObject implements FileType.Listener {
         getUrl: function() {
           return this.url();
         },
+        
+        getThumbnailUrl: function() {
+          return @org.swellrt.api.SwellRTUtils::buildThumbnailUrl(Lorg/swellrt/model/generic/FileType;)(this._delegate);
+        },
 
         setValue: function(file) {
           this.set(file);

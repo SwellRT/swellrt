@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import com.google.common.net.MediaType;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
@@ -37,6 +38,7 @@ import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -48,6 +50,7 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -108,13 +111,21 @@ public class AttachmentServlet extends HttpServlet {
     } else {
       waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
     }
-
-    ParticipantId user = sessionManager.getLoggedInUser(request);
+    
+    // the same HTTP cookie-based session could handle different per browser tab sessions
+    // however, we can't distinguish the actual participant requesting an image because
+    // img requests can't carry the header with the browser tab id. 
+    // Workaround is to grant access to the image to all sessions in the browser.
+    Set<ParticipantId> participants = sessionManager.getAllLoggedInUser(sessionManager.getSession(request));
     boolean isAuthorized = false;
-    try {
-      isAuthorized = waveletProvider.checkAccessPermission(waveletName, user);
-    } catch (WaveServerException e) {
-      LOG.warning("Problem while authorizing user: " + user + " for wavelet: " + waveletName, e);
+    for (ParticipantId p: participants) {
+      try {
+        isAuthorized = waveletProvider.checkAccessPermission(waveletName, p);
+        if (isAuthorized) 
+          break;
+      } catch (WaveServerException e) {
+        LOG.warning("Problem while authorizing user: " + p + " for wavelet: " + waveletName, e);
+      }
     }
     if (!isAuthorized) {
       response.sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -164,7 +175,10 @@ public class AttachmentServlet extends HttpServlet {
 
     response.setContentType(contentType);
     response.setContentLength((int)data.getSize());
-    response.setHeader("Content-Disposition", "attachment; filename=\"" + metadata.getFileName() + "\"");
+    
+    if (!isWebContent(contentType))
+      response.setHeader("Content-Disposition", "attachment; filename=\"" + metadata.getFileName() + "\"");
+    
     response.setStatus(HttpServletResponse.SC_OK);
     response.setDateHeader("Last-Modified", Calendar.getInstance().getTimeInMillis());
     AttachmentUtil.writeTo(data.getInputStream(), response.getOutputStream());
@@ -353,5 +367,23 @@ public class AttachmentServlet extends HttpServlet {
       }
     }
     return waveRefStr;
+  }
+  
+  /**
+   * Check if mime type is suitable to be deliver as an inline content
+   * or as a file.
+   * @param mimeType
+   * @return
+   */
+  private static boolean isWebContent(String mimeType) {
+    boolean isWebContent = false;
+    try {
+      MediaType mt = MediaType.parse(mimeType);
+      isWebContent = mt.is(MediaType.ANY_IMAGE_TYPE) || mt.is(MediaType.ANY_VIDEO_TYPE);      
+    } catch (IllegalArgumentException e) {
+      LOG.warning("Unable to decode mime type "+mimeType != null ? mimeType : "null");
+    }
+    
+    return isWebContent;
   }
 }

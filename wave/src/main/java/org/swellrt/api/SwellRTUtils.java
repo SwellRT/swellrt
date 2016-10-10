@@ -211,11 +211,19 @@ public class SwellRTUtils {
     Preconditions.checkArgument(file.getModel() != null, "File is not in a model");
 
 
-    return getBaseUrl() + "/attachment/" + file.getValue().getId() + BrowserSession.getSessionURLparameter()
-        + "?waveRef=" + encodeWaveRefUri(file.getModel().getWaveRef())
-        + BrowserSession.getWindowURLparameter();
+    return getBaseUrl() + "/attachment/" + file.getValue().getId() + BrowserSession.getSessionURLparameter();
   }
 
+  public static String buildThumbnailUrl(FileType file) {
+    Preconditions.checkArgument(file != null, "File can't be null");
+    Preconditions.checkArgument(file.getValue() != null, "File content can't be null");
+    Preconditions.checkArgument(file.getValue().getId() != null, "File id can't be null");
+    Preconditions.checkArgument(file.getModel() != null, "File is not in a model");
+
+    return getBaseUrl() + "/thumbnail/" + file.getValue().getId() + BrowserSession.getSessionURLparameter();
+  }
+    
+  
   public static String encodeWaveRefUri(WaveRef waveRef) {
     return URL.encode(GwtWaverefEncoder.encodeToUriQueryString(waveRef));
   }
