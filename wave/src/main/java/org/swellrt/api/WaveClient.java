@@ -390,13 +390,13 @@ public class WaveClient implements SwellRT.Listener {
   public TextEditorJS getTextEditor(String elementId, JavaScriptObject widgets, JavaScriptObject annotations) {
     Element parent = Document.get().getElementById(elementId);
     Preconditions.checkArgument(parent != null, "Can't hook editor in a null element");
-    
+
     TextEditor textEditor = coreClient.createTextEditor(parent, JsoWidgetController.fromJso(widgets),
         JsoAnnotationController.fromJso(annotations));
-    
+
     TextEditorJS textEditorJS = TextEditorJS.create(textEditor, this);
     textEditor.initialize(textEditorJS);
-    
+
     return textEditorJS;
   }
 
@@ -519,6 +519,24 @@ public class WaveClient implements SwellRT.Listener {
     });
     };
 
+  public void join(String email, String url, String urlText, String message, String admin,
+      final JavaScriptObject callback)
+      throws RequestException {
+
+    coreClient.join(email, url, urlText, message, admin, new Callback<String, String>() {
+
+      @Override
+      public void onFailure(String reason) {
+        invoke(callback, WaveClientJS.FAILURE, reason);
+      }
+
+      @Override
+      public void onSuccess(String result) {
+        invoke(callback, WaveClientJS.SUCCESS);
+      }
+    });
+  };
+
   /**
    * Enable/disable WebSockets transport. Alternative protocol is long-polling.
    *
@@ -640,8 +658,8 @@ public class WaveClient implements SwellRT.Listener {
     } else if (e instanceof Throwable) {
 
     }
- 
-    
+
+
     return exceptionCode;
   }
 
