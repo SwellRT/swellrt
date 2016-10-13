@@ -25,6 +25,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.apache.velocity.tools.ToolManager;
+import org.apache.velocity.tools.generic.EscapeTool;
 import org.apache.velocity.tools.generic.ResourceTool;
 import org.swellrt.server.velocity.CustomResourceTool;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -140,7 +141,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
     if (locale == null) {
       locale = Locale.getDefault();
     }
-    	
+
     return ResourceBundle.getBundle(getDecoupledBundleName(messageBundleName), locale, propertyClassloader);
 
   }
@@ -149,7 +150,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
   public String getDecoupledBundleName(String messageBundleName) {
 	  if (!isExternalPropertyClassLoader)
     	return CLASSPATH_VELOCITY_PATH.replace("/", ".") + messageBundleName;
-	   else 
+	   else
 	    return  messageBundleName;
   }
 
@@ -177,6 +178,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
       context.put(p.getKey(), p.getValue());
     }
 
+    context.put("esc", new EscapeTool());
 
     StringWriter sw = new StringWriter();
 
