@@ -1,17 +1,16 @@
-package x.swellrt.model.mutable;
+package x.swellrt.model;
 
 import java.util.List;
 import java.util.Map;
 
-import x.swellrt.model.CNode;
-import x.swellrt.model.IllegalValueConversionException;
+import x.swellrt.model.mutable.MutableCNode;
 
-public class MutableCPrimitive implements MutableCNode, CNode {
+public class CPrimitive implements CNode, MutableCNode {
   
-  protected static final int TYPE_INT = 1;
-  protected static final int TYPE_DOUBLE = 2;
-  protected static final int TYPE_STRING = 3;
-  protected static final int TYPE_BOOL = 4;
+  public static final int TYPE_INT = 1;
+  public static final int TYPE_DOUBLE = 2;
+  public static final int TYPE_STRING = 3;
+  public static final int TYPE_BOOL = 4;
   
   protected final int type;
   protected final int intValue;
@@ -20,7 +19,7 @@ public class MutableCPrimitive implements MutableCNode, CNode {
   protected final Boolean boolValue;
   
  
-  protected MutableCPrimitive(int value) {
+  public CPrimitive(int value) {
      type = TYPE_INT;
      intValue = value;
      doubleValue = Double.NaN;
@@ -28,7 +27,7 @@ public class MutableCPrimitive implements MutableCNode, CNode {
      boolValue = null;
   }
 
-  protected MutableCPrimitive(double value) {
+  public CPrimitive(double value) {
     type = TYPE_DOUBLE;
     intValue = Integer.MAX_VALUE;
     doubleValue = value;
@@ -37,7 +36,7 @@ public class MutableCPrimitive implements MutableCNode, CNode {
     
   }
   
-  protected MutableCPrimitive(String value) {
+  public CPrimitive(String value) {
     type = TYPE_STRING;
     intValue = Integer.MAX_VALUE;
     doubleValue = Double.NaN;
@@ -45,7 +44,7 @@ public class MutableCPrimitive implements MutableCNode, CNode {
     boolValue = null;    
   }
   
-  protected MutableCPrimitive(boolean value) {
+  public CPrimitive(boolean value) {
     type = TYPE_BOOL;
     intValue = Integer.MAX_VALUE;
     doubleValue = Double.NaN;
@@ -53,7 +52,7 @@ public class MutableCPrimitive implements MutableCNode, CNode {
     boolValue = value;    
   }
   
-  protected int getType() {
+  public int getType() {
     return type;
   }
 
