@@ -33,6 +33,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+
 import org.waveprotocol.box.stat.SessionContext;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
@@ -155,6 +157,9 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
       json = serializer.toJson(message);
       String type = message.getDescriptorForType().getName();
       str = MessageWrapper.serialize(type, sequenceNo, json);
+      if (sequenceNo == 1) {
+        LOG.info("First response size is "+ (str.length() * 2) + " bytes ");
+      }
     } catch (SerializationException e) {
       LOG.warning("Failed to JSONify proto message", e);
       return;
