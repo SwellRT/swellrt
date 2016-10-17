@@ -19,25 +19,24 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import java.io.IOException;
+
+import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveletUpdate;
+import org.waveprotocol.box.server.rpc.ProtoSerializer.SerializationException;
+import org.waveprotocol.box.stat.SessionContext;
+import org.waveprotocol.box.stat.Timer;
+import org.waveprotocol.box.stat.Timing;
+import org.waveprotocol.wave.communication.gson.GsonException;
+import org.waveprotocol.wave.communication.gson.GsonSerializable;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.protobuf.Message;
-
-import org.waveprotocol.box.server.rpc.ProtoSerializer.SerializationException;
-import org.waveprotocol.wave.communication.gson.GsonException;
-import org.waveprotocol.wave.communication.gson.GsonSerializable;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-import org.waveprotocol.box.stat.SessionContext;
-import org.waveprotocol.box.stat.Timer;
-import org.waveprotocol.box.stat.Timing;
 
 /**
  * A channel abstraction for websocket, for sending and receiving strings.
@@ -157,8 +156,10 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
       json = serializer.toJson(message);
       String type = message.getDescriptorForType().getName();
       str = MessageWrapper.serialize(type, sequenceNo, json);
-      if (sequenceNo == 1) {
-        LOG.info("First response size is "+ (str.length() * 2) + " bytes ");
+      if (message instanceof ProtocolWaveletUpdate) {
+        ProtocolWaveletUpdate updateMessage = (ProtocolWaveletUpdate) message;
+        if (updateMessage.hasSnapshot())
+          LOG.info("snaphost size is "+(str.length() *2)+" bytes");
       }
     } catch (SerializationException e) {
       LOG.warning("Failed to JSONify proto message", e);
