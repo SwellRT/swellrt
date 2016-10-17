@@ -35,11 +35,13 @@ import org.waveprotocol.box.server.waveserver.AppliedDeltaUtil;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
 import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
+import org.waveprotocol.box.server.waveserver.DeltaStore.Snapshot;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
 import java.io.File;
@@ -641,9 +643,27 @@ public class FileDeltaCollection implements DeltasAccess {
     file.setLength(file.getFilePointer());
   }
 
-@Override
-public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
-	// TODO Auto-generated method stub
-	return 0;
-}
+  @Override
+  public long getAllDeltas(Receiver<WaveletDeltaRecord> receiver) throws IOException {
+     return getDeltasInRange(0, endVersion.getVersion(), receiver);
+  }
+
+  @Override
+  public Snapshot loadSnapshot() throws PersistenceException {    
+    // Not supported!
+    return null;
+  }
+
+  @Override
+  public void storeSnapshot(WaveletData waveletData)
+      throws PersistenceException {
+    // No-op    
+  }
+
+  @Override
+  public WaveletDeltaRecord getLastDelta() throws IOException {
+    return getDeltaByEndVersion(endVersion.getVersion());
+  }
+  
+  
 }

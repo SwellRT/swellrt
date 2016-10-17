@@ -27,6 +27,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
 import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -52,6 +54,7 @@ public class WaveServerModule extends AbstractModule {
   private final Executor waveletLoadExecutor;
   private final Executor storageContinuationExecutor;
   private final boolean enableFederation;
+  private final int persistSnapshotOnDeltasCount;
 
 
   @Inject
@@ -59,6 +62,13 @@ public class WaveServerModule extends AbstractModule {
       @WaveletLoadExecutor Executor waveletLoadExecutor,
       @StorageContinuationExecutor Executor storageContinuationExecutor) {
     this.enableFederation = config.getBoolean("federation.enable_federation");
+    int deltaCountForPersistSnapshots = 250;
+    try { 
+      deltaCountForPersistSnapshots = config.getInt("core.persist_snapshots_on_deltas_count");
+    } catch (ConfigException.Missing e) {
+      e.printStackTrace();
+    }
+    this.persistSnapshotOnDeltasCount = deltaCountForPersistSnapshots;
     this.waveletLoadExecutor = waveletLoadExecutor;
     this.storageContinuationExecutor = storageContinuationExecutor;
   }
@@ -106,7 +116,7 @@ public class WaveServerModule extends AbstractModule {
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor), waveDomain,
+            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor, persistSnapshotOnDeltasCount), waveDomain,
             storageContinuationExecutor);
       }
     };
@@ -121,7 +131,7 @@ public class WaveServerModule extends AbstractModule {
       public RemoteWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new RemoteWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor),
+            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor, persistSnapshotOnDeltasCount),
             storageContinuationExecutor);
       }
     };
@@ -147,16 +157,16 @@ public class WaveServerModule extends AbstractModule {
    */
   @VisibleForTesting
   static ListenableFuture<DeltaStoreBasedWaveletState> loadWaveletState(Executor executor,
-      final DeltaStore deltaStore, final WaveletName waveletName, final Executor persistExecutor) {
-    ListenableFutureTask<DeltaStoreBasedWaveletState> task =
-        ListenableFutureTask.create(
-           new Callable<DeltaStoreBasedWaveletState>() {
-             @Override
-             public DeltaStoreBasedWaveletState call() throws PersistenceException {
-               return DeltaStoreBasedWaveletState.create(deltaStore.open(waveletName),
-                                                                persistExecutor);
-             }
-           });
+      final DeltaStore deltaStore, final WaveletName waveletName, final Executor persistExecutor,
+      final int persistSnapshotOnDeltasCount) {
+    ListenableFutureTask<DeltaStoreBasedWaveletState> task = ListenableFutureTask
+        .create(new Callable<DeltaStoreBasedWaveletState>() {
+          @Override
+          public DeltaStoreBasedWaveletState call() throws PersistenceException {
+            return DeltaStoreBasedWaveletState.create(deltaStore.open(waveletName), persistExecutor,
+                persistSnapshotOnDeltasCount);
+          }
+        });
     executor.execute(task);
     return task;
   }

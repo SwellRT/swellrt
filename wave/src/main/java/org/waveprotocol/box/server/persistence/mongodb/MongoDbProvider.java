@@ -159,7 +159,7 @@ public class MongoDbProvider {
    */
   public MongoDbDeltaStore provideMongoDbDeltaStore() {
     if (mongoDbDeltaStore == null) {
-      mongoDbDeltaStore = new MongoDbDeltaStore(getDatabase());
+      mongoDbDeltaStore = MongoDbDeltaStore.create(getDatabase());
     }
 
     return mongoDbDeltaStore;

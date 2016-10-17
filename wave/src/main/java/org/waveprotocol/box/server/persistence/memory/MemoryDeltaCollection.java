@@ -24,13 +24,16 @@ import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.waveprotocol.box.common.Receiver;
+import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
 import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
+import org.waveprotocol.box.server.waveserver.DeltaStore.Snapshot;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.data.WaveletData;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -149,5 +152,21 @@ public class MemoryDeltaCollection implements DeltasAccess {
     }
 
     return count;
+  }
+
+  @Override
+  public Snapshot loadSnapshot() throws PersistenceException {
+    return null;
+  }
+
+  @Override
+  public void storeSnapshot(WaveletData waveletData)
+      throws PersistenceException {
+    // No op
+  }
+
+  @Override
+  public WaveletDeltaRecord getLastDelta() throws IOException {
+    return endDeltas.get(endVersion.getVersion());
   }
 }

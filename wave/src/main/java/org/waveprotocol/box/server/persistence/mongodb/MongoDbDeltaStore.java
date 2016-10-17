@@ -36,37 +36,71 @@ import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.util.logging.Log;
 
 import java.util.List;
 
 /**
- * A MongoDB based Delta Store implementation using a simple <b>deltas</b>
- * collection, storing a delta record per each MongoDb document.
+ * A MongoDB based Delta Store implementation using a <b>deltas</b>
+ * collection and a snapshots collection.
+ * 
+ * Each deltas is stored as a MongoDb document.
+ * 
+ * For snapshots store details check out {@link MongoDBSnapshotStore}
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
 public class MongoDbDeltaStore implements DeltaStore {
-
+  
+  private static final Log LOG = Log.get(MongoDbDeltaStore.class);
+  
   /** Name of the MongoDB collection to store Deltas */
   private static final String DELTAS_COLLECTION = "deltas";
 
-  /** Database connection object */
-  private final DB database;
+  /** MongoDB Collection for deltas */
+  private final DBCollection deltasCollection;
+  
+  /** A specific class handling snapshots */
+  private final MongoDBSnapshotStore snapshotStore;
 
   /**
-   * Construct a new store
+   * Creates a mongoDB based delta/snapshot store.
+   * 
+   * @param database
+   * @return
+   */
+  public static MongoDbDeltaStore create(DB database) {
+    
+    DBCollection deltasCollection = database.getCollection(DELTAS_COLLECTION);    
+    checkDeltasCollectionIndexes(deltasCollection);
+    MongoDBSnapshotStore snapshotStore = MongoDBSnapshotStore.create(database);
+    
+    return new MongoDbDeltaStore(deltasCollection, snapshotStore);
+  }
+  
+  private static void checkDeltasCollectionIndexes(DBCollection deltasCollection) {
+    
+    LOG.info("For production environments, set MongoDB index in 'deltas' collection with fields 'waveid', 'waveletid' and 'transformed.resultingversion'");
+    
+  }
+  
+  
+  /**
+   * Construct a new store instance
    *
    * @param database the database connection object
    */
-  public MongoDbDeltaStore(DB database) {
-    this.database = database;
+  private MongoDbDeltaStore(DBCollection deltasCollection, MongoDBSnapshotStore snapshotStore) {
+    this.deltasCollection = deltasCollection;
+    this.snapshotStore = snapshotStore;
   }
+  
+  
 
   @Override
   public DeltasAccess open(WaveletName waveletName) throws PersistenceException {
-
-    return new MongoDbDeltaCollection(waveletName, getDeltaDbCollection());
+    return new MongoDbDeltaCollection(waveletName, deltasCollection, snapshotStore);
   }
 
   @Override
@@ -80,10 +114,14 @@ public class MongoDbDeltaStore implements DeltaStore {
     try {
       // Using Journaled Write Concern
       // (http://docs.mongodb.org/manual/core/write-concern/#journaled)
-      getDeltaDbCollection().remove(criteria, WriteConcern.JOURNALED);
+      deltasCollection.remove(criteria, WriteConcern.JOURNALED);
     } catch (MongoException e) {
       throw new PersistenceException(e);
     }
+    
+    // Also delete wavelet snapshots
+    snapshotStore.deleteSnapshot(waveletName);
+
   }
 
   @Override
@@ -99,7 +137,7 @@ public class MongoDbDeltaStore implements DeltaStore {
     DBCursor cursor = null;
 
     try {
-      cursor = getDeltaDbCollection().find(query, projection);
+      cursor = deltasCollection.find(query, projection);
     } catch (MongoException e) {
       throw new PersistenceException(e);
     }
@@ -126,7 +164,7 @@ public class MongoDbDeltaStore implements DeltaStore {
     try {
 
       @SuppressWarnings("rawtypes")
-      List results = getDeltaDbCollection().distinct(MongoDbDeltaStoreUtil.FIELD_WAVE_ID);
+      List results = deltasCollection.distinct(MongoDbDeltaStoreUtil.FIELD_WAVE_ID);
 
       for (Object o : results)
         builder.add(WaveId.deserialise((String) o));
@@ -138,13 +176,5 @@ public class MongoDbDeltaStore implements DeltaStore {
 
     return ExceptionalIterator.FromIterator.create(builder.build().iterator());
   }
-
-  /**
-   * Access to deltas collection
-   *
-   * @return DBCollection of deltas
-   */
-  private DBCollection getDeltaDbCollection() {
-    return database.getCollection(DELTAS_COLLECTION);
-  }
+  
 }

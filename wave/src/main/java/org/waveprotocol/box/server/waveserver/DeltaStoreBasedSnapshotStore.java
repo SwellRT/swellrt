@@ -188,6 +188,11 @@ class DeltaStoreBasedSnapshotStore implements DeltaAndSnapshotStore {
       isClosed = true;
       deltasAccess.close();
     }
+
+    @Override
+    public WaveletDeltaRecord getLastDelta() throws IOException {
+      return deltasAccess.getLastDelta();
+    }
   }
 
   private final DeltaStore deltaStore;

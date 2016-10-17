@@ -95,13 +95,22 @@ public interface WaveletDeltaRecordReader {
 
 
   /**
-   * Returns a range of deltas.
+   * Returns a range of deltas having their result version greater than startVersion
+   * and less or equals than endVersion
    * 
-   * @param start
-   * @param end
+   * @param startVersion 
+   * @param endVersion
    * @param receiver
    */
   long getDeltasInRange(long startVersion, long endVersion, Receiver<WaveletDeltaRecord> receiver)
       throws IOException;
+
+  /**
+   * Returns the last delta of the wavelet.
+   * 
+   * @return the last delta
+   * @throws IOException 
+   */
+  WaveletDeltaRecord getLastDelta() throws IOException;
 
 }

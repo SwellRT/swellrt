@@ -20,6 +20,8 @@
 package org.waveprotocol.box.server.waveserver;
 
 import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.data.WaveletData;
 
 import java.io.Closeable;
 import java.util.Collection;
@@ -28,12 +30,26 @@ import java.util.Collection;
  * Stores wavelet deltas.
  *
  * @author soren@google.com (Soren Lassen)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface DeltaStore extends WaveletStore<DeltaStore.DeltasAccess> {
 
   /**
+   * Wavelet snapshot and resulting version together.
+   * 
+   * @author pablojan@gmail.com (Pablo Ojanguren)
+   */
+  interface Snapshot {
+    
+    /** Gets the wavelet snapshot */
+    public WaveletData getWaveletData();
+  }
+  
+  /**
    * Accesses the delta history for a wavelet.
    * Permits reading historical deltas and appending deltas to the history.
+   * 
+   * Optionally, it can provide service to load and store snapshots. 
    */
   interface DeltasAccess extends WaveletDeltaRecordReader, Closeable {
     /**
@@ -50,5 +66,24 @@ public interface DeltaStore extends WaveletStore<DeltaStore.DeltasAccess> {
      *         storage.
      */
     void append(Collection<WaveletDeltaRecord> deltas) throws PersistenceException;
+    
+    /**
+     * Loads the last snapshot of the wavelet.
+     * 
+     * @return the wavelet data object
+     * @throws PersistenceException if anything goes wrong with the underlying
+     *         storage.
+     */
+    Snapshot loadSnapshot() throws PersistenceException;
+    
+    /**
+     * Stores a wavelet snapshot as the last one.  
+     * 
+     * @param waveletData the wavelet data
+     * @throws PersistenceException if anything goes wrong with the underlying
+     *         storage.
+     */
+    void storeSnapshot(WaveletData waveletData) throws PersistenceException;
+    
   }
 }
