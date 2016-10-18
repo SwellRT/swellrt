@@ -355,7 +355,7 @@ task compileJsWeb {
                     "-noincremental",
                     "-optimize", "9",
                     "-localWorkers", "4",
-                    "org.swellrt.api.SwellRT"
+                    "org.swellrt.api.SwellRTProd"
             ]
         }
     }
@@ -383,17 +383,18 @@ task compileJsWebDev {
                     "-logLevel", "INFO",
                     "-saveSource",
                     "-draftCompile",
-                    "org.swellrt.api.SwellRT"
+                    "org.swellrt.api.SwellRTDev"
             ]
         }
     }
 }
 
+// compileJsWebDev.mustRunAfter compileJava
+// run.dependsOn compileJsWebDev
+
+compileJsWeb.mustRunAfter compileJava
 compileJsWebDev.mustRunAfter compileJava
 run.dependsOn compileJsWebDev
-
-// compileJsWeb.mustRunAfter compileJava
-// run.dependsOn compileJsWeb
 
 
 compileJava.dependsOn = [generateMessages, generateGXP]
@@ -705,8 +706,8 @@ task createDistBinTar(type: Tar) {
 
 }
 
-createDistBinZip.dependsOn jar, compileJsWebDev, createPropertiesFile
-createDistBinTar.dependsOn jar, compileJsWebDev, createPropertiesFile
+createDistBinZip.dependsOn jar, compileJsWeb, createPropertiesFile
+createDistBinTar.dependsOn jar, compileJsWeb, createPropertiesFile
 
 //=============================================================================
 // Distribution's

@@ -2,56 +2,27 @@
 
 <!--
 
-        It provides a collection of JSNI classes wrapping the GWT implementation of the
-        generic API.
-
-        It basically mimics WebClient basics..
-
- -->
+	SwellRT JavaSctript Client for Web
+	Common module
+	
+-->
 <module rename-to="swellrt">
-  <inherits name="com.google.gwt.http.HTTP"/>
-  <inherits name="org.waveprotocol.box.webclient.WebClient" />
+	<inherits name="com.google.gwt.http.HTTP" />
+	<inherits name="org.waveprotocol.box.webclient.WebClient" />
 
-  <!-- Wave Mod -->
-  <inherits name='org.swellrt.model.SwellRTModel'/>
-  <inherits name='org.swellrt.client.SwellRTClient'/>
+	<!-- Wave Mod -->
+	<inherits name='org.swellrt.model.SwellRTModel' />
+	<inherits name='org.swellrt.client.SwellRTClient' />
 
-  <!-- Kune.cc Initials avatars -->
-  <inherits name='cc.kune.initials.InitialsAvatars'/>
+	<!-- Kune.cc Initials avatars -->
+	<inherits name='cc.kune.initials.InitialsAvatars' />
+	
+	<add-linker name="xsiframe" />
 
-  <!-- Specify the app entry point class.                         -->
-  <entry-point class='org.swellrt.api.SwellRT'/>
-
-  <!-- Specification of permutation restrictions suitable for production.
-       In general, this should support as many permutations as possible -->
-
-  <!-- Stack emulation is too slow to use in production. -->
-  <!--
-  <set-property name="compiler.emulatedStack" value="false"/>
-  -->
-
-  <!-- Only build supported clients. -->
-  <set-property name="user.agent" value="safari, gecko1_8, ie8"/>
-  <set-property name="mobile.user.agent" value="android, iphone, not_mobile" />
-
-  <!-- Turn off logging, because it's really slow. -->
-  <set-property name="loglevel" value="debug" />
-
-
-  <extend-property name="locale" values="en"/>
-  <set-property-fallback name="locale" value="en"/>
-
-  <!-- Allow super-dev debug in custom host name -->
-  <set-configuration-property name="devModeUrlWhitelistRegexp" value="http://(localhost|127\.0\.0\.1|showcase\.net)(:\d+)?/.*" />
-  <!-- Work around for source map offset problem https://code.google.com/p/google-web-toolkit/issues/detail?id=7862 -->
-  <set-property name="compiler.useSymbolMaps" value="true"/>
-
-  <add-linker name="xsiframe"/>
-
-  <source path="" />
-  <source path="js" />
-  <source path="js/adt" />
-  <source path="js/generic" />
-  <source path="js/editor" />
-
+	<source path="" />
+	<source path="js" />
+	<source path="js/adt" />
+	<source path="js/generic" />
+	<source path="js/editor" />
+	
 </module>

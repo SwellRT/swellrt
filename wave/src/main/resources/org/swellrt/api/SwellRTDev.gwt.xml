@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+
+	SwellRT JavaSctript Client for Web
+	Development version module
+	
+-->
+<module rename-to="swellrt">
+	
+	<inherits name='org.swellrt.api.SwellRT' />
+
+	<!-- Specify the app entry point class. -->
+	<entry-point class='org.swellrt.api.SwellRT' />
+
+	<!-- Specification of permutation restrictions suitable for production. 
+		In general, this should support as many permutations as possible -->
+
+	<!-- Stack emulation is too slow to use in production. -->
+	<set-property name="compiler.emulatedStack" value="true" />
+	<set-configuration-property name="compiler.emulatedStack.recordFileNames"
+		value="true" />
+	<set-configuration-property name="compiler.emulatedStack.recordLineNumbers"
+		value="true" />
+
+	<set-property name="loglevel" value="debug" />
+
+	<!-- Only build supported clients. -->
+	<!-- -->
+	<set-property name="user.agent" value="safari, gecko1_8, ie8" />
+	<set-property name="mobile.user.agent" value="android, iphone, not_mobile" />
+
+
+	<extend-property name="locale" values="en" />
+	<set-property-fallback name="locale" value="en" />
+
+	<!-- Allow super-dev debug in custom host name -->
+	<set-configuration-property name="devModeUrlWhitelistRegexp"
+		value="http://(localhost|127\.0\.0\.1|showcase\.net)(:\d+)?/.*" />
+
+	<!-- Work around for source map offset problem https://code.google.com/p/google-web-toolkit/issues/detail?id=7862 -->
+	<set-property name="compiler.useSymbolMaps" value="true" />
+	
+	<set-property name="compiler.useSourceMaps" value="true" />
+	
+
+</module>
