@@ -660,6 +660,10 @@ jar.dependsOn compileJava, extractApi
 def binName = this.group + "-bin"
 
 task createPropertiesFile(type: Copy) {
+	// ensure the task executed if version prop changes
+	// see: https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:up_to_date_checks
+	inputs.property("version", version)
+	
     from 'src/main/configs'
     include 'wave.conf'
     into 'config'
