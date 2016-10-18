@@ -30,11 +30,11 @@ import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
