@@ -26,6 +26,7 @@ import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.dom.client.Text;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.editor.impl.NodeManager;
 import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
 

@@ -17,22 +17,22 @@
  * under the License.
  */
 
-package org.waveprotocol.wave.client.doodad.selection;
+package org.waveprotocol.wave.client.common.util;
 
 /**
  * A value object for an RGB triple.
  *
  * @author hearnden@google.com (David Hearnden)
  */
-final class RgbColor {
-  static final RgbColor BLACK = new RgbColor(0, 0, 0);
-  static final RgbColor WHITE = new RgbColor(255, 255, 255);
+public final class RgbColor {
+  public static final RgbColor BLACK = new RgbColor(0, 0, 0);
+  public static final RgbColor WHITE = new RgbColor(255, 255, 255);
 
-  final int red;
-  final int green;
-  final int blue;
+  public final int red;
+  public final int green;
+  public final int blue;
 
-  RgbColor(int red, int green, int blue) {
+  public RgbColor(int red, int green, int blue) {
     this.red = red;
     this.green = green;
     this.blue = blue;

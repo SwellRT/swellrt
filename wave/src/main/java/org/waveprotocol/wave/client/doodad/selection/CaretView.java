@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.client.doodad.selection;
 
+import org.waveprotocol.wave.client.common.util.RgbColor;
 
 /**
  * UI interface for the caret marker

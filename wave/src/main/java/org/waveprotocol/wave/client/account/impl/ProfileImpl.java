@@ -23,6 +23,7 @@ package org.waveprotocol.wave.client.account.impl;
 import com.google.common.base.Joiner;
 
 import org.waveprotocol.wave.client.account.Profile;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -130,5 +131,10 @@ public final class ProfileImpl implements Profile {
   public String toString() {
     return "ProfileImpl [id=" + id + ", firstName=" + firstName + ", fullName=" + fullName
         + ", imageUrl=" + imageUrl + "]";
+  }
+
+  @Override
+  public RgbColor getColor() {
+    throw new IllegalStateException("Method not implemented");
   }
 }
