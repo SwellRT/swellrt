@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.56.0-alpha"
+version = "0.57.0-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
