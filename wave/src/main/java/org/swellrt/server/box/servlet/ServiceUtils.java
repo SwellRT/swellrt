@@ -1,27 +1,19 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.common.base.Preconditions;
-
-import org.waveprotocol.box.server.authentication.HttpWindowSession;
-
 import javax.servlet.http.HttpServletRequest;
+import org.waveprotocol.box.server.authentication.SessionManager;
+
+import com.google.common.base.Preconditions;
 
 public class ServiceUtils {
 
-
+  
   public static String getSessionUrlRewrite(HttpServletRequest request) {
-    Preconditions.checkNotNull(request, "Request can't be null");
-
-    if (request.getPathInfo() == null || request.getPathInfo().isEmpty()) return "";
-
-    // The ';sid=' syntax is jetty specific.
-    int indexSid = request.getPathInfo().indexOf(";sid=");
-
-    if (indexSid >= 0) {
-      return request.getPathInfo().substring(indexSid, request.getPathInfo().length());
-    }
-
-    return "";
+   if (SessionManager.hasSessionCookie(request))
+     return "";
+   else 
+     return SessionManager.getSessionStringFromPath(request);
+      
   }
 
 
@@ -56,17 +48,6 @@ public class ServiceUtils {
         if (!relativePath.startsWith("/")) relativePath = "/" + relativePath;
 
         if (queryString == null) queryString = "";
-
-        // Add x-window-id as query parameter
-        Object o = request.getAttribute(HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR);
-        String windowId = (o != null && o instanceof String) ? (String) o : null;
-
-        if (windowId != null) {
-          if (queryString.isEmpty())
-            queryString = "?" + HttpWindowSession.WINDOW_SESSION_PARAMETER_NAME + "=" + windowId;
-          else
-            queryString += "&" + HttpWindowSession.WINDOW_SESSION_PARAMETER_NAME + "=" + windowId;
-        }
 
         String absolute =
             base + context + relativePath + sessionRewrite + queryString;
