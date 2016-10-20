@@ -19,11 +19,14 @@
 
 package org.waveprotocol.box.server.authentication;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.eclipse.jetty.security.authentication.LoginAuthenticator;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.persistence.AccountStore;
@@ -32,13 +35,9 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
 
 /**
  * Utility class for managing the session's authentication status.
