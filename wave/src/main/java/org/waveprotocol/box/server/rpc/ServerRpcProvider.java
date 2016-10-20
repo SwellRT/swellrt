@@ -19,35 +19,43 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Singleton;
-import com.google.inject.servlet.GuiceFilter;
-import com.google.inject.servlet.GuiceServletContextListener;
-import com.google.inject.servlet.ServletModule;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.Descriptors.MethodDescriptor;
-import com.google.protobuf.Message;
-import com.google.protobuf.RpcCallback;
-import com.google.protobuf.Service;
-import com.typesafe.config.Config;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+
+import javax.annotation.Nullable;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.ServletContextListener;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
+
 import org.apache.commons.lang.StringUtils;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.config.service.AtmosphereHandlerService;
-import org.atmosphere.cpr.*;
+import org.atmosphere.cpr.AtmosphereHandler;
+import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.atmosphere.cpr.Broadcaster;
+import org.atmosphere.cpr.BroadcasterFactory;
 import org.atmosphere.guice.AtmosphereGuiceServlet;
-import org.atmosphere.util.IOUtils;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
@@ -55,7 +63,11 @@ import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.websocket.servlet.*;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
+import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.swellrt.model.generic.Model;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
@@ -73,22 +85,22 @@ import org.waveprotocol.wave.model.util.Pair;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import javax.annotation.Nullable;
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.ServletContextListener;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import com.google.inject.servlet.GuiceFilter;
+import com.google.inject.servlet.GuiceServletContextListener;
+import com.google.inject.servlet.ServletModule;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.MethodDescriptor;
+import com.google.protobuf.Message;
+import com.google.protobuf.RpcCallback;
+import com.google.protobuf.Service;
+import com.typesafe.config.Config;
 
 /**
  * ServerRpcProvider can provide instances of type Service over an incoming
@@ -133,9 +145,6 @@ public class ServerRpcProvider {
 
   private final int sessionMaxInactiveTime;
   private final int sessionCookieMaxAge;
-
-  private final static String SESSION_URL_PARAM = "sid";
-  private final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
   /**
    * Internal, static container class for any specific registered service
@@ -584,13 +593,13 @@ public class ServerRpcProvider {
       sessionTrackingModes.add(SessionTrackingMode.COOKIE);
       context.getSessionHandler().getSessionManager().setSessionTrackingModes(sessionTrackingModes);
       context.getSessionHandler().getSessionManager()
-          .setSessionIdPathParameterName(SESSION_URL_PARAM);
+          .setSessionIdPathParameterName(SessionManager.SESSION_URL_PARAM);
 
     }
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
 
-    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", SESSION_COOKIE_NAME);
+    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", SessionManager.SESSION_COOKIE_NAME);
     if (sessionCookieMaxAge == 0)
     	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(Integer.MAX_VALUE));
     else
