@@ -54,10 +54,12 @@ public interface SessionManager {
   public static boolean hasSessionCookie(HttpServletRequest request) {
     Preconditions.checkNotNull(request, "Request can't be null");
     
-    for (Cookie c: request.getCookies()) {
-      if (c.getName().equalsIgnoreCase(SESSION_COOKIE_NAME))
-        return true;
-    }
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null)
+      for (Cookie c: cookies) {
+        if (c.getName().equalsIgnoreCase(SESSION_COOKIE_NAME))
+          return true;
+      }
     return false;
   }
   

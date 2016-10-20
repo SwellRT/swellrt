@@ -81,7 +81,7 @@ public class EchoService extends BaseService {
     HttpSession httpSession = sessionManager.getSession(request);
     HttpWindowSession httpWindowSession = httpSession instanceof HttpWindowSession ? (HttpWindowSession) httpSession : null;
     
-    EchoServiceData responseData = new EchoServiceData(hasSessionCookie, httpSession.getId(), httpWindowSession != null ? httpWindowSession.getWindowId() : "");
+    EchoServiceData responseData = new EchoServiceData(hasSessionCookie, httpSession != null ? httpSession.getId() : "", httpWindowSession != null ? httpWindowSession.getWindowId() : "");
     
     sendResponse(response, responseData);
   }
