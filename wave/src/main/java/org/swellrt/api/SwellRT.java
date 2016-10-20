@@ -189,6 +189,30 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     websocket.disconnect(true);
     channel = null;
   }
+  
+  /**
+   * Calls server's echo service to check if
+   * session cookie is being sent by the browser.
+   * It allows to check if 3rd party cookies are
+   * blocked by the browser and then use URL params
+   * to propagate session.
+   * 
+   * @param callback
+   * @throws RequestException 
+   */
+  protected void echo(RequestCallback callback) {
+    
+    String url = baseServerUrl + "/swell/echo";
+
+    RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
+    builder.setHeader("Content-Type", "text/plain; charset=utf-8");
+    try {
+      builder.sendRequest("", callback);    
+    } catch (RequestException e) {
+      callback.onError(null, e);
+    }
+    
+  }
 
   public void login(JavaScriptObject parameters, ServiceCallback _callback)
       throws RequestException {
@@ -215,7 +239,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         if (response.getStatusCode() != 200)
           callback.onComplete(ServiceCallback.JavaScriptResponse.error(response.getText()));
         else {
-
+          
           // Clean everything before setting new session
           cleanSessionData();
           shouldOpenWebsocket = true;
@@ -229,14 +253,50 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           sessionId = responseData.getValue("sessionId");
           waveDomain = responseData.getValue("domain");
           seed = SwellRTUtils.nextBase64(10);
+          
+   
+          
+          echo(new RequestCallback() {
 
-          BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
-                  sessionId);
+            @Override
+            public void onResponseReceived(Request request, Response response) {
+              
+              boolean sessionCookie = false;
+              
+              if (response.getStatusCode() == 200) {
+              
+                JavaScriptResponse echoResponseData =
+                    ServiceCallback.JavaScriptResponse.success(response.getText());
 
-          // Init Id generator
-          TypeIdGenerator.get().initialize(ClientIdGenerator.create());
+                sessionCookie = echoResponseData.getBoolean("sessionCookie");                
+              }
+  
+              BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+                  sessionId, BrowserSession.getWindowId(), sessionCookie);
+              
+              // Do this after window.__session is set
+              TypeIdGenerator.get().initialize(ClientIdGenerator.create());   
+              
+              callback.onComplete(responseData);
+            }
 
-          callback.onComplete(responseData);
+            @Override
+            public void onError(Request request, Throwable exception) {
+              
+              // Fall into safe state, if we cannot ensure cookies are received in the server
+              // force URL rewriting
+              BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+                  sessionId, BrowserSession.getWindowId(), false);
+              
+              // Do this after window.__session is set
+              TypeIdGenerator.get().initialize(ClientIdGenerator.create());   
+              
+              callback.onComplete(responseData);
+            }
+            
+          });
+
+
         }
 
       }
@@ -290,9 +350,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           waveDomain = responseData.getValue("domain");
           seed = SwellRTUtils.nextBase64(10);
 
-          // Use the browser __session object instead of setting cookie
+          // If session is resumed we can ensure that session cookie is received by the server
+          // lets set isCookieEnabled = true
           BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
-              sessionId);
+              sessionId, BrowserSession.getWindowId(), true);
 
           // Init Id generator
           TypeIdGenerator.get().initialize(ClientIdGenerator.create());
@@ -637,15 +698,53 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
           String seed = SwellRTUtils.nextBase64(10);
           waveDomain = loggedInUser.getDomain();
-          // Use the browser __session object instead of setting cookie
-          JavaScriptObject sessionWeb =
-              BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
-                  sessionId);
+        
+          echo(new RequestCallback() {
 
-          // Init Id generator
-          TypeIdGenerator.get().initialize(ClientIdGenerator.create());
+            @Override
+            public void onResponseReceived(Request request, Response response) {
+              
+              
 
-          callback.onSuccess(sessionWeb);
+              boolean sessionCookie = false;
+              
+              if (response.getStatusCode() == 200) {
+              
+                JavaScriptResponse echoResponseData =
+                    ServiceCallback.JavaScriptResponse.success(response.getText());
+                
+                sessionCookie = echoResponseData.getBoolean("sessionCookie");                
+              }
+  
+              JavaScriptObject sessionWeb =
+                BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+                    sessionId, BrowserSession.getWindowId(), sessionCookie);
+              
+              
+              // Do this after window.__session is set
+              TypeIdGenerator.get().initialize(ClientIdGenerator.create());   
+              
+              callback.onSuccess(sessionWeb);
+            }
+
+            @Override
+            public void onError(Request request, Throwable exception) {
+              
+              // Fall into safe state, if we cannot ensure cookies are received in the server
+              // force URL rewriting
+              JavaScriptObject sessionWeb =
+                  BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
+                      sessionId, BrowserSession.getWindowId(), false);
+              
+              // Do this after window.__session is set
+              TypeIdGenerator.get().initialize(ClientIdGenerator.create());   
+              
+              callback.onSuccess(sessionWeb);
+            }
+            
+          });
+          
+          
 
         } else if (response.getStatusCode() == 403) {
           loggedInUser = null;
@@ -869,9 +968,10 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           waveDomain = responseData.getValue("domain");
           seed = SwellRTUtils.nextBase64(10);
 
-          // Use the browser __session object instead of setting cookie
+          // If session is resumed we can ensure that session cookie is received by the server
+          // lets set isCookieEnabled = true
           BrowserSession.setUserData(loggedInUser.getDomain(), loggedInUser.getAddress(), seed,
-              sessionId);
+              sessionId, BrowserSession.getWindowId(), true);
 
           // Init Id generator
           TypeIdGenerator.get().initialize(ClientIdGenerator.create());

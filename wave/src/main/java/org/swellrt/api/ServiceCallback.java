@@ -43,6 +43,10 @@ public class ServiceCallback extends JavaScriptObject {
     public final native String getValue(String field) /*-{
       return this.data[field];
     }-*/;
+    
+    public final native boolean getBoolean(String field) /*-{
+      return this.data[field];
+    }-*/;
 
     protected JavaScriptResponse() {}
 
