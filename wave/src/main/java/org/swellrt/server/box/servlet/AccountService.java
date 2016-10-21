@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -155,7 +156,7 @@ public class AccountService extends BaseService {
   }
 
   protected void createAccount(HttpServletRequest req, HttpServletResponse response)
-      throws IOException {
+      throws ServiceException, IOException {
 
     UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
@@ -216,33 +217,20 @@ public class AccountService extends BaseService {
       return;
 
 
-    } catch (IOException e) {
-
-      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          RC_INTERNAL_SERVER_ERROR);
-      LOG.warning(e.getMessage(), e);
-      return;
-
     } catch (PersistenceException e) {
-
-      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          RC_INTERNAL_SERVER_ERROR);
-      LOG.warning(e.getMessage(), e);
-      return;
-
-    } catch (InvalidParticipantAddress e) {
-      sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
-      return;
+      throw new ServiceException("Can't write account to storage", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR ,e);
     } catch (JsonParseException e) {
-      sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
-      return;
+      throw new ServiceException("Can't parse JSON", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INVALID_JSON_SYNTAX ,e);
+    } catch (InvalidParticipantAddress e) {
+      throw new ServiceException("Can't get participant from request" ,HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX, e);
     }
+
 
   }
 
 
   protected void updateAccount(HttpServletRequest req, HttpServletResponse response)
-      throws IOException {
+      throws ServiceException, IOException {
 
     // POST /account/joe update user's account
 
@@ -312,66 +300,53 @@ public class AccountService extends BaseService {
 
 
     } catch (PersistenceException e) {
-
-      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          RC_INTERNAL_SERVER_ERROR);
-      LOG.warning(e.getMessage(), e);
-      return;
-
-    } catch (IOException e) {
-
-      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          RC_INTERNAL_SERVER_ERROR);
-      LOG.warning(e.getMessage(), e);
-      return;
-
-    } catch (InvalidParticipantAddress e) {
-
-      sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
-      return;
-
+      throw new ServiceException("Can't write account to storage", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR ,e);
     } catch (JsonParseException e) {
-      sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
-      return;
+      throw new ServiceException("Can't parse JSON", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INVALID_JSON_SYNTAX ,e);
+    } catch (InvalidParticipantAddress e) {
+      throw new ServiceException("Can't get participant from request" ,HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX, e);
     }
 
   }
 
-  protected void getAvatar(HttpServletRequest req, HttpServletResponse response) throws IOException {
+  /**
+   * Returns an avatar image from the provided participant
+   * 
+   * @param avatarOwnerAddress
+   * @param req
+   * @param response
+   * @throws IOException
+   */
+  protected void getAvatar(HttpServletRequest req, HttpServletResponse response) throws ServiceException, IOException {
 
     // GET /account/joe/avatar/[filename]
     try {
 
-
-      ParticipantId participantId = getParticipantFromRequest(req);
-
-      if (checkForLoggedInUser(req, response) == null) {
-        return;
-      }
-
-      AccountData accountData = accountStore.getAccount(participantId);
+      // We require an open session, at least anonymous
+      checkAnySession(req);
+      
+      ParticipantId avatarOwnerId = getParticipantFromRequest(req);
+      
+      // Retrieve the avatar's owner account data
+      AccountData accountData = accountStore.getAccount(avatarOwnerId);
 
       if (accountData == null) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_FOUND);
-        return;
+        throw new ServiceException("Can't retrieve user account", HttpServletResponse.SC_NOT_FOUND, "ACCOUNT_NOT_FOUND");
       }
 
       String fileName = getAvatarFileFromRequest(req);
 
-      if (fileName == null || !accountData.asHuman().getAvatarFileName().equals(fileName)) {
-        sendResponseError(response, HttpServletResponse.SC_NOT_FOUND,
-            "ACCOUNT_ATTACHMENT_NOT_FOUND");
-        return;
+      if (fileName == null) {
+        throw new ServiceException("Can't extract avatar file from request", HttpServletResponse.SC_BAD_REQUEST, "ATTACHMENT_FILE_NAME_ERROR");
       }
 
       Attachment avatar = attachmentAccountStore.getAvatar(fileName);
 
       if (avatar == null) {
-        sendResponseError(response, HttpServletResponse.SC_NOT_FOUND,
-            "ACCOUNT_ATTACHMENT_NOT_FOUND");
         LOG.warning("Avatar file not found: " + fileName);
-        return;
+        throw new ServiceException("Avatar file not found", HttpServletResponse.SC_NOT_FOUND, "ACCOUNT_ATTACHMENT_NOT_FOUND");
       }
+
 
       response.setContentType(accountData.asHuman().getAvatarMimeType());
       response.setContentLength((int) avatar.getSize());
@@ -380,31 +355,22 @@ public class AccountService extends BaseService {
       AttachmentUtil.writeTo(avatar.getInputStream(), response.getOutputStream());
 
     } catch (PersistenceException e) {
-
-      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          RC_INTERNAL_SERVER_ERROR);
-      LOG.warning(e.getMessage(), e);
-      return;
-
+      throw new ServiceException("Can't read avatar from storage", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR ,e);
     } catch (InvalidParticipantAddress e) {
-      sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
-      return;
+      throw new ServiceException("Can't get participant from request" ,HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX, e);
     }
 
   }
 
 
   protected void getParticipantAccount(HttpServletRequest req, HttpServletResponse response)
-      throws IOException {
+      throws ServiceException, IOException {
 
     UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
 
     try {
 
-      ParticipantId loggedInUser = null;
-
-      if ((loggedInUser = checkForLoggedInUser(req, response)) == null)
-        return;
+      ParticipantId loggedInUser = getLoggedInUser(req);
 
       ParticipantId participantId = getParticipantFromRequest(req);
 
@@ -433,24 +399,22 @@ public class AccountService extends BaseService {
       }
 
     } catch (PersistenceException e) {
-
-      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          RC_INTERNAL_SERVER_ERROR);
-      LOG.warning(e.getMessage(), e);
-      return;
-
+      throw new ServiceException("Can't read account from storage", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR ,e);
     } catch (InvalidParticipantAddress e) {
-      sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
-      return;
+      throw new ServiceException("Can't get participant from request" ,HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX, e);
     }
+    
   }
 
 
   protected void queryParticipantAccount(HttpServletRequest req, HttpServletResponse response)
-      throws IOException {
+      throws ServiceException, IOException {
 
 
     // GET /account?p=joe@local.net;tom@local.net
+    
+    // We require an open session, at least anonymous
+    checkAnySession(req);
 
     Collection<ParticipantId> participantsQuery = getParticipantsFromRequestQuery(req);
 
@@ -473,33 +437,40 @@ public class AccountService extends BaseService {
     String participantToken = pathTokens.length > 2 ? pathTokens[2] : null;
     String participantOp = pathTokens.length > 3 ? pathTokens[3] : null;
 
-    // All operations required a logged in user
+    try {
 
+      if (req.getMethod().equals("POST") && participantToken == null) {
 
-    if (req.getMethod().equals("POST") && participantToken == null) {
+        createAccount(req, response);
 
-      createAccount(req, response);
+      } else if (req.getMethod().equals("POST") && participantToken != null) {
 
-    } else if (req.getMethod().equals("POST") && participantToken != null) {
+        updateAccount(req, response);
 
-      if (checkForLoggedInUser(req, response) == null) return;
-      updateAccount(req, response);
+      } else if (req.getMethod().equals("GET")) {
 
-    } else if (req.getMethod().equals("GET")) {
+        if (participantToken != null) {
 
-      if (participantToken != null) {
+          if (participantOp != null && participantOp.equals("avatar"))
+            getAvatar(req, response);
+          else
+            getParticipantAccount(req, response);
 
-        if (participantOp != null && participantOp.equals("avatar"))
-          getAvatar(req, response);
-        else
-          getParticipantAccount(req, response);
+        } else {
+          
+          queryParticipantAccount(req, response);
 
-      } else {
-
-        if (checkForLoggedInUser(req, response) != null) queryParticipantAccount(req, response);
-
+        }
       }
+
+    } catch (ServiceException e) {
+      sendResponseError(response, e.getHttpResponseCode(), e.getServiceResponseCode());
+      return;
+    } catch (IOException e) {
+      sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR);
+      return;
     }
+    
   }
 
 

@@ -112,9 +112,14 @@ public class QueryModelService extends BaseService {
       return;
     }
 
-    ParticipantId participantId;
+    ParticipantId participantId = null;
+    try {
+      participantId = getLoggedInUser(req);
+    } catch (ServiceException e) {
+      sendResponseError(response, e.getHttpResponseCode(), e.getServiceResponseCode());
+      return;
+    }
 
-    if ((participantId = checkForLoggedInUser(req, response)) == null) return;
 
     // Either... /rest/[api_version]/model?q={MongoDB query}&p={MongoDB
     // projection}
