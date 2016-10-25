@@ -22,18 +22,33 @@ package org.waveprotocol.wave.client.doodad.selection;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.dom.client.Text;
+import com.google.gwt.user.client.Event;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
+import org.waveprotocol.wave.client.common.util.DomHelper.JavaScriptEventListener;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.editor.impl.NodeManager;
 import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
 
 /**
  * DOM implementation of a caret view
+ * 
+ * (pablojan) The caret view has a marker and
+ * a label for the user name.
+ * 
+ * The marker will be visible always until user
+ * stops edition.
+ * 
+ * The user name's label will be only visible
+ * on mouse over.
  *
  * @author danilatos@google.com (Daniel Danilatos)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public class CaretWidget implements CaretView {
 
@@ -45,37 +60,78 @@ public class CaretWidget implements CaretView {
   }
 
   private final Element caretMarkerElement;
+  private final Element caretLeft;
+  private final Element caretRight;
+  private final Element caretLabel;
   private final Element compositionStateSpan;
-  private final Element outerSpan;
-  private final Element innerSpan;
   private final Text nameTextNode;
 
   /**
    * Build a DOM element for storing a single user selection element.
    */
   public CaretWidget() {
-    // TODO(danilatos): UiBinder?
-    caretMarkerElement = Document.get().createSpanElement();
+    
+    
+    
     compositionStateSpan = Document.get().createSpanElement();
-
-    caretMarkerElement.appendChild(compositionStateSpan);
+    
+    /*
+    caretUpper = Document.get().createSpanElement();
+    caretUpper.setClassName(CSS.caretUpper());
+    caretUpper.getStyle().setPosition(Position.ABSOLUTE);
+    caretUpper.appendChild(nameTextNode);
+    
+    compositionStateSpan = Document.get().createSpanElement();
     compositionStateSpan.setClassName(CSS.compositionState());
+    caretUpper.appendChild(compositionStateSpan);
+    */
+    
+    caretMarkerElement = Document.get().createSpanElement();
+    caretMarkerElement.setClassName(CSS.caretMarker());
+    
+    caretLeft = Document.get().createSpanElement();
+    caretLeft.setClassName(CSS.caretMarkerLeft());
+    caretRight = Document.get().createSpanElement();
+    caretRight.setClassName(CSS.caretMarkerRight());
 
-    outerSpan = Document.get().createSpanElement();
-    innerSpan = Document.get().createSpanElement();
-    caretMarkerElement.appendChild(outerSpan);
-
-    // Text node must come first, or rendering glitches ensue.
-    // Also, there is code that depends on it being the first child!
+    caretLabel = Document.get().createSpanElement();
+    caretLabel.setClassName(CSS.caretLabel());
+    caretLabel.getStyle().setVisibility(Visibility.HIDDEN);
     nameTextNode = Document.get().createTextNode("?");
-    outerSpan.appendChild(nameTextNode);
-    outerSpan.appendChild(innerSpan);
-
-    outerSpan.setClassName(CSS.outer());
-    innerSpan.setClassName(CSS.inner());
-
+    caretLabel.appendChild(nameTextNode);
+    
+    caretMarkerElement.appendChild(caretLabel);
+    caretMarkerElement.appendChild(caretLeft);
+    caretMarkerElement.appendChild(caretRight);
+   
+    
     DomHelper.makeUnselectable(caretMarkerElement);
     NodeManager.setTransparency(caretMarkerElement, Skip.DEEP);
+    
+    DomHelper.registerEventHandler(caretMarkerElement, "mouseover", true, new JavaScriptEventListener() {
+
+      @Override
+      public void onJavaScriptEvent(String name, Event event) {
+        
+          caretLabel.getStyle().setVisibility(Visibility.VISIBLE);
+          event.stopPropagation();
+        
+      }
+      
+    });
+    
+    DomHelper.registerEventHandler(caretMarkerElement, "mouseout", true, new JavaScriptEventListener() {
+
+      @Override
+      public void onJavaScriptEvent(String name, Event event) {
+        
+          caretLabel.getStyle().setVisibility(Visibility.HIDDEN);
+          event.stopPropagation();
+        
+      }
+      
+    });
+    
   }
 
   @Override
@@ -92,11 +148,25 @@ public class CaretWidget implements CaretView {
   public void setColor(RgbColor color) {
     String cssColour = color.getCssColor();
     compositionStateSpan.getStyle().setBorderColor(cssColour);
-    outerSpan.getStyle().setBackgroundColor(cssColour);
-    innerSpan.getStyle().setBorderColor(cssColour);
+    caretMarkerElement.getStyle().setBorderColor(cssColour);
+    caretRight.getStyle().setBorderColor(cssColour);
+    caretLeft.getStyle().setBorderColor(cssColour);
+    caretLabel.getStyle().setBackgroundColor(cssColour);
   }
 
   public Element getElement() {
     return caretMarkerElement;
   }
+
+  @Override
+  public void attachToParent(Element parent) {
+    
+    if (parent == null)
+      return;
+       
+    parent.appendChild(getElement());
+    
+  }
+  
+  
 }

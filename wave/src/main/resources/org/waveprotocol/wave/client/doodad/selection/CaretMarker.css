@@ -48,3 +48,40 @@
   left: 1px;
   right: 1px;
 }
+
+
+.caretMarker {
+}
+
+.caretMarkerRight {
+    border-top: 0.4em solid;
+    border-left: 1px solid;
+    height: 1.4em;
+    display: inline-block;
+    width: 2px;
+    margin-right: -2px;    
+    margin-top: -0.4em;
+    vertical-align: text-bottom;
+}
+
+.caretMarkerLeft {
+    border-top: 0.4em solid;
+    border-right: 1px solid;
+    height: 1.4em;
+    display: inline-block;
+    width: 2px;
+    margin-left: -2px;
+    margin-top: -0.4em;
+    vertical-align: text-bottom;
+}
+
+.caretLabel {     
+	position: fixed;
+	margin-top: -1.0em;
+	margin-left: -2px;
+	font-size: 9pt;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	padding-left: 3px;
+	padding-right: 3px;    
+}

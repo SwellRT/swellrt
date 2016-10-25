@@ -86,7 +86,7 @@ import java.util.Queue;
  */
 public class SelectionAnnotationHandler implements AnnotationMutationHandler, ProfileListener {
   /** Time out for not showing stale carets */
-  public static final int STALE_CARET_TIMEOUT_MS = 15 * 1000;
+  public static final int STALE_CARET_TIMEOUT_MS = 6 * 1000;
 
   /**
    * Don't do a stale check more frequently than this
@@ -418,7 +418,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     // Access directly from the map because the high level getter filters stale carets,
     // and this could result in memory leaks.
     SessionData data = sessions.get(sessionId);
-    if (data == null) {
+    if (data == null) { 
       data = new SessionData(markerFactory.createMarker(), address, sessionId, getNextColour());
     }
     double expiry = Math.min(timeStamp, scheduler.currentTimeMillis()) + STALE_CARET_TIMEOUT_MS;
@@ -550,13 +550,16 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     }
 
     if (key.startsWith(AnnotationConstants.USER_DATA) && newValue != null) {
+      // User activity
       updateCaretData(dataSuffix(key), (String) newValue, bundle);
     } else if (key.startsWith(AnnotationConstants.USER_RANGE)) {
+      // The selection
       painterRegistry.registerPaintFunction(
           CollectionUtils.newStringSet(key), spreadFunc);
       painterRegistry.getPainter().scheduleRepaint(bundle, start, end);
 
     } else {
+      // The caret
       painterRegistry.registerBoundaryFunction(
           CollectionUtils.newStringSet(key), boundaryFunc);
       painterRegistry.getPainter().scheduleRepaint(bundle, start, start + 1);
