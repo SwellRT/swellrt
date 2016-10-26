@@ -23,6 +23,7 @@ package org.waveprotocol.wave.client.account.impl;
 import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -44,13 +45,16 @@ public final class ProfileImpl implements Profile {
   private String name;
   private String imageUrl;  
   private String shortName;
+  
+  private final  AbstractProfileManager<ProfileImpl> manager;
 
 
-  public ProfileImpl(ParticipantId id, String name, String imageUrl) {
+  public ProfileImpl(ParticipantId id, String name, String imageUrl, AbstractProfileManager<ProfileImpl> manager) {
     this.id = id;
     this.shortName = buildName(id);
     this.name = (name == null || name.isEmpty()) ? shortName : name;
     this.imageUrl = imageUrl;
+    this.manager = manager;
   }
 
   
@@ -120,6 +124,7 @@ public final class ProfileImpl implements Profile {
   public void update(String name, String imageUrl) {
     this.name = (name == null || name.isEmpty()) ? shortName : name;
     this.imageUrl = imageUrl;
+    manager.fireOnUpdated(this);
   }
 
 

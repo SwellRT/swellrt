@@ -75,7 +75,7 @@ public class SwellRTProfileManager extends AbstractProfileManager<ProfileImpl> {
     
     ProfileImpl profile = null;
     if (!profiles.containsKey(id.getAddress())) {
-      profile = new ProfileImpl(id, null, null);
+      profile = new ProfileImpl(id, null, null, this);
       profiles.put(id.getAddress(), profile);
     } else {
       profile = profiles.get(id.getAddress());
@@ -109,7 +109,7 @@ public class SwellRTProfileManager extends AbstractProfileManager<ProfileImpl> {
       
       ProfileImpl profile = profiles.get(id.getAddress());
       if (profile == null) {
-        profile = new ProfileImpl(id, name, imageUrl);
+        profile = new ProfileImpl(id, name, imageUrl, this);
         profiles.put(id.getAddress(), profile);
       } else {
         profile.update(name, imageUrl);

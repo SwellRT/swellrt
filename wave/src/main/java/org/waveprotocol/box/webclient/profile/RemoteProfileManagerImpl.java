@@ -79,7 +79,7 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager<Profi
   protected ProfileImpl requestProfile(ParticipantId participantId) {
     LOG.trace().log("Fetching profile: " + participantId.getAddress());
     fetchProfilesService.fetch(this, participantId.getAddress());    
-    return new ProfileImpl(participantId, null, null);
+    return new ProfileImpl(participantId, null, null, this);
   }
 
 }

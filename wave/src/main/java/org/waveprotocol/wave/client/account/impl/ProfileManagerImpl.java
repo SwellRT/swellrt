@@ -34,8 +34,7 @@ public final class ProfileManagerImpl extends AbstractProfileManager<ProfileImpl
 
   @Override
   protected ProfileImpl requestProfile(ParticipantId participantId) {
-    // TODO Auto-generated method stub
-    return null;
+    return new ProfileImpl(participantId, null, null, this);
   }
 
 
