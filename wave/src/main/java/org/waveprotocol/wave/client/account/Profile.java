@@ -41,15 +41,16 @@ public interface Profile {
   /**
    * @return the participant's full name
    */
-  String getFullName();
+  String getName();
 
   /**
-   * @return the participant's first name
+   * @return the participant's short name
    */
-  String getFirstName();
+  String getShortName();
 
   /**
    * @return the URL of a participant's avatar image
    */
   String getImageUrl();
+    
 }

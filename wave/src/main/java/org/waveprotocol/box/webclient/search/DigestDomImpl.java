@@ -174,7 +174,7 @@ public final class DigestDomImpl implements DigestView {
   private void renderAvatar(SafeHtmlBuilder html, Profile profile) {
     // URL is trusted to be attribute safe (i.e., no ' or ")
     String url = profile.getImageUrl();
-    String name = profile.getFullName();
+    String name = profile.getName();
     html.appendHtmlConstant("<img class='" + css.avatar() + "' src='");
     html.appendHtmlConstant(url);
     html.appendHtmlConstant("' alt='");

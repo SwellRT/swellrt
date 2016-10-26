@@ -19,6 +19,9 @@
 
 package org.waveprotocol.wave.client.doodad.selection;
 
+import org.waveprotocol.wave.client.common.util.RgbColor;
+
+import com.google.gwt.dom.client.Element;
 
 /**
  * UI interface for the caret marker
@@ -37,4 +40,7 @@ public interface CaretView {
    * Set the current displayed IME composition state for the user's marker
    */
   void setCompositionState(String state);
+  
+  
+  void attachToParent(Element parent);
 }

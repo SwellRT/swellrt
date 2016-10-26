@@ -121,7 +121,7 @@ public final class UndercurrentShallowBlipRenderer implements ShallowBlipRendere
   }
 
   private String nameOf(ParticipantId contributor) {
-    return manager.getProfile(contributor).getFirstName();
+    return manager.getProfile(contributor).getName();
   }
 
   private String avatarOf(ParticipantId contributor) {

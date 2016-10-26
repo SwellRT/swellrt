@@ -10,6 +10,7 @@ import org.swellrt.api.BrowserSession;
 import org.swellrt.client.editor.TextEditorDefinitions.ParagraphAnnotation;
 import org.swellrt.model.generic.TextType;
 import org.swellrt.model.shared.ModelUtils;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
 import org.waveprotocol.wave.client.common.util.JsoStringMap;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
@@ -24,6 +25,7 @@ import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler;
+import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler.CaretListener;
 import org.waveprotocol.wave.client.doodad.selection.SelectionExtractor;
 import org.waveprotocol.wave.client.doodad.widget.WidgetDoodad;
 import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidget;
@@ -72,6 +74,7 @@ import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 import org.waveprotocol.wave.model.util.StringMap;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -95,7 +98,22 @@ public class TextEditor implements EditorUpdateListener {
      * be injected in the Editor by the JS API. Model's classes have to ignore it.
      */
     public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry();
-  
+    
+    /**
+     * @return a profile manager instance
+     */
+    public ProfileManager getProfileManager();
+    
+    /**
+     * @return a full session id including tab/window info. 
+     */
+    public String getSessionId();
+    
+    /**
+     * 
+     * @return current logged in user id
+     */
+    public ParticipantId getParticipantId();
   }
 
   public static class JSLogSink extends LogSink {
@@ -178,6 +196,8 @@ public class TextEditor implements EditorUpdateListener {
 
   private boolean shouldFireEvents = false;
   
+  private TimerService clock;
+  
   /**
    * Registry of JavaScript controllers for widgets
    */
@@ -214,6 +234,7 @@ public class TextEditor implements EditorUpdateListener {
     };
     this.widgetRegistry = widgetControllers;
     this.annotationRegistry = annotationControllers;
+    this.clock = SchedulerInstance.getLowPriorityTimer();
   }
 
   /**
@@ -417,9 +438,11 @@ public class TextEditor implements EditorUpdateListener {
    * Start an editing session.
    * 
    * @param text the TextType instance to edit
+   * @param a handler to listen on caret events
    * @param configurator editor dependencies not related with text
+   * 
    */
-  public void edit(TextType text, Configurator configurator) {
+  public void edit(TextType text, CaretListener caretListener, Configurator configurator) {
     Preconditions.checkNotNull(text, "Text object can't be null");
     Preconditions.checkNotNull(configurator, "Editor configurator can't be null");
     
@@ -428,9 +451,9 @@ public class TextEditor implements EditorUpdateListener {
     if (!isClean()) cleanUp();
 
     // Place here selection extractor to ensure session id and user id are refreshed
-    SelectionAnnotationHandler.register(registries, BrowserSession.getWindowSessionId(), new ProfileManagerImpl());
-    TimerService clock = SchedulerInstance.getLowPriorityTimer();
-    selectionExtractor = new SelectionExtractor(clock, BrowserSession.getUserAddress(), BrowserSession.getWindowSessionId());
+    SelectionAnnotationHandler.register(registries, configurator.getSessionId(), configurator.getProfileManager(), caretListener);
+    
+    selectionExtractor = new SelectionExtractor(clock, configurator.getParticipantId().getAddress(), configurator.getSessionId());
     
     doc = getContentDocument(text, configurator.getDocumentRegistry());
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");

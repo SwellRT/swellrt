@@ -44,10 +44,8 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager<Profi
    */
   static void deserializeResponseAndUpdateProfiles(RemoteProfileManagerImpl manager,
       ProfileResponse profileResponse) {
-    int i = 0;
     for (FetchedProfile fetchedProfile : profileResponse.getProfiles()) {
       deserializeAndUpdateProfile(manager, fetchedProfile);
-      i++;
     }
   }
 
@@ -58,25 +56,12 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager<Profi
     // Profiles already exist for all profiles that have been requested.
     assert profile != null;
     // Updates profiles - this also notifies listeners.
-    profile
-        .update(fetchedProfile.getName(), fetchedProfile.getName(), fetchedProfile.getImageUrl());
+    profile.update(fetchedProfile.getName(), fetchedProfile.getImageUrl());
+    manager.fireOnUpdated(profile);
   }
 
   public RemoteProfileManagerImpl() {
     fetchProfilesService = FetchProfilesServiceImpl.create();
-  }
-
-  @Override
-  public ProfileImpl getProfile(ParticipantId participantId) {
-    String address = participantId.getAddress();
-    ProfileImpl profile = profiles.get(address);
-    if (profile == null) {
-      profile = new ProfileImpl(this, participantId);
-      profiles.put(address, profile);
-      LOG.trace().log("Fetching profile: " + address);
-      fetchProfilesService.fetch(this, address);
-    }
-    return profile;
   }
 
   @Override
@@ -89,4 +74,12 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager<Profi
   public void onSuccess(ProfileResponse profileResponse) {
     deserializeResponseAndUpdateProfiles(this, profileResponse);
   }
+
+  @Override
+  protected ProfileImpl requestProfile(ParticipantId participantId) {
+    LOG.trace().log("Fetching profile: " + participantId.getAddress());
+    fetchProfilesService.fetch(this, participantId.getAddress());    
+    return new ProfileImpl(participantId, null, null);
+  }
+
 }

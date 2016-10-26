@@ -65,11 +65,8 @@ public class CaretMarkerRenderer implements Renderer, CaretViewFactory {
   }
 
   public void setMarker(Object element, CaretView marker) {
-    // Hack for bug 2868754
+    // Hack for bug 2868754 
     Element impl = ((ContentElement) element).getImplNodelet();
-    if (impl != null) {
-    impl.appendChild(
-        ((CaretWidget) marker).getElement());
-    }
+    marker.attachToParent(impl);
   }
 }

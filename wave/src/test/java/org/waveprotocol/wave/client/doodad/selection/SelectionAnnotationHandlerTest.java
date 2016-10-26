@@ -96,11 +96,11 @@ public class SelectionAnnotationHandlerTest extends TestCase {
       profile = profileManager.getProfile(ParticipantId.ofUnsafe(name + "@example.com"));
       id = "#" + name + "#";
       extractor = new SelectionExtractor(handlerTimer, profile.getAddress(), id);
-      displayName = profile.getFirstName();
+      displayName = profile.getName();
     }
 
     void setName(String newName) {
-      profile.update(newName, null, null);
+      profile.update(newName, null);
     }
   }
 
@@ -127,7 +127,7 @@ public class SelectionAnnotationHandlerTest extends TestCase {
     Registries registries =
         new RegistriesImpl(mock(ElementHandlerRegistry.class), annotationRegistry, painterRegistry);
     handler = SelectionAnnotationHandler.register(
-        registries, handlerTimer, markerFactory, me.id, profileManager);
+        registries, handlerTimer, markerFactory, me.id, profileManager, null);
 
     String content = "abcdefghij";
     cxt = ContextProviders.createTestPojoContext2(

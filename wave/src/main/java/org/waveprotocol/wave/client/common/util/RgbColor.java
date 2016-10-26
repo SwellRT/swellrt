@@ -17,22 +17,24 @@
  * under the License.
  */
 
-package org.waveprotocol.wave.client.doodad.selection;
+package org.waveprotocol.wave.client.common.util;
+
+import com.google.common.base.Joiner;
 
 /**
  * A value object for an RGB triple.
  *
  * @author hearnden@google.com (David Hearnden)
  */
-final class RgbColor {
-  static final RgbColor BLACK = new RgbColor(0, 0, 0);
-  static final RgbColor WHITE = new RgbColor(255, 255, 255);
+public final class RgbColor {
+  public static final RgbColor BLACK = new RgbColor(0, 0, 0);
+  public static final RgbColor WHITE = new RgbColor(255, 255, 255);
 
-  final int red;
-  final int green;
-  final int blue;
+  public final int red;
+  public final int green;
+  public final int blue;
 
-  RgbColor(int red, int green, int blue) {
+  public RgbColor(int red, int green, int blue) {
     this.red = red;
     this.green = green;
     this.blue = blue;
@@ -43,6 +45,11 @@ final class RgbColor {
     return "rgb(" + red + "," + green + "," + blue + ")";
   }
 
+  /** @return the Hex RGB value for this color */
+  public String getHexColor() {
+    return Joiner.on("").join("#", Integer.toHexString(red), Integer.toHexString(green), Integer.toHexString(blue));   
+  }
+  
   @Override
   public int hashCode() {
     // Bitshifting is significantly faster on both Chrome and Firefox.
