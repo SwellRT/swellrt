@@ -19,6 +19,8 @@
 
 package org.waveprotocol.wave.client.common.util;
 
+import com.google.common.base.Joiner;
+
 /**
  * A value object for an RGB triple.
  *
@@ -43,6 +45,11 @@ public final class RgbColor {
     return "rgb(" + red + "," + green + "," + blue + ")";
   }
 
+  /** @return the Hex RGB value for this color */
+  public String getHexColor() {
+    return Joiner.on("").join("#", Integer.toHexString(red), Integer.toHexString(green), Integer.toHexString(blue));   
+  }
+  
   @Override
   public int hashCode() {
     // Bitshifting is significantly faster on both Chrome and Firefox.

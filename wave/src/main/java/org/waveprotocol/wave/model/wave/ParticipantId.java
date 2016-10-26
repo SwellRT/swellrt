@@ -192,7 +192,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   }
 
   public static boolean isAnonymousName(String name) {
-    return name != null && name.equals(ANONYMOUS_NAME);
+    return name != null && name.startsWith(ANONYMOUS_NAME);
   }
 
 

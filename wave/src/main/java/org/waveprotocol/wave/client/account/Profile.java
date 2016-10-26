@@ -19,7 +19,6 @@
 
 package org.waveprotocol.wave.client.account;
 
-import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
@@ -42,20 +41,16 @@ public interface Profile {
   /**
    * @return the participant's full name
    */
-  String getFullName();
+  String getName();
 
   /**
-   * @return the participant's first name
+   * @return the participant's short name
    */
-  String getFirstName();
+  String getShortName();
 
   /**
    * @return the URL of a participant's avatar image
    */
   String getImageUrl();
-  
-  /**
-   * @return the color for this user
-   */
-  RgbColor getColor();
+    
 }

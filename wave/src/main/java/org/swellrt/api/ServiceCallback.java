@@ -21,7 +21,7 @@ public class ServiceCallback extends JavaScriptObject {
         r.data = JSON.parse(json);
       } catch (e) {};
       if (!r.data)
-        r.data = json;
+        r.error = json;
       return r;
     }-*/;
 

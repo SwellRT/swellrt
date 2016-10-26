@@ -20,36 +20,40 @@
 package org.waveprotocol.wave.client.account.impl;
 
 
-import com.google.common.base.Joiner;
+import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
-import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.util.List;
+import com.google.common.base.Joiner;
 
 /**
  * A {@link Profile} which determines all properties from just a
  * {@link ParticipantId} given on construction.
  *
  * @author kalman@google.com (Benjamin Kalman)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public final class ProfileImpl implements Profile {
+  
+  private final static String ANONYMOUS_NAME = "Anonymous";
 
-  private final AbstractProfileManager<? super ProfileImpl> manager;
   private final ParticipantId id;
+  
+  private String name;
+  private String imageUrl;  
+  private String shortName;
 
-  // Lazily loaded values
-  private String firstName;
-  private String fullName;
-  private String imageUrl;
 
-  public ProfileImpl(AbstractProfileManager<ProfileImpl> manager, ParticipantId id) {
-    this.manager = manager;
+  public ProfileImpl(ParticipantId id, String name, String imageUrl) {
     this.id = id;
+    this.shortName = buildName(id);
+    this.name = (name == null || name.isEmpty()) ? shortName : name;
+    this.imageUrl = imageUrl;
   }
 
+  
   @Override
   public ParticipantId getParticipantId() {
     return id;
@@ -60,38 +64,22 @@ public final class ProfileImpl implements Profile {
     return id.getAddress();
   }
 
-  @Override
-  public String getFullName() {
-    if (fullName == null) {
-      buildNames();
-    }
-    return fullName;
-  }
-
-  @Override
-  public String getFirstName() {
-    if (firstName == null) {
-      buildNames();
-    }
-    return firstName;
-  }
-
+  
   @Override
   public String getImageUrl() {
     if (imageUrl == null) {
-      imageUrl = "static/images/unknown.jpg";
+      return "static/images/unknown.jpg";
     }
     return imageUrl;
   }
 
-  /**
-   * Attempts to create the fragments of the participant's name from their
-   * address, for example "john.smith@example.com" into ["John", "Smith"].
-   */
-  private void buildNames() {
+  private static String buildName(ParticipantId id) {
     List<String> names = CollectionUtils.newArrayList();
-    String nameWithoutDomain = id.getAddress().split("@")[0];
-    if (nameWithoutDomain != null && !nameWithoutDomain.isEmpty()) {
+    String nameWithoutDomain = id.getName();
+    
+    if (ParticipantId.isAnonymousName(nameWithoutDomain)) {
+      return ANONYMOUS_NAME;      
+    } else if (nameWithoutDomain != null && !nameWithoutDomain.isEmpty()) {
       // Include empty names from fragment, so split with a -ve.
       for (String fragment : nameWithoutDomain.split("[._]", -1)) {
         if (!fragment.isEmpty()) {
@@ -99,13 +87,10 @@ public final class ProfileImpl implements Profile {
         }
       }
       // ParticipantId normalization implies names can not be empty.
-      assert !names.isEmpty();
-      firstName = names.get(0);
-      fullName = Joiner.on(' ').join(names);
+      assert !names.isEmpty();      
+      return Joiner.on(' ').join(names);
     } else {
-      // Name can be empty in case of shared domain participant which has the the form:
-      // @example.com.
-      fullName = id.getAddress();
+      return "";
     }
   }
 
@@ -113,28 +98,29 @@ public final class ProfileImpl implements Profile {
     return s.isEmpty() ? s : (Character.toUpperCase(s.charAt(0))) + s.substring(1);
   }
 
-  /**
-   * Replaces this profile's fields.
-   * <p>
-   * Each non-null argument replaces this profile's corresponding field. Null
-   * arguments have no effect (i.e., they do not clear the existing field).
-   */
-  public void update(String firstName, String fullName, String imageUrl) {
-    this.firstName = firstName != null ? firstName : this.firstName;
-    this.fullName = fullName != null ? fullName : this.fullName;
-    this.imageUrl = imageUrl != null ? imageUrl : this.imageUrl;
-
-    manager.fireOnUpdated(this);
-  }
-
   @Override
   public String toString() {
-    return "ProfileImpl [id=" + id + ", firstName=" + firstName + ", fullName=" + fullName
-        + ", imageUrl=" + imageUrl + "]";
+    return "ProfileImpl [id=" + id + ", "+name+ ", imageUrl=" + imageUrl + "]";
   }
 
   @Override
-  public RgbColor getColor() {
-    throw new IllegalStateException("Method not implemented");
+  public String getName() {    
+    return name;
   }
+
+  @Override
+  public String getShortName() {
+    if (shortName == null)
+      shortName = capitalize(id.getName());
+    
+    return shortName;
+  }
+
+  
+  public void update(String name, String imageUrl) {
+    this.name = (name == null || name.isEmpty()) ? shortName : name;
+    this.imageUrl = imageUrl;
+  }
+
+
 }

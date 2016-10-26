@@ -144,7 +144,7 @@ public final class FullDomRenderer implements RenderingRules<UiBuilder> {
     String id = viewIdMapper.participantOf(conversation, participant);
     ParticipantAvatarViewBuilder participantUi = ParticipantAvatarViewBuilder.create(id);
     participantUi.setAvatar(profile.getImageUrl());
-    participantUi.setName(profile.getFullName());
+    participantUi.setName(profile.getName());
     return participantUi;
   }
 

@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.RootPanel;
 
 import org.swellrt.api.ServiceCallback.JavaScriptResponse;
 import org.swellrt.api.js.generic.ModelJS;
+import org.swellrt.client.SwellRTProfileManager;
 import org.swellrt.client.WaveLoader;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
@@ -28,6 +29,7 @@ import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
@@ -148,6 +150,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
   /** List of editors created in the app */
   private Map<Element, TextEditor> editorRegistry = CollectionUtils.newHashMap();
+  
+  private SwellRTProfileManager profileManager;  
 
   /** A listener to global data/network/runtime events */
   private SwellRT.Listener listener = null;
@@ -188,6 +192,16 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     waveRegistry.clear();
     websocket.disconnect(true);
     channel = null;
+  }
+  
+  /**
+   * @return profile manager instance.
+   */
+  protected ProfileManager getProfileManager() {
+    if (this.profileManager == null) {
+      this.profileManager = new SwellRTProfileManager(this);
+    }
+    return this.profileManager;  
   }
 
   public void login(JavaScriptObject parameters, ServiceCallback _callback)
@@ -235,7 +249,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
           // Init Id generator
           TypeIdGenerator.get().initialize(ClientIdGenerator.create());
-
+          
           callback.onComplete(responseData);
         }
 

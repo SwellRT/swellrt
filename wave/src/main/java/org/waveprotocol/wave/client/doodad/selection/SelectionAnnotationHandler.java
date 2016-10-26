@@ -98,6 +98,29 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   public static final int MAX_NAME_LENGTH_FOR_SELECTION_ANNOTATION = 15;
 
   /**
+   * Interface to get notified when users
+   * are working on the document
+   */
+  public interface CaretListener {
+    
+    /**
+     * Called when a participant is writing or moving the caret
+     * in a document.
+     * @param address the participant id
+     * @param color the caret's color
+     */
+    public void onActive(String address, RgbColor color);
+    
+    /**
+     * Called after certain time of inactivity of the participant
+     * in the document. 
+     * @param address the participant id
+     */
+    public void onExpire(String address);
+    
+  }
+  
+  /**
    * Interface for dealing with marker doodads
    */
   public interface CaretViewFactory {
@@ -115,24 +138,38 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
      */
     void setMarker(Object element, CaretView marker);
   }
-
+  
   /**
    * Installs this doodad.
    */
   public static void register(
-      Registries registries, String sessionId, ProfileManager profiles) {
+      Registries registries, String sessionId, ProfileManager profiles, CaretListener caretListener) {
     CaretMarkerRenderer carets = CaretMarkerRenderer.getInstance();
     registries.getElementHandlerRegistry().registerRenderer(
         CaretMarkerRenderer.FULL_TAGNAME, carets);
-    register(registries, SchedulerInstance.getLowPriorityTimer(), carets, sessionId, profiles);
+    
+    // Ensure a not null listener
+    if (caretListener == null)
+      caretListener = new CaretListener() {
+        @Override
+        public void onActive(String address, RgbColor color) {
+          // no op
+        }
+        @Override
+        public void onExpire(String address) {
+          // no op
+        }
+    };
+    
+    register(registries, SchedulerInstance.getLowPriorityTimer(), carets, sessionId, profiles, caretListener);
   }
 
   @VisibleForTesting
   static SelectionAnnotationHandler register(Registries registries, TimerService timer,
-      CaretViewFactory carets, String sessionId, ProfileManager profiles) {
+      CaretViewFactory carets, String sessionId, ProfileManager profiles, CaretListener caretListener) {
     Preconditions.checkNotNull(sessionId, "Session Id to ignore must not be null");
     SelectionAnnotationHandler selection = new SelectionAnnotationHandler(
-        registries.getPaintRegistry(), sessionId, profiles, timer, carets);
+        registries.getPaintRegistry(), sessionId, profiles, timer, carets, caretListener);
     registries.getAnnotationHandlerRegistry().
       registerHandler(AnnotationConstants.USER_PREFIX, selection);
     profiles.addListener(selection);
@@ -267,8 +304,8 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       ui.setColor(color);
     }
 
-    void replaceName(Profile profile) {
-      String newName = profile.getFirstName().replace(' ', '\u00a0');
+    void setProfile(Profile profile) {
+      String newName = profile.getName();
       if (!newName.equals(name)) {
         name = newName;
         ui.setName(name);
@@ -291,6 +328,8 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   private final StringMap<String> highlightCache = CollectionUtils.createStringMap();
 
   private final CaretViewFactory markerFactory;
+  
+  private final CaretListener caretListener;
 
   private String getUsersHighlight(String sessions) {
     if (!highlightCache.containsKey(sessions)) {
@@ -322,7 +361,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
   private final PaintFunction spreadFunc = new PaintFunction() {
     public Map<String, String> apply(Map<String, Object> from, boolean isEditing) {
-      // discover which sessions have hilighted this range:
+      // discover which sessions have highlighted this range:
       String sessions = "";
       for (Map.Entry<String, Object> entry : from.entrySet()) {
         if (entry.getKey().startsWith(AnnotationConstants.USER_RANGE)) {
@@ -335,7 +374,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
         }
       }
 
-      // combine them together and hilight the range accordingly:
+      // combine them together and highlight the range accordingly:
       if (!sessions.equals("")) {
         return Collections.singletonMap("backgroundColor", getUsersHighlight(sessions));
       } else {
@@ -391,12 +430,15 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   public SelectionAnnotationHandler(PainterRegistry registry,
       String ignoreSessionId,
       ProfileManager profileManager,
-      TimerService timer, CaretViewFactory markerFactory) {
+      TimerService timer, 
+      CaretViewFactory markerFactory,
+      CaretListener caretListener) {
     this.painterRegistry = registry;
     this.ignoreSessionId = ignoreSessionId;
     this.profileManager = profileManager;
     this.scheduler = timer;
     this.markerFactory = markerFactory;
+    this.caretListener = caretListener;
   }
 
   private void updateCaretData(String sessionId, String value, DocumentContext<?, ?, ?> doc) {
@@ -500,6 +542,8 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     if (hotSpot >= 0) {
       AnnotationPainter.maybeScheduleRepaint((DocumentContext) bundle, rangeStart, rangeEnd);
     }
+    
+     caretListener.onExpire(data.address);
   }
 
   private void activate(SessionData data, double expiry, DocumentContext<?, ?, ?> doc) {
@@ -514,9 +558,12 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
         profile = null;
       }
       if (profile != null) {
-        data.replaceName(profile);
+        data.setProfile(profile);
       }
       expiries.add(data);
+      
+      
+      caretListener.onActive(data.address, data.color);
     }
 
     data.bundle = doc;
@@ -551,7 +598,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
     if (key.startsWith(AnnotationConstants.USER_DATA) && newValue != null) {
       // User activity
-      updateCaretData(dataSuffix(key), (String) newValue, bundle);
+      updateCaretData(dataSuffix(key), (String) newValue, bundle);       
     } else if (key.startsWith(AnnotationConstants.USER_RANGE)) {
       // The selection
       painterRegistry.registerPaintFunction(
@@ -582,7 +629,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       @Override
       public void apply(String s, SessionData value) {
         if (value.address.equals(profileAddress) && !value.isStale()) {
-          value.replaceName(profile);
+          value.setProfile(profile);
         }
       }
     });

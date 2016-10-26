@@ -45,4 +45,5 @@ public interface ProfileManager extends SourcesEvents<ProfileListener> {
    * @return true if the participant should be ignored, false if not
    */
   boolean shouldIgnore(ParticipantId participantId);
+  
 }

@@ -87,7 +87,7 @@ public final class ProfilePopupPresenter implements ProfileListener, ProfilePopu
 
   private void render() {
     view.setAddress(model.getAddress());
-    view.setName(model.getFullName());
+    view.setName(model.getName());
     view.setAvatarUrl(model.getImageUrl());
   }
 

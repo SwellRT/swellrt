@@ -2,16 +2,63 @@ package org.swellrt.api.js.editor;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import org.swellrt.api.BrowserSession;
 import org.swellrt.api.WaveClient;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.client.editor.TextEditor.Configurator;
 import org.swellrt.model.generic.TextType;
+import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.common.util.RgbColor;
+import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler.CaretListener;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 
 public class TextEditorJS extends JavaScriptObject {
+  
+  private static class CaretListenerJS implements CaretListener {
+    
+    private final JavaScriptObject nativeCaretListener;
+    
+    public CaretListenerJS(JavaScriptObject nativeCaretListener) {
+      this.nativeCaretListener = nativeCaretListener;
+    }
+    
+    @Override
+    public void onActive(String address, RgbColor color) {      
+      onActiveNative(this.nativeCaretListener, address, color.getHexColor());
+    }   
+
+    @Override
+    public void onExpire(String address) {
+      onExpireNative(nativeCaretListener, address);
+    }
+    
+    protected static native void onActiveNative(JavaScriptObject nativeListener, String address, String color) /*-{
+    
+      if (!nativeListener)
+        return;
+       
+      if (typeof nativeListener.onActive == "function") {
+        nativeListener.onActive(address, color);
+      }
+    
+    }-*/;
+    
+    protected static native void onExpireNative(JavaScriptObject nativeListener, String address) /*-{
+
+      if (!nativeListener)
+        return;
+       
+      if (typeof nativeListener.onExpire == "function") {
+        nativeListener.onExpire(address);
+      }
+    
+    }-*/;
+    
+  }
 
   public native static TextEditorJS create(TextEditor delegate, WaveClient client) /*-{
 
@@ -22,10 +69,9 @@ public class TextEditorJS extends JavaScriptObject {
         delegate.@org.swellrt.client.editor.TextEditor::setListener(Lorg/swellrt/client/editor/TextEditorListener;)(_handler);
       },
 
-      edit: function(text) {
-        // TODO check for cleanUp();
+      edit: function(text, caretListener) {
         var _text = text.getDelegate();
-        @org.swellrt.api.js.editor.TextEditorJS::edit(Lorg/swellrt/client/editor/TextEditor;Lorg/swellrt/model/generic/TextType;Lorg/swellrt/api/WaveClient;)(delegate, _text, client);
+        @org.swellrt.api.js.editor.TextEditorJS::edit(Lorg/swellrt/client/editor/TextEditor;Lorg/swellrt/model/generic/TextType;Lorg/swellrt/api/WaveClient;Lcom/google/gwt/core/client/JavaScriptObject;)(delegate, _text, client, caretListener);
       },
 
       cleanUp: function() {
@@ -101,13 +147,30 @@ public class TextEditorJS extends JavaScriptObject {
 
   }
   
-  private static void edit(TextEditor editor, TextType text, WaveClient client) {
+  private static void edit(TextEditor editor, TextType text, WaveClient client, JavaScriptObject caretListener) {
     final WaveId waveId = text.getModel().getWaveId();
-    editor.edit(text, new Configurator() {
+    
+    editor.edit(text, new CaretListenerJS(caretListener),        
+        new Configurator() {
 
       @Override
       public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry() {
          return client.getDocumentRegistry(waveId);
+      }
+
+      @Override
+      public ProfileManager getProfileManager() {
+        return client.getProfileManager();
+      }
+
+      @Override
+      public String getSessionId() {     
+        return BrowserSession.getWindowSessionId();
+      }
+
+      @Override
+      public ParticipantId getParticipantId() {
+        return ParticipantId.ofUnsafe(BrowserSession.getUserAddress());
       }
       
     });
