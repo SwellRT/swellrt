@@ -112,14 +112,10 @@ import java.util.Map;
  */
 public interface StageTwo {
 
-  /** @return the (live) conversations in the wave. */
-  ObservableConversationView getConversations();
 
   /** @return the core wave. */
   ObservableWaveView getWave();
 
-  /** @return the signed-in user's (live) supplementary data in the wave. */
-  LocalSupplementedWave getSupplement();
 
   /** @return the registry of document objects used for conversational blips. */
   WaveDocuments<? extends InteractiveDocument> getDocumentRegistry();
@@ -270,16 +266,6 @@ public interface StageTwo {
       return wavelets == null ? wavelets = createWavelets() : wavelets;
     }
 
-    @Override
-    public final ObservableConversationView getConversations() {
-      return conversations == null ? conversations = createConversations() : conversations;
-    }
-
-    @Override
-    public final LocalSupplementedWave getSupplement() {
-      return supplement == null ? supplement = createSupplement() : supplement;
-    }
-
 
     @Override
     public final WaveDocuments<LazyContentDocument> getDocumentRegistry() {
@@ -292,11 +278,6 @@ public interface StageTwo {
       return waveData;
     }
 
-
-    /** @return the id mangler for model objects. Subclasses may override. */
-    protected ModelIdMapper createModelIdMapper() {
-      return ModelIdMapperImpl.create(getConversations(), "UC");
-    }
 
 
     /** @return the id of the signed-in user. Subclassses may override. */
@@ -364,23 +345,6 @@ public interface StageTwo {
       return WaveBasedConversationView.create(getWave(), getIdGenerator());
     }
 
-    /** @return the user supplement of the wave. Subclasses may override. */
-    protected LocalSupplementedWave createSupplement() {
-      Wavelet udw = getWave().getUserData();
-      if (udw == null) {
-         udw = getWave().createUserData();
-      }
-      ObservablePrimitiveSupplement state = WaveletBasedSupplement.create(udw);
-      ObservableSupplementedWave live = new LiveSupplementedWaveImpl(
-          state, getWave(), getSignedInUser(), DefaultFollow.ALWAYS, getConversations());
-      return LocalSupplementedWaveImpl.create(getWave(), live);
-    }
-
-    /** @return a supplement to the supplement, to get exact read/unread counts. */
-    protected BlipReadStateMonitor createReadMonitor() {
-      return BlipReadStateMonitorImpl.create(
-          getWave().getWaveId(), getSupplement(), getConversations());
-    }
 
     /** @return the registry of documents in the wave. Subclasses may override. */
     protected WaveDocuments<LazyContentDocument> createDocumentRegistry() {

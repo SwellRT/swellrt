@@ -558,7 +558,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
         ModelJS cobJsFacade = null;
 
         Model cob =
-          Model.create(wave.getWave().getWave(), wave.getLocalDomain(),
+          Model.create(wave.getWave(), wave.getLocalDomain(),
                   wave.getLoggedInUser(),
                 wave.isNewWave(), wave.getIdGenerator());
 

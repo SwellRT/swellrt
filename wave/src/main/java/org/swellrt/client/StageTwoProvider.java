@@ -128,13 +128,6 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   @Override
   protected void install() {
     if (isNewWave) {
-      // For a new wave, initial state comes from local initialization.
-      // getConversations().createRoot().getRootThread().appendBlip();
-
-      // Adding any initial participant to the new wave
-      // getConversations().getRoot().addParticipantIds(otherParticipants);
-
-      getConversations().createRoot().addParticipantIds(otherParticipants);
 
       super.install();
       whenReady.use(StageTwoProvider.this);

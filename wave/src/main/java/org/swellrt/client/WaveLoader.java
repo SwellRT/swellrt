@@ -1,5 +1,7 @@
 package org.swellrt.client;
 
+import java.util.Set;
+
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
@@ -7,12 +9,10 @@ import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
-import org.waveprotocol.wave.model.document.WaveContext;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 import org.waveprotocol.wave.model.waveref.WaveRef;
-
-import java.util.Set;
 
 /**
  * The Wave Loader encapsulates the process of loading a Wave and Wavelets from
@@ -40,7 +40,7 @@ public class WaveLoader extends Stages {
   private StageOne one;
   private StageTwo two;
   private StageThree three;
-  protected WaveContext wave;
+  protected ObservableWaveView wave;
   protected WaveRef waveRef;
   private RemoteViewServiceMultiplexer channel;
   protected IdGenerator idGenerator;
@@ -116,9 +116,7 @@ public class WaveLoader extends Stages {
       return;
     }
     three = x;
-    wave =
-        new WaveContext(two.getWave(), two.getConversations(), two.getSupplement(),
- null);
+    wave = two.getWave();
     // Add into some Wave store?
     install();
     whenReady.use(x);
@@ -164,7 +162,7 @@ public class WaveLoader extends Stages {
   }
 
 
-  public WaveContext getWave() {
+  public ObservableWaveView getWave() {
     return wave;
   }
 
