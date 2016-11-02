@@ -13,9 +13,6 @@
 	<!-- Wave Mod -->
 	<inherits name='org.swellrt.model.SwellRTModel' />
 	<inherits name='org.swellrt.client.SwellRTClient' />
-
-	<!-- Kune.cc Initials avatars -->
-	<inherits name='cc.kune.initials.InitialsAvatars' />
 	
 	<add-linker name="xsiframe" />
 
