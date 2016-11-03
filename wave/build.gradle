@@ -392,8 +392,8 @@ task compileJsWebDev {
 
 compileJsWeb.mustRunAfter compileJava
 compileJsWebDev.mustRunAfter compileJava
-// run.dependsOn compileJsWebDev
-run.dependsOn compileJava
+run.dependsOn compileJsWebDev
+
 
 compileJava.dependsOn = [generateMessages, generateGXP]
 
