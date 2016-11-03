@@ -14,8 +14,6 @@
 	<inherits name='org.swellrt.model.SwellRTModel' />
 	<inherits name='org.swellrt.client.SwellRTClient' />
 	
-	<add-linker name="xsiframe" />
-
 	<source path="" />
 	<source path="js" />
 	<source path="js/adt" />
