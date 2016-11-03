@@ -204,7 +204,6 @@ public class ServerMain {
     // server.addServlet("/webclient/remote_logging",
     // RemoteLoggingServiceImpl.class);
     // server.addServlet("/profile/*", FetchProfilesServlet.class);
-    // server.addServlet("/iniavatars/*", InitialsAvatarsServlet.class);
     // server.addServlet("/waveref/*", WaveRefServlet.class);
 
 	//    String gadgetServerHostname = config.getString("core.gadget_server_hostname");

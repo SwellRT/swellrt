@@ -383,11 +383,6 @@ public class WaveClient implements SwellRT.Listener {
   }
 
 
-  public JavaScriptObject avatar(JsArray<AvatarParameter> parameters, AvatarOptions options) {
-    return AvatarService.getInstance().getAvatar(parameters, options);
-  }
-
-
   public TextEditorJS getTextEditor(String elementId, JavaScriptObject widgets, JavaScriptObject annotations) {
     Element parent = Document.get().getElementById(elementId);
     Preconditions.checkArgument(parent != null, "Can't hook editor in a null element");
