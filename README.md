@@ -129,8 +129,9 @@ Compile Tasks:
 
 Run Tasks:
 
-- **run**: runs the server with the default parameters.
-- **gwtDev**: runs the gwt development mode to debug Javascript Web client.
+- **run**: runs the server with the default parameters and generate dev version of the JS library.
+
+- **gwtDev**: runs the [gwt super development mode](http://www.gwtproject.org/articles/superdevmode.html) to debug the JS client  library. Super dev mode only works for one target browser, according to settings in `SwellRTDev.gwt.xml`.
 
 Distribution Tasks:
 - **jar**: builds jar file for the project.

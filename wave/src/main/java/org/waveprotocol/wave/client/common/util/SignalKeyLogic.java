@@ -179,12 +179,17 @@ public final class SignalKeyLogic {
       computedKeyCode = KeyCodes.KEY_ENTER;
     }
 
-    // Some trace logging very useful to debug
+    // Some trace logging very useful to debug key events
     EditorStaticDeps.logger.trace().log(
-        "KEY SIGNAL IN PROCESS identifier/key = " + (keyIdentifier == null ? key : "?") + " code = " + computedKeyCode
-            + " type = "
-            + (typeInt == Event.ONKEYDOWN ? "KeyDown" : "KeyPress") + (ctrlKey ? " CTRL" : "")
-            + (shiftKey ? " SHIFT" : "") + (altKey ? " ALT" : ""));
+        "Captured Key Signal: "+typeName
+            + " keyIdentifier(!)="+keyIdentifier
+            + " key="+key
+            + " keyCode(!)="+keyCode
+            + " which(!)="+which
+            + (ctrlKey ? " CTRL" : "")
+            + (shiftKey ? " SHIFT" : "") 
+            + (altKey ? " ALT" : "")
+            + (metaKey ? " META" : ""));
     
     
     // For non-firefox browsers, we only get keydown events for IME, no keypress
