@@ -30,7 +30,7 @@ apply plugin: 'com.google.protobuf'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.57.6-alpha"
+version = "0.57.8-alpha"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -660,7 +660,7 @@ task createPropertiesFile(type: Copy) {
 	// ensure the task executed if version prop changes
 	// see: https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:up_to_date_checks
 	inputs.property("version", version)
-	
+
     from 'src/main/configs'
     include 'wave.conf'
     into 'config'
