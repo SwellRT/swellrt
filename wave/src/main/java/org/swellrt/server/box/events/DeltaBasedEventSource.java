@@ -1,6 +1,7 @@
 package org.swellrt.server.box.events;
 
-import com.google.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.swellrt.model.ReadableString;
 import org.swellrt.model.ReadableType;
@@ -34,8 +35,7 @@ import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.inject.Inject;
 
 
 /**
@@ -388,12 +388,12 @@ public class DeltaBasedEventSource implements Subscriber {
    * generates<br>
    * <p>
    * ContextData["root.list.?.array.?.field"] = value of "root.list.2.array.5"
-   * 
+   *
    * @param dataModel the data model of the event
    * @param valuePath the path to match with context paths
    * @params contextData context data of the event
    * @return a copy of the provided context populated with values
-   * 
+   *
    */
   protected Map<String, String> getContextData(UnmutableModel dataModel, String valuePath,
       Map<String, String> contextData) {
@@ -406,9 +406,10 @@ public class DeltaBasedEventSource implements Subscriber {
 
       if (path != null) {
         ReadableType value = dataModel.fromPath(path);
-        if (value == null) break;
+        if (value != null) {
         ReadableString strValue = value.asString();
         if (strValue != null) newContextData.put(key, strValue.getValue());
+        }
       }
     }
 
@@ -428,13 +429,13 @@ public class DeltaBasedEventSource implements Subscriber {
    * returns
    * <p>
    * ["root.list.?"] = value of str+3 in the provided blip
-   * 
-   * 
-   * 
+   *
+   *
+   *
    * @param dataContainerBlip the blip containing the data
    * @param dataPath the path pointing a value within the blip
    * @param dataValueRef the pointer to a value within the blip
-   * 
+   *
    */
   protected Map<String, String> getContextData(ReadableBlipData dataContainerBlip,
       String dataPath,
@@ -454,7 +455,7 @@ public class DeltaBasedEventSource implements Subscriber {
    * <p>
    * Paths with wildcards are ignored, they should be evaluated on op event
    * processing.
-   * 
+   *
    * @param dataModel
    * @param contextData
    */
@@ -480,7 +481,7 @@ public class DeltaBasedEventSource implements Subscriber {
    * <p>
    * For relative expressions (e.g. "root.?.list.?.field) value must be
    * calculated in the context of the op event.
-   * 
+   *
    * @param app
    * @param dataType
    * @return
