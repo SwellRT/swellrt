@@ -8,6 +8,8 @@ Objects are stored in the server and can be query using the API.
 
 SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs® or Etherpad) through an extensible **text editor Web component and API**.
 
+You may find comprehensive documentation [in the project Wiki](https://github.com/P2Pvalue/swellrt/wiki).
+
 ## Getting Started
 
 These instructions will get you the latest version of the server up and running in your machine.
