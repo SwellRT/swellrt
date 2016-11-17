@@ -8,7 +8,6 @@ Objects are stored in the server and can be query using the API.
 
 SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs® or Etherpad) through an extensible **text editor Web component and API**.
 
-
 ## NOTICE
 
 This README.md file refers only to **Alpha** source code of SwellRT. 
@@ -16,6 +15,8 @@ This README.md file refers only to **Alpha** source code of SwellRT.
 A new SwellRT **Beta** code is in ongoing development. For more information check out [README_BETA.md](README_BETA.md)
 
 The source code of both versions lives together in this same Git repo/branch.  
+
+You may find comprehensive documentation [in the project Wiki](https://github.com/P2Pvalue/swellrt/wiki).
 
 ## Getting Started
 
