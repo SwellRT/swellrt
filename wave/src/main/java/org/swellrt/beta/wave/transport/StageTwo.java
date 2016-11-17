@@ -18,12 +18,11 @@
  */
 
 
-package org.swellrt.client;
+package org.swellrt.beta.wave.transport;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;
 
-import org.swellrt.model.generic.Model;
 import org.waveprotocol.wave.client.OptimalGroupingScheduler;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
@@ -37,18 +36,13 @@ import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
-import org.waveprotocol.wave.client.state.BlipReadStateMonitor;
-import org.waveprotocol.wave.client.state.BlipReadStateMonitorImpl;
 import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.LocalSupplementedWave;
-import org.waveprotocol.wave.client.wave.LocalSupplementedWaveImpl;
 import org.waveprotocol.wave.client.wave.RegistriesHolder;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
-import org.waveprotocol.wave.client.wavepanel.view.ModelIdMapper;
-import org.waveprotocol.wave.client.wavepanel.view.ModelIdMapperImpl;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactories;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactory;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.WavePanelResourceLoader;
@@ -74,11 +68,6 @@ import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
-import org.waveprotocol.wave.model.supplement.LiveSupplementedWaveImpl;
-import org.waveprotocol.wave.model.supplement.ObservablePrimitiveSupplement;
-import org.waveprotocol.wave.model.supplement.ObservableSupplementedWave;
-import org.waveprotocol.wave.model.supplement.SupplementedWaveImpl.DefaultFollow;
-import org.waveprotocol.wave.model.supplement.WaveletBasedSupplement;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler.CollectiveScheduler;
 import org.waveprotocol.wave.model.util.Scheduler;
@@ -86,7 +75,6 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.version.HashedVersionZeroFactoryImpl;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.Wavelet;
 import org.waveprotocol.wave.model.wave.data.DocumentFactory;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.WaveViewData;
@@ -169,13 +157,6 @@ public interface StageTwo {
     private MuxConnector connector;
 
     private DocOperationLog operationLog; // tracks ops and contributors
-
-    // Model objects
-
-    private ProfileManager profileManager;
-    private ObservableConversationView conversations;
-    private LocalSupplementedWave supplement;
-
 
 
     private final UnsavedDataListener unsavedDataListener;
@@ -405,8 +386,8 @@ public interface StageTwo {
 
       WaveletId udwId = getIdGenerator().newUserDataWaveletId(getSignedInUser().getAddress());
       ArrayList<String> prefixes = new ArrayList<String>();
-      prefixes.add(IdConstants.CONVERSATION_WAVELET_PREFIX);
-      prefixes.add(Model.WAVELET_SWELL_PREFIX);
+      //prefixes.add(IdConstants.CONVERSATION_WAVELET_PREFIX);
+      prefixes.add("data"); // SwellRT data wavelets
       final IdFilter filter = IdFilter.of(Collections.singleton(udwId), prefixes);
 
       WaveletDataImpl.Factory snapshotFactory =

@@ -1,8 +1,7 @@
-package org.swellrt.client;
+package org.swellrt.beta.wave.transport;
 
 import java.util.Set;
 
-import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
@@ -86,7 +85,7 @@ public class WaveLoader extends Stages {
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
     return haltIfClosed(new StageTwoProvider(this.one = one, this.waveRef, this.channel,
         this.isNewWave, this.idGenerator, this.dataListener,
-        this.participants));
+        this.participants, this.loggedInUser));
   }
 
   @Override

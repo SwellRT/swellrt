@@ -17,17 +17,11 @@
  * under the License.
  */
 
-package org.swellrt.client;
+package org.swellrt.beta.wave.transport;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;
 
-import org.swellrt.model.ModelSchemas;
-import org.swellrt.model.generic.Model;
-import org.swellrt.model.generic.TextType;
-import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
-import org.waveprotocol.box.webclient.client.RemoteWaveViewService;
-import org.waveprotocol.box.webclient.client.Session;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -52,9 +46,9 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   private final WaveRef waveRef;
   private final RemoteViewServiceMultiplexer channel;
   private final boolean isNewWave;
-  // TODO: Remove this after WebClientBackend is deleted.
   private final IdGenerator idGenerator;
-
+  private final ParticipantId participant;
+  
   /**
    * Continuation to progress to the next stage. This will disappear with the
    * new protocol.
@@ -73,7 +67,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       boolean isNewWave, IdGenerator idGenerator,
-      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants) {
+      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants, ParticipantId participant) {
     super(stageOne, unsavedDataListener);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
@@ -83,6 +77,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
     this.isNewWave = isNewWave;
     this.idGenerator = idGenerator;
     this.otherParticipants = otherParticipants;
+    this.participant = participant;
   }
 
   @Override
@@ -91,12 +86,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
 
       @Override
       public DocumentSchema getSchemaForId(WaveletId waveletId, String documentId) {
-        if (Model.isModelWaveletId(waveletId)) {
-          if (TextType.isTextBlipId(documentId)) {
-            return ModelSchemas.TEXT_DOCUMENT_SCHEMA;
-          }
-          // TODO Add more schemas for List, Root, Map...
-        }
+        // TODO Add more schemas for List, Root, Map...
         return DocumentSchema.NO_SCHEMA_CONSTRAINTS;
       }
     };
@@ -104,7 +94,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
 
   @Override
   public String createSessionId() {
-    return Session.get().getIdSeed();
+    return "no-provided";
   }
 
   @Override
@@ -114,7 +104,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
 
   @Override
   protected ParticipantId createSignedInUser() {
-    return ParticipantId.ofUnsafe(Session.get().getAddress());
+    return participant;
   }
 
   @Override

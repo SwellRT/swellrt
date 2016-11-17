@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+
+	<!--  TODO filter out modules -->
+	<inherits name="com.google.common.base.Base" />
+	<inherits name='com.google.gwt.user.User' />
+	<inherits name="com.google.gwt.http.HTTP" />
+	
+	<!-- 
+	<inherits name="com.google.gwt.event.EventBase" />
+ 	-->
+
+	<inherits name='com.google.gwt.json.JSON' />
+	<inherits name='org.waveprotocol.wave.client.Client' />
+	<!-- 
+	<inherits name='com.google.gwt.websockets.WebSockets' />	
+	<inherits name='org.waveprotocol.wave.client.editor.Editor' />
+	<inherits name='org.waveprotocol.wave.client.gadget.Gadget' />
+	<inherits name='org.waveprotocol.wave.client.util.ClientFlags' />
+	-->
+	
+	<inherits name='org.waveprotocol.wave.model.Model' />
+	<inherits name="org.waveprotocol.wave.model.account.Account" />
+	
+	<!-- Get ride of converstaion stuff -->
+	<inherits name='org.waveprotocol.wave.model.conversation.Conversation' />
+	 
+ 
+	<inherits name="org.waveprotocol.box.common.Common" />
+	<inherits name='org.waveprotocol.box.common.comms.WaveClientRpc' />
+	
+	<inherits name='org.waveprotocol.box.attachment.Attachment' />
+	<!-- 
+	<inherits name='org.waveprotocol.box.search.Search' />	
+	<inherits name='org.waveprotocol.box.profile.Profile' />
+	 -->
+	 
+	<inherits
+		name='org.waveprotocol.box.webclient.common.communication.Communication' />
+	<inherits name='org.waveprotocol.box.stat.Stat' />
+
+	<!-- TODO(hearnden): delete webclient.common. It's not common to anything. -->
+	
+	<inherits name='org.waveprotocol.box.webclient.common.Common' />
+	
+	<!-- 
+	<inherits name='org.waveprotocol.box.webclient.search.Search' />
+	<inherits name='org.waveprotocol.box.webclient.profile.Profile' />
+	<inherits name='org.waveprotocol.box.webclient.widget.error.Error' />
+	<inherits name='org.waveprotocol.box.webclient.widget.frame.Frame' />
+	<inherits name='org.waveprotocol.box.webclient.widget.loading.Loading' />
+	-->
+	<inherits name='org.waveprotocol.box.webclient.stat.Stat' />
+	 
+	
+	<inherits name='org.swellrt.beta.model.Model' />
+	<inherits name='org.swellrt.beta.wave.Wave' />
+
+	<set-configuration-property name="CssResource.obfuscationPrefix"
+		value="SWC" />
+	
+	<source path="" />
+	<source path="operation/**" />
+	<source path="js/**" />
+		
+</module>

@@ -60,6 +60,7 @@ public interface WaveView {
    *
    * @return the root wavelet, if it exists in the view.
    */
+  @Deprecated
   Wavelet getRoot();
 
   /**
@@ -69,6 +70,7 @@ public interface WaveView {
    *
    * @return the new wavelet.
    */
+  @Deprecated
   Wavelet createRoot();
 
   /**
@@ -76,6 +78,7 @@ public interface WaveView {
    *
    * @return the root wavelet, if it exists in the view.
    */
+  @Deprecated
   Wavelet getUserData();
 
   /**
@@ -84,6 +87,7 @@ public interface WaveView {
    * @return the new wavelet.
    * @throws IllegalStateException if the user-data wavelet already exists.
    */
+  @Deprecated
   Wavelet createUserData();
 
   /**
