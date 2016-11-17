@@ -8,16 +8,237 @@ Objects are stored in the server and can be query using the API.
 
 SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs® or Etherpad) through an extensible **text editor Web component and API**.
 
+## NOTICE:
 
-## NOTICE
+This README_BETA.md file refers only to the **Beta** source code of SwellRT. 
 
-This README.md file refers only to **Alpha** source code of SwellRT. 
-
-A new SwellRT **Beta** code is in ongoing development. For more information check out [README_BETA.md](README_BETA.md)
+SwellRT **Alpha** source code is not going to be developed anymore. For more information about Alpha versions check out [README.md](README.md)
 
 The source code of both versions lives together in this same Git repo/branch.  
 
-## Getting Started
+
+## Roadmap Beta version
+
+**Provide similar features than Alpha version**
+
+- Re-implement all API operations in the current Alpha version, keeping input/output formats if possible.
+- Add List data type
+- Add mutation event bindings in data types
+- Re-implement server's indexing events according to know data model implementation
+- Re-implement server's event hub according to know data model implementation
+
+**Additional features than Alpha version**
+
+TBD
+
+## Quick start
+
+### Build
+
+Clone the project
+
+```
+// From SwellRT repo
+git clone git@github.com:P2Pvalue/swellrt.git
+cd swellrt
+git checkout master
+
+//
+// or
+//
+
+// From Apache Wave repo
+git@github.com:apache/incubator-wave.git 
+cd incubator-wave
+git checkout swellrt
+
+```
+
+Build SwellRT
+
+```
+./gradlew compileJava buildJsDevBeta
+```
+
+Start the server
+
+```
+./gradlew run
+```
+
+Add SwellRT JS client script in your web project:
+
+```
+<script src='http://localhost:9898/swellrt-beta.js'></script>
+```
+
+or go to http://localhost:9898/swellrt-beta.html and open the debugger console of the browser. 
+
+### Using the API
+
+
+**Get API instance**
+```
+var s = swellrt.service.get();
+```
+
+
+**Create user**
+```
+s.createUser({
+
+    id: "ann",
+    password: "ann",
+    email: "ann@swellrt.org",
+    locale: "es_ES",       
+},
+{ 
+  onError: function(e) { 
+         console.log("Error");
+        _exception = e; 
+    }, 
+  
+  onSuccess: function(r) { 
+        console.log("User created");
+        _response = r; 
+    }
+});
+
+```
+
+**Login**
+```
+s.login(
+{
+ id : "ann@local.net",
+ password : "ann" 
+},
+{ 
+  onError: function(e) { 
+         console.log("Error");
+        _exception = e; 
+    }, 
+  
+  onSuccess: function(r) { 
+        console.log("Login success");
+        _response = r; 
+	}
+});
+```
+
+**Create / Load object**
+
+Leave id field empty to create an object with an auto generated id.
+
+
+```
+s.open({
+    id : "local.net/s+_MCiy9-CgsA"
+}, 
+{ 
+  onError: function(e) { 
+         console.log("Error");
+        _exception = e; 
+    }, 
+  
+  onSuccess: function(r) { 
+        console.log("Object is live!");
+        obj = r.object; 
+	}
+});
+```
+
+**Working with objects**
+
+
+Using objects with Java map syntax
+```
+// primitive values
+obj.put("name", "Kelly Slater");
+obj.put("job", "Pro Surfer");
+obj.put("age", 42);
+
+// add nested map
+obj.put("address", swellrt.Map.create().put("street", "North Coast Avenue").put("zip", 12345).put("city","Honololu"));
+
+// get root level keys (properties)
+obj.keys();
+
+// access values
+obj.get("address").get("street");
+
+```
+
+
+
+Using objects with JavaScript syntax
+```
+// Get the JS object view
+jso = obj.asNative();
+
+// Reading properties
+jso.address.street;
+
+// Adding properties
+jso.address.state = "Hawaii";
+
+
+// Adding nested map - as mutable properties
+
+jso.quiver = swellrt.Map.create();
+jso.quiver.put("surfboard-1-size", "6.1, 18 1/2, 3 1/4");
+jso.quiver.put("surfboard-2-size", "5.11, 19 , 2 3/4");
+
+
+// Adding nested map - as static js
+// the whole JS object is stored as a single item,
+// changes in properties won't throw events. 
+
+jso.prize = {
+	contest: "Fiji Pro",
+	year: "2015",
+	points: 12000
+};
+
+
+``` 
+
+
+
+### Source code quick guide
+
+SwellRT client's source code is written in Java/GWT-JsInterop. It is designed to target eventually...
+
+- a JavaScript library to be used in Web (currently available)
+- a GWT module be imported in GWT projects (currently available but not tested yet)
+
+- a Java Android library (requires to replace platform dependent HTTP/Websocket libraries)
+- a JavaScript library for NodeJs (requires to replace platform dependent HTTP/Websocket libraries)
+- ideally, a Objective-C version using java2Objc (future plan)
+
+
+Java Packages:
+
+- **org.swellrt.beta** container for all Beta source code.
+
+- **org.swellrt.beta.model**  SwellRT data model interfaces and common classes
+- **org.swellrt.beta.model.local** implementation of data model interfaces, backed by client's data structures
+- **org.swellrt.beta.model.remote** implementation of data model interfaces backed by Waves and Wavelets
+- **org.swellrt.beta.model.js** Javascript/Browser specific binding classes (ES6 Proxies)
+
+- **org.swellrt.beta.wave.transport** Wave client protocol classes related with transport. In general this is platform dependent code
+
+- **org.swellrt.beta.client** Client API implementation. Shared interface for Java, GWT, and JS (JsInterop)
+- **org.swellrt.beta.client.operation** Implementation of each API operation including HTTP
+- **org.swellrt.beta.client.js** JsInterop Browser specific bindings  
+
+Get more info about data model implementation in **org.swellrt.beta.model.remote.SObjectRemote**  Javadoc.  
+
+
+
+
+
+## Getting Startedd
 
 These instructions will get you the latest version of the server up and running in your machine.
 
@@ -83,9 +304,6 @@ List of docker's image folders that should be placed outside the container (in y
 Default configuration is provided in the file [reference.conf](https://github.com/P2Pvalue/swellrt/blob/master/wave/config/reference.conf).
 To overwrite a property, do create a new file named `application.config` in the config folder and put there the property with the new value.
 
-## Documentation
-
-For SwellRT development guide and API reference, please visit our [Wiki](https://github.com/P2Pvalue/swellrt/wiki).
 
 ### Contact and Support
 
@@ -127,20 +345,20 @@ Test Tasks:
 - **testLarge**: runs the more lengthy test cases.
 - **testAll**: runs all the above tests.
 
-Compile Tasks:
+Build Tasks: 
 
-- **generateMessages**: Generates the message source files from the .st sources.
-- **generateGXP**: Compiles sources from the gxp files.
-- **compileJava**: Compiles all java sources.
-- **compileJsWebDev**: Compiles all the Gwt sources for development (Javascript Web client).
-- **compileJsWeb**: Compiles all the Gwt sources (Javascript Web client).
+- **compileJava**: builds server.
+- **compileWebDevBeta**: builds the JavaScript client (for Web).
+
+Run server Tasks:
+
+- **run**: runs server. By default, Javascript client is at [http://localhost:9898/swellrt-beta.js](http://localhost:9898/swellrt-beta.js)
+
+- **runWebServer**: runs a lightweight Web server to serve Javascript client at [http://localhost:8080/swellrt/swellrt-beta.js](http://localhost:8080/swellrt/swellrt-beta.js)
+
+- **gwtDev** (To be updated for Beta): runs the [gwt super development mode](http://www.gwtproject.org/articles/superdevmode.html) to debug the JS client  library. Super dev mode only works for one target browser, according to settings in *org.swellrt.beta.client.ServiceFrontendDev.gwt.xml*
 
 
-Run Tasks:
-
-- **run**: runs the server with the default parameters and generate dev version of the JS library.
-
-- **gwtDev**: runs the [gwt super development mode](http://www.gwtproject.org/articles/superdevmode.html) to debug the JS client  library. Super dev mode only works for one target browser, according to settings in `SwellRTDev.gwt.xml`.
 
 Distribution Tasks:
 
@@ -163,7 +381,7 @@ Server can be debugged launching the *run* gradle task with following parameters
 
 The Java process will get suspended for the remote debugger connection on the port 5005.
 
-### Build
+### Build and Run redistributable package
 
 To build the client and server:
 
