@@ -5,11 +5,11 @@
 // before the GWT module is loaded
 
 
-window.SwellRT = {
+window.swellrt = {
 
   _readyHandlers: [],
 
-  ready: function(handler) {
+  onReady: function(handler) {
        if (!handler || typeof handler !== "function")
          return;
 
@@ -35,7 +35,7 @@ if (thisScript) {
   }
 
 
-  var scriptSrc = p.protocol + "//" +p.host  + "/webapi/webapi.nocache.js";
+  var scriptSrc = p.protocol + "//" +p.host  + "/swellrt_beta/swellrt_beta.nocache.js";
   document.write("<script src='"+scriptSrc+"'></script>");
 }
 
