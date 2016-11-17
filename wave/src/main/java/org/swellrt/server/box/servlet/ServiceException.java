@@ -1,15 +1,16 @@
 package org.swellrt.server.box.servlet;
 
-import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
 public class ServiceException extends Exception {
 
-	 int httpResponseCode;
-	 String serviceResponseCode;
+	 private final int httpResponseCode;
+	 private final String serviceResponseCode;
 	
 	public ServiceException(String message, int httpResponseCode, String serviceResponseCode, Throwable cause) {
 		super(message, cause);
+		this.httpResponseCode = httpResponseCode;
+		this.serviceResponseCode = serviceResponseCode;
 	}
 	
 	public ServiceException(String message, int httpResponseCode, String serviceResponseCode) {

@@ -94,6 +94,9 @@ public class BrowserSession {
 		return null;
 	}-*/;
 	
+  protected static native boolean isCookieEnabled() /*-{
+    return ($wnd.__session && $wnd.__session['cookieEnabled'] && $wnd.__session['cookieEnabled'] == true);
+  }-*/;
 	
 	public static native String getWindowId() /*-{
 		var PROP_SESSION_WINDOW_ID = @org.swellrt.api.BrowserSession::PROP_SESSION_WINDOW_ID;
@@ -120,14 +123,17 @@ public class BrowserSession {
 	 * @param localDomain
 	 * @param userAddress
 	 * @param sessionId
+	 * @param isCookieEnabled true if the browser sends session cookie to server
 	 */
 	public static native JavaScriptObject setUserData(String localDomain, String userAddress, String seed,
-			String sessionId) /*-{
+			String sessionId, String windowId, boolean isCookieEnabled) /*-{
 		$wnd.__session = new Object();
 		$wnd.__session['domain'] = localDomain;
 		$wnd.__session['address'] = userAddress;
 		$wnd.__session['id'] = seed; // 'id' is used in Session.java/ClientIdGenerator to get the seed
 		$wnd.__session['sessionid'] = sessionId; //
+		$wnd.__session['windowid'] = windowId; //
+		$wnd.__session['cookieEnabled'] = isCookieEnabled;
 		return $wnd.__session;
 		
 	}-*/;
@@ -144,7 +150,7 @@ public class BrowserSession {
 	
 	
 	public static String getSessionURLparameter() {
-	    if (Cookies.getCookie(SESSION_COOKIE_NAME) == null) {
+	    if (!isCookieEnabled()) {
 	      return ";" + SESSION_PATH_PARAM + "=" + getSessionId();
 	    }
 	    return "";
@@ -164,7 +170,7 @@ public class BrowserSession {
 	 * @return
 	 */
 	public static String addSessionToUrl(String url) {
-		if (Cookies.getCookie(SESSION_COOKIE_NAME) == null &&  getSessionId() != null) {
+		if (!isCookieEnabled() &&  getSessionId() != null) {
 			url += ";" + SESSION_PATH_PARAM + "=" +  getSessionId();
 		}
 		return url;

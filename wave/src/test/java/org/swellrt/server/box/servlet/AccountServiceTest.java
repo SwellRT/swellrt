@@ -19,6 +19,7 @@ import org.waveprotocol.box.server.persistence.AccountAttachmentStore;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.memory.MemoryStore;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -27,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -335,6 +337,8 @@ public class AccountServiceTest extends TestCase {
     when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
         ACCOUNT_MAT.getId());
 
+    when(sessionManager.getAllLoggedInUser((HttpSession) anyObject())).thenReturn(CollectionUtils.immutableSet(ACCOUNT_MAT.getId()));
+    
     // Test
     AccountServiceData requestData = new AccountServiceData();
 

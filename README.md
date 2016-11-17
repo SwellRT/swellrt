@@ -15,7 +15,7 @@ These instructions will get you the latest version of the server up and running 
 ### Prerequisites
 
 - [Java JDK 8](http://openjdk.java.net/install/)
-- [MongoDB 2.4](https://www.mongodb.com/download-center#community)
+- [MongoDB 2.4](https://docs.mongodb.com/manual/administration/install-community/)
 
 ### Install and run
 
@@ -23,9 +23,22 @@ These instructions will get you the latest version of the server up and running 
 
 2. Extract server binary files with ``tar zxvf swellrt-bin-X.Y.Z.tar.gz`` .
 
-3. Run the server from the swellrt folder ``cd swellrt; ./run-server.sh`` (Linux) or ``swellrt/run-server.bat`` (Windows).
-
-4. Check out demo app at <http://localhost:9898/demo>.
+3. Start the server from the swellrt folder 
+   
+   Linux:
+    ```
+    cd swellrt 
+    ./run-server.sh
+    ``` 
+    
+    Windows:    
+	 ```
+	 cd swellrt
+	 run-server.bat
+	 ```
+  
+   Check out server status in ``http://demo.swellrt.org/test/``.
+   Log in with user name 'test' and password 'test'.
 
 ### Docker
 
@@ -116,8 +129,9 @@ Compile Tasks:
 
 Run Tasks:
 
-- **run**: runs the server with the default parameters.
-- **gwtDev**: runs the gwt development mode to debug Javascript Web client.
+- **run**: runs the server with the default parameters and generate dev version of the JS library.
+
+- **gwtDev**: runs the [gwt super development mode](http://www.gwtproject.org/articles/superdevmode.html) to debug the JS client  library. Super dev mode only works for one target browser, according to settings in `SwellRTDev.gwt.xml`.
 
 Distribution Tasks:
 - **jar**: builds jar file for the project.

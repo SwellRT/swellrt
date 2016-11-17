@@ -7,5 +7,4 @@ public interface TextEditorListener {
 
   public void onSelectionChange(JsoRange annotationsInRage);
 
-
 }

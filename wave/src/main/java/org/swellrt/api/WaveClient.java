@@ -22,6 +22,7 @@ import org.swellrt.client.WaveLoader;
 import org.swellrt.client.editor.TextEditor;
 import org.swellrt.model.generic.Model;
 import org.swellrt.model.generic.TextType;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.doodad.widget.jso.JsoWidgetController;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
@@ -382,11 +383,6 @@ public class WaveClient implements SwellRT.Listener {
   }
 
 
-  public JavaScriptObject avatar(JsArray<AvatarParameter> parameters, AvatarOptions options) {
-    return AvatarService.getInstance().getAvatar(parameters, options);
-  }
-
-
   public TextEditorJS getTextEditor(String elementId, JavaScriptObject widgets, JavaScriptObject annotations) {
     Element parent = Document.get().getElementById(elementId);
     Preconditions.checkArgument(parent != null, "Can't hook editor in a null element");
@@ -405,6 +401,10 @@ public class WaveClient implements SwellRT.Listener {
    */
   public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry(WaveId waveId) {
     return coreClient.getDocumentRegistry(waveId);
+  }
+  
+  public ProfileManager getProfileManager() {
+    return coreClient.getProfileManager();
   }
 
   /**

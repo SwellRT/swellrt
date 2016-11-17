@@ -22,8 +22,11 @@ package org.waveprotocol.box.server.authentication;
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import com.google.common.base.Preconditions;
+
 import java.util.Set;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -42,7 +45,49 @@ public interface SessionManager {
   public final static String SESSION_URL_PARAM = "sid";
   public final static String SESSION_COOKIE_NAME = "WSESSIONID";
 
+  /**
+   * Checks if the session cookie is in the request.
+   * 
+   * @param request
+   * @return true if cookie session is present
+   */
+  public static boolean hasSessionCookie(HttpServletRequest request) {
+    Preconditions.checkNotNull(request, "Request can't be null");
+    
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null)
+      for (Cookie c: cookies) {
+        if (c.getName().equalsIgnoreCase(SESSION_COOKIE_NAME))
+          return true;
+      }
+    return false;
+  }
+  
+  /**
+   * Extracts the session id string from the URL's path if present.
+   * For example: ";sid=fds342534sdf"
+   * 
+   * This function assumes that ";sid=..." string is always at the
+   * end of the URL's path part.
+   * 
+   * @param request the HTTP request
+   * @return the session string or empty string
+   */
+  public static String getSessionStringFromPath(HttpServletRequest request) {
+    Preconditions.checkNotNull(request, "Request can't be null");
 
+    if (request.getPathInfo() == null || request.getPathInfo().isEmpty()) return "";
+
+    // The ';sid=' syntax is jetty specific.
+    int indexSid = request.getPathInfo().indexOf(";sid=");
+
+    if (indexSid >= 0) {
+      return request.getPathInfo().substring(indexSid, request.getPathInfo().length());
+    }
+
+    return "";    
+  }
+  
   /**
    * Get the participant id of the currently logged in user from the user's HTTP
    * session.

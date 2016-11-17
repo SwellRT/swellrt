@@ -144,7 +144,7 @@ public class ObjectApiService extends BaseService {
 
 
 		} catch (ServiceException e) {
-			 sendResponseError(response, e.httpResponseCode, e.getServiceResponseCode());
+			 sendResponseError(response, e.getHttpResponseCode(), e.getServiceResponseCode());
 		} catch (JsonParseException e) {
 			sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
 		} catch (ObjectApiException e) {

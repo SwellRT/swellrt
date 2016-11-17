@@ -95,6 +95,10 @@ public class SwellRtServlet extends HttpServlet {
     } else if (entity.equals("object")) {
 
        injector.getInstance(ObjectApiService.class).execute(req, response);
+       
+    } else if (entity.equals("echo")) {
+      
+      injector.getInstance(EchoService.class).execute(req, response);
 
     } else {
 

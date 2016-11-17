@@ -7,6 +7,7 @@ import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,27 +87,6 @@ public abstract class BaseService {
     return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
   }
 
-  /**
-   * Check if request has a valid user session, if so return the participant
-   * object. Send a HTTP response error otherwise.
-   * 
-   * @deprecated use {{@link #getLoggedInUser(HttpServletRequest)}
-   * 
-   * @param req
-   * @param response
-   * @return
-   * @throws IOException
-   */
-  @Deprecated
-  protected ParticipantId checkForLoggedInUser(HttpServletRequest req, HttpServletResponse response)
-      throws IOException {
-    ParticipantId pid = sessionManager.getLoggedInUser(req);
-    if (pid == null) {
-      sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
-    }
-    return pid;
-
-  }
   
 	protected ParticipantId getLoggedInUser(HttpServletRequest req) throws ServiceException {
 		ParticipantId pid = sessionManager.getLoggedInUser(req);
@@ -114,6 +94,12 @@ public abstract class BaseService {
 			throw new ServiceException("Can't retrieve logged in user", HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
 		}
 		return pid;
+	}
+	
+	// Browser must have at least one window with authenticated user
+	protected void checkAnySession(HttpServletRequest req) throws ServiceException {
+	  if (sessionManager.getAllLoggedInUser(sessionManager.getSession(req)).isEmpty())
+	    throw new ServiceException("No active sessions found in the browser", HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
 	}
 
   /**

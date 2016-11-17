@@ -190,7 +190,7 @@ final class LiveProfileRenderer implements ProfileListener {
               views.getParticipantView(conversation, profile.getParticipantId());
           if (participantUi != null) {
             participantUi.setAvatar(profile.getImageUrl());
-            participantUi.setName(profile.getFullName());
+            participantUi.setName(profile.getName());
           }
         }
       });

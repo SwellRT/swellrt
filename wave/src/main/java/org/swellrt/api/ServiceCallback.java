@@ -21,7 +21,7 @@ public class ServiceCallback extends JavaScriptObject {
         r.data = JSON.parse(json);
       } catch (e) {};
       if (!r.data)
-        r.data = json;
+        r.error = json;
       return r;
     }-*/;
 
@@ -41,6 +41,10 @@ public class ServiceCallback extends JavaScriptObject {
     }-*/;
 
     public final native String getValue(String field) /*-{
+      return this.data[field];
+    }-*/;
+    
+    public final native boolean getBoolean(String field) /*-{
       return this.data[field];
     }-*/;
 

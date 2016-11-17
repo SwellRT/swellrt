@@ -1,13 +1,11 @@
 package org.swellrt.server.box.events;
 
-import com.google.common.base.Preconditions;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 
-import java.math.BigInteger;
-import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.common.base.Preconditions;
 
 
 public class ExpressionParser {
@@ -56,11 +54,6 @@ public class ExpressionParser {
 
     throw new InvalidEventExpressionException("Expresion has wrong syntax");
 
-  }
-
-  protected static String base64ToIntString(String s) {
-    return (new BigInteger(Base64.getDecoder().decode(s)).mod(new BigInteger("1000000000")))
-        .toString();
   }
 
   protected static String getParticipantAddress(String participant) {
@@ -115,16 +108,14 @@ public class ExpressionParser {
 
     if (expression.startsWith(EXP_OP_HASH)) {
 
-      // A hack to auto convert wave id's ignoring domain part and
-      if (value.contains("+")) value = value.substring(value.indexOf("+") + 1, value.length());
+      value = String.valueOf(value.hashCode());
 
-      value = base64ToIntString(value);
     }
 
     // Secure JSON, delete string delimeter chars
     value = value.replaceAll("\"", "");
     value = value.replaceAll("'", "");
-    
+
     return value;
   }
 

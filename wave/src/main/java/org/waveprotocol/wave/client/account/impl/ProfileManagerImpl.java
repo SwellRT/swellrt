@@ -33,12 +33,10 @@ public final class ProfileManagerImpl extends AbstractProfileManager<ProfileImpl
   }
 
   @Override
-  public ProfileImpl getProfile(ParticipantId participantId) {
-    ProfileImpl profile = profiles.get(participantId.getAddress());
-    if (profile == null) {
-      profile = new ProfileImpl(this, participantId);
-      profiles.put(participantId.getAddress(), profile);
-    }
-    return profile;
+  protected ProfileImpl requestProfile(ParticipantId participantId) {
+    return new ProfileImpl(participantId, null, null, this);
   }
+
+
+
 }

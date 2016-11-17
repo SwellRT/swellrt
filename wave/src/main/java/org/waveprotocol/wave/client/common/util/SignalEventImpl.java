@@ -20,6 +20,7 @@
 package org.waveprotocol.wave.client.common.util;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.user.client.Event;
 
 import org.waveprotocol.wave.client.common.util.SignalKeyLogic.OperatingSystem;
@@ -79,7 +80,8 @@ public class SignalEventImpl implements SignalEvent {
     boolean getAltKey();
     boolean getShiftKey();
     void preventDefault();
-    void stopPropagation();
+    void stopPropagation();    
+    EventTarget getEventTarget();    
   }
 
   /**
@@ -146,6 +148,8 @@ public class SignalEventImpl implements SignalEvent {
   private static final StringSet MOUSE_BUTTONLESS_EVENTS = CollectionUtils.createStringSet();
   private static final StringSet FOCUS_EVENTS = CollectionUtils.createStringSet();
   private static final StringSet CLIPBOARD_EVENTS = CollectionUtils.createStringSet();
+  
+  private static final String DOM_CHARDATAMOD_EVENT = "DOMCharacterDataModified";
 
   /**
    * Events affected by
@@ -269,9 +273,10 @@ public class SignalEventImpl implements SignalEvent {
       keySignalResult = computeKeySignalTypeResult;
 
       String keyIdentifier = getKeyIdentifier(event);
+      String key = getKey(event);
 
       logic.computeKeySignalType(keySignalResult,
-          event.getType(), getNativeKeyCode(event), getWhich(event), keyIdentifier,
+          event.getType(), getNativeKeyCode(event), getWhich(event), keyIdentifier, key,
           event.getMetaKey(), event.getCtrlKey(), event.getAltKey(), event.getShiftKey());
 
     } else {
@@ -320,7 +325,11 @@ public class SignalEventImpl implements SignalEvent {
   }-*/;
 
   public static native String getKeyIdentifier(Event event) /*-{
-    return event.keyIdentifier
+    return event.keyIdentifier;
+  }-*/;
+  
+  public static native String getKey(Event event) /*-{
+    return event.key;
   }-*/;
 
   /**
@@ -331,10 +340,10 @@ public class SignalEventImpl implements SignalEvent {
   }
 
   /**
-   * @return The target element of the event
+   * @return The target element of the event.
    */
   public Element getTarget() {
-    return asEvent().getTarget();
+    return Element.as(nativeEvent.getEventTarget());
   }
 
   /**
@@ -664,5 +673,10 @@ public class SignalEventImpl implements SignalEvent {
       //   point.
       nativeEvent.stopPropagation();
     }
+  }
+  
+  @Override
+  public final boolean isDOMCharacterEvent() {
+    return DOM_CHARDATAMOD_EVENT.equalsIgnoreCase(nativeEvent.getType());
   }
 }

@@ -36,6 +36,17 @@ public interface CaretMarkerResources extends ClientBundle {
     String outer();
     /** container for IME composition state */
     String compositionState();
+    
+    /** the caret it self */
+    String caretMarker();
+    
+    String caretMarkerRight();
+    
+    String caretMarkerLeft();
+    
+    /** the upper floating label */
+    String caretLabel();
+    
   }
 
   /** Css resource */

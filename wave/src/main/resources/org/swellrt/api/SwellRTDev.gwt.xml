@@ -25,14 +25,19 @@
 
 	<set-property name="loglevel" value="debug" />
 
-	<!-- Only build supported clients. -->
-	<!-- -->
-	<set-property name="user.agent" value="safari, gecko1_8, ie8" />
+	<!-- Supported agents -->
+	<!-- 
+   	<set-property name="user.agent" value="safari, gecko1_8, ie8" />
 	<set-property name="mobile.user.agent" value="android, iphone, not_mobile" />
-
-
-	<extend-property name="locale" values="en" />
-	<set-property-fallback name="locale" value="en" />
+    -->
+    <!-- In SuperDevMode only set one agent -->
+	<set-property name="user.agent" value="safari" />
+	<set-property name="mobile.user.agent" value="not_mobile" />
+    
+    <!--
+	<extend-property name="locale" values="default" />
+	<set-property-fallback name="locale" value="default" />
+    -->
 
 	<!-- Allow super-dev debug in custom host name -->
 	<set-configuration-property name="devModeUrlWhitelistRegexp"
@@ -43,5 +48,5 @@
 	
 	<set-property name="compiler.useSourceMaps" value="true" />
 	
-
+    <collapse-all-properties />
 </module>
