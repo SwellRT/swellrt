@@ -4,6 +4,7 @@ import org.swellrt.beta.client.js.SessionManagerJs;
 import org.swellrt.beta.client.operation.OperationException;
 import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
+import org.swellrt.beta.client.operation.impl.CreateUserOperation;
 import org.swellrt.beta.client.operation.impl.LoginOperation;
 import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
@@ -35,6 +36,11 @@ public class ServiceFrontend {
   @JsIgnore
   protected void setContext(ServiceContext context) {
     this.context = context;  
+  }
+  
+  public void createUser(CreateUserOperation.Options options, Callback<CreateUserOperation.Response> callback) throws OperationException {
+    CreateUserOperation op = new CreateUserOperation(context);
+    op.execute(options, callback);
   }
   
   public void login(LoginOperation.Options options, Callback<LoginOperation.Response> callback) {   

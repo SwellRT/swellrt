@@ -1,9 +1,7 @@
 package org.swellrt.beta.client.operation;
 
 import org.swellrt.beta.client.ServiceContext;
-import org.swellrt.beta.client.operation.impl.LoginOperation;
 
-import com.google.common.base.Preconditions;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.http.client.Request;
@@ -11,6 +9,9 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestBuilder.Method;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
+
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
 /**
  * A base class for operations which performs HTTP requests. The underlying HTTP client is platform dependent.
@@ -40,8 +41,13 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
     public String getStatusMessage() {
       return statusMessage;
     }
+  }
+ 
+  @JsType(isNative = true)
+  private interface ResponseError {
     
-    
+    @JsProperty
+    public String getError();
   }
   
   private final static String HEADER_WINDOW_ID = "X-window-id";
@@ -163,8 +169,15 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
             com.google.gwt.http.client.Response response) {
           HTTPOperation.this.status = STATUS_COMPLETED;
           
-          if (response.getStatusCode() != 200) {
-            HTTPOperation.this.onError(new HTTPOperationException(response.getStatusCode(), response.getStatusText()), callback);
+          if (response.getStatusCode() != 200) {        
+            String statusMessage = response.getStatusText();
+            try {
+              ResponseError e = JsonUtils.safeEval(response.getText());
+              statusMessage = e.getError();
+            } catch (IllegalArgumentException ex) {
+              
+            }            
+            HTTPOperation.this.onError(new HTTPOperationException(response.getStatusCode(), statusMessage), callback);
           } else {        
             HTTPOperation.this.onSuccess(response.getStatusCode(), response.getText(), callback);
           }
@@ -221,7 +234,7 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
   }
   
   @Override
-  public abstract void execute(O options, Callback<R> callback);
+  public abstract void execute(O options, Callback<R> callback) throws OperationException;
   
   
 }

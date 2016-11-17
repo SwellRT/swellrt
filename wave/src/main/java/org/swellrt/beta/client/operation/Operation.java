@@ -32,7 +32,7 @@ public interface Operation<O extends Operation.Options, R extends Operation.Resp
     public void onSuccess(T response);
        
   }
-
+  
   public void execute(O options, Callback<R> callback) throws OperationException;
   
 }
