@@ -54,10 +54,10 @@ git checkout swellrt
 
 ```
 
-Build SwellRT
+Build client and server
 
 ```
-./gradlew compileJava buildJsDevBeta
+./gradlew compileJava compileWebDevBeta
 ```
 
 Start the server
@@ -66,13 +66,15 @@ Start the server
 ./gradlew run
 ```
 
-Add SwellRT JS client script in your web project:
+Add JS client's script in your web project:
 
 ```
 <script src='http://localhost:9898/swellrt-beta.js'></script>
 ```
 
-or go to http://localhost:9898/swellrt-beta.html and open the debugger console of the browser. 
+or go to http://localhost:9898/swellrt-beta.html
+
+Open the debugger console of the browser. 
 
 ### Using the API
 
