@@ -140,7 +140,8 @@ public class JoinMessageService extends BaseService {
 
       String body = decTemplates.getTemplateMessage(t, JOIN_MESSAGE_BUNDLE, params, locale);
 
-      emailSender.send(new InternetAddress(adminEmail), subject, body);
+      emailSender.send(new InternetAddress(adminEmail), subject, body,
+          new InternetAddress(joinerEmail, joinerNickOrEmail));
 
     } catch (AddressException e) {
         // TODO Auto-generated catch block

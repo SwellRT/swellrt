@@ -249,7 +249,7 @@ public class EmailService extends BaseService {
                 String body =
                     decTemplates.getTemplateMessage(t, RECOVER_PASSWORD_BUNDLE, ctx, locale);
 
-                emailSender.send(new InternetAddress(emailAddress), subject, body);
+                emailSender.send(new InternetAddress(emailAddress), subject, body, null);
 
               }
             }

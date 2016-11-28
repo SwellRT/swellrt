@@ -130,19 +130,25 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
   }
 
   @Override
-  public void send(InternetAddress address, String subject, String htmlBody)
+  public void send(InternetAddress toAddress, String subject, String htmlBody,
+      InternetAddress replyToAddress)
       throws AddressException, MessagingException {
 
 
     MimeMessage message = new MimeMessage(mailSession);
 
-    message.setFrom(from);
+    message.setFrom(this.from);
 
-    message.addRecipient(Message.RecipientType.TO, address);
+    message.addRecipient(Message.RecipientType.TO, toAddress);
 
     message.setSubject(subject);
 
     message.setText(htmlBody, "UTF-8", "html");
+
+    if (replyToAddress != null) {
+      InternetAddress[] adds = { replyToAddress };
+      message.setReplyTo(adds);
+    }
 
     LOG.info("Sending email:" + "\n  Subject: " + subject + "\n  Message body: " + htmlBody);
     // Send message

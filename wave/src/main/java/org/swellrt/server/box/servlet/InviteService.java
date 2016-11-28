@@ -128,7 +128,13 @@ public class InviteService extends BaseService {
 
       String body = decTemplates.getTemplateMessage(t, INVITATION_EMAIL_BUNDLE, params, locale);
 
-      emailSender.send(new InternetAddress(emailAddress), subject, body);
+      InternetAddress replyTo = null;
+
+      if (hum != null && !hum.getId().isAnonymous() && hum.getEmail() != null) {
+        replyTo = new InternetAddress(hum.getEmail(), inviter);
+      }
+
+      emailSender.send(new InternetAddress(emailAddress), subject, body, replyTo);
     } catch (AddressException e) {
         // TODO Auto-generated catch block
       e.printStackTrace();

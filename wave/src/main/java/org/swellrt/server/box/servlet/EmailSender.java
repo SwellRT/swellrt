@@ -6,7 +6,8 @@ import javax.mail.internet.InternetAddress;
 
 public interface EmailSender {
 
-  void send(InternetAddress address, String subject, String htmlBody)
+  void send(InternetAddress toAddress, String subject, String htmlBody,
+      InternetAddress replyToAddress)
       throws AddressException, MessagingException;
 
 }
