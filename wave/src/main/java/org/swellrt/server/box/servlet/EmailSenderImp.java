@@ -43,7 +43,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 
   private String host;
 
-  private String from;
+  private InternetAddress from;
 
   private Session mailSession;
   private ToolManager manager;
@@ -63,7 +63,30 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
     this.ve = ve;
     this.velocityPath = config.getString("email.template_path");
     this.host = config.getString("email.host");
-    this.from = config.getString("email.from_email_address");
+
+    String fromStr = config.getString("email.from_email_address");
+    InternetAddress fromAddress = null;
+
+    try {
+
+      fromAddress = new InternetAddress(fromStr);
+
+    } catch (AddressException e1) {
+
+      LOG.severe("Error building EmailService from header "
+          + "using email.from_email_address property: " + fromStr + e1.getMessage());
+
+    }
+
+    if (fromAddress != null) {
+
+      this.from = fromAddress;
+
+    } else {
+
+      this.from = null;
+
+    }
 
     Properties p = new Properties();
     p.put("resource.loader", "file, class");
@@ -82,7 +105,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 
     // Setup mail server
     properties.setProperty("mail.smtp.host", host);
-    properties.setProperty("mail.smtp.from", from);
+    properties.setProperty("mail.smtp.from", from.getAddress());
 
     manager = new ToolManager(false);
 
@@ -113,7 +136,7 @@ public class EmailSenderImp implements EmailSender, DecoupledTemplates {
 
     MimeMessage message = new MimeMessage(mailSession);
 
-    message.setFrom(new InternetAddress(from));
+    message.setFrom(from);
 
     message.addRecipient(Message.RecipientType.TO, address);
 
