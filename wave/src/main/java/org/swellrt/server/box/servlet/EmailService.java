@@ -1,24 +1,6 @@
 package org.swellrt.server.box.servlet;
 
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.velocity.Template;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.tools.ConversionUtils;
-import org.apache.velocity.tools.ToolManager;
-import org.waveprotocol.box.server.account.AccountData;
-import org.waveprotocol.box.server.account.HumanAccountData;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -40,6 +22,23 @@ import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.velocity.Template;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.tools.ConversionUtils;
+import org.apache.velocity.tools.ToolManager;
+import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.box.server.account.HumanAccountData;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 public class EmailService extends BaseService {
 
@@ -66,8 +65,6 @@ public class EmailService extends BaseService {
 
 
   private final AccountStore accountStore;
-  private final String host;
-  private final String from;
   private final String recoverPasswordTemplateName;
   private final VelocityEngine ve;
   private URLClassLoader loader;
@@ -81,13 +78,12 @@ public class EmailService extends BaseService {
   private DecoupledTemplates decTemplates;
 
   @Inject
-  public EmailService(SessionManager sessionManager, AccountStore accountStore, Config config, 
+  public EmailService(SessionManager sessionManager, AccountStore accountStore, Config config,
       EmailSender emailSender, DecoupledTemplates decTemplates) {
     super(sessionManager);
     this.accountStore = accountStore;
     String velocityPath = config.getString("email.template_path");
-    this.host = config.getString("email.host");
-    this.from = config.getString("email.from_email_address");
+
     this.emailSender = emailSender;
     this.decTemplates = decTemplates;
 
@@ -121,16 +117,6 @@ public class EmailService extends BaseService {
       LOG.warning("Error constructing classLoader for velocity internationalization resources:"
           + e.getMessage());
     }
-
-    Properties properties = new Properties();
-
-
-    // Get the default Session object.
-    mailSession = Session.getDefaultInstance(properties, null);
-
-    // Setup mail server
-    properties.setProperty("mail.smtp.host", host);
-    properties.setProperty("mail.smtp.from", from);
 
     manager = new ToolManager(false);
 
