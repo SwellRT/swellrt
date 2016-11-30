@@ -81,6 +81,11 @@ public class Paragraph {
   public static final String SUBTYPE_ATTR = "t";
 
   /**
+   * id attribute, to identify headings
+   */
+  public static final String ID_ATTR = "id";
+  
+  /**
    * Indentation attribute. Integral values, in "indentation units"
    */
   public static final String INDENT_ATTR = "i";
@@ -158,6 +163,12 @@ public class Paragraph {
       }
       return null;
     }
+
+    @Override
+    public void setId(String id) {
+      // TODO Auto-generated method stub
+      
+    }
   }
 
   /**
@@ -214,6 +225,12 @@ public class Paragraph {
      */
     public String cssValue() {
       return css;
+    }
+
+    @Override
+    public void setId(String id) {
+      // TODO Auto-generated method stub
+      
     }
   }
 
@@ -278,17 +295,25 @@ public class Paragraph {
 
   private static class RegularStyler implements LineStyle {
     private final String type;
+    private String id = null;
     RegularStyler(String type) {
       this.type = type;
     }
-
     @Override public void apply(ContentElement e, boolean isOn) {
+       
       e.getMutableDoc().setElementAttribute(e, SUBTYPE_ATTR, isOn ? type : null);
       e.getMutableDoc().setElementAttribute(e, LIST_STYLE_ATTR, null);
+      if (id != null)
+        e.getMutableDoc().setElementAttribute(e, ID_ATTR, id);
     }
 
     @Override public boolean isApplied(ContentElement e) {
       return ValueUtils.equal(type, e.getAttribute(SUBTYPE_ATTR));
+    }
+
+    @Override
+    public void setId(String id) {
+      this.id = id;
     }
   }
 
@@ -307,6 +332,12 @@ public class Paragraph {
       return Paragraph.LIST_TYPE.equals(e.getAttribute(SUBTYPE_ATTR))
           && ValueUtils.equal(type, e.getAttribute(LIST_STYLE_ATTR));
     }
+
+    @Override
+    public void setId(String id) {
+      // TODO Auto-generated method stub
+      
+    }
   }
 
   public static LineStyle regularStyle(String type) {
@@ -315,6 +346,7 @@ public class Paragraph {
     return new RegularStyler(type);
   }
 
+  
   public static LineStyle listStyle(String listStyleType) {
     return new ListStyler(listStyleType);
   }
@@ -361,6 +393,8 @@ public class Paragraph {
      * @return true if the style is considered applied to the given element.
      */
     boolean isApplied(ContentElement e);
+    
+    void setId(String id);
   }
 
   public static void toggle(LocationMapper<ContentNode> mapper,

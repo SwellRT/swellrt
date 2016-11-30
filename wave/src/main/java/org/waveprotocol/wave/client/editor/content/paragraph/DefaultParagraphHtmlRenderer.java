@@ -100,7 +100,7 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
   @Override
   public void updateRendering(HasImplNodelets element,
       String type, String listStyle,
-      int indent, Alignment alignment, Direction direction) {
+      int indent, Alignment alignment, Direction direction, String id) {
 
     Element implNodelet = element.getImplNodelet();
     ParagraphBehaviour behaviour = ParagraphBehaviour.of(type);
@@ -206,7 +206,8 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
     if (behaviour.equals(ParagraphBehaviour.HEADING)) {
     	implNodelet.addClassName("heading");
     	implNodelet.addClassName("heading-"+type);
-    	implNodelet.setId(getIdFromNodeletText(implNodelet));
+    	if (id != null) 
+    	  implNodelet.setId(id);
     } else 	if (!implNodelet.hasClassName("heading")) {
     	String classes = implNodelet.getClassName();
     	int s = classes.indexOf("heading-");

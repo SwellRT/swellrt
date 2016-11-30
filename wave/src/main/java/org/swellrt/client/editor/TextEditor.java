@@ -2,6 +2,7 @@ package org.swellrt.client.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -789,6 +790,13 @@ public class TextEditor implements EditorUpdateListener {
 
 		ParagraphAnnotation annotation = TextEditorDefinitions.ParagraphAnnotation.fromString(annotationName);
 		final LineStyle style = annotation.getLineStyleForValue(annotationValue);
+		
+
+    if (annotationName.equals(ParagraphAnnotation.HEADER.toString())) {
+      Date now = new Date();
+      style.setId(String.valueOf(now.getTime()) + String.valueOf(start) + String.valueOf(end)); 
+    }
+		
 		final boolean isOn = annotationValue != null && !annotationValue.isEmpty();
 
 		editor.undoableSequence(new Runnable() {

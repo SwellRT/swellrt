@@ -128,7 +128,8 @@ public class ParagraphRenderer extends RenderingMutationHandler {
           p.getAttribute(Paragraph.LIST_STYLE_ATTR),
           indent,
           Alignment.fromValue(p.getAttribute(Paragraph.ALIGNMENT_ATTR)),
-          Direction.fromValue(p.getAttribute(Paragraph.DIRECTION_ATTR)));
+          Direction.fromValue(p.getAttribute(Paragraph.DIRECTION_ATTR)),
+          p.getAttribute(Paragraph.ID_ATTR));
       p.getContext().endDeferredMutation();
     }
   };

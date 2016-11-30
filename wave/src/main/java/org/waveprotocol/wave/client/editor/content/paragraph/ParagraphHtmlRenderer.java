@@ -45,7 +45,7 @@ public interface ParagraphHtmlRenderer extends Renderer {
    */
   public void updateRendering(HasImplNodelets element,
       String type, String listStyle, int indent,
-      Alignment alignment, Direction direction);
+      Alignment alignment, Direction direction, String id);
 
   /**
    * Update the list item number, e.g. for decimal lists.

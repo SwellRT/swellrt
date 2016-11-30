@@ -89,7 +89,7 @@ public abstract class RenumbererTestBase extends TestCase {
 
     @Override
     public void updateRendering(HasImplNodelets element, String type, String listStyle, int indent,
-        Alignment alignment, Direction direction) {
+        Alignment alignment, Direction direction, String id) {
     }
 
     @Override
