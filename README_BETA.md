@@ -24,8 +24,8 @@ The source code of both versions lives together in this same Git repo/branch.
 - Re-implement all API operations in the current Alpha version, keeping input/output formats if possible.
 - Add List data type
 - Add mutation event bindings in data types
-- Re-implement server's indexing events according to know data model implementation
-- Re-implement server's event hub according to know data model implementation
+- Re-implement server's indexing events according to new data model implementation
+- Re-implement server's event hub according to new data model implementation
 
 **Additional features than Alpha version**
 
