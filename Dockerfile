@@ -4,7 +4,7 @@ MAINTAINER P2Pvalue UCM Team <p2pv@ucm.es>
 # SwellRT port
 EXPOSE 9898
 
-ENV home /usr/local/swellrt
+ENV home /usr/local/swellrt/
 
 RUN adduser --system --home $home swellrt \
     && addgroup --system swellrt
@@ -35,7 +35,7 @@ ADD scripts/docker/home/* $home/
 ADD wave/war $home/war/
 
 # Add runtime
-ADD wave/build/libs/swellrt-*.jar $home/swellrt.jar
+ADD wave/build/libs/swellrt.jar $home/swellrt.jar
 
 # Set permissions
 RUN chown -R swellrt:swellrt $home

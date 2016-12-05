@@ -25,15 +25,16 @@ push_tag () {
   fi
 }
 
-echo "Building image.."
+VERSION=`basename wave/build/libs/swellrt-*.jar | sed 's/^swellrt-//' | sed 's/.jar//'` 
+cp wave/build/libs/swellrt-$VERSION.jar wave/build/libs/swellrt.jar
 
+echo "Building image.."
 docker build -t $NAME .
 
 if [ $? -ne 0 ]; then exit 1; fi
 
 echo "Tagging image.."
 
-VERSION=`basename wave/build/libs/swellrt-*.jar | sed 's/^swellrt-//' | sed 's/.jar//'` 
 
 echo "  Current version is $VERSION Need docker tagging?"
 
