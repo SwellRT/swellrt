@@ -339,7 +339,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
     RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.GET, url);
     builder.setHeader("Content-Type", "text/plain; charset=utf-8");
-    builder.sendRequest("{}", new RequestCallback() {
+    builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
 
       @Override
       public void onResponseReceived(Request request, Response response) {
@@ -430,7 +430,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       RequestBuilder builder = SwellRTUtils.newRequestBuilder(RequestBuilder.DELETE, url);
       builder.setHeader("Content-Type", "text/plain; charset=utf-8");
-      builder.sendRequest("{}", new RequestCallback() {
+      builder.sendRequest(ServiceParameters.toJSON(parameters), new RequestCallback() {
 
         @Override
         public void onResponseReceived(Request request, Response response) {

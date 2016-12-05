@@ -400,14 +400,20 @@ public class AuthenticationService extends BaseService {
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException,
       PersistenceException {
 
-    String[] pathTokens = SwellRtServlet.getCleanPathInfo(req).split("/");
-    String participantToken = pathTokens.length > 2 ? pathTokens[2] : null;
+    AuthenticationServiceData authData;
+    
+    try {
+      authData = getRequestServiceData(req); 
+    } catch (JsonParseException e) {
+      sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
+      return;
+    }
     
     ParticipantId participantId = null;
 
-    if (participantToken != null && !participantToken.isEmpty()) {
+    if (authData != null && authData.isParsedField("id") && authData.id != null) {            
       try {
-        participantId = ParticipantId.of(participantToken);
+        participantId = ParticipantId.of(authData.id);
       } catch (InvalidParticipantAddress e) {
         sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
@@ -415,7 +421,7 @@ public class AuthenticationService extends BaseService {
     } 
     
     participantId = sessionManager.resume(participantId, req);
-   
+     
     if (participantId != null) {
 
       AccountService.AccountServiceData accountData;

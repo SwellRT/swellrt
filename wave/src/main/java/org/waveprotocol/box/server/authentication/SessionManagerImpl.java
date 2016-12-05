@@ -189,6 +189,7 @@ public final class SessionManagerImpl implements SessionManager {
     //    or 
     //    resume with the last log in participant
     //
+    // if participant is null, resume with the last log in participant
     // if participant no null, resume with her if it has an open session
    
     HttpSession session = getSession(request);
@@ -211,8 +212,8 @@ public final class SessionManagerImpl implements SessionManager {
     }
     
     
-    ParticipantId matchedParticipant = null;
-    int matchedParticipantIndex = -1;
+    ParticipantId lastParticipant = null;
+    int lastParticipantIndex = -1;
     Enumeration<String> names = session.getAttributeNames();
     
     // Found the last participant among all the session attributes
@@ -223,20 +224,21 @@ public final class SessionManagerImpl implements SessionManager {
 
           int index = Integer.valueOf(name.split("_")[1]);
 
-          if (index > matchedParticipantIndex) {
-            matchedParticipantIndex = index;
-            matchedParticipant = (ParticipantId) session.getAttribute(name);
-            if (participant != null && matchedParticipant.equals(participant)) {
+          if (index > lastParticipantIndex) {
+            lastParticipantIndex = index;
+            lastParticipant = (ParticipantId) session.getAttribute(name);
+            if (participant != null && lastParticipant.equals(participant)) {
               break;
             }
           }
 
         } else {
 
-          if (matchedParticipantIndex < 0) {
-            matchedParticipantIndex = 0;
-            matchedParticipant = (ParticipantId) session.getAttribute(name);
-            if (participant != null && matchedParticipant.equals(participant)) {
+
+          if (lastParticipantIndex < 0) {
+            lastParticipantIndex = 0;
+            lastParticipant = (ParticipantId) session.getAttribute(name);
+            if (participant != null && lastParticipant.equals(participant)) {
               break;
             }
           }
@@ -244,19 +246,13 @@ public final class SessionManagerImpl implements SessionManager {
         }
       }
     }
-    
+
     if (participant != null) {
-      if (matchedParticipant != null && matchedParticipant.equals(participant)) {
-        login(session, matchedParticipant);
-        return participant;
-      } else 
-        return null;      
+    	login(session, lastParticipant);
+    	return lastParticipant;
+    } else {
+    	return null;
     }
-    
-    if (matchedParticipant != null)
-      login(session, matchedParticipant);
-    
-    return matchedParticipant;
   }
 
   @Override
