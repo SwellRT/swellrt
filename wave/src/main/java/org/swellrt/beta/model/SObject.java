@@ -39,5 +39,19 @@ public interface SObject extends SMap {
    * of the object
    */
   public Object asNative();
+  
+  /**
+   * Debug only. Return list of blips.
+   * 
+   * @return
+   */
+  public String[] _debug_getBlipList();
+  
+  /**
+   * Debug only. Return blip content.
+   * 
+   * @return
+   */
+  public String _debug_getBlip(String blipId);
 
 }

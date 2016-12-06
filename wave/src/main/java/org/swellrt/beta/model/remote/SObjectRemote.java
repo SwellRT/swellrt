@@ -1,6 +1,7 @@
 package org.swellrt.beta.model.remote;
 
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
@@ -381,5 +382,18 @@ public class SObjectRemote implements SObject, SNodeRemote {
   public int size() {
     return root.size();
   }
+
+	@Override
+	public String[] _debug_getBlipList() {
+		return masterWavelet.getDocumentIds().toArray(new String[masterWavelet.getDocumentIds().size()]);
+	}
+	
+	@Override
+	public String _debug_getBlip(String blipId) {
+		if (masterWavelet.getDocumentIds().contains(blipId))
+			return masterWavelet.getDocument(blipId).toXmlString();
+	
+		return null;
+	}
 
 }

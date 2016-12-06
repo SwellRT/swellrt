@@ -111,6 +111,16 @@ public class SObjectLocal implements SObject {
   public int size() {
     return delegateMap.size();
   }
+
+  @Override
+  public String[] _debug_getBlipList() {
+    return null;
+  }
+
+  @Override
+  public String _debug_getBlip(String blipId) {
+   return null;
+  }
   
   
 }
