@@ -4,8 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 public class SUtils {
 
-  public static SNode cast(Object object) throws IllegalCastException {
-    // TODO check preconditions
+  public static SNode castToPrimitive(Object object) throws IllegalCastException {
+    
+    if (object == null)
+      throw new IllegalCastException("Error casting a null object");
     
     if (object instanceof String) {
       return new SPrimitive((String) object);
@@ -21,7 +23,7 @@ public class SUtils {
       return new SPrimitive((JavaScriptObject) object);
     }
   
-    throw new IllegalCastException("Error casting to SNode");
+    throw new IllegalCastException("Error casting to primitive SNode");
   }
 
 }

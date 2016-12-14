@@ -10,6 +10,7 @@ import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
+import org.swellrt.beta.model.js.SMapProxyHandler;
 
 
 public class SMapLocal implements SMap, HasJsProxy {
@@ -38,7 +39,7 @@ public class SMapLocal implements SMap, HasJsProxy {
   
   @Override
   public SMap put(String key, Object object) throws IllegalCastException {
-    SNode node = SUtils.cast(object);
+    SNode node = SUtils.castToPrimitive(object);
     return put(key, node);
   }
 
@@ -85,6 +86,11 @@ public class SMapLocal implements SMap, HasJsProxy {
   @Override
   public int size() {
     return map.size();
+  }
+
+  @Override
+  public Object asNative() {
+    return new Proxy(this, new SMapProxyHandler());
   }
   
 }

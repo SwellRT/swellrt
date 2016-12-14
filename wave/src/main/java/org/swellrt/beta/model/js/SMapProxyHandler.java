@@ -37,7 +37,7 @@ public class SMapProxyHandler extends ProxyHandler {
   }
 
   public boolean set(SMap target, String property, Object value, ProxyHandler reciever) throws IllegalCastException {        
-    target.put(property, SUtils.cast(value));
+    target.put(property, SUtils.castToPrimitive(value));
     return true;
   }
   

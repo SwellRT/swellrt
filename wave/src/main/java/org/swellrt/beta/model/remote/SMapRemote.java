@@ -8,11 +8,14 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.js.HasJsProxy;
+import org.swellrt.beta.model.js.Proxy;
+import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 
 
 
-public class SMapRemote implements SMap, SNodeRemote {
+public class SMapRemote implements SMap, SNodeRemote, HasJsProxy {
   
   
   public static SMapRemote create(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
@@ -31,7 +34,7 @@ public class SMapRemote implements SMap, SNodeRemote {
   /** cache of SNodeRemote instances in the map */ 
   private final HashMap<String, SNodeRemote> cache;
   
-  
+  private Proxy proxy;
   
   protected SMapRemote(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
     this.cache = new HashMap<String, SNodeRemote>();
@@ -117,7 +120,7 @@ public class SMapRemote implements SMap, SNodeRemote {
 
   @Override
   public SMap put(String key, Object value) throws IllegalCastException {
-     SNode node = SUtils.cast(value);
+     SNode node = SUtils.castToPrimitive(value);
      return put(key, node);
   }
  
@@ -136,6 +139,19 @@ public class SMapRemote implements SMap, SNodeRemote {
     return map.keySet().size();
   }
 
+  @Override
+  public Object asNative() {
+    return new Proxy(this, new SMapProxyHandler());
+  }
 
+  @Override
+  public void setJsProxy(Proxy proxy) {
+	  this.proxy = proxy;
+  }
+
+  @Override
+  public Proxy getJsProxy() {
+	  return this.proxy;
+  }
 
 }

@@ -1,7 +1,6 @@
 package org.swellrt.beta.model.remote;
 
 import java.util.Collections;
-import java.util.function.Consumer;
 
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
@@ -10,7 +9,6 @@ import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
-import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.remote.wave.DocumentBasedBasicRMap;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.document.Doc.E;
@@ -237,13 +235,13 @@ public class SObjectRemote implements SObject, SNodeRemote {
    */
   private SNodeRemote asRemote(SNode node, ObservableWavelet containerWavelet) {
         
-    if (node instanceof SMapLocal) {
-      SMapLocal localMap = (SMapLocal) node;
+    if (node instanceof SMap) {
+      SMap map = (SMap) node;
       SMapRemote remoteMap = loadMap(SubstrateId.createForMap(containerWavelet.getId(), idGenerator));
       
-      for (String k: localMap.keys()) {
-        SNode v = localMap.getNode(k);
-        remoteMap.put(k, v);
+      for (String k: map.keys()) {
+        SNode v = map.getNode(k);
+        remoteMap.put(k, asRemote(v, containerWavelet));
       }
       
       return remoteMap;
