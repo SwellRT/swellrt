@@ -51,6 +51,7 @@ wave/war/WEB-INF/
 wave/war/webclient/
 wave/war/org*
 wave/war/swellrt/
+wave/war/swellrt_beta/
 pst/build/
 distributions/
 ### Reports
