@@ -472,6 +472,36 @@ task gwtDev {
 
 gwtDev.dependsOn compileJava
 
+task debugWebDevBeta {
+    description = 'Runs the hosted mode server, for debugging the Gwt client ' +
+            'in a JVM.'
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.codeserver.CodeServer"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt,
+                ]
+            }
+            args = [
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",
+                    "-bindAddress", "0.0.0.0",
+                    "-logLevel", "DEBUG",
+                    "-generateJsInteropExports",                    
+                    "org.swellrt.beta.client.ServiceFrontendDev"
+            ]
+        }
+    }
+}
+
+debugWebDevBeta.dependsOn compileJava
+
 //
 // Warning: excluding sources from GWT modules doesn't seem to work properly.
 // see http://stackoverflow.com/questions/27902152/gwt-2-7-ignores-exclude-tag
