@@ -49,7 +49,7 @@ public final class CreateUserOperation extends HTTPOperation<CreateUserOperation
   @Override
   protected void onError(Throwable exception, Callback<Response> callback) {
     if (callback != null)
-      callback.onError(exception);
+      callback.onError(new OperationException(OperationException.OPERATION_EXCEPTION, exception.getMessage()));
   }
 
 
@@ -62,12 +62,14 @@ public final class CreateUserOperation extends HTTPOperation<CreateUserOperation
 
 
   @Override
-  public void execute(Options options, Callback<Response> callback) throws OperationException {
+  public void execute(Options options, Callback<Response> callback) {
     
     if (options == null || 
         options.getId() == null ||
         options.getPassword() == null) {
-      throw new OperationException("Not enough parameters");
+    
+      if (callback != null)
+    	  callback.onError(new OperationException(OperationException.MISSING_PARAMETERS,""));
     }
     
     addPathElement("account");   

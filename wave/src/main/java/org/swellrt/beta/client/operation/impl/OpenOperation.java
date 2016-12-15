@@ -38,13 +38,15 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
   
 
   @Override
-  public void execute(Options options, Callback<Response> callback) throws OperationException {
+  public void execute(Options options, Callback<Response> callback) {
 
     try {
             
-      if (!context.isSession())
-        throw new OperationException("Session not started");
-      
+      if (!context.isSession()) {
+    	if (callback != null)
+        	callback.onError(new OperationException(OperationException.SESSION_NOT_STARTED, ""));
+      }
+        
       WaveId waveId = null;
       if (options.getId() != null) {
         waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(options.getId());
@@ -66,14 +68,14 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
 
         @Override
         public void onFailure(Exception e) {
-          callback.onError(new OperationException("Error retrieving object", e));
+          callback.onError(new OperationException(OperationException.UNABLE_GET_OBJECT, e.getMessage()));
         }
         
       });
       
 
     } catch (InvalidIdException e) {
-      callback.onError(new OperationException("Object id invalid syntax", e));
+      callback.onError(new OperationException(OperationException.INVALID_OBJECT_ID, e.getMessage()));
     }
 
   }

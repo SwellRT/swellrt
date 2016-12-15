@@ -27,12 +27,12 @@ public interface Operation<O extends Operation.Options, R extends Operation.Resp
   @JsType(isNative = true)
   public interface Callback<T extends Response> {
     
-    public void onError(Throwable exception);
+    public void onError(OperationException exception);
     
     public void onSuccess(T response);
        
   }
   
-  public void execute(O options, Callback<R> callback) throws OperationException;
+  public void execute(O options, Callback<R> callback);
   
 }

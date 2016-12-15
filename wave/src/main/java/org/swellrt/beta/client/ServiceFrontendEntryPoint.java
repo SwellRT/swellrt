@@ -1,5 +1,6 @@
 package org.swellrt.beta.client;
 
+import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -15,19 +16,23 @@ import jsinterop.annotations.JsType;
  */
 @JsType(namespace = "swellrt", name = "service")
 public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryPoint {
-
-  private static ServiceFrontend instance = null;
+  
+  private static ServiceContext context; 
+  
+  @JsMethod(name = "getWithCallback")
+  public static ServiceFrontend getStandardInstance() {
+    return ServiceFrontend.create(context);
+  }
   
   @JsMethod(name = "get")
-  public static ServiceFrontend getInstance() {
-    return instance;
+  public static PromisableServiceFrontend getPromisableInstance() {
+    return new PromisableServiceFrontend(getStandardInstance());
   }
   
 
   @Override
   public void onModuleLoad() {
-    instance = this;
-    instance.setContext(new ServiceContext(SessionManagerJs.create()));
+	this.context = new ServiceContext(SessionManagerJs.create());  
   }
   
 }

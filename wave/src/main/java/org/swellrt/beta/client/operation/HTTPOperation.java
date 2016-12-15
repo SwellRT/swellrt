@@ -24,23 +24,12 @@ import jsinterop.annotations.JsType;
 public abstract class HTTPOperation<O  extends Operation.Options, R extends Operation.Response> implements Operation<O, R> {
   
   @SuppressWarnings("serial")
-  public static class HTTPOperationException extends Exception {
+  public static class HTTPOperationException extends OperationException {
       
-    private int statusCode;
-    private String statusMessage;
-
-    public HTTPOperationException(int statusCode, String statusMessage) {
-      this.statusCode = statusCode;
-      this.statusMessage = statusMessage;
+     public HTTPOperationException(int statusCode, String statusMessage) {
+      super("HTTP_"+statusCode, statusMessage);
     }
 
-    public int getStatusCode() {
-      return statusCode;
-    }
-
-    public String getStatusMessage() {
-      return statusMessage;
-    }
   }
  
   @JsType(isNative = true)
@@ -234,7 +223,7 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
   }
   
   @Override
-  public abstract void execute(O options, Callback<R> callback) throws OperationException;
+  public abstract void execute(O options, Callback<R> callback);
   
   
 }

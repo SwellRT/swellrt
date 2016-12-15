@@ -3,6 +3,7 @@ package org.swellrt.beta.client.operation.impl;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
+import org.swellrt.beta.client.operation.OperationException;
 import org.swellrt.beta.client.operation.data.ProfileData;
 
 import jsinterop.annotations.JsProperty;
@@ -55,7 +56,7 @@ public final class LoginOperation extends HTTPOperation<LoginOperation.Options, 
   @Override
   protected void onError(Throwable exception, Callback<Response> callback) {
     if (callback != null) {
-      callback.onError(exception);
+      callback.onError(new OperationException(OperationException.OPERATION_EXCEPTION, exception.getMessage()));
     }
   }
 
@@ -74,7 +75,7 @@ public final class LoginOperation extends HTTPOperation<LoginOperation.Options, 
     echo.execute(null, new Callback<EchoOperation.Response>() {
 
       @Override
-      public void onError(Throwable exception) {
+      public void onError(OperationException exception) {
         // Ignore error of echo, login was successful anyway
         if (callback != null) {    
           callback.onSuccess(response);

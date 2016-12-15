@@ -3,6 +3,7 @@ package org.swellrt.beta.client.operation.impl;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
+import org.swellrt.beta.client.operation.OperationException;
 import org.swellrt.beta.client.operation.data.ProfileData;
 import org.swellrt.beta.client.operation.impl.LoginOperation.Response;
 
@@ -34,7 +35,7 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
   @Override
   protected void onError(Throwable exception, Callback<Response> callback) {
     if (callback != null)
-      callback.onError(exception);
+      callback.onError(new OperationException(OperationException.OPERATION_EXCEPTION, exception.getMessage()));
   }
 
 

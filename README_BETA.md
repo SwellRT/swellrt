@@ -92,40 +92,22 @@ s.createUser({
     id: "ann",
     password: "ann",
     email: "ann@swellrt.org",
-    locale: "es_ES",       
-},
-{ 
-  onError: function(e) { 
-         console.log("Error");
-        _exception = e; 
-    }, 
-  
-  onSuccess: function(r) { 
-        console.log("User created");
-        _response = r; 
-    }
-});
+    locale: "en_EN",
+
+}).then(r=>{ console.log("User created"); _response = r; })
+.catch(e=>{ console.log("User creation error"); _exception = e; });
 
 ```
 
 **Login**
 ```
-s.login(
-{
+s.login({ 
+
  id : "ann@local.net",
  password : "ann" 
-},
-{ 
-  onError: function(e) { 
-         console.log("Error");
-        _exception = e; 
-    }, 
-  
-  onSuccess: function(r) { 
-        console.log("Login success");
-        _response = r; 
-	}
-});
+
+}).then(r=>{ console.log("Login Successful"); _response = r; })
+.catch(e=>{ console.log("Login error"); _exception = e; });
 ```
 
 **Create / Load object**
@@ -135,19 +117,11 @@ Leave id field empty to create an object with an auto generated id.
 
 ```
 s.open({
-    id : "local.net/s+_MCiy9-CgsA"
-}, 
-{ 
-  onError: function(e) { 
-         console.log("Error");
-        _exception = e; 
-    }, 
-  
-  onSuccess: function(r) { 
-        console.log("Object is live!");
-        obj = r.object; 
-	}
-});
+
+    id : "local.net/s+T6Ad2s2TC2A"
+
+}).then(r=>{ console.log("Object opened"); _response = r; })
+.catch(e=>{ console.log("Object could't be opened"); _exception = e; });
 ```
 
 **Working with objects**

@@ -2,9 +2,6 @@ package org.swellrt.beta.client.operation.impl;
 
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.Operation;
-import org.swellrt.beta.client.operation.Operation.Callback;
-import org.swellrt.beta.client.operation.Operation.Options;
-import org.swellrt.beta.client.operation.Operation.Response;
 
 import jsinterop.annotations.JsType;
 
