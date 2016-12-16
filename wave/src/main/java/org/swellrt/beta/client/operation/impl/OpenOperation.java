@@ -26,7 +26,10 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
   public interface Response extends Operation.Response {
     
     @JsProperty
-    public SObject getObject();
+    public SObject getController();
+    
+    @JsProperty
+    public Object getObject();
     
   }
   
@@ -60,9 +63,15 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
         public void onReady(SObject object) {
           callback.onSuccess(new OpenOperation.Response() {
             @Override
-            public SObject getObject() {
+            public SObject getController() {
               return object;
-            }           
+            }
+
+			@Override
+			public Object getObject() {
+				return object.asNative();
+			}           
+            
           });         
         }
 
