@@ -32,7 +32,7 @@ public class SObjectTest extends TestCase {
     
     idGenerator = FakeIdGenerator.create();
     wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
-    object = SObjectRemote.inflateFromWave(idGenerator, "example.com", wave);
+    object = SObjectRemote.inflateFromWave(idGenerator, "example.com", wave, null);
     
     // A different way to create a fake wave
     /*

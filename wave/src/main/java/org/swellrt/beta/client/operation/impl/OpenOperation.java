@@ -1,13 +1,16 @@
 package org.swellrt.beta.client.operation.impl;
 
 import org.swellrt.beta.client.ServiceContext;
-import org.swellrt.beta.client.ServiceContext.ObjectCallback;
 import org.swellrt.beta.client.operation.Operation;
-import org.swellrt.beta.client.operation.OperationException;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
+import org.swellrt.beta.model.remote.SObjectRemote;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
+
+import com.google.common.util.concurrent.FutureCallback;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -47,7 +50,7 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
             
       if (!context.isSession()) {
     	if (callback != null)
-        	callback.onError(new OperationException(OperationException.SESSION_NOT_STARTED, ""));
+        	callback.onError(new SException(ResponseCode.NOT_LOGGED_IN));
       }
         
       WaveId waveId = null;
@@ -57,34 +60,41 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
         waveId = context.generateWaveId();
       }
 
-      context.getObject(waveId, new ObjectCallback() {
+      context.getObject(waveId, new FutureCallback<SObjectRemote>() {
 
         @Override
-        public void onReady(SObject object) {
+        public void onSuccess(SObjectRemote result) {
+
           callback.onSuccess(new OpenOperation.Response() {
             @Override
             public SObject getController() {
-              return object;
+              return result;
             }
 
-			@Override
-			public Object getObject() {
-				return object.asNative();
-			}           
-            
-          });         
+            @Override
+            public Object getObject() {
+              return result.asNative();
+            }
+
+          });
+
         }
 
         @Override
-        public void onFailure(Exception e) {
-          callback.onError(new OperationException(OperationException.UNABLE_GET_OBJECT, e.getMessage()));
+        public void onFailure(Throwable e) {
+          if (e instanceof SException) {
+            callback.onError((SException) e); 
+           } else {
+            callback.onError(new SException(SException.OPERATION_EXCEPTION, e));
+           }
+          
         }
         
       });
       
 
     } catch (InvalidIdException e) {
-      callback.onError(new OperationException(OperationException.INVALID_OBJECT_ID, e.getMessage()));
+      callback.onError(new SException(ResponseCode.INVALID_ID));
     }
 
   }

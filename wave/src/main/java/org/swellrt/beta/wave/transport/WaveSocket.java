@@ -30,13 +30,13 @@ public interface WaveSocket {
 
   interface WaveSocketStartCallback {
     void onSuccess();
-    void onFailure();
+    void onFailure(Throwable e);
   }
 
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
-    void onError(String errorCode);
+    void onError(Throwable e);
     void onMessage(String message);
   }
   

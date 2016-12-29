@@ -2,6 +2,8 @@ package org.swellrt.beta.model.remote;
 
 import java.util.Collections;
 
+import org.swellrt.beta.client.WaveStatus;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -144,6 +146,7 @@ public class SObjectRemote implements SObject, SNodeRemote {
   private final String domain;
   private final IdGenerator idGenerator;
   private final ObservableWaveView wave;
+  private final WaveStatus waveStatus;
   private ObservableWavelet masterWavelet;
   
   private SubstrateMapSerializer mapSerializer;   
@@ -154,7 +157,7 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * Initialize the Wave accordingly.
    * 
    */
-  public static SObjectRemote inflateFromWave(IdGenerator idGenerator, String domain, ObservableWaveView wave) {
+  public static SObjectRemote inflateFromWave(IdGenerator idGenerator, String domain, ObservableWaveView wave, WaveStatus waveStatus) {
     
     Preconditions.checkArgument(domain != null && !domain.isEmpty(), "Domain is not provided");
     Preconditions.checkArgument(wave != null, "Wave can't be null");
@@ -165,7 +168,7 @@ public class SObjectRemote implements SObject, SNodeRemote {
       masterWavelet = wave.createWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     }
      
-    SObjectRemote object = new SObjectRemote(idGenerator, domain, wave);
+    SObjectRemote object = new SObjectRemote(idGenerator, domain, wave, waveStatus);
     object.init();
     
     return object;
@@ -178,12 +181,13 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * @param domain
    * @param wave
    */
-  private SObjectRemote(IdGenerator idGenerator, String domain, ObservableWaveView wave) {
+  private SObjectRemote(IdGenerator idGenerator, String domain, ObservableWaveView wave, WaveStatus waveStatus) {
     this.wave = wave;
     this.masterWavelet = wave.getWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     this.mapSerializer = new SubstrateMapSerializer();
     this.domain = domain;
     this.idGenerator = idGenerator;
+    this.waveStatus = waveStatus;
   }
   
   /**
@@ -191,6 +195,19 @@ public class SObjectRemote implements SObject, SNodeRemote {
    */
   private void init() {
     root = loadMap(SubstrateId.ofMap(masterWavelet.getId(), ROOT_SUBSTRATE_ID));
+  }
+  
+  /**
+   * Checks if the status of the object or any underlying component (wave view, channel, websocket...)
+   * is normal.
+   * <p>
+   * Throws a {@link SException} otherwise.
+   * <p>
+   * This method should be called before doing any operation in the object.
+   */
+  protected void checkStatus() throws SException {
+	  if (waveStatus != null)
+		  waveStatus.check();
   }
   
   /**

@@ -1,5 +1,7 @@
 package org.swellrt.beta.client.operation;
 
+import org.swellrt.beta.common.SException;
+
 import jsinterop.annotations.JsType;
 
 /**
@@ -27,7 +29,7 @@ public interface Operation<O extends Operation.Options, R extends Operation.Resp
   @JsType(isNative = true)
   public interface Callback<T extends Response> {
     
-    public void onError(OperationException exception);
+    public void onError(SException exception);
     
     public void onSuccess(T response);
        

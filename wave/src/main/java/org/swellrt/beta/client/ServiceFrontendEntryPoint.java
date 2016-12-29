@@ -1,9 +1,13 @@
 package org.swellrt.beta.client;
 
+import java.net.URLDecoder;
+
 import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
 
+import com.gargoylesoftware.htmlunit.javascript.host.URL;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
@@ -29,10 +33,37 @@ public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryP
     return new PromisableServiceFrontend(getStandardInstance());
   }
   
-
-  @Override
-  public void onModuleLoad() {
-	this.context = new ServiceContext(SessionManagerJs.create());  
+  
+  private static String getServerURL() {
+      String url = GWT.getModuleBaseURL();
+      
+      int c = 3;
+      String s = url;
+      int index = -1;
+      while (c > 0) {
+        index = s.indexOf("/", index+1);
+        if (index == -1)
+          break;
+        c--;        
+      }
+      
+      if (c == 0)
+        url = url.substring(0, index);
+      
+      return url;
   }
   
+  @Override
+  public void onModuleLoad() {    
+    this.context = new ServiceContext(SessionManagerJs.create(), getServerURL());  	
+    GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
+
+      @Override
+      public void onUncaughtException(Throwable e) {
+        // TODO Auto-generated method stub
+
+      }
+    });
+  }
+
 }

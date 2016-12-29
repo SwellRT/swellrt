@@ -21,6 +21,9 @@
 	
 	<inherits name='org.waveprotocol.box.webclient.stat.Stat' />
 
+	<inherits name='org.swellrt.beta.common.Common' />
+	
+
 	<source path="" />	
 	<source path="transport/**" />
 	<source path="transport/atmosphere/**" />

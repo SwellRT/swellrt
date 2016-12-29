@@ -7,8 +7,10 @@ import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
+import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 import org.waveprotocol.wave.model.waveref.WaveRef;
@@ -40,7 +42,7 @@ public class WaveLoader extends Stages {
   private StageTwo two;
   private StageThree three;
   protected ObservableWaveView wave;
-  protected WaveRef waveRef;
+  protected WaveId waveId;
   private RemoteViewServiceMultiplexer channel;
   protected IdGenerator idGenerator;
   private ProfileManager profileManager;
@@ -49,20 +51,22 @@ public class WaveLoader extends Stages {
   protected boolean isNewWave;
   private UnsavedDataListener dataListener;
   protected ParticipantId loggedInUser;
+  private TurbulenceListener turbulenceListener;
 
 
-  public WaveLoader(WaveRef waveRef, RemoteViewServiceMultiplexer channel,
+  public WaveLoader(WaveId waveId, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, String localDomain,
  Set<ParticipantId> participants, ParticipantId loggedInUser,
-      UnsavedDataListener dataListener) {
+      UnsavedDataListener dataListener, TurbulenceListener turbulenceListener) {
     super();
-    this.waveRef = waveRef;
+    this.waveId = waveId;
     this.channel = channel;
     this.idGenerator = idGenerator;
     this.localDomain = localDomain;
     this.participants = participants;
     this.loggedInUser = loggedInUser;
     this.dataListener = dataListener;
+    this.turbulenceListener = turbulenceListener;
 
   }
 
@@ -83,9 +87,9 @@ public class WaveLoader extends Stages {
 
   @Override
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
-    return haltIfClosed(new StageTwoProvider(this.one = one, this.waveRef, this.channel,
+    return haltIfClosed(new StageTwoProvider(this.one = one, WaveRef.of(this.waveId), this.channel,
         this.isNewWave, this.idGenerator, this.dataListener,
-        this.participants, this.loggedInUser));
+        this.participants, this.loggedInUser, turbulenceListener));
   }
 
   @Override
@@ -129,6 +133,10 @@ public class WaveLoader extends Stages {
     // WindowTitleHandler.install(context.getStore(), context.getWaveFrame());
   }
 
+  /**
+   * Dispose resources of this Wave, also remove listeners
+   * from underlying {@OperationChannelMultiplexer}
+   */
   public void destroy() {
     if (wave != null) {
       // Remove from some wave store
