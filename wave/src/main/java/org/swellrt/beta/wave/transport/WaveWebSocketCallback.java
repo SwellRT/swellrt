@@ -20,13 +20,59 @@
 package org.swellrt.beta.wave.transport;
 
 import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
+import org.waveprotocol.wave.communication.gwt.JsonHelper;
+import org.waveprotocol.wave.communication.gwt.JsonMessage;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
 
 /**
  * Callback for a wave websocket.
  *
  * @author arb@google.com (Anthony Baxter)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface WaveWebSocketCallback {
+  
+  /**
+   * Hand made wrapper class for messages of type RpcFinished.
+   * This is a workaround, because real implementation of this protobuf wrapper 
+   * is not visible for client. 
+   */
+  public static final class RpcFinished  extends JsonMessage {
+    
+    protected RpcFinished() {
+      super();
+    }
+    
+    public boolean hasFailed() {
+      return JsonHelper.getPropertyAsBoolean(this, "1");
+    }
+    
+    public boolean hasErrorText() {
+      return JsonHelper.hasProperty(this, "2");
+    }
+    
+    public String getErrorText() {
+      return JsonHelper.getPropertyAsString(this, "2");
+    }
+
+    public ChannelException getChannelException() {
+      ChannelException e = null;
+      if (hasErrorText()) {       
+        e = ChannelException.deserialize(getErrorText());        
+      }      
+      return e;
+    }
+    
+  }
+  
+  
 
   void onWaveletUpdate(ProtocolWaveletUpdate message);
+  
+  void onFinished(RpcFinished message);
 }

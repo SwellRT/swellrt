@@ -22,6 +22,9 @@ package org.swellrt.beta.wave.transport;
 import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
@@ -108,6 +111,30 @@ public final class RemoteViewServiceMultiplexer implements WaveWebSocketCallback
       // updates).
     }
   }
+  
+  /** Dispatches a error to the appropriate wave stream */
+  @Override
+  public void onFinished(RpcFinished message) {
+
+    ChannelException ex = message.getChannelException();
+
+    if (ex != null && ex.getWaveId() != null) {
+      // Route to the appropriate stream handler.
+      WaveWebSocketCallback stream = streams.get(ex.getWaveId());
+      if (stream != null) {
+        stream.onFinished(message);
+        return;
+      }
+    }
+
+
+    // If execution reaches here  error couldn't be handled properly because
+    // we don't know the right stream (wave) involved.
+    //
+    // We assume further operations over the failed stream will
+    // raised a Channel exception locally.
+
+  }
 
   /**
    * Opens a wave stream.
@@ -172,4 +199,5 @@ public final class RemoteViewServiceMultiplexer implements WaveWebSocketCallback
   public static String serialize(WaveletName name) {
     return ModernIdSerialiser.INSTANCE.serialiseWaveletName(name);
   }
+
 }

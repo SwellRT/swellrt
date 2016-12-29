@@ -139,7 +139,9 @@ public final class LiveChannelBinder
 
   @Override
   public void onFailed(CorruptionDetail detail) {
-    throw new RuntimeException(detail);
+	 // Avoid throwing unchecked exceptions,
+	 // use the TurbulenceListener instead	  
+	 // throw new RuntimeException(detail);
   }
 
   @Override

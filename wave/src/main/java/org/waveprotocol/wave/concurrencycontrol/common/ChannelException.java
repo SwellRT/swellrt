@@ -19,16 +19,78 @@
 
 package org.waveprotocol.wave.concurrencycontrol.common;
 
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 
 
 /**
  * Represents failure within a communication channel or stack.
+ * Original implementation is extended to represent exceptions
+ * thrown in the server.
  *
  * @author anorth@google.com (Alex North)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
+@SuppressWarnings("serial")
 public class ChannelException extends Exception {
+  
+  private final static String TS = ",";
+  
+  public static ChannelException deserialize(String message) {
+
+    String[] tokens = message.split(TS);
+
+    if (tokens == null || tokens.length == 0)
+      return null;
+
+    ResponseCode code = ResponseCode.UNKNOWN;
+    WaveId waveId = null;
+    WaveletId waveletId = null;
+    String description = "Unknown Excpetion";
+    Recoverable isRecoverable = Recoverable.NOT_RECOVERABLE;
+
+    for (int t = 0; t < tokens.length; t++) {
+
+      try {
+
+        switch (t) {
+
+        case 0:
+          int intCode = Integer.parseInt(tokens[0]);
+          code = ResponseCode.of(intCode);
+          break;
+
+        case 1:
+          if (!tokens[1].isEmpty())
+            waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(tokens[1]);
+          break;
+
+        case 2:
+          if (!tokens[2].isEmpty())
+            waveletId = ModernIdSerialiser.INSTANCE.deserialiseWaveletId(tokens[2]);
+          break;
+
+        case 3:
+          description = tokens[3];
+          break;
+
+        case 4:
+          isRecoverable = (tokens[4] != null && tokens[4].equals("true") ? Recoverable.RECOVERABLE
+              : Recoverable.NOT_RECOVERABLE);
+          break;
+
+        }
+
+      } catch (Exception e) {
+        continue;
+      }
+    }
+
+    return new ChannelException(code, description, null, isRecoverable, waveId, waveletId);
+
+  }
+  
   private final Recoverable isRecoverable;
   private final WaveId waveId;
   private final WaveletId waveletId;
@@ -98,4 +160,53 @@ public class ChannelException extends Exception {
     return super.toString() + ", \nwaveId: " + waveId + " waveletId: " + waveletId
         + ", isRecoverable: " + isRecoverable + ", responseCode: " + responseCode;
   }
+  
+  public String serialize() {
+    
+      return ""+ responseCode.getValue() + TS 
+          + (waveId != null ? ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId) : "") + TS 
+          + (waveletId != null ? ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId) : "" ) + TS 
+          + getMessage() + TS 
+          + (isRecoverable != null && isRecoverable.equals(Recoverable.RECOVERABLE) ? "true" : "false");
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((isRecoverable == null) ? 0 : isRecoverable.hashCode());
+    result = prime * result + ((responseCode == null) ? 0 : responseCode.hashCode());
+    result = prime * result + ((waveId == null) ? 0 : waveId.hashCode());
+    result = prime * result + ((waveletId == null) ? 0 : waveletId.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ChannelException other = (ChannelException) obj;
+    if (isRecoverable != other.isRecoverable)
+      return false;
+    if (responseCode != other.responseCode)
+      return false;
+    if (waveId == null) {
+      if (other.waveId != null)
+        return false;
+    } else if (!waveId.equals(other.waveId))
+      return false;
+    if (waveletId == null) {
+      if (other.waveletId != null)
+        return false;
+    } else if (!waveletId.equals(other.waveletId))
+      return false;
+    return true;
+  }
+  
+  
+    
 }

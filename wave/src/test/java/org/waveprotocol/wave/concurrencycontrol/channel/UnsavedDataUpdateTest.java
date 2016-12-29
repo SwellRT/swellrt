@@ -120,7 +120,7 @@ public class UnsavedDataUpdateTest extends TestCase {
 
          public void destroy(WaveletId waveletId) {
          }
-    }, new ImmediateExcecutionScheduler(), FakeHashedVersionFactory.INSTANCE);
+    }, new ImmediateExcecutionScheduler(), FakeHashedVersionFactory.INSTANCE, null);
     muxListener = new MockMuxListener();
   }
 

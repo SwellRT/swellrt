@@ -422,7 +422,7 @@ public class ViewChannelImpl implements ViewChannel, WaveViewService.OpenCallbac
 
   @Override
   public void onException(ChannelException e) {
-    triggerOnException(e, null);
+    triggerOnException(e, e.getWaveletId());
     terminate("WaveService raised exception (probably in translation): " + e);
   }
 
@@ -441,7 +441,7 @@ public class ViewChannelImpl implements ViewChannel, WaveViewService.OpenCallbac
   private void triggerOnException(ChannelException e, WaveletId waveletId) {
     if (openListener != null) {
       openListener.onException(
-          new ChannelException(e.getResponseCode(), "Exception in view channel, state " + this,
+          new ChannelException(e.getResponseCode(), "Exception in view channel, state " + this + " "+e.getMessage(),
               e, e.getRecoverable(), waveId, waveletId));
     }
   }

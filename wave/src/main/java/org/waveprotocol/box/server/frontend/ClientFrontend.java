@@ -21,6 +21,7 @@ package org.waveprotocol.box.server.frontend;
 
 import org.waveprotocol.box.common.comms.WaveClientRpc;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -63,7 +64,7 @@ public interface ClientFrontend {
     /**
      * Called when the stream fails. No further updates will be received.
      */
-    void onFailure(String errorMessage);
+    void onFailure(ChannelException exception);
   }
 
   /**

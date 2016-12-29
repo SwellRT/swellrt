@@ -53,6 +53,7 @@ import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiple
 import org.waveprotocol.wave.concurrencycontrol.channel.ViewChannelFactory;
 import org.waveprotocol.wave.concurrencycontrol.channel.ViewChannelImpl;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
+import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListenerFactory;
 import org.waveprotocol.wave.model.conversation.ObservableConversationView;
@@ -160,10 +161,12 @@ public interface StageTwo {
 
 
     private final UnsavedDataListener unsavedDataListener;
+    private final TurbulenceListener turbulenceListener;
 
-    public DefaultProvider(StageOne stageOne, UnsavedDataListener unsavedDataListener) {
+    public DefaultProvider(StageOne stageOne, UnsavedDataListener unsavedDataListener, TurbulenceListener turbulenceListener) {
       this.stageOne = stageOne;
       this.unsavedDataListener = unsavedDataListener;
+      this.turbulenceListener = turbulenceListener;
     }
 
     /**
@@ -399,7 +402,8 @@ public interface StageTwo {
               loggers,
               unsyncedListeners,
               scheduler,
-              hashFactory);
+              hashFactory,
+              turbulenceListener);
 
       final WaveViewImpl<OpBasedWavelet> wave = getWave();
 

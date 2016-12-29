@@ -28,6 +28,9 @@ import org.waveprotocol.box.server.waveserver.WaveBus;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -98,23 +101,22 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     LOG.info("received openRequest from " + loggedInUser + " for " + waveId + ", filter "
         + waveletIdFilter + ", known wavelets: " + knownWavelets);
 
-    // TODO(josephg): Make it possible for this to succeed & return public
-    // waves.
-    if (loggedInUser == null) {
-      openListener.onFailure("Not logged in");
+    // Users must be logged in always, but they might be anonymous.
+    if (loggedInUser == null) {      
+      openListener.onFailure(new ChannelException(ResponseCode.NOT_LOGGED_IN, "Not Logged in", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
 
-    if (!knownWavelets.isEmpty()) {
-      openListener.onFailure("Known wavelets not supported");
+    if (!knownWavelets.isEmpty()) {      
+      openListener.onFailure(new ChannelException(ResponseCode.INTERNAL_ERROR, "Known wavelets not supported", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
 
     try {
       waveletInfo.initialiseWave(waveId);
     } catch (WaveServerException e) {
-      LOG.severe("Wave server failed lookup for " + waveId, e);
-      openListener.onFailure("Wave server failed to look up wave");
+      LOG.severe("Wave server failed lookup for " + waveId, e);      
+      openListener.onFailure(new ChannelException(ResponseCode.WAVE_RETRIEVAL_ERROR, "Wave server failed to look up wave", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
 
@@ -131,6 +133,7 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       waveletIds = Sets.newHashSet();
       LOG.warning("Failed to retrieve visible wavelets for " + loggedInUser, e1);
     }
+    
     for (WaveletId waveletId : waveletIds) {
       WaveletName waveletName = WaveletName.of(waveId, waveletId);
       // Ensure that implicit participants will also receive updates.
@@ -152,8 +155,8 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       try {
         snapshotToSend = waveletProvider.getSnapshot(waveletName);
       } catch (WaveServerException e) {
-        LOG.warning("Failed to retrieve snapshot for wavelet " + waveletName, e);
-        openListener.onFailure("Wave server failure retrieving wavelet");
+        LOG.warning("Failed to retrieve snapshot for wavelet " + waveletName, e);        
+        openListener.onFailure(new ChannelException(ResponseCode.WAVELET_RETRIEVAL_ERROR, "Wave server failure retrieving wavelet", null, Recoverable.NOT_RECOVERABLE, waveId, waveletId));
         return;
       }
 
@@ -170,13 +173,26 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     }
 
     WaveletName dummyWaveletName = createDummyWaveletName(waveId);
+
     if (waveletIds.size() == 0) {
       // Send message with just the channel id.
       LOG.info("sending just a channel id for " + dummyWaveletName);
       openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, null, channelId);
     }
+
     LOG.info("sending marker for " + dummyWaveletName);
     openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, true, null);
+    
+    // After all, if user can't see any wavelet, response an error
+    // A user should be able to access at least the master wavelet
+    // The condition is place here, after updates for dummyWavelet and marker
+    // to keep protocol as compatible as possible 
+    
+    if (waveletIds.isEmpty()) {
+      LOG.warning("No visible wavelets for " + loggedInUser + ", response failure");      
+      openListener.onFailure(new ChannelException(ResponseCode.NOT_AUTHORIZED, "No visible wavelets", null, Recoverable.NOT_RECOVERABLE, waveId, null));
+        return;
+    }     
   }
 
   private String generateChannelID() {

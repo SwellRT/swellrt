@@ -162,7 +162,7 @@ public class OperationChannelMultiplexerImplTest extends TestCase {
       }
     };
     mux = new OperationChannelMultiplexerImpl(WAVE_ID, viewFactory, DATA_FACTORY, LOGGERS,
-        fakeListenerFactory, new ImmediateExcecutionScheduler(), FakeHashedVersionFactory.INSTANCE);
+        fakeListenerFactory, new ImmediateExcecutionScheduler(), FakeHashedVersionFactory.INSTANCE, null);
     muxListener = new MockMuxListener();
   }
 
@@ -816,7 +816,7 @@ public class OperationChannelMultiplexerImplTest extends TestCase {
 
     FakeScheduler scheduler = new FakeScheduler();
     mux = new OperationChannelMultiplexerImpl(WAVE_ID, viewFactory, DATA_FACTORY,
-        LOGGERS, null, scheduler, FakeHashedVersionFactory.INSTANCE);
+        LOGGERS, null, scheduler, FakeHashedVersionFactory.INSTANCE, null);
     MockViewChannel view = openMux();
     muxListener.verifyNoMoreInteractions();
     ViewChannel.Listener viewListener = view.takeListener();
@@ -861,7 +861,7 @@ public class OperationChannelMultiplexerImplTest extends TestCase {
 
     FakeScheduler scheduler = new FakeScheduler();
     mux = new OperationChannelMultiplexerImpl(WAVE_ID, viewFactory, DATA_FACTORY,
-        LOGGERS, null, scheduler, FakeHashedVersionFactory.INSTANCE);
+        LOGGERS, null, scheduler, FakeHashedVersionFactory.INSTANCE, null);
     MockViewChannel view = openMux();
     muxListener.verifyNoMoreInteractions();
     ViewChannel.Listener viewListener = view.takeListener();

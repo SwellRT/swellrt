@@ -231,8 +231,8 @@ public class WaveSocketAtmosphere implements WaveSocket {
           };
 
           // ERROR
-          socket.request.onError = function(response) {
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onError(Ljava/lang/String;)(response.status);
+          socket.request.onError = function(response) {            
+            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onError(Ljava/lang/String;)(String(response.status));
           };
 
           // CLIENT TIMEOUT
@@ -312,14 +312,13 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
             ScriptInjector.fromUrl(scriptUrl).setCallback(new Callback<Void, Exception>() {
               public void onFailure(Exception reason) {
-                throw new IllegalStateException("atmosphere.js load failed!");
+                onError("Unable to connect to Websocket endpoint");                
               }
 
               public void onSuccess(Void result) {
                 // We assume Atmosphere is going to work only with http(s) schemas
-          socket =
-              AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost, true
-                  ? "websocket" : "long-polling", "long-polling", clientVersion, currentSessionId);
+                socket = AtmosphereSocket.create(WaveSocketAtmosphere.this, scriptHost,
+                    true ? "websocket" : "long-polling", "long-polling", clientVersion, currentSessionId);
                 socket.connect();
               }
 
@@ -350,10 +349,11 @@ public class WaveSocketAtmosphere implements WaveSocket {
   /**
    * Atmosphere has detected a fatal error in the connection. It will stop x
    */
-    @SuppressWarnings("unused")
     private void onError(String error) {
+      if (error == null)
+        error = "Websocket fatal error";
       log.severe(error);
-      listener.onError(error);
+      listener.onError(new Exception(error));
     }
 
     /**

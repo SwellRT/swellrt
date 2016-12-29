@@ -24,6 +24,7 @@ import com.google.gwt.user.client.Command;
 
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
+import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.id.IdGenerator;
@@ -67,8 +68,8 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       boolean isNewWave, IdGenerator idGenerator,
-      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants, ParticipantId participant) {
-    super(stageOne, unsavedDataListener);
+      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants, ParticipantId participant, TurbulenceListener turbulenceListener) {
+    super(stageOne, unsavedDataListener, turbulenceListener);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
     Preconditions.checkArgument(waveRef.getWaveId() != null);

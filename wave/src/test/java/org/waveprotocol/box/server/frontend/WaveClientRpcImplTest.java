@@ -35,6 +35,9 @@ import org.waveprotocol.box.server.frontend.testing.FakeClientFrontend;
 import org.waveprotocol.box.server.rpc.testing.FakeServerRpcController;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
 import org.waveprotocol.box.server.util.testing.TestingConstants;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletOperation;
 import org.waveprotocol.wave.model.id.InvalidIdException;
@@ -133,7 +136,7 @@ public class WaveClientRpcImplTest extends TestCase implements TestingConstants 
     frontend.doUpdateFailure(WAVE_ID, FAIL_MESSAGE);
     assertEquals(0, counter);
     assertTrue(controller.failed());
-    assertEquals(FAIL_MESSAGE, controller.errorText());
+    assertEquals(new ChannelException(ResponseCode.INTERNAL_ERROR, FAIL_MESSAGE, null, Recoverable.NOT_RECOVERABLE, WAVE_ID, null).serialize(), controller.errorText());
   }
 
   /**

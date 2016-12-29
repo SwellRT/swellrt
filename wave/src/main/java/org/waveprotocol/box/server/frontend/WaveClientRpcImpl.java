@@ -34,6 +34,9 @@ import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.common.SnapshotSerializer;
 import org.waveprotocol.box.server.rpc.ServerRpcController;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
@@ -83,12 +86,12 @@ public class WaveClientRpcImpl implements ProtocolWaveClientRpc.Interface {
   @Override
   public void open(final RpcController controller, ProtocolOpenRequest request,
       final RpcCallback<ProtocolWaveletUpdate> done) {
-    WaveId waveId;
+    WaveId waveId = null;
     try {
       waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(request.getWaveId());
     } catch (InvalidIdException e) {
       LOG.warning("Invalid id in open", e);
-      controller.setFailed(e.getMessage());
+      controller.setFailed(new ChannelException(ResponseCode.INVALID_ID, null, e, Recoverable.NOT_RECOVERABLE, waveId, null).serialize());
       return;
     }
     IdFilter waveletIdFilter =
@@ -98,9 +101,9 @@ public class WaveClientRpcImpl implements ProtocolWaveClientRpc.Interface {
     frontend.openRequest(loggedInUser, waveId, waveletIdFilter, request.getKnownWaveletList(),
         new ClientFrontend.OpenListener() {
           @Override
-          public void onFailure(String errorMessage) {
-            LOG.warning("openRequest failure: " + errorMessage);
-            controller.setFailed(errorMessage);
+          public void onFailure(ChannelException ex) {
+            LOG.warning("openRequest failure: " + ex);
+            controller.setFailed(ex.serialize());
           }
 
           @Override
@@ -153,7 +156,7 @@ public class WaveClientRpcImpl implements ProtocolWaveClientRpc.Interface {
       waveletName = ModernIdSerialiser.INSTANCE.deserialiseWaveletName(request.getWaveletName());
     } catch (InvalidIdException e) {
       LOG.warning("Invalid id in submit", e);
-      controller.setFailed(e.getMessage());
+      controller.setFailed(new ChannelException(ResponseCode.INVALID_ID, null, e, Recoverable.NOT_RECOVERABLE, null, null).serialize());          
       return;
     }
     String channelId;

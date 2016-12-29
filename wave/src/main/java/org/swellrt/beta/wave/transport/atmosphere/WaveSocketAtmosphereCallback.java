@@ -124,7 +124,7 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
       }
 
     } catch (Exception e) {
-      delegate.onError("EXCEPTION="+e.getMessage());
+      delegate.onError(e);
     }
 
   }
@@ -139,7 +139,7 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
 
     if (message.startsWith(EXT_RESPONSE_HEADER)) {
       String response = message.substring(EXT_RESPONSE_HEADER.length());
-      delegate.onError(response);
+      delegate.onError(new Exception(response));
     } else {
       delegate.onMessage(message);
     }
@@ -148,8 +148,8 @@ public class WaveSocketAtmosphereCallback implements WaveSocket.WaveSocketCallba
 
 
   @Override
-  public void onError(String errorCode) {
-    delegate.onError("EXCEPTION=" + errorCode);
+  public void onError(Throwable t) {
+    delegate.onError(t);
   }
 
 }

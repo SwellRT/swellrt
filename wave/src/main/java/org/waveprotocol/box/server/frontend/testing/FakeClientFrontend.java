@@ -24,6 +24,9 @@ import org.waveprotocol.box.common.comms.WaveClientRpc;
 import org.waveprotocol.box.server.frontend.ClientFrontend;
 import org.waveprotocol.box.server.waveserver.WaveBus;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -80,7 +83,7 @@ public class FakeClientFrontend implements ClientFrontend, WaveBus.Subscriber {
   public void doUpdateFailure(WaveId waveId, String errorMessage) {
     OpenListener listener = openListeners.get(waveId);
     if (listener != null) {
-      listener.onFailure(errorMessage);
+      listener.onFailure(new ChannelException(ResponseCode.INTERNAL_ERROR, errorMessage, null, Recoverable.NOT_RECOVERABLE, waveId, null));
     }
   }
 

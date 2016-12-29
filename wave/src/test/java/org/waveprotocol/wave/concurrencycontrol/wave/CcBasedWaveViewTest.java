@@ -276,7 +276,7 @@ public class CcBasedWaveViewTest extends TestCase {
     OperationChannelMultiplexerImpl mux = new OperationChannelMultiplexerImpl(WAVE_ID,
         ViewChannelImpl.factory(waveViewService, logger),
         WaveletDataImpl.Factory.create(docFactory),
-        loggers, null, new ImmediateExcecutionScheduler(), FakeHashedVersionFactory.INSTANCE);
+        loggers, null, new ImmediateExcecutionScheduler(), FakeHashedVersionFactory.INSTANCE, null);
     CcBasedWaveView waveView = CcBasedWaveViewImpl.create(docFactory, SCHEMAS, WAVE_ID, USER_ID,
         mux, IdFilters.ALL_IDS, idGenerator, logger,
         new BasicWaveletOperationContextFactory(USER_ID), ParticipationHelper.IGNORANT, null,

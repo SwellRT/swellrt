@@ -568,7 +568,7 @@ public interface StageTwo {
               loggers,
               unsyncedListeners,
               scheduler,
-              hashFactory);
+              hashFactory, null);
 
       final WaveViewImpl<OpBasedWavelet> wave = getWave();
 

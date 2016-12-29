@@ -27,6 +27,7 @@ import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.CorruptionDetail;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
+import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListenerFactory;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.WaveId;
@@ -242,7 +243,7 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
   private final LoggerBundle logger;
 
   /** A stateful manager/factory for unsaved data listeners */
-  private final UnsavedDataListenerFactory unsavedDataListenerFactory;
+  private UnsavedDataListenerFactory unsavedDataListenerFactory;
 
   /** Synthesizer of initial wavelet snapshots for locally-created wavelets. */
   private final ObservableWaveletData.Factory<?> dataFactory;
@@ -283,6 +284,9 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
 
   /** Used to backoff when reconnecting. */
   private final Scheduler scheduler;
+  
+  /** A listener for turbulences in the channel or protocol */
+  private TurbulenceListener turbulenceListener;
 
   /**
    * Creates factory for building delta channels.
@@ -336,17 +340,20 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
    * @param unsavedDataListenerFactory a factory for adding listeners
    * @param scheduler scheduler for reconnection
    * @param hashFactory factory for hashed versions
+   * @param turbulenceListener a listener to report turbulences to users
    */
   public OperationChannelMultiplexerImpl(WaveId waveId, ViewChannelFactory viewFactory,
       ObservableWaveletData.Factory<?> dataFactory, LoggerContext loggers,
       UnsavedDataListenerFactory unsavedDataListenerFactory, Scheduler scheduler,
-      HashedVersionFactory hashFactory) {
+      HashedVersionFactory hashFactory,
+      TurbulenceListener turbulenceListener) {
     // Construct default dependency implementations, based on given arguments.
     this(waveId,
         createDeltaChannelFactory(loggers.delta),
         createOperationChannelFactory(waveId, unsavedDataListenerFactory, loggers),
         viewFactory, dataFactory, scheduler, loggers.view, unsavedDataListenerFactory,
-        hashFactory);
+        hashFactory,
+        turbulenceListener);
     Preconditions.checkNotNull(dataFactory, "null dataFactory");
   }
 
@@ -361,6 +368,7 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
    * @param logger log target
    * @param unsavedDataListenerFactory
    * @param hashFactory factory for hashed versions
+   * @param turbulenceListener a listener to report turbulences to users 
    */
   OperationChannelMultiplexerImpl(
       WaveId waveId, DeltaChannelFactory deltaChannelFactory,
@@ -368,7 +376,8 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
       ViewChannelFactory channelFactory, ObservableWaveletData.Factory<?> dataFactory,
       Scheduler scheduler, LoggerBundle logger,
       UnsavedDataListenerFactory unsavedDataListenerFactory,
-      HashedVersionFactory hashFactory) {
+      HashedVersionFactory hashFactory,
+      TurbulenceListener turbulenceListener) {
     this.waveId = waveId;
     this.deltaChannelFactory = deltaChannelFactory;
     this.opChannelFactory = opChannelFactory;
@@ -379,6 +388,7 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
     this.state = State.NOT_CONNECTED;
     this.scheduler = scheduler;
     this.hashFactory = hashFactory;
+    this.turbulenceListener = turbulenceListener;
   }
 
   @Override
@@ -416,6 +426,9 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
   @Override
   public void close() {
     shutdown(ResponseCode.OK, "View closed.", null);
+    // Remove listeners to avoid unexcepted notifications
+    turbulenceListener = null;
+    unsavedDataListenerFactory = null;
   }
 
   @Override
@@ -718,6 +731,9 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
    * @param e The exception that caused the channel to fail.
    */
   private void onChannelException(ChannelException e) {
+    if (turbulenceListener != null) {
+      turbulenceListener.onFailure(e);
+    }	    
     if (e.getRecoverable() != Recoverable.RECOVERABLE) {
       shutdown(e.getResponseCode(), "Channel Exception", e);
     } else {
@@ -817,8 +833,8 @@ public class OperationChannelMultiplexerImpl implements OperationChannelMultiple
     boolean notifyFailure = (reasonCode != ResponseCode.OK);
 
     // We are telling the user through UI that the wave is corrupt, so we must also report it
-    // to the server.
-    if (notifyFailure) {
+    // to the server. TODO(pablojan) Keep this until clarify proper error handling 
+    if (notifyFailure) {   	
       if (exception == null) {
         logger.error().log(description);
       } else {

@@ -28,6 +28,7 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsSt
 
 import com.google.common.base.Preconditions;
 
+import org.swellrt.beta.wave.transport.WaveWebSocketCallback.RpcFinished;
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
@@ -59,7 +60,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   public static interface StatusListener {
 
-    public void onStateChange(String state, Throwable e);
+    public void onStateChange(ConnectState state, Throwable e);
 
   }
 
@@ -97,6 +98,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       return getPropertyAsObject(this, "message").<T>cast();
     }
   }
+  
+  
+
 
   private WaveSocket socket;
   private final IntMap<SubmitResponseCallback> submitRequestCallbacks;
@@ -111,7 +115,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    *
    */
   public enum ConnectState {
-    CONNECTED, CONNECTING, DISCONNECTED, ERROR;
+    NEW, CONNECTED, CONNECTING, DISCONNECTED, ERROR;
 
     public String toString() {
 
@@ -119,13 +123,14 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       if (this == CONNECTING) return "CONNECTING";
       if (this == DISCONNECTED) return "DISCONNECTED";
       if (this == ERROR) return "ERROR";
+      if (this == NEW) return "NEW";
 
       return "UNKOWN";
     }
 
   }
 
-  private ConnectState connectState = ConnectState.DISCONNECTED;
+  private ConnectState connectState = ConnectState.NEW;
   private WaveWebSocketCallback callback;
   private StatusListener statusListener;
   private int sequenceNo;
@@ -185,7 +190,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    *
    */
   public void disconnect(boolean discardInFlightMessages) {
-    setState(ConnectState.DISCONNECTED);
+    setState(ConnectState.NEW);
     socket.disconnect();
     connectedAtLeastOnce = false;
     if (discardInFlightMessages) messages.clear();
@@ -221,7 +226,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
       // Report connection error on connection started explicitly
       if (onStartCallback != null) {
-        onStartCallback.onFailure();
+        onStartCallback.onFailure(e);
         onStartCallback = null;
       }
 
@@ -283,6 +288,10 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         }
 
       }
+    } else if ("RpcFinished".equals(messageType)) {
+        if (callback != null) {
+           callback.onFinished(wrapper.<RpcFinished>getPayload());
+        }
     }
   }
 
@@ -318,11 +327,13 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     return connectState == ConnectState.CONNECTED;
   }
 
+  public ConnectState getState() {
+    return this.connectState;
+  }
+  
   @Override
-  public void onError(String errorCode) {
-    // For now, we can't recover exceptions from inner layers. Just let the
-    // client app to reset
-    setState(ConnectState.ERROR);
+  public void onError(Throwable ex) {
+    setState(ConnectState.ERROR, ex);
   }
 
   protected void setState(ConnectState state) {
@@ -331,7 +342,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   protected void setState(ConnectState state, Throwable e) {
     connectState = state;
-    if (statusListener != null) statusListener.onStateChange(state.toString(), e);
+    if (statusListener != null) statusListener.onStateChange(state, e);
   }
 
 }

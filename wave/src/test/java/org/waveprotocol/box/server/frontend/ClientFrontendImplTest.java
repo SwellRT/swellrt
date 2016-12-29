@@ -49,6 +49,9 @@ import org.waveprotocol.box.server.util.WaveletDataUtil;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.box.server.waveserver.WaveletProvider.SubmitRequestListener;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.federation.Proto.ProtocolWaveletDelta;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
@@ -124,7 +127,7 @@ public class ClientFrontendImplTest extends TestCase {
   public void testCannotOpenWavesWhenNotLoggedIn() throws Exception {
     OpenListener listener = mock(OpenListener.class);
     clientFrontend.openRequest(null, WAVE_ID, IdFilters.ALL_IDS, NO_KNOWN_WAVELETS, listener);
-    verify(listener).onFailure("Not logged in");
+    verify(listener).onFailure(new ChannelException(ResponseCode.NOT_LOGGED_IN, "Not Logged in", null, Recoverable.NOT_RECOVERABLE, WAVE_ID, null));
 
     CommittedWaveletSnapshot snapshot = provideWavelet(WN1);
     clientFrontend.waveletUpdate(snapshot.snapshot, DELTAS);

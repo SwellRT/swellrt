@@ -57,8 +57,23 @@ public enum ResponseCode {
    * The version the delta was being submitted against is too old.
    * The client should reconnect, transform, and retry.
    */
-  TOO_OLD(10);
+  TOO_OLD(10),
+  
+  /** The user is not logged in the server */
+  NOT_LOGGED_IN(11),
+  
+  /** The server couldn't load the wave */
+  WAVE_RETRIEVAL_ERROR(12),
+  
+  /** The server couldn't load the wavelet */
+  WAVELET_RETRIEVAL_ERROR(13),
+  
+  /** The wave or wavelet id is invalid */
+  INVALID_ID(14),
 
+  /** The websocket is not available  */
+  WEBSOCKET_ERROR(15);
+  
   private final int value;
 
   private ResponseCode(int value) {
