@@ -1,6 +1,7 @@
 package org.swellrt.beta.model.js;
 
 
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -16,7 +17,7 @@ public class SMapProxyHandler extends ProxyHandler {
   public SMapProxyHandler() {
   }
   
-  public Object get(SMap target, String property, ProxyHandler reciever) {
+  public Object get(SMap target, String property, ProxyHandler reciever) throws SException {
     Object node = target.get(property);
 
     if (node instanceof HasJsProxy) {
@@ -36,7 +37,7 @@ public class SMapProxyHandler extends ProxyHandler {
     }
   }
 
-  public boolean set(SMap target, String property, Object value, ProxyHandler reciever) throws IllegalCastException {        
+  public boolean set(SMap target, String property, Object value, ProxyHandler reciever) throws SException {        
     target.put(property, SUtils.castToPrimitive(value));
     return true;
   }

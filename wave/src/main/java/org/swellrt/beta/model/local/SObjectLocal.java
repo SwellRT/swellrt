@@ -4,6 +4,7 @@ package org.swellrt.beta.model.local;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -32,36 +33,36 @@ public class SObjectLocal implements SObject {
   }
   
   @Override
-  public Object get(String key) {
+  public Object get(String key) throws SException {
     return delegateMap.get(key);
   }
 
   @JsIgnore
   @Override
-  public SMap put(String key, SNode value) {
+  public SMap put(String key, SNode value) throws SException {
     delegateMap.put(key, value);
     return this;
   }
 
   @Override
-  public SMap put(String key, Object object) throws IllegalCastException {
+  public SMap put(String key, Object object) throws SException {
     delegateMap.put(key, object);
     return this;
   }
 
   @Override
-  public void remove(String key) {
+  public void remove(String key) throws SException {
     delegateMap.remove(key);
   }
 
   
   @Override
-  public boolean has(String key) {
+  public boolean has(String key) throws SException {
     return delegateMap.has(key);
   }
 
   @Override
-  public String[] keys() {
+  public String[] keys() throws SException {
     return delegateMap.keys();
   }
 
@@ -93,12 +94,12 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public SNode getNode(String key) {
+  public SNode getNode(String key) throws SException  {
     return delegateMap.getNode(key);
   }
 
   @Override
-  public void clear() {
+  public void clear() throws SException {
     delegateMap.clear();
   }
 
@@ -121,6 +122,5 @@ public class SObjectLocal implements SObject {
   public String _debug_getBlip(String blipId) {
    return null;
   }
-  
   
 }

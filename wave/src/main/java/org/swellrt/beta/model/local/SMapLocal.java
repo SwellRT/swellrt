@@ -70,7 +70,8 @@ public class SMapLocal implements SMap, HasJsProxy {
 
   @Override
   public SNode getNode(String key) {
-    return map.get(key);
+    SNode n = map.get(key);
+    return n;
   }
 
   @Override

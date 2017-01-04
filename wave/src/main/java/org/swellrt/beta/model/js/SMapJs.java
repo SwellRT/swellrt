@@ -192,5 +192,4 @@ public class SMapJs implements SMap {
 	public Object asNative() {
 		return jso;
 	}
-
 }

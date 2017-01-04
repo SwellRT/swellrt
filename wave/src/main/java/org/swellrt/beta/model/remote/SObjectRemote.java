@@ -1,13 +1,16 @@
 package org.swellrt.beta.model.remote;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.swellrt.beta.client.WaveStatus;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.IllegalCastException;
+import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
+import org.swellrt.beta.model.SObservable;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
@@ -88,9 +91,8 @@ import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class SObjectRemote implements SObject, SNodeRemote {
-
-  
+public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObservable {
+   
   /**
    * A serializer/deserializer of CNode objects to/from a Wave concurrent map
    */
@@ -152,6 +154,8 @@ public class SObjectRemote implements SObject, SNodeRemote {
   private SubstrateMapSerializer mapSerializer;   
   private SMapRemote root;
   
+  private Map<SubstrateId, SNodeRemote> nodeStore = new HashMap<SubstrateId, SNodeRemote>();
+  
   /**
    * Get a MutableCObject instance with a substrate Wave.
    * Initialize the Wave accordingly.
@@ -194,7 +198,8 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * Initialization tasks not suitable for constructors.
    */
   private void init() {
-    root = loadMap(SubstrateId.ofMap(masterWavelet.getId(), ROOT_SUBSTRATE_ID));
+    root = loadMap(SubstrateId.ofMap(masterWavelet.getId(), ROOT_SUBSTRATE_ID));   
+    root.attach(SNodeRemoteContainer.Void);
   }
   
   /**
@@ -205,7 +210,7 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * <p>
    * This method should be called before doing any operation in the object.
    */
-  protected void checkStatus() throws SException {
+  protected void check() throws SException {
 	  if (waveStatus != null)
 		  waveStatus.check();
   }
@@ -221,7 +226,7 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * @param newContainer
    * @return
    */
-  protected SNodeRemote asRemote(SNode node, boolean newContainer) {
+  protected SNodeRemote asRemote(SNode node, SNodeRemoteContainer parentNode, boolean newContainer)  throws SException {
 
     if (node instanceof SNodeRemote)
       return (SNodeRemote) node;
@@ -232,15 +237,27 @@ public class SObjectRemote implements SObject, SNodeRemote {
       containerWavelet = createContainerWavelet();
     }
 
-    return asRemote(node, containerWavelet);
+    return asRemote(node, parentNode, containerWavelet);
   }
   
   /**
    * Unit test only.
    * TODO fix visibility
    */
-  public void clearCache() {
+  @Override
+  protected void clearCache() {
     root.clearCache();
+  }
+  
+  @Override
+  public void addHandler(SHandler h) {
+    root.addHandler(h);
+  }
+  
+
+  @Override
+  public void deleteHandler(SHandler h) {
+    root.deleteHandler(h);
   }
   
   /**
@@ -250,15 +267,16 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * @param containerWavelet
    * @return
    */
-  private SNodeRemote asRemote(SNode node, ObservableWavelet containerWavelet) {
+  private SNodeRemote asRemote(SNode node, SNodeRemoteContainer parentNode, ObservableWavelet containerWavelet)  throws SException {
         
     if (node instanceof SMap) {
       SMap map = (SMap) node;
       SMapRemote remoteMap = loadMap(SubstrateId.createForMap(containerWavelet.getId(), idGenerator));
+      remoteMap.attach(parentNode);
       
       for (String k: map.keys()) {
         SNode v = map.getNode(k);
-        remoteMap.put(k, asRemote(v, containerWavelet));
+        remoteMap.put(k, asRemote(v, remoteMap, containerWavelet));
       }
       
       return remoteMap;
@@ -286,8 +304,15 @@ public class SObjectRemote implements SObject, SNodeRemote {
    * @return
    */
   private SMapRemote loadMap(SubstrateId substrateId) {
+
     Preconditions.checkArgument(substrateId.isMap(), "Expected a map susbtrate id");
     
+    // Reuse instances
+    if (nodeStore.containsKey(substrateId)) {
+      return (SMapRemote) nodeStore.get(substrateId);    
+    }
+
+    // Create new instance
     ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());
     ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());    
     DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
@@ -308,7 +333,10 @@ public class SObjectRemote implements SObject, SNodeRemote {
             MAP_ENTRY_VALUE_ATTR);
 
     
-    return SMapRemote.create(this, substrateId, map);     
+    SMapRemote n = SMapRemote.create(this, substrateId, map);
+    nodeStore.put(substrateId, n);
+    
+    return n;
   }
   
   @Override
@@ -349,42 +377,42 @@ public class SObjectRemote implements SObject, SNodeRemote {
   
 
   @Override
-  public Object get(String key) {
+  public Object get(String key) throws SException {
     return root.get(key);
   }
 
   @Override
-  public SNode getNode(String key) {
+  public SNode getNode(String key) throws SException {
     return root.getNode(key);
   }
 
   @Override
-  public SMap put(String key, SNode value) {
+  public SMap put(String key, SNode value) throws SException {
     return root.put(key, value);
   }
 
   @Override
-  public SMap put(String key, Object object) throws IllegalCastException {
+  public SMap put(String key, Object object) throws SException {
     return root.put(key, object);
   }
 
   @Override
-  public void remove(String key) {
+  public void remove(String key) throws SException {
     root.remove(key);
   }
 
   @Override
-  public boolean has(String key) {
+  public boolean has(String key) throws SException {
     return root.has(key);
   }
 
   @Override
-  public String[] keys() {
+  public String[] keys() throws SException {
     return root.keys();
   }
 
   @Override
-  public void clear() {
+  public void clear() throws SException {
     root.clear();
   }
 
@@ -410,5 +438,5 @@ public class SObjectRemote implements SObject, SNodeRemote {
 	
 		return null;
 	}
-
+	
 }

@@ -39,6 +39,13 @@ public class SException extends Exception {
   @JsIgnore
   public static final int MISSING_PARAMETERS = 101;
   
+  @JsIgnore
+  public static final int NOT_ATTACHED_NODE = 110;
+  
+  @JsIgnore
+  public static final int ILLEGAL_CAST = 111;
+
+  
   private final int code;
 
   @JsIgnore

@@ -1,9 +1,14 @@
 package org.swellrt.beta.model;
 
-@SuppressWarnings("serial")
-public class IllegalCastException extends Exception {
+import org.swellrt.beta.common.SException;
 
-  public IllegalCastException(String msg) {
-    super(msg);
+@SuppressWarnings("serial")
+public class IllegalCastException extends SException {
+
+  public IllegalCastException(String m) {
+    super(ILLEGAL_CAST,null,m);
+    
   }
+
+  
 }

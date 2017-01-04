@@ -1,6 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.model.remote.SNodeRemote;
+import org.swellrt.beta.model.remote.SNodeRemoteContainer;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -171,6 +172,11 @@ public class SPrimitive implements SNode, SNodeRemote {
       return jsoValue;
 
     return null;
+  }
+  
+  @Override
+  public String toString() {
+    return "Primitive Value ["+ serialize() + "]";    
   }
 
 }
