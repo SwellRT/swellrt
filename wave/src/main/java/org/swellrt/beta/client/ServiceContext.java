@@ -93,7 +93,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   
   private final String httpAddress;
   private final String websocketAddress;  
-  private final WaveWebSocketClient websocketClient;
+  private WaveWebSocketClient websocketClient;
   private SettableFuture<RemoteViewServiceMultiplexer> serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create(); 
 
   
@@ -102,7 +102,6 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     this.sessionManager = sessionManager; 
     this.httpAddress = httpAddress;
     this.websocketAddress = getWebsocketAddress(httpAddress);
-    this.websocketClient = new WaveWebSocketClient(websocketAddress, SWELL_DATAMODEL_VERSION);
   }
  
   
@@ -166,9 +165,14 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     for (WaveContext wc: waveRegistry.values())
       wc.close();
     
-    if (websocketClient.getState() == WaveWebSocketClient.ConnectState.CONNECTED  ||
-        websocketClient.getState() == WaveWebSocketClient.ConnectState.CONNECTING)
+    waveRegistry.clear();
+    
+    if (websocketClient != null &&
+        (websocketClient.getState() == WaveWebSocketClient.ConnectState.CONNECTED  ||
+        websocketClient.getState() == WaveWebSocketClient.ConnectState.CONNECTING))
       websocketClient.disconnect(false);
+    
+    websocketClient = new WaveWebSocketClient(websocketAddress, SWELL_DATAMODEL_VERSION);
     
     serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create();
     

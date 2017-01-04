@@ -191,10 +191,11 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    */
   public void disconnect(boolean discardInFlightMessages) {
     setState(ConnectState.NEW);
-    socket.disconnect();
-    connectedAtLeastOnce = false;
+    socket.disconnect();    
+    connectedAtLeastOnce = false;    
     if (discardInFlightMessages) messages.clear();
-
+    statusListener = null;
+    callback = null;
   }
 
 
