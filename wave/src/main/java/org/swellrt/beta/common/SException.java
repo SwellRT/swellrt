@@ -32,19 +32,52 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swellrt")
 public class SException extends Exception {
   
+  // Codes from SException
+  
   /** a generic exception for REST operations */
-  @JsIgnore
   public static final int OPERATION_EXCEPTION = 100;
   
-  @JsIgnore
   public static final int MISSING_PARAMETERS = 101;
   
-  @JsIgnore
   public static final int NOT_ATTACHED_NODE = 110;
   
-  @JsIgnore
   public static final int ILLEGAL_CAST = 111;
 
+  // Codes from ResponseCode
+  
+  public static final int UNKNOWN = -1;
+
+  public static final int OK = 0;
+
+  public static final int BAD_REQUEST = 1;
+
+  public static final int INTERNAL_ERROR = 2;
+
+  public static final int NOT_AUTHORIZED = 3;
+
+  public static final int VERSION_ERROR = 4;
+
+  public static final int INVALID_OPERATION = 5;
+
+  public static final int SCHEMA_VIOLATION = 6;
+
+  public static final int SIZE_LIMIT_EXCEEDED = 7;
+
+  public static final int POLICY_VIOLATION = 8;
+
+  public static final int QUARANTINED = 9;
+
+  public static final int TOO_OLD = 10;
+  
+  public static final int NOT_LOGGED_IN = 11;
+  
+  public static final int WAVE_RETRIEVAL_ERROR = 12;
+  
+  public static final int WAVELET_RETRIEVAL_ERROR = 13;
+  
+  public static final int INVALID_ID = 14;
+
+  public static final int WEBSOCKET_ERROR = 15;
   
   private final int code;
 
