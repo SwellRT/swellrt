@@ -60,7 +60,7 @@ public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryP
 
       @Override
       public void onUncaughtException(Throwable e) {
-        // TODO Auto-generated method stub
+        GWT.log("Unexpected Exception", e);
 
       }
     });
