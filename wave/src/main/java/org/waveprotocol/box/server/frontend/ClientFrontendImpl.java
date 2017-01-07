@@ -111,9 +111,10 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       openListener.onFailure(new ChannelException(ResponseCode.INTERNAL_ERROR, "Known wavelets not supported", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
-
+    
+    boolean isNewWave = false;
     try {
-      waveletInfo.initialiseWave(waveId);
+      isNewWave = waveletInfo.initialiseWave(waveId);
     } catch (WaveServerException e) {
       LOG.severe("Wave server failed lookup for " + waveId, e);      
       openListener.onFailure(new ChannelException(ResponseCode.WAVE_RETRIEVAL_ERROR, "Wave server failed to look up wave", null, Recoverable.NOT_RECOVERABLE, waveId, null));
@@ -188,7 +189,7 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     // The condition is place here, after updates for dummyWavelet and marker
     // to keep protocol as compatible as possible 
     
-    if (waveletIds.isEmpty()) {
+    if (!isNewWave && waveletIds.isEmpty()) {
       LOG.warning("No visible wavelets for " + loggedInUser + ", response failure");      
       openListener.onFailure(new ChannelException(ResponseCode.NOT_AUTHORIZED, "No visible wavelets", null, Recoverable.NOT_RECOVERABLE, waveId, null));
         return;
