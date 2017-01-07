@@ -462,7 +462,6 @@ public class ServerRpcProvider {
                           || !serviceMethod.method.getOptions().getExtension(Rpc.isStreamingRpc)) {
                         // This RPC is over - remove it from the map.
                         boolean failed = message instanceof Rpc.RpcFinished && ((Rpc.RpcFinished) message).getFailed();
-                        LOG.info("RPC " + sequenceNo + " is now finished, failed = " + failed);
                         if (failed) {
                           LOG.fine("error = " + ((Rpc.RpcFinished) message).getErrorText());
                         }
