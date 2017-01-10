@@ -140,15 +140,22 @@ public class WaveletInfo {
 
   /**
    * Initializes front-end information from the wave store, if necessary.
+   * @returns true iff the wave is new = if it doesn't have any wavelet
    */
-  public void initialiseWave(WaveId waveId) throws WaveServerException {
+  public boolean initialiseWave(WaveId waveId) throws WaveServerException {
+    
+    boolean isNew = false; 
+    
     if(LOG.isFineLoggable()) {
       LOG.fine("frontend initialiseWave(" + waveId +")");
     }
 
     try {
-      if (perWavelet.getIfPresent(waveId) == null) {
-        LoadingCache<WaveletId, PerWavelet> wavelets = perWavelet.get(waveId);
+      
+      LoadingCache<WaveletId, PerWavelet> wavelets = perWavelet.getIfPresent(waveId);
+      
+      if (wavelets == null) {
+        wavelets = perWavelet.get(waveId);
         for (WaveletId waveletId : waveletProvider.getWaveletIds(waveId)) {
           ReadableWaveletData wavelet =
               waveletProvider.getSnapshot(WaveletName.of(waveId, waveletId)).snapshot;
@@ -156,16 +163,23 @@ public class WaveletInfo {
           PerWavelet waveletInfo = wavelets.get(waveletId);
           synchronized (waveletInfo) {
             waveletInfo.currentVersion = wavelet.getHashedVersion();
+            LOG.info("frontend wavelet " + waveletId + " @" + wavelet.getHashedVersion().getVersion());
             if(LOG.isFineLoggable()) {
               LOG.fine("frontend wavelet " + waveletId + " @" + wavelet.getHashedVersion().getVersion());
             }
             waveletInfo.explicitParticipants.addAll(wavelet.getParticipants());
           }
         }
-      }
+      } 
+      
+      if (wavelets.size() == 0)
+        isNew = true;
+      
     } catch (ExecutionException ex) {
       throw new RuntimeException(ex);
     }
+    
+    return isNew;
   }
 
   /**
