@@ -1,14 +1,13 @@
 package org.swellrt.beta.client;
 
-import java.net.URLDecoder;
-
 import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
 
-import com.gargoylesoftware.htmlunit.javascript.host.URL;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsType;
 
@@ -22,15 +21,25 @@ import jsinterop.annotations.JsType;
 public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryPoint {
   
   private static ServiceContext context; 
+  private static ServiceFrontend callbackableFrontend;
+  private static PromisableServiceFrontend promisableFrontend;
   
-  @JsMethod(name = "getWithCallback")
-  public static ServiceFrontend getStandardInstance() {
-    return ServiceFrontend.create(context);
+  @JsMethod(name = "getCallbackable")
+  public static ServiceFrontend getCallbackableInstance() {
+    
+    if (callbackableFrontend == null)
+      callbackableFrontend = ServiceFrontend.create(context);
+    
+    return callbackableFrontend;
   }
   
   @JsMethod(name = "get")
   public static PromisableServiceFrontend getPromisableInstance() {
-    return new PromisableServiceFrontend(getStandardInstance());
+    
+    if (promisableFrontend == null)
+      promisableFrontend = new PromisableServiceFrontend(getCallbackableInstance());
+    
+    return promisableFrontend;
   }
   
   
@@ -53,6 +62,27 @@ public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryP
       return url;
   }
   
+  /**
+   * Client apps can register handlers to be notified
+   * when SwellRT library is fully functional.
+   * <p>
+   * See "swellrt.js" file for details.
+   */
+  private static native void procOnReadyHandlers(PromisableServiceFrontend sf) /*-{
+    
+    if (!$wnd.swellrt) {
+      console.log("swellrt object not ready yet! wtf?")
+    }
+      
+    for(var i=0; i < $wnd._lh.length; i++) {
+      $wnd._lh[i](sf);
+    }
+
+    delete $wnd._lh;
+    
+  }-*/;
+  
+  @JsIgnore
   @Override
   public void onModuleLoad() {    
     this.context = new ServiceContext(SessionManagerJs.create(), getServerURL());  	
@@ -64,6 +94,17 @@ public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryP
 
       }
     });
+    
+    // Notify the host page that client is already loaded
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        
+        procOnReadyHandlers(getPromisableInstance());
+        
+      }
+    });
+    
   }
 
 }
