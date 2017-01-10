@@ -1,5 +1,8 @@
 package org.swellrt.beta.model;
 
+import jsinterop.annotations.JsFunction;
+
+@JsFunction
 public interface SHandler {
 
   /** 
@@ -7,6 +10,6 @@ public interface SHandler {
    * @param e
    * @return
    */
-  public boolean onEvent(SEvent e);
+  public boolean exec(SEvent e);
   
 }

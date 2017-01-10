@@ -3,6 +3,7 @@ package org.swellrt.beta.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.operation.data.ProfileData;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SObjectRemote;
@@ -96,7 +97,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private WaveWebSocketClient websocketClient;
   private SettableFuture<RemoteViewServiceMultiplexer> serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create(); 
 
-  
+  private ServiceFrontend.ConnectionHandler connectionHandler;
   
   public ServiceContext(SessionManager sessionManager, String httpAddress) {
     this.sessionManager = sessionManager; 
@@ -104,6 +105,9 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     this.websocketAddress = getWebsocketAddress(httpAddress);
   }
  
+  protected void setConnectionHandler(ConnectionHandler h) {
+    this.connectionHandler = h;
+  }
   
   protected void setupIdGenerator() {
     final String seed = getRandomBase64(WAVE_ID_SEED_LENGTH);
@@ -283,6 +287,14 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     if (state.equals(ConnectState.ERROR)) {
       handleWebsocketError(e);      
     }
+    
+    SException se = null;
+    if (e != null)
+      se = new SException(ResponseCode.WEBSOCKET_ERROR.getValue(), e, "Websocket error");
+      
+    
+    if (connectionHandler != null)
+      connectionHandler.exec(state.toString(), se);
   }
   
   /**

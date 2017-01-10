@@ -26,7 +26,7 @@ public class SMapLocal implements SMap, HasJsProxy {
   public Object get(String key) {  
     SNode node = map.get(key);
     if (node instanceof SPrimitive)
-      return ((SPrimitive) node).getObject();
+      return ((SPrimitive) node).get();
     
     return node;
   }

@@ -16,7 +16,7 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
   };
   
   protected SNodeRemoteContainer parent = null;
-  protected boolean eventsEnabled = true;
+  protected boolean eventsEnabled = false;
   
   private final CopyOnWriteSet<SHandler> eventHandlerSet = CopyOnWriteSet.<SHandler>createHashSet();
   
@@ -26,6 +26,8 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
    */
   protected void attach(SNodeRemoteContainer parent) {
     this.parent = parent;
+    this.eventHandlerSet.clear();
+    this.eventsEnabled = true;
   }
   
   /** 
@@ -33,6 +35,8 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
    * This is a recursive in-depth process. 
    */
   protected void deattach() {
+    this.eventsEnabled = false;
+    this.eventHandlerSet.clear();
     this.parent  = null;
   }
     
@@ -44,13 +48,13 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
   
   
   @Override
-  public void addHandler(SHandler h) {
+  public void listen(SHandler h) {
     eventHandlerSet.add(h);
   }
   
 
   @Override
-  public void deleteHandler(SHandler h) {
+  public void unlisten(SHandler h) {
     eventHandlerSet.remove(h);
   }
   
@@ -63,7 +67,7 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
     boolean propagate = true;
     
     for (SHandler h: eventHandlerSet) {
-      propagate = propagate && h.onEvent(e);
+      propagate = propagate && h.exec(e);
     }
 
     if (propagate && this.parent != null && !this.parent.equals(Void)) {

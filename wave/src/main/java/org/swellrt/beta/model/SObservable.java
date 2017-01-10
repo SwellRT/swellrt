@@ -7,8 +7,8 @@ package org.swellrt.beta.model;
  */
 public interface SObservable {
   
-  public void addHandler(SHandler h);
+  public void listen(SHandler h);
   
-  public void deleteHandler(SHandler h);
+  public void unlisten(SHandler h);
   
 }

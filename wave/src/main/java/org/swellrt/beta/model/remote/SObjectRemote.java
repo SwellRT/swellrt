@@ -12,6 +12,7 @@ import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SObservable;
 import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.remote.wave.DocumentBasedBasicRMap;
@@ -154,7 +155,9 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   private SubstrateMapSerializer mapSerializer;   
   private SMapRemote root;
   
-  private Map<SubstrateId, SNodeRemote> nodeStore = new HashMap<SubstrateId, SNodeRemote>();
+  private final Map<SubstrateId, SNodeRemote> nodeStore = new HashMap<SubstrateId, SNodeRemote>();
+  
+  private SObject.StatusHandler statusHandler = null;
   
   /**
    * Get a MutableCObject instance with a substrate Wave.
@@ -250,14 +253,14 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   }
   
   @Override
-  public void addHandler(SHandler h) {
-    root.addHandler(h);
+  public void listen(SHandler h) {
+    root.listen(h);
   }
   
 
   @Override
-  public void deleteHandler(SHandler h) {
-    root.deleteHandler(h);
+  public void unlisten(SHandler h) {
+    root.unlisten(h);
   }
   
   /**
@@ -369,6 +372,15 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     return new Proxy(root, new SMapProxyHandler());
   }
   
+  @Override
+  public void setStatusHandler(StatusHandler h) {
+    this.statusHandler = h;
+  }
+
+  public void onStatusEvent(SStatusEvent e) {
+    if (statusHandler != null)
+      statusHandler.exec(e);
+  }
   
   //
   // SMap interface
@@ -438,5 +450,20 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
 	
 		return null;
 	}
+
+  @Override
+  public void makePublic(boolean isPublic) {
+
+      try {
+        
+        if (isPublic)
+          addParticipant("@"+domain);
+        else
+          removeParticipant("@"+domain);
+        
+      } catch (InvalidParticipantAddress e) {
+
+      }
+  }
 	
 }

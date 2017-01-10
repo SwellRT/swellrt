@@ -8,9 +8,11 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
+@SuppressWarnings("unused")
 @JsType(namespace = "swellrt", name = "Primitive")
 public class SPrimitive implements SNode, SNodeRemote {
 
@@ -34,6 +36,15 @@ public class SPrimitive implements SNode, SNodeRemote {
   private final Boolean boolValue;
   private final JavaScriptObject jsoValue;
 
+  /** 
+   * the key associated with this value in its parent container
+   * if it is a map.
+   */
+  private String nameKey = null;
+  
+  /** the container node */
+  private SNode container = null;
+  
   /**
    * Deserialize a SPrimitive
    * @param s the serialized representation of the primitive value. 
@@ -149,12 +160,12 @@ public class SPrimitive implements SNode, SNodeRemote {
     jsoValue = value;
   }
 
- 
+  @JsProperty
   public int getType() {
     return type;
   }
 
-  public Object getObject() {
+  public Object get() {
 
     if (type == TYPE_STRING)
       return stringValue;
@@ -176,7 +187,27 @@ public class SPrimitive implements SNode, SNodeRemote {
   
   @Override
   public String toString() {
-    return "Primitive Value ["+ serialize() + "]";    
+    return "Primitive Value ["+ serialize()+"]";    
   }
 
+  @JsIgnore
+  public void setNameKey(String nameKey) {
+    this.nameKey = nameKey;
+  }
+  
+  @JsIgnore
+  public String getNameKey() {
+    return this.nameKey;
+  }
+
+  @JsIgnore
+  public SNode getContainer() {
+    return container;
+  }
+
+  @JsIgnore
+  public void setContainer(SNode container) {
+    this.container = container;
+  }
+  
 }

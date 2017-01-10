@@ -8,7 +8,12 @@ import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
+import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.remote.SNodeRemoteContainer;
 
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
@@ -16,7 +21,16 @@ import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt")
 public class ServiceFrontend {
+  
+  public static final String ANONYMOUS_USER_ID  = "_anonymous_";
 
+  /**
+   * 
+   */
+  @JsFunction
+  public interface ConnectionHandler {
+    void exec(String state, SException e);
+  }
 
   @JsIgnore
   public static ServiceFrontend create(ServiceContext context) {
@@ -70,5 +84,24 @@ public class ServiceFrontend {
     QueryOperation op = new QueryOperation(context);
     op.execute(options, callback);    
   }
+  
+  public void setConnectionHandler(ConnectionHandler h) {
+    context.setConnectionHandler(h);
+  }
+  
+  
+  public void listen(Object object, SHandler handler) {
     
+    if (handler == null)
+      return;
+    
+   
+    // As container
+    SNodeRemoteContainer nodeContainer = SUtils.asContainer(object);
+    
+    if (nodeContainer != null)
+      nodeContainer.listen(handler);
+    
+  }
+  
 }

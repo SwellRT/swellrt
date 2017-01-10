@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.js;
 
 import org.swellrt.beta.client.ServiceFrontend;
+import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.js.Promise.ConstructorParam;
 import org.swellrt.beta.client.js.Promise.FunctionParam;
 import org.swellrt.beta.client.operation.Operation.Callback;
@@ -12,6 +13,7 @@ import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SHandler;
 
 import jsinterop.annotations.JsType;
 
@@ -179,5 +181,12 @@ public class PromisableServiceFrontend {
 		});			
 	}
 
-	
+  public void setConnectionHandler(ConnectionHandler h) {
+    service.setConnectionHandler(h);
+  }
+  
+  public void listen(Object object, SHandler handler) {
+    service.listen(object, handler);
+  }
+  
 }

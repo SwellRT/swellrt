@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
@@ -121,6 +120,16 @@ public class SObjectLocal implements SObject {
   @Override
   public String _debug_getBlip(String blipId) {
    return null;
+  }
+
+  @Override
+  public void setStatusHandler(StatusHandler h) {
+    // Ignore for local objects    
+  }
+
+  @Override
+  public void makePublic(boolean isPublic) {
+    // Ignore for local objects    
   }
   
 }

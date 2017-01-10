@@ -1,8 +1,10 @@
 package org.swellrt.beta.client;
 
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.wave.transport.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.wave.transport.WaveLoader;
@@ -11,6 +13,7 @@ import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -115,11 +118,17 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
 	public void onFailure(ChannelException e) {
 	  this.lastException = e;
 		this.state = ERROR;
-		
+			
 		// If an exception occurs during stage loader (WaveLoader)
 		// it will reach here. Check the future so.
 		if (!this.sobjectFuture.isDone()) {	  
 		  this.sobjectFuture.setException(new SException(e));
+		} else {
+		  try {      
+		    this.sobjectFuture.get().onStatusEvent(new SStatusEvent(ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), new SException(e)));      
+		  } catch (InterruptedException | ExecutionException e1) {
+        throw new RuntimeException(e1);
+      }
 		}
 		
 		close();
@@ -128,13 +137,37 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
 
 	@Override
 	public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
-		// TODO Auto-generated method stub		
+	  if (this.sobjectFuture.isDone()) {
+	    try {      
+        this.sobjectFuture.get().onStatusEvent(
+            new SStatusEvent(
+                ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), 
+                unsavedDataInfo.inFlightSize(),
+                unsavedDataInfo.estimateUnacknowledgedSize(),
+                unsavedDataInfo.estimateUncommittedSize(),
+                unsavedDataInfo.laskAckVersion(),
+                unsavedDataInfo.lastCommitVersion()                
+                ));      
+      } catch (InterruptedException | ExecutionException e1) {
+        throw new RuntimeException(e1);
+      }  
+	  }
 	}
 
 
 	@Override
 	public void onClose(boolean everythingCommitted) {
-		// TODO Auto-generated method stub		
+    if (this.sobjectFuture.isDone()) {
+      try {      
+        this.sobjectFuture.get().onStatusEvent(
+            new SStatusEvent(
+                ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), 
+                everythingCommitted                
+                ));      
+      } catch (InterruptedException | ExecutionException e1) {
+        throw new RuntimeException(e1);
+      }  
+    }
 	}
 
 	public boolean isError() {

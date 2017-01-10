@@ -184,7 +184,7 @@ public class SObjectRemoteTest extends TestCase {
     SHandler eventHandler = new SHandler() {
 
       @Override
-      public boolean onEvent(SEvent e) { 
+      public boolean exec(SEvent e) { 
         recvEvents.add(e);
         synchronized (this) {
           if (recvEvents.size() == 3)
@@ -200,7 +200,7 @@ public class SObjectRemoteTest extends TestCase {
     populatePrimitiveValues(map);
     object.put("map", map);
     SMapRemote remoteMap =(SMapRemote) object.get("map");
-    remoteMap.addHandler(eventHandler);
+    remoteMap.listen(eventHandler);
     
     remoteMap.remove("k1");
     remoteMap.put("k2" , "This is new value");
@@ -220,16 +220,16 @@ public class SObjectRemoteTest extends TestCase {
     assertEquals(3, recvEvents.size());
     
     assertEquals(SEvent.REMOVED_VALUE, recvEvents.get(0).getType());
-    assertEquals("k1", recvEvents.get(0).getTargetKey());
-    assertEquals("A value for k1", (String) ((SPrimitive) recvEvents.get(0).getValue()).getObject());
+    assertEquals("k1", recvEvents.get(0).getKey());
+    assertEquals("A value for k1", (String) ((SPrimitive) recvEvents.get(0).getValue()).get());
     
     assertEquals(SEvent.ADDED_VALUE, recvEvents.get(1).getType());
-    assertEquals("k2", recvEvents.get(1).getTargetKey());
-    assertEquals("This is new value", (String) ((SPrimitive) recvEvents.get(1).getValue()).getObject());
+    assertEquals("k2", recvEvents.get(1).getKey());
+    assertEquals("This is new value", (String) ((SPrimitive) recvEvents.get(1).getValue()).get());
     
     assertEquals(SEvent.UPDATED_VALUE, recvEvents.get(2).getType());
-    assertEquals("k0", recvEvents.get(2).getTargetKey());
-    assertEquals("This is updated value", (String) ((SPrimitive) recvEvents.get(2).getValue()).getObject());
+    assertEquals("k0", recvEvents.get(2).getKey());
+    assertEquals("This is updated value", (String) ((SPrimitive) recvEvents.get(2).getValue()).get());
   }
   
   
@@ -255,27 +255,27 @@ public class SObjectRemoteTest extends TestCase {
         SEvent e = capturedEventsMapB.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForC", (String) ((SPrimitive) e.getValue()).getObject());
+        assertEquals("valueForC", (String) ((SPrimitive) e.getValue()).get());
         
         // Case 2) Generate event in B
         // captured by handlerB but not in handlerA and handlerRoot
         e = capturedEventsMapB.get(1);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForB", (String) ((SPrimitive) e.getValue()).getObject());
+        assertEquals("valueForB", (String) ((SPrimitive) e.getValue()).get());
         
         // Case 3) Generate event in A
         // captured by handlerA and rootHandler
         e = capturedEventsMapA.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).getObject()); 
+        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).get()); 
         assertEquals(1, capturedEventsMapA.size()); // Assert case 1 and case 2, "but" parts
         
         e = capturedEventsRoot.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).getObject());  
+        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).get());  
         assertEquals(1, capturedEventsRoot.size()); // Assert case 1 and case 2, "but" parts
         
       }
@@ -286,7 +286,7 @@ public class SObjectRemoteTest extends TestCase {
     SHandler handlerRoot = new SHandler() {
 
       @Override
-      public boolean onEvent(SEvent e) { 
+      public boolean exec(SEvent e) { 
         capturedEventsRoot.add(e);
         // System.out.println("handlerRoot: "+e.toString());
         cd.tick();
@@ -299,7 +299,7 @@ public class SObjectRemoteTest extends TestCase {
     SHandler handlerMapA = new SHandler() {
 
       @Override
-      public boolean onEvent(SEvent e) { 
+      public boolean exec(SEvent e) { 
         capturedEventsMapA.add(e);
         // System.out.println("handlerMapA: "+e.toString());
         cd.tick();
@@ -313,7 +313,7 @@ public class SObjectRemoteTest extends TestCase {
     SHandler handlerMapB = new SHandler() {
 
       @Override
-      public boolean onEvent(SEvent e) { 
+      public boolean exec(SEvent e) { 
         capturedEventsMapB.add(e);
         // System.out.println("handlerMapB: "+e.toString());
         cd.tick();
@@ -344,9 +344,9 @@ public class SObjectRemoteTest extends TestCase {
     SMapRemote remoteMapC = (SMapRemote) remoteMapB.put("mapC", new SMapLocal()).get("mapC");
     
     // Set handlers here to ignore events for initialization fields
-    remoteMapA.addHandler(handlerMapA);
-    remoteMapB.addHandler(handlerMapB);
-    object.addHandler(handlerRoot);
+    remoteMapA.listen(handlerMapA);
+    remoteMapB.listen(handlerMapB);
+    object.listen(handlerRoot);
     
     // Case 1) Generate event in C 
     // captured by handlerB but not in handlerA and handlerRoot

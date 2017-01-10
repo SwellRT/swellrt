@@ -2,11 +2,17 @@ package org.swellrt.beta.model;
 
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "Object")
 public interface SObject extends SMap {
     
+  @JsFunction
+  public interface StatusHandler {
+    void exec(SStatusEvent e);
+  }
+  
   /**
    * @return the global id of this object. Null for local objects.
    */
@@ -32,6 +38,11 @@ public interface SObject extends SMap {
    */
   public String[] getParticipants();
   
+  
+  /** Make this object to be public to any user */
+  public void makePublic(boolean isPublic);
+
+  
   /**
    * GWT only
    * <p>
@@ -39,6 +50,13 @@ public interface SObject extends SMap {
    * of the object
    */
   public Object asNative();
+  
+  /**
+   * Register a status handler for this object.
+   * 
+   * @param h
+   */
+  public void setStatusHandler(StatusHandler h);
   
   /**
    * Debug only. Return list of blips.

@@ -99,9 +99,17 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     
     if (!cache.containsKey(key)) {
       node = map.get(key);
+      
+      if (node instanceof SPrimitive) {
+        ((SPrimitive) node).setNameKey(key);
+        ((SPrimitive) node).setContainer(this);
+      }
+      
       if (node instanceof SNodeRemoteContainer)
        ((SNodeRemoteContainer) node).attach(this); // lazily set parent
+      
       cache.put(key, node);
+    
     } else {
       node = cache.get(key);
     }
@@ -118,7 +126,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       return null;
         
     if (node instanceof SPrimitive)
-      return ((SPrimitive) node).getObject();
+      return ((SPrimitive) node).get();
     
     return node;
   }
@@ -157,6 +165,12 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     if (!map.keySet().contains(key))
       return;
     
+    SNodeRemote nr = map.get(key);
+    if (nr instanceof SNodeRemoteContainer) {
+      SNodeRemoteContainer nrc = (SNodeRemoteContainer) nr;
+      nrc.deattach();
+    }   
+    // TODO delete from SObjectRemote.nodeStore
     map.remove(key);
     cache.remove(key);
   }
@@ -209,12 +223,14 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
        // on added
        } else if (oldValue == null) {
          eventType = SEvent.ADDED_VALUE;
-         eventValue = getNode(key); // ensure attach the node       
+         // ensure attach the node, set keyname       
+         eventValue = getNode(key); 
          
        // on updated  
        } else {
-         eventType = SEvent.UPDATED_VALUE;         
-         eventValue = getNode(key); // ensure attach the node
+         eventType = SEvent.UPDATED_VALUE;
+         // ensure attach the node, set keyname
+         eventValue = getNode(key);
          
        }
       
