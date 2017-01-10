@@ -1,5 +1,10 @@
 package org.swellrt.beta.model;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
+@JsType(namespace = "swellrt")
 public class SEvent {
   
   public static final int ADDED_VALUE = 11;
@@ -17,6 +22,7 @@ public class SEvent {
   /** The actual value, added, removed or updated */
   private final SNode value;
 
+  @JsIgnore
   public SEvent(int type, SNode target, String targetKey, SNode value) {
     super();
     this.type = type;
@@ -25,18 +31,22 @@ public class SEvent {
     this.value = value;
   }
 
+  @JsProperty
   public int getType() {
     return type;
   }
 
+  @JsProperty
   public SNode getTarget() {
     return target;
   }
 
-  public String getTargetKey() {
+  @JsProperty
+  public String getKey() {
     return targetKey;
   }
 
+  @JsProperty
   public SNode getValue() {
     return value;
   }
