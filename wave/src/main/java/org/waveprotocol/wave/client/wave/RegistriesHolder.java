@@ -30,6 +30,7 @@ import org.waveprotocol.wave.model.conversation.Blips;
  * Defines the base handler set for documents in undercurrent.
  *
  */
+@Deprecated
 public final class RegistriesHolder {
 
   private static final Registries REGISTRIES = Editor.ROOT_REGISTRIES;

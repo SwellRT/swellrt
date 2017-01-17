@@ -1402,7 +1402,7 @@ public class EditorImpl extends LogicalPanel.Impl implements
   /**
    * Constructor
    */
-  protected EditorImpl(boolean ownsDocument, Element div) {
+  public EditorImpl(boolean ownsDocument, Element div) {
     this.ownsDocument = ownsDocument;
     this.div = div;
     setElement(div);

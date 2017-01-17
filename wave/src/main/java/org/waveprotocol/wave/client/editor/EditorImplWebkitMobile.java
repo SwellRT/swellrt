@@ -29,7 +29,7 @@ import com.google.gwt.dom.client.Element;
  */
 public class EditorImplWebkitMobile extends EditorImpl {
 
-  protected EditorImplWebkitMobile(boolean ownsDocument, Element e) {
+  public EditorImplWebkitMobile(boolean ownsDocument, Element e) {
     super(ownsDocument, e);
   }
 
