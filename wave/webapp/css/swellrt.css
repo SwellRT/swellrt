@@ -1,0 +1,47 @@
+/*
+* CSS styles for SwellRT static html pages
+* Author: pablojan@gmail.com (Pablo Ojanguren)
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Varela+Round');
+@import url('https://fonts.googleapis.com/css?family=Overpass+Mono');
+
+.logo {
+ width: 120px;
+}
+
+.page-header {
+ margin-top: 20px;
+ margin-bottom: 20px;
+ padding-left: 25px
+ padding-bottom: 6px;
+}
+
+.title {
+ margin-top: 8px;
+ font-family: 'Varela Round', sans-serif;
+ font-size: 20px;
+ font-weight: bold;
+ color: darkgrey;
+}
+
+.text-swellrt {
+ font-family: 'Varela Round', sans-serif;
+ font-size: 20px;
+}
+
+.text-rt {
+
+ color: #2a6a8f;
+ font-weight: normal;
+}
+
+.text-swell {
+ color: #449fc2;
+ font-weight: bold;
+}
+
+.net-status {
+ margin-left: 40px;
+ float:right;
+}

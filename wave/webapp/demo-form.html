@@ -1,0 +1,253 @@
+<!--
+  SwellRT Form demo
+  Author: Pablo Ojanguren (pablojan@gmail.com)
+
+  This demo shows main features of SwellRT API, in particular how to use
+  a collaborative object to share and update forms in real time across
+  different clients.
+
+  Important objects are exposed globally to be available from browser
+  debug console.
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SwellRT, Form Demo</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/swellrt.css">
+  <style type="text/css">
+
+
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container-fluid">
+
+    <div class="page-header">
+      <h4>
+        <span class="text-swellrt">
+          <span class="text-swell">Swell</span><span class="text-rt">RT</span>
+        </span>
+        <span class="title">Form Demo</span><span class="net-status" id="netStatus"></span>
+      </h4>
+    </div>
+
+    <div class="row">
+      <div class="col-md-offset-3 col-md-6 col-xs-offset-1 col-xs-10">
+
+        <form class="form-horizontal">
+          <div class="form-group">
+            <label for="inputName">Name</label>
+            <input type="text" class="form-control" id="inputName" placeholder="Name">
+          </div>
+          <div class="form-group">
+            <label for="inputAddress">Address</label>
+            <input type="text" class="form-control" id="inputAddress" placeholder="Address">
+          </div>
+          <div class="form-group">
+            <label for="inputAge">Age</label>
+            <input type="number" class="form-control" id="inputAge" placeholder="Age">
+          </div>
+          <div class="checkbox">
+            <label>
+              <input id="inputCheck" type="checkbox"> Check me out
+            </label>
+          </div>
+          <!--
+          <div class="form-group">
+          <label for="exampleInputFile">File input</label>
+          <input type="file" id="exampleInputFile">
+          <p class="help-block">Example block-level help text here.</p>
+          </div>
+          -->
+          <br/>
+          <button id="btnSubmit" type="button" class="btn btn-default">Save changes</button>
+          <br/><br/>
+          <div class="alert alert-info" role="alert">
+            Current Version: <span id="version">none</span><br />
+            Timestamp: <span id="timestamp">none</span>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+
+</div><!-- container -->
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="/swellrt-beta.js"></script>
+
+  <script>
+
+  var api;
+
+  swellrt.onReady(function(service) {
+    window.service;
+
+    // Put on eye on live commucation turbulences
+    service.addConnectionHandler(connectionHandler);
+
+    service.login({
+      id : "_anonymous_",
+      password : ""
+    })
+    .then(r=>{
+      return service.open({
+        id : "local.net/demo-form-1"
+      });
+    })
+    .then(r => {
+
+      controller = r.controller;
+      object = controller.asNative();
+
+      var lastVersion;
+
+      // Initialize data
+      if (!object.form) {
+        // This syntax create a single object
+        // associated with property 'form'.
+        // Changes in form.* are not captured,
+        // instead you should replace whole form's
+        // value.
+        object.form = {
+          name: "",
+          address : "",
+          age : 0,
+          check : false,
+          timestamp : "",
+          version : 0
+        };
+
+        // Make public after initialization
+        controller.makePublic(true);
+        lastVersion = 0;
+
+      } else {
+        // Show current data
+        populateFormData(object.form);
+        showVersion(object.form.version, object.form.timestamp);
+        lastVersion = object.form.version;
+      }
+
+      // Listen updates in the form property
+      service.listen(object, function(event) {
+
+        // Note: this hanlder is invoked
+        // both from local or remote changes.
+
+        if (!event) return;
+
+        if (event.key == "form" &&
+        event.type == swellrt.SEvent.UPDATED_VALUE) {
+
+          var formData = event.value.get();
+
+          if (lastVersion != formData.version) {
+            lastVersion = formData.version;
+            populateFormData(formData);
+            showVersion(formData.version, formData.timestamp);
+          }
+        }
+      });
+
+      // Save changes
+      submit = document.getElementById('btnSubmit');
+      submit.addEventListener("click", function(e) {
+
+        var data = getFormData();
+        data.timestamp = new Date();
+        lastVersion = data.version = lastVersion+1;
+
+        // update the object
+        object.form = data;
+        showVersion(data.version, data.timestamp);
+
+        return false;
+      }, true);
+
+    })
+    .catch(e=>{
+      _exception = e;
+      console.log(e);
+      window.alert("Error "+e);
+    });
+
+  });
+
+
+  function getFormData() {
+    return {
+      name : document.getElementById('inputName').value,
+      address : document.getElementById('inputAddress').value,
+      age : document.getElementById('inputAge').value,
+      check : document.getElementById('inputCheck').checked
+    };
+  }
+
+  function populateFormData(data) {
+      document.getElementById('inputName').value = data.name;
+      document.getElementById('inputAddress').value = data.address;
+      document.getElementById('inputAge').value = data.age;
+      document.getElementById('inputCheck').checked = data.check;
+  }
+
+  function showVersion(version, timestamp) {
+    document.getElementById('version').innerHTML = version;
+    document.getElementById('timestamp').innerHTML = timestamp;
+  }
+
+  // Utility functions
+
+  function objectHandler(s) {
+    var m = "";
+    if (s.type == 1) {
+      m += "error "+s.exception;
+    }
+    if (s.type == 2) {
+      if (s.uncommitted == s.unacknowledge == s.inflight == 0)
+        m += "all changes saved v="+s.lastCommittedVersion;
+      else
+        return;
+    }
+    if (s.type == 3) {
+      m += "closed";
+    }
+    console.log(m);
+  }
+
+
+  function connectionHandler(s, e) {
+    console.log(s);
+    var netStatus = document.getElementById("netStatus");
+
+    if (s == "CONNECTED")
+      netStatus.innerHTML = '<span class="label label-info">Connected</span>';
+
+    if (s == "CONNECTING")
+      netStatus.innerHTML = '<span class="label label-warning">Connecting</span>';
+
+    if (s == "DISCONNECTED")
+      netStatus.innerHTML = '<span class="label label-danger">Disconnected</span>';
+
+    if (s == "ERROR")
+      netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
+  }
+
+  </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,288 @@
+<!--
+  SwellRT Pad demo
+  Author: Pablo Ojanguren (pablojan@gmail.com)
+
+  This demo shows main features of SwellRT API, in particular how to use
+  the text editor component with local or collaborative text documents.
+
+  Important objects are exposed globally to be available from browser
+  debug console.
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SwellRT, Text Pad Demo</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/swellrt.css">
+  <style type="text/css">
+
+  .bg-canvas {
+    background-color: #b8beab;
+  }
+
+  .editor-canvas {
+    padding: 10px;
+    font-family: 'Overpass Mono', monospace;
+    font-size: 14px;
+    min-height: 450px;
+    background-color: #F2F2F2;
+  }
+
+  .btnInline {
+    margin-left: 14px;
+  }
+
+  .btn {
+    margin-right: 8px;
+  }
+
+  .document-list {
+
+  }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container-fluid">
+
+    <div class="page-header">
+      <h4>
+        <span class="text-swellrt">
+          <span class="text-swell">Swell</span><span class="text-rt">RT</span>
+        </span>
+        <span class="title">Text Pad Demo</span><span class="net-status" id="netStatus"></span>
+      </h4>
+    </div>
+
+    <div class="row">
+
+      <div class="col-md-offset-1 col-xs-4 col-md-3 document-list">
+        <h4>Documents</h4>
+
+        <ul id="documentList" class="list-group">
+          <!--
+          <li class="list-group-item">Cras justo odio
+            <span class="glyphicon glyphicon-pencil pull-right"</span>
+            <span class="glyphicon glyphicon-trash"</span>
+          </li>
+        -->
+        </ul>
+      </div>
+
+      <div class="col-md-7 col-xs-8">
+        <h4>Editor (<span id="title">New document</span>)
+         <input id="saveBtn" class="btn btn-default pull-right" type="submit" value="Save..." onclick="saveDocument()">
+         <input id="newBtn" class="btn btn-default pull-right" type="submit" value="New" onclick="newDocument()">
+         <input id="editBtn" class="btn btn-default pull-right" type="submit" value="Edit" onclick="editDocument()">
+       </h4>
+        <div id="editor" class="editor-canvas">
+        </div>
+      </div>
+    </div>
+
+  </div><!-- container -->
+
+
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="/swellrt-beta.js"></script>
+
+  <script>
+
+  swellrt.onReady(function(service) {
+    window.service = service;
+
+    // Put on eye on live commucation turbulences
+    service.addConnectionHandler(connectionHandler);
+
+    // We work with anonymous user
+    service.login({
+      id : "_anonymous_",
+      password : ""
+    })
+    .then(profile => {
+      // Open the collaborative object to store text documents
+      return service.open({ id : "local.net/demo-pad-list" });
+    })
+    .then(r => {
+
+      controller = r.controller;
+      object = controller.asNative();
+
+      if (!object.documents) {
+        // Create a live map
+        object.documents = swellrt.Map.create();
+        // Make public after initialization
+        controller.makePublic(true);
+      }
+
+      // Create editor instance, reusable
+      editor = swellrt.Editor.createWithId("editor");
+      // Configure editor with a empty document
+      configEditor();
+      // Show list of stored documents
+      renderDocumentList();
+      // Listen for changes in the set of documents
+      // update the displayed list.
+      object.documents.__controller.listen(function(e) {
+          renderDocumentList();
+      });
+
+    })
+    .catch(e=>{
+      _exception = e;
+      console.log(e);
+      window.alert("Error: "+e);
+    });
+
+  });
+
+  function renderDocumentList() {
+    var documentList = document.getElementById("documentList");
+    documentList.innerHTML = "";
+
+    var keys = object.__controller.get("documents").keys();
+    for (i = 0; i < keys.length; i++) {
+
+          var name = keys[i];
+
+          var li = document.createElement("li");
+          li.classList.add("list-group-item");
+          documentList.appendChild(li);
+
+          var title = document.createElement("span");
+          title.innerHTML = name;
+          li.appendChild(title);
+
+          var iconPencil = document.createElement("span");
+          iconPencil.className = "btnInline glyphicon glyphicon-pencil pull-right";
+          iconPencil.addEventListener("click", function(name) {
+              configEditor(name);
+          }.bind(this, name));
+          li.appendChild(iconPencil);
+
+          var iconTrash = document.createElement("span");
+          iconTrash.className = "btnInline glyphicon glyphicon-trash pull-right";
+          iconTrash.addEventListener("click", function(name) {
+              removeDocument(name);
+          }.bind(this, name));
+          li.appendChild(iconTrash);
+
+
+    }
+  }
+
+
+  function configEditor(name) {
+    // clean previous editor state
+    editor.clean();
+
+    if (!name) {
+      // create a new text
+      text = swellrt.Text.create("Write here your document. This text is not stored yet!");
+      isLocal = true;
+      configButton("saveBtn","Save...");
+    } else {
+      text = object.documents[name];
+      isLocal = false;
+      configButton("saveBtn","Save", true);
+    }
+
+    // Show the text in the editor,
+    // edit mode is disabled by default
+    editor.set(text);
+    // Show title for new document
+    configTitle(name);
+    // Show Edit button
+    configButton("editBtn", "Edit");
+  }
+
+
+  function editDocument() {
+    if (!editor.hasDocument()) return;
+
+    if (editor.isEditing()) {
+      editor.edit(false);
+      configButton("editBtn", "Edit");
+    } else {
+      editor.edit(true);
+      configButton("editBtn", "Done");
+    }
+  }
+
+  function saveDocument() {
+    if (!isLocal)
+      return;
+
+    var name = window.prompt("Please, set a name:","");
+
+    if (!name || name.length == 0)
+      return;
+
+    // Add text document to the collaborative object
+    // Be careful! text var is still the old reference
+    object.documents[name] = text;
+    // Set up the editor with the new text object
+    configEditor(name);
+  }
+
+  function removeDocument(name) {
+    object.documents.__controller.remove(name);
+
+  }
+
+
+  function newDocument() {
+      configEditor();
+  }
+
+  function configTitle(name) {
+    var t = document.getElementById("title");
+    if (!name)
+      t.innerHTML = "New document";
+    else
+      t.innerHTML = name;
+  }
+
+  function configButton(id, value, hide) {
+    var btn = document.getElementById(id);
+    if (value)
+        btn.value = value;
+
+    if (hide)
+      btn.classList.add("hidden");
+    else
+      btn.classList.remove("hidden");
+  }
+
+
+  function connectionHandler(s, e) {
+    console.log(s);
+    var netStatus = document.getElementById("netStatus");
+
+    if (s == "CONNECTED")
+      netStatus.innerHTML = '<span class="label label-info">Connected</span>';
+
+    if (s == "CONNECTING")
+      netStatus.innerHTML = '<span class="label label-warning">Connecting</span>';
+
+    if (s == "DISCONNECTED")
+      netStatus.innerHTML = '<span class="label label-danger">Disconnected</span>';
+
+    if (s == "ERROR")
+      netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
+  }
+
+  </script>
+
+
+</body>
+</html>

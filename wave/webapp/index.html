@@ -1,0 +1,169 @@
+<!--
+  SwellRT Server Landing Page
+  Author: Pablo Ojanguren (pablojan@gmail.com)
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SwellRT Server</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/swellrt.css">
+  <style type="text/css">
+
+
+
+  </style>
+
+</head>
+<body>
+
+  <div class="container-fluid">
+
+    <div class="page-header">
+      <h4>
+        <span class="text-swellrt">
+          <span class="text-swell">Swell</span><span class="text-rt">RT</span>
+        </span>
+        <span class="title">Server</span><span class="net-status" id="netStatus"></span>
+      </h4>
+    </div>
+
+
+      <div class="row hidden" id="topics-ok">
+        <div class="col-xs-offset-3 col-xs-6">
+          <div class="alert alert-success" role="alert"><strong>It works!</strong>, this server is running.</div>
+          <p>Now, you might be interested on...</p>
+          <ul>
+
+            <li>
+              <h4>Demo Apps</h4>
+              Check out SwellRT coding basis with <a href="demo-form.html">form demo</a> or <a href="demo-pad.html">text pad demo</a>.
+            </li>
+
+            <!--
+            <li>
+            <h4>Set up federation</h4>
+            Connect this server with a remote SwellRT instance
+          </li>
+        -->
+        <!--
+        <li>
+          <h4>Customize server configuration</h4>
+          Database connection, email settings, network interfaces, disable welcome page...
+        </li>
+        -->
+        <li>
+          <h4>Documentation</h4>
+          Check out the SwellRT official <a href="https://github.com/P2Pvalue/swellrt/wiki">documentation</a>
+        </li>
+
+        <li>
+          <h4>Get Support</h4>
+          Chat with us in our <a href="https://gitter.im/P2Pvalue/swellrt">Gitter channel</a>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+
+
+    <div class="row hidden" id="topics-error">
+      <div class="col-xs-offset-3 col-xs-6">
+        <div class="alert alert-danger" role="alert"><strong>Oops!</strong>, something went wrong, server is not working</div>
+
+          <ul>
+            <!--
+            <li>
+              <h4>Server configuration</h4>
+              <p>
+              Database connection, email settings, network interfaces...
+              </p>
+            </li>
+          -->
+            <li>
+              <h4>Get support</h4>
+              Visit our <a href="https://gitter.im/P2Pvalue/swellrt">Gitter channel</a> or check out <a href="https://github.com/P2Pvalue/swellrt/wiki">documentation</a>
+            </li>
+
+          </ul>
+      </div>
+    </div>
+
+  </div>
+
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="/swellrt-beta.js"></script>
+  <script>
+
+    swellrt.onReady(function(s) {
+
+      service = s;
+
+      // Put on eye on live commucation turbulences
+      service.addConnectionHandler(connectionHandler);
+
+      service.login({
+        id : "_anonymous_",
+        password : ""
+      })
+      .then(r=>{
+        return service.open({
+          id : "local.net/status-echo"
+        });
+      })
+      .then(r=>{
+
+        // throw "TESTING ERROR";
+
+        var controller = r.controller;
+        var object = controller.asNative();
+
+        if (!object.signal) {
+            object.signal = new Date();
+            controller.makePublic(true);
+        }
+        console.log("checking swellrt status signal -> "+object.signal);
+        object.signal = (new Date()).toString();
+        document.getElementById('topics-ok').classList.remove('hidden');
+        __status__ = true;
+      })
+      .catch(e=>{
+        console.log(e);
+        document.getElementById('topics-error').classList.remove('hidden');
+        __status__ = false;
+      });
+
+    });
+
+
+    function connectionHandler(s, e) {
+      console.log(s);
+      var netStatus = document.getElementById("netStatus");
+
+      if (s == "CONNECTED")
+        netStatus.innerHTML = '<span class="label label-info">Connected</span>';
+
+      if (s == "CONNECTING")
+        netStatus.innerHTML = '<span class="label label-warning">Connecting</span>';
+
+      if (s == "DISCONNECTED")
+        netStatus.innerHTML = '<span class="label label-danger">Disconnected</span>';
+
+      if (s == "ERROR")
+        netStatus.innerHTML = '<span class="label label-danger">Connection error</span>';
+    }
+
+  </script>
+
+
+
+  </body>
+
+  </html>
