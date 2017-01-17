@@ -108,15 +108,18 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     
     @Override
     public String toString(SNodeRemote x) {
-    
-      if (x instanceof SNodeRemote) {
-        SNodeRemote r = (SNodeRemote) x;  
-        return r.getSubstrateId().serialize();
-      }
-      
+
+      // Order matters check SPrimitive first 
       if (x instanceof SPrimitive) {        
         SPrimitive p = (SPrimitive) x;
         return p.serialize();
+      }
+      
+      if (x instanceof SNodeRemote) {
+        SNodeRemote r = (SNodeRemote) x;  
+        SubstrateId id = r.getSubstrateId();
+        if (id != null) 
+          return id.serialize();
       }
       
       return null;
