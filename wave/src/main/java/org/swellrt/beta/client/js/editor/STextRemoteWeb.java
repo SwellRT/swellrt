@@ -8,6 +8,7 @@ import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
+import org.waveprotocol.wave.model.document.operation.Nindo;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.dom.client.Element;
@@ -34,7 +35,7 @@ public class STextRemoteWeb extends STextRemote implements STextWeb {
   }
 
   @Override
-  public DocInitialization getOps() {
+  public DocInitialization getInitContent() {
     return textWeb.getContentDocument().getMutableDoc().toInitialization();
   }
 
@@ -71,8 +72,8 @@ public class STextRemoteWeb extends STextRemote implements STextWeb {
   }
   
   @Override
-  public void consumeOps(DocOp ops) {
-    textWeb.getContentDocument().consume(ops);   
+  public void setInitContent(DocInitialization ops) {
+    textWeb.getContentDocument().getMutableDoc().hackConsume(Nindo.fromDocOp(ops, true));   
   }
 
 }

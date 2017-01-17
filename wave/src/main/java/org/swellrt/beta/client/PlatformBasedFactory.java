@@ -41,7 +41,7 @@ public interface PlatformBasedFactory {
   public static void copySTextContent(SText source, SText target) {
     if (target instanceof STextWeb) {
       STextWeb targetWeb = (STextWeb) target;
-      targetWeb.getContentDocument().consume(source.getOps());
+      targetWeb.getContentDocument().consume(source.getInitContent());
     }
   }
   

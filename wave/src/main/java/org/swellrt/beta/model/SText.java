@@ -28,7 +28,7 @@ public interface SText extends SNode {
    * @return 
    */
   @JsIgnore  
-  public DocInitialization getOps();
+  public DocInitialization getInitContent();
   
   /**
    * Cosume raw operations
@@ -36,5 +36,5 @@ public interface SText extends SNode {
    * @param ops
    */
   @JsIgnore
-  public void consumeOps(DocOp ops);
+  public void setInitContent(DocInitialization ops);
 }

@@ -21,12 +21,12 @@ public class FakePlatformBasedFactory implements PlatformBasedFactory {
       }
 
       @Override
-      public DocInitialization getOps() {
+      public DocInitialization getInitContent() {
         return blip.getContent().toInitialization();
       }
 
       @Override
-      public void consumeOps(DocOp ops) {
+      public void setInitContent(DocInitialization ops) {
         throw new IllegalStateException("Not implemented");
       }
       

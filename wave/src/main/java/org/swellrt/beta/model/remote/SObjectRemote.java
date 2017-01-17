@@ -302,7 +302,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     
     } else if (node instanceof SText) {
       SText text = (SText) node;
-      STextRemote remoteText = loadText(SubstrateId.createForText(containerWavelet.getId(), idGenerator), text.getOps());
+      STextRemote remoteText = loadText(SubstrateId.createForText(containerWavelet.getId(), idGenerator), text.getInitContent());
       remoteText.attach(parentNode);
       
       return remoteText;
@@ -382,14 +382,13 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       blip = substrateContainer.createBlip(substrateId.getDocumentId());
       
       // TODO The docInit stuff seems not to work, check out LazyContentDocument 
-      // blip = substrateContainer.createBlip(substrateId.getDocumentId(), docInit);       
+      // blip = substrateContainer.createBlip(substrateId.getDocumentId(), docInit);
     }
       
     STextRemote textRemote = factory.getSTextRemote(this, substrateId, blip);
-    if (docInit != null) {
-      textRemote.consumeOps(docInit);
+    if (docInit != null) {         
+      textRemote.setInitContent(docInit);
     }
-    
     nodeStore.put(substrateId, textRemote);    
     return textRemote;
   }

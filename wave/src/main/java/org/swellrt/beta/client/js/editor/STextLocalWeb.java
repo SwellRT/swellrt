@@ -8,6 +8,7 @@ import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
+import org.waveprotocol.wave.model.document.operation.Nindo;
 import org.waveprotocol.wave.model.document.util.DocProviders;
 
 import com.google.gwt.dom.client.Element;
@@ -41,8 +42,8 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   }
 
   @Override
-  public DocInitialization getOps() {
-    return textWeb.getContentDocument().getMutableDoc().toInitialization();
+  public DocInitialization getInitContent() {
+    return textWeb.getContentDocument().asOperation();
   }
   
   @Override
@@ -76,8 +77,8 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   }
 
   @Override
-  public void consumeOps(DocOp ops) {
-    textWeb.getContentDocument().consume(ops);   
+  public void setInitContent(DocInitialization ops) {
+    textWeb.getContentDocument().getMutableDoc().hackConsume(Nindo.fromDocOp(ops, true));
   }
 
 
