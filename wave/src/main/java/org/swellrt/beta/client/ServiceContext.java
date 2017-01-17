@@ -187,7 +187,6 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     
     sessionManager.removeSession();
     
-    connectionHandlers.clear();
   }
   
   public boolean isSession() {
