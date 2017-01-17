@@ -37,6 +37,8 @@ import org.waveprotocol.box.common.comms.jso.ProtocolWaveletUpdateJsoImpl;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.client.events.Log;
+import org.waveprotocol.wave.client.scheduler.Scheduler;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.communication.gwt.JsonMessage;
 import org.waveprotocol.wave.communication.json.JsonException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -99,7 +101,11 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     }
   }
   
-  
+  private final Scheduler.Task reconnectTask = new Scheduler.Task() {
+    public void execute() {
+      reconnect();
+    }
+  };
 
 
   private WaveSocket socket;
@@ -169,7 +175,16 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   /**
    * Opens this connection.
    */
+  public void reconnect() {
+    setState(ConnectState.CONNECTING);
+    socket.connect(sessionId);
+  }
+  
+  /**
+   * Opens this connection.
+   */
   public void connect(String sessionId) {
+    this.sessionId = sessionId;
     setState(ConnectState.CONNECTING);
     socket.connect(sessionId);
   }
@@ -244,7 +259,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   @Override
   public void onDisconnect() {
-    setState(ConnectState.DISCONNECTED);
+    setState(ConnectState.CONNECTING);
+    SchedulerInstance.getLowPriorityTimer().scheduleDelayed(reconnectTask, 5000);
   }
 
 
