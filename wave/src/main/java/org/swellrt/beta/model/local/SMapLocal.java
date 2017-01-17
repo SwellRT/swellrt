@@ -39,7 +39,7 @@ public class SMapLocal implements SMap, HasJsProxy {
   
   @Override
   public SMap put(String key, Object object) throws IllegalCastException {
-    SNode node = SUtils.castToPrimitive(object);
+    SNode node = SUtils.castToSNode(object);
     return put(key, node);
   }
 

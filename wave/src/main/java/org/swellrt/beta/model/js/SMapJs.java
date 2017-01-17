@@ -66,7 +66,7 @@ public class SMapJs implements SMap {
 		
 		if (isPrimitive(object)) {			
 			// We assume primite JS values are transparently converted to Java primitives
-			return SUtils.castToPrimitive(object);			
+			return SUtils.castToSNode(object);			
 		} else if (isObject(object)) {
 			return new SMapJs(object);		
 		} else if (isArray(object)) {			

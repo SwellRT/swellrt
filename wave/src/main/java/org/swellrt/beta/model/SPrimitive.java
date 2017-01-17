@@ -1,7 +1,6 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.model.remote.SNodeRemote;
-import org.swellrt.beta.model.remote.SNodeRemoteContainer;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -12,9 +11,8 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
-@SuppressWarnings("unused")
 @JsType(namespace = "swellrt", name = "Primitive")
-public class SPrimitive implements SNode, SNodeRemote {
+public class SPrimitive extends SNodeRemote {
 
   private static final String SEPARATOR = ":";
   private static final String STRING_TYPE_PREFIX  = "s";
@@ -41,9 +39,6 @@ public class SPrimitive implements SNode, SNodeRemote {
    * if it is a map.
    */
   private String nameKey = null;
-  
-  /** the container node */
-  private SNode container = null;
   
   /**
    * Deserialize a SPrimitive
@@ -198,16 +193,6 @@ public class SPrimitive implements SNode, SNodeRemote {
   @JsIgnore
   public String getNameKey() {
     return this.nameKey;
-  }
-
-  @JsIgnore
-  public SNode getContainer() {
-    return container;
-  }
-
-  @JsIgnore
-  public void setContainer(SNode container) {
-    this.container = container;
   }
   
 }

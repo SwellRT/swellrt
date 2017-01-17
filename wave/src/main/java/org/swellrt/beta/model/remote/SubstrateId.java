@@ -27,6 +27,7 @@ public class SubstrateId {
 
   private static final String SEPARATOR = ":";
   private static final String MAP_TYPE_PREFIX = "m";
+  private static final String TEXT_TYPE_PREFIX = "t";
   private static final String TOKEN_SEPARATOR = "+";
 
   
@@ -42,6 +43,18 @@ public class SubstrateId {
     return MAP_TYPE_PREFIX.equals(id.type);
   }
   
+  public static boolean isText(SubstrateId id) {
+    Preconditions.checkArgument(id != null, "Null substrate id");
+    return TEXT_TYPE_PREFIX.equals(id.type);
+  }
+  
+  public static boolean isText(String documdentId) {
+    Preconditions.checkArgument(documdentId != null, "Null document id"); 
+    return documdentId.startsWith(TEXT_TYPE_PREFIX+TOKEN_SEPARATOR);
+  }
+
+  
+  
   private static SubstrateId of(String type, WaveletId containerId, String substrateId) {
     Preconditions.checkArgument(containerId != null, "Null container id");
     Preconditions.checkArgument(substrateId != null, "Null substrate id");
@@ -53,6 +66,10 @@ public class SubstrateId {
     return of(MAP_TYPE_PREFIX, containerId, substrateId);
   }
   
+  public static SubstrateId ofText(WaveletId containerId, String substrateId) {
+    Preconditions.checkArgument(substrateId.startsWith(TEXT_TYPE_PREFIX+TOKEN_SEPARATOR), "Bad substrate id format");
+    return of(TEXT_TYPE_PREFIX, containerId, substrateId);
+  }
 
   public static SubstrateId deserialize(String s) {
       Preconditions.checkArgument(s != null && !s.isEmpty(), "String is null or empty");
@@ -62,10 +79,12 @@ public class SubstrateId {
         return null;
       
       // TODO add list check
-      if (!parts[0].equals(MAP_TYPE_PREFIX)) 
+      if (!parts[0].equals(MAP_TYPE_PREFIX) &&
+          !parts[0].equals(TEXT_TYPE_PREFIX)) 
         return null;
 
-      if (!parts[2].startsWith(MAP_TYPE_PREFIX+TOKEN_SEPARATOR))
+      if (!parts[2].startsWith(MAP_TYPE_PREFIX+TOKEN_SEPARATOR) &&
+          !parts[2].startsWith(TEXT_TYPE_PREFIX+TOKEN_SEPARATOR))
         return null;
       
       WaveletId containerId = null;
@@ -85,6 +104,10 @@ public class SubstrateId {
     return of(MAP_TYPE_PREFIX, containerId, MAP_TYPE_PREFIX+TOKEN_SEPARATOR+tokenGenerator.newUniqueToken());
   }
   
+  public static SubstrateId createForText(WaveletId containerId, IdGenerator tokenGenerator) {
+    return of(TEXT_TYPE_PREFIX, containerId, TEXT_TYPE_PREFIX+TOKEN_SEPARATOR+tokenGenerator.newUniqueToken());
+  }
+  
   protected SubstrateId(String type, WaveletId containerId, String substrateId) {
     this.type = type;
     this.containerId = containerId;
@@ -95,6 +118,10 @@ public class SubstrateId {
   
   public boolean isMap() {    
     return MAP_TYPE_PREFIX.equals(type);
+  }
+  
+  public boolean isText() {
+    return TEXT_TYPE_PREFIX.equals(type);
   }
   
   public String getType() {

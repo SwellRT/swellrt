@@ -3,11 +3,11 @@ package org.swellrt.beta.client;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
+import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
+import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.remote.SObjectRemote;
-import org.swellrt.beta.wave.transport.RemoteViewServiceMultiplexer;
-import org.swellrt.beta.wave.transport.WaveLoader;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -89,7 +89,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
           try {
             // there was exception during loading process?
             check();
-            SObjectRemote sobject = SObjectRemote.inflateFromWave(loader.getIdGenerator(), loader.getLocalDomain(), loader.getWave(), WaveContext.this);
+            SObjectRemote sobject = SObjectRemote.inflateFromWave(loader.getIdGenerator(), loader.getLocalDomain(), loader.getWave(), PlatformBasedFactory.getFactory(loader), WaveContext.this);
             sobjectFuture.set(sobject);
             
           } catch (SException ex) {

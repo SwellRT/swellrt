@@ -1,9 +1,9 @@
 package org.swellrt.beta.model.remote;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
+import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SEvent;
@@ -12,8 +12,8 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.remote.SObjectRemote;
+import org.swellrt.beta.testing.FakePlatformBasedFactory;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
-import org.waveprotocol.wave.client.render.ReductionRuleRenderHelperEquivalenceTest;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.testing.BasicFactories;
 import org.waveprotocol.wave.model.testing.FakeIdGenerator;
@@ -38,12 +38,14 @@ public class SObjectRemoteTest extends TestCase {
   private IdGenerator idGenerator;
   private FakeWaveView wave;
   private SObjectRemote object;
+  private PlatformBasedFactory factory;
   
   protected void setUp() throws Exception {
     
+    factory = new FakePlatformBasedFactory();
     idGenerator = FakeIdGenerator.create();
     wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
-    object = SObjectRemote.inflateFromWave(idGenerator, "example.com", wave, null);
+    object = SObjectRemote.inflateFromWave(idGenerator, "example.com", wave, factory, null);
     
     // A different way to create a fake wave
     /*

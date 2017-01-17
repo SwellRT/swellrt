@@ -5,18 +5,19 @@ import java.util.Map;
 
 import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.operation.data.ProfileData;
+import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
+import org.swellrt.beta.client.wave.WaveWebSocketClient;
+import org.swellrt.beta.client.wave.WaveSocket.WaveSocketStartCallback;
+import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SObjectRemote;
-import org.swellrt.beta.wave.transport.RemoteViewServiceMultiplexer;
-import org.swellrt.beta.wave.transport.WaveSocket.WaveSocketStartCallback;
-import org.swellrt.beta.wave.transport.WaveWebSocketClient;
-import org.swellrt.beta.wave.transport.WaveWebSocketClient.ConnectState;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -97,7 +98,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private WaveWebSocketClient websocketClient;
   private SettableFuture<RemoteViewServiceMultiplexer> serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create(); 
 
-  private ServiceFrontend.ConnectionHandler connectionHandler;
+  private CopyOnWriteSet<ServiceFrontend.ConnectionHandler> connectionHandlers = CopyOnWriteSet.createListSet();
   
   public ServiceContext(SessionManager sessionManager, String httpAddress) {
     this.sessionManager = sessionManager; 
@@ -105,8 +106,12 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     this.websocketAddress = getWebsocketAddress(httpAddress);
   }
  
-  protected void setConnectionHandler(ConnectionHandler h) {
-    this.connectionHandler = h;
+  public void addConnectionHandler(ConnectionHandler h) {
+    this.connectionHandlers.add(h);
+  }
+  
+  public void removeConnectionHandler(ConnectionHandler h) {
+    this.connectionHandlers.remove(h);
   }
   
   protected void setupIdGenerator() {
@@ -181,7 +186,8 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create();
     
     sessionManager.removeSession();
-       
+    
+    connectionHandlers.clear();
   }
   
   public boolean isSession() {
@@ -293,8 +299,8 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
       se = new SException(ResponseCode.WEBSOCKET_ERROR.getValue(), e, "Websocket error");
       
     
-    if (connectionHandler != null)
-      connectionHandler.exec(state.toString(), se);
+    for (ServiceFrontend.ConnectionHandler ch: connectionHandlers)
+      ch.exec(state.toString(), se);
   }
   
   /**

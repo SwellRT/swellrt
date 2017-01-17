@@ -8,6 +8,7 @@ import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
+import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
@@ -24,6 +25,8 @@ public class ServiceFrontend {
   
   public static final String ANONYMOUS_USER_ID  = "_anonymous_";
 
+  public static final String STATE_CONNECTED = WaveWebSocketClient.ConnectState.CONNECTED.toString();
+  
   /**
    * 
    */
@@ -85,10 +88,13 @@ public class ServiceFrontend {
     op.execute(options, callback);    
   }
   
-  public void setConnectionHandler(ConnectionHandler h) {
-    context.setConnectionHandler(h);
+  public void addConnectionHandler(ConnectionHandler h) {
+    context.addConnectionHandler(h);
   }
   
+  public void removeConnectionHandler(ConnectionHandler h) {
+    context.removeConnectionHandler(h);
+  }
   
   public void listen(Object object, SHandler handler) {
     

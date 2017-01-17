@@ -5,9 +5,13 @@ import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SObservable;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 
-public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
+import jsinterop.annotations.JsType;
+
+@JsType(namespace = "swellrt", name = "ListenableNode")
+public abstract class SNodeRemoteContainer extends SNodeRemote implements SObservable {
    
-  public static SNodeRemoteContainer Void = new SNodeRemoteContainer() {
+  
+  protected static SNodeRemoteContainer Void = new SNodeRemoteContainer() {
     
     @Override
     protected void clearCache() {
@@ -15,29 +19,30 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
     }
   };
   
-  protected SNodeRemoteContainer parent = null;
   protected boolean eventsEnabled = false;
   
   private final CopyOnWriteSet<SHandler> eventHandlerSet = CopyOnWriteSet.<SHandler>createHashSet();
   
-  /** 
-   * A lazy method to set the parent of this node
-   * @param parent the parent node 
-   */
+  protected SNodeRemoteContainer() {
+    super(null, null);
+  }
+  
+  protected SNodeRemoteContainer(SubstrateId substrateId, SObjectRemote object) {
+    super(substrateId, object);
+  }
+  
+  @Override
   protected void attach(SNodeRemoteContainer parent) {
-    this.parent = parent;
+    super.attach(parent);
     this.eventHandlerSet.clear();
     this.eventsEnabled = true;
   }
   
-  /** 
-   * Notify this node is not longer part of an object.<p>
-   * This is a recursive in-depth process. 
-   */
+  @Override
   protected void deattach() {
     this.eventsEnabled = false;
     this.eventHandlerSet.clear();
-    this.parent  = null;
+    super.deattach();
   }
     
   /** 
@@ -70,8 +75,8 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
       propagate = propagate && h.exec(e);
     }
 
-    if (propagate && this.parent != null && !this.parent.equals(Void)) {
-      this.parent.triggerEvent(e);
+    if (propagate && this.getParent() != null && !this.getParent().equals(Void)) {
+      this.getParent().triggerEvent(e);
     }
       
   }
@@ -84,7 +89,7 @@ public abstract class SNodeRemoteContainer implements SNodeRemote, SObservable {
   protected void enableEvents(boolean enabled) {
     
     this.eventsEnabled = enabled;
-    if (this.parent != null && !this.parent.equals(Void))
-      this.parent.enableEvents(enabled);
+    if (this.getParent() != null && !this.getParent().equals(Void))
+      this.getParent().enableEvents(enabled);
   }
 }

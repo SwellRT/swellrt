@@ -181,8 +181,12 @@ public class PromisableServiceFrontend {
 		});			
 	}
 
-  public void setConnectionHandler(ConnectionHandler h) {
-    service.setConnectionHandler(h);
+  public void addConnectionHandler(ConnectionHandler h) {
+    service.addConnectionHandler(h);
+  }
+  
+  public void removeConnectionHandler(ConnectionHandler h) {
+    service.removeConnectionHandler(h);
   }
   
   public void listen(Object object, SHandler handler) {

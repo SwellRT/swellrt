@@ -23,12 +23,6 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     return new SMapRemote(object, substrateId, map);
   }
   
-  /** the substrate id (wavelet/document id pair) */
-  private final SubstrateId substrateId;
-  
-  /** the root object */
-  private final SObjectRemote object;
-  
   /** the underlying wave map */
   private final ObservableBasicMap<String, SNodeRemote> map;  
   
@@ -39,16 +33,12 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
       
   protected SMapRemote(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
+    super(substrateId, object);
     this.cache = new HashMap<String, SNodeRemote>();
     this.map = map;
     this.map.addListener(this);
-    this.object = object;
-    this.substrateId = substrateId;
   }
   
-  protected SubstrateId getSubstrateId() {
-    return substrateId;
-  }
   
   @Override
   protected void clearCache() {
@@ -64,10 +54,10 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
    * in a bad state.
    */
   protected void check() throws SException {
-    if (this.parent == null)
+    if (this.getParent() == null)
       throw new SException(SException.NOT_ATTACHED_NODE);
     
-    this.object.check();
+    getObject().check();
   }
   
   @Override
@@ -102,11 +92,11 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       
       if (node instanceof SPrimitive) {
         ((SPrimitive) node).setNameKey(key);
-        ((SPrimitive) node).setContainer(this);
       }
       
-      if (node instanceof SNodeRemoteContainer)
-       ((SNodeRemoteContainer) node).attach(this); // lazily set parent
+      // This should be always true!
+      if (node instanceof SNodeRemote)
+       ((SNodeRemote) node).attach(this); // lazily set parent
       
       cache.put(key, node);
     
@@ -145,7 +135,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public SMap put(String key, SNode value) throws SException {
     check();
-    SNodeRemote remoteValue =  object.asRemote(value, this, false);
+    SNodeRemote remoteValue =  getObject().asRemote(value, this, false);
     map.put(key, remoteValue);
     cache.put(key, remoteValue);
     return this;
@@ -154,7 +144,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public SMap put(String key, Object value) throws SException {
      check();
-     SNode node = SUtils.castToPrimitive(value);
+     SNode node = SUtils.castToSNode(value);
      return put(key, node);
   }
  
@@ -245,6 +235,6 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
   @Override
   public String toString() {
-    return "SMapRemote ["+substrateId+"]";
+    return "SMapRemote ["+getSubstrateId()+"]";
   }
 }

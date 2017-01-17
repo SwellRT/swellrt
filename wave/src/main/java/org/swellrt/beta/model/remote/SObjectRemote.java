@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.client.WaveStatus;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
@@ -13,19 +14,23 @@ import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SObservable;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SStatusEvent;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.remote.wave.DocumentBasedBasicRMap;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.ObservableDocument;
+import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
+import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -103,9 +108,9 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     @Override
     public String toString(SNodeRemote x) {
     
-      if (x instanceof SMapRemote) {
-        SMapRemote map = (SMapRemote) x;  
-        return map.getSubstrateId().serialize();
+      if (x instanceof SNodeRemote) {
+        SNodeRemote r = (SNodeRemote) x;  
+        return r.getSubstrateId().serialize();
       }
       
       if (x instanceof SPrimitive) {        
@@ -122,12 +127,19 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
      
       SubstrateId substrateId = SubstrateId.deserialize(s);
       if (substrateId != null) {
+      
         if (substrateId.isMap())
           return loadMap(substrateId);
+        
+        if (substrateId.isText())
+          return loadText(substrateId, null);
+        
+        return null;
+      
+      } else {      
+        return SPrimitive.deserialize(s);      
       }
       
-      SPrimitive v = SPrimitive.deserialize(s);      
-      return v;      
     }
 
     @Override
@@ -155,6 +167,9 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   private SubstrateMapSerializer mapSerializer;   
   private SMapRemote root;
   
+  /** A factory for platform dependent objects */
+  private final PlatformBasedFactory factory;
+  
   private final Map<SubstrateId, SNodeRemote> nodeStore = new HashMap<SubstrateId, SNodeRemote>();
   
   private SObject.StatusHandler statusHandler = null;
@@ -164,7 +179,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    * Initialize the Wave accordingly.
    * 
    */
-  public static SObjectRemote inflateFromWave(IdGenerator idGenerator, String domain, ObservableWaveView wave, WaveStatus waveStatus) {
+  public static SObjectRemote inflateFromWave(IdGenerator idGenerator, String domain, ObservableWaveView wave, PlatformBasedFactory factory, WaveStatus waveStatus) {
     
     Preconditions.checkArgument(domain != null && !domain.isEmpty(), "Domain is not provided");
     Preconditions.checkArgument(wave != null, "Wave can't be null");
@@ -175,7 +190,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       masterWavelet = wave.createWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     }
      
-    SObjectRemote object = new SObjectRemote(idGenerator, domain, wave, waveStatus);
+    SObjectRemote object = new SObjectRemote(idGenerator, domain, wave, factory, waveStatus);
     object.init();
     
     return object;
@@ -188,12 +203,13 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    * @param domain
    * @param wave
    */
-  private SObjectRemote(IdGenerator idGenerator, String domain, ObservableWaveView wave, WaveStatus waveStatus) {
+  private SObjectRemote(IdGenerator idGenerator, String domain, ObservableWaveView wave, PlatformBasedFactory factory, WaveStatus waveStatus) {
     this.wave = wave;
     this.masterWavelet = wave.getWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     this.mapSerializer = new SubstrateMapSerializer();
     this.domain = domain;
     this.idGenerator = idGenerator;
+    this.factory = factory;
     this.waveStatus = waveStatus;
   }
   
@@ -283,10 +299,18 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       }
       
       return remoteMap;
-    }
     
-    if (node instanceof SPrimitive) {
-      return (SPrimitive) node;
+    } else if (node instanceof SText) {
+      SText text = (SText) node;
+      STextRemote remoteText = loadText(SubstrateId.createForText(containerWavelet.getId(), idGenerator), text.getOps());
+      remoteText.attach(parentNode);
+      
+      return remoteText;
+      
+    } else if (node instanceof SPrimitive) {
+      SPrimitive primitive = (SPrimitive) node;
+      primitive.attach(parentNode);
+      return primitive;
     }
     
     return null;
@@ -341,6 +365,35 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     
     return n;
   }
+  
+  
+  private STextRemote loadText(SubstrateId substrateId, DocInitialization docInit) {
+
+    Preconditions.checkArgument(substrateId.isText(), "Expected a text susbtrate id");
+    
+    // Reuse instances
+    if (nodeStore.containsKey(substrateId)) {
+      return (STextRemote) nodeStore.get(substrateId);    
+    }
+    
+    ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());    
+    Blip blip = substrateContainer.getBlip(substrateId.getDocumentId());
+    if (blip == null) {
+      blip = substrateContainer.createBlip(substrateId.getDocumentId());
+      
+      // TODO The docInit stuff seems not to work, check out LazyContentDocument 
+      // blip = substrateContainer.createBlip(substrateId.getDocumentId(), docInit);       
+    }
+      
+    STextRemote textRemote = factory.getSTextRemote(this, substrateId, blip);
+    if (docInit != null) {
+      textRemote.consumeOps(docInit);
+    }
+    
+    nodeStore.put(substrateId, textRemote);    
+    return textRemote;
+  }
+  
   
   @Override
   public String getId() {
@@ -466,4 +519,15 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       }
   }
 	
+  public boolean isPublic() {
+    try {
+      return masterWavelet.getParticipantIds().contains(ParticipantId.of("@"+domain));
+    } catch (InvalidParticipantAddress e) {
+      return false;
+    }
+  }
+  
+  public boolean isNew() {
+    return false;
+  }
 }

@@ -7,7 +7,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 public class SUtils {
 
-  public static SNode castToPrimitive(Object object) throws IllegalCastException {
+  public static SNode castToSNode(Object object) throws IllegalCastException {
     
     if (object == null)
       throw new IllegalCastException("Error casting a null object");

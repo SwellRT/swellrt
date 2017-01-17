@@ -45,7 +45,7 @@ public class SMapProxyHandler extends ProxyHandler {
   }
 
   public boolean set(SMap target, String property, Object value, ProxyHandler reciever) throws SException {        
-    target.put(property, SUtils.castToPrimitive(value));
+    target.put(property, SUtils.castToSNode(value));
     return true;
   }
   
