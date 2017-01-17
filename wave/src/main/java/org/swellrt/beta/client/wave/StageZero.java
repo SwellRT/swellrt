@@ -18,7 +18,7 @@
  */
 
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;

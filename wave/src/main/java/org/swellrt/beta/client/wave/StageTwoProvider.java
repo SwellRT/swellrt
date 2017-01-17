@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;

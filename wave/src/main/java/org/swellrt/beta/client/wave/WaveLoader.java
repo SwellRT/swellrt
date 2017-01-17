@@ -1,4 +1,4 @@
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import java.util.Set;
 
@@ -6,7 +6,6 @@ import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
-import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
 import org.waveprotocol.wave.model.id.IdGenerator;
@@ -16,12 +15,14 @@ import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
 /**
- * The Wave Loader encapsulates the process of loading a Wave and Wavelets from
- * the server and build the in-memory structure.
- * 
+ * Wave Loader orchestrate the process of instantiate a Wavelet with its Blip/Documents,
+ * and connect it to the server. 
+ * <p>
  * It uses the original stage-based load process optimized for browsers and the
  * conversational model. TODO consider to simplify the staged loader.
- * 
+ * <p>
+ * Important! This class and all Stage classes are platform dependent.
+ * <p>
  * Use the method {@link Stages#load} to launch the load process.
  * 
  * @author pablojan@gmail.com (Pablo Ojanguren)
@@ -193,7 +194,7 @@ public class WaveLoader extends Stages {
 
   }
 
-  public WaveDocuments<? extends InteractiveDocument> getDocumentRegistry() {
+  public SWaveDocuments<? extends InteractiveDocument> getDocumentRegistry() {
     return two.getDocumentRegistry();
   }
 

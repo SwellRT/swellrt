@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
 import org.waveprotocol.wave.communication.gwt.JsonHelper;

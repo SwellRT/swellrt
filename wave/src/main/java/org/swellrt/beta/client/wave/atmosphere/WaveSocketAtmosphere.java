@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport.atmosphere;
+package org.swellrt.beta.client.wave.atmosphere;
 
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -25,7 +25,7 @@ import com.google.gwt.core.client.ScriptInjector;
 
 import java.util.logging.Logger;
 
-import org.swellrt.beta.wave.transport.WaveSocket;
+import org.swellrt.beta.client.wave.WaveSocket;
 
 /**
  * A wrapper for the Atmosphere Javascript client. Websocket transport will be
@@ -160,23 +160,23 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
           // OPEN
           socket.request.onOpen = function(response) {
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onConnect()();
+            impl.@org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere::onConnect()();
           };
 
           // REOPEN
           socket.request.onReopen = function() {
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onConnect()();
+            impl.@org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere::onConnect()();
           };
 
           // MESSAGE
           socket.request.onMessage = function(response) {
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onMessage(Ljava/lang/String;)(response.responseBody);
+            impl.@org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere::onMessage(Ljava/lang/String;)(response.responseBody);
 
           };
 
           // CLOSE
           socket.request.onClose = function(response) {
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onDisconnect()();
+            impl.@org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere::onDisconnect()();
           };
 
           // TRANSPORT FAILURE
@@ -232,12 +232,12 @@ public class WaveSocketAtmosphere implements WaveSocket {
 
           // ERROR
           socket.request.onError = function(response) {            
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::onError(Ljava/lang/String;)(String(response.status));
+            impl.@org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere::onError(Ljava/lang/String;)(String(response.status));
           };
 
           // CLIENT TIMEOUT
           socket.request.onClientTimeout = function(request) {
-            impl.@org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere::reconnect()();
+            impl.@org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere::reconnect()();
           };
 
           socket.request.callback = function(response) {

@@ -17,10 +17,10 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
-import org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphere;
-import org.swellrt.beta.wave.transport.atmosphere.WaveSocketAtmosphereCallback;
+import org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphere;
+import org.swellrt.beta.client.wave.atmosphere.WaveSocketAtmosphereCallback;
 
 
 /**

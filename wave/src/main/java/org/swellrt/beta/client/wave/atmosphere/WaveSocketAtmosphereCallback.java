@@ -1,12 +1,12 @@
-package org.swellrt.beta.wave.transport.atmosphere;
+package org.swellrt.beta.client.wave.atmosphere;
 
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.swellrt.beta.wave.transport.WaveSocket;
-import org.swellrt.beta.wave.transport.WaveSocket.WaveSocketCallback;
+import org.swellrt.beta.client.wave.WaveSocket;
+import org.swellrt.beta.client.wave.WaveSocket.WaveSocketCallback;
 
 /**
  * A WaveSocketCallback implementations adding specific Atmosphere WebSocket

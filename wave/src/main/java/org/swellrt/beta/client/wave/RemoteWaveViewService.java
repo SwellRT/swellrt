@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import java.util.ArrayList;
 import java.util.HashSet;

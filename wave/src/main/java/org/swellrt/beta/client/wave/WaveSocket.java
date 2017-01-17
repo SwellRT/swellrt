@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 /**
  * This interface serves as a proxy interface wrapper for concrete socket implementations

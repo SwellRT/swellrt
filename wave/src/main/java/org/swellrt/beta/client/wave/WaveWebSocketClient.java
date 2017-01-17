@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.getPropertyAsInteger;
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.getPropertyAsObject;
@@ -28,7 +28,7 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsSt
 
 import com.google.common.base.Preconditions;
 
-import org.swellrt.beta.wave.transport.WaveWebSocketCallback.RpcFinished;
+import org.swellrt.beta.client.wave.WaveWebSocketCallback.RpcFinished;
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;

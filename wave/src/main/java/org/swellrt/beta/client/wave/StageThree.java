@@ -18,7 +18,7 @@
  */
 
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 

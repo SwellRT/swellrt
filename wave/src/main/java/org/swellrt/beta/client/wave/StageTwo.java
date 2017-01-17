@@ -18,21 +18,22 @@
  */
 
 
-package org.swellrt.beta.wave.transport;
+package org.swellrt.beta.client.wave;
 
 import com.google.common.base.Preconditions;
 import com.google.gwt.user.client.Command;
 
+import org.swellrt.beta.client.wave.concurrencycontrol.LiveChannelBinder;
+import org.swellrt.beta.client.wave.concurrencycontrol.MuxConnector;
+import org.swellrt.beta.client.wave.concurrencycontrol.WaveletOperationalizer;
 import org.waveprotocol.wave.client.OptimalGroupingScheduler;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
-import org.waveprotocol.wave.client.concurrencycontrol.LiveChannelBinder;
-import org.waveprotocol.wave.client.concurrencycontrol.MuxConnector;
-import org.waveprotocol.wave.client.concurrencycontrol.WaveletOperationalizer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.DocOperationLog;
+import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
@@ -40,9 +41,7 @@ import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.LocalSupplementedWave;
-import org.waveprotocol.wave.client.wave.RegistriesHolder;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
-import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactories;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactory;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.WavePanelResourceLoader;
@@ -107,7 +106,7 @@ public interface StageTwo {
 
 
   /** @return the registry of document objects used for conversational blips. */
-  WaveDocuments<? extends InteractiveDocument> getDocumentRegistry();
+  SWaveDocuments<? extends InteractiveDocument> getDocumentRegistry();
 
 
   /** @return the id generator. */
@@ -152,7 +151,7 @@ public interface StageTwo {
     // Wave stack.
 
     private IdGenerator idGenerator;
-    private WaveDocuments<LazyContentDocument> documentRegistry;
+    private SWaveDocuments<LazyContentDocument> documentRegistry;
     private WaveletOperationalizer wavelets;
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
@@ -252,7 +251,7 @@ public interface StageTwo {
 
 
     @Override
-    public final WaveDocuments<LazyContentDocument> getDocumentRegistry() {
+    public final SWaveDocuments<LazyContentDocument> getDocumentRegistry() {
       return documentRegistry == null
           ? documentRegistry = createDocumentRegistry() : documentRegistry;
     }
@@ -331,14 +330,15 @@ public interface StageTwo {
 
 
     /** @return the registry of documents in the wave. Subclasses may override. */
-    protected WaveDocuments<LazyContentDocument> createDocumentRegistry() {
+    protected SWaveDocuments<LazyContentDocument> createDocumentRegistry() {
       IndexedDocumentImpl.performValidation = false;
 
       DocumentFactory<?> dataDocFactory =
           ObservablePluggableMutableDocument.createFactory(createSchemas());
-      DocumentFactory<LazyContentDocument> blipDocFactory =
+      
+      DocumentFactory<LazyContentDocument> textDocFactory =
           new DocumentFactory<LazyContentDocument>() {
-            private final Registries registries = RegistriesHolder.get();
+            private final Registries registries = Editor.ROOT_REGISTRIES;
             private final DocOperationLog opLog = DefaultProvider.this.getDocOperationLog();
             @Override
             public LazyContentDocument create(
@@ -349,7 +349,7 @@ public interface StageTwo {
             }
           };
 
-      return WaveDocuments.create(blipDocFactory, dataDocFactory);
+      return SWaveDocuments.create(textDocFactory, dataDocFactory);
     }
 
     protected abstract SchemaProvider createSchemas();
