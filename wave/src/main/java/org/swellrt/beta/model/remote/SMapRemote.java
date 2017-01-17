@@ -160,9 +160,11 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       SNodeRemoteContainer nrc = (SNodeRemoteContainer) nr;
       nrc.deattach();
     }   
-    // TODO delete from SObjectRemote.nodeStore
+
     map.remove(key);
     cache.remove(key);
+    
+    getObject().deleteNode(nr);    
   }
 
   @Override

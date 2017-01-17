@@ -19,12 +19,13 @@ import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.remote.wave.DocumentBasedBasicRMap;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
+import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
+import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
-import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -393,6 +394,36 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     return textRemote;
   }
   
+  /**
+   * Delete reference of this node in the cache
+   * and delete substrate
+   * @param node
+   */
+  protected void deleteNode(SNodeRemote node) {
+    emptySubstrate(node.getSubstrateId());
+    nodeStore.remove(node.getSubstrateId());
+  }
+  
+  /**
+   * Empty the substrate to mark it as deleted.
+   * <p>
+   * This method must be called after the substrate
+   * reference is removed from its container.
+   * 
+   * @param substrateId subtrate id
+   */
+  private void emptySubstrate(SubstrateId substrateId) {
+    ObservableWavelet w = wave.getWavelet(substrateId.getContainerId());
+    Document d = null;
+    if (SubstrateId.isText(substrateId.getDocumentId())) {
+      d = w.getBlip(substrateId.getDocumentId()).getContent();
+    } else {
+      d = w.getDocument(substrateId.getDocumentId());
+    }
+    Doc.E root = DocHelper.getFirstChildElement(d, d.getDocumentElement());
+    if (root != null)
+      d.deleteNode(root);    
+  }
   
   @Override
   public String getId() {
@@ -497,9 +528,14 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
 	
 	@Override
 	public String _debug_getBlip(String blipId) {
-		if (masterWavelet.getDocumentIds().contains(blipId))
-			return masterWavelet.getDocument(blipId).toXmlString();
-	
+	  if (masterWavelet.getDocumentIds().contains(blipId)) {
+  	  if (SubstrateId.isText(blipId)) {
+  	    return masterWavelet.getBlip(blipId).getContent().toXmlString();
+  	  } else {
+  	    return masterWavelet.getDocument(blipId).toXmlString();
+  	  }
+	  }
+
 		return null;
 	}
 
