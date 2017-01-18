@@ -120,7 +120,7 @@
         // associated with property 'form'.
         // Changes in form.* are not captured,
         // instead you should replace whole form's
-        // value.
+        // value.      
         object.form = {
           name: "",
           address : "",
@@ -150,7 +150,7 @@
         if (!event) return;
 
         if (event.key == "form" &&
-        event.type == swellrt.SEvent.UPDATED_VALUE) {
+        event.type == swellrt.Event.UPDATED_VALUE) {
 
           var formData = event.value.get();
 
