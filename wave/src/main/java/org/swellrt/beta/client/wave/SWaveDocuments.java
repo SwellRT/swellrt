@@ -70,10 +70,12 @@ public final class SWaveDocuments<TextDocument extends DocumentOperationSink> im
   }
   
   public TextDocument getTextDocument(String waveletId, String docId) {
-    SubstrateId substrateId;
+    SubstrateId substrateId;    
     try {
       substrateId = SubstrateId.ofText(ModernIdSerialiser.INSTANCE.deserialiseWaveletId(waveletId), docId);
     } catch (InvalidIdException e) {
+      return null;
+    } catch (IllegalArgumentException e) {
       return null;
     }
     return getTextDocument(substrateId);
