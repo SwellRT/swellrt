@@ -105,12 +105,12 @@
 
     // We work with anonymous user
     service.login({
-      id : "_anonymous_",
+      id : swellrt.Service.ANONYMOUS_USER_ID,
       password : ""
     })
     .then(profile => {
       // Open the collaborative object to store text documents
-      return service.open({ id : "local.net/demo-pad-list" });
+      return service.open({ id : "demo-pad-list" });
     })
     .then(r => {
 

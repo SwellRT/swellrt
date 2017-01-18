@@ -99,12 +99,12 @@
     service.addConnectionHandler(connectionHandler);
 
     service.login({
-      id : "_anonymous_",
+      id : swellrt.Service.ANONYMOUS_USER_ID,
       password : ""
     })
     .then(r=>{
       return service.open({
-        id : "local.net/demo-form-1"
+        id : "demo-form-1"
       });
     })
     .then(r => {
@@ -120,7 +120,7 @@
         // associated with property 'form'.
         // Changes in form.* are not captured,
         // instead you should replace whole form's
-        // value.      
+        // value.
         object.form = {
           name: "",
           address : "",
