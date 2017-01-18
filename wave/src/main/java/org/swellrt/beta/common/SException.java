@@ -29,7 +29,7 @@ import jsinterop.annotations.JsType;
  *
  */
 @SuppressWarnings("serial")
-@JsType(namespace = "swellrt")
+@JsType(namespace = "swellrt", name = "Exception")
 public class SException extends Exception {
   
   // Codes from SException
