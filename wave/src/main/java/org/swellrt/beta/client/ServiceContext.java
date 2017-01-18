@@ -327,4 +327,9 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     }
     
   }
+  
+  public String getWaveDomain() {
+    return sessionManager.getWaveDomain();
+  }
+  
 }
