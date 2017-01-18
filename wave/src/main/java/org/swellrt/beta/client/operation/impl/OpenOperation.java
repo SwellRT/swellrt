@@ -54,8 +54,13 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
       }
         
       WaveId waveId = null;
-      if (options.getId() != null) {
-        waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(options.getId());
+      String id = options.getId();
+      // Wave domain part is optional
+      if (id != null) {
+        if (!id.contains("/")) {
+          id = context.getWaveDomain()+ "/" + id;
+        }
+        waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(id);
       } else {
         waveId = context.generateWaveId();
       }
