@@ -403,8 +403,10 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    * @param node
    */
   protected void deleteNode(SNodeRemote node) {
-    emptySubstrate(node.getSubstrateId());
-    nodeStore.remove(node.getSubstrateId());
+    if (node.getSubstrateId() != null) {
+      emptySubstrate(node.getSubstrateId());
+      nodeStore.remove(node.getSubstrateId());
+    }
   }
   
   /**
