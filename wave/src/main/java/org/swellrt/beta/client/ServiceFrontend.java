@@ -13,6 +13,7 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.remote.SNodeRemoteContainer;
+import org.waveprotocol.wave.model.util.Preconditions;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
@@ -20,7 +21,7 @@ import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 
-@JsType(namespace = "swellrt")
+@JsType(namespace = "swellrt", name = "Service")
 public class ServiceFrontend {
   
   public static final String ANONYMOUS_USER_ID  = "_anonymous_";
@@ -37,6 +38,7 @@ public class ServiceFrontend {
 
   @JsIgnore
   public static ServiceFrontend create(ServiceContext context) {
+    Preconditions.checkNotNull(context, "Service context can't be null");
     ServiceFrontend sf = new ServiceFrontend();
     sf.setContext(context);    
     return sf;
