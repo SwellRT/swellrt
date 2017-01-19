@@ -225,6 +225,7 @@ public class SPrimitive extends SNodeRemote {
    * @param participantId
    * @return
    */
+  @JsIgnore
   public boolean canWrite(ParticipantId participantId) {
     return accessControl.canWrite(participantId);
   }
@@ -235,6 +236,7 @@ public class SPrimitive extends SNodeRemote {
    * @param participantId
    * @return
    */
+  @JsIgnore
   public boolean canRead(ParticipantId participantId) {
     return accessControl.canRead(participantId);
   }
