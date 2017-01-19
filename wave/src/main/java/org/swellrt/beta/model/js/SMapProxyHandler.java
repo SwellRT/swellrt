@@ -5,6 +5,8 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.remote.SMapRemote;
+import org.swellrt.beta.model.remote.SNodeRemoteContainer;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -28,6 +30,14 @@ public class SMapProxyHandler extends ProxyHandler {
     if (property.equals(PROP_TARGET) || 
         property.equals(PROP_CONTROLLER) ||
         property.equals(PROP_CTRL)) {
+      
+      if (target instanceof SMapRemote) {
+        SMapRemote targetRemote = (SMapRemote) target;
+        if (targetRemote.getParent().equals(SNodeRemoteContainer.Void)) {
+          return targetRemote.getObject();
+        }        
+      }
+      
       return target;
     }
     
