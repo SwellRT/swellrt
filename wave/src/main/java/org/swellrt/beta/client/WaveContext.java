@@ -89,7 +89,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
           try {
             // there was exception during loading process?
             check();
-            SObjectRemote sobject = SObjectRemote.inflateFromWave(loader.getIdGenerator(), loader.getLocalDomain(), loader.getWave(), PlatformBasedFactory.getFactory(loader), WaveContext.this);
+            SObjectRemote sobject = SObjectRemote.inflateFromWave(participant, loader.getIdGenerator(), loader.getLocalDomain(), loader.getWave(), PlatformBasedFactory.getFactory(loader), WaveContext.this);
             sobjectFuture.set(sobject);
             
           } catch (SException ex) {

@@ -1,92 +1,28 @@
 package org.swellrt.beta.model.remote;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.local.SMapLocal;
-import org.swellrt.beta.model.remote.SObjectRemote;
-import org.swellrt.beta.testing.FakePlatformBasedFactory;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
-import org.waveprotocol.wave.model.id.IdGenerator;
-import org.waveprotocol.wave.model.testing.BasicFactories;
-import org.waveprotocol.wave.model.testing.FakeIdGenerator;
-import org.waveprotocol.wave.model.testing.FakeWaveView;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 
 import com.google.gwt.user.client.Command;
 
-import junit.framework.TestCase;
-
 
 /**
- * Unit tests for the SwellRT data model
- * <p>
- * SObjectRemote and SMapRemote have a circular dependency so they must be
- * tested together.
- * <p>
- * @author pablojan@gmail.com
- *
+ * Test SMapRemote 
  */
-public class SObjectRemoteTest extends TestCase {
+public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
-  private IdGenerator idGenerator;
-  private FakeWaveView wave;
-  private SObjectRemote object;
-  private PlatformBasedFactory factory;
-  
-  protected void setUp() throws Exception {
-    
-    factory = new FakePlatformBasedFactory();
-    idGenerator = FakeIdGenerator.create();
-    wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
-    object = SObjectRemote.inflateFromWave(idGenerator, "example.com", wave, factory, null);
-    
-    // A different way to create a fake wave
-    /*
-    SchemaProvider SCHEMA_PROVIDER = new SchemaProvider() {
-
-      @Override
-      public DocumentSchema getSchemaForId(WaveletId waveletId, String documentId) {
-        if (Model.isModelWaveletId(waveletId)) {
-          if (TextType.isTextBlipId(documentId)) {
-            return ModelSchemas.TEXT_DOCUMENT_SCHEMA;
-          }
-          // TODO Add more schemas for List, Root, Map...
-        }
-        return DocumentSchema.NO_SCHEMA_CONSTRAINTS;
-      }
-    };
-    
-    IdGenerator ID_GENERATOR = FakeIdGenerator.create();
-  
-    String DOMAIN = "example.com";
-    
-    FakeWaveView wave = FakeWaveView.builder(SCHEMA_PROVIDER).with(ID_GENERATOR).build();
-    
-    
-    MutableCObject object = MutableCObject.ofWave(DOMAIN, wave);
-    */
-  }
-  
-  protected void populatePrimitiveValues(SMap map) throws SException {
-    
-    map.put("k0", new SPrimitive("A value for k0"));
-    map.put("k1", "A value for k1");
-    
-  }
-  
-  protected void assertPrimitiveValues(SMap map) throws SException {
-    
-    assertEquals("A value for k0", (String) map.get("k0"));
-    assertEquals("A value for k1", (String) map.get("k1"));
-    
-  }
   
   /**
    * Put only primitive values in the root map.
@@ -364,6 +300,136 @@ public class SObjectRemoteTest extends TestCase {
     
     cd.tick();
     
+  }
+  
+  
+  
+  public void testAccessControl() throws SException {
+    
+    // field without access control
+    
+    SNodeAccessControl nac = new SNodeAccessControl();
+    SPrimitive p = new SPrimitive("total access", nac);
+    object.put("prop1", p);
+    
+    try {
+      object.get("prop1");
+    } catch (SException e) {
+      assertTrue("SException not expected", false);
+    }
+    
+    try {
+      object.put("prop1", p);
+    } catch (SException e) {
+      assertTrue("SException not expected", false);
+    }
+    
+    try {
+      object.remove("prop1");
+    } catch (SException e) {
+      assertTrue("SException not expected", false);
+    }
+    
+    // field read only, any user
+    
+    nac = new SNodeAccessControl(true);
+    p = new SPrimitive("read only access", nac);
+    object.put("prop2", p);
+    
+    try {
+      object.get("prop2");
+    } catch (SException e) {
+      assertTrue("SException not expected", false);
+    }
+    
+    try {
+      object.put("prop2", p);
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+    
+    try {
+      object.remove("prop2");
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+          
+    
+    // field read only, restricted user list (current user in list)
+    
+    nac = new SNodeAccessControl(CollectionUtils.immutableSet("tom@acme.com","ann@acme.com") ,Collections.<String>emptySet(), true);
+    p = new SPrimitive("read only with access list", nac);
+    object.put("prop3", p);
+    
+    try {
+      object.get("prop3");
+    } catch (SException e) {
+      assertTrue("SException not expected", false);
+    }
+    
+    try {
+      object.put("prop3", p);
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+    
+    try {
+      object.remove("prop3");
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+    
+    //  field read only, restricted user list (current user NOT in list)
+    
+    nac = new SNodeAccessControl(CollectionUtils.immutableSet("bob@acme.com","ann@acme.com") ,Collections.<String>emptySet(), true);
+    p = new SPrimitive("read only with access list", nac);
+    object.put("prop4", p);
+    
+    try {
+      object.get("prop4");
+    } catch (SException e) {
+      assertTrue("SException expected, can't read", true);
+    }
+    
+    try {
+      object.put("prop4", p);
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+    
+    try {
+      object.remove("prop4");
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+    
+    // field with write and read access lists (current user can't write)
+    
+    nac = new SNodeAccessControl(
+        CollectionUtils.immutableSet("tom@acme.com","ann@acme.com"), 
+        CollectionUtils.immutableSet("bob@acme.com","ann@acme.com"), 
+        false);
+    
+    p = new SPrimitive("read and write access list", nac);
+    object.put("prop5", p);
+    
+    try {
+      object.get("prop5");
+    } catch (SException e) {
+      assertTrue("SException not expected", false);
+    }
+    
+    try {
+      object.put("prop5", p);
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
+    
+    try {
+      object.remove("prop5");
+    } catch (SException e) {
+      assertTrue("SException expected, can't write", true);
+    }
   }
   
   

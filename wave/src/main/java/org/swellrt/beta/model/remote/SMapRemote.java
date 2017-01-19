@@ -7,6 +7,7 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.js.HasJsProxy;
@@ -111,6 +112,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   public Object get(String key) throws SException {
     
     SNode node = getNode(key);
+    getObject().checkReadable(node);
     
     if (node == null)
       return null;
@@ -135,6 +137,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public SMap put(String key, SNode value) throws SException {
     check();
+    getObject().checkWritable(getNode(key));
     SNodeRemote remoteValue =  getObject().asRemote(value, this, false);
     map.put(key, remoteValue);
     cache.put(key, remoteValue);
@@ -143,7 +146,6 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
   @Override
   public SMap put(String key, Object value) throws SException {
-     check();
      SNode node = SUtils.castToSNode(value);
      return put(key, node);
   }
@@ -152,6 +154,8 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public void remove(String key) throws SException {
     check();
+    getObject().checkWritable(getNode(key));
+    
     if (!map.keySet().contains(key))
       return;
     

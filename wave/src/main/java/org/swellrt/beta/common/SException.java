@@ -42,6 +42,10 @@ public class SException extends Exception {
   public static final int NOT_ATTACHED_NODE = 110;
   
   public static final int ILLEGAL_CAST = 111;
+  
+  public static final int READ_FORBIDDEN = 112;
+  
+  public static final int WRITE_FORBIDDEN = 113;
 
   // Codes from ResponseCode
   

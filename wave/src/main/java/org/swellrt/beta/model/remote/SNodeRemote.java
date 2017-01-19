@@ -38,7 +38,7 @@ public abstract class SNodeRemote implements SNode {
     return substrateId;
   }
   
-  protected SObjectRemote getObject() {
+  public SObjectRemote getObject() {
     return object;
   }
   
@@ -57,7 +57,7 @@ public abstract class SNodeRemote implements SNode {
     this.parent  = null;
   }
   
-  protected SNodeRemoteContainer getParent() {
+  public SNodeRemoteContainer getParent() {
     return this.parent;
   }
 }

@@ -178,12 +178,14 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   
   private SObject.StatusHandler statusHandler = null;
   
+  private final ParticipantId participant;
+  
   /**
    * Get a MutableCObject instance with a substrate Wave.
    * Initialize the Wave accordingly.
    * 
    */
-  public static SObjectRemote inflateFromWave(IdGenerator idGenerator, String domain, ObservableWaveView wave, PlatformBasedFactory factory, WaveStatus waveStatus) {
+  public static SObjectRemote inflateFromWave(ParticipantId participant, IdGenerator idGenerator, String domain, ObservableWaveView wave, PlatformBasedFactory factory, WaveStatus waveStatus) {
     
     Preconditions.checkArgument(domain != null && !domain.isEmpty(), "Domain is not provided");
     Preconditions.checkArgument(wave != null, "Wave can't be null");
@@ -194,7 +196,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       masterWavelet = wave.createWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     }
      
-    SObjectRemote object = new SObjectRemote(idGenerator, domain, wave, factory, waveStatus);
+    SObjectRemote object = new SObjectRemote(participant, idGenerator, domain, wave, factory, waveStatus);
     object.init();
     
     return object;
@@ -207,7 +209,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    * @param domain
    * @param wave
    */
-  private SObjectRemote(IdGenerator idGenerator, String domain, ObservableWaveView wave, PlatformBasedFactory factory, WaveStatus waveStatus) {
+  private SObjectRemote(ParticipantId participant, IdGenerator idGenerator, String domain, ObservableWaveView wave, PlatformBasedFactory factory, WaveStatus waveStatus) {
     this.wave = wave;
     this.masterWavelet = wave.getWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     this.mapSerializer = new SubstrateMapSerializer();
@@ -215,6 +217,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     this.idGenerator = idGenerator;
     this.factory = factory;
     this.waveStatus = waveStatus;
+    this.participant = participant;
   }
   
   /**
@@ -236,6 +239,40 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   protected void check() throws SException {
 	  if (waveStatus != null)
 		  waveStatus.check();
+  }
+  
+  /**
+   * Check if node can be written by the current log in user.
+   * <p>
+   * Actual check is delegated to the node. 
+   * <p>
+   * TODO Only SPrimitives nodes support access control so far.
+   * 
+   * @param node 
+   * @throws SException throw exception if access is forbidden
+   */
+  public void checkWritable(SNode node) throws SException {
+    if (node != null && node instanceof SPrimitive) {
+      if (!((SPrimitive) node).canWrite(participant))
+        throw new SException(SException.WRITE_FORBIDDEN, null, "Not allowed to write property");
+    }
+  }
+  
+  /**
+   * Check if node can be read by the current log in user.
+   * <p>
+   * Actual check is delegated to the node. 
+   * <p>
+   * TODO Only SPrimitives nodes support access control so far.
+   * 
+   * @param node 
+   * @throws SException throw exception if access is forbidden
+   */
+  public void checkReadable(SNode node) throws SException {
+    if (node != null && node instanceof SPrimitive) {
+      if (!((SPrimitive) node).canRead(participant))
+        throw new SException(SException.READ_FORBIDDEN, null, "Not allowed to read property");
+    }    
   }
   
   /**

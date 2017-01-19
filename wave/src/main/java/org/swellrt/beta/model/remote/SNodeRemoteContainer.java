@@ -5,13 +5,14 @@ import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SObservable;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "ListenableNode")
 public abstract class SNodeRemoteContainer extends SNodeRemote implements SObservable {
    
-  
-  protected static SNodeRemoteContainer Void = new SNodeRemoteContainer() {
+  @JsIgnore
+  public static SNodeRemoteContainer Void = new SNodeRemoteContainer() {
     
     @Override
     protected void clearCache() {

@@ -2,6 +2,7 @@ package org.swellrt.beta.model;
 
 import org.swellrt.beta.model.remote.SNodeRemote;
 import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
@@ -33,6 +34,8 @@ public class SPrimitive extends SNodeRemote {
   private final String stringValue;
   private final Boolean boolValue;
   private final JavaScriptObject jsoValue;
+  
+  private final SNodeAccessControl accessControl; 
 
   /** 
    * the key associated with this value in its parent container
@@ -41,20 +44,31 @@ public class SPrimitive extends SNodeRemote {
   private String nameKey = null;
   
   /**
-   * Deserialize a SPrimitive
+   * Deserialize a SPrimitive value
+   * <p>
    * @param s the serialized representation of the primitive value. 
    * @return the primitive value or null if is not a valid serialized string
    */
   public static SPrimitive deserialize(String s) {
     Preconditions.checkArgument(s != null && !s.isEmpty(), "Null or empty string");
     
+    SNodeAccessControl acToken = null;
+    if (SNodeAccessControl.isToken(s)) {
+      int firstSepIndex = s.indexOf(SEPARATOR);
+      acToken = SNodeAccessControl.deserialize(s.substring(0, firstSepIndex));     
+      s = s.substring(firstSepIndex+1);
+    } else {
+      acToken = new SNodeAccessControl();
+    }
+    
+    
     if (s.startsWith(STRING_TYPE_PREFIX+SEPARATOR)) {
-      return new SPrimitive(s.substring(2));
+      return new SPrimitive(s.substring(2), acToken);
     }
     
     if (s.startsWith(INTEGER_TYPE_PREFIX+SEPARATOR)) {
       try {
-       return new SPrimitive(Integer.parseInt(s.substring(2)));
+       return new SPrimitive(Integer.parseInt(s.substring(2)), acToken);
       } catch (NumberFormatException e) {
         // Oops
         return null;
@@ -63,7 +77,7 @@ public class SPrimitive extends SNodeRemote {
 
     if (s.startsWith(DOUBLE_TYPE_PREFIX+SEPARATOR)) {
       try {
-       return new SPrimitive(Double.parseDouble(s.substring(2)));
+       return new SPrimitive(Double.parseDouble(s.substring(2)), acToken);
       } catch (NumberFormatException e) {
         // Oops
         return null;
@@ -71,11 +85,11 @@ public class SPrimitive extends SNodeRemote {
     }
     
     if (s.startsWith(BOOLEAN_TYPE_PREFIX+SEPARATOR)) {
-       return new SPrimitive(Boolean.parseBoolean(s.substring(2)));
+       return new SPrimitive(Boolean.parseBoolean(s.substring(2)), acToken);
     }
     
     if (s.startsWith(JSO_TYPE_PREFIX+SEPARATOR)) {
-      return new SPrimitive(JsonUtils.<JavaScriptObject>safeEval(s.substring(3)));
+      return new SPrimitive(JsonUtils.<JavaScriptObject>safeEval(s.substring(3)), acToken);
     }
     
     return null;
@@ -84,75 +98,83 @@ public class SPrimitive extends SNodeRemote {
   
   public String serialize() {
     
+    String token = accessControl.serialize();
+    if (!token.isEmpty())
+      token += SEPARATOR;
+      
+    
     if (type == TYPE_STRING)
-      return STRING_TYPE_PREFIX+SEPARATOR+stringValue;
+      return token + STRING_TYPE_PREFIX+SEPARATOR+stringValue;
     
     if (type == TYPE_BOOL)
-      return BOOLEAN_TYPE_PREFIX+SEPARATOR+Boolean.toString(boolValue);
+      return token + BOOLEAN_TYPE_PREFIX+SEPARATOR+Boolean.toString(boolValue);
     
     if (type == TYPE_INT)
-      return INTEGER_TYPE_PREFIX+SEPARATOR+Integer.toString(intValue);
+      return token + INTEGER_TYPE_PREFIX+SEPARATOR+Integer.toString(intValue);
     
     if (type == TYPE_DOUBLE)
-      return DOUBLE_TYPE_PREFIX+SEPARATOR+Double.toString(doubleValue);
+      return token + DOUBLE_TYPE_PREFIX+SEPARATOR+Double.toString(doubleValue);
     
     if (type == TYPE_JSO)
-      return JSO_TYPE_PREFIX+SEPARATOR+JsonUtils.stringify(jsoValue);
+      return token + JSO_TYPE_PREFIX+SEPARATOR+JsonUtils.stringify(jsoValue);
     
     return null;    
   }
-  
-  
+
   
   @JsIgnore
-  public SPrimitive(int value) {
+  public SPrimitive(int value, SNodeAccessControl token) {
     type = TYPE_INT;
     intValue = value;
     doubleValue = Double.NaN;
     stringValue = null;
     boolValue = null;
     jsoValue = null;
+    accessControl = token;
   }
 
   @JsIgnore
-  public SPrimitive(double value) {
+  public SPrimitive(double value, SNodeAccessControl token) {
     type = TYPE_DOUBLE;
     intValue = Integer.MAX_VALUE;
     doubleValue = value;
     stringValue = null;
     boolValue = null;
     jsoValue = null;
-
+    accessControl = token;    
   }
 
   @JsIgnore
-  public SPrimitive(String value) {
+  public SPrimitive(String value, SNodeAccessControl token) {
     type = TYPE_STRING;
     intValue = Integer.MAX_VALUE;
     doubleValue = Double.NaN;
     stringValue = value;
     boolValue = null;
     jsoValue = null;
+    accessControl = token;    
   }
 
   @JsIgnore
-  public SPrimitive(boolean value) {
+  public SPrimitive(boolean value, SNodeAccessControl token) {
     type = TYPE_BOOL;
     intValue = Integer.MAX_VALUE;
     doubleValue = Double.NaN;
     stringValue = null;
     boolValue = value;
     jsoValue = null;
+    accessControl = token;    
   }
 
   @JsIgnore
-  public SPrimitive(JavaScriptObject value) {
+  public SPrimitive(JavaScriptObject value, SNodeAccessControl token) {
     type = TYPE_JSO;
     intValue = Integer.MAX_VALUE;
     doubleValue = Double.NaN;
     stringValue = null;
     boolValue = null;
     jsoValue = value;
+    accessControl = token;    
   }
 
   @JsProperty
@@ -194,5 +216,30 @@ public class SPrimitive extends SNodeRemote {
   public String getNameKey() {
     return this.nameKey;
   }
+
   
+  
+  /**
+   * Check if this value can be written by a participant
+   * @param node
+   * @param participantId
+   * @return
+   */
+  public boolean canWrite(ParticipantId participantId) {
+    return accessControl.canWrite(participantId);
+  }
+  
+  /**
+   * Check if this value can be read by a participant
+   * @param node
+   * @param participantId
+   * @return
+   */
+  public boolean canRead(ParticipantId participantId) {
+    return accessControl.canRead(participantId);
+  }
+  
+  protected SNodeAccessControl getNodeAccessControl() {
+    return accessControl;
+  }
 }
