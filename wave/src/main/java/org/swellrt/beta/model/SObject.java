@@ -40,8 +40,10 @@ public interface SObject extends SMap {
   
   
   /** Make this object to be public to any user */
-  public void makePublic(boolean isPublic);
+  public void setPublic(boolean isPublic);
 
+  /** @return root map of the user's private area */
+  public SMap getPrivateArea();
   
   /**
    * GWT only

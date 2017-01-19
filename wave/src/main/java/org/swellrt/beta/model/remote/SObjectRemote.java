@@ -162,14 +162,18 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   private static final String MAP_ENTRY_KEY_ATTR = "k";
   private static final String MAP_ENTRY_VALUE_ATTR = "v";
   
+  private static final String USER_ROOT_SUBSTRATED_ID = "m+root";
+  
   private final String domain;
   private final IdGenerator idGenerator;
   private final ObservableWaveView wave;
   private final WaveStatus waveStatus;
   private ObservableWavelet masterWavelet;
+  private ObservableWavelet userWavelet;
   
   private SubstrateMapSerializer mapSerializer;   
   private SMapRemote root;
+  private SMapRemote userRoot;
   
   /** A factory for platform dependent objects */
   private final PlatformBasedFactory factory;
@@ -582,7 +586,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
 	}
 
   @Override
-  public void makePublic(boolean isPublic) {
+  public void setPublic(boolean isPublic) {
 
       try {
         
@@ -604,7 +608,29 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     }
   }
   
+  @Override
+  public SMap getPrivateArea() {
+    
+    // Initialize user's private area
+    if (userRoot == null) {      
+      
+      // Initialize user wavelet
+      if (userWavelet == null) {
+        userWavelet = wave.getUserData();
+        if (userWavelet == null)
+          userWavelet = wave.createUserData();
+      }   
+
+      userRoot = loadMap(SubstrateId.ofMap(userWavelet.getId(), USER_ROOT_SUBSTRATED_ID));
+      userRoot.attach(SNodeRemoteContainer.Void);
+    }
+    
+    return userRoot;
+  }
+  
   public boolean isNew() {
     return false;
   }
+  
+  
 }

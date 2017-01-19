@@ -7,6 +7,7 @@ import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.remote.SMapRemote;
 import org.swellrt.beta.model.remote.SNodeRemoteContainer;
+import org.swellrt.beta.model.remote.SObjectRemote;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -20,6 +21,8 @@ public class SMapProxyHandler extends ProxyHandler {
   private static final String PROP_TARGET = "__target__";
   private static final String PROP_CONTROLLER = "__controller";
   private static final String PROP_CTRL = "__ctrl";
+  private static final String PROP_PRIVATE = "__priv";
+  private static final String PROP_USER = "__user";
 
   @JsIgnore
   public SMapProxyHandler() {
@@ -27,21 +30,33 @@ public class SMapProxyHandler extends ProxyHandler {
   
   public Object get(SMap target, String property, ProxyHandler reciever) throws SException {
     
-    if (property.equals(PROP_TARGET) || 
+    boolean isRoot = false;
+    SObjectRemote object = null;
+    
+    if (target instanceof SMapRemote) {
+      SMapRemote targetRemote = (SMapRemote) target;
+      if (targetRemote.getParent().equals(SNodeRemoteContainer.Void)) {
+        isRoot = true;
+        object = targetRemote.getObject();
+      }        
+    }
+    
+    if (isRoot && property.equals(PROP_TARGET) || 
         property.equals(PROP_CONTROLLER) ||
         property.equals(PROP_CTRL)) {
-      
-      if (target instanceof SMapRemote) {
-        SMapRemote targetRemote = (SMapRemote) target;
-        if (targetRemote.getParent().equals(SNodeRemoteContainer.Void)) {
-          return targetRemote.getObject();
-        }        
-      }
-      
       return target;
     }
     
-    Object node = target.get(property);
+    Object node = null;
+    
+    if (isRoot && (property.equals(PROP_PRIVATE) ||
+        property.equals(PROP_USER))) {
+      node = object.getPrivateArea();
+    } else {
+      node = target.get(property);
+    }
+    
+    
 
     if (node instanceof HasJsProxy) {
       Proxy proxy = ((HasJsProxy) node).getJsProxy();

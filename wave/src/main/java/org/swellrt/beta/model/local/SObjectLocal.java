@@ -128,8 +128,13 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public void makePublic(boolean isPublic) {
+  public void setPublic(boolean isPublic) {
     // Ignore for local objects    
+  }
+
+  @Override
+  public SMap getPrivateArea() {
+    return null;
   }
   
 }
