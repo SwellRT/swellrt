@@ -1,6 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
@@ -9,10 +10,12 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swellrt", name = "StatusEvent")
 public class SStatusEvent {
 
-  public static final int TYPE_UNKNOWN = -1;
-  public static final int TYPE_ERROR = 1;
-  public static final int TYPE_UPDATE = 2;
-  public static final int TYPE_CLOSE = 3;
+  public static final int UNKNOW = -1;
+  public static final int ERROR = 1;
+  public static final int UPDATE = 2;
+  public static final int CLOSED = 3;
+  public static final int PARTICIPANT_ADDED = 4;
+  public static final int PARTICIPANT_REMOVED = 5;
   
   private final String objectId;
   private final int type;
@@ -30,17 +33,20 @@ public class SStatusEvent {
   // Type close
   private boolean allDataCommitted;
   
+  // Type participant add / remove
+  private String participantId;
+  
   @JsIgnore
   public SStatusEvent(String objectId, SException e) {
     this.objectId = objectId;
-    this.type = TYPE_ERROR;
+    this.type = ERROR;
     this.exception = e;
   }
 
   @JsIgnore
   public SStatusEvent(String objectId, int inflight, int unacknowdledge, int uncommitted, long lastAckVersion, long lastCommittedVersion) {
     this.objectId = objectId;
-    this.type = TYPE_UPDATE;
+    this.type = UPDATE;
   
     this.inflight = inflight;
     this.unacknowledge = unacknowdledge;
@@ -54,10 +60,17 @@ public class SStatusEvent {
   @JsIgnore
   public SStatusEvent(String objectId, boolean allDataCommitted) {
     this.objectId = objectId;
-    this.type = TYPE_CLOSE;
+    this.type = CLOSED;
     this.allDataCommitted = allDataCommitted;
   }
 
+  @JsIgnore
+  public SStatusEvent(String objectId, ParticipantId participantId, boolean isRemoved) {
+    this.objectId = objectId;
+    this.type = isRemoved ? PARTICIPANT_REMOVED : PARTICIPANT_ADDED;
+    this.participantId = participantId.getAddress();
+  }
+  
   @JsProperty
   public String getObjectId() {
     return objectId;
@@ -103,6 +116,8 @@ public class SStatusEvent {
     return allDataCommitted;
   }
   
-  
+  public String getParticipantId() {
+    return participantId;
+  }
   
 }

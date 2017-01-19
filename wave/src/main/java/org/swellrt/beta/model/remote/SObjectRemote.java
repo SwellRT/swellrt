@@ -199,9 +199,10 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
     if (masterWavelet == null) {
       masterWavelet = wave.createWavelet(WaveletId.of(domain, MASTER_DATA_WAVELET_NAME));
     }
-     
-    SObjectRemote object = new SObjectRemote(participant, idGenerator, domain, wave, factory, waveStatus);
+         
+    SObjectRemote object = new SObjectRemote(participant, idGenerator, domain, wave, factory, waveStatus);    
     object.init();
+    masterWavelet.addListener(new SWaveletListener(object));
     
     return object;
   }
