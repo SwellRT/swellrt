@@ -46,6 +46,8 @@ public class SException extends Exception {
   public static final int READ_FORBIDDEN = 112;
   
   public static final int WRITE_FORBIDDEN = 113;
+  
+  // Codes above 200 are reserved for editors
 
   // Codes from ResponseCode
   

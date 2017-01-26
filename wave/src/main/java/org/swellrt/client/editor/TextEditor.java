@@ -793,8 +793,8 @@ public class TextEditor implements EditorUpdateListener {
 		
 
     if (annotationName.equals(ParagraphAnnotation.HEADER.toString())) {
-      Date now = new Date();
-      style.setId(String.valueOf(now.getTime()) + String.valueOf(start) + String.valueOf(end)); 
+      //Date now = new Date();
+      //style.setId(String.valueOf(now.getTime()) + String.valueOf(start) + String.valueOf(end)); 
     }
 		
 		final boolean isOn = annotationValue != null && !annotationValue.isEmpty();

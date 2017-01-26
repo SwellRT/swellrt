@@ -32,6 +32,7 @@ import com.google.gwt.user.client.Event;
  * @author Pablo Ojanguren (pablojan@gmail.com)
  * 
  */
+@Deprecated
 public class AnnotationHandler implements AnnotationMutationHandler {
 
   public interface Activator {

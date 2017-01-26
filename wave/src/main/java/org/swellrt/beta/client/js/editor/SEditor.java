@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
+import org.swellrt.beta.client.js.JsUtils;
+import org.swellrt.beta.client.js.editor.annotation.Annotation;
+import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
@@ -31,11 +34,17 @@ import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.LineContainers;
+import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.Preconditions;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "Editor")
@@ -295,7 +304,13 @@ public class SEditor {
 
   }
   
-  
+  /**
+   * Attach a text object to this editor. The text will be
+   * shown instantly.
+   * 
+   * @param text a text object
+   * @throws SException
+   */
   public void set(STextWeb text) throws SException {
 
     Editor e = getEditor();
@@ -320,7 +335,10 @@ public class SEditor {
 
   }
   
-  
+  /**
+   * Enable or disable edit mode.
+   * @param editOn
+   */
   public void edit(boolean editOn) {
     if (editor != null && editor.hasDocument()) {
       if (editor.isEditing() != editOn) 
@@ -328,7 +346,10 @@ public class SEditor {
     }
   }
   
-  
+  /**
+   * Reset the state of the editor, deattaching the document
+   * if it is necessary.
+   */
   public void clean() {
     if (editor != null && editor.hasDocument()) {
       // editor.removeUpdateListener(this);
@@ -337,13 +358,104 @@ public class SEditor {
     }
   }
   
+  /**
+   * @return true iff the editor is in edit mode
+   */
   public boolean isEditing() {
     return editor != null && editor.isEditing();
   }
   
+  /**
+   * @return true iff a document is attached to this editor.
+   */
   public boolean hasDocument() {
     return editor != null && editor.hasDocument();
   }
+  
+  //
+  // Annotation methods
+  //
+  
+  /**
+   * Set an annotation in a provided text range or in
+   * the current selection.  
+   * 
+   * @param name annotation's name
+   * @param value a valid value for the annotation
+   * @param range a range or null
+   */
+  public void setAnnotation(String name, String value, @JsOptional Range range) throws SEditorException {
+    
+    if (!editor.isEditing())
+      return;
+    
+    Annotation antn = AnnotationRegistry.get(name);
+    if (antn == null)
+      throw new SEditorException(SEditorException.UNKNOWN_ANNOTATION, "Unknown annotation");
+    
+    if (range == null)
+      range = editor.getSelectionHelper().getOrderedSelectionRange();
+    
+    antn.set(getEditor(), range, value);    
+  }
+  
+  
+  public void resetAnnotation(JsArrayString names,  @JsOptional Range range) throws SEditorException {
+    
+    if (!editor.isEditing())
+      return;
+    
+    if (range == null)
+      range = editor.getSelectionHelper().getOrderedSelectionRange();
+    
+    AnnotationRegistry.AnnotationBulkAction resetAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
+    
+    if (names != null) {
+      if (JsUtils.isArray(names)) {
+        resetAction.add((JsArrayString) names);
+      } else if (JsUtils.isString(names)){
+        String name = names.toString();
+        resetAction.add(name);
+      } else {
+        throw new SEditorException("Expected array or string as first argument");
+      }
+    }
+    
+    resetAction.reset();
+  }
+  
+  
+  public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
+    if (range == null)
+      range = editor.getSelectionHelper().getOrderedSelectionRange();
+    
+    if (range == null) {
+      int start = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getFirstValidSelectionPoint());
+      int end = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getLastValidSelectionPoint());
+      range = new Range(start, end);
+    }
+         
+    
+    AnnotationRegistry.AnnotationBulkAction getAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
+    
+    if (names != null) {
+      if (JsUtils.isArray(names)) {
+        getAction.add((JsArrayString) names);
+      } else if (JsUtils.isString(names) && !names.toString().isEmpty()){
+        getAction.add(names.toString());
+      } else {
+        throw new SEditorException("Expected array or string as first argument");
+      }
+    }
+    
+    return getAction.get();   
+  }
+  
+  
+  
+  //
+  // Internal stuff
+  // 
   
   /**
    * Make editor instance to listen to service's connection
@@ -355,11 +467,13 @@ public class SEditor {
    * 
    * @param serviceFrontend
    */
+  @JsIgnore
   public void registerService(ServiceFrontend serviceFrontend) {
     this.serviceFrontend = serviceFrontend;
     this.serviceFrontend.addConnectionHandler(connectionHandler);
   }
   
+  @JsIgnore
   public void unregisterService() {
     if (serviceFrontend != null)
       serviceFrontend.removeConnectionHandler(connectionHandler);

@@ -43,6 +43,8 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.EventListener;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Renderer for the bits of paint that spread over text
  *
@@ -53,7 +55,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   private static final int NOTIFY_SCHEDULE_DELAY_MS = 200;
 
   private static final int MOUSE_LISTENER_EVENTS = Event.MOUSEEVENTS | Event.ONCLICK;
-
+  
   private final Set<ContentElement> mutatedElements = new HashSet<ContentElement>();
 
   private final Task mutationNotificationTask = new Task() {
@@ -121,6 +123,8 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   private void applyAttribute(ContentElement element, String name, String newValue) {
     // NOTE(user): If an link attribute is added, then handle specially,
     // otherwise treat as style attribute.
+
+    
     Element implNodelet = element.getImplNodelet();
     if (name.equals(AnnotationPaint.LINK_ATTR)) {
       if (newValue != null) {
@@ -135,7 +139,10 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
         implNodelet.removeAttribute("href");
       }
     } else if (name.equals(AnnotationPaint.MOUSE_LISTENER_ATTR)) {
-      updateEventHandler(element, newValue);
+      
+      // TODO unify this section with the general case, down below
+      updateEventHandler(element, "link", newValue != null && !newValue.isEmpty());
+      
     } else if (name.equals(AnnotationPaint.CLASS_ATTR)) {
       // If a class attribute is provided, set as a CSS class name
       implNodelet.addClassName(newValue);
@@ -144,20 +151,21 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     // Attributes for generic annotations
     //    
     else if (name.startsWith(AnnotationPaint.VALUE_ATTR_PREFIX)) {    	
-    	
-    	// By default, set a CSS class with the annotation name to identify the node
-    	String annotationName = name
-    			.replace(AnnotationPaint.VALUE_ATTR_PREFIX, "");
-    			
-    	implNodelet.addClassName(annotationName);
-    	
+      String annotationName = name
+          .replace(AnnotationPaint.VALUE_ATTR_PREFIX, "");
+    	   			
+    	implNodelet.addClassName(annotationName);    	
     	implNodelet.setAttribute("data-"+annotationName, newValue);   
     	
-    } else if (name.startsWith(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX)) {    	
-    	updateEventHandler(element, newValue);    	
+    } else if (name.startsWith(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX)) {   
+      
+      String annotationName = name
+          .replace(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX, "");
+        
+      updateEventHandler(element, annotationName, newValue != null && !newValue.isEmpty());  	    
     
-    } else if (name.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR)) {
-    	// Ignore mutation listener attributes
+    } else if (name.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX)) {
+    	// Ignore mutation listener attributes, not need to paint
     } else { 	
     //
     // Rest of local node attributes are meant to be inline styles
@@ -171,21 +179,92 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
       }
     }
   }
+  
+  @JsFunction
+  public interface DOMEventListener {
+    void exec(Event e);
+  }
+  
+  private native void DOMAddEventListener(Element e, String listenerId, DOMEventListener listener) /*-{
+  
+    var events = ["click", "mousedown", "mouseup", "mousemove", "mouseover", "mouseout"];
+       
+    for (var i in events) {
+      e.addEventListener(events[i], listener, false);
+    }
+    
+    if (!e.listeners) {
+      e.listeners = new Object();
+    }
+    
+    e.listeners[listenerId] = listener;
+  
+  }-*/;
+  
+  private native void DOMRemoveEventListener(Element e, String listenerId) /*-{
+  
+    var events = ["click", "mousedown", "mouseup", "mousemove", "mouseover", "mouseout"];
+    
+    var listener = e.listeners[listenerId];
+    
+    if (listener) {   
+      for (var i in events) {
+        e.removeEventListener(events[i], listener, false);
+      }
+    
+      delete e.listeners[listenerId]; 
+    
+    }
+  
+  }-*/;
 
-  private void updateEventHandler(final ContentElement element, String eventHandlerId) {
+  /**
+   * Allow different handlers in a single node, one for each
+   * annotation type (eventHandlerId).
+   * <p>
+   * The same handler will be registered for all supported events.
+   * 
+   * @param element
+   * @param eventHandlerId
+   * @param enable
+   */
+  private void updateEventHandler(final ContentElement element, String eventHandlerId, boolean enable) {
     Element implNodelet = element.getImplNodelet();
     final EventHandler handler =
         eventHandlerId == null ? null : AnnotationPaint.eventHandlerRegistry.get(eventHandlerId);
-    if (handler != null) {
+    
+    if (handler != null && enable) {
+      
       DOM.sinkEvents(DomHelper.castToOld(implNodelet), MOUSE_LISTENER_EVENTS);
+      
+      // Old way
+      /*
       DOM.setEventListener(DomHelper.castToOld(implNodelet), new EventListener() {
         @Override
         public void onBrowserEvent(Event event) {
           handler.onEvent(element, event);
         }
       });
-    } else {
-      removeListener(DomHelper.castToOld(implNodelet));
+      */
+      
+      /**
+       * Allow to have multiple handlers in same node, i.e. same text could have
+       * more that one annotations.
+       */
+      DOMAddEventListener(implNodelet, eventHandlerId, new DOMEventListener() {
+
+        @Override
+        public void exec(Event e) {
+          handler.onEvent(element, e) ;
+        }
+        
+      });
+      
+    } else if (!enable) {           
+      DOMRemoveEventListener(implNodelet, eventHandlerId);
+      // Old way
+      // DOM.setEventListener(implNodelet, null);
+      DOM.sinkEvents(implNodelet, DOM.getEventsSunk(implNodelet) & ~MOUSE_LISTENER_EVENTS);
     }
   }
 
@@ -246,7 +325,8 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     removeListener(DomHelper.castToOld(element.getImplNodelet()));
     super.onRemovedFromParent(element, newParent);
   }
-
+  
+  @Deprecated
   private void removeListener(com.google.gwt.user.client.Element implNodelet) {
     DOM.setEventListener(implNodelet, null);
     DOM.sinkEvents(implNodelet, DOM.getEventsSunk(implNodelet) & ~MOUSE_LISTENER_EVENTS);

@@ -8,7 +8,6 @@ import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
 
 public class STextWebImpl implements STextWeb {
   

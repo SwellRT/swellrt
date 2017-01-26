@@ -165,9 +165,8 @@ public class Paragraph {
     }
 
     @Override
-    public void setId(String id) {
-      // TODO Auto-generated method stub
-      
+    public void setAttributes(Map<String, String> attrs) {
+      // Ignore      
     }
   }
 
@@ -228,8 +227,8 @@ public class Paragraph {
     }
 
     @Override
-    public void setId(String id) {
-      // TODO Auto-generated method stub
+    public void setAttributes(Map<String, String> attrs) {
+      // Ignore
       
     }
   }
@@ -292,10 +291,16 @@ public class Paragraph {
       ParagraphEventHandler.indent(e, -1);
     }
   };
+  
+  public static final ContentElement.Action RESET_INDENT = new ContentElement.Action() {
+    public void execute(ContentElement e) {
+      ParagraphEventHandler.indent(e, 0);
+    }
+  };
 
   private static class RegularStyler implements LineStyle {
     private final String type;
-    private String id = null;
+    private Map<String, String> attrs = null;
     RegularStyler(String type) {
       this.type = type;
     }
@@ -303,8 +308,10 @@ public class Paragraph {
        
       e.getMutableDoc().setElementAttribute(e, SUBTYPE_ATTR, isOn ? type : null);
       e.getMutableDoc().setElementAttribute(e, LIST_STYLE_ATTR, null);
-      if (id != null)
-        e.getMutableDoc().setElementAttribute(e, ID_ATTR, id);
+      if (attrs != null) {
+        for (String attrName: attrs.keySet())
+          e.getMutableDoc().setElementAttribute(e, attrName, attrs.get(attrName));
+      }
     }
 
     @Override public boolean isApplied(ContentElement e) {
@@ -312,8 +319,8 @@ public class Paragraph {
     }
 
     @Override
-    public void setId(String id) {
-      this.id = id;
+    public void setAttributes(Map<String, String> attrs) {
+      this.attrs = attrs;
     }
   }
 
@@ -334,9 +341,8 @@ public class Paragraph {
     }
 
     @Override
-    public void setId(String id) {
-      // TODO Auto-generated method stub
-      
+    public void setAttributes(Map<String, String> attrs) {
+      // Ignore      
     }
   }
 
@@ -394,7 +400,11 @@ public class Paragraph {
      */
     boolean isApplied(ContentElement e);
     
-    void setId(String id);
+    /**
+     * Pass extended attributes to line stylers
+     * @param attrs
+     */
+    void setAttributes(Map<String, String> attrs);
   }
 
   public static void toggle(LocationMapper<ContentNode> mapper,

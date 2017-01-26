@@ -19,15 +19,14 @@
 
 package org.waveprotocol.wave.client.editor.content.misc;
 
-import com.google.gwt.user.client.Event;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.extract.PasteFormatRenderers;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.gwt.user.client.Event;
 
 /**
  * Element for rendering bits of annotations
@@ -49,27 +48,15 @@ public class AnnotationPaint {
 
   
   //
-  // Below, local node attributes for generic annotations
+  // Below, local node attributes for custom annotations
   //
   
-  /**
-   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
-   */
-  public static final String VALUE_ATTR_PREFIX = "value-";
+  public static final String VALUE_ATTR_PREFIX = "v-";
 
-  /**
-   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
-   */
-  public static final String EVENT_LISTENER_ATTR_PREFIX = "eventListener-";
+  public static final String EVENT_LISTENER_ATTR_PREFIX = "el-";
   
-  /**
-   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
-   */
-  public static final String MUTATION_LISTENER_ATTR_PREFIX = "mutationListener-";
+  public static final String MUTATION_LISTENER_ATTR_PREFIX = "ml-";
   
-  /**
-   * Attribute prefix in a content's local node for {@link JsoAnnotationController} 
-   */
   public static final String CLASS_ATTR_PREFIX = "class-";
 
   
@@ -85,8 +72,13 @@ public class AnnotationPaint {
   /**
    * Attribute for mapping callback strings.
    */
-  public static final String MOUSE_LISTENER_ATTR = "mouseListener";
-        
+  public static final String MOUSE_LISTENER_ATTR = "el-link";
+
+  /**
+   * Attribute for mapping callback strings.
+   */
+  public static final String MUTATION_LISTENER_ATTR = "ml-link";
+  
   /**
    * Handlers may register callback for mutation events over painted regions.
    */
@@ -99,10 +91,6 @@ public class AnnotationPaint {
   static final Map<String, MutationHandler> mutationHandlerRegistry =
     new HashMap<String, MutationHandler>();
 
-  /**
-   * Attribute for mapping callback strings.
-   */
-  public static final String MUTATION_LISTENER_ATTR = "mutationListener";
   
   static final Map<String, EventHandler> eventHandlerRegistry =
       new HashMap<String, EventHandler>();
