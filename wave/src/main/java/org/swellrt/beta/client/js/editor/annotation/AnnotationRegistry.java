@@ -9,7 +9,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.swellrt.beta.client.js.JsUtils;
-import org.swellrt.beta.client.js.editor.SEditor;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.GeneralAnnotationHandler;
@@ -17,7 +16,6 @@ import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
-import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
@@ -25,20 +23,14 @@ import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
-import org.waveprotocol.wave.model.document.util.DocHelper;
-import org.waveprotocol.wave.model.document.util.LineContainers;
-import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
@@ -82,6 +74,9 @@ public class AnnotationRegistry {
   public static final String STYLE_TEXT_DECORATION = AnnotationConstants.STYLE_TEXT_DECORATION;
   public static final String STYLE_VERTICAL_ALIGN = AnnotationConstants.STYLE_VERTICAL_ALIGN;
   
+  
+  
+  
   public static class AnnotationBulkAction {
     
     Set<Annotation> paragraphAnnotations = new HashSet<Annotation>(); 
@@ -89,12 +84,10 @@ public class AnnotationRegistry {
 
     final Range range;
     final EditorContext editor;
-    final SEditor seditor;
     
-    public AnnotationBulkAction(SEditor seditor, EditorContext editor, Range range) {
+    public AnnotationBulkAction(EditorContext editor, Range range) {
       this.range = range;
       this.editor = editor;
-      this.seditor = seditor;
     }
     
     public void add(JsArrayString names) {
@@ -162,10 +155,7 @@ public class AnnotationRegistry {
         antn.reset(editor, range);
     }
     
-    protected int getRangeMatchType (Range selectionRange, Range annotationRange) {      
-      boolean in = selectionRange.equals(annotationRange) || (annotationRange.getStart() <= selectionRange.getStart() &&  selectionRange.getEnd() <= annotationRange.getEnd());     
-      return in ? AnnotationInstance.MATCH_IN : AnnotationInstance.MATCH_OUT;
-    }
+
     
     protected JsoView createResult() {
       return JsoView.as(JavaScriptObject.createObject());
@@ -180,16 +170,6 @@ public class AnnotationRegistry {
       JsUtils.addToArray(arrayJso, instance);
     }
     
-    protected Node lookupNode(ContentNode n) {
-      if (n != null) {
-          Node rightwardsNodelet = n.getImplNodeletRightwards();
-          if (rightwardsNodelet != null) {
-            return rightwardsNodelet;
-          }
-      }
-      
-      return null;
-    }
     
     
     public JavaScriptObject get() {
@@ -205,6 +185,7 @@ public class AnnotationRegistry {
       // Text (caret) annotations
       // 
       
+      /*
       if (range.isCollapsed())  {
       
         editor.getDocument().forEachAnnotationAt(range.getStart(), new ProcV<String>() {
@@ -214,48 +195,30 @@ public class AnnotationRegistry {
             
             if ((getAll || textAnnotations.contains(key)) && !isParagraphAnnotation(key)) {
               
-              Range actualRange = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), key , range.getStart());
-              Point<ContentNode> atNode = editor.getDocument().locate(range.getStart()+1);
-              ContentElement lineNode = LineContainers.getRelatedLineElement(editor.getDocument(), atNode);
+              Range actualRange = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), key , range.getStart());              
+              AnnotationInstance antn = createAnnotationInstance(seditor, editor, key, value, "", range, actualRange);
               
-              Element lineElement = lookupNode(lineNode).getParentElement();
-              Node node = atNode.getContainer().getImplNodelet().getParentElement();         
-              
-              addToResult(result, key, new AnnotationInstance(seditor, key, value, "", actualRange, lineElement, node, getRangeMatchType(range, actualRange)));
+              addToResult(result, key, antn);
             }
           }
         });
       
-      } else {
-        
-        ReadableStringSet keys = !getAll ? textAnnotations : null;
-        editor.getDocument().rangedAnnotations(range.getStart(), range.getEnd(), keys).forEach(new Consumer<RangedAnnotation<String>>() {
-          @Override
-          public void accept(RangedAnnotation<String> t) {
-            if (t.value() != null) {
-              Range r = new Range(t.start(), t.end());
-              String text = DocHelper.getText(editor.getDocument(), t.start(), t.end());
-              Point<ContentNode> atNode = editor.getDocument().locate(t.start()+1);
-              ContentElement lineNode = LineContainers.getRelatedLineElement(editor.getDocument(), atNode);
-              
-              Element lineElement = lookupNode(lineNode).getParentElement();
-              Node node = atNode.getContainer().getImplNodelet().getParentElement();    
-              
-              addToResult(result, t.key(), new AnnotationInstance(seditor, t.key(), t.value(), text, r, lineElement, node, getRangeMatchType(range, r)));
-            }             
-          }          
-        });
-        
-      }
-  
+      } */
+      
+      ReadableStringSet keys = !getAll ? textAnnotations : null;
+      
+      editor.getDocument().rangedAnnotations(range.getStart(), range.getEnd(), keys).forEach(new Consumer<RangedAnnotation<String>>() {
+        @Override
+        public void accept(RangedAnnotation<String> t) {
+          if (t.value() != null) {
+            addToResult(result, t.key(), AnnotationInstance.create(editor.getDocument(), t.key(), t.value(), new Range(t.start(), t.end()), range));
+          }             
+        }          
+      });
+
       //
       // Paragraph annotations
       // 
-
-      String text = DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
-      Point<ContentNode> linePoint = editor.getDocument().locate(range.getStart()+1);
-      ContentNode lineNode = LineContainers.getRelatedLineElement(editor.getDocument(), linePoint);
-      Element lineElement = lineNode.asElement().getImplNodeletRightwards().getParentElement();     
        
       for (Annotation antn: paragraphAnnotations) {
         
@@ -263,7 +226,8 @@ public class AnnotationRegistry {
           String name = ((ParagraphValueAnnotation) antn).getName();
           String value = ((ParagraphValueAnnotation) antn).apply(editor, range);
           if (value != null) {
-            addToResult(result,name, new AnnotationInstance(seditor, name, value, text, range, lineElement, null, AnnotationInstance.MATCH_IN));
+            
+            addToResult(result,name, new AnnotationInstance(editor.getDocument(), name, value, range, null, AnnotationInstance.MATCH_IN));
           }
         }
       }

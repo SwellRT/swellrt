@@ -432,14 +432,14 @@ public class SEditor {
    * @param range
    * @throws SEditorException
    */
-  public void resetAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
+  public void clearAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
     
     if (!editor.isEditing())
       return;
     
     range = checkRangeArgument(range);
     
-    AnnotationRegistry.AnnotationBulkAction resetAction = new AnnotationRegistry.AnnotationBulkAction(this, editor, range);
+    AnnotationRegistry.AnnotationBulkAction resetAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {
@@ -467,7 +467,7 @@ public class SEditor {
     
     range = checkRangeArgument(range);
     
-    AnnotationRegistry.AnnotationBulkAction getAction = new AnnotationRegistry.AnnotationBulkAction(this, editor, range);
+    AnnotationRegistry.AnnotationBulkAction getAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {

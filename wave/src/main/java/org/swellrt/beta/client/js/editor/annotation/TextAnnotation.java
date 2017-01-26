@@ -7,7 +7,6 @@ import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.util.Range;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 
 /**
@@ -52,29 +51,14 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
     }
   }
   
-  protected Range getNodeRange(ContentElement node) {
-    
-    int start = node.getContext().locationMapper().getLocation(node);
-    int end = node.getContext().locationMapper().getLocation(node.getNextSibling());
-    return new Range(start, end);
-
-  }
   
-  protected Element getNodeElement(ContentElement node) {
-    /*
-    Point<ContentNode> point = doc.locate(start);
-    if (point != null)
-      node = point.getCanonicalNode().getImplNodeletRightwards();
-      */    
-    return node.asElement().getImplNodelet();
-  }
+
      
   @Override
   public void onAdded(ContentElement node) {
     if (handler != null) {      
-      String value = node.getAttribute(this.contentNodeAttributeName);
-      Range range = getNodeRange(node);
-      handler.onAdded(getNodeElement(node), value, range);
+      String value = node.getAttribute(this.contentNodeAttributeName);          
+      handler.onAdded(AnnotationInstance.create(node.getMutableDoc(), name, value, node));
     }    
   }
 
@@ -82,8 +66,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onMutation(ContentElement node) {
     if (handler != null) {
       String value = node.getAttribute(this.contentNodeAttributeName);
-      Range range = getNodeRange(node);
-      handler.onMutation(getNodeElement(node), value, range);
+      handler.onMutation(AnnotationInstance.create(node.getMutableDoc(), name, value, node));
     }   
   }
 
@@ -91,8 +74,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onRemoved(ContentElement node) {
     if (handler != null) {
       String value = node.getAttribute(this.contentNodeAttributeName);
-      Range range = getNodeRange(node);
-      handler.onRemoved(getNodeElement(node), value, range);
+      handler.onRemoved(AnnotationInstance.create(node.getMutableDoc(), name, value, node));
     }   
   }
 
@@ -100,8 +82,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onEvent(ContentElement node, Event event) {
     if (handler != null) {
       String value = node.getAttribute(this.contentNodeAttributeName);
-      Range range = getNodeRange(node);
-      handler.onEvent(event, getNodeElement(node), value, range);
+      handler.onEvent(event, AnnotationInstance.create(node.getMutableDoc(), name, value, node));
     }   
   }
   

@@ -41,7 +41,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.EventListener;
 
 import jsinterop.annotations.JsFunction;
 
@@ -69,7 +68,12 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
 
         Set<MutationHandler> handlers = getMutationHandlers(element);
         for (MutationHandler h: handlers) {
-        	h.onMutation(element);
+          try {
+            h.onMutation(element);
+          } catch (Exception e) {
+            EditorStaticDeps.logger.error().log("Exception invoking annotation mutation handler", e);
+          }
+          
         }
 
       }
@@ -255,7 +259,11 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
 
         @Override
         public void exec(Event e) {
-          handler.onEvent(element, e) ;
+          try {
+            handler.onEvent(element, e) ;
+          } catch (Exception ex) {
+            EditorStaticDeps.logger.error().log("Error invoking annotation event handler", ex);
+          }
         }
         
       });
@@ -307,7 +315,11 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   public void onAddedToParent(ContentElement element, ContentElement oldParent) {
     Set<MutationHandler> handlers = getMutationHandlers(element);
     for (MutationHandler h : handlers) {
-      h.onAdded(element);
+      try {
+        h.onAdded(element);
+      } catch (Exception ex) {
+        EditorStaticDeps.logger.error().log("Error invoking annotation onAdded handler", ex);
+      }
     }
   }  
 
@@ -318,8 +330,12 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     }
     
     Set<MutationHandler> handlers = getMutationHandlers(element);
-    for (MutationHandler h: handlers) {
-      h.onRemoved(element);
+    for (MutationHandler h : handlers) {
+      try {
+        h.onRemoved(element);
+      } catch (Exception ex) {
+        EditorStaticDeps.logger.error().log("Error invoking annotation onRemoved handler", ex);
+      }
     }
     
     removeListener(DomHelper.castToOld(element.getImplNodelet()));
