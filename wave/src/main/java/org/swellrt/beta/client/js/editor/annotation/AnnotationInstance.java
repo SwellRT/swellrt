@@ -1,5 +1,6 @@
 package org.swellrt.beta.client.js.editor.annotation;
 
+import org.swellrt.beta.client.js.editor.SEditor;
 import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.dom.client.Element;
@@ -31,11 +32,12 @@ public class AnnotationInstance {
   Element line;
   Node node;
   int matchType;
+  SEditor editor;
   
   
   
   @JsIgnore
-  public AnnotationInstance(String name, String value, String text, Range range, Element line, Node node, int matchType) {
+  public AnnotationInstance(SEditor editor, String name, String value, String text, Range range, Element line, Node node, int matchType) {
     super();
     this.name = name;
     this.value = value;
@@ -44,6 +46,7 @@ public class AnnotationInstance {
     this.line = line;
     this.matchType = matchType;
     this.node = node;
+    this.editor = editor;
   }
 
   @JsProperty
@@ -81,5 +84,10 @@ public class AnnotationInstance {
     return matchType;
   }
   
+  /** @return reference to the editor instance  */
+  @JsProperty
+  public SEditor getEditor() {
+    return editor;
+  }
   
 }

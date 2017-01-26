@@ -35,7 +35,6 @@ import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -376,9 +375,36 @@ public class SEditor {
   // Annotation methods
   //
   
+
+  protected Range getWholeDocRange() {
+    int start = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getFirstValidSelectionPoint());
+    int end = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getLastValidSelectionPoint());
+    return new Range(start, end);
+  }
+  
   /**
-   * Set an annotation in a provided text range or in
-   * the current selection.  
+   * Implements a safe logic to a range argument. 
+   * 
+   * @param range
+   * @return the original range or the current selection
+   * @throws SEditorException if not valid range can be privided
+   */
+  protected Range checkRangeArgument(Range range) throws SEditorException {
+    
+    if (Range.ALL.equals(range))
+      range = getWholeDocRange();
+    
+    if (range == null)
+      range = editor.getSelectionHelper().getOrderedSelectionRange();
+    
+    if (range == null)
+      throw new SEditorException("A valid range must be provided or a selection must be active");
+    
+    return range;
+  }
+   
+  /**
+   * Set annotation in an specific doc range or in the current selection otherwise.
    * 
    * @param name annotation's name
    * @param value a valid value for the annotation
@@ -393,22 +419,27 @@ public class SEditor {
     if (antn == null)
       throw new SEditorException(SEditorException.UNKNOWN_ANNOTATION, "Unknown annotation");
     
-    if (range == null)
-      range = editor.getSelectionHelper().getOrderedSelectionRange();
+    range = checkRangeArgument(range);
     
     antn.set(getEditor(), range, value);    
   }
   
   
-  public void resetAnnotation(JsArrayString names,  @JsOptional Range range) throws SEditorException {
+  /**
+   * Reset annotations in an specific doc range or in the current selection otherwise.
+   * 
+   * @param names
+   * @param range
+   * @throws SEditorException
+   */
+  public void resetAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
     
     if (!editor.isEditing())
       return;
     
-    if (range == null)
-      range = editor.getSelectionHelper().getOrderedSelectionRange();
+    range = checkRangeArgument(range);
     
-    AnnotationRegistry.AnnotationBulkAction resetAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
+    AnnotationRegistry.AnnotationBulkAction resetAction = new AnnotationRegistry.AnnotationBulkAction(this, editor, range);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {
@@ -424,19 +455,19 @@ public class SEditor {
     resetAction.reset();
   }
   
-  
+  /**
+   * Get annotations in an specific doc range or in the current selection otherwise.
+   * 
+   * @param names
+   * @param range
+   * @return
+   * @throws SEditorException
+   */
   public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
-    if (range == null)
-      range = editor.getSelectionHelper().getOrderedSelectionRange();
     
-    if (range == null) {
-      int start = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getFirstValidSelectionPoint());
-      int end = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getLastValidSelectionPoint());
-      range = new Range(start, end);
-    }
-         
+    range = checkRangeArgument(range);
     
-    AnnotationRegistry.AnnotationBulkAction getAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
+    AnnotationRegistry.AnnotationBulkAction getAction = new AnnotationRegistry.AnnotationBulkAction(this, editor, range);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {

@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.swellrt.beta.client.js.JsUtils;
+import org.swellrt.beta.client.js.editor.SEditor;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.GeneralAnnotationHandler;
@@ -88,10 +89,12 @@ public class AnnotationRegistry {
 
     final Range range;
     final EditorContext editor;
+    final SEditor seditor;
     
-    public AnnotationBulkAction(EditorContext editor, Range range) {
+    public AnnotationBulkAction(SEditor seditor, EditorContext editor, Range range) {
       this.range = range;
       this.editor = editor;
+      this.seditor = seditor;
     }
     
     public void add(JsArrayString names) {
@@ -218,7 +221,7 @@ public class AnnotationRegistry {
               Element lineElement = lookupNode(lineNode).getParentElement();
               Node node = atNode.getContainer().getImplNodelet().getParentElement();         
               
-              addToResult(result, key, new AnnotationInstance(key, value, "", actualRange, lineElement, node, getRangeMatchType(range, actualRange)));
+              addToResult(result, key, new AnnotationInstance(seditor, key, value, "", actualRange, lineElement, node, getRangeMatchType(range, actualRange)));
             }
           }
         });
@@ -238,7 +241,7 @@ public class AnnotationRegistry {
               Element lineElement = lookupNode(lineNode).getParentElement();
               Node node = atNode.getContainer().getImplNodelet().getParentElement();    
               
-              addToResult(result, t.key(), new AnnotationInstance(t.key(), t.value(), text, r, lineElement, node, getRangeMatchType(range, r)));
+              addToResult(result, t.key(), new AnnotationInstance(seditor, t.key(), t.value(), text, r, lineElement, node, getRangeMatchType(range, r)));
             }             
           }          
         });
@@ -260,7 +263,7 @@ public class AnnotationRegistry {
           String name = ((ParagraphValueAnnotation) antn).getName();
           String value = ((ParagraphValueAnnotation) antn).apply(editor, range);
           if (value != null) {
-            addToResult(result,name, new AnnotationInstance(name, value, text, range, lineElement, null, AnnotationInstance.MATCH_IN));
+            addToResult(result,name, new AnnotationInstance(seditor, name, value, text, range, lineElement, null, AnnotationInstance.MATCH_IN));
           }
         }
       }

@@ -31,6 +31,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swellrt.Editor", name = "Range")
 public final class Range {
 
+  public static final Range ALL = new Range(-1, -1); 
   
   public static Range create(int start, int end) {
     return new Range(start, end);
