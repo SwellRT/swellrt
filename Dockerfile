@@ -34,6 +34,9 @@ ADD scripts/docker/home/* $home/
 # Add static resources
 ADD wave/war $home/war/
 
+# Add static resources
+ADD wave/webapp $home/webapp/
+
 # Add runtime
 ADD wave/build/libs/swellrt.jar $home/swellrt.jar
 
