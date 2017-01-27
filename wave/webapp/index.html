@@ -127,7 +127,7 @@
 
         if (!object.signal) {
             object.signal = new Date();
-            controller.makePublic(true);
+            controller.setPublic(true);
         }
         console.log("checking swellrt status signal -> "+object.signal);
         object.signal = (new Date()).toString();
