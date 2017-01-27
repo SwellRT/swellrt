@@ -752,7 +752,9 @@ task createDistBinZip(type: Zip) {
     from('war') {
         into distFolder + '/war'
     }
-
+	from('webapp') {
+        into distFolder + '/webapp'
+    }
 }
 
 task createDistBinTar(type: Tar) {
@@ -772,7 +774,9 @@ task createDistBinTar(type: Tar) {
     from('war') {
         into distFolder + '/war'
     }
-
+	from('webapp') {
+        into distFolder + '/webapp'
+    }
 }
 
 createDistBinZip.dependsOn jar, compileJsWeb, createPropertiesFile
