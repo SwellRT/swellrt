@@ -21,6 +21,8 @@ import org.waveprotocol.wave.client.editor.EditorImpl;
 import org.waveprotocol.wave.client.editor.EditorImplWebkitMobile;
 import org.waveprotocol.wave.client.editor.EditorSettings;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
+import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
+import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
@@ -42,13 +44,21 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 
+import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "Editor")
-public class SEditor {
+public class SEditor implements EditorUpdateListener {
 
+  @JsFunction
+  public interface SelectionChangeHandler {
+    
+    void exec(Range range, SEditor editor);
+    
+  }
+  
   //
   // public flag names
   //
@@ -241,6 +251,8 @@ public class SEditor {
   
   private boolean wasEditingOnDiscconnect= true;
   
+  private SelectionChangeHandler selectionHandler = null;
+  
   private ConnectionHandler connectionHandler = new ConnectionHandler() {
 
     @Override
@@ -318,6 +330,7 @@ public class SEditor {
       e.removeContentAndUnrender();
       e.reset();
     }
+
     
     ContentDocument doc = text.getContentDocument();
 
@@ -369,6 +382,12 @@ public class SEditor {
    */
   public boolean hasDocument() {
     return editor != null && editor.hasDocument();
+  }
+  
+  
+  
+  public void setSelectionHandler(SelectionChangeHandler handler) {
+    this.selectionHandler = handler;
   }
   
   //
@@ -537,9 +556,19 @@ public class SEditor {
         UserAgent.isMobileWebkit() ? new EditorImplWebkitMobile(false, editorPanel.getElement()) 
             : new EditorImpl(false, editorPanel.getElement());
        
-        editor.init(null, getKeyBindingRegistry(), getSettings()); 
+        editor.init(null, getKeyBindingRegistry(), getSettings());         
+        editor.addUpdateListener(this);
     }
     return editor;
+  }
+
+  @Override
+  public void onUpdate(EditorUpdateEvent event) {
+    if (event.selectionLocationChanged() && selectionHandler != null) {
+      Range range = editor.getSelectionHelper().getOrderedSelectionRange();
+      selectionHandler.exec(range, this);
+    }
+    
   }
  
 }
