@@ -353,9 +353,10 @@ public class SEditor implements EditorUpdateListener {
    */
   public void edit(boolean editOn) {
     if (editor != null && editor.hasDocument()) {
-      if (editor.isEditing() != editOn) 
+      if (editor.isEditing() != editOn) { 
         editor.setEditing(editOn);
-    }
+      }
+    }    
   }
   
   /**
@@ -384,11 +385,22 @@ public class SEditor implements EditorUpdateListener {
     return editor != null && editor.hasDocument();
   }
   
+  public void focus() {
+    if (editor != null && editor.hasDocument()) {
+      editor.focus(false);
+    }
+  }
   
+  public void blur() {
+    if (editor != null && editor.hasDocument()) {
+      editor.blur();
+    }
+  }
   
   public void setSelectionHandler(SelectionChangeHandler handler) {
     this.selectionHandler = handler;
   }
+  
   
   //
   // Annotation methods
@@ -556,17 +568,19 @@ public class SEditor implements EditorUpdateListener {
         UserAgent.isMobileWebkit() ? new EditorImplWebkitMobile(false, editorPanel.getElement()) 
             : new EditorImpl(false, editorPanel.getElement());
        
-        editor.init(null, getKeyBindingRegistry(), getSettings());         
+        editor.init(null, getKeyBindingRegistry(), getSettings());
         editor.addUpdateListener(this);
     }
     return editor;
   }
 
+  @JsIgnore
   @Override
   public void onUpdate(EditorUpdateEvent event) {
-    if (event.selectionLocationChanged() && selectionHandler != null) {
+    if (selectionHandler != null) {
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-      selectionHandler.exec(range, this);
+      if (range != null)
+        selectionHandler.exec(range, this);
     }
     
   }
