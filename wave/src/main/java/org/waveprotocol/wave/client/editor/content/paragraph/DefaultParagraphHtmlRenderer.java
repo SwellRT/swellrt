@@ -208,7 +208,7 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
     	implNodelet.addClassName("heading-"+type);
     	if (id != null) 
     	  implNodelet.setId(id);
-    } else 	if (!implNodelet.hasClassName("heading")) {
+    } else 	if (implNodelet.hasClassName("heading")) {
     	String classes = implNodelet.getClassName();
     	int s = classes.indexOf("heading-");
     	int e = s + 10;
