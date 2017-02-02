@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
-import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.util.Range;
 
 /**

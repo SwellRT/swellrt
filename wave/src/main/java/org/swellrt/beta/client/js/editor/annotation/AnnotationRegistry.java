@@ -137,7 +137,7 @@ public class AnnotationRegistry {
     m.put("center", Paragraph.Alignment.CENTER);
     m.put("right", Paragraph.Alignment.RIGHT);
     m.put("justify", Paragraph.Alignment.JUSTIFY);
-    m.put("default", null);
+    m.put("default", Paragraph.Alignment.LEFT);
     
     store.put(PARAGRAPH_TEXT_ALIGN, new ParagraphValueAnnotation(PARAGRAPH_TEXT_ALIGN, m, null));
    
