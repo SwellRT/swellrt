@@ -6,6 +6,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.swellrt.beta.client.js.JsUtils;
+import org.swellrt.beta.client.js.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.editor.EditorContext;
@@ -40,19 +41,19 @@ public class AnnotationAction {
     this.editor = editor;
   }
      
-  public void add(JsArrayString names) {
+  public void add(JsArrayString names) throws SEditorException {
     for (int i = 0; i < names.length(); i++)
       add(names.get(i));
   }
   
-  public void add(String nameOrPrefix) {
+  public void add(String nameOrPrefix) throws SEditorException {
     Preconditions.checkArgument(nameOrPrefix != null && !nameOrPrefix.isEmpty(),
         "Annotation name or prefix not provided");
 
     if (!nameOrPrefix.contains("/")) { // it's name
       addByName(nameOrPrefix);
     } else { // it's prefix
-      for (String name : AnnotationRegistry.store.keySet()) {
+      for (String name : AnnotationRegistry.getNames()) {
         if (name.startsWith(nameOrPrefix)) {
           addByName(name);
         }
@@ -74,21 +75,23 @@ public class AnnotationAction {
     this.projectEffective = enable;
   }
   
-  protected void addByName(String name) {
-    Annotation antn = AnnotationRegistry.store.get(name);
+  protected void addByName(String name) throws SEditorException {
+    Annotation antn = AnnotationRegistry.get(name);
     if (antn != null) {
      
       if (antn instanceof TextAnnotation) {
-        textAnnotations.add((TextAnnotation)antn);
-        textAnnotationsNames.add(name);
+        textAnnotations.add((TextAnnotation) antn);
+        textAnnotationsNames.add(((TextAnnotation) antn).getName()); // ensure we use canonical name
       } else
         paragraphAnnotations.add(antn);
       
-    }   
+    }  else{
+      throw new SEditorException("Invalid annotation name");
+    }
   }
   
   protected void addAllAnnotations() {
-    AnnotationRegistry.store.forEach(new BiConsumer<String, Annotation>() {
+    AnnotationRegistry.forEach(new BiConsumer<String, Annotation>() {
 
       @Override
       public void accept(String t, Annotation u) {

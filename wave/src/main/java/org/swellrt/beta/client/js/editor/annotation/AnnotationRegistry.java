@@ -77,7 +77,7 @@ public class AnnotationRegistry {
   
   private static final JsoView CANONICAL_NAMES = JsoView.create(); 
   
-  protected final static Map<String, Annotation> store = new HashMap<String, Annotation>();
+  private final static Map<String, Annotation> store = new HashMap<String, Annotation>();
   
   
   /**
@@ -178,7 +178,17 @@ public class AnnotationRegistry {
   }
   
   @JsIgnore
-  public static Annotation get(String name) {   
+  public static Set<String> getNames() {
+    return store.keySet();
+  }
+  
+  @JsIgnore
+  public static void forEach(BiConsumer<String, Annotation> action) {
+    store.forEach(action);
+  }
+  
+  @JsIgnore
+  public static Annotation get(String name) {  
     String canonicalName = CANONICAL_NAMES.getString(name);
     return store.get(canonicalName != null ? canonicalName : name);
   }
