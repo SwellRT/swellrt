@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.swellrt.beta.client.js.JsUtils;
-import org.waveprotocol.wave.client.common.util.JsoStringSet;
+import org.swellrt.beta.client.js.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.GeneralAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
@@ -75,219 +75,33 @@ public class AnnotationRegistry {
   public static final String STYLE_TEXT_DECORATION = AnnotationConstants.STYLE_TEXT_DECORATION;
   public static final String STYLE_VERTICAL_ALIGN = AnnotationConstants.STYLE_VERTICAL_ALIGN;
   
-   
-  /**
-   * Action to be performed in a set of annotations for a provided range.
-   * 
-   * TODO rewrite in a stream-based way, current impl is a mess.
-   * 
-   *
-   */
-  public static class AnnotationBulkAction {
-    
-    Set<Annotation> paragraphAnnotations = new HashSet<Annotation>(); 
-    Set<TextAnnotation> textAnnotations = new HashSet<TextAnnotation>(); 
-    JsoStringSet textAnnotationsNames = JsoStringSet.create();
-
-    final Range range;
-    final EditorContext editor;
-    
-    boolean projectEffective = false;
-    
-    public AnnotationBulkAction(EditorContext editor, Range range) {
-      this.range = range;
-      this.editor = editor;
-    }
-       
-    public void add(JsArrayString names) {
-      for (int i = 0; i < names.length(); i++)
-        add(names.get(i));
-    }
-    
-    public void add(String nameOrPrefix) {
-      Preconditions.checkArgument(nameOrPrefix != null && !nameOrPrefix.isEmpty(),
-          "Annotation name or prefix not provided");
-
-      if (!nameOrPrefix.contains("/")) { // it's name
-        addByName(nameOrPrefix);
-      } else { // it's prefix
-        for (String name : store.keySet()) {
-          if (name.startsWith(nameOrPrefix)) {
-            addByName(name);
-          }
-        }
-
-      }
-    }
-    
-
-    /**
-     * Configure this annotation action to only consider effective annotations for its range.
-     * <p>
-     * Within a range, there could exist multiple instances of the same annotation spanning
-     * subranges. An effective annotation must span at least the size of the range.   
-     * 
-     * @param projectEffective enable projections o
-     */
-    public void onlyEffectiveAnnotations(boolean enable) {
-      this.projectEffective = enable;
-    }
-    
-    protected void addByName(String name) {
-      Annotation antn = store.get(name);
-      if (antn != null) {
-       
-        if (antn instanceof TextAnnotation) {
-          textAnnotations.add((TextAnnotation)antn);
-          textAnnotationsNames.add(name);
-        } else
-          paragraphAnnotations.add(antn);
-        
-      }   
-    }
-    
-    protected void addAllAnnotations() {
-      store.forEach(new BiConsumer<String, Annotation>() {
-
-        @Override
-        public void accept(String t, Annotation u) {
-          
-          if (u instanceof TextAnnotation) {
-            textAnnotations.add((TextAnnotation) u);
-            textAnnotationsNames.add(t);
-          } else if (u instanceof ParagraphValueAnnotation) {
-            paragraphAnnotations.add(u);
-          }
-          
-        }
-      });
-    }
-    
-    public void reset() {
-      
-      boolean getAll = textAnnotations.isEmpty() && paragraphAnnotations.isEmpty();
-      
-      if (getAll) 
-        addAllAnnotations();
-      
-      // Text annotations
-      EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), textAnnotationsNames, range.getStart(), range.getEnd());
-      
-      // Paragraph annotations
-      for (Annotation antn: paragraphAnnotations)
-        antn.reset(editor, range);
-    }
-    
-
-    
-    protected JsoView createResult() {
-      return JsoView.as(JavaScriptObject.createObject());
-    }
-    
-    protected void addToResult(JsoView result, String key, AnnotationInstance instance) {
-      
-      if (!projectEffective) {
-        
-        // Map of arrays, we expect multiple instances of the same annotation within a range.        
-        
-        JavaScriptObject arrayJso = result.getJso(key);      
-        if (arrayJso == null) {
-          arrayJso = JsoView.createArray().cast();
-          result.setJso(key, arrayJso);
-        }        
-        JsUtils.addToArray(arrayJso, instance);
-        
-      } else {
-        
-        // on projecting effective annotations, if several instances
-        // are found in the range, keep always the one with a non null value.
-        boolean overwriteAnnotation = true;
-           
-        Object formerInstance = result.getObjectUnsafe(key);
-        if (formerInstance != null) {
-          AnnotationInstance typedFormerInstance = (AnnotationInstance) formerInstance;
-          overwriteAnnotation = typedFormerInstance.getValue() == null;
-        }
-        
-        // A simple map, one annotation instance per key     
-        if (overwriteAnnotation)
-          result.setObject(key, instance);        
-      }
-    }
-    
-    
-    /** 
-     * @return annotations object 
-     */
-    public JavaScriptObject get() {
-      
-      JsoView result = createResult();
-
-      boolean getAll = textAnnotations.isEmpty() && paragraphAnnotations.isEmpty();
-      
-      if (getAll) 
-        addAllAnnotations();
-      
-      //
-      // Text annotations
-      // 
-      
-      if (range.isCollapsed()) {
-        
-        for (TextAnnotation antn: textAnnotations) {
-          String value = editor.getDocument().getAnnotation(range.getStart(), antn.getName());
-          addToResult(result, antn.getName(), AnnotationInstance.create(editor.getDocument(), antn.getName(), value, range, AnnotationInstance.MATCH_IN)); 
-        }
-        
-      } else {
-       
-        //
-        // Within a range, there could exist multiple instances of the same annotation. 
-        // If projectEffective, only consider those spanning at least the full range.
-       
-        editor.getDocument().rangedAnnotations(range.getStart(), range.getEnd(), textAnnotationsNames).forEach(new Consumer<RangedAnnotation<String>>() {
-          @Override
-          public void accept(RangedAnnotation<String> t) {
-            Range anotRange = new Range(t.start(), t.end());
-            
-            // on projection of effective annotations, consider not effective ones with null value
-            int matchType = AnnotationInstance.getRangeMatch(range, anotRange);            
-            String value = projectEffective && matchType != AnnotationInstance.MATCH_IN ? null : t.value();            
-            
-            addToResult(result, t.key(), AnnotationInstance.create(editor.getDocument(), t.key(), value, anotRange, matchType));             
-          }          
-        });
-      }
-      
-      //
-      // Paragraph annotations
-      // 
-       
-      for (Annotation antn: paragraphAnnotations) {
-        
-        if (antn instanceof ParagraphValueAnnotation) {
-          String name = ((ParagraphValueAnnotation) antn).getName();
-          String value = ((ParagraphValueAnnotation) antn).apply(editor, range);
-          addToResult(result,name, new AnnotationInstance(editor.getDocument(), name, value, range, null, AnnotationInstance.MATCH_IN));   
-        }
-      }
-      
-      return result;
-    }
-    
-  }
+  private static final JsoView CANONICAL_NAMES = JsoView.create(); 
   
-  
-  
-  
-  
-  private final static Map<String, Annotation> store = new HashMap<String, Annotation>();
+  protected final static Map<String, Annotation> store = new HashMap<String, Annotation>();
   
   
   /**
    * Define friendly names for annotation referencing in SEditor
    */
   static {
+    
+    //
+    // Map annotation names without prefix to their canonical name
+    // for the Wave system.
+    //
+    CANONICAL_NAMES.setString("header", PARAGRAPH_HEADER);
+    CANONICAL_NAMES.setString("textAlign", PARAGRAPH_TEXT_ALIGN);
+    CANONICAL_NAMES.setString("list", PARAGRAPH_LIST);
+    CANONICAL_NAMES.setString("indent", PARAGRAPH_INDENT);
+    
+    CANONICAL_NAMES.setString("backgroundColor", STYLE_BG_COLOR);
+    CANONICAL_NAMES.setString("color", STYLE_COLOR);
+    CANONICAL_NAMES.setString("fontFamily", STYLE_FONT_FAMILY);
+    CANONICAL_NAMES.setString("fontSize", STYLE_FONT_SIZE);
+    CANONICAL_NAMES.setString("fontStyle", STYLE_FONT_STYLE);
+    CANONICAL_NAMES.setString("fontWeight", STYLE_FONT_WEIGHT);
+    CANONICAL_NAMES.setString("textDecoration", STYLE_TEXT_DECORATION);
+    CANONICAL_NAMES.setString("verticalAlign", STYLE_VERTICAL_ALIGN);
     
     //
     // Paragraph Headers
@@ -364,12 +178,15 @@ public class AnnotationRegistry {
   }
   
   @JsIgnore
-  public static Annotation get(String name) {
-    return store.get(name);
+  public static Annotation get(String name) {   
+    String canonicalName = CANONICAL_NAMES.getString(name);
+    return store.get(canonicalName != null ? canonicalName : name);
   }
   
   
   protected static boolean isParagraphAnnotation(String name) {
+    String canonicalName = CANONICAL_NAMES.getString(name);
+    name = canonicalName != null ? canonicalName : name;
     return name.startsWith("paragraph/");
   }
   
@@ -380,10 +197,10 @@ public class AnnotationRegistry {
    * @param cssClass a css class for the html container
    * @param cssStyle css styles for the html container
    */
-  public static void define(String name, String cssClass, JavaScriptObject cssStyleObj) {    
+  public static void define(String name, String cssClass, JavaScriptObject cssStyleObj) throws SEditorException {    
     
-    if (name == null || name.startsWith("paragraph") || name.startsWith(AnnotationConstants.STYLE_PREFIX)) {
-      return;
+    if (name == null || name.startsWith("paragraph") || name.startsWith(AnnotationConstants.STYLE_PREFIX) || CANONICAL_NAMES.getString(name) != null) {
+      throw new SEditorException("Not valid annotation name");
     }
     
     JsoView styles = null;
@@ -406,7 +223,7 @@ public class AnnotationRegistry {
    * @param handler
    */
   public static void setHandler(String name, AnnotationEventHandler handler) {    
-    Annotation antn = store.get(name);
+    Annotation antn = get(name);
     
     if (antn != null && antn instanceof TextAnnotation) {
       TextAnnotation ta = (TextAnnotation) antn;   
@@ -420,7 +237,7 @@ public class AnnotationRegistry {
    * @param handler
    */
   public static void unsetHandler(String name) {    
-    Annotation antn = store.get(name);
+    Annotation antn = get(name);
     
     if (antn != null && antn instanceof TextAnnotation) {
       TextAnnotation ta = (TextAnnotation) antn;   

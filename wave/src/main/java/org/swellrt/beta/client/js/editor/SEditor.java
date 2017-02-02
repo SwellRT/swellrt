@@ -8,6 +8,7 @@ import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.annotation.Annotation;
+import org.swellrt.beta.client.js.editor.annotation.AnnotationAction;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
@@ -470,7 +471,7 @@ public class SEditor implements EditorUpdateListener {
     
     range = checkRangeArgument(range);
     
-    AnnotationRegistry.AnnotationBulkAction resetAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
+    AnnotationAction resetAction = new AnnotationAction(editor, range);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {
@@ -498,7 +499,7 @@ public class SEditor implements EditorUpdateListener {
     
     range = checkRangeArgument(range);
     
-    AnnotationRegistry.AnnotationBulkAction getAction = new AnnotationRegistry.AnnotationBulkAction(editor, range);
+    AnnotationAction getAction = new AnnotationAction(editor, range);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {
