@@ -203,6 +203,42 @@ public class EditorAnnotationUtil {
     return wasRemoved;
   }
 
+  /** 
+   * Same as {{@link #clearAnnotationsOverRange(MutableAnnotationSet, CaretAnnotations, String[], int, int)}
+   * but allowing params keys as ReadableStringSet 
+   */
+  public static void clearAnnotationsOverRange(MutableAnnotationSet<String> doc,
+      CaretAnnotations caret, ReadableStringSet keys, int start, int end) {
+
+    if (start == end) {
+      // clear from caret annotation if collapsed range      
+      keys.each(new Proc(){
+
+        @Override
+        public void apply(String key) {
+          if (caret.getAnnotation(key) != null) {
+            caret.setAnnotation(key, null); // remove if present
+          }          
+        }
+        
+      });
+
+    } else {
+
+      // clear from the entire range
+      keys.each(new Proc(){
+        
+        @Override
+        public void apply(String key) {
+          if (doc.firstAnnotationChange(start, end, key, null) != -1) {
+            doc.setAnnotation(start, end, key, null); // remove if present
+          }
+        }
+      });
+    }
+  }
+
+
   /**
    * Finds the range of an adjacent or containing non-null range of contiguous
    * value for a given annotation key.

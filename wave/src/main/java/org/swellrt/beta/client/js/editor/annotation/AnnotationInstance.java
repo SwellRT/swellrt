@@ -28,11 +28,15 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swellrt.Editor", name = "Annotation")
 public class AnnotationInstance {
 
-  /** the annotation range is equals to selection range or inside it */
+  /** the selection range is equals to annotation range or inside it */
   public static final int MATCH_IN = 0;
-  /** the annotation range is partially out of the selection range or selection spans more content beyond annotation */
+  /** the selection range is partially out of the annotation range or selection spans more content beyond annotation */
   public static final int MATCH_OUT = 1;
   
+  public static int getRangeMatch(Range selectionRange, Range annotationRange) {  
+    boolean in = selectionRange.equals(annotationRange) || ( selectionRange.getStart() >= annotationRange.getStart() && selectionRange.getEnd() <= annotationRange.getEnd());     
+    return in ? AnnotationInstance.MATCH_IN : AnnotationInstance.MATCH_OUT;
+  }
   
   String name;
   String value;
@@ -52,10 +56,6 @@ public class AnnotationInstance {
     return null;
   }
   
-  protected static int getRangeMatchType (Range selectionRange, Range annotationRange) {      
-    boolean in = selectionRange.equals(annotationRange) || (annotationRange.getStart() <= selectionRange.getStart() &&  selectionRange.getEnd() <= annotationRange.getEnd());     
-    return in ? AnnotationInstance.MATCH_IN : AnnotationInstance.MATCH_OUT;
-  }
   
   protected static Range getAnnotationRange(ContentElement node, String name) {
     
@@ -77,13 +77,15 @@ public class AnnotationInstance {
   }
  
   
+
   /**
    * Use this method from annotation search. See {@link AnnotationRegistry}
    * 
    */
-  protected static AnnotationInstance create(CMutableDocument doc, String name, String value, Range range, Range searchRange) {
-    return new AnnotationInstance(doc, name, value, range, null, getRangeMatchType(searchRange, range));
+  protected static AnnotationInstance create(CMutableDocument doc, String name, String value, Range range, int matchType) {
+    return new AnnotationInstance(doc, name, value, range, null, matchType);
   }
+
   
   /**
    * Use this method from event handlers. See {@link TextAnnotation}

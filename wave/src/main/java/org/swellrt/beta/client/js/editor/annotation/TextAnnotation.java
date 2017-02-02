@@ -30,6 +30,10 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
     this.contentNodeAttributeName = AnnotationPaint.VALUE_ATTR_PREFIX + GeneralAnnotationHandler.getSafeKey(name);
   }
 
+  public String getName() {
+    return name;
+  }
+  
   @Override
   public void set(EditorContext editor, Range range, String value) {
     EditorAnnotationUtil.setAnnotationOverRange(editor.getDocument(), editor.getCaretAnnotations(), name, value, range.getStart(), range.getEnd());

@@ -494,7 +494,7 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
+  public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range, @JsOptional Boolean all) throws SEditorException {
     
     range = checkRangeArgument(range);
     
@@ -509,6 +509,9 @@ public class SEditor implements EditorUpdateListener {
         throw new SEditorException("Expected array or string as first argument");
       }
     }
+    
+    // By default only consider effective annotations 
+    getAction.onlyEffectiveAnnotations( !(all != null && all.equals(Boolean.TRUE)) );      
     
     return getAction.get();   
   }
@@ -577,7 +580,7 @@ public class SEditor implements EditorUpdateListener {
   @JsIgnore
   @Override
   public void onUpdate(EditorUpdateEvent event) {
-    if (selectionHandler != null) {
+    if (selectionHandler != null && event.selectionLocationChanged()) {
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();
       if (range != null)
         selectionHandler.exec(range, this);

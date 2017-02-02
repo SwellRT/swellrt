@@ -22,6 +22,7 @@ import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
+import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -74,22 +75,30 @@ public class AnnotationRegistry {
   public static final String STYLE_TEXT_DECORATION = AnnotationConstants.STYLE_TEXT_DECORATION;
   public static final String STYLE_VERTICAL_ALIGN = AnnotationConstants.STYLE_VERTICAL_ALIGN;
   
-  
-  
-  
+   
+  /**
+   * Action to be performed in a set of annotations for a provided range.
+   * 
+   * TODO rewrite in a stream-based way, current impl is a mess.
+   * 
+   *
+   */
   public static class AnnotationBulkAction {
     
     Set<Annotation> paragraphAnnotations = new HashSet<Annotation>(); 
-    JsoStringSet textAnnotations = JsoStringSet.create(); 
+    Set<TextAnnotation> textAnnotations = new HashSet<TextAnnotation>(); 
+    JsoStringSet textAnnotationsNames = JsoStringSet.create();
 
     final Range range;
     final EditorContext editor;
+    
+    boolean projectEffective = false;
     
     public AnnotationBulkAction(EditorContext editor, Range range) {
       this.range = range;
       this.editor = editor;
     }
-    
+       
     public void add(JsArrayString names) {
       for (int i = 0; i < names.length(); i++)
         add(names.get(i));
@@ -111,13 +120,27 @@ public class AnnotationRegistry {
       }
     }
     
+
+    /**
+     * Configure this annotation action to only consider effective annotations for its range.
+     * <p>
+     * Within a range, there could exist multiple instances of the same annotation spanning
+     * subranges. An effective annotation must span at least the size of the range.   
+     * 
+     * @param projectEffective enable projections o
+     */
+    public void onlyEffectiveAnnotations(boolean enable) {
+      this.projectEffective = enable;
+    }
+    
     protected void addByName(String name) {
       Annotation antn = store.get(name);
       if (antn != null) {
        
-        if (antn instanceof TextAnnotation) 
-          textAnnotations.add(name);
-        else
+        if (antn instanceof TextAnnotation) {
+          textAnnotations.add((TextAnnotation)antn);
+          textAnnotationsNames.add(name);
+        } else
           paragraphAnnotations.add(antn);
         
       }   
@@ -130,7 +153,8 @@ public class AnnotationRegistry {
         public void accept(String t, Annotation u) {
           
           if (u instanceof TextAnnotation) {
-            textAnnotations.add(t);            
+            textAnnotations.add((TextAnnotation) u);
+            textAnnotationsNames.add(t);
           } else if (u instanceof ParagraphValueAnnotation) {
             paragraphAnnotations.add(u);
           }
@@ -146,11 +170,10 @@ public class AnnotationRegistry {
       if (getAll) 
         addAllAnnotations();
       
-      if (!textAnnotations.isEmpty()) {
-        String[] array =  JsUtils.stringSetToArray(textAnnotations);
-        EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), array, range.getStart(), range.getEnd());
-      }
+      // Text annotations
+      EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), textAnnotationsNames, range.getStart(), range.getEnd());
       
+      // Paragraph annotations
       for (Annotation antn: paragraphAnnotations)
         antn.reset(editor, range);
     }
@@ -162,16 +185,40 @@ public class AnnotationRegistry {
     }
     
     protected void addToResult(JsoView result, String key, AnnotationInstance instance) {
-      JavaScriptObject arrayJso = result.getJso(key);
-      if (arrayJso == null) {
-        arrayJso = JsoView.createArray().cast();
-        result.setJso(key, arrayJso);
-      }     
-      JsUtils.addToArray(arrayJso, instance);
+      
+      if (!projectEffective) {
+        
+        // Map of arrays, we expect multiple instances of the same annotation within a range.        
+        
+        JavaScriptObject arrayJso = result.getJso(key);      
+        if (arrayJso == null) {
+          arrayJso = JsoView.createArray().cast();
+          result.setJso(key, arrayJso);
+        }        
+        JsUtils.addToArray(arrayJso, instance);
+        
+      } else {
+        
+        // on projecting effective annotations, if several instances
+        // are found in the range, keep always the one with a non null value.
+        boolean overwriteAnnotation = true;
+           
+        Object formerInstance = result.getObjectUnsafe(key);
+        if (formerInstance != null) {
+          AnnotationInstance typedFormerInstance = (AnnotationInstance) formerInstance;
+          overwriteAnnotation = typedFormerInstance.getValue() == null;
+        }
+        
+        // A simple map, one annotation instance per key     
+        if (overwriteAnnotation)
+          result.setObject(key, instance);        
+      }
     }
     
     
-    
+    /** 
+     * @return annotations object 
+     */
     public JavaScriptObject get() {
       
       JsoView result = createResult();
@@ -182,40 +229,36 @@ public class AnnotationRegistry {
         addAllAnnotations();
       
       //
-      // Text (caret) annotations
+      // Text annotations
       // 
       
-      /*
-      if (range.isCollapsed())  {
-      
-        editor.getDocument().forEachAnnotationAt(range.getStart(), new ProcV<String>() {
-
+      if (range.isCollapsed()) {
+        
+        for (TextAnnotation antn: textAnnotations) {
+          String value = editor.getDocument().getAnnotation(range.getStart(), antn.getName());
+          addToResult(result, antn.getName(), AnnotationInstance.create(editor.getDocument(), antn.getName(), value, range, AnnotationInstance.MATCH_IN)); 
+        }
+        
+      } else {
+       
+        //
+        // Within a range, there could exist multiple instances of the same annotation. 
+        // If projectEffective, only consider those spanning at least the full range.
+       
+        editor.getDocument().rangedAnnotations(range.getStart(), range.getEnd(), textAnnotationsNames).forEach(new Consumer<RangedAnnotation<String>>() {
           @Override
-          public void apply(String key, String value) {
+          public void accept(RangedAnnotation<String> t) {
+            Range anotRange = new Range(t.start(), t.end());
             
-            if ((getAll || textAnnotations.contains(key)) && !isParagraphAnnotation(key)) {
-              
-              Range actualRange = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), key , range.getStart());              
-              AnnotationInstance antn = createAnnotationInstance(seditor, editor, key, value, "", range, actualRange);
-              
-              addToResult(result, key, antn);
-            }
-          }
+            // on projection of effective annotations, consider not effective ones with null value
+            int matchType = AnnotationInstance.getRangeMatch(range, anotRange);            
+            String value = projectEffective && matchType != AnnotationInstance.MATCH_IN ? null : t.value();            
+            
+            addToResult(result, t.key(), AnnotationInstance.create(editor.getDocument(), t.key(), value, anotRange, matchType));             
+          }          
         });
+      }
       
-      } */
-      
-      ReadableStringSet keys = !getAll ? textAnnotations : null;
-      
-      editor.getDocument().rangedAnnotations(range.getStart(), range.getEnd(), keys).forEach(new Consumer<RangedAnnotation<String>>() {
-        @Override
-        public void accept(RangedAnnotation<String> t) {
-          if (t.value() != null) {
-            addToResult(result, t.key(), AnnotationInstance.create(editor.getDocument(), t.key(), t.value(), new Range(t.start(), t.end()), range));
-          }             
-        }          
-      });
-
       //
       // Paragraph annotations
       // 
@@ -225,10 +268,7 @@ public class AnnotationRegistry {
         if (antn instanceof ParagraphValueAnnotation) {
           String name = ((ParagraphValueAnnotation) antn).getName();
           String value = ((ParagraphValueAnnotation) antn).apply(editor, range);
-          if (value != null) {
-            
-            addToResult(result,name, new AnnotationInstance(editor.getDocument(), name, value, range, null, AnnotationInstance.MATCH_IN));
-          }
+          addToResult(result,name, new AnnotationInstance(editor.getDocument(), name, value, range, null, AnnotationInstance.MATCH_IN));   
         }
       }
       
@@ -296,7 +336,7 @@ public class AnnotationRegistry {
     m.put("unordered", Paragraph.listStyle(null));
     m.put("default", Paragraph.listStyle(null));
     
-    store.put(PARAGRAPH_LIST, new ParagraphValueAnnotation(PARAGRAPH_TEXT_ALIGN, m, null));
+    store.put(PARAGRAPH_LIST, new ParagraphValueAnnotation(PARAGRAPH_LIST, m, null));
     
     //
     // Paragraph indentation
