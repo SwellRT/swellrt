@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
+import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.util.Range;
 
 /**
@@ -35,7 +36,7 @@ public class ParagraphValueAnnotation implements Annotation {
       if (styleKey != null && !styleKey.isEmpty() && !styles.containsKey(styleKey))
         return;
       
-      final boolean isOn = (styleKey != null && !styleKey.isEmpty());
+      final boolean isOn = (styleKey != null && !styleKey.isEmpty() && !styleKey.equals("default"));
       if (!isOn)
         styleKey = "default";
       
@@ -50,7 +51,7 @@ public class ParagraphValueAnnotation implements Annotation {
           style.setAttributes(null);
         }
       });
-
+      
     }
   }
 
@@ -63,7 +64,7 @@ public class ParagraphValueAnnotation implements Annotation {
     
     for (String styleValue: styles.keySet()) {
       if (Paragraph.appliesEntirely(editor.getDocument(), range.getStart(), range.getEnd(), styles.get(styleValue))) {
-        return styleValue;
+        return styleValue.equals("default") ? null : styleValue;
       }
     }
     
