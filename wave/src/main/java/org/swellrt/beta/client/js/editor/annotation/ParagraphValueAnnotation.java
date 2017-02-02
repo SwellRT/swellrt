@@ -32,13 +32,13 @@ public class ParagraphValueAnnotation implements Annotation {
   public void set(EditorContext editor, Range range, String styleKey) {
     if (range != null && editor != null) {
 
+      if (styleKey != null && !styleKey.isEmpty() && !styles.containsKey(styleKey))
+        return;
+      
       final boolean isOn = (styleKey != null && !styleKey.isEmpty());
-      if (isOn)
-        if (!styles.containsKey(styleKey))
-          return;
-        else
-          styleKey = "default";
-
+      if (!isOn)
+        styleKey = "default";
+      
       Paragraph.LineStyle style = styles.get(styleKey);
       if (attributeGen != null)
       style.setAttributes(attributeGen.generate(editor, range, styleKey));
