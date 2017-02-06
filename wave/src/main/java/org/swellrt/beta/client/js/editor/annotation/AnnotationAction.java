@@ -190,8 +190,9 @@ public class AnnotationAction {
       
       for (TextAnnotation antn: textAnnotations) {
         String value = editor.getDocument().getAnnotation(range.getStart(), antn.getName());
+        Range actualRange = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), antn.getName(), range.getStart());
         if (value != null)
-          addToResult(result, antn.getName(), AnnotationInstance.create(editor.getDocument(), antn.getName(), value, range, AnnotationInstance.MATCH_IN)); 
+          addToResult(result, antn.getName(), AnnotationInstance.create(editor.getDocument(), antn.getName(), value, actualRange, AnnotationInstance.MATCH_IN)); 
       }
       
     } else {

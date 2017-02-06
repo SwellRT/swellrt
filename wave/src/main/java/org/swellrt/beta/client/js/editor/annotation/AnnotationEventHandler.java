@@ -1,5 +1,8 @@
 package org.swellrt.beta.client.js.editor.annotation;
 
+import org.waveprotocol.wave.client.editor.content.ContentElement;
+import org.waveprotocol.wave.model.document.util.Range;
+
 import com.google.gwt.user.client.Event;
 
 import jsinterop.annotations.JsType;

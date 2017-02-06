@@ -109,7 +109,9 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   @Override
   public void onAttributeModified(final ContentElement element, String name,
       String oldValue, final String newValue) {
+    
     if (name.equals(AnnotationPaint.LINK_ATTR)) {
+    
       // NOTE(user): This is a special case, because it replaces the DOM node,
       // we must reapply all the attributes.
       maybeConvertToAnchor(element, newValue != null);
@@ -120,6 +122,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
         }
       });
     } else {
+      
       applyAttribute(element, name, newValue);
     }
   }
@@ -130,22 +133,26 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
 
     
     Element implNodelet = element.getImplNodelet();
+    
     if (name.equals(AnnotationPaint.LINK_ATTR)) {
+      
       if (newValue != null) {
+        
         String scrubbedValue = Scrub.scrub(newValue);
+        
         implNodelet.setAttribute("href", scrubbedValue);
+        
         if (scrubbedValue.startsWith("#")) {
           implNodelet.removeAttribute("target");
         } else {
           implNodelet.setAttribute("target", "_blank");
         }
+        
       } else {
+        
         implNodelet.removeAttribute("href");
       }
-    } else if (name.equals(AnnotationPaint.MOUSE_LISTENER_ATTR)) {
       
-      // TODO unify this section with the general case, down below
-      updateEventHandler(element, "link", newValue != null && !newValue.isEmpty());
       
     } else if (name.equals(AnnotationPaint.CLASS_ATTR)) {
       // If a class attribute is provided, set as a CSS class name
@@ -170,6 +177,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     
     } else if (name.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX)) {
     	// Ignore mutation listener attributes, not need to paint
+      
     } else { 	
     //
     // Rest of local node attributes are meant to be inline styles

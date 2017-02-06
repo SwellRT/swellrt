@@ -72,12 +72,12 @@ public class AnnotationPaint {
   /**
    * Attribute for mapping callback strings.
    */
-  public static final String MOUSE_LISTENER_ATTR = "el-link";
+  public static final String LINK_EVENT_LISTENER_ATTR = "el-link";
 
   /**
    * Attribute for mapping callback strings.
    */
-  public static final String MUTATION_LISTENER_ATTR = "ml-link";
+  public static final String LINK_MUTATION_LISTENER_ATTR = "ml-link";
   
   /**
    * Handlers may register callback for mutation events over painted regions.

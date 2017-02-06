@@ -2,11 +2,9 @@ package org.swellrt.beta.client.js.editor.annotation;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.SEditorException;
@@ -20,17 +18,11 @@ import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
-import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
-import org.waveprotocol.wave.model.document.AnnotationInterval;
-import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
-import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.util.ReadableStringSet;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsonUtils;
 
 import jsinterop.annotations.JsIgnore;
@@ -74,6 +66,8 @@ public class AnnotationRegistry {
   public static final String STYLE_FONT_WEIGHT = AnnotationConstants.STYLE_FONT_WEIGHT;
   public static final String STYLE_TEXT_DECORATION = AnnotationConstants.STYLE_TEXT_DECORATION;
   public static final String STYLE_VERTICAL_ALIGN = AnnotationConstants.STYLE_VERTICAL_ALIGN;
+  
+  public static final String LINK = AnnotationConstants.LINK_PREFIX;
   
   private static final JsoView CANONICAL_NAMES = JsoView.create(); 
   
@@ -175,6 +169,7 @@ public class AnnotationRegistry {
     store.put(AnnotationConstants.STYLE_TEXT_DECORATION, new TextAnnotation(AnnotationConstants.STYLE_TEXT_DECORATION));
     store.put(AnnotationConstants.STYLE_VERTICAL_ALIGN, new TextAnnotation(AnnotationConstants.STYLE_VERTICAL_ALIGN));
     
+    store.put(AnnotationConstants.LINK_PREFIX, new TextAnnotation(AnnotationConstants.LINK_PREFIX));
   }
   
   @JsIgnore

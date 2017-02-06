@@ -2,7 +2,9 @@ package org.swellrt.beta.client.js.editor.annotation;
 
 import java.util.Iterator;
 
+import org.swellrt.beta.client.js.editor.SEditorHelper;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
+import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
@@ -118,7 +120,7 @@ public class AnnotationInstance {
   
   @JsProperty
   public String getText() {
-    if (range != null)
+    if (range != null) 
       return DocHelper.getText(doc, range.getStart(), range.getEnd());
     else
       return "";
@@ -162,24 +164,30 @@ public class AnnotationInstance {
   }
   
   public void update(String value) {
-    if (range != null)
+    if (range != null) {
       doc.setAnnotation(range.getStart(), range.getEnd(), name, value);
+      this.value = value;
+    }
   }
 
   public AnnotationInstance mutate(String text) {
     if (range == null) return null;
     
-    clear();
-    doc.deleteRange(range.getStart(), range.getEnd());
-    doc.insertText(range.getStart(), text);
-    Range mutatedRange = new Range(range.getStart(), range.getStart() + text.length());
+    String value = this.value;
+    // remove old annotation
+    clear(); 
+    // edit text
+    Range mutatedRange = SEditorHelper.replaceText(doc, range, text); 
+    // create
     doc.setAnnotation(mutatedRange.getStart(), mutatedRange.getEnd(), name, value);
     return new AnnotationInstance(doc, name, value, mutatedRange, null, MATCH_IN);
   }
 
   public void clear() {
-    if (range != null)
+    if (range != null) {
       doc.setAnnotation(range.getStart(), range.getEnd(), name, null);
+      this.value = null;
+    }
   }
   
 

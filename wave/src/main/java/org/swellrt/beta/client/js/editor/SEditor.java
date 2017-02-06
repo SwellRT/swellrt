@@ -36,6 +36,7 @@ import org.waveprotocol.wave.common.logging.AbstractLogger;
 import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Range;
 
@@ -60,6 +61,7 @@ public class SEditor implements EditorUpdateListener {
     
   }
   
+    
   //
   // public flag names
   //
@@ -407,12 +409,6 @@ public class SEditor implements EditorUpdateListener {
   // Annotation methods
   //
   
-
-  protected Range getWholeDocRange() {
-    int start = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getFirstValidSelectionPoint());
-    int end = editor.getContent().getLocationMapper().getLocation(editor.getSelectionHelper().getLastValidSelectionPoint());
-    return new Range(start, end);
-  }
   
   /**
    * Implements a safe logic to a range argument. 
@@ -424,7 +420,7 @@ public class SEditor implements EditorUpdateListener {
   protected Range checkRangeArgument(Range range) throws SEditorException {
     
     if (Range.ALL.equals(range))
-      range = getWholeDocRange();
+      range = SEditorHelper.getFullValidRange(editor);
     
     if (range == null)
       range = editor.getSelectionHelper().getOrderedSelectionRange();
@@ -518,7 +514,22 @@ public class SEditor implements EditorUpdateListener {
   }
   
   
+  public String getText(@JsOptional Range range) {
+    try {
+      range = checkRangeArgument(range);
+    } catch (Exception e) {
+      return null;
+    }
+    return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
+  }
   
+  public Range getSelection() {
+    try { 
+      return checkRangeArgument(null);
+    } catch (Exception e) {
+      return null;
+    }
+  }
   //
   // Internal stuff
   // 

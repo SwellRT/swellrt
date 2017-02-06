@@ -52,9 +52,7 @@ public final class Link {
   private static final String QUERY_REGEX = "(\\?" + COMMON_REGEX +"|)($|"+ FRAGMENT_URI_REGEX + ")";
 
   private static final String INVALID_LINK_MSG =
-      "Invalid link. Should either be a web url\n" +
-      "or, a Wave ref in the form: wave://example.com/w+1234/~/conv+root/b+abcd\n" +
-      "or be a valid serialized wave id";
+      "Invalid link.";
 
   public static class InvalidLinkException extends Exception {
     public InvalidLinkException(String message, Throwable cause) {
@@ -135,29 +133,14 @@ public final class Link {
     String scheme = parts != null ? parts[0] : null;
 
     // Normal web url
-    if (rawLinkValue.matches(QUERY_REGEX) || (scheme != null && WEB_SCHEMES.contains(scheme))) {
+    if (rawLinkValue.matches(QUERY_REGEX) || 
+        (scheme != null && WEB_SCHEMES.contains(scheme))) {
       return rawLinkValue;
     }
 
-    // Try to interpret a wave URI or naked waveid/waveref
-    try {
-      // NOTE(danilatos): Pasting in the raw serialized form of a wave ref is
-      // not supported here. In practice this doesn't really matter.
-      WaveRef ref;
-      if (WaveRefConstants.WAVE_SCHEME.equals(scheme)) {
-        ref = GwtWaverefEncoder.decodeWaveRefFromPath(parts[1]);
-      } else if (scheme == null) {
-        ref = inferWaveRef(rawLinkValue);
-      } else if (WaveRefConstants.WAVE_SCHEME_OLD.equals(scheme)) {
-        ref = inferWaveRef(parts[1]);
-      } else {
-        // Scheme is not a regular web scheme nor a wave scheme.
-        throw new InvalidLinkException("Unsupported URL scheme: " + scheme);
-      }
-      return WaveRefConstants.WAVE_URI_PREFIX + GwtWaverefEncoder.encodeToUriPathSegment(ref);
-    } catch (InvalidWaveRefException e) {
-      throw new InvalidLinkException(INVALID_LINK_MSG, e);
-    }
+    // default 
+    return "http://"+rawLinkValue;
+
   }
 
   /**

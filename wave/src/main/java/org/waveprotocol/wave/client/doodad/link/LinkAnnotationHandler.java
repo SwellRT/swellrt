@@ -18,6 +18,10 @@
  */
 
 package org.waveprotocol.wave.client.doodad.link;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.waveprotocol.wave.client.doodad.suggestion.Suggestion;
 import org.waveprotocol.wave.client.doodad.suggestion.SuggestionRenderer;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
@@ -26,7 +30,8 @@ import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFuncti
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.PainterRegistry;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;import org.waveprotocol.wave.client.editor.sugg.SuggestionsManager.HasSuggestions;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
+import org.waveprotocol.wave.client.editor.sugg.SuggestionsManager.HasSuggestions;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.AnnotationFamily;
 import org.waveprotocol.wave.model.document.AnnotationBehaviour.DefaultAnnotationBehaviour;
@@ -39,14 +44,7 @@ import org.waveprotocol.wave.model.util.Box;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
-
-import com.google.gwt.user.client.Event;
-
 import org.waveprotocol.wave.model.util.StringMap;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Annotation handler for Links.
@@ -103,8 +101,8 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
     // puts it there resulting in surprising behaviour mid-typing (e.g. if
     // the text is bold, the bold will suddenly get ended because of the link)
     registerBehaviour(annotationRegistry, AnnotationConstants.LINK_PREFIX);
-    registerBehaviour(annotationRegistry, AnnotationConstants.LINK_MANUAL);
-    registerBehaviour(annotationRegistry, AnnotationConstants.LINK_WAVE);
+    //registerBehaviour(annotationRegistry, AnnotationConstants.LINK_MANUAL);
+    //registerBehaviour(annotationRegistry, AnnotationConstants.LINK_WAVE);
 
     painterRegistry.registerPaintFunction(KEYS, new RenderFunc(augmenter));
     painterRegistry.registerBoundaryFunction(BOUNDARY_KEYS, boundaryFunc);
@@ -171,8 +169,8 @@ public class LinkAnnotationHandler implements AnnotationMutationHandler {
       if (content != null) {
         ret = new HashMap<String, String>();
         ret.put(AnnotationPaint.LINK_ATTR, content);
-        ret.put(AnnotationPaint.MOUSE_LISTENER_ATTR, AnnotationPaint.LINK_ATTR);
-        ret.put(AnnotationPaint.MUTATION_LISTENER_ATTR, AnnotationPaint.LINK_ATTR);
+        ret.put(AnnotationPaint.LINK_EVENT_LISTENER_ATTR, AnnotationPaint.LINK_ATTR);
+        ret.put(AnnotationPaint.LINK_MUTATION_LISTENER_ATTR, AnnotationPaint.LINK_ATTR);
       } else {
         ret = Collections.emptyMap();
       }
