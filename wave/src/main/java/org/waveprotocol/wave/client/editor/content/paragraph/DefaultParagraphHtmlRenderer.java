@@ -28,11 +28,16 @@ import org.waveprotocol.wave.client.editor.content.Renderer;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Alignment;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Direction;
 
+import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.http.client.URL;
 
 /**
@@ -202,12 +207,27 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
     
     //// Heading logic ////
     
-    // NOTE(pablojan): add CSS class for headings
     if (behaviour.equals(ParagraphBehaviour.HEADING)) {
     	implNodelet.addClassName("heading");
     	implNodelet.addClassName("heading-"+type);
-    	if (id != null) 
-    	  implNodelet.setId(id);
+    	if (id != null) {
+    	  
+    	  implNodelet.setAttribute("hid", id);
+    	  
+    	  AnchorElement anchor = Document.get().createAnchorElement();
+    	  anchor.setId(id);
+    	  anchor.setInnerHTML("&nbsp");
+    	  anchor.setClassName("header-anchor");
+    	  
+    	  anchor.getStyle().setPosition(Position.RELATIVE);
+    	  anchor.getStyle().setHeight(0, Unit.PX);
+    	  anchor.getStyle().setWidth(0, Unit.PX);
+    	  anchor.getStyle().setVisibility(Visibility.HIDDEN);
+    	  anchor.getStyle().setDisplay(Display.BLOCK);
+    	  
+    	  implNodelet.appendChild(anchor);
+    	  
+    	}
     } else 	if (implNodelet.hasClassName("heading")) {
     	String classes = implNodelet.getClassName();
     	int s = classes.indexOf("heading-");
@@ -216,7 +236,11 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
     	
     	implNodelet.removeClassName("heading");
     	implNodelet.removeClassName(hClass);
-    	implNodelet.removeAttribute("id");
+    	implNodelet.removeAttribute("hid");
+    	
+    	Element anchor = implNodelet.getElementsByTagName("a").getItem(0);
+    	implNodelet.removeChild(anchor);
+    	
     }
     
   }
