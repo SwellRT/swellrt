@@ -3,6 +3,7 @@ package org.swellrt.beta.client.js.editor.annotation;
 import java.util.Map;
 
 import org.waveprotocol.wave.client.editor.EditorContext;
+import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.model.document.util.Range;
 
@@ -69,4 +70,18 @@ public class ParagraphValueAnnotation implements Annotation {
     
     return null;
   }
+  
+  public String apply(ContentElement e) {
+    
+    final String[] result = new String[1];
+    
+    this.styles.forEach( (value , style) -> {            
+      if (!value.equals("default") && style.isApplied(e))
+        result[0] = value;
+    });
+    
+    return result[0];
+    
+  }
+  
 }

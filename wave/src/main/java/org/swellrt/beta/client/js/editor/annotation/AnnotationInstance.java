@@ -148,14 +148,24 @@ public class AnnotationInstance {
   
   @JsProperty
   public Node getNode() {
+    Node e = null;
+    
     if (this.node != null) {
-      return node.getImplNodelet();
-    } else if (range != null) {
-       Point<ContentNode> point = doc.locate(range.getStart()+1);    
-      return point.getContainer().getParentElement().getImplNodelet();
+      
+      e = node.getImplNodelet();      
+      if (e == null)
+        e = this.node.getImplNodeletRightwards();
+      
+    } 
+    
+    if (e == null && range != null) {
+
+      Point<ContentNode> point = doc.locate(range.getStart()+1);    
+      e = point.getContainer().getParentElement().getImplNodelet();
+    
     }
     
-    return null;
+    return e;
   }
   
   @JsProperty

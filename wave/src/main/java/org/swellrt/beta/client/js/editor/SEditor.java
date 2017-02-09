@@ -421,7 +421,7 @@ public class SEditor implements EditorUpdateListener {
     
     if (Range.ALL.equals(range))
       range = SEditorHelper.getFullValidRange(editor);
-    
+
     if (range == null)
       range = editor.getSelectionHelper().getOrderedSelectionRange();
     
@@ -492,10 +492,14 @@ public class SEditor implements EditorUpdateListener {
    * @throws SEditorException
    */
   public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range, @JsOptional Boolean all) throws SEditorException {
-    
+        
     range = checkRangeArgument(range);
     
     AnnotationAction getAction = new AnnotationAction(editor, range);
+    
+    getAction.deepTraverse(all != null ? all : false);
+    // By default only consider effective annotations 
+    getAction.onlyEffectiveAnnotations( !(all != null && all.equals(Boolean.TRUE)) ); 
     
     if (names != null) {
       if (JsUtils.isArray(names)) {
@@ -507,8 +511,7 @@ public class SEditor implements EditorUpdateListener {
       }
     }
     
-    // By default only consider effective annotations 
-    getAction.onlyEffectiveAnnotations( !(all != null && all.equals(Boolean.TRUE)) );      
+     
     
     return getAction.get();   
   }

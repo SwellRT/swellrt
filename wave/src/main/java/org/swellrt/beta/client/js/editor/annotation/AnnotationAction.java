@@ -2,6 +2,7 @@ package org.swellrt.beta.client.js.editor.annotation;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -9,7 +10,12 @@ import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.JsoView;
+import org.waveprotocol.wave.client.doodad.annotation.jso.JsoParagraphAnnotation;
+import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorContext;
+import org.waveprotocol.wave.client.editor.content.ContentElement;
+import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
+import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Range;
@@ -17,6 +23,7 @@ import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.dom.client.Element;
 
 /**
  * Action to be performed in a set of annotations for a provided range.
@@ -32,15 +39,20 @@ public class AnnotationAction {
   JsoStringSet textAnnotationsNames = JsoStringSet.create();
 
   final Range range;
-  final EditorContext editor;
-  
+  final Editor editor;
+     
+  boolean deepTraverse = false;
   boolean projectEffective = false;
   
-  public AnnotationAction(EditorContext editor, Range range) {
+  public AnnotationAction(Editor editor, Range range) {
     this.range = range;
     this.editor = editor;
   }
      
+  public void deepTraverse(boolean enabled) {
+    this.deepTraverse = enabled;
+  }
+  
   public void add(JsArrayString names) throws SEditorException {
     for (int i = 0; i < names.length(); i++)
       add(names.get(i));
@@ -219,15 +231,52 @@ public class AnnotationAction {
     //
     // Paragraph annotations
     // 
-     
-    for (Annotation antn: paragraphAnnotations) {
-      
-      if (antn instanceof ParagraphValueAnnotation) {
-        String name = ((ParagraphValueAnnotation) antn).getName();
-        String value = ((ParagraphValueAnnotation) antn).apply(editor, range);
-        if (value != null)
-          addToResult(result,name, new AnnotationInstance(editor.getDocument(), name, value, range, null, AnnotationInstance.MATCH_IN));   
-      }
+    
+    if (!deepTraverse) {
+
+      Paragraph.traverse(editor.getContent().getLocationMapper(), range.getStart(), range.getEnd(),
+          new ContentElement.Action() {
+
+            @Override
+            public void execute(ContentElement e) {
+
+              for (Annotation antn : paragraphAnnotations) {
+
+                if (antn instanceof ParagraphValueAnnotation) {
+                  String name = ((ParagraphValueAnnotation) antn).getName();
+                  String value = ((ParagraphValueAnnotation) antn).apply(e);
+                  if (value != null)
+                    addToResult(result, name, new AnnotationInstance(editor.getDocument(), name,
+                        value, range, e, AnnotationInstance.MATCH_IN));
+                }
+              }
+
+            }
+
+          });
+
+    } else {
+
+      Paragraph.traverseDoc(editor.getDocument(), new ContentElement.RangedAction() {
+        
+        @Override
+        public void execute(ContentElement e, Range r) {
+          
+          for (Annotation antn : paragraphAnnotations) {
+  
+            if (antn instanceof ParagraphValueAnnotation) {
+              String name = ((ParagraphValueAnnotation) antn).getName();
+              String value = ((ParagraphValueAnnotation) antn).apply(e);
+              if (value != null)
+                addToResult(result, name, new AnnotationInstance(editor.getDocument(), name,
+                    value, r, e, AnnotationInstance.MATCH_IN));
+            }
+          }
+          
+        }
+        
+      });
+    
     }
     
     return result;
