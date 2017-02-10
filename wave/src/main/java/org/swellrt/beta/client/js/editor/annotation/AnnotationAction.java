@@ -2,7 +2,6 @@ package org.swellrt.beta.client.js.editor.annotation;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -10,12 +9,9 @@ import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.common.util.JsoView;
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoParagraphAnnotation;
 import org.waveprotocol.wave.client.editor.Editor;
-import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
-import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Range;
@@ -23,7 +19,6 @@ import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.dom.client.Element;
 
 /**
  * Action to be performed in a set of annotations for a provided range.
@@ -172,7 +167,7 @@ public class AnnotationAction {
       Object formerInstance = result.getObjectUnsafe(key);
       if (formerInstance != null) {
         AnnotationInstance typedFormerInstance = (AnnotationInstance) formerInstance;
-        overwriteAnnotation = typedFormerInstance.getValue() == null;
+        overwriteAnnotation = typedFormerInstance.value == null;
       }
       
       // A simple map, one annotation instance per key     

@@ -18,6 +18,7 @@ import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
+import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -50,7 +51,7 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-@JsType(namespace = "swellrt.Editor", name = "AnnotationRegistry")
+@JsType(namespace = "swellrt.Annotation", name = "Registry")
 public class AnnotationRegistry {
 
   public static final String PARAGRAPH_HEADER = "paragraph/header";
@@ -109,7 +110,7 @@ public class AnnotationRegistry {
     m.put("h5", Paragraph.regularStyle("h5"));
     m.put("default", Paragraph.regularStyle(""));
     
-    store.put(PARAGRAPH_HEADER, new ParagraphValueAnnotation(PARAGRAPH_HEADER, m, new Annotation.AttributeGenerator() {
+    store.put(PARAGRAPH_HEADER, new ParagraphValueAnnotation(ParagraphBehaviour.HEADING, PARAGRAPH_HEADER, m, new Annotation.AttributeGenerator() {
 
       @Override
       public Map<String, String> generate(EditorContext editor, Range range, String styleKey) {
@@ -133,7 +134,7 @@ public class AnnotationRegistry {
     m.put("justify", Paragraph.Alignment.JUSTIFY);
     m.put("default", Paragraph.Alignment.LEFT);
     
-    store.put(PARAGRAPH_TEXT_ALIGN, new ParagraphValueAnnotation(PARAGRAPH_TEXT_ALIGN, m, null));
+    store.put(PARAGRAPH_TEXT_ALIGN, new ParagraphValueAnnotation(ParagraphBehaviour.DEFAULT, PARAGRAPH_TEXT_ALIGN, m, null));
    
     //
     // Paragraph List
@@ -144,7 +145,7 @@ public class AnnotationRegistry {
     m.put("unordered", Paragraph.listStyle(null));
     m.put("default", Paragraph.listStyle(null));
     
-    store.put(PARAGRAPH_LIST, new ParagraphValueAnnotation(PARAGRAPH_LIST, m, null));
+    store.put(PARAGRAPH_LIST, new ParagraphValueAnnotation(ParagraphBehaviour.LIST, PARAGRAPH_LIST, m, null));
     
     //
     // Paragraph indentation
@@ -227,11 +228,11 @@ public class AnnotationRegistry {
    * @param name
    * @param handler
    */
-  public static void setHandler(String name, AnnotationEventHandler handler) {    
+  public static void setHandler(String name, AnnotationInstance.Handler handler) {    
     Annotation antn = get(name);
     
-    if (antn != null && antn instanceof TextAnnotation) {
-      TextAnnotation ta = (TextAnnotation) antn;   
+    if (antn != null && antn instanceof Annotation.Listenable) {
+      Annotation.Listenable ta = (Annotation.Listenable) antn;   
       ta.setHandler(handler);
     }
   }

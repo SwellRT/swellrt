@@ -17,10 +17,10 @@ import com.google.gwt.user.client.Event;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler, AnnotationPaint.MutationHandler {
+public class TextAnnotation implements Annotation, Annotation.Listenable, AnnotationPaint.EventHandler, AnnotationPaint.MutationHandler {
 
   private final String name;
-  private AnnotationEventHandler handler; 
+  private AnnotationInstance.Handler handler; 
   
   private final String contentNodeAttributeName;
   
@@ -44,7 +44,8 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
     EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), new String[]{ name }, range.getStart(), range.getEnd());
   }
 
-  public void setHandler(AnnotationEventHandler h) {    
+  @Override
+  public void setHandler(AnnotationInstance.Handler h) {    
     this.handler = h;
     if (handler != null) {
       AnnotationPaint.registerEventHandler(name, this);
@@ -62,7 +63,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onAdded(ContentElement node) {
     if (handler != null) {      
       String value = node.getAttribute(this.contentNodeAttributeName);          
-      handler.onAdded(AnnotationInstance.create(node.getMutableDoc(), name, value, node));
+      handler.exec(AnnotationInstance.EVENT_ADDED, AnnotationInstance.create(node.getMutableDoc(), name, value, node), null);
     }    
   }
 
@@ -70,7 +71,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onMutation(ContentElement node) {
     if (handler != null) {
       String value = node.getAttribute(this.contentNodeAttributeName);
-      handler.onMutation(AnnotationInstance.create(node.getMutableDoc(), name, value, node));
+      handler.exec(AnnotationInstance.EVENT_MUTATED, AnnotationInstance.create(node.getMutableDoc(), name, value, node), null);
     }   
   }
 
@@ -78,7 +79,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onRemoved(ContentElement node) {
     if (handler != null) {
       String value = node.getAttribute(this.contentNodeAttributeName);
-      handler.onRemoved(AnnotationInstance.create(node.getMutableDoc(), name, value, node));
+      handler.exec(AnnotationInstance.EVENT_REMOVED, AnnotationInstance.create(node.getMutableDoc(), name, value, node), null);
     }   
   }
 
@@ -86,7 +87,7 @@ public class TextAnnotation implements Annotation, AnnotationPaint.EventHandler,
   public void onEvent(ContentElement node, Event event) {
     if (handler != null) {
       String value = node.getAttribute(this.contentNodeAttributeName);
-      handler.onEvent(event, AnnotationInstance.create(node.getMutableDoc(), name, value, node));
+      handler.exec(AnnotationInstance.EVENT_MOUSE, AnnotationInstance.create(node.getMutableDoc(), name, value, node), event);
     }   
   }
   

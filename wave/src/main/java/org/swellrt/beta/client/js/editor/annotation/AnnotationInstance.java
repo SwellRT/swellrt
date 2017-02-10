@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import org.swellrt.beta.client.js.editor.SEditorHelper;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
-import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
@@ -17,7 +16,10 @@ import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.user.client.Event;
 
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -27,9 +29,20 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com
  *
  */
-@JsType(namespace = "swellrt.Editor", name = "Annotation")
+@JsType(namespace = "swellrt", name = "Annotation")
 public class AnnotationInstance {
 
+  public static final int EVENT_ADDED = 1;
+  public static final int EVENT_MUTATED = 2;
+  public static final int EVENT_REMOVED = 3;
+  public static final int EVENT_MOUSE = 4;
+  
+  @JsFunction
+  public interface Handler {
+            
+    public boolean exec(int type, AnnotationInstance annotation, @JsOptional Event event);
+  }
+  
   /** the selection range is equals to annotation range or inside it */
   public static final int MATCH_IN = 0;
   /** the selection range is partially out of the annotation range or selection spans more content beyond annotation */
@@ -40,12 +53,14 @@ public class AnnotationInstance {
     return in ? AnnotationInstance.MATCH_IN : AnnotationInstance.MATCH_OUT;
   }
   
-  String name;
-  String value;
-  Range range;
-  ContentElement node;
-  int matchType;
-  CMutableDocument doc;
+  public String name;
+  public String value;
+  public String text;
+  public Range range;  
+  public int matchType;
+  
+  private ContentElement node;
+  private CMutableDocument doc;
   
   protected static Node lookupNodelet(ContentNode n) {
     if (n != null) {
@@ -101,36 +116,15 @@ public class AnnotationInstance {
     super();
     this.name = name;
     this.value = value;
-    this.range = range;
+    // clone to avoid side effects
+    this.range = Range.create(range.getStart(), range.getEnd());
     this.matchType = matchType;
     this.node = node;
     this.doc = doc;
-  }
-  
+    this.text = DocHelper.getText(doc, range.getStart(), range.getEnd());
 
-  @JsProperty
-  public String getName() {
-    return name;
   }
-  
-  @JsProperty
-  public String getValue() {
-    return value;
-  }
-  
-  @JsProperty
-  public String getText() {
-    if (range != null) 
-      return DocHelper.getText(doc, range.getStart(), range.getEnd());
-    else
-      return "";
-  }
-  
-  @JsProperty
-  public Range getRange() {   
-    return range;
-  }
-  
+    
   
   @JsProperty
   public Element getLine() {
@@ -167,11 +161,7 @@ public class AnnotationInstance {
     
     return e;
   }
-  
-  @JsProperty
-  public int getMatchType() {
-    return matchType;
-  }
+
   
   public void update(String value) {
     if (range != null) {

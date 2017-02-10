@@ -12,6 +12,13 @@ import org.waveprotocol.wave.model.document.util.Range;
  *
  */
 public interface Annotation {
+  
+  public interface Listenable {
+    
+    public void setHandler(AnnotationInstance.Handler h);
+    
+  }
+  
 
   public interface AttributeGenerator {
     
