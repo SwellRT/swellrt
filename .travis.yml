@@ -1,4 +1,4 @@
 language: java
 jdk: oraclejdk8
 script:
-  - ./gradlew clean jar compileJsWebDev compileWebDevBeta test createDistBin
+  - ./gradlew clean jar prodWeb test createDistBin
