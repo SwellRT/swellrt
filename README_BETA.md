@@ -1,63 +1,38 @@
-![](http://php-carbonero.rhcloud.com/swellrt/wp-content/uploads/sites/3/2016/08/Logo-SwellRT-tamanÌos-13.png)
 
-SwellRT is a **real-time storage platform**. This project includes the server runtime and the JavaScript client for Web applications.
+SwellRT is a **backend-as-a-service**. It allows to develop Web and _mobile_ apps faster by providing a set of common backend features:
 
-SwellRT enables **real-time collaboration** in your Web applications: multiple users can share and edit JavaScript objects in real-time with transparent conflict resolution (*eventual consistency*). Changes are distributed in real-time to any user or App instance using a shared object.
+* Real-time storage (NoSQL)
+* User management
+* Auth
+* Event based integration
 
-Objects are stored in the server and can be query using the API.
+These features are available through a simple API for JavaScript, Java, Android and iOS
 
-SwellRT provides also **out-of-the-box collaborative rich-text editing** for Web applications (as Google Docs® or Etherpad) through an extensible **text editor Web component and API**.
+SwellRT enables easily real-time collaboration in your apps:
 
-## NOTICE:
-
-This README_BETA.md file refers only to the **Beta** source code of SwellRT. 
-
-SwellRT **Alpha** source code is not going to be developed anymore. For more information about Alpha versions check out [README.md](README.md)
-
-The source code of both versions lives together in this same Git repo/branch.  
+* Collaborative text editing
+* Chats
+* Reactive user interface
+* Push notifications
+* Ubiquitous User Experience across devices
 
 
-## Roadmap Beta version
+_Note: native mobile clients are not still available_
 
-**Provide similar features than Alpha version**
-
-- Re-implement all API operations in the current Alpha version, keeping input/output formats if possible.
-- Add List data type
-- Add mutation event bindings in data types
-- Re-implement server's indexing events according to new data model implementation
-- Re-implement server's event hub according to new data model implementation
-
-**Additional features than Alpha version**
-
-TBD
-
-## Quick start
 
 ### Build
 
 Clone the project
 
 ```
-// From SwellRT repo
 git clone git@github.com:P2Pvalue/swellrt.git
 cd swellrt
-git checkout master
-
-//
-// or
-//
-
-// From Apache Wave repo
-git@github.com:apache/incubator-wave.git 
-cd incubator-wave
-git checkout swellrt
-
 ```
 
-Build client and server
+Build
 
 ```
-./gradlew compileJava compileWebDevBeta
+./gradlew compileJava devWeb
 ```
 
 Start the server
@@ -74,7 +49,7 @@ Add JS client's script in your web project:
 
 or go to http://localhost:9898/swellrt-beta.html
 
-Open the debugger console of the browser. 
+Open the debugger console of the browser.
 
 ### Using the API
 
@@ -101,10 +76,10 @@ s.createUser({
 
 **Login**
 ```
-s.login({ 
+s.login({
 
  id : "ann@local.net",
- password : "ann" 
+ password : "ann"
 
 }).then(r=>{ console.log("Login Successful"); _response = r; })
 .catch(e=>{ console.log("Login error"); _exception = e; });
@@ -168,7 +143,7 @@ jso.quiver.put("surfboard-2-size", "5.11, 19 , 2 3/4");
 
 // Adding nested map - as static js
 // the whole JS object is stored as a single item,
-// changes in properties won't throw events. 
+// changes in properties won't throw events.
 
 jso.prize = {
 	contest: "Fiji Pro",
@@ -177,7 +152,7 @@ jso.prize = {
 };
 
 
-``` 
+```
 
 
 
@@ -229,20 +204,20 @@ These instructions will get you the latest version of the server up and running 
 
 2. Extract server binary files with ``tar zxvf swellrt-bin-X.Y.Z.tar.gz`` .
 
-3. Start the server from the swellrt folder 
-   
+3. Start the server from the swellrt folder
+
    Linux:
     ```
-    cd swellrt 
+    cd swellrt
     ./run-server.sh
-    ``` 
-    
+    ```
+
     Windows:    
 	 ```
 	 cd swellrt
 	 run-server.bat
 	 ```
-  
+
    Check out server status in ``http://demo.swellrt.org/test/``.
    Log in with user name 'test' and password 'test'.
 
@@ -321,7 +296,7 @@ Test Tasks:
 - **testLarge**: runs the more lengthy test cases.
 - **testAll**: runs all the above tests.
 
-Build Tasks: 
+Build Tasks:
 
 - **compileJava**: builds server.
 - **compileWebDevBeta**: builds the JavaScript client (for Web).

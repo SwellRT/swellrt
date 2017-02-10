@@ -4,15 +4,16 @@
 // A fake SwellRT object to register on ready handlers
 // before the GWT module is loaded
 
-window._lh = [];
-
 window.swellrt = {
 
   onReady: function(handler) {
        if (!handler || typeof handler !== "function")
          return;
-
-       _lh.push(handler);
+       
+       if (!window._lh)
+    	   window._lh = [];
+    	   
+       window._lh.push(handler);
       }
 }
 

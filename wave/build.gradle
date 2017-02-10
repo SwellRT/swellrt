@@ -31,7 +31,7 @@ apply plugin: 'jetty'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.57.9-alpha"
+version = "0.10-beta"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -315,6 +315,9 @@ task generateGXP {
     }
 }
 
+compileJava.dependsOn = [generateMessages, generateGXP]
+
+
 //=============================================================================
 // JavaScript Web Client (Gwt)
 //=============================================================================
@@ -330,7 +333,7 @@ task generateGXP {
 // Remove "-strict"
 //
 
-
+// Deprecated (alpha)
 task compileJsWeb {
     description = 'Compiles the SwellRT Javascript Web Client (Production)'
     doLast {
@@ -360,6 +363,7 @@ task compileJsWeb {
     }
 }
 
+// Deprecated (alpha)
 task compileJsWebDev {
     description = 'Compiles the SwellRT Javascript Web Client (Development)'
     doLast {
@@ -388,61 +392,10 @@ task compileJsWebDev {
     }
 }
 
-task compileWebDevBeta {
-    description = 'Compiles the SwellRT Javascript/Web Client (Development)'
-    doLast {
-        javaexec {
-            main = "com.google.gwt.dev.Compiler"
-            classpath {
-                [
-                        sourceSets.main.java.srcDirs,
-                        sourceSets.main.compileClasspath,
-                        sourceSets.main.resources.srcDirs,
-                        configurations.gwt
-                ]
-            }
-            jvmArgs = [
-                    "-Xmx1024M"
-            ]
-            args = [
-                    "-style", "PRETTY",
-                    "-noincremental",
-                    "-logLevel", "INFO",
-                    "-saveSource",
-                    "-draftCompile",
-                    "-strict",
-                    "-generateJsInteropExports",                    
-                    "org.swellrt.beta.client.ServiceFrontendDev"
-            ]
-        }
-    }
-}
-
-task runWebServer(type: JettyRun) {
-	webAppSourceDirectory=file("war/")
-}
-
-// compileJsWebDev.mustRunAfter compileJava
-// run.dependsOn compileJsWebDev
-
 compileJsWeb.mustRunAfter compileJava
 compileJsWebDev.mustRunAfter compileJava
 
-compileWebDevBeta.mustRunAfter compileJava
-
-run.dependsOn compileJsWebDev
-
-
-compileJava.dependsOn = [generateMessages, generateGXP]
-
-/* Gwt Dev Tasks */
-
-/*
-	Use CodeServer instead of DevMode to have the
-	-style property available.
-*/
-
-
+// Deprecated (alpha)
 task gwtDev {
     description = 'Runs the hosted mode server, for debugging the Gwt client ' +
             'in a JVM.'
@@ -472,9 +425,86 @@ task gwtDev {
 
 gwtDev.dependsOn compileJava
 
-task debugWebDevBeta {
-    description = 'Runs the hosted mode server, for debugging the Gwt client ' +
-            'in a JVM.'
+
+//
+// New beta tasks
+//
+
+task prodWeb {
+
+    description = 'Builds SwellRT Web Client (Production version)'
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.Compiler"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt
+                ]
+            }
+            jvmArgs = [
+                    "-Xmx1024M"
+            ]
+            args = [
+            
+                    "-style", "OBFUSCATED",
+                    "-XnoclassMetadata",
+                    "-XnocheckCasts",
+                    "-noincremental",
+                    "-optimize", "9",
+                    "-localWorkers", "4",            
+                    "-logLevel", "INFO",
+                    "-saveSource",
+                    "-strict",
+                    "-Xnamespace", "PACKAGE",
+                    "-generateJsInteropExports",                    
+                    "org.swellrt.beta.client.ServiceFrontendProd"
+            ]
+        }
+    }
+}
+
+prodWeb.mustRunAfter compileJava
+
+task devWeb {
+
+    description = 'Builds SwellRT Web Client (Development version)'
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.Compiler"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt
+                ]
+            }
+            jvmArgs = [
+                    "-Xmx1024M"
+            ]
+            args = [
+                    "-style", "PRETTY",
+                    "-noincremental",
+                    "-logLevel", "INFO",
+                    "-saveSource",
+                    "-draftCompile",
+                    "-strict",
+                    "-Xnamespace", "PACKAGE",
+                    "-generateJsInteropExports",                    
+                    "org.swellrt.beta.client.ServiceFrontendDev"
+            ]
+        }
+    }
+}
+
+devWeb.mustRunAfter compileJava
+run.dependsOn devWeb
+
+task debugWeb {
+    description = 'Builds SwellRT Web Client (Debug mode)'
     doLast {
         javaexec {
             main = "com.google.gwt.dev.codeserver.CodeServer"
@@ -500,7 +530,8 @@ task debugWebDevBeta {
     }
 }
 
-debugWebDevBeta.dependsOn compileJava
+debugWeb.dependsOn compileJava
+
 
 //
 // Warning: excluding sources from GWT modules doesn't seem to work properly.
@@ -508,9 +539,8 @@ debugWebDevBeta.dependsOn compileJava
 //
 
 
-task gwtEditorDev {
-    description = 'Runs the hosted mode server, for debugging the Editor Harness client ' +
-            'in a JVM.'
+task debugEditor {
+    description = 'Run editor test console on debug mode'
 
     doLast {
         javaexec {
@@ -536,7 +566,13 @@ task gwtEditorDev {
     }
 }
 
-gwtEditorDev.dependsOn compileJava
+debugEditor.dependsOn compileJava
+
+
+task runWebServer(type: JettyRun) {
+	webAppSourceDirectory=file("war/")
+}
+
 
 //=============================================================================
 // Tests
@@ -605,6 +641,7 @@ testAll.dependsOn test, testMongo, testLarge
 
 testMongo.mustRunAfter compileJava, test
 testLarge.mustRunAfter test
+
 
 //=============================================================================
 // Custom UberJar Implementation
