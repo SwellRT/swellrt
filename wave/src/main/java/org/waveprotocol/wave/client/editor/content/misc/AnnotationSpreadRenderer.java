@@ -35,6 +35,7 @@ import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Priority;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
+import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 
 import com.google.gwt.dom.client.Document;
@@ -54,6 +55,15 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   private static final int NOTIFY_SCHEDULE_DELAY_MS = 200;
 
   private static final int MOUSE_LISTENER_EVENTS = Event.MOUSEEVENTS | Event.ONCLICK;
+  
+  
+  public static final String HTML_DATA_ATTR_PREFIX = "data-"; 
+  
+  
+  public static String htmlSafeKey(String key) {
+    return (Annotations.LOCAL == key.charAt(0) ? key.substring(1) : key);
+  }
+
   
   private final Set<ContentElement> mutatedElements = new HashSet<ContentElement>();
 
@@ -162,17 +172,15 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     // Attributes for generic annotations
     //    
     else if (name.startsWith(AnnotationPaint.VALUE_ATTR_PREFIX)) {    	
-      String annotationName = name
-          .replace(AnnotationPaint.VALUE_ATTR_PREFIX, "");
-    	   			
+      String annotationName = AnnotationPaint.extractKey(AnnotationPaint.VALUE_ATTR_PREFIX, name);
+              	   			
     	implNodelet.addClassName(annotationName);    	
-    	implNodelet.setAttribute("data-"+annotationName, newValue);   
+    	implNodelet.setAttribute(HTML_DATA_ATTR_PREFIX + htmlSafeKey(annotationName), 
+    	     newValue);   
     	
     } else if (name.startsWith(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX)) {   
       
-      String annotationName = name
-          .replace(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX, "");
-        
+      String annotationName = AnnotationPaint.extractKey(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX, name);        
       updateEventHandler(element, annotationName, newValue != null && !newValue.isEmpty());  	    
     
     } else if (name.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX)) {

@@ -1,13 +1,16 @@
 package org.swellrt.beta.client.js.editor.annotation;
 
-import java.util.Iterator;
+import java.util.function.Consumer;
 
-import org.swellrt.beta.client.js.editor.SEditorHelper;
 import org.waveprotocol.wave.client.common.util.JsoStringSet;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
+import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
+import org.waveprotocol.wave.client.editor.content.misc.CaretAnnotations;
+import org.waveprotocol.wave.model.document.MutableAnnotationSet;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
+import org.waveprotocol.wave.model.document.indexed.LocationMapper;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
@@ -19,6 +22,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.Event;
 
 import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -52,15 +56,23 @@ public class AnnotationInstance {
     boolean in = selectionRange.equals(annotationRange) || ( selectionRange.getStart() >= annotationRange.getStart() && selectionRange.getEnd() <= annotationRange.getEnd());     
     return in ? AnnotationInstance.MATCH_IN : AnnotationInstance.MATCH_OUT;
   }
+
   
-  public String name;
+  private final Annotation annotation;
+  
+  // public to Js */
+  public final String name;
   public String value;
-  public String text;
-  public Range range;  
+  public Range range;
   public int matchType;
+  public String text;
   
-  private ContentElement node;
-  private CMutableDocument doc;
+  private final LocationMapper<ContentNode> mapper;
+  private final CMutableDocument doc; 
+  private final MutableAnnotationSet<Object> localAnnotations; 
+  private final CaretAnnotations caret;
+  
+  private final ContentElement node; // optional
   
   protected static Node lookupNodelet(ContentNode n) {
     if (n != null) {
@@ -74,55 +86,112 @@ public class AnnotationInstance {
   }
   
   
+  @SuppressWarnings("rawtypes")
   protected static Range getAnnotationRange(ContentElement node, String name) {
     
     int start = node.getMutableDoc().getLocation(node);
     int end = node.getMutableDoc().getLocation(node.getNextSibling());
-
     
     StringSet keys = JsoStringSet.create();
     keys.add(name);
-    Iterator<RangedAnnotation<String>> it = node.getMutableDoc().rangedAnnotations(start, end, keys).iterator();
-    while (it.hasNext()) {
-      RangedAnnotation<String> ra = it.next();
-      if (ra.value() != null && ra.key().equals(name)) {
-        return new Range(ra.start(), ra.end());
+
+    Range[] result = new Range[1];
+    
+    Consumer<RangedAnnotation> rangeMatcher = new Consumer<RangedAnnotation>() {
+     
+      @Override
+      public void accept(RangedAnnotation r) {        
+        if (r.value() != null && r.key().equals(name)) {
+          result[0] = new Range(r.start(), r.end());
+        }        
       }
+
+    };
+    
+    if (Annotation.isLocal(name)) {
+      node.getContext().localAnnotations().rangedAnnotations(start, end, keys).forEach(rangeMatcher);      
+    } else {
+      node.getMutableDoc().rangedAnnotations(start, end, keys).forEach(rangeMatcher);
     }
 
-    return new Range(start, start);
+    return result[0];
   }
  
   
 
   /**
    * Use this method from annotation search. See {@link AnnotationRegistry}
-   * 
    */
-  protected static AnnotationInstance create(CMutableDocument doc, String name, String value, Range range, int matchType) {
-    return new AnnotationInstance(doc, name, value, range, null, matchType);
+  @JsIgnore
+  public static AnnotationInstance create(ContentDocument doc, String name, String value, Range range, int matchType) {
+    
+    return AnnotationInstance.create(
+        name, 
+        value,
+        doc.getMutableDoc(),
+        doc.getLocationMapper(),
+        doc.getLocalAnnotations(),
+        doc.getContext().editing().editorContext().getCaretAnnotations(),
+        range,
+        matchType,
+        null);
+    
   }
 
   
+  @JsIgnore
+  public static AnnotationInstance create(String name, String value, Range range, ContentElement node, int matchType) {
+      
+    return AnnotationInstance.create(
+        name, 
+        value,
+        node.getMutableDoc(),
+        node.getLocationMapper(),
+        node.getContext().localAnnotations(),
+        node.getContext().editing().editorContext().getCaretAnnotations(),
+        range,
+        matchType,
+        node);
+  }
+  
   /**
    * Use this method from event handlers. See {@link TextAnnotation}
-   * 
    */
-  protected static AnnotationInstance create(CMutableDocument doc, String name, String value, ContentElement node) {
-    return new AnnotationInstance(doc, name, value, getAnnotationRange(node, name), node, MATCH_IN);
+  @JsIgnore
+  public static AnnotationInstance create(String name, String value, ContentElement node) {
+    Range range = getAnnotationRange(node, name);
+  
+    
+    return AnnotationInstance.create(
+        name, 
+        value,
+        node.getMutableDoc(),
+        node.getLocationMapper(),
+        node.getContext().localAnnotations(),
+        node.getContext().editing().editorContext().getCaretAnnotations(),
+        range,
+        MATCH_IN,
+        node);
+  }
+  
+  @JsIgnore
+  public static AnnotationInstance create(String name, String value, CMutableDocument doc, LocationMapper<ContentNode> mapper, MutableAnnotationSet<Object> localAnnotations, CaretAnnotations caret, Range range, int matchType, ContentElement node) {
+    return new AnnotationInstance(name, value, doc, mapper, localAnnotations, caret, range, matchType, node); 
   }
     
-  protected AnnotationInstance(CMutableDocument doc, String name, String value, Range range, ContentElement node, int matchType) {
+  protected AnnotationInstance(String name, String value, CMutableDocument doc, LocationMapper<ContentNode> mapper, MutableAnnotationSet<Object> localAnnotations, CaretAnnotations caret, Range range, int matchType, ContentElement node) {
     super();
+    this.annotation = AnnotationRegistry.get(name);
     this.name = name;
-    this.value = value;
-    // clone to avoid side effects
-    this.range = Range.create(range.getStart(), range.getEnd());
+    this.value = value;    
+    this.range = range != null ? Range.create(range.getStart(), range.getEnd()) : null; // clone to avoid side effects
     this.matchType = matchType;
-    this.node = node;
+    this.mapper =
     this.doc = doc;
-    this.text = DocHelper.getText(doc, range.getStart(), range.getEnd());
-
+    this.text = range != null ? DocHelper.getText(doc, range.getStart(), range.getEnd()) : "";
+    this.localAnnotations = localAnnotations;
+    this.caret = caret;
+    this.node = node;
   }
     
   
@@ -142,21 +211,11 @@ public class AnnotationInstance {
   
   @JsProperty
   public Node getNode() {
-    Node e = null;
-    
-    if (this.node != null) {
-      
-      e = node.getImplNodelet();      
-      if (e == null)
-        e = this.node.getImplNodeletRightwards();
-      
-    } 
+    Node e = lookupNodelet(node);
     
     if (e == null && range != null) {
-
       Point<ContentNode> point = doc.locate(range.getStart()+1);    
-      e = point.getContainer().getParentElement().getImplNodelet();
-    
+      e = point.getContainer().getParentElement().getImplNodelet();    
     }
     
     return e;
@@ -165,28 +224,26 @@ public class AnnotationInstance {
   
   public void update(String value) {
     if (range != null) {
-      doc.setAnnotation(range.getStart(), range.getEnd(), name, value);
+      annotation.update(doc, mapper, localAnnotations, caret, range, value);
       this.value = value;
     }
   }
 
-  public AnnotationInstance mutate(String text) {
-    if (range == null) return null;
+  public void mutate(String text) {
     
-    String value = this.value;
-    // remove old annotation
-    clear(); 
-    // edit text
-    Range mutatedRange = SEditorHelper.replaceText(doc, range, text); 
-    // create
-    doc.setAnnotation(mutatedRange.getStart(), mutatedRange.getEnd(), name, value);
-    return new AnnotationInstance(doc, name, value, mutatedRange, null, MATCH_IN);
+    if (range != null) { 
+      Range mutatedRange = annotation.mutate(doc, mapper, localAnnotations, caret, range, text, value);
+      this.text = text;
+      this.range = mutatedRange;
+    }
   }
 
-  public void clear() {
+  public void clear() {    
     if (range != null) {
-      doc.setAnnotation(range.getStart(), range.getEnd(), name, null);
+      annotation.reset(doc, mapper, localAnnotations, caret, range);  
       this.value = null;
+      this.text = null;
+      this.range = null;
     }
   }
   

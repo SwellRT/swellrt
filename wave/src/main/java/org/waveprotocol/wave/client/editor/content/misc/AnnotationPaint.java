@@ -25,6 +25,7 @@ import java.util.Map;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.extract.PasteFormatRenderers;
+import org.waveprotocol.wave.model.document.util.Annotations;
 
 import com.google.gwt.user.client.Event;
 
@@ -58,7 +59,12 @@ public class AnnotationPaint {
   public static final String MUTATION_LISTENER_ATTR_PREFIX = "ml-";
   
   public static final String CLASS_ATTR_PREFIX = "class-";
-
+  
+  
+  public static String extractKey(String prefix, String attributeName) {
+   return attributeName
+        .replace(prefix, "");       
+  }
   
   //
   // Below, local node attributes for original annotations (style, links...)

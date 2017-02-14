@@ -12,7 +12,6 @@ import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.GeneralAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.editor.Editor;
-import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
@@ -113,7 +112,7 @@ public class AnnotationRegistry {
     store.put(PARAGRAPH_HEADER, new ParagraphValueAnnotation(ParagraphBehaviour.HEADING, PARAGRAPH_HEADER, m, new Annotation.AttributeGenerator() {
 
       @Override
-      public Map<String, String> generate(EditorContext editor, Range range, String styleKey) {
+      public Map<String, String> generate(Range range, String styleKey) {
         // This code auto generates an id for each header! so we can reference them in the DOM
         Date now = new Date();
         String id = String.valueOf(now.getTime()) + 
@@ -250,5 +249,5 @@ public class AnnotationRegistry {
       ta.setHandler(null);
     }
   }
-  
+    
 }

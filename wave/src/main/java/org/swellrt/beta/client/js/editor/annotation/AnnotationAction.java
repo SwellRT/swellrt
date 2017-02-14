@@ -29,7 +29,7 @@ import com.google.gwt.core.client.JsArrayString;
  */
 public class AnnotationAction {
   
-  Set<Annotation> paragraphAnnotations = new HashSet<Annotation>(); 
+  Set<ParagraphAnnotation> paragraphAnnotations = new HashSet<ParagraphAnnotation>(); 
   Set<TextAnnotation> textAnnotations = new HashSet<TextAnnotation>(); 
   JsoStringSet textAnnotationsNames = JsoStringSet.create();
 
@@ -89,8 +89,9 @@ public class AnnotationAction {
       if (antn instanceof TextAnnotation) {
         textAnnotations.add((TextAnnotation) antn);
         textAnnotationsNames.add(((TextAnnotation) antn).getName()); // ensure we use canonical name
-      } else
-        paragraphAnnotations.add(antn);
+      } else if (antn instanceof ParagraphAnnotation) {
+        paragraphAnnotations.add((ParagraphAnnotation) antn);
+      }
       
     }  else{
       throw new SEditorException("Invalid annotation name");
@@ -107,7 +108,7 @@ public class AnnotationAction {
           textAnnotations.add((TextAnnotation) u);
           textAnnotationsNames.add(t);
         } else if (u instanceof ParagraphValueAnnotation) {
-          paragraphAnnotations.add(u);
+          paragraphAnnotations.add((ParagraphAnnotation) u);
         }
         
       }
@@ -122,11 +123,10 @@ public class AnnotationAction {
       addAllAnnotations();
     
     // Text annotations
-    EditorAnnotationUtil.clearAnnotationsOverRange(editor.getDocument(), editor.getCaretAnnotations(), textAnnotationsNames, range.getStart(), range.getEnd());
+    TextAnnotation.clearRange(editor.getDocument(), editor.getCaretAnnotations(), textAnnotationsNames, range.getStart(), range.getEnd());
     
     // Paragraph annotations
-    for (Annotation antn: paragraphAnnotations)
-      antn.reset(editor, range);
+    ParagraphAnnotation.clearRange(editor.getContent(), range, paragraphAnnotations);
   }
   
 
@@ -199,7 +199,7 @@ public class AnnotationAction {
         String value = editor.getDocument().getAnnotation(range.getStart(), antn.getName());
         Range actualRange = EditorAnnotationUtil.getEncompassingAnnotationRange(editor.getDocument(), antn.getName(), range.getStart());
         if (value != null)
-          addToResult(result, antn.getName(), AnnotationInstance.create(editor.getDocument(), antn.getName(), value, actualRange, AnnotationInstance.MATCH_IN)); 
+          addToResult(result, antn.getName(), AnnotationInstance.create(editor.getContent(), antn.getName(), value, actualRange, AnnotationInstance.MATCH_IN)); 
       }
       
     } else {
@@ -216,9 +216,9 @@ public class AnnotationAction {
            
           if (projectEffective && matchType != AnnotationInstance.MATCH_IN)
             return;
-            
+          
           if (t.value() != null)
-              addToResult(result, t.key(), AnnotationInstance.create(editor.getDocument(), t.key(), t.value(), anotRange, matchType));          
+              addToResult(result, t.key(), AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, matchType));          
         }          
       });
     }
@@ -241,8 +241,7 @@ public class AnnotationAction {
                   String name = ((ParagraphValueAnnotation) antn).getName();
                   String value = ((ParagraphValueAnnotation) antn).apply(e);
                   if (value != null)
-                    addToResult(result, name, new AnnotationInstance(editor.getDocument(), name,
-                        value, range, e, AnnotationInstance.MATCH_IN));
+                    addToResult(result, name, AnnotationInstance.create(name, value, range, e, AnnotationInstance.MATCH_IN));
                 }
               }
 
@@ -263,8 +262,7 @@ public class AnnotationAction {
               String name = ((ParagraphValueAnnotation) antn).getName();
               String value = ((ParagraphValueAnnotation) antn).apply(e);
               if (value != null)
-                addToResult(result, name, new AnnotationInstance(editor.getDocument(), name,
-                    value, r, e, AnnotationInstance.MATCH_IN));
+                addToResult(result, name, AnnotationInstance.create(name, value, r, e, AnnotationInstance.MATCH_IN));
             }
           }
           

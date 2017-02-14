@@ -9,7 +9,9 @@ import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.annotation.Annotation;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationAction;
+import org.swellrt.beta.client.js.editor.annotation.AnnotationInstance;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
+import org.swellrt.beta.client.js.editor.annotation.ParagraphAnnotation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
@@ -26,6 +28,7 @@ import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
@@ -38,12 +41,14 @@ import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
+import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.DOM;
 
 import jsinterop.annotations.JsFunction;
@@ -328,12 +333,7 @@ public class SEditor implements EditorUpdateListener {
   public void set(STextWeb text) throws SException {
 
     Editor e = getEditor();
-    // Reuse existing editor.
-    if (e.hasDocument()) {
-      e.removeContentAndUnrender();
-      e.reset();
-    }
-
+    clean();
     
     ContentDocument doc = text.getContentDocument();
 
@@ -368,9 +368,9 @@ public class SEditor implements EditorUpdateListener {
    */
   public void clean() {
     if (editor != null && editor.hasDocument()) {
-      // editor.removeUpdateListener(this);
       editor.removeContentAndUnrender();
-      editor.reset();   
+      editor.reset();  
+      editor.addUpdateListener(this);
     }
   }
   
@@ -438,18 +438,36 @@ public class SEditor implements EditorUpdateListener {
    * @param value a valid value for the annotation
    * @param range a range or null
    */
-  public void setAnnotation(String name, String value, @JsOptional Range range) throws SEditorException {
+  public AnnotationInstance setAnnotation(String name, String value, @JsOptional Range range) throws SEditorException {
     
     if (!editor.isEditing())
-      return;
+      return null;
     
     Annotation antn = AnnotationRegistry.get(name);
     if (antn == null)
       throw new SEditorException(SEditorException.UNKNOWN_ANNOTATION, "Unknown annotation");
     
-    range = checkRangeArgument(range);
+    final Range effectiveRange = checkRangeArgument(range);
+    final Editor editor = getEditor();
     
-    antn.set(getEditor(), range, value);    
+    
+    if (antn instanceof ParagraphAnnotation) {
+      
+      editor.undoableSequence(new Runnable(){
+        @Override
+        public void run() {
+          antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);           
+        }        
+      });
+      return null;
+      
+    } else {
+ 
+      antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);           
+      return AnnotationInstance.create(editor.getContent(), name, value, effectiveRange, AnnotationInstance.MATCH_IN);
+
+    }
+    
   }
   
   
@@ -465,9 +483,9 @@ public class SEditor implements EditorUpdateListener {
     if (!editor.isEditing())
       return;
     
-    range = checkRangeArgument(range);
+    Range effectiveRange = checkRangeArgument(range);
     
-    AnnotationAction resetAction = new AnnotationAction(editor, range);
+    AnnotationAction resetAction = new AnnotationAction(editor, effectiveRange);
     
     if (names != null) {
       if (JsUtils.isArray(names)) {
@@ -480,7 +498,13 @@ public class SEditor implements EditorUpdateListener {
       }
     }
     
-    resetAction.reset();
+    editor.undoableSequence(new Runnable(){
+      @Override
+      public void run() {
+        resetAction.reset();       
+      }
+    });
+      
   }
   
   /**
@@ -586,21 +610,30 @@ public class SEditor implements EditorUpdateListener {
         UserAgent.isMobileWebkit() ? new EditorImplWebkitMobile(false, editorPanel.getElement()) 
             : new EditorImpl(false, editorPanel.getElement());
        
-        editor.init(null, getKeyBindingRegistry(), getSettings());
+        editor.init(null, getKeyBindingRegistry(), getSettings());       
         editor.addUpdateListener(this);
     }
+    
+    
     return editor;
   }
 
   @JsIgnore
   @Override
   public void onUpdate(EditorUpdateEvent event) {
+    Editor editor = this.getEditor();
     if (selectionHandler != null && event.selectionLocationChanged()) {
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-      if (range != null)
+
+      if (range != null) {
+
+        Point<ContentNode> pStart = editor.getDocument().locate(range.getStart());
+        Node nStart = pStart.getCanonicalNode().getImplNodelet();
+
         selectionHandler.exec(range, this);
+      }
+
     }
-    
   }
  
 }

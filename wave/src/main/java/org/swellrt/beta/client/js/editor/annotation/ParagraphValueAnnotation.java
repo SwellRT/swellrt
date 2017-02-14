@@ -3,13 +3,17 @@ package org.swellrt.beta.client.js.editor.annotation;
 import java.util.Map;
 
 import org.waveprotocol.wave.client.editor.EditorContext;
+import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
-import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
+import org.waveprotocol.wave.client.editor.content.ContentNode;
+import org.waveprotocol.wave.client.editor.content.misc.CaretAnnotations;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Alignment;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.EventHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.MutationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
+import org.waveprotocol.wave.model.document.MutableAnnotationSet;
+import org.waveprotocol.wave.model.document.indexed.LocationMapper;
 import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.user.client.Event;
@@ -20,7 +24,7 @@ import com.google.gwt.user.client.Event;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class ParagraphValueAnnotation implements Annotation, Annotation.Listenable, EventHandler, MutationHandler {
+public class ParagraphValueAnnotation implements ParagraphAnnotation, Annotation.Listenable, EventHandler, MutationHandler {
   
   private final String name;
   private final Map<String, Paragraph.LineStyle> styles;
@@ -41,34 +45,28 @@ public class ParagraphValueAnnotation implements Annotation, Annotation.Listenab
   }
   
   @Override
-  public void set(EditorContext editor, Range range, String styleKey) {
-    if (range != null && editor != null) {
+  public void set(CMutableDocument doc, LocationMapper<ContentNode> mapper, MutableAnnotationSet<Object> localAnnotations, CaretAnnotations caret, Range range, String value) {
+    if (range != null && doc != null) {
 
-      if (styleKey != null && !styleKey.isEmpty() && !styles.containsKey(styleKey))
+      if (value != null && !value.isEmpty() && !styles.containsKey(value))
         return;
       
-      final boolean isOn = (styleKey != null && !styleKey.isEmpty() && !styleKey.equals("default"));
+      final boolean isOn = (value != null && !value.isEmpty() && !value.equals("default"));
       if (!isOn)
-        styleKey = "default";
+        value = "default";
       
-      Paragraph.LineStyle style = styles.get(styleKey);
+      Paragraph.LineStyle style = styles.get(value);
       if (attributeGen != null)
-      style.setAttributes(attributeGen.generate(editor, range, styleKey));
+        style.setAttributes(attributeGen.generate(range, value));
 
-      editor.undoableSequence(new Runnable() {
-        @Override
-        public void run() {
-          Paragraph.apply(editor.getDocument(), range.getStart(), range.getEnd(), style, isOn);
-          style.setAttributes(null);
-        }
-      });
-      
+      Paragraph.apply(mapper, range.getStart(), range.getEnd(), style, isOn);
+      style.setAttributes(null);      
     }
   }
 
   @Override
-  public void reset(EditorContext editor, Range range) {
-    set(editor, range, null);
+  public void reset(CMutableDocument doc, LocationMapper<ContentNode> mapper, MutableAnnotationSet<Object> localAnnotations, CaretAnnotations caret, Range range) {
+    set(doc, mapper, localAnnotations, caret, range, null);
   }
   
   public String apply(EditorContext editor, Range range) {
@@ -94,6 +92,17 @@ public class ParagraphValueAnnotation implements Annotation, Annotation.Listenab
     return result[0];
     
   }
+  
+  @Override
+  public void update(CMutableDocument doc, LocationMapper<ContentNode> mapper, MutableAnnotationSet<Object> localAnnotations, CaretAnnotations caret, Range range, String value) {
+    // do not implement
+  }
+  
+  @Override
+  public Range mutate(CMutableDocument doc, LocationMapper<ContentNode> mapper, MutableAnnotationSet<Object> localAnnotations, CaretAnnotations caret, Range range, String text, String value) {
+    return null;
+  }
+  
 
   @Override
   public void setHandler(AnnotationInstance.Handler h) {
@@ -119,7 +128,7 @@ public class ParagraphValueAnnotation implements Annotation, Annotation.Listenab
   public void onAdded(ContentElement node) {
     if (handler != null) {      
       String value = getParagraphAnnotationValue(node, behaviour);        
-      handler.exec(AnnotationInstance.EVENT_ADDED, AnnotationInstance.create(node.getMutableDoc(), name, value, node), null);
+      handler.exec(AnnotationInstance.EVENT_ADDED, AnnotationInstance.create(name, value, node), null);
     }        
   }
 
@@ -127,7 +136,7 @@ public class ParagraphValueAnnotation implements Annotation, Annotation.Listenab
   public void onMutation(ContentElement node) {
     if (handler != null) {      
       String value = getParagraphAnnotationValue(node, behaviour);        
-      handler.exec(AnnotationInstance.EVENT_MUTATED, AnnotationInstance.create(node.getMutableDoc(), name, value, node), null);
+      handler.exec(AnnotationInstance.EVENT_MUTATED, AnnotationInstance.create(name, value, node), null);
     }   
   }
 
@@ -135,7 +144,7 @@ public class ParagraphValueAnnotation implements Annotation, Annotation.Listenab
   public void onRemoved(ContentElement node) {
     if (handler != null) {      
       String value = getParagraphAnnotationValue(node, behaviour);        
-      handler.exec(AnnotationInstance.EVENT_REMOVED, AnnotationInstance.create(node.getMutableDoc(), name, value, node), null);
+      handler.exec(AnnotationInstance.EVENT_REMOVED, AnnotationInstance.create(name, value, node), null);
     }   
   }
 
@@ -143,8 +152,9 @@ public class ParagraphValueAnnotation implements Annotation, Annotation.Listenab
   public void onEvent(ContentElement node, Event event) {
     if (handler != null) {      
       String value = getParagraphAnnotationValue(node, behaviour);        
-      handler.exec(AnnotationInstance.EVENT_MOUSE, AnnotationInstance.create(node.getMutableDoc(), name, value, node), event);
+      handler.exec(AnnotationInstance.EVENT_MOUSE, AnnotationInstance.create(name, value, node), event);
     }   
   }
+
   
 }
