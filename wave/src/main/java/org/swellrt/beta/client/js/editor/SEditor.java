@@ -62,7 +62,7 @@ public class SEditor implements EditorUpdateListener {
   @JsFunction
   public interface SelectionChangeHandler {
     
-    void exec(Range range, SEditor editor);
+    void exec(Range range, SEditor editor, Node node);
     
   }
   
@@ -629,10 +629,10 @@ public class SEditor implements EditorUpdateListener {
 
       if (range != null) {
 
-        Point<ContentNode> pStart = editor.getDocument().locate(range.getStart());
+        Point<ContentNode> pStart = editor.getDocument().locate(range.getStart()+1);
         Node nStart = pStart.getCanonicalNode().getImplNodelet();
 
-        selectionHandler.exec(range, this);
+        selectionHandler.exec(range, this, nStart);
       }
 
     }
