@@ -347,7 +347,8 @@ public class SEditor implements EditorUpdateListener {
 
     // make editor aware of the document
     e.setContent(doc);
-
+    
+    AnnotationRegistry.muteHandlers(false);
   }
   
   /**
@@ -366,11 +367,12 @@ public class SEditor implements EditorUpdateListener {
    * Reset the state of the editor, deattaching the document
    * if it is necessary.
    */
-  public void clean() {
+  public void clean() {    
     if (editor != null && editor.hasDocument()) {
       editor.removeContentAndUnrender();
       editor.reset();  
       editor.addUpdateListener(this);
+      AnnotationRegistry.muteHandlers(true);
     }
   }
   

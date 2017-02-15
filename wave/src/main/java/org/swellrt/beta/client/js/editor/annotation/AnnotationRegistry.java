@@ -73,6 +73,7 @@ public class AnnotationRegistry {
   
   private final static Map<String, Annotation> store = new HashMap<String, Annotation>();
   
+  protected static boolean muteHandlers = true;
   
   /**
    * Define friendly names for annotation referencing in SEditor
@@ -244,10 +245,14 @@ public class AnnotationRegistry {
   public static void unsetHandler(String name) {    
     Annotation antn = get(name);
     
-    if (antn != null && antn instanceof TextAnnotation) {
-      TextAnnotation ta = (TextAnnotation) antn;   
+    if (antn != null && antn instanceof Annotation.Listenable)  {
+      Annotation.Listenable ta = (Annotation.Listenable) antn;   
       ta.setHandler(null);
     }
   }
     
+  
+  public static void muteHandlers(boolean mute) {
+    muteHandlers = mute;
+  }
 }

@@ -99,7 +99,7 @@ public class TextAnnotation implements Annotation, Annotation.Listenable, Annota
      
   @Override
   public void onAdded(ContentElement node) {
-    if (handler != null) {      
+    if (handler != null && !AnnotationRegistry.muteHandlers) {      
       String value = node.getAttribute(this.contentNodeAttributeName);          
       handler.exec(AnnotationInstance.EVENT_ADDED, AnnotationInstance.create(name, value, node), null);
     }    
@@ -107,7 +107,7 @@ public class TextAnnotation implements Annotation, Annotation.Listenable, Annota
 
   @Override
   public void onMutation(ContentElement node) {
-    if (handler != null) {
+    if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = node.getAttribute(this.contentNodeAttributeName);
       handler.exec(AnnotationInstance.EVENT_MUTATED, AnnotationInstance.create(name, value, node), null);
     }   
@@ -115,7 +115,7 @@ public class TextAnnotation implements Annotation, Annotation.Listenable, Annota
 
   @Override
   public void onRemoved(ContentElement node) {
-    if (handler != null) {
+    if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = node.getAttribute(this.contentNodeAttributeName);
       handler.exec(AnnotationInstance.EVENT_REMOVED, AnnotationInstance.create(name, value, node), null);
     }   
@@ -123,7 +123,7 @@ public class TextAnnotation implements Annotation, Annotation.Listenable, Annota
 
   @Override
   public void onEvent(ContentElement node, Event event) {
-    if (handler != null) {
+    if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = node.getAttribute(this.contentNodeAttributeName);
       handler.exec(AnnotationInstance.EVENT_MOUSE, AnnotationInstance.create(name, value, node), event);
     }   
