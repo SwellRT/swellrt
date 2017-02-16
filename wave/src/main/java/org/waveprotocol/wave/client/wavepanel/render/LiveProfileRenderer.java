@@ -22,6 +22,7 @@ package org.waveprotocol.wave.client.wavepanel.render;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.scheduler.QueueProcessor;
 import org.waveprotocol.wave.client.scheduler.TimerService;
 import org.waveprotocol.wave.client.wavepanel.view.BlipMetaView;
@@ -198,13 +199,13 @@ final class LiveProfileRenderer implements ProfileListener {
   }
 
   @Override
-  public void onOffline(Profile profile) {
+  public void onOffline(ProfileSession profile) {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public void onOnline(Profile profile) {
+  public void onOnline(ProfileSession profile) {
     // TODO Auto-generated method stub
     
   }

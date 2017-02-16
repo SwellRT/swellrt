@@ -106,5 +106,17 @@ public class SwellRTProfileManager extends AbstractProfileManager {
     // TODO Auto-generated method stub
     
   }
+
+  @Override
+  public String getCurrentSessionId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ParticipantId getCurrentParticipantId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
   
 }

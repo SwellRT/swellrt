@@ -24,6 +24,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.common.safehtml.SafeHtml;
 
 
@@ -110,13 +111,13 @@ public final class ProfilePopupPresenter implements ProfileListener, ProfilePopu
   }
 
   @Override
-  public void onOffline(Profile profile) {
+  public void onOffline(ProfileSession profile) {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public void onOnline(Profile profile) {
+  public void onOnline(ProfileSession profile) {
     // TODO Auto-generated method stub
     
   }

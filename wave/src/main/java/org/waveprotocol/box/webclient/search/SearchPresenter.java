@@ -24,6 +24,7 @@ import org.waveprotocol.box.webclient.search.Search.State;
 import org.waveprotocol.box.webclient.search.i18n.SearchPresenterMessages;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
+import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.scheduler.Scheduler.IncrementalTask;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
@@ -398,13 +399,13 @@ public final class SearchPresenter
   }
 
   @Override
-  public void onOffline(Profile profile) {
+  public void onOffline(ProfileSession profile) {
     // TODO Auto-generated method stub
     
   }
 
   @Override
-  public void onOnline(Profile profile) {
+  public void onOnline(ProfileSession profile) {
     // TODO Auto-generated method stub
     
   }

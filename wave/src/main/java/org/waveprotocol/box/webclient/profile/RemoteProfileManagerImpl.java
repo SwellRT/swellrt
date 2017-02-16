@@ -81,6 +81,18 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager imple
     
   }
 
+  @Override
+  public String getCurrentSessionId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ParticipantId getCurrentParticipantId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 
 }
