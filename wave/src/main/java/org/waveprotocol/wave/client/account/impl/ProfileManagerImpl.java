@@ -27,16 +27,12 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  *
  * @author kalman@google.com (Benjamin Kalman)
  */
-public final class ProfileManagerImpl extends AbstractProfileManager<ProfileImpl> {
-
-  public ProfileManagerImpl() {
-  }
+public final class ProfileManagerImpl extends AbstractProfileManager {
 
   @Override
-  protected ProfileImpl requestProfile(ParticipantId participantId) {
-    return new ProfileImpl(participantId, null, null, this);
+  protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
+    // Nothing to do    
   }
-
 
 
 }

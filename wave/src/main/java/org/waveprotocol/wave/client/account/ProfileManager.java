@@ -29,6 +29,8 @@ import org.waveprotocol.wave.model.wave.SourcesEvents;
  */
 public interface ProfileManager extends SourcesEvents<ProfileListener> {
 
+  public static final long USER_INACTIVE_WAIT = 60 * 1000; // ms
+  
   /**
    * Gets the profile for a participant.
    *
@@ -36,7 +38,7 @@ public interface ProfileManager extends SourcesEvents<ProfileListener> {
    * @return the profile for a participant
    */
   Profile getProfile(ParticipantId participantId);
-
+  
   /**
    * Returns whether the participant should be ignored in the context of
    * accounts.

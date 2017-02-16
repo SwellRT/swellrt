@@ -1,7 +1,7 @@
 package org.swellrt.beta.client.js;
 
 import org.swellrt.beta.client.SessionManager;
-import org.swellrt.beta.client.operation.data.ProfileData;
+import org.waveprotocol.wave.client.account.RawProfileData;
 
 import com.google.gwt.user.client.Cookies;
 
@@ -11,7 +11,7 @@ public class SessionManagerJs implements SessionManager {
   private static final String WINDOW_ID_COUNTER_ITEM = "swellrt_wid_counter";
   
   
-  private final ProfileData emptyProfile = new ProfileData() {
+  private final RawProfileData emptyProfile = new RawProfileData() {
 
     @Override
     public String getId() {
@@ -51,7 +51,7 @@ public class SessionManagerJs implements SessionManager {
   };
  
   
-  private ProfileData profile = emptyProfile;
+  private RawProfileData profile = emptyProfile;
   private String windowId = null;
   
   
@@ -104,7 +104,7 @@ public class SessionManagerJs implements SessionManager {
 
 
   @Override
-  public void setSession(ProfileData profile) {
+  public void setSession(RawProfileData profile) {
     this.profile = profile;    
   }
 

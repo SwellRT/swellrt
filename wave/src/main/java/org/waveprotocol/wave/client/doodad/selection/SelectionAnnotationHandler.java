@@ -623,7 +623,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   //
 
   @Override
-  public void onProfileUpdated(final Profile profile) {
+  public void onUpdated(final Profile profile) {
     final String profileAddress = profile.getAddress();
     sessions.each(new ProcV<SessionData>() {
       @Override
@@ -633,5 +633,17 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
         }
       }
     });
+  }
+
+  @Override
+  public void onOffline(Profile profile) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onOnline(Profile profile) {
+    // TODO Auto-generated method stub
+    
   }
 }

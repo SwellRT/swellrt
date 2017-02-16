@@ -25,5 +25,11 @@ package org.waveprotocol.wave.client.account;
  * @author kalman@google.com (Benjamin Kalman)
  */
 public interface ProfileListener {  
-  void onProfileUpdated(Profile profile);
+  
+  void onUpdated(Profile profile);
+  
+  void onOffline(Profile profile);
+  
+  void onOnline(Profile profile);
+  
 }

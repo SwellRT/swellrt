@@ -19,10 +19,14 @@
 
 package org.waveprotocol.wave.client.account.impl;
 
+import java.util.Collection;
+
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
+import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
@@ -30,36 +34,114 @@ import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
- * Serves as a base for concrete {@link SwellRTProfileManager} implementations.
  * 
  * @author yurize@apache.org (Yuri Zelikov)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-public abstract class AbstractProfileManager<P extends Profile> implements ProfileManager {
+public abstract class AbstractProfileManager implements ProfileManager {
   
-  protected final StringMap<P> profiles = CollectionUtils.createStringMap();
-  protected final CopyOnWriteSet<ProfileListener> listeners = CopyOnWriteSet.create();
+  public interface RequestProfileCallback {    
+    void onCompleted(RawProfileData rawData);    
+  }
   
+  // Do proper random colours at some point...
+  private static final RgbColor[] COLOURS = new RgbColor[] {
+    new RgbColor(252, 146, 41), // Orange
+    new RgbColor(81, 209, 63), // Green
+    new RgbColor(183, 68, 209), // Purple
+    new RgbColor(59, 201, 209), // Cyan
+    new RgbColor(209, 59, 69), // Pinky Red
+    new RgbColor(70, 95, 230), // Blue
+    new RgbColor(244, 27, 219), // Magenta
+    new RgbColor(183, 172, 74), // Vomit
+    new RgbColor(114, 50, 38) // Poo
+  };
+
   
-  @Override
-  public final P getProfile(ParticipantId participantId) {
-    P profile = null;
-    if (!profiles.containsKey(participantId.getAddress())) {
-      profile = requestProfile(participantId);
-      if (profile == null)
-        return null;
-      profiles.put(participantId.getAddress(), profile);
-    } else {
-      profile = profiles.get(participantId.getAddress());
+  private static RgbColor average(Collection<RgbColor> colors) {
+    
+    int size = colors.size();
+    int red = 0, green = 0, blue = 0;
+    for (RgbColor color : colors) {
+      red += color.red;
+      green += color.green;
+      blue += color.blue;
     }
     
-    return profile;
+    return size == 0 ? RgbColor.BLACK : new RgbColor(red / size, green / size, blue / size);
   }
+    
+  private RgbColor grey = new RgbColor(128, 128, 128);
+  
+  private int currentColourIndex = 0;
+    
+  protected final StringMap<Profile> profiles = CollectionUtils.createStringMap();
+  
+  protected final CopyOnWriteSet<ProfileListener> listeners = CopyOnWriteSet.create();
+  
+  private final Scheduler.Task checkStatusTask = new Scheduler.Task() {
+    
+    @Override
+    public void execute() {
+
+      profiles.each(new ProcV<Profile>() {
+
+        @Override
+        public void apply(String key, Profile value) {
+          if (!value.isOnline()) {
+            fireOnOffline(value);
+          }
+        }
+        
+      });
+      
+    }
+  };
+  
+    
+  /** Internal helper that rotates through the colours. */
+  private RgbColor getNextColour() {
+    
+    RgbColor colour = COLOURS[currentColourIndex];
+    currentColourIndex = (currentColourIndex + 1) % COLOURS.length;
+    return colour;  
+  }
+  
+    
+  @Override
+  public final Profile getProfile(ParticipantId participantId) {
+    
+    if (!profiles.containsKey(participantId.getAddress())) {
+      
+      final Profile profile = createBareProfile(participantId);
+      
+      requestProfile(participantId, new RequestProfileCallback() {
+        
+        @Override
+        public void onCompleted(RawProfileData rawData) {
+          profile.update(rawData);
+          fireOnUpdated(profile);
+        }
+      });       
+      
+      profiles.put(participantId.getAddress(), profile);     
+    } 
+    
+    return profiles.get(participantId.getAddress());
+  }
+  
+  
+  
+  private Profile createBareProfile(ParticipantId participantId) {
+    return new ProfileImpl(participantId, getNextColour(), this);
+  }
+  
   
   @Override
   public boolean shouldIgnore(ParticipantId participant) {
     return false;
   }
+  
 
   @Override
   public void addListener(ProfileListener listener) {
@@ -73,18 +155,28 @@ public abstract class AbstractProfileManager<P extends Profile> implements Profi
   
   protected void fireOnUpdated(Profile profile) {
     for (ProfileListener listener : listeners) {
-      listener.onProfileUpdated(profile);
+      listener.onUpdated(profile);
     }
   }
-    
+  
+  protected void fireOnOffline(Profile profile) {
+    for (ProfileListener listener : listeners) {
+      listener.onOffline(profile);
+    }
+  }
+   
+  protected void fireOnOnline(Profile profile) {
+    for (ProfileListener listener : listeners) {
+      listener.onOnline(profile);
+    }
+  }  
+  
   /**
-   * Request profile data for the participant. This method could
-   * trigger an underlying asynchronous call but will always return a profile object
-   * although with incomplete info.
+   * Asynchronous method to retrieve profile data.
    * 
-   * @param participantId participant id
-   * @return a profile object, at least with minimum information.
+   * @param participantId
+   * @param callback
    */
-  protected abstract P requestProfile(ParticipantId participantId);
+  protected abstract void requestProfile(ParticipantId participantId, RequestProfileCallback callback);
   
 }

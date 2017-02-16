@@ -1,6 +1,6 @@
 package org.swellrt.beta.client;
 
-import org.swellrt.beta.client.operation.data.ProfileData;
+import org.waveprotocol.wave.client.account.RawProfileData;
 
 /**
  * Manage session data. Implementations are platform dependent: Web, Android...
@@ -14,7 +14,7 @@ public interface SessionManager {
     
   }
     
-  public void setSession(ProfileData profile);
+  public void setSession(RawProfileData profile);
      
   public String getWindowId();
   

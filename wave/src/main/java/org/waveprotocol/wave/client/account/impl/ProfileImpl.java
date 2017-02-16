@@ -24,10 +24,13 @@ import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 
 /**
  * A {@link Profile} which determines all properties from just a
@@ -35,28 +38,74 @@ import com.google.common.base.Joiner;
  *
  * @author kalman@google.com (Benjamin Kalman)
  * @author pablojan@gmail.com (Pablo Ojanguren)
+ * 
  */
 public final class ProfileImpl implements Profile {
+ 
+  public static String DEFAULT_PICTURE_URL = "static/images/unknown.jpg";
   
   private final static String ANONYMOUS_NAME = "Anonymous";
-
+  
+  private static String capitalize(String s) {
+    return s.isEmpty() ? s : (Character.toUpperCase(s.charAt(0))) + s.substring(1);
+  }
+  
+  private static String buildName(ParticipantId id) {
+    
+    List<String> names = CollectionUtils.newArrayList();
+    String nameWithoutDomain = id.getName();
+    
+    if (ParticipantId.isAnonymousName(nameWithoutDomain)) {
+      return ANONYMOUS_NAME;      
+    } else if (nameWithoutDomain != null && !nameWithoutDomain.isEmpty()) {
+      
+      // Include empty names from fragment, so split with a -ve.
+      for (String fragment : nameWithoutDomain.split("[._]", -1)) {
+        if (!fragment.isEmpty()) {
+          names.add(capitalize(fragment));
+        }
+      }
+      // ParticipantId normalization implies names can not be empty.
+      assert !names.isEmpty();      
+      return Joiner.on(' ').join(names);
+    } else {
+      return "";
+    }
+  }
+  
   private final ParticipantId id;
+  private final RgbColor color;
+  private final AbstractProfileManager manager;
   
-  private String name;
-  private String imageUrl;  
-  private String shortName;
+  private String name = "?";
+  private String imageUrl = "static/images/unknown.jpg";  
+  private String shortName = "?";
+  private String email;
+  private String locale;
   
-  private final  AbstractProfileManager<ProfileImpl> manager;
+  private long lastOnlineTime = 0;
 
+  
 
-  public ProfileImpl(ParticipantId id, String name, String imageUrl, AbstractProfileManager<ProfileImpl> manager) {
+  public ProfileImpl(ParticipantId id, RgbColor color, AbstractProfileManager manager) {
     this.id = id;
-    this.shortName = buildName(id);
-    this.name = (name == null || name.isEmpty()) ? shortName : name;
-    this.imageUrl = imageUrl;
+    this.shortName = id.getName();
+    this.name = buildName(id);
+    this.color = color;
     this.manager = manager;
   }
 
+  public void update(RawProfileData data) {
+  
+    Preconditions.checkArgument(id.getAddress().equals(data.getId()));
+    
+    imageUrl = data.getAvatarUrl() != null ? data.getAvatarUrl() : DEFAULT_PICTURE_URL;
+    email = data.getEmail();
+    name = data.getName();
+    shortName = id.getName();
+    locale = data.getLocale();
+
+  }
   
   @Override
   public ParticipantId getParticipantId() {
@@ -71,40 +120,7 @@ public final class ProfileImpl implements Profile {
   
   @Override
   public String getImageUrl() {
-    if (imageUrl == null) {
-      return "static/images/unknown.jpg";
-    }
     return imageUrl;
-  }
-
-  private static String buildName(ParticipantId id) {
-    List<String> names = CollectionUtils.newArrayList();
-    String nameWithoutDomain = id.getName();
-    
-    if (ParticipantId.isAnonymousName(nameWithoutDomain)) {
-      return ANONYMOUS_NAME;      
-    } else if (nameWithoutDomain != null && !nameWithoutDomain.isEmpty()) {
-      // Include empty names from fragment, so split with a -ve.
-      for (String fragment : nameWithoutDomain.split("[._]", -1)) {
-        if (!fragment.isEmpty()) {
-          names.add(capitalize(fragment));
-        }
-      }
-      // ParticipantId normalization implies names can not be empty.
-      assert !names.isEmpty();      
-      return Joiner.on(' ').join(names);
-    } else {
-      return "";
-    }
-  }
-
-  private static String capitalize(String s) {
-    return s.isEmpty() ? s : (Character.toUpperCase(s.charAt(0))) + s.substring(1);
-  }
-
-  @Override
-  public String toString() {
-    return "ProfileImpl [id=" + id + ", "+name+ ", imageUrl=" + imageUrl + "]";
   }
 
   @Override
@@ -113,19 +129,35 @@ public final class ProfileImpl implements Profile {
   }
 
   @Override
-  public String getShortName() {
-    if (shortName == null)
-      shortName = capitalize(id.getName());
-    
+  public String getShortName() {   
     return shortName;
   }
 
-  
-  public void update(String name, String imageUrl) {
-    this.name = (name == null || name.isEmpty()) ? shortName : name;
-    this.imageUrl = imageUrl;
-    manager.fireOnUpdated(this);
+  @Override
+  public RgbColor getColor() {
+    return color;
   }
 
+  @Override
+  public String toString() {
+    return "ProfileImpl [id=" + id + ", "+name+ "]";
+  }
 
+  @Override
+  public void setOnline() {
+    this.lastOnlineTime = System.currentTimeMillis(); 
+    this.manager.fireOnOnline(this);
+  }
+
+  @Override
+  public void setOffline() {
+    this.lastOnlineTime = 0; 
+    this.manager.fireOnOffline(this);
+  }
+  
+  @Override
+  public boolean isOnline() {
+    return ProfileManager.USER_INACTIVE_WAIT < (System.currentTimeMillis() - lastOnlineTime);    
+  }
+  
 }

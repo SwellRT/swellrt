@@ -19,12 +19,22 @@
 
 package org.waveprotocol.wave.client.account;
 
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import jsinterop.annotations.JsType;
 
 /**
  * Profile information for a participant.
+ * <p>
+ * A profile keeps the activity state of the user
+ * in the current wave as long as the color representing her/him.
+ * <p>
+ * This class is intended to be shared across platforms. Not UI
+ * components must be kept here.
  *
  * @author kalman@google.com (Benjamin Kalman)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface Profile {
 
@@ -32,6 +42,8 @@ public interface Profile {
    * @return the participant id for this profile
    */
   ParticipantId getParticipantId();
+  
+  void update(RawProfileData rawData);
 
   /**
    * @return the address for this profile, same as {@link #getParticipantId()}
@@ -52,5 +64,18 @@ public interface Profile {
    * @return the URL of a participant's avatar image
    */
   String getImageUrl();
+  
+  /**
+   * @return the color associated to this profile
+   */
+  RgbColor getColor();
+  
+  /**
+   * @return true if the user is online in the current wave
+   */
+  boolean isOnline();
+  
+  void setOnline();
     
+  void setOffline();
 }

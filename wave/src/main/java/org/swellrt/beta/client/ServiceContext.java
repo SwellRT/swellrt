@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
-import org.swellrt.beta.client.operation.data.ProfileData;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveSocket.WaveSocketStartCallback;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SObjectRemote;
+import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -150,7 +150,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    * and setting a new session.
    * @param profile
    */
-  public void init(ProfileData profile) {
+  public void init(RawProfileData profile) {
     reset();
     sessionManager.setSession(profile);
     setupIdGenerator();  
