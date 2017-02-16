@@ -21,19 +21,27 @@ package org.waveprotocol.wave.client.common.util;
 
 import com.google.common.base.Joiner;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
+
 /**
  * A value object for an RGB triple.
  *
  * @author hearnden@google.com (David Hearnden)
  */
+@JsType(namespace = "swellrt.Service", name = "Color")
 public final class RgbColor {
+  
+  @JsIgnore
   public static final RgbColor BLACK = new RgbColor(0, 0, 0);
+  @JsIgnore
   public static final RgbColor WHITE = new RgbColor(255, 255, 255);
 
   public final int red;
   public final int green;
   public final int blue;
 
+  @JsIgnore
   public RgbColor(int red, int green, int blue) {
     this.red = red;
     this.green = green;
@@ -51,12 +59,14 @@ public final class RgbColor {
   }
   
   @Override
+  @JsIgnore
   public int hashCode() {
     // Bitshifting is significantly faster on both Chrome and Firefox.
     return (red << 16) | (green << 8) | blue;
   }
 
   @Override
+  @JsIgnore
   public boolean equals(Object o) {
     if (this == o) {
       return true;

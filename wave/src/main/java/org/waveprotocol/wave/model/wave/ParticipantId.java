@@ -21,19 +21,26 @@ package org.waveprotocol.wave.model.wave;
 
 import org.waveprotocol.wave.model.util.Preconditions;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
 import java.io.Serializable;
 
 /**
  * A ParticipantId uniquely identifies a participant. It looks like an email
  * address, e.g. 'joe@example.com'
  */
+@JsType(namespace = "swellrt", name = "Participant")
 public final class ParticipantId implements Comparable<ParticipantId>, Serializable {
 
   private static final long serialVersionUID = -1465142562958113670L;
 
+  @JsIgnore
   public static final String ANONYMOUS_NAME = "_anonymous_";
 
   /** The prefix of a domain in the ParticpantId */
+  @JsIgnore
   public static final String DOMAIN_PREFIX = "@";
 
   /** The participant's address */
@@ -47,6 +54,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *
    * @param address a non-null address string
    */
+  @JsIgnore
   public ParticipantId(String address) {
     Preconditions.checkNotNull(address, "Non-null address expected");
 
@@ -88,6 +96,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   /**
    * @return the participant's address
    */
+  @JsProperty
   public String getAddress() {
     return address;
   }
@@ -97,6 +106,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         whole string, if more than one occurs, it will be the part before
    *         the last "@".
    */
+  @JsProperty  
   public String getName() {
     String[] parts = address.split(DOMAIN_PREFIX);
     return parts[0];
@@ -107,12 +117,14 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         whole string, if more than one occurs, it will be the part after
    *         the last "@".
    */
+  @JsProperty
   public String getDomain() {
     String[] parts = address.split(DOMAIN_PREFIX);
     return parts[parts.length - 1];
   }
 
   @Override
+  @JsIgnore
   public boolean equals(Object o) {
     if (o == this) {
       return true;
@@ -124,6 +136,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   }
 
   @Override
+  @JsIgnore
   public int hashCode() {
     return address.hashCode();
   }
@@ -132,7 +145,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   public String toString() {
     return getAddress();
   }
-
+  
   public boolean isAnonymous() {
     return getName().startsWith(ANONYMOUS_NAME);
   }
@@ -146,6 +159,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         address.
    * @throws InvalidParticipantAddress if the validation on the address fails.
    */
+  @JsIgnore
   public static ParticipantId of(String name, String domain) throws InvalidParticipantAddress {
     return ParticipantId.of(name + ParticipantId.DOMAIN_PREFIX + domain);
   }
@@ -159,6 +173,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         address.
    * @throws InvalidParticipantAddress if the validation on the address fails.
    */
+  @JsIgnore
   public static ParticipantId of(String address) throws InvalidParticipantAddress {
     validate(address);
     return new ParticipantId(address);
@@ -174,6 +189,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         address.
    * @throws IllegalArgumentException if the validation on the address fails
    */
+  @JsIgnore
   public static ParticipantId ofUnsafe(String address) {
     try {
       return of(address);
@@ -182,15 +198,17 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
     }
   }
 
-
+  @JsIgnore
   public static ParticipantId anonymousOfUnsafe(String id, String domain) {
     return ofUnsafe(ANONYMOUS_NAME + id + DOMAIN_PREFIX + domain);
   }
 
+  @JsIgnore
   public static ParticipantId anonymousOfUnsafe(String domain) {
     return ofUnsafe(ANONYMOUS_NAME + DOMAIN_PREFIX + domain);
   }
 
+  @JsIgnore
   public static boolean isAnonymousName(String name) {
     return name != null && name.startsWith(ANONYMOUS_NAME);
   }
@@ -200,6 +218,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    * Compare two {@link ParticipantId}s, name first, then domain.
    */
   @Override
+  @JsIgnore
   public int compareTo(ParticipantId other) {
     /*
      *  Because it's still possible to create invalid ParticipantId instances

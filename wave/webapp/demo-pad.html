@@ -124,8 +124,28 @@
         controller.setPublic(true);
       }
 
+
+      service.profiles.addStatusHandler({
+
+        onUpdated: function(profile) {
+          console.log("profile update -> "+profile.address);
+        },
+
+        onOffline: function(session) {
+          console.log("profile is OFFLINE -> "+session.profile.address);
+        },
+
+        onOnline: function(session) {
+          console.log("profile is ONLINE -> "+session.profile.address);
+        }
+
+      });
+
+      service.profiles.autoRefresh(true);
+
       // Create editor instance, reusable
-      editor = swellrt.Editor.createWithId("editor");
+      editor = swellrt.Editor.createWithId("editor", service);
+
       // Configure editor with a empty document
       configEditor();
       // Show list of stored documents

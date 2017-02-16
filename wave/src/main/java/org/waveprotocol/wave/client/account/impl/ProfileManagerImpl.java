@@ -34,5 +34,17 @@ public final class ProfileManagerImpl extends AbstractProfileManager {
     // Nothing to do    
   }
 
+  @Override
+  public String getCurrentSessionId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ParticipantId getCurrentParticipantId() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 }

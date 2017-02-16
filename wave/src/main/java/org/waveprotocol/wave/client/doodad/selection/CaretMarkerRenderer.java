@@ -23,7 +23,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
-import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler.CaretViewFactory;
+import org.waveprotocol.wave.client.doodad.selection.CaretView.CaretViewFactory;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.Renderer;
 import org.waveprotocol.wave.client.editor.impl.NodeManager;

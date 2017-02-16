@@ -19,9 +19,10 @@
 
 package org.waveprotocol.wave.client.account;
 
-import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -36,46 +37,40 @@ import jsinterop.annotations.JsType;
  * @author kalman@google.com (Benjamin Kalman)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
+@JsType(namespace = "swellrt.Service", name = "Profile")
 public interface Profile {
 
   /**
    * @return the participant id for this profile
    */
+  @JsProperty
   ParticipantId getParticipantId();
   
+  @JsIgnore
   void update(RawProfileData rawData);
 
   /**
    * @return the address for this profile, same as {@link #getParticipantId()}
    */
+  @JsProperty
   String getAddress();
 
   /**
    * @return the participant's full name
    */
+  @JsProperty
   String getName();
 
   /**
    * @return the participant's short name
    */
+  @JsProperty
   String getShortName();
 
   /**
    * @return the URL of a participant's avatar image
    */
+  @JsProperty
   String getImageUrl();
   
-  /**
-   * @return the color associated to this profile
-   */
-  RgbColor getColor();
-  
-  /**
-   * @return true if the user is online in the current wave
-   */
-  boolean isOnline();
-  
-  void setOnline();
-    
-  void setOffline();
 }

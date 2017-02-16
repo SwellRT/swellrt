@@ -22,14 +22,16 @@ package org.waveprotocol.wave.client.account;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
+import jsinterop.annotations.JsOptional;
+import jsinterop.annotations.JsType;
+
 /**
  * Manages profiles for participants.
  *
  * @author kalman@google.com (Benjamin Kalman)
  */
+@JsType(namespace = "swellrt.Service", name = "ProfileManager")
 public interface ProfileManager extends SourcesEvents<ProfileListener> {
-
-  public static final long USER_INACTIVE_WAIT = 60 * 1000; // ms
   
   /**
    * Gets the profile for a participant.
@@ -47,5 +49,32 @@ public interface ProfileManager extends SourcesEvents<ProfileListener> {
    * @return true if the participant should be ignored, false if not
    */
   boolean shouldIgnore(ParticipantId participantId);
+    
+  /**
+   * Gets the session for a particular participant.
+   * 
+   * @param participantId
+   * @param sessionId
+   * @return
+   */
+  ProfileSession getSession(String sessionId, @JsOptional ParticipantId participantId);
+ 
+  /**
+   * @return session id of the logged in user, null otherwise 
+   */
+  String getCurrentSessionId();
+  
+  /**
+   * @return id of the logged in user, null otherwise
+   */
+  ParticipantId getCurrentParticipantId();
+
+  /**
+   * Start/Stop auto refresh of profiles and their online status
+   * 
+   * @param enable
+   */
+  void autoRefresh(boolean enable);
+  
   
 }

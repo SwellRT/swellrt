@@ -14,7 +14,9 @@ import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
+import org.waveprotocol.wave.client.account.ProfileManager;
 
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -191,6 +193,11 @@ public class PromisableServiceFrontend {
   
   public void listen(Object object, SHandler handler) {
     service.listen(object, handler);
+  }
+  
+  @JsProperty
+  public ProfileManager getProfiles() {
+    return service.getProfiles();
   }
   
 }

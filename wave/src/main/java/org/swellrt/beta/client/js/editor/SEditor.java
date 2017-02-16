@@ -13,12 +13,13 @@ import org.swellrt.beta.client.js.editor.annotation.AnnotationInstance;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
 import org.swellrt.beta.client.js.editor.annotation.ParagraphAnnotation;
 import org.swellrt.beta.common.SException;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
-import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
-import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
+import org.waveprotocol.wave.client.doodad.selection.CaretAnnotationHandler;
+import org.waveprotocol.wave.client.doodad.selection.SelectionExtractor;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorImpl;
 import org.waveprotocol.wave.client.editor.EditorImplWebkitMobile;
@@ -32,6 +33,8 @@ import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
+import org.waveprotocol.wave.client.scheduler.TimerService;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
@@ -156,6 +159,8 @@ public class SEditor implements EditorUpdateListener {
   //
   // Use always Editor.ROOT_REGISTRIES as reference for editor's registers
   
+  protected static CaretAnnotationHandler caretAnnotationHandler;
+  
   static {
     
     EditorStaticDeps.logger = new CustomLogger(new ConsoleLogSink());
@@ -186,12 +191,16 @@ public class SEditor implements EditorUpdateListener {
     // Listen for Diff annotations to paint new content or to insert a
     // delete-content tag
     // to be rendered by the DiffDeleteRendere
+    /*
     DiffAnnotationHandler.register(
         Editor.ROOT_REGISTRIES.getAnnotationHandlerRegistry(),
         Editor.ROOT_REGISTRIES.getPaintRegistry());
     
     DiffDeleteRenderer.register(
         Editor.ROOT_REGISTRIES.getElementHandlerRegistry());
+        */
+    
+    caretAnnotationHandler = CaretAnnotationHandler.register(Editor.ROOT_REGISTRIES);
     
     //
     // Reuse existing link annotation handler, but also support external
@@ -224,20 +233,22 @@ public class SEditor implements EditorUpdateListener {
   }
   
   
-  public static SEditor createWithId(String containerId) throws SException {
+  public static SEditor createWithId(String containerId, @JsOptional ServiceFrontend sf) throws SException {
     Element containerElement = DOM.getElementById(containerId);
     if (containerElement == null || !containerElement.getNodeName().equalsIgnoreCase("div"))
       throw new SException(SException.INTERNAL_ERROR, null, "Container element must be a div");
     
-    SEditor se = new SEditor(containerElement);  
+    SEditor se = new SEditor(containerElement);
+    if (sf != null) se.registerService(sf);
     return se;
   }
   
-  public static SEditor createWithElement(Element containerElement) throws SException {
+  public static SEditor createWithElement(Element containerElement, @JsOptional ServiceFrontend sf) throws SException {
     if (containerElement == null || !containerElement.getNodeName().equalsIgnoreCase("div"))
       throw new SException(SException.INTERNAL_ERROR, null, "Container element must be a div");
     
     SEditor se = new SEditor(containerElement);  
+    if (sf != null) se.registerService(sf);
     return se;
   }
   
@@ -256,8 +267,12 @@ public class SEditor implements EditorUpdateListener {
   
   /** A service to listen to connection events */
   ServiceFrontend serviceFrontend;
+   
+  private SelectionExtractor selectionExtractor;
   
-  private boolean wasEditingOnDiscconnect= true;
+  private ProfileManager profileManager;
+  
+  private boolean wasEditingOnDiscconnect = true;
   
   private SelectionChangeHandler selectionHandler = null;
   
@@ -348,6 +363,10 @@ public class SEditor implements EditorUpdateListener {
     // make editor aware of the document
     e.setContent(doc);
     
+    // start live carets
+    if (selectionExtractor != null)
+      selectionExtractor.start(e);
+       
     AnnotationRegistry.muteHandlers(false);
   }
   
@@ -360,7 +379,8 @@ public class SEditor implements EditorUpdateListener {
       if (editor.isEditing() != editOn) { 
         editor.setEditing(editOn);
       }
-    }    
+    }
+    
   }
   
   /**
@@ -369,10 +389,19 @@ public class SEditor implements EditorUpdateListener {
    */
   public void clean() {    
     if (editor != null && editor.hasDocument()) {
+      
+      if (selectionExtractor != null) {       
+        selectionExtractor.stop(editor);
+        // ensures selection extractor is create for each new doc.
+        selectionExtractor = null; 
+      }
+      
       editor.removeContentAndUnrender();
       editor.reset();  
       editor.addUpdateListener(this);
       AnnotationRegistry.muteHandlers(true);
+      
+      caretAnnotationHandler.clear();
     }
   }
   
@@ -573,16 +602,25 @@ public class SEditor implements EditorUpdateListener {
    * 
    * @param serviceFrontend
    */
-  @JsIgnore
   public void registerService(ServiceFrontend serviceFrontend) {
+    
+    if (this.serviceFrontend != null)
+      unregisterService();
+    
     this.serviceFrontend = serviceFrontend;
     this.serviceFrontend.addConnectionHandler(connectionHandler);
+    this.profileManager = serviceFrontend.getProfiles();
+    if (this.profileManager != null)
+      caretAnnotationHandler.setProfileManager(profileManager);
   }
   
-  @JsIgnore
   public void unregisterService() {
     if (serviceFrontend != null)
       serviceFrontend.removeConnectionHandler(connectionHandler);
+    
+    caretAnnotationHandler.setProfileManager(null);
+    
+    this.profileManager = null;
   }
   
   protected EditorSettings getSettings() {
@@ -613,9 +651,16 @@ public class SEditor implements EditorUpdateListener {
             : new EditorImpl(false, editorPanel.getElement());
        
         editor.init(null, getKeyBindingRegistry(), getSettings());       
-        editor.addUpdateListener(this);
+        editor.addUpdateListener(this);        
     }
     
+    if (selectionExtractor == null && profileManager != null) {
+      selectionExtractor = new SelectionExtractor(SchedulerInstance.getLowPriorityTimer(), 
+          profileManager.getCurrentParticipantId().getAddress(), 
+          profileManager.getCurrentSessionId());     
+    }
+    
+
     
     return editor;
   }

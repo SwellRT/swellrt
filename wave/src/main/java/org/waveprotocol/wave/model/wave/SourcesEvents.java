@@ -19,18 +19,24 @@
 
 package org.waveprotocol.wave.model.wave;
 
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsType;
+
 /**
  * An object that emits events to registered listeners.
  *
  *
  */
+@JsType(namespace = "swellrt")
 public interface SourcesEvents<Listener> {
+  
   /**
    * Adds a listener.  If the listener is already registered on this object,
    * this method has no effect.
    *
    * @param listener  listener to add
    */
+  @JsMethod(name = "addStatusHandler")
   void addListener(Listener listener);
 
   /**
@@ -39,5 +45,6 @@ public interface SourcesEvents<Listener> {
    *
    * @param listener  listener to remove
    */
+  @JsMethod(name = "removeStatusHandler")
   void removeListener(Listener listener);
 }

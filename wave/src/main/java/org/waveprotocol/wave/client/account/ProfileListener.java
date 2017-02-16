@@ -19,17 +19,21 @@
 
 package org.waveprotocol.wave.client.account;
 
+import jsinterop.annotations.JsType;
+
 /**
  * Listen to changes in a profile.
  *
  * @author kalman@google.com (Benjamin Kalman)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
+@JsType(isNative = true)
 public interface ProfileListener {  
   
   void onUpdated(Profile profile);
   
-  void onOffline(Profile profile);
+  void onOffline(ProfileSession profile);
   
-  void onOnline(Profile profile);
+  void onOnline(ProfileSession profile);
   
 }

@@ -13,11 +13,15 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.remote.SNodeRemoteContainer;
+import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
 import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
@@ -45,6 +49,29 @@ public class ServiceFrontend {
   }
   
   private ServiceContext context;
+  
+  private ProfileManager profileManager = new AbstractProfileManager() {
+
+    @Override
+    public String getCurrentSessionId() {
+      return context.getSessionId();
+    }
+
+    @Override
+    public ParticipantId getCurrentParticipantId() {
+      try {
+        return ParticipantId.ofUnsafe(context.getParticipantId());
+      } catch (Exception e) {
+        return null;
+      }
+    }
+
+    @Override
+    protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
+       // TODO complete request to service
+    }
+    
+  };
   
   @JsIgnore
   protected ServiceFrontend() {
@@ -88,6 +115,11 @@ public class ServiceFrontend {
   public void query(QueryOperation.Options options, Callback<QueryOperation.Response> callback) {
     QueryOperation op = new QueryOperation(context);
     op.execute(options, callback);    
+  }
+  
+  @JsProperty
+  public ProfileManager getProfiles() {
+    return profileManager;
   }
   
   public void addConnectionHandler(ConnectionHandler h) {

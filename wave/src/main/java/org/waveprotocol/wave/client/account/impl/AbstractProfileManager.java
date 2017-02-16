@@ -19,27 +19,33 @@
 
 package org.waveprotocol.wave.client.account.impl;
 
-import java.util.Collection;
-
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import jsinterop.annotations.JsOptional;
+
 /**
+ * Manage user profiles and their sessions.
+ * <p><br>
+ * TODO refresh online status automatically
+ * TODO refresh cached profiles data automatically 
  * 
  * @author yurize@apache.org (Yuri Zelikov)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public abstract class AbstractProfileManager implements ProfileManager {
-  
+      
   public interface RequestProfileCallback {    
     void onCompleted(RawProfileData rawData);    
   }
@@ -58,36 +64,22 @@ public abstract class AbstractProfileManager implements ProfileManager {
   };
 
   
-  private static RgbColor average(Collection<RgbColor> colors) {
-    
-    int size = colors.size();
-    int red = 0, green = 0, blue = 0;
-    for (RgbColor color : colors) {
-      red += color.red;
-      green += color.green;
-      blue += color.blue;
-    }
-    
-    return size == 0 ? RgbColor.BLACK : new RgbColor(red / size, green / size, blue / size);
-  }
-    
-  private RgbColor grey = new RgbColor(128, 128, 128);
-  
   private int currentColourIndex = 0;
     
   protected final StringMap<Profile> profiles = CollectionUtils.createStringMap();
+  protected final StringMap<ProfileSession> sessions = CollectionUtils.createStringMap();
   
   protected final CopyOnWriteSet<ProfileListener> listeners = CopyOnWriteSet.create();
   
-  private final Scheduler.Task checkStatusTask = new Scheduler.Task() {
+  private final Scheduler.IncrementalTask checkStatusTask = new Scheduler.IncrementalTask() {
     
     @Override
-    public void execute() {
+    public boolean execute() {
 
-      profiles.each(new ProcV<Profile>() {
+      sessions.each(new ProcV<ProfileSession>() {
 
         @Override
-        public void apply(String key, Profile value) {
+        public void apply(String key, ProfileSession value) {
           if (!value.isOnline()) {
             fireOnOffline(value);
           }
@@ -95,10 +87,32 @@ public abstract class AbstractProfileManager implements ProfileManager {
         
       });
       
+      return true;
+      
     }
   };
   
+  @Override
+  public void autoRefresh(boolean enable) {
     
+    if (enable) {
+    
+      if (!SchedulerInstance.getLowPriorityTimer().isScheduled(checkStatusTask)) {
+        // Refresh connection status each minute
+        SchedulerInstance.getLowPriorityTimer().scheduleRepeating(checkStatusTask, 60 * 1000, 65 * 1000);
+      }
+    
+    } else {
+      
+      if (SchedulerInstance.getLowPriorityTimer().isScheduled(checkStatusTask)) {
+        SchedulerInstance.getLowPriorityTimer().cancel(checkStatusTask);
+      }
+      
+    }
+  }
+ 
+
+      
   /** Internal helper that rotates through the colours. */
   private RgbColor getNextColour() {
     
@@ -132,8 +146,23 @@ public abstract class AbstractProfileManager implements ProfileManager {
   
   
   
+  @Override
+  public final ProfileSession getSession(String sessionId, @JsOptional ParticipantId participantId) {
+  
+    if (participantId != null) {    
+      Profile profile = getProfile(participantId);  
+      
+      if (!sessions.containsKey(sessionId)) {
+        sessions.put(sessionId, new ProfileSessionImpl(profile, this, sessionId, getNextColour()));
+      }    
+    }
+    
+    return sessions.get(sessionId);
+  }
+  
+  
   private Profile createBareProfile(ParticipantId participantId) {
-    return new ProfileImpl(participantId, getNextColour(), this);
+    return new ProfileImpl(participantId, this);
   }
   
   
@@ -159,13 +188,13 @@ public abstract class AbstractProfileManager implements ProfileManager {
     }
   }
   
-  protected void fireOnOffline(Profile profile) {
+  protected void fireOnOffline(ProfileSession profile) {
     for (ProfileListener listener : listeners) {
       listener.onOffline(profile);
     }
   }
    
-  protected void fireOnOnline(Profile profile) {
+  protected void fireOnOnline(ProfileSession profile) {
     for (ProfileListener listener : listeners) {
       listener.onOnline(profile);
     }

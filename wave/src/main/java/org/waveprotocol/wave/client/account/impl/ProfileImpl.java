@@ -19,13 +19,10 @@
 
 package org.waveprotocol.wave.client.account.impl;
 
-
 import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
-import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.RawProfileData;
-import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -74,7 +71,6 @@ public final class ProfileImpl implements Profile {
   }
   
   private final ParticipantId id;
-  private final RgbColor color;
   private final AbstractProfileManager manager;
   
   private String name = "?";
@@ -87,11 +83,10 @@ public final class ProfileImpl implements Profile {
 
   
 
-  public ProfileImpl(ParticipantId id, RgbColor color, AbstractProfileManager manager) {
+  public ProfileImpl(ParticipantId id, AbstractProfileManager manager) {
     this.id = id;
     this.shortName = id.getName();
     this.name = buildName(id);
-    this.color = color;
     this.manager = manager;
   }
 
@@ -133,31 +128,12 @@ public final class ProfileImpl implements Profile {
     return shortName;
   }
 
-  @Override
-  public RgbColor getColor() {
-    return color;
-  }
 
   @Override
   public String toString() {
     return "ProfileImpl [id=" + id + ", "+name+ "]";
   }
 
-  @Override
-  public void setOnline() {
-    this.lastOnlineTime = System.currentTimeMillis(); 
-    this.manager.fireOnOnline(this);
-  }
 
-  @Override
-  public void setOffline() {
-    this.lastOnlineTime = 0; 
-    this.manager.fireOnOffline(this);
-  }
-  
-  @Override
-  public boolean isOnline() {
-    return ProfileManager.USER_INACTIVE_WAIT < (System.currentTimeMillis() - lastOnlineTime);    
-  }
   
 }

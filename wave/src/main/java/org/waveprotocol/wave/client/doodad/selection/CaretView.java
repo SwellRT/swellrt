@@ -27,6 +27,26 @@ import com.google.gwt.dom.client.Element;
  * UI interface for the caret marker
  */
 public interface CaretView {
+  
+   
+  /**
+   * Interface for dealing with marker doodads
+   */
+  public interface CaretViewFactory {
+
+    /**
+     * @return a new marker view
+     */
+    CaretView createMarker();
+
+    /**
+     * Associate a marker with the given element
+     *
+     * Note that this is not really type safe - the E parameter is more for
+     * documentation.
+     */
+    void setMarker(Object element, CaretView marker);
+  }
 
   /** Update the label of a user's caret */
   void setName(String name);

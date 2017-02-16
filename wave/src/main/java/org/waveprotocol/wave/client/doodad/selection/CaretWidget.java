@@ -19,21 +19,19 @@
 
 package org.waveprotocol.wave.client.doodad.selection;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.dom.client.Style.Visibility;
-import com.google.gwt.dom.client.StyleInjector;
-import com.google.gwt.dom.client.Text;
-import com.google.gwt.user.client.Event;
-
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.common.util.DomHelper.JavaScriptEventListener;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.editor.impl.NodeManager;
 import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
+
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Visibility;
+import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.dom.client.Text;
+import com.google.gwt.user.client.Event;
 
 /**
  * DOM implementation of a caret view

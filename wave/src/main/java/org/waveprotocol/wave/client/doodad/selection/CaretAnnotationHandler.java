@@ -19,8 +19,15 @@
 
 package org.waveprotocol.wave.client.doodad.selection;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
@@ -47,21 +54,19 @@ import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
- * Deals with rendering of selections.
- *
+ * Deals with rendering of remote carets (and selections). 
+ * <p>
+ * This class relies on a {@link ProfileManager} instance to render properly carets.
+ * <p>
+ * Modified version of original SelectionAnnotationHandler class.
+ * <p>
+ * See {@link SelectionExtractor} to know how following annotatations are generated:
+ * <p>
  * Currently, a user's selection is defined as a group of two or three annotations.
- *
+ * <br>
  *  - Data annotation, with the prefix {@link #AnnotationConstants.USER_DATA}
  *    This annotation always covers the entire document.
  *    Its value is of the form "address,timestamp[,compositionstate]" where address is
@@ -80,13 +85,11 @@ import java.util.Queue;
  * Each key is suffixed with a globally unique value identifying the current session
  * (e.g. one value per browser tab).
  *
- * Note: This class maintains a permanent mapping of session id to colour
- *
- * TODO(danilatos): Make this a "per wave" mapping
  *
  * @author danilatos@google.com (Daniel Danilatos)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-public class SelectionAnnotationHandler implements AnnotationMutationHandler, ProfileListener {
+public class CaretAnnotationHandler implements AnnotationMutationHandler, ProfileListener {
   /** Time out for not showing stale carets */
   public static final int STALE_CARET_TIMEOUT_MS = 6 * 1000;
 
@@ -99,78 +102,32 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
   public static final int MAX_NAME_LENGTH_FOR_SELECTION_ANNOTATION = 15;
 
-  /**
-   * Interface to get notified when users
-   * are working on the document
-   */
-  public interface CaretListener {
     
-    /**
-     * Called when a participant is writing or moving the caret
-     * in a document.
-     * @param address the participant id
-     * @param color the caret's color
-     */
-    public void onActive(String address, RgbColor color);
-    
-    /**
-     * Called after certain time of inactivity of the participant
-     * in the document. 
-     * @param address the participant id
-     */
-    public void onExpire(String address);
-    
-  }
-  
   /**
    * Installs this doodad.
    */
-  public static void register(
-      Registries registries, String sessionId, ProfileManager profiles, CaretListener caretListener) {
+  public static CaretAnnotationHandler register(Registries registries) {
+    
     CaretMarkerRenderer carets = CaretMarkerRenderer.getInstance();
+    
     registries.getElementHandlerRegistry().registerRenderer(
         CaretMarkerRenderer.FULL_TAGNAME, carets);
-    
-    // Ensure a not null listener
-    if (caretListener == null)
-      caretListener = new CaretListener() {
-        @Override
-        public void onActive(String address, RgbColor color) {
-          // no op
-        }
-        @Override
-        public void onExpire(String address) {
-          // no op
-        }
-    };
-    
-    register(registries, SchedulerInstance.getLowPriorityTimer(), carets, sessionId, profiles, caretListener);
+        
+    return register(registries, SchedulerInstance.getLowPriorityTimer(), carets);
   }
 
   @VisibleForTesting
-  static SelectionAnnotationHandler register(Registries registries, TimerService timer,
-      CaretViewFactory carets, String sessionId, ProfileManager profiles, CaretListener caretListener) {
-    Preconditions.checkNotNull(sessionId, "Session Id to ignore must not be null");
-    SelectionAnnotationHandler selection = new SelectionAnnotationHandler(
-        registries.getPaintRegistry(), sessionId, profiles, timer, carets, caretListener);
+  static CaretAnnotationHandler register(Registries registries, TimerService timer,
+      CaretViewFactory carets) {
+    
+    CaretAnnotationHandler selection = new CaretAnnotationHandler(
+        registries.getPaintRegistry(), timer, carets);
+    
     registries.getAnnotationHandlerRegistry().
       registerHandler(AnnotationConstants.USER_PREFIX, selection);
-    profiles.addListener(selection);
+    
     return selection;
   }
-
-  // Do proper random colours at some point...
-  private static final RgbColor[] COLOURS = new RgbColor[] {
-    new RgbColor(252, 146, 41), // Orange
-    new RgbColor(81, 209, 63), // Green
-    new RgbColor(183, 68, 209), // Purple
-    new RgbColor(59, 201, 209), // Cyan
-    new RgbColor(209, 59, 69), // Pinky Red
-    new RgbColor(70, 95, 230), // Blue
-    new RgbColor(244, 27, 219), // Magenta
-    new RgbColor(183, 172, 74), // Vomit
-    new RgbColor(114, 50, 38) // Poo
-  };
 
   /**
    * Handy method for getting the full annotation key, given a session id
@@ -204,39 +161,27 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   public static String dataSuffix(String dataKey) {
     return dataKey.substring(AnnotationConstants.USER_DATA.length());
   }
-
-  private final String ignoreSessionId;
+  
+  private String ignoreSessionId = "";
 
   private final PainterRegistry painterRegistry;
 
   private final TimerService scheduler;
 
   // Used for getting profiles, which are needed for choosing names.
-  private final ProfileManager profileManager;
+  private ProfileManager profileManager;
 
-  private int currentColourIndex = 0;
+  private final StringMap<String> highlightCache = CollectionUtils.createStringMap();
 
-  RgbColor grey = new RgbColor(128, 128, 128);
-  /** Resolve a single session id into a css colour. */
-  public RgbColor getSessionColour(String sessionId) {
-    if (!sessions.containsKey(sessionId)) {
-      return grey;
-    }
-    return sessions.get(sessionId).getColour();
-  }
+  private final CaretViewFactory markerFactory;
 
-  /** Internal helper that rotates through the colours. */
-  private RgbColor getNextColour() {
-    RgbColor colour = COLOURS[currentColourIndex];
-    currentColourIndex = (currentColourIndex + 1) % COLOURS.length;
-    return colour;
-  }
-
+ 
   /**
    * Information required for book-keeping and managing the logic of rendering
    * each session's caret marker and selection.
    */
-  class SessionData {
+  class CaretData {
+    
     /** UI for rendering the marker associated with this user session */
     private final CaretView ui;
 
@@ -247,7 +192,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     private final String sessionId;
 
     /** Assigned colour */
-    private final RgbColor color;
+    private RgbColor color;
 
     /** Time at which caret will expire */
     private double expiry;
@@ -271,7 +216,8 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
      */
     private String name;
 
-    SessionData(CaretView ui, String address, String sessionId, RgbColor color) {
+    CaretData(CaretView ui, ProfileSession profileSession, String address, String sessionId) {
+      
       if (sessions.containsKey(sessionId)) {
         throw new IllegalArgumentException("Session data already exists");
       }
@@ -282,17 +228,15 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
       this.ui = ui;
       this.sessionId = sessionId;
-      this.color = color;
-
-      ui.setColor(color);
+      this.color = profileSession.getColor();
+      this.ui.setColor(this.color);
+      
+      updateProfile(profileSession.getProfile());
     }
 
-    void setProfile(Profile profile) {
-      String newName = profile.getName();
-      if (!newName.equals(name)) {
-        name = newName;
-        ui.setName(name);
-      }
+    public void updateProfile(Profile profile) {      
+      this.name = profile.getName();
+      ui.setName(name);      
     }
 
     public void compositionStateUpdated(String newState) {
@@ -307,31 +251,10 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       return color;
     }
   }
-
-  private final StringMap<String> highlightCache = CollectionUtils.createStringMap();
-
-  private final CaretViewFactory markerFactory;
   
-  private final CaretListener caretListener;
-
-  private String getUsersHighlight(String sessions) {
-    if (!highlightCache.containsKey(sessions)) {
-      // comma-split:
-      String[] sessionIDs = sessions.split(",");
-      List<RgbColor> colours = new ArrayList<RgbColor>();
-      for (String id : sessionIDs) {
-        if (!"".equals(id)) {
-          colours.add(getSessionColour(id));
-        }
-      }
-      // average out the colours, then reduce opacity by averaging against white.
-      RgbColor lighter = average(Arrays.asList(average(colours), RgbColor.WHITE));
-      highlightCache.put(sessions, lighter.getCssColor());
-    }
-    return highlightCache.get(sessions);
-  }
-
+  
   private static RgbColor average(Collection<RgbColor> colors) {
+    
     int size = colors.size();
     int red = 0, green = 0, blue = 0;
     for (RgbColor color : colors) {
@@ -339,22 +262,61 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       green += color.green;
       blue += color.blue;
     }
+    
     return size == 0 ? RgbColor.BLACK : new RgbColor(red / size, green / size, blue / size);
   }
+    
+  private RgbColor grey = new RgbColor(128, 128, 128);
 
+  
+  private String getUsersHighlight(String sessions) {
+    
+    if (!highlightCache.containsKey(sessions)) {
+      
+      // comma-split:
+      String[] sessionIDs = sessions.split(",");
+      
+      List<RgbColor> colours = new ArrayList<RgbColor>();
+      
+      for (String id : sessionIDs) {
+      
+        if (!"".equals(id)) {
+          ProfileSession session = profileManager.getSession(id, null);
+          colours.add(session != null ? session.getColor() : grey);
+        }
+      }
+      
+      // average out the colours, then reduce opacity by averaging against white.
+      RgbColor lighter = average(Arrays.asList(average(colours), RgbColor.WHITE));
+      highlightCache.put(sessions, lighter.getCssColor());
+    }
+    
+    return highlightCache.get(sessions);
+  }
+  
+  
   private final PaintFunction spreadFunc = new PaintFunction() {
+    
     public Map<String, String> apply(Map<String, Object> from, boolean isEditing) {
+      
       // discover which sessions have highlighted this range:
+      
       String sessions = "";
+      
       for (Map.Entry<String, Object> entry : from.entrySet()) {
+        
         if (entry.getKey().startsWith(AnnotationConstants.USER_RANGE)) {
+        
           String sessionId = endSuffix(entry.getKey());
           String address = (String) entry.getValue();
-          if (address == null || getActiveSessionData(sessionId) == null) {
+          
+          if (address == null || getActiveCaretData(sessionId) == null) {
             continue;
           }
-          sessions += sessionId + ",";
+          
+          sessions += sessionId + ",";          
         }
+        
       }
 
       // combine them together and highlight the range accordingly:
@@ -366,7 +328,9 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     }
   };
 
+  
   private final BoundaryFunction boundaryFunc = new BoundaryFunction() {
+    
     public <N, E extends N, T extends N> E apply(LocalDocument<N, E, T> localDoc, E parent,
         N nodeAfter, Map<String, Object> before, Map<String, Object> after, boolean isEditing) {
 
@@ -374,6 +338,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       E usersContainer = null;
 
       for (Map.Entry<String, Object> entry : after.entrySet()) {
+        
         if (entry.getKey().startsWith(AnnotationConstants.USER_END)) {
           // get the user's address:
           String address = (String) entry.getValue();
@@ -383,7 +348,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
           // get the session ID:
           String sessionId = endSuffix(entry.getKey());
-          SessionData data = getActiveSessionData(sessionId);
+          CaretData data = getActiveCaretData(sessionId);
           if (data == null) {
             continue;
           }
@@ -404,33 +369,55 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     }
   };
 
-  public SessionData getActiveSessionData(String sessionId) {
-    SessionData data = sessions.get(sessionId);
+  private CaretData getActiveCaretData(String sessionId) {
+    CaretData data = sessions.get(sessionId);
     return data != null && !data.isStale() ? data : null;
   }
 
   /** Seed the annotation handler with all required config objects. */
-  public SelectionAnnotationHandler(PainterRegistry registry,
-      String ignoreSessionId,
-      ProfileManager profileManager,
+  public CaretAnnotationHandler(PainterRegistry registry,      
       TimerService timer, 
-      CaretViewFactory markerFactory,
-      CaretListener caretListener) {
+      CaretViewFactory markerFactory) {
+    
     this.painterRegistry = registry;
-    this.ignoreSessionId = ignoreSessionId;
-    this.profileManager = profileManager;
     this.scheduler = timer;
     this.markerFactory = markerFactory;
-    this.caretListener = caretListener;
   }
 
+
+  /** 
+   * Set the profile manager dependency. The manager depends on
+   * a service instance.
+   * 
+   * @param profileManager
+   */
+  public void setProfileManager(ProfileManager profileManager) {
+  
+    if (this.profileManager != null)
+      this.profileManager.removeListener(this);
+    
+    sessions.clear();
+    expiries.clear();
+    ignoreSessionId = null;
+    
+    this.profileManager = profileManager;
+    
+    if (profileManager != null) {    
+      this.profileManager.addListener(this);    
+      this.ignoreSessionId = profileManager.getCurrentSessionId();
+    }
+  }
+  
+  
   private void updateCaretData(String sessionId, String value, DocumentContext<?, ?, ?> doc) {
+    
     String[] components = value.split(",");
     if (components.length < 2) {
       return; // invalid input
     }
 
     double timeStamp;
+    
     try {
       // split into session address and time
       timeStamp = Double.parseDouble(components[1]);
@@ -442,21 +429,55 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
     // Access directly from the map because the high level getter filters stale carets,
     // and this could result in memory leaks.
-    SessionData data = sessions.get(sessionId);
-    if (data == null) { 
-      data = new SessionData(markerFactory.createMarker(), address, sessionId, getNextColour());
+    CaretData data = sessions.get(sessionId);
+    if (data == null) {
+    
+      ProfileSession profile;
+      try {
+        profile = profileManager.getSession(sessionId, ParticipantId.of(address));
+      } catch (InvalidParticipantAddress e) {
+        return;
+      }
+          
+      data = new CaretData(markerFactory.createMarker(), profile, address, sessionId);
     }
+    
     double expiry = Math.min(timeStamp, scheduler.currentTimeMillis()) + STALE_CARET_TIMEOUT_MS;
     activate(data, expiry, doc);
 
     data.compositionStateUpdated(components.length >= 3 ? components[2] : "");
   }
 
+  
+  private void activate(CaretData data, double expiry, DocumentContext<?, ?, ?> doc) {
+    
+    profileManager.getSession(data.sessionId, null).setOnline();
+    
+    data.expiry = expiry;
+    data.originallyScheduledExpiry = expiry;
+
+    if (data.bundle == null) {
+      expiries.add(data);
+    }
+
+    data.bundle = doc;
+
+    if (!scheduler.isScheduled(expiryTask)) {
+      scheduler.scheduleRepeating(expiryTask, MINIMUM_STALE_CHECK_GAP_MS,
+          MINIMUM_STALE_CHECK_GAP_MS);
+    }
+  }
+  
+  
+  
   private final Scheduler.IncrementalTask expiryTask = new Scheduler.IncrementalTask() {
+    
     @Override
     public boolean execute() {
+      
       while (!expiries.isEmpty()) {
-        SessionData data = expiries.element();
+      
+        CaretData data = expiries.element();
 
         if (data.originallyScheduledExpiry > scheduler.currentTimeMillis()) {
           return true;
@@ -465,8 +486,10 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
         expiries.remove();
 
         if (data.expiry > scheduler.currentTimeMillis()) {
+        
           data.originallyScheduledExpiry = data.expiry;
           expiries.add(data);
+        
         } else {
           expire(data);
         }
@@ -481,14 +504,17 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
    *
    * @param data expired data
    */
-  @SuppressWarnings("unchecked")
-  private void expire(SessionData data) {
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private void expire(CaretData data) {
+    
     DocumentContext<?, ?, ?> bundle = data.bundle;
     MutableDocument<?, ?, ?> document = bundle.document();
 
     data.bundle = null;
+    
     painterRegistry.unregisterBoundaryFunction(
         CollectionUtils.newStringSet(AnnotationConstants.USER_END + data.sessionId), boundaryFunc);
+    
     painterRegistry.unregisterPaintFunction(
         CollectionUtils.newStringSet(AnnotationConstants.USER_RANGE + data.sessionId), spreadFunc);
 
@@ -525,73 +551,56 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     if (hotSpot >= 0) {
       AnnotationPainter.maybeScheduleRepaint((DocumentContext) bundle, rangeStart, rangeEnd);
     }
-    
-     caretListener.onExpire(data.address);
   }
 
-  private void activate(SessionData data, double expiry, DocumentContext<?, ?, ?> doc) {
-    data.expiry = expiry;
-    data.originallyScheduledExpiry = expiry;
 
-    if (data.bundle == null) {
-      Profile profile;
-      try {
-        profile = profileManager.getProfile(ParticipantId.of(data.address));
-      } catch (InvalidParticipantAddress e) {
-        profile = null;
-      }
-      if (profile != null) {
-        data.setProfile(profile);
-      }
-      expiries.add(data);
+
+  private final StringMap<CaretData> sessions = CollectionUtils.createStringMap();
+
+  private final Queue<CaretData> expiries = new PriorityQueue<CaretData>(10,
       
-      
-      caretListener.onActive(data.address, data.color);
-    }
-
-    data.bundle = doc;
-
-    if (!scheduler.isScheduled(expiryTask)) {
-      scheduler.scheduleRepeating(expiryTask, MINIMUM_STALE_CHECK_GAP_MS,
-          MINIMUM_STALE_CHECK_GAP_MS);
-    }
-  }
-
-  private final StringMap<SessionData> sessions = CollectionUtils.createStringMap();
-
-  private final Queue<SessionData> expiries = new PriorityQueue<SessionData>(10,
-      new Comparator<SessionData>() {
+      new Comparator<CaretData>() {
+        
         @Override
-        public int compare(SessionData o1, SessionData o2) {
+        public int compare(CaretData o1, CaretData o2) {
           return (int) Math.signum(o1.originallyScheduledExpiry - o2.originallyScheduledExpiry);
         }
       });
 
-  @VisibleForTesting CaretView getUiForSession(String session) {
-    return sessions.get(session).ui;
-  }
 
   @Override
   public <N, E extends N, T extends N> void handleAnnotationChange(DocumentContext<N, E, T> bundle,
       int start, int end, String key, Object newValue) {
+    
+    // we can't render carets if we can get participants profile
+    if (profileManager == null)
+      return;
+    
     // skip if we shouldn't render any carets, or this particular caret.
     if (key.endsWith("/" + ignoreSessionId)) {
       return;
     }
 
     if (key.startsWith(AnnotationConstants.USER_DATA) && newValue != null) {
+      
       // User activity
-      updateCaretData(dataSuffix(key), (String) newValue, bundle);       
+      updateCaretData(dataSuffix(key), (String) newValue, bundle);     
+      
     } else if (key.startsWith(AnnotationConstants.USER_RANGE)) {
+      
       // The selection
+      
       painterRegistry.registerPaintFunction(
           CollectionUtils.newStringSet(key), spreadFunc);
       painterRegistry.getPainter().scheduleRepaint(bundle, start, end);
 
     } else {
+      
       // The caret
+      
       painterRegistry.registerBoundaryFunction(
           CollectionUtils.newStringSet(key), boundaryFunc);
+      
       painterRegistry.getPainter().scheduleRepaint(bundle, start, start + 1);
 
       if (end == bundle.document().size()) {
@@ -599,6 +608,12 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
       }
       painterRegistry.getPainter().scheduleRepaint(bundle, end, end + 1);
     }
+    
+  }
+  
+  public void clear() {
+    expiries.clear();
+    sessions.clear();
   }
 
   //
@@ -607,22 +622,30 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
   @Override
   public void onUpdated(final Profile profile) {
+    
     final String profileAddress = profile.getAddress();
-    sessions.each(new ProcV<SessionData>() {
+    
+    sessions.each(new ProcV<CaretData>() {
+      
       @Override
-      public void apply(String s, SessionData value) {
+      public void apply(String s, CaretData value) {
         if (value.address.equals(profileAddress) && !value.isStale()) {
-          value.setProfile(profile);
+          value.updateProfile(profile);
         }
       }
+      
     });
+    
   }
 
   @Override
   public void onOffline(ProfileSession profile) {
+  
   }
 
   @Override
-  public void onOnline(ProfileSession profile) {  
+  public void onOnline(ProfileSession profile) {
+  
   }
+  
 }

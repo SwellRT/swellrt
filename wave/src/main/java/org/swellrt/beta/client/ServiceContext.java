@@ -164,6 +164,10 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     return sessionManager.getSessionId();
   }
   
+  public String getParticipantId() {
+    return sessionManager.getUserId();
+  }
+  
   /**
    * Clean up the internal state of this context.
    * This will normally happen on a session close
