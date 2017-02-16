@@ -33,7 +33,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  * 
  * @author yurize@apache.org (Yuri Zelikov)
  */
-public final class RemoteProfileManagerImpl extends AbstractProfileManager<ProfileImpl> implements
+public final class RemoteProfileManagerImpl extends AbstractProfileManager implements
     FetchProfilesService.Callback {
 
   private final static LoggerBundle LOG = new DomLogger("fetchProfiles");
@@ -52,12 +52,12 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager<Profi
   static private void deserializeAndUpdateProfile(RemoteProfileManagerImpl manager,
       FetchedProfile fetchedProfile) {
     ParticipantId participantId = ParticipantId.ofUnsafe(fetchedProfile.getAddress());
-    ProfileImpl profile = manager.getProfile(participantId);
+    ProfileImpl profile = null; // manager.getProfile(participantId);
     // Profiles already exist for all profiles that have been requested.
     assert profile != null;
     // Updates profiles - this also notifies listeners.
-    profile.update(fetchedProfile.getName(), fetchedProfile.getImageUrl());
-    manager.fireOnUpdated(profile);
+    // profile.update(fetchedProfile.getName(), fetchedProfile.getImageUrl());
+    // manager.fireOnUpdated(profile);
   }
 
   public RemoteProfileManagerImpl() {
@@ -76,10 +76,11 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager<Profi
   }
 
   @Override
-  protected ProfileImpl requestProfile(ParticipantId participantId) {
-    LOG.trace().log("Fetching profile: " + participantId.getAddress());
-    fetchProfilesService.fetch(this, participantId.getAddress());    
-    return new ProfileImpl(participantId, null, null, this);
+  protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
+    // TODO Auto-generated method stub
+    
   }
+
+
 
 }

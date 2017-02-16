@@ -97,7 +97,7 @@ public final class ProfilePopupPresenter implements ProfileListener, ProfilePopu
   }
 
   @Override
-  public void onProfileUpdated(Profile profile) {
+  public void onUpdated(Profile profile) {
     if (profile.equals(model)) {
       render();
     }
@@ -107,5 +107,17 @@ public final class ProfilePopupPresenter implements ProfileListener, ProfilePopu
   public void onHide() {
     events.removeListener(this);
     destroy();
+  }
+
+  @Override
+  public void onOffline(Profile profile) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onOnline(Profile profile) {
+    // TODO Auto-generated method stub
+    
   }
 }

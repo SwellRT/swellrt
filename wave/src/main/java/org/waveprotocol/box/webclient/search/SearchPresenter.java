@@ -388,12 +388,24 @@ public final class SearchPresenter
   }
 
   @Override
-  public void onProfileUpdated(Profile profile) {
+  public void onUpdated(Profile profile) {
     // NOTE: Search panel will be re-rendered once for every profile that comes
     // back to the client. If this causes an efficiency problem then have the
     // SearchPanelRenderer to be the profile listener, rather than
     // SearchPresenter, and make it stateful. Have it remember which digests
     // have used which profiles in their renderings.
     renderLater();
+  }
+
+  @Override
+  public void onOffline(Profile profile) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onOnline(Profile profile) {
+    // TODO Auto-generated method stub
+    
   }
 }

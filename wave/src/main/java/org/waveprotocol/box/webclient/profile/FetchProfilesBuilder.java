@@ -74,7 +74,7 @@ public final class FetchProfilesBuilder {
   }
 
   public FetchProfilesBuilder setProfilesManager(
-      AbstractProfileManager<ProfileImpl> profileManager) {
+      AbstractProfileManager profileManager) {
     return this;
   }
 

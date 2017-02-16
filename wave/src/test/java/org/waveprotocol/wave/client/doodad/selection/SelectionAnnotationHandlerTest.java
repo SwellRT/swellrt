@@ -95,14 +95,14 @@ public class SelectionAnnotationHandlerTest extends TestCase {
     String displayName;
 
     public FakeSession(String name) {
-      profile = profileManager.getProfile(ParticipantId.ofUnsafe(name + "@example.com"));
+      profile = (ProfileImpl) profileManager.getProfile(ParticipantId.ofUnsafe(name + "@example.com"));
       id = "#" + name + "#";
       extractor = new SelectionExtractor(handlerTimer, profile.getAddress(), id);
       displayName = profile.getName();
     }
 
     void setName(String newName) {
-      profile.update(newName, null);
+      //profile.update(newName, null);
     }
   }
 

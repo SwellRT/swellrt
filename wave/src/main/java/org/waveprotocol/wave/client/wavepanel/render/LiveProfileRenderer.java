@@ -162,7 +162,7 @@ final class LiveProfileRenderer implements ProfileListener {
   }
 
   @Override
-  public void onProfileUpdated(final Profile profile) {
+  public void onUpdated(final Profile profile) {
     // Update contributors later.
     IdentitySet<ConversationBlip> blips = contributions.get(profile.getAddress());
     if (blips != null) {
@@ -195,5 +195,17 @@ final class LiveProfileRenderer implements ProfileListener {
         }
       });
     }
+  }
+
+  @Override
+  public void onOffline(Profile profile) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void onOnline(Profile profile) {
+    // TODO Auto-generated method stub
+    
   }
 }

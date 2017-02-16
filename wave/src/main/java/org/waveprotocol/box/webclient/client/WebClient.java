@@ -127,7 +127,7 @@ public class WebClient implements EntryPoint {
     return popup;
   }
 
-  private final ProfileManager profiles = new RemoteProfileManagerImpl();
+  private final ProfileManager profiles = null;
   private final UniversalPopup turbulencePopup = createTurbulencePopup();
 
   @UiField

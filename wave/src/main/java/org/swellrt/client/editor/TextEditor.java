@@ -452,7 +452,7 @@ public class TextEditor implements EditorUpdateListener {
     if (!isClean()) cleanUp();
 
     // Place here selection extractor to ensure session id and user id are refreshed
-    SelectionAnnotationHandler.register(registries, configurator.getSessionId(), configurator.getProfileManager(), caretListener);
+    //SelectionAnnotationHandler.register(registries, configurator.getSessionId(), configurator.getProfileManager(), caretListener);
     
     selectionExtractor = new SelectionExtractor(clock, configurator.getParticipantId().getAddress(), configurator.getSessionId());
     

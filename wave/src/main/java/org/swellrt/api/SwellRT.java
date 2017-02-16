@@ -224,7 +224,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     if (this.profileManager == null) {
       this.profileManager = new SwellRTProfileManager(this);
     }
-    return this.profileManager;  
+    return null;
   }
 
   public void login(JavaScriptObject parameters, ServiceCallback _callback)

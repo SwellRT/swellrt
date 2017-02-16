@@ -22,7 +22,7 @@ import com.google.gwt.http.client.RequestException;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class SwellRTProfileManager extends AbstractProfileManager<ProfileImpl> {
+public class SwellRTProfileManager extends AbstractProfileManager {
   
   
   private static native ServiceCallback getProfileCallback(SwellRTProfileManager manager) /*-{
@@ -70,21 +70,7 @@ public class SwellRTProfileManager extends AbstractProfileManager<ProfileImpl> {
     }
   }
   
-  @Override
-  protected ProfileImpl requestProfile(ParticipantId id) {
-    
-    ProfileImpl profile = null;
-    if (!profiles.containsKey(id.getAddress())) {
-      profile = new ProfileImpl(id, null, null, this);
-      profiles.put(id.getAddress(), profile);
-    } else {
-      profile = profiles.get(id.getAddress());
-    }
-    // call server
-    requestProfiles(CollectionUtils.immutableSet(id));
-    
-    return profile;
-  }
+
 
   /**
    * Adapts JSON response from server and creates or updates profile entries.
@@ -107,19 +93,18 @@ public class SwellRTProfileManager extends AbstractProfileManager<ProfileImpl> {
       String name = profileRaw.getString("name");
       String imageUrl = profileRaw.getString("avatarUrl");
       
-      ProfileImpl profile = profiles.get(id.getAddress());
-      if (profile == null) {
-        profile = new ProfileImpl(id, name, imageUrl, this);
-        profiles.put(id.getAddress(), profile);
-      } else {
-        profile.update(name, imageUrl);
-      }
+      ProfileImpl profile = null;
       
-      fireOnUpdated(profile);
-      
+     
     }
  
   
+  }
+
+  @Override
+  protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
+    // TODO Auto-generated method stub
+    
   }
   
 }
