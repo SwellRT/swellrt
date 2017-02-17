@@ -162,8 +162,9 @@ public interface StageThree {
       TimerService clock = SchedulerInstance.getLowPriorityTimer();
       String sessionId = stageTwo.getSessionId();
 
-      SelectionExtractor selectionExtractor = new SelectionExtractor(clock, address, sessionId);
-      return EditSession.install(views, documents, selectionExtractor, focus, panel);
+      // SelectionExtractor selectionExtractor = new SelectionExtractor(clock, address, sessionId);
+      // return EditSession.install(views, documents, selectionExtractor, focus, panel);
+      return EditSession.install(views, documents, null, focus, panel);
     }
 
     protected EditToolbar createEditToolbar() {

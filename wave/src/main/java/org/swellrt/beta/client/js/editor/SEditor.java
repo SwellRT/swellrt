@@ -659,9 +659,7 @@ public class SEditor implements EditorUpdateListener {
     }
     
     if (selectionExtractor == null && profileManager != null) {
-      selectionExtractor = new SelectionExtractor(SchedulerInstance.getLowPriorityTimer(), 
-          profileManager.getCurrentParticipantId().getAddress(), 
-          profileManager.getCurrentSessionId());     
+      selectionExtractor = new SelectionExtractor(SchedulerInstance.getLowPriorityTimer(), profileManager);     
     }
     
 

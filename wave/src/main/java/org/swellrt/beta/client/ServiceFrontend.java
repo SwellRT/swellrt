@@ -54,7 +54,7 @@ public class ServiceFrontend {
 
     @Override
     public String getCurrentSessionId() {
-      return context.getSessionId();
+      return context.getSessionId() != null ? context.getSessionId() : "";
     }
 
     @Override

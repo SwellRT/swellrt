@@ -22,6 +22,7 @@ package org.waveprotocol.wave.client.doodad.selection;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
@@ -38,15 +39,13 @@ import org.waveprotocol.wave.model.document.util.Range;
 public class SelectionExtractor implements EditorUpdateListener {
 
   private final TimerService clock;
-  private final String address;
-  private final String sessionId;
-
-  public SelectionExtractor(TimerService clock, String address, String sessionId) {
-    Preconditions.checkNotNull(address, "Address must not be null");
-    Preconditions.checkNotNull(sessionId, "Session id must not be null");
+  private final ProfileManager profiles;
+  
+  public SelectionExtractor(TimerService clock, ProfileManager profiles) {
+    Preconditions.checkNotNull(profiles, "No profile manager provided");
+    Preconditions.checkNotNull(clock, "Timer not provided");
     this.clock = clock;
-    this.address = address;
-    this.sessionId = sessionId;
+    this.profiles = profiles;
   }
 
   /**
@@ -66,6 +65,7 @@ public class SelectionExtractor implements EditorUpdateListener {
     context.removeUpdateListener(this);
     MutableAnnotationSet.Persistent document = context.getDocument();
     int size = document.size();
+    String sessionId = profiles.getCurrentSessionId();
     String rangeKey = SelectionAnnotationHandler.rangeKey(sessionId);
     String endKey = SelectionAnnotationHandler.endKey(sessionId);
     String dataKey = SelectionAnnotationHandler.dataKey(sessionId);
@@ -104,9 +104,13 @@ public class SelectionExtractor implements EditorUpdateListener {
       String compositionState, double currentTimeMillis) {
     // TODO(danilatos): Use focus and not end
     Range range = selection == null ? null : selection.asRange();
+    String sessionId = profiles.getCurrentSessionId();
     String rangeKey = SelectionAnnotationHandler.rangeKey(sessionId);
     String endKey = SelectionAnnotationHandler.endKey(sessionId);
     String dataKey = SelectionAnnotationHandler.dataKey(sessionId);
+    
+    String address = profiles.getCurrentParticipantId().getAddress();
+    String name = profiles.getProfile(profiles.getCurrentParticipantId()).getName();
     String value = address;
 
     int size = document.size();
@@ -115,7 +119,7 @@ public class SelectionExtractor implements EditorUpdateListener {
     // to refresh the timestamp.
     if (range != null) {
       document.setAnnotation(0, size, dataKey, address + "," + currentTimeMillis + ","
-          + (compositionState != null ? compositionState : ""));
+          + (compositionState != null ? compositionState : "")+","+name);
     }
 
     // TODO(danilatos): This fiddliness is necessary to avoid gratuitous

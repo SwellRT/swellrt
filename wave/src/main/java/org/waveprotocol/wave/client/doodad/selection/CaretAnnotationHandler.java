@@ -86,6 +86,8 @@ import com.google.common.annotations.VisibleForTesting;
  * (e.g. one value per browser tab).
  *
  *
+ * TODO: write unit test based on SelectionAnnotationHandlerTest
+ *
  * @author danilatos@google.com (Daniel Danilatos)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
@@ -161,8 +163,6 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
   public static String dataSuffix(String dataKey) {
     return dataKey.substring(AnnotationConstants.USER_DATA.length());
   }
-  
-  private String ignoreSessionId = "";
 
   private final PainterRegistry painterRegistry;
 
@@ -398,13 +398,11 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
     
     sessions.clear();
     expiries.clear();
-    ignoreSessionId = null;
     
     this.profileManager = profileManager;
     
     if (profileManager != null) {    
       this.profileManager.addListener(this);    
-      this.ignoreSessionId = profileManager.getCurrentSessionId();
     }
   }
   
@@ -426,19 +424,21 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
     }
 
     String address = components[0];
-
+        
+    ParticipantId participantId;
+    try {
+      participantId = ParticipantId.of(address);
+    } catch (InvalidParticipantAddress e) {
+      return;
+    }
+    
     // Access directly from the map because the high level getter filters stale carets,
     // and this could result in memory leaks.
     CaretData data = sessions.get(sessionId);
-    if (data == null) {
     
+    if (data == null) {
       ProfileSession profile;
-      try {
-        profile = profileManager.getSession(sessionId, ParticipantId.of(address));
-      } catch (InvalidParticipantAddress e) {
-        return;
-      }
-          
+      profile = profileManager.getSession(sessionId, participantId);
       data = new CaretData(markerFactory.createMarker(), profile, address, sessionId);
     }
     
@@ -446,6 +446,11 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
     activate(data, expiry, doc);
 
     data.compositionStateUpdated(components.length >= 3 ? components[2] : "");
+
+    // update the name of remote anonymous users
+    if (components.length >= 4) {
+      profileManager.getProfile(participantId).setName(components[3]);
+    }
   }
 
   
@@ -577,7 +582,7 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
       return;
     
     // skip if we shouldn't render any carets, or this particular caret.
-    if (key.endsWith("/" + ignoreSessionId)) {
+    if (profileManager != null && key.endsWith("/" + profileManager.getCurrentSessionId())) {
       return;
     }
 

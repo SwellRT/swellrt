@@ -73,4 +73,15 @@ public interface Profile {
   @JsProperty
   String getImageUrl();
   
+  /**
+   * Set a name for the profile, the change it is not persisted
+   * @param name
+   */
+  void setName(String name);
+  
+  /**
+   * @return true iff it is the logged in user
+   */
+  boolean isCurrentSessionProfile();
+  
 }

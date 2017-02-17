@@ -36,14 +36,12 @@ public final class ProfileManagerImpl extends AbstractProfileManager {
 
   @Override
   public String getCurrentSessionId() {
-    // TODO Auto-generated method stub
-    return null;
+    return "nosessionid";
   }
 
   @Override
   public ParticipantId getCurrentParticipantId() {
-    // TODO Auto-generated method stub
-    return null;
+    return ParticipantId.ofUnsafe("dummy@example.com");
   }
 
 

@@ -26,6 +26,7 @@ import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
@@ -38,8 +39,6 @@ import com.google.common.base.Preconditions;
  * 
  */
 public final class ProfileImpl implements Profile {
- 
-  public static String DEFAULT_PICTURE_URL = "static/images/unknown.jpg";
   
   private final static String ANONYMOUS_NAME = "Anonymous";
   
@@ -73,9 +72,9 @@ public final class ProfileImpl implements Profile {
   private final ParticipantId id;
   private final AbstractProfileManager manager;
   
-  private String name = "?";
+  private String name = "";
   private String imageUrl = "static/images/unknown.jpg";  
-  private String shortName = "?";
+  private String shortName = "";
   private String email;
   private String locale;
   
@@ -94,7 +93,7 @@ public final class ProfileImpl implements Profile {
   
     Preconditions.checkArgument(id.getAddress().equals(data.getId()));
     
-    imageUrl = data.getAvatarUrl() != null ? data.getAvatarUrl() : DEFAULT_PICTURE_URL;
+    imageUrl = data.getAvatarUrl() != null ? data.getAvatarUrl() : null;
     email = data.getEmail();
     name = data.getName();
     shortName = id.getName();
@@ -134,6 +133,19 @@ public final class ProfileImpl implements Profile {
     return "ProfileImpl [id=" + id + ", "+name+ "]";
   }
 
+  @Override
+  public void setName(String name) {
+    
+    this.name = name;
+    this.shortName = name;
+    manager.fireOnUpdated(this);
+  }
+  
 
+  @Override
+  public boolean isCurrentSessionProfile() {
+    return manager.getCurrentParticipantId().equals(id);
+    
+  }
   
 }

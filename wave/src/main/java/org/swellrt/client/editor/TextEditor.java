@@ -454,7 +454,7 @@ public class TextEditor implements EditorUpdateListener {
     // Place here selection extractor to ensure session id and user id are refreshed
     //SelectionAnnotationHandler.register(registries, configurator.getSessionId(), configurator.getProfileManager(), caretListener);
     
-    selectionExtractor = new SelectionExtractor(clock, configurator.getParticipantId().getAddress(), configurator.getSessionId());
+    selectionExtractor = null; // new SelectionExtractor(clock, configurator.getParticipantId().getAddress(), configurator.getSessionId());
     
     doc = getContentDocument(text, configurator.getDocumentRegistry());
     Preconditions.checkArgument(doc != null, "Can't edit an unattached TextType");

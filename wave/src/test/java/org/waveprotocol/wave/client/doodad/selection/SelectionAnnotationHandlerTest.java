@@ -29,8 +29,11 @@ import static org.waveprotocol.wave.model.document.util.DocCompare.STRUCTURE;
 
 import junit.framework.TestCase;
 
+import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileImpl;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
+import org.waveprotocol.wave.client.account.impl.AbstractProfileManager.RequestProfileCallback;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.doodad.selection.CaretView.CaretViewFactory;
 import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler.CaretListener;
@@ -89,24 +92,46 @@ public class SelectionAnnotationHandlerTest extends TestCase {
 
   /** Session for the current editor. */
   class FakeSession {
+    final ParticipantId pid;
     final String id;
     final ProfileImpl profile;
     final SelectionExtractor extractor;
     String displayName;
+    ProfileManager manager;
 
     public FakeSession(String name) {
-      profile = (ProfileImpl) profileManager.getProfile(ParticipantId.ofUnsafe(name + "@example.com"));
+      
+      pid = ParticipantId.ofUnsafe(name + "@example.com");
       id = "#" + name + "#";
-      extractor = new SelectionExtractor(handlerTimer, profile.getAddress(), id);
+      
+      manager = new AbstractProfileManager() {
+        
+        @Override
+        public String getCurrentSessionId() {
+          return id;
+        }
+        
+        @Override
+        public ParticipantId getCurrentParticipantId() {
+          return pid;
+        }
+        
+        @Override
+        protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {     
+        }
+      };
+      
+      profile = (ProfileImpl) manager.getProfile(pid);
+      extractor = new SelectionExtractor(handlerTimer, manager);
       displayName = profile.getName();
     }
 
     void setName(String newName) {
-      //profile.update(newName, null);
+      ProfileImpl p = (ProfileImpl) me.manager.getProfile(pid);
+      p.setName(newName);
     }
   }
 
-  ProfileManagerImpl profileManager = new ProfileManagerImpl();
   AnnotationRegistry annotationRegistry = new AnnotationRegistryImpl();
   FakeTimerService painterTimer = new FakeTimerService();
   FakeTimerService handlerTimer = new FakeTimerService();
@@ -129,7 +154,7 @@ public class SelectionAnnotationHandlerTest extends TestCase {
     Registries registries =
         new RegistriesImpl(mock(ElementHandlerRegistry.class), annotationRegistry, painterRegistry);
     handler = SelectionAnnotationHandler.register(
-        registries, handlerTimer, markerFactory, me.id, profileManager, new CaretListener() {
+        registries, handlerTimer, markerFactory, me.id, me.manager, new CaretListener() {
 
           @Override
           public void onActive(String address, RgbColor color) {
