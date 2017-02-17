@@ -280,6 +280,10 @@ public class SEditor implements EditorUpdateListener {
 
     @Override
     public void exec(String state, SException e) {
+      
+      if (editor == null)
+        return;
+      
       if (!state.equals(ServiceFrontend.STATE_CONNECTED)) {
         
         if (editor.isEditing()) {
