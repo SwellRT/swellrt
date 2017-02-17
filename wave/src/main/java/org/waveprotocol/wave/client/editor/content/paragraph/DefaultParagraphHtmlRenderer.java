@@ -27,6 +27,8 @@ import org.waveprotocol.wave.client.editor.content.HasImplNodelets;
 import org.waveprotocol.wave.client.editor.content.Renderer;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Alignment;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.Direction;
+import org.waveprotocol.wave.client.editor.impl.NodeManager;
+import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
 
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
@@ -223,7 +225,10 @@ public class DefaultParagraphHtmlRenderer implements ParagraphHtmlRenderer {
     	  anchor.getStyle().setHeight(0, Unit.PX);
     	  anchor.getStyle().setWidth(0, Unit.PX);
     	  anchor.getStyle().setVisibility(Visibility.HIDDEN);
-    	  anchor.getStyle().setDisplay(Display.BLOCK);
+    	  anchor.getStyle().setDisplay(Display.INLINE_BLOCK);
+    	  
+        DomHelper.makeUnselectable(anchor);
+        NodeManager.setTransparency(anchor, Skip.DEEP);
     	  
     	  implNodelet.appendChild(anchor);
     	  
