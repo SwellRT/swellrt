@@ -118,7 +118,7 @@ public class SelectionExtractor implements EditorUpdateListener {
     // If we have a selection, then continually update regardless of old value,
     // to refresh the timestamp.
     if (range != null) {
-      document.setAnnotation(0, size, dataKey, address + "," + currentTimeMillis + ","
+      document.setAnnotation(0, 1, dataKey, address + "," + currentTimeMillis + ","
           + (compositionState != null ? compositionState : "")+","+name);
     }
 
@@ -172,7 +172,7 @@ public class SelectionExtractor implements EditorUpdateListener {
         // no new selection, clear old one
         document.setAnnotation(currentFocus, size, endKey, null);
         document.setAnnotation(currentStart, currentEnd, rangeKey, null);
-        document.setAnnotation(0, size, dataKey, null);
+        document.setAnnotation(0, 1, dataKey, null);
       }
     } else {
       // no old selection
