@@ -671,16 +671,18 @@ public class SEditor implements EditorUpdateListener {
   @Override
   public void onUpdate(EditorUpdateEvent event) {
     Editor editor = this.getEditor();
-    if (selectionHandler != null && event.selectionLocationChanged()) {
+    if (selectionHandler != null) {
+      
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-
+      
+      Node node = null;
       if (range != null) {
-
         Point<ContentNode> pStart = editor.getDocument().locate(range.getStart()+1);
-        Node nStart = pStart.getCanonicalNode().getImplNodelet();
-
-        selectionHandler.exec(range, this, nStart);
+        node = pStart.getCanonicalNode().getImplNodelet();
       }
+      
+      selectionHandler.exec(range, this, node);
+  
 
     }
   }
