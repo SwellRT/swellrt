@@ -10,8 +10,8 @@ script:
   - ./gradlew clean jar prodWeb test createDistBin
 
 after_success:
-  - docker build -t p2pvalue/swellrt
+  - docker build -t p2pvalue/swellrt .
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push p2pvalue/swellrt
+    // docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push p2pvalue/swellrt;
     fi
