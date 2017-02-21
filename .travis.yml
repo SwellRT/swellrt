@@ -1,5 +1,10 @@
 sudo: required
 
+addons:
+  ssh_known_hosts:
+    - demo.swellrt.org
+    - assange.fdi.ucm.es
+
 language: java
 jdk: oraclejdk8
 
@@ -14,6 +19,9 @@ after_success:
   - cp wave/build/libs/swellrt-$VERSION.jar wave/build/libs/swellrt.jar
   - docker build -t p2pvalue/swellrt .
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push p2pvalue/swellrt;
+     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+     docker push p2pvalue/swellrt;
+     .travis/deploy.sh;
     fi
+  
+
