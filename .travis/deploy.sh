@@ -9,4 +9,3 @@ if [ $TRAVIS_BRANCH = "master" ]; then
   cd .travis
   ./deploy-demo.sh	
 fi
-
