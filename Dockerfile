@@ -1,5 +1,5 @@
 FROM java:8
-MAINTAINER P2Pvalue UCM Team <p2pv@ucm.es>
+MAINTAINER SwellRT Community <swellrt@gmail.com>
 
 # SwellRT port
 EXPOSE 9898

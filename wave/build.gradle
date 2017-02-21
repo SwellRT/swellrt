@@ -816,8 +816,8 @@ task createDistBinTar(type: Tar) {
     }
 }
 
-createDistBinZip.dependsOn jar, compileJsWeb, createPropertiesFile
-createDistBinTar.dependsOn jar, compileJsWeb, createPropertiesFile
+createDistBinZip.dependsOn jar, prodWeb, createPropertiesFile
+createDistBinTar.dependsOn jar, prodWeb, createPropertiesFile
 
 //=============================================================================
 // Distribution's
