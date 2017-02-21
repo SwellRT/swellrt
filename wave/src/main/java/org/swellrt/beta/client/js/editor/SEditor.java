@@ -33,8 +33,8 @@ import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
+import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
-import org.waveprotocol.wave.client.scheduler.TimerService;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
@@ -43,9 +43,11 @@ import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.FocusedPointRange;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.IntRange;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -667,18 +669,22 @@ public class SEditor implements EditorUpdateListener {
     return editor;
   }
 
+  Element caretMarker = null;
+  
   @JsIgnore
   @Override
   public void onUpdate(EditorUpdateEvent event) {
     Editor editor = this.getEditor();
+    
+    
+    
     if (selectionHandler != null) {
       
-      Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-      
+      Range range = editor.getSelectionHelper().getOrderedSelectionRange();    
+      FocusedPointRange<Node> fp = NativeSelectionUtil.get();
       Node node = null;
-      if (range != null) {
-        Point<ContentNode> pStart = editor.getDocument().locate(range.getStart()+1);
-        node = pStart.getCanonicalNode().getImplNodelet();
+      if (fp != null) {
+        node = fp.getFocus().getCanonicalNode();
       }
       
       selectionHandler.exec(range, this, node);
