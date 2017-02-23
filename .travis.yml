@@ -15,13 +15,5 @@ script:
   - ./gradlew clean jar prodWeb test createDistBin
 
 after_success:
-  - VERSION=`basename wave/build/libs/swellrt-*.jar | sed 's/^swellrt-//' | sed 's/.jar//'` 
-  - cp wave/build/libs/swellrt-$VERSION.jar wave/build/libs/swellrt.jar
-  - docker build -t p2pvalue/swellrt .
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-     docker push p2pvalue/swellrt;
-     .travis/deploy.sh;
-    fi
-  
+  - .travis/deploy.sh
 
