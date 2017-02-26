@@ -52,7 +52,8 @@ VOLUME $home/config \
  $home/certificates \
  $home/accounts \
  $home/deltas \
- $home/indexes
+ $home/indexes \
+ $home/webapp
  
 
 USER swellrt

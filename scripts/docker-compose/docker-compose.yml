@@ -1,0 +1,22 @@
+version: '2'
+services:
+  swellrt:
+    image: p2pvalue/swellrt:latest
+    hostname: swellrt.<your_domain>
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "127.0.0.1:9898:9898"
+    volumes:
+      - ./swellrt/config:/usr/local/swellrt/config
+      - ./swellrt/log:/usr/local/swellrt/log
+      - ./swellrt/sessions:/usr/local/swellrt/sessions
+      - ./swellrt/avatars:/usr/local/swellrt/avatars
+      - ./swellrt/attachments:/usr/local/swellrt/attachments
+      - ./swellrt/webapp:/usr/local/swellrt/webapp
+  mongo:
+    image: mongo:latest
+    restart: always
+    volumes:
+      - ./mongo:/data/db
