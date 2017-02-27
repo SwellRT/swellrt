@@ -501,7 +501,6 @@ task devWeb {
 }
 
 devWeb.mustRunAfter compileJava
-run.dependsOn devWeb
 
 task debugWeb {
     description = 'Builds SwellRT Web Client (Debug mode)'
