@@ -30,7 +30,6 @@ import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
@@ -46,9 +45,7 @@ import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.FocusedPointRange;
 import org.waveprotocol.wave.model.document.util.LineContainers;
-import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.util.IntRange;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -84,6 +81,7 @@ public class SEditor implements EditorUpdateListener {
   protected static int FLAG_SEMANTIC_COPY_PASTE = 5;
   protected static int FLAG_WHITELIST_EDITOR = 6;
   protected static int FLAG_WEBKIT_COMPOSITION = 7;
+  protected static int FLAG_ENABLE_LOGS = 8;
   
   protected static final Map<Integer, Boolean> SETTINGS = new HashMap<Integer, Boolean>();
   
@@ -95,6 +93,7 @@ public class SEditor implements EditorUpdateListener {
     SETTINGS.put(FLAG_SEMANTIC_COPY_PASTE, false);
     SETTINGS.put(FLAG_WHITELIST_EDITOR, false);
     SETTINGS.put(FLAG_WEBKIT_COMPOSITION, true);
+    SETTINGS.put(FLAG_ENABLE_LOGS, false);
   }
   
   public static void setFlag(int flag, boolean value) {
@@ -166,7 +165,8 @@ public class SEditor implements EditorUpdateListener {
   
   static {
     
-    EditorStaticDeps.logger = new CustomLogger(new ConsoleLogSink());
+    if (getFlag(FLAG_ENABLE_LOGS))
+      EditorStaticDeps.logger = new CustomLogger(new ConsoleLogSink());
     
     Editors.initRootRegistries();
 
