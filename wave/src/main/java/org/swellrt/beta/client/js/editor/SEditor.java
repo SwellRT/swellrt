@@ -4,8 +4,9 @@ package org.swellrt.beta.client.js.editor;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.swellrt.beta.client.ServiceBasis;
+import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.annotation.Annotation;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationAction;
@@ -268,7 +269,7 @@ public class SEditor implements EditorUpdateListener {
   private KeyBindingRegistry keyBindingRegistry;
   
   /** A service to listen to connection events */
-  ServiceFrontend serviceFrontend;
+  ServiceBasis service;
    
   private SelectionExtractor selectionExtractor;
   
@@ -608,21 +609,21 @@ public class SEditor implements EditorUpdateListener {
    * 
    * @param serviceFrontend
    */
-  public void registerService(ServiceFrontend serviceFrontend) {
+  public void registerService(ServiceBasis service) {
     
-    if (this.serviceFrontend != null)
+    if (this.service != null)
       unregisterService();
     
-    this.serviceFrontend = serviceFrontend;
-    this.serviceFrontend.addConnectionHandler(connectionHandler);
-    this.profileManager = serviceFrontend.getProfiles();
+    this.service = service;
+    this.service.addConnectionHandler(connectionHandler);
+    this.profileManager = service.getProfiles();
     if (this.profileManager != null)
       caretAnnotationHandler.setProfileManager(profileManager);
   }
   
   public void unregisterService() {
-    if (serviceFrontend != null)
-      serviceFrontend.removeConnectionHandler(connectionHandler);
+    if (service != null)
+      service.removeConnectionHandler(connectionHandler);
     
     caretAnnotationHandler.setProfileManager(null);
     

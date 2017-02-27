@@ -30,7 +30,7 @@ import jsinterop.annotations.JsType;
  *
  * @author kalman@google.com (Benjamin Kalman)
  */
-@JsType(namespace = "swellrt.Service", name = "ProfileManager")
+@JsType(namespace = "swellrt", name = "ProfileManager")
 public interface ProfileManager extends SourcesEvents<ProfileListener> {
   
   /**

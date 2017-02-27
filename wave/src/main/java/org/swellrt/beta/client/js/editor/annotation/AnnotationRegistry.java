@@ -50,7 +50,7 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-@JsType(namespace = "swellrt.Annotation", name = "Registry")
+@JsType(namespace = "swellrt.Editor", name = "AnnotationRegistry")
 public class AnnotationRegistry {
 
   public static final String PARAGRAPH_HEADER = "paragraph/header";

@@ -37,7 +37,7 @@ import jsinterop.annotations.JsType;
  * @author kalman@google.com (Benjamin Kalman)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-@JsType(namespace = "swellrt.Service", name = "Profile")
+@JsType(namespace = "swellrt", name = "Profile")
 public interface Profile {
 
   /**

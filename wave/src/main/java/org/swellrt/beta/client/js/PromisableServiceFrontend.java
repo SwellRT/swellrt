@@ -1,7 +1,7 @@
 package org.swellrt.beta.client.js;
 
+import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
 import org.swellrt.beta.client.js.Promise.ConstructorParam;
 import org.swellrt.beta.client.js.Promise.FunctionParam;
 import org.swellrt.beta.client.operation.Operation.Callback;
@@ -26,7 +26,7 @@ import jsinterop.annotations.JsType;
  *
  */
 @JsType(namespace = "swellrt", name = "PromisableService")
-public class PromisableServiceFrontend {
+public class PromisableServiceFrontend implements ServiceBasis {
 
 	private final ServiceFrontend service;
 
@@ -183,19 +183,24 @@ public class PromisableServiceFrontend {
 		});			
 	}
 
+	@Override
   public void addConnectionHandler(ConnectionHandler h) {
     service.addConnectionHandler(h);
   }
   
+	@Override
   public void removeConnectionHandler(ConnectionHandler h) {
     service.removeConnectionHandler(h);
   }
   
+	@Override
   public void listen(Object object, SHandler handler) {
     service.listen(object, handler);
   }
   
+	
   @JsProperty
+  @Override
   public ProfileManager getProfiles() {
     return service.getProfiles();
   }

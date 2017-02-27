@@ -9,7 +9,6 @@ import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
-import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.remote.SNodeRemoteContainer;
@@ -18,7 +17,6 @@ import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsProperty;
@@ -26,29 +24,21 @@ import jsinterop.annotations.JsType;
 
 
 @JsType(namespace = "swellrt", name = "Service")
-public class ServiceFrontend {
+public class ServiceFrontend implements ServiceBasis {
   
   public static final String ANONYMOUS_USER_ID  = "_anonymous_";
 
   public static final String STATE_CONNECTED = WaveWebSocketClient.ConnectState.CONNECTED.toString();
   
-  /**
-   * 
-   */
-  @JsFunction
-  public interface ConnectionHandler {
-    void exec(String state, SException e);
-  }
 
   @JsIgnore
   public static ServiceFrontend create(ServiceContext context) {
     Preconditions.checkNotNull(context, "Service context can't be null");
-    ServiceFrontend sf = new ServiceFrontend();
-    sf.setContext(context);    
+    ServiceFrontend sf = new ServiceFrontend(context);
     return sf;
   }
   
-  private ServiceContext context;
+  private final ServiceContext context;
   
   private ProfileManager profileManager = new AbstractProfileManager() {
 
@@ -74,12 +64,8 @@ public class ServiceFrontend {
   };
   
   @JsIgnore
-  protected ServiceFrontend() {
-  }
-  
-  @JsIgnore
-  protected void setContext(ServiceContext context) {
-    this.context = context;  
+  protected ServiceFrontend(ServiceContext context) {
+    this.context = context; 
   }
   
   public void createUser(CreateUserOperation.Options options, Callback<CreateUserOperation.Response> callback) {
@@ -117,19 +103,23 @@ public class ServiceFrontend {
     op.execute(options, callback);    
   }
   
+  @Override
   @JsProperty
   public ProfileManager getProfiles() {
     return profileManager;
   }
   
+  @Override
   public void addConnectionHandler(ConnectionHandler h) {
     context.addConnectionHandler(h);
   }
   
+  @Override
   public void removeConnectionHandler(ConnectionHandler h) {
     context.removeConnectionHandler(h);
   }
   
+  @Override
   public void listen(Object object, SHandler handler) {
     
     if (handler == null)

@@ -29,7 +29,7 @@ import jsinterop.annotations.JsType;
  *
  * @author hearnden@google.com (David Hearnden)
  */
-@JsType(namespace = "swellrt.Service", name = "Color")
+@JsType(namespace = "swellrt", name = "Color")
 public final class RgbColor {
   
   @JsIgnore

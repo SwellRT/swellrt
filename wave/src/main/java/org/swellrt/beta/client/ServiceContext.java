@@ -3,7 +3,7 @@ package org.swellrt.beta.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.swellrt.beta.client.ServiceFrontend.ConnectionHandler;
+import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveSocket.WaveSocketStartCallback;
@@ -98,7 +98,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private WaveWebSocketClient websocketClient;
   private SettableFuture<RemoteViewServiceMultiplexer> serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create(); 
 
-  private CopyOnWriteSet<ServiceFrontend.ConnectionHandler> connectionHandlers = CopyOnWriteSet.createListSet();
+  private final CopyOnWriteSet<ServiceFrontend.ConnectionHandler> connectionHandlers = CopyOnWriteSet.createListSet();
   
   public ServiceContext(SessionManager sessionManager, String httpAddress) {
     this.sessionManager = sessionManager; 
@@ -107,11 +107,11 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   }
  
   public void addConnectionHandler(ConnectionHandler h) {
-    this.connectionHandlers.add(h);
+    connectionHandlers.add(h);
   }
   
   public void removeConnectionHandler(ConnectionHandler h) {
-    this.connectionHandlers.remove(h);
+    connectionHandlers.remove(h);
   }
   
   protected void setupIdGenerator() {

@@ -1,5 +1,6 @@
 package org.swellrt.beta.client;
 
+import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
 
@@ -17,8 +18,8 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-@JsType(namespace = "swellrt", name = "service")
-public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryPoint {
+@JsType(namespace = "swellrt", name = "runtime")
+public class ServiceFrontendEntryPoint implements EntryPoint {
   
   private static ServiceContext context; 
   private static ServiceFrontend callbackableFrontend;
@@ -82,19 +83,21 @@ public class ServiceFrontendEntryPoint extends ServiceFrontend implements EntryP
     
   }-*/;
   
+  
   @JsIgnore
   @Override
   public void onModuleLoad() {    
-    this.context = new ServiceContext(SessionManagerJs.create(), getServerURL());  	
+
     GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
 
       @Override
       public void onUncaughtException(Throwable e) {
-        GWT.log("Unexpected Exception", e);
-
+        Console.log("Uncaught Exception: "+ e.getMessage());
       }
     });
     
+    ServiceFrontendEntryPoint.context = new ServiceContext(SessionManagerJs.create(), getServerURL());  	
+    Console.log(context == null ? "Service context couldn't be created!" : "Service context created successfully");
     // Notify the host page that client is already loaded
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
