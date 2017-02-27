@@ -96,8 +96,7 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
       }
     });
     
-    ServiceFrontendEntryPoint.context = new ServiceContext(SessionManagerJs.create(), getServerURL());  	
-    Console.log(context == null ? "Service context couldn't be created!" : "Service context created successfully");
+    ServiceFrontendEntryPoint.context = new ServiceContext(SessionManagerJs.create(), getServerURL());  	    
     // Notify the host page that client is already loaded
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
