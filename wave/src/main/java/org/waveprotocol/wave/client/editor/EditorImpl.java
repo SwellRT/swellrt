@@ -1751,12 +1751,13 @@ public class EditorImpl extends LogicalPanel.Impl implements
       docDiv.setAttribute("autocorrect", "off");
       docDiv.setAttribute("autocapitalize", "off");
 
-      // setup event handling
-      registerDomEventHandling();
 
       // Initialise editing state related things
       setEditing(isEditing());
 
+      // setup event handling
+      registerDomEventHandling();
+      
       // TODO(danilatos): If this is necessary, add comment why.  Also consider
       // scheduling with delay or at low priority, so as not to slow down initial
       // rendering.
@@ -2092,6 +2093,7 @@ public class EditorImpl extends LogicalPanel.Impl implements
    * {@inheritDoc}
    */
   public void onJavaScriptEvent(String name, Event rawEvent) {
+    // EditorStaticDeps.logger.trace().log("onJavaScriptEvent: "+name);
     double processTiming = 0;
     Duration instrumentedDuration = null;
     // These events should never be stopped by the editor since other handlers
