@@ -466,7 +466,7 @@ task prodWeb {
     }
 }
 
-prodWeb.mustRunAfter compileJava
+prodWeb.dependsOn compileJava
 
 task devWeb {
 
@@ -500,7 +500,7 @@ task devWeb {
     }
 }
 
-devWeb.mustRunAfter compileJava
+devWeb.dependsOn compileJava
 
 task debugWeb {
     description = 'Builds SwellRT Web Client (Debug mode)'
