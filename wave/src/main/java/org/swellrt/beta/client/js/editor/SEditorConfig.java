@@ -112,7 +112,7 @@ public class SEditorConfig {
   
   @JsOverlay
   public final static boolean webkitComposition() {
-    boolean DEFAULT = true;
+    boolean DEFAULT = false;
     try {
       return getWebkitComposition() != null ? getWebkitComposition() : DEFAULT;
     } catch (RuntimeException e) {
