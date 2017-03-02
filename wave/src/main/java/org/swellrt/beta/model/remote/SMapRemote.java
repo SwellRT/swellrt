@@ -53,6 +53,9 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
    * Perform a sanity check. Raise an exception if this node
    * can't perform the operation or the container object is
    * in a bad state.
+   * <p>
+   * Don't use it for read operations to avoid client frameworks
+   * (like angular2) receiving exceptions in templates.
    */
   protected void check() throws SException {
     if (this.getParent() == null)
@@ -81,8 +84,9 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
   @Override 
   public SNode getNode(String key) throws SException {
-    check();
-            
+
+    // Don't call check here, this is a read operation!
+    
     if (!map.keySet().contains(key))
       return null;
     
@@ -110,7 +114,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
   @Override
   public Object get(String key) throws SException {
-    
+
     SNode node = getNode(key);
     getObject().checkReadable(node);
     
