@@ -7,13 +7,12 @@
 	
 	<entry-point class='org.swellrt.beta.client.ServiceFrontendEntryPoint' />
 	
-	<!-- Specification of permutation restrictions suitable for production. 
-		In general, this should support as many permutations as possible -->
-
-  	<!-- Only build supported clients. -->
-
-  	<set-property name="user.agent" value="safari, gecko1_8, ie8" />
-	<set-property name="mobile.user.agent" value="android, iphone, not_mobile" />
+	<!-- 
+		Warning: not setting all possible user agents causes
+		a runtime mistake on choosing DOMImpl implementation 
+	-->
+	<set-property name="user.agent" value="ie8, gecko1_8, safari, ie9, ie10" />
+  	<set-property name="mobile.user.agent" value="android, iphone, not_mobile" />
 
   	
 

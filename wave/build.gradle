@@ -523,7 +523,7 @@ task debugWeb {
                     "-bindAddress", "0.0.0.0",
                     "-logLevel", "DEBUG",
                     "-generateJsInteropExports",                    
-                    "org.swellrt.beta.client.ServiceFrontendDev"
+                    "org.swellrt.beta.client.ServiceFrontendDebug"
             ]
         }
     }
