@@ -7,6 +7,7 @@ import java.util.Map;
 import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
 import org.swellrt.beta.client.ServiceFrontend;
+import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.annotation.Annotation;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationAction;
@@ -63,47 +64,10 @@ import jsinterop.annotations.JsType;
 public class SEditor implements EditorUpdateListener {
 
   @JsFunction
-  public interface SelectionChangeHandler {
-    
-    void exec(Range range, SEditor editor, Node node);
-    
+  public interface SelectionChangeHandler {   
+    void exec(Range range, SEditor editor, Node node);    
   }
-  
     
-  //
-  // public flag names
-  //
-    
-  protected static int FLAG_LOG = 1;
-  protected static int FLAG_DEBUG_DIALOG = 2;
-  protected static int FLAG_UNDO = 3;
-  protected static int FLAG_FANCY_CURSOR_BIAS = 4;
-  protected static int FLAG_SEMANTIC_COPY_PASTE = 5;
-  protected static int FLAG_WHITELIST_EDITOR = 6;
-  protected static int FLAG_WEBKIT_COMPOSITION = 7;
-  protected static int FLAG_ENABLE_LOGS = 8;
-  
-  protected static final Map<Integer, Boolean> SETTINGS = new HashMap<Integer, Boolean>();
-  
-  static {
-    SETTINGS.put(FLAG_LOG, true);
-    SETTINGS.put(FLAG_DEBUG_DIALOG, true);
-    SETTINGS.put(FLAG_UNDO, true);
-    SETTINGS.put(FLAG_FANCY_CURSOR_BIAS, true);
-    SETTINGS.put(FLAG_SEMANTIC_COPY_PASTE, false);
-    SETTINGS.put(FLAG_WHITELIST_EDITOR, false);
-    SETTINGS.put(FLAG_WEBKIT_COMPOSITION, true);
-    SETTINGS.put(FLAG_ENABLE_LOGS, false);
-  }
-  
-  public static void setFlag(int flag, boolean value) {
-    SETTINGS.put(flag, value);
-  }
-  
-  public static boolean getFlag(int flag) {
-    return SETTINGS.get(flag);
-  }
-  
   //
   // Static private properties
   //
@@ -115,13 +79,9 @@ public class SEditor implements EditorUpdateListener {
    */
   protected static class ConsoleLogSink extends LogSink {
 
-    private native void console(String msg) /*-{
-      console.log(msg);
-    }-*/;
-
     @Override
     public void log(Level level, String message) {
-      console("[" + level.name() + "] " + message);
+      Console.log("[" + level.name() + "] " + message);
     }
 
     @Override
@@ -129,28 +89,29 @@ public class SEditor implements EditorUpdateListener {
       for (Object o : messages) {
         log(level, o.toString());
       }
-
     }
-
   }
   
   /**
-   *
+   * 
    */
   protected static class CustomLogger extends AbstractLogger {
 
+    
+    private boolean enabled = SEditorConfig.enableLog();
+    
     public CustomLogger(LogSink sink) {
       super(sink);
     }
 
     @Override
     public boolean isModuleEnabled() {
-      return getFlag(FLAG_LOG);
+      return enabled;
     }
 
     @Override
     protected boolean shouldLog(Level level) {
-      return getFlag(FLAG_LOG);
+      return enabled;
     }
   }
 
@@ -165,7 +126,7 @@ public class SEditor implements EditorUpdateListener {
   
   static {
     
-    if (getFlag(FLAG_ENABLE_LOGS))
+    if (SEditorConfig.enableLog())
       EditorStaticDeps.logger = new CustomLogger(new ConsoleLogSink());
     
     Editors.initRootRegistries();
@@ -633,12 +594,12 @@ public class SEditor implements EditorUpdateListener {
   protected EditorSettings getSettings() {
     
     return new EditorSettings()
-    .setHasDebugDialog(SETTINGS.get(FLAG_DEBUG_DIALOG))
-    .setUndoEnabled(SETTINGS.get(FLAG_UNDO))
-    .setUseFancyCursorBias(SETTINGS.get(FLAG_FANCY_CURSOR_BIAS))
-    .setUseSemanticCopyPaste(SETTINGS.get(FLAG_SEMANTIC_COPY_PASTE))
-    .setUseWhitelistInEditor(SETTINGS.get(FLAG_WHITELIST_EDITOR))
-    .setUseWebkitCompositionEvents(SETTINGS.get(FLAG_WEBKIT_COMPOSITION));
+    .setHasDebugDialog(SEditorConfig.debugDialog())
+    .setUndoEnabled(SEditorConfig.undo())
+    .setUseFancyCursorBias(SEditorConfig.fancyCursorBias())
+    .setUseSemanticCopyPaste(SEditorConfig.semanticCopyPaste())
+    .setUseWhitelistInEditor(SEditorConfig.whitelistEditor())
+    .setUseWebkitCompositionEvents(SEditorConfig.webkitComposition());
     
   }
   
