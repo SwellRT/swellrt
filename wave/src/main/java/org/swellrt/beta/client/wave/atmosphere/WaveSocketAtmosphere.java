@@ -241,7 +241,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
           };
 
           socket.request.callback = function(response) {
-            atmosphere.util.debug("Atmosphere callback "+response.status);
+            // noop
           };
 
           $wnd._socket = socket;
