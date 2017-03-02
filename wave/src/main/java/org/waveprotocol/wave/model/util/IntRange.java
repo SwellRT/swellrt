@@ -19,6 +19,8 @@
 
 package org.waveprotocol.wave.model.util;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
 
 /**
  * An integer range.
@@ -27,6 +29,7 @@ package org.waveprotocol.wave.model.util;
  * equal to end.
  *
  */
+@JsType(namespace="swellrt", name="IntRange")
 public final class IntRange extends IntPair {
 
   /**
@@ -39,8 +42,8 @@ public final class IntRange extends IntPair {
     super(start, end);
     Preconditions.checkArgument(start <= end, "Start of range must be <= end");
   }
-
+  @JsIgnore
   public IntRange(int collapsedAt) {
-    super(collapsedAt, collapsedAt);
+    this(collapsedAt, collapsedAt);
   }
 }

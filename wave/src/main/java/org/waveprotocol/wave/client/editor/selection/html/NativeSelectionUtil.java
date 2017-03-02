@@ -22,6 +22,9 @@ package org.waveprotocol.wave.client.editor.selection.html;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
+
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
 import org.waveprotocol.wave.client.common.util.UserAgent;
 import org.waveprotocol.wave.client.debug.logger.BufferedLogger;
@@ -36,11 +39,13 @@ import org.waveprotocol.wave.model.util.Preconditions;
  * Document selection methods.
  *
  */
+@JsType(namespace = "swellrt.Editor", name = "Selection")
 public class NativeSelectionUtil {
   /**
    * For notification before/after transient DOM mutations, which can be
    * ignored.
    */
+
   public static interface MutationListener {
     void startTransientMutations();
     void endTransientMutations();
@@ -59,6 +64,7 @@ public class NativeSelectionUtil {
   /**
    * Debug logger for selection package
    */
+  @JsIgnore
   static final LoggerBundle LOG = new BufferedLogger("selection");
 
   /** Browser-specific implementation of getting the content/range of the selection. */
@@ -71,17 +77,11 @@ public class NativeSelectionUtil {
    * Create browser specific selection implementation.
    */
   static {
-    if (UserAgent.isIE()) {
+    // Nowadays things are easier: http://caniuse.com/#feat=selection-api
+    if (UserAgent.isIE8()) {
       impl = new SelectionImplIE();
-      coordinateGetter = new SelectionCoordinatesHelperIEImpl();
-    } else if (UserAgent.isMobileWebkit()) { 
-      // Trying to use standard selection helper in mobile,
-      // I guess mobile browsers have evolved so much
-      // impl = new SelectionImplDisabled();
-      impl = new SelectionImplW3C();	
-      coordinateGetter = new SelectionCoordinatesHelperDisabled();
+      coordinateGetter = new SelectionCoordinatesHelperIEImpl();   
     } else {
-      // avoid casting:
       SelectionImplW3C w3cImpl = new SelectionImplW3C();
       impl = w3cImpl;
       coordinateGetter = new SelectionCoordinatesHelperW3C(new NativeSelectionUtil.MutationListener() {
@@ -121,6 +121,7 @@ public class NativeSelectionUtil {
    *
    * @param mutationListener
    */
+  @JsIgnore
   public static void setTransientMutationListener(
       NativeSelectionUtil.MutationListener mutationListener) {
     Preconditions.checkNotNull(mutationListener, "null mutationListener");
@@ -129,7 +130,7 @@ public class NativeSelectionUtil {
 
   /**
    * Turning selection caching on
-   */
+   */  
   public static void cacheOn() {
     caching = true;
   }
@@ -157,6 +158,7 @@ public class NativeSelectionUtil {
    * are references to the actual elements in the DOM; not
    * clones.
    */
+  @JsIgnore
   public static FocusedPointRange<Node> get() {
     if (caching) {
       if (cache == null) {
@@ -173,6 +175,7 @@ public class NativeSelectionUtil {
    *
    * Ordered means the anchor before, or the same as, the focus
    */
+  @JsIgnore
   public static PointRange<Node> getOrdered() {
     return impl.getOrdered();
   }
@@ -181,6 +184,7 @@ public class NativeSelectionUtil {
    * @return true if the selection is currently ordered. Ordered means the
    *         anchor before, or the same as, the focus
    */
+  @JsIgnore
   public static boolean isOrdered() {
     return impl.isOrdered();
   }
@@ -208,6 +212,7 @@ public class NativeSelectionUtil {
    *
    * @param range
    */
+  @JsIgnore
   public static void set(FocusedPointRange<Node> range) {
     cache = null;
     impl.set(range.getAnchor(), range.getFocus());
@@ -219,6 +224,7 @@ public class NativeSelectionUtil {
    * @param anchor
    * @param focus
    */
+  @JsIgnore
   public static void set(Point<Node> anchor, Point<Node> focus) {
     cache = null;
     impl.set(anchor, focus);
@@ -229,6 +235,7 @@ public class NativeSelectionUtil {
    *
    * @param caret
    */
+  @JsIgnore
   public static void setCaret(Point<Node> caret) {
     cache = null;
     set(caret, caret);
@@ -236,7 +243,7 @@ public class NativeSelectionUtil {
 
   /**
    * Clears selection
-   */
+   */  
   public static void clear() {
     cache = null;
     impl.clear();

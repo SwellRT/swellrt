@@ -1,7 +1,6 @@
 package org.swellrt.beta.client.js.editor;
 
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.ServiceBasis;
@@ -65,7 +64,7 @@ public class SEditor implements EditorUpdateListener {
 
   @JsFunction
   public interface SelectionChangeHandler {   
-    void exec(Range range, SEditor editor, Node node);    
+    void exec(Range range, SEditor editor, SSelection node);    
   }
     
   //
@@ -638,20 +637,9 @@ public class SEditor implements EditorUpdateListener {
   public void onUpdate(EditorUpdateEvent event) {
     Editor editor = this.getEditor();
     
-    
-    
     if (selectionHandler != null) {
-      
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();    
-      FocusedPointRange<Node> fp = NativeSelectionUtil.get();
-      Node node = null;
-      if (fp != null) {
-        node = fp.getFocus().getCanonicalNode();
-      }
-      
-      selectionHandler.exec(range, this, node);
-  
-
+      selectionHandler.exec(range, this, SSelection.get());
     }
   }
  

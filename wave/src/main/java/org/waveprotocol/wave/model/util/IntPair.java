@@ -19,10 +19,14 @@
 
 package org.waveprotocol.wave.model.util;
 
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
 /**
  * An immutable pair of integers.
  *
  */
+@JsType(namespace="swellrt", name="IntPair")
 public class IntPair {
   private final int first;
   private final int second;
@@ -40,6 +44,7 @@ public class IntPair {
   /**
    * Returns the first integer in the pair.
    */
+  @JsProperty
   public int getFirst() {
     return first;
   }
@@ -47,6 +52,7 @@ public class IntPair {
   /**
    * Returns the second integer in the pair.
    */
+  @JsProperty
   public int getSecond() {
     return second;
   }
