@@ -247,7 +247,7 @@ public class SEditor implements EditorUpdateListener {
       if (editor == null)
         return;
       
-      if (!state.equals(ServiceFrontend.STATE_CONNECTED)) {
+      if (!state.equals(ServiceFrontend.STATUS_CONNECTED)) {
         
         if (editor.isEditing()) {
           wasEditingOnDiscconnect = true;      

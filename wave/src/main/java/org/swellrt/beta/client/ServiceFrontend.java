@@ -28,8 +28,11 @@ public class ServiceFrontend implements ServiceBasis {
   
   public static final String ANONYMOUS_USER_ID  = "_anonymous_";
 
-  public static final String STATE_CONNECTED = WaveWebSocketClient.ConnectState.CONNECTED.toString();
-  
+  public static final String STATUS_CONNECTED = WaveWebSocketClient.ConnectState.CONNECTED.toString();
+  public static final String STATUS_DISCONNECTED = WaveWebSocketClient.ConnectState.DISCONNECTED.toString();
+  public static final String STATUS_ERROR = WaveWebSocketClient.ConnectState.ERROR.toString();
+  public static final String STATUS_CONNECTING = WaveWebSocketClient.ConnectState.CONNECTING.toString();
+
 
   @JsIgnore
   public static ServiceFrontend create(ServiceContext context) {
