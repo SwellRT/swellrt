@@ -65,6 +65,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
 
   
   private int currentColourIndex = 0;
+  private int refreshInterval = 180 * 1000;
     
   protected final StringMap<Profile> profiles = CollectionUtils.createStringMap();
   protected final StringMap<ProfileSession> sessions = CollectionUtils.createStringMap();
@@ -91,6 +92,14 @@ public abstract class AbstractProfileManager implements ProfileManager {
       
     }
   };
+
+  protected AbstractProfileManager() {
+    
+  }
+  
+  protected AbstractProfileManager(int refreshInterval) {
+    this.refreshInterval = refreshInterval;
+  }
   
   @Override
   public void autoRefresh(boolean enable) {
@@ -99,7 +108,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
     
       if (!SchedulerInstance.getLowPriorityTimer().isScheduled(checkStatusTask)) {
         // Refresh connection status each minute
-        SchedulerInstance.getLowPriorityTimer().scheduleRepeating(checkStatusTask, 60 * 1000, 65 * 1000);
+        SchedulerInstance.getLowPriorityTimer().scheduleRepeating(checkStatusTask, refreshInterval, refreshInterval + 1000);
       }
     
     } else {
@@ -169,6 +178,11 @@ public abstract class AbstractProfileManager implements ProfileManager {
   @Override
   public boolean shouldIgnore(ParticipantId participant) {
     return false;
+  }
+  
+  @Override
+  public final Profile getCurrentProfile() {
+    return getProfile(getCurrentParticipantId());     
   }
   
 

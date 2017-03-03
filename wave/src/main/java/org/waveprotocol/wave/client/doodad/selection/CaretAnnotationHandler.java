@@ -215,6 +215,8 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
      * does not change
      */
     private String name;
+    
+    private ProfileSession profileSession;
 
     CaretData(CaretView ui, ProfileSession profileSession, String address, String sessionId) {
       
@@ -226,6 +228,8 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
 
       sessions.put(sessionId, this);
 
+      this.profileSession = profileSession;
+      
       this.ui = ui;
       this.sessionId = sessionId;
       this.color = profileSession.getColor();
@@ -249,6 +253,10 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
 
     public RgbColor getColour() {
       return color;
+    }
+    
+    public ProfileSession getProfileSession() {
+      return profileSession;
     }
   }
   
@@ -436,28 +444,30 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
     // and this could result in memory leaks.
     CaretData data = sessions.get(sessionId);
     
+    
+    
     if (data == null) {
-      ProfileSession profile;
-      profile = profileManager.getSession(sessionId, participantId);
+      ProfileSession profile = profileManager.getSession(sessionId, participantId);
       data = new CaretData(markerFactory.createMarker(), profile, address, sessionId);
     }
     
-    double expiry = Math.min(timeStamp, scheduler.currentTimeMillis()) + STALE_CARET_TIMEOUT_MS;
+    double lastActivityTime = Math.min(timeStamp, scheduler.currentTimeMillis());
+    double expiry = lastActivityTime + STALE_CARET_TIMEOUT_MS;
     activate(data, expiry, doc);
 
     data.compositionStateUpdated(components.length >= 3 ? components[2] : "");
 
+    data.getProfileSession().trackActivity(lastActivityTime);
+    
     // update the name of remote anonymous users
     if (components.length >= 4) {
-      profileManager.getProfile(participantId).setName(components[3]);
+      data.getProfileSession().getProfile().setName(components[3]);
     }
   }
 
   
   private void activate(CaretData data, double expiry, DocumentContext<?, ?, ?> doc) {
-    
-    profileManager.getSession(data.sessionId, null).setOnline();
-    
+     
     data.expiry = expiry;
     data.originallyScheduledExpiry = expiry;
 

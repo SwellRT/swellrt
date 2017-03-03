@@ -135,6 +135,7 @@ public final class ProfileImpl implements Profile {
 
   @Override
   public void setName(String name) {
+    if (this.name.equals(name)) return;
     
     this.name = name;
     this.shortName = name;

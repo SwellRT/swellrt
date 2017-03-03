@@ -1,8 +1,12 @@
 package org.waveprotocol.wave.client.account.impl;
 
+import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.common.util.RgbColor;
+
+import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
 
 public class ProfileSessionImpl implements ProfileSession {
 
@@ -13,7 +17,7 @@ public class ProfileSessionImpl implements ProfileSession {
   private final Profile profile;
   private final AbstractProfileManager manager;
   
-  private long lastOnlineTime = 0;
+  private double lastActivityTime = 0;
   
   public ProfileSessionImpl(Profile profile, AbstractProfileManager manager, String sessionId, RgbColor color) {
     this.color = color;
@@ -33,25 +37,37 @@ public class ProfileSessionImpl implements ProfileSession {
   }
 
   @Override
-  public void setOnline() {
-    this.lastOnlineTime = System.currentTimeMillis(); 
-    this.manager.fireOnOnline(this);
+  public void trackActivity() {
+    this.trackActivity(getCurrentTime());
+  }
+  
+  @Override
+  public void trackActivity(double timestamp) {
+    if ((timestamp - lastActivityTime) > USER_INACTIVE_WAIT) {
+      this.manager.fireOnOnline(this);
+    }
+    this.lastActivityTime = timestamp;
   }
 
   @Override
   public void setOffline() {
-    this.lastOnlineTime = 0; 
+    this.lastActivityTime = 0; 
     this.manager.fireOnOffline(this);
   }
   
   @Override
   public boolean isOnline() {
-    return USER_INACTIVE_WAIT < (System.currentTimeMillis() - lastOnlineTime);    
+    return USER_INACTIVE_WAIT < (getCurrentTime() - lastActivityTime);    
   }
 
   @Override
   public Profile getProfile() {
     return profile;
   }
-
+  
+  private double getCurrentTime() {
+    return GWT.isClient()
+        ? Duration.currentTimeMillis()
+        : System.currentTimeMillis();
+  }
 }

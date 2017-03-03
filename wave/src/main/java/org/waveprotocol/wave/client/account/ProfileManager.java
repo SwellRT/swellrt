@@ -68,6 +68,11 @@ public interface ProfileManager extends SourcesEvents<ProfileListener> {
    * @return id of the logged in user, null otherwise
    */
   ParticipantId getCurrentParticipantId();
+  
+  /**
+   * @return the profile of the current logged in user
+   */
+  Profile getCurrentProfile();
 
   /**
    * Start/Stop auto refresh of profiles and their online status

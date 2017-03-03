@@ -19,11 +19,16 @@ public interface ProfileSession {
   boolean isOnline();
   
   @JsIgnore
-  void setOnline();
-    
+  void trackActivity(double timestamp);
+  
+  @JsIgnore
+  void trackActivity();
+  
   @JsIgnore
   void setOffline();
   
   @JsProperty
   Profile getProfile();
+
+  
 }
