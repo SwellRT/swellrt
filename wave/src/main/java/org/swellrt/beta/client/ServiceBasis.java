@@ -20,7 +20,7 @@ public interface ServiceBasis {
   }
   
   @JsProperty
-  public ProfileManager getProfiles();
+  public ProfileManager getProfilesManager();
     
   public void addConnectionHandler(ConnectionHandler h);
   

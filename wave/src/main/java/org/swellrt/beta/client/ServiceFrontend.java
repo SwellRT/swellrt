@@ -108,7 +108,7 @@ public class ServiceFrontend implements ServiceBasis {
   
   @Override
   @JsProperty
-  public ProfileManager getProfiles() {
+  public ProfileManager getProfilesManager() {
     return profileManager;
   }
   

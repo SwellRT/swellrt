@@ -576,7 +576,7 @@ public class SEditor implements EditorUpdateListener {
     
     this.service = service;
     this.service.addConnectionHandler(connectionHandler);
-    this.profileManager = service.getProfiles();
+    this.profileManager = service.getProfilesManager();
     if (this.profileManager != null)
       caretAnnotationHandler.setProfileManager(profileManager);
   }

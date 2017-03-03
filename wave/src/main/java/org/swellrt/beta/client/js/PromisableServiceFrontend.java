@@ -201,8 +201,8 @@ public class PromisableServiceFrontend implements ServiceBasis {
 	
   @JsProperty
   @Override
-  public ProfileManager getProfiles() {
-    return service.getProfiles();
+  public ProfileManager getProfilesManager() {
+    return service.getProfilesManager();
   }
   
 }
