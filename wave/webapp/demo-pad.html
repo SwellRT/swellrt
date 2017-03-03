@@ -136,7 +136,7 @@
       }
 
 
-      service.profiles.addStatusHandler({
+      service.profilesManager.addStatusHandler({
 
         onUpdated: function(profile) {
           console.log("profile update -> "+profile.address);
@@ -152,7 +152,7 @@
 
       });
 
-      service.profiles.autoRefresh(true);
+      service.profilesManager.autoRefresh(true);
 
       // Create editor instance, reusable
       editor = swellrt.Editor.createWithId("editor", service);
