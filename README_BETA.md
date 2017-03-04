@@ -1,3 +1,4 @@
+# SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt)
 
 SwellRT is a **backend-as-a-service**. It allows to develop Web and _mobile_ apps faster by providing a set of common backend features:
 

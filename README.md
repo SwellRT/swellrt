@@ -1,4 +1,4 @@
-![](http://php-carbonero.rhcloud.com/swellrt/wp-content/uploads/sites/3/2016/08/Logo-SwellRT-tamanÌos-13.png)
+# SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt)
 
 SwellRT is a **real-time storage platform**. This project includes the server runtime and the JavaScript client for Web applications.
 
