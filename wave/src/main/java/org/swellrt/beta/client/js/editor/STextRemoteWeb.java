@@ -7,8 +7,8 @@ import org.swellrt.beta.model.remote.SubstrateId;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
-import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.Nindo;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.dom.client.Element;
@@ -76,4 +76,19 @@ public class STextRemoteWeb extends STextRemote implements STextWeb {
     textWeb.getContentDocument().getMutableDoc().hackConsume(Nindo.fromDocOp(ops, true));   
   }
 
+  @Override
+  public boolean isEmpty() {
+    return textWeb.isEmpty();
+  }
+
+
+  @Override
+  public Range insert(Range at, String content) {
+    return textWeb.insert(at, content);
+  }
+
+  @Override
+  public Range replace(Range at, String content) {
+    return textWeb.replace(at, content);
+  }
 }

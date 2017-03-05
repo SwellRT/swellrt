@@ -2,6 +2,8 @@ package org.swellrt.beta.model;
 
 import org.swellrt.beta.model.remote.SNodeRemoteContainer;
 import org.waveprotocol.wave.client.common.util.JsoView;
+import org.waveprotocol.wave.model.document.ReadableDocument;
+import org.waveprotocol.wave.model.document.util.DocHelper;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -62,6 +64,42 @@ public class SUtils {
     return node;
   }
 
+  
+  public static <N, E extends N, T extends N> boolean isEmptyNode(ReadableDocument<N, E, T> doc, N node) {
+    if (node == null)
+      return true;
+    
+    int count = 0;
+    N child = doc.getFirstChild(node);
+    N first = child;
+    while (child != null) {
+      count++;
+      child = doc.getNextSibling(child);
+      if (count > 1) return false;
+    }
+    
+    if (first == null) return true;
+   
+    return isEmptyNode(doc, first);
+    
+  }
+  
+  public static <N, E extends N, T extends N>  boolean isEmptyDocument(ReadableDocument<N, E, T> doc) {
+    E body = DocHelper.getElementWithTagName(doc, "body");
+
+    return isEmptyNode(doc, body);
+    
+  }
+  /**
+   * Clean any XML from the string
+   * @param s
+   * @return
+   */
+  public static String sanitizeString(String s) {
+    return s.replace("<", "")
+        .replace(">", "")
+        .replace("/>", "");
+  }
 
   
 }

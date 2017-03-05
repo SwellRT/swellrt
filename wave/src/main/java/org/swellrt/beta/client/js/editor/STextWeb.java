@@ -4,6 +4,7 @@ package org.swellrt.beta.client.js.editor;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.dom.client.Element;
 
@@ -23,6 +24,12 @@ public interface STextWeb {
   public void setRendered();
   
   public void setShelved();
+  
+  public boolean isEmpty();
+  
+  public Range insert(Range at, String content);
+  
+  public Range replace(Range at, String content);
   
   @JsIgnore
   public ContentDocument getContentDocument();

@@ -3,7 +3,6 @@ package org.swellrt.beta.model;
 import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
-import org.waveprotocol.wave.model.document.operation.DocOp;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
@@ -19,8 +18,10 @@ public interface SText extends SNode {
     
     return PlatformBasedFactory.getSTextLocal(text);
   }
-  
+    
   public String getRawContent();
+  
+  public boolean isEmpty();
   
   /**
    * A representation of the text data suitable to

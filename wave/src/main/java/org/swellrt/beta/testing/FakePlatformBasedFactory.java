@@ -1,6 +1,7 @@
 package org.swellrt.beta.testing;
 
 import org.swellrt.beta.client.PlatformBasedFactory;
+import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.model.remote.STextRemote;
 import org.swellrt.beta.model.remote.SubstrateId;
@@ -28,6 +29,11 @@ public class FakePlatformBasedFactory implements PlatformBasedFactory {
       @Override
       public void setInitContent(DocInitialization ops) {
         throw new IllegalStateException("Not implemented");
+      }
+
+      @Override
+      public boolean isEmpty() {
+        return SUtils.isEmptyDocument(blip.getContent());
       }
       
     };

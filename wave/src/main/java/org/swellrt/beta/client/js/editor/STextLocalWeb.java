@@ -9,6 +9,7 @@ import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.Nindo;
 import org.waveprotocol.wave.model.document.util.DocProviders;
+import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.dom.client.Element;
 
@@ -80,5 +81,19 @@ public class STextLocalWeb implements STextWeb, STextLocal {
     textWeb.getContentDocument().getMutableDoc().hackConsume(Nindo.fromDocOp(ops, true));
   }
 
+  @Override
+  public boolean isEmpty() {
+    return textWeb.isEmpty();
+  }
+
+  @Override
+  public Range insert(Range at, String content) {
+    return textWeb.insert(at, content);
+  }
+
+  @Override
+  public Range replace(Range at, String content) {
+    return textWeb.replace(at, content);
+  }
 
 }
