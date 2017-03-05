@@ -1,5 +1,6 @@
 package org.swellrt.beta.client.js.editor;
 
+import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
 import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
 import org.waveprotocol.wave.model.document.util.FocusedPointRange;
@@ -14,23 +15,32 @@ public class SSelection {
 
   protected static SSelection get() {
     
-    SSelection s = new SSelection();
-    
     FocusedPointRange<Node> range = NativeSelectionUtil.get();
     
-    s.anchorNode = range.getAnchor().getCanonicalNode();
-    s.anchorOffset = range.getAnchor().getContainer().getNodeType() == Node.TEXT_NODE ? range.getAnchor().getTextOffset() : 0;
-    
-    s.focusNode = range.getFocus().getCanonicalNode();
-    s.focusOffset = range.getFocus().getContainer().getNodeType() == Node.TEXT_NODE ? range.getFocus().getTextOffset() : 0;
-    
-    s.isCollapsed = range.isCollapsed();
-        
-    s.focusBound = NativeSelectionUtil.getFocusBounds();    
-    s.position = NativeSelectionUtil.slowGetPosition();    
-    s.anchorPosition = NativeSelectionUtil.slowGetAnchorPosition();
+    try {
+
+      SSelection s = new SSelection();
+      
+      s.anchorNode = range.getAnchor().getCanonicalNode();
+      s.anchorOffset = range.getAnchor().getContainer().getNodeType() == Node.TEXT_NODE ? range.getAnchor().getTextOffset() : 0;
+      
+      s.focusNode = range.getFocus().getCanonicalNode();
+      s.focusOffset = range.getFocus().getContainer().getNodeType() == Node.TEXT_NODE ? range.getFocus().getTextOffset() : 0;
+      
+      s.isCollapsed = range.isCollapsed();
+          
+      s.focusBound = NativeSelectionUtil.getFocusBounds();    
+      s.position = NativeSelectionUtil.slowGetPosition();    
+      s.anchorPosition = NativeSelectionUtil.slowGetAnchorPosition();
     
     return s;
+    
+    } catch (RuntimeException e) {
+      Console.log("Error getting browser selection: "+e.getMessage());
+      return null;
+    }
+    
+    
   }
   
   protected SSelection() {

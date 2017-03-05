@@ -1,5 +1,12 @@
 package org.swellrt.beta.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
@@ -87,12 +94,20 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
   @JsIgnore
   @Override
   public void onModuleLoad() {    
-
+    
     GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
 
       @Override
       public void onUncaughtException(Throwable e) {
         Console.log("Uncaught Exception: "+ e.getMessage());
+        /*
+        String string = "";
+        for (StackTraceElement element : e.getStackTrace()) {
+          string += element + "\n";
+        }
+        Console.log("Trace: ");
+        Console.log(string);
+        */
       }
     });
     
