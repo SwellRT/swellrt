@@ -22,6 +22,7 @@ package org.waveprotocol.wave.client.common.util;
 import com.google.common.base.Joiner;
 
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -47,13 +48,22 @@ public final class RgbColor {
     this.green = green;
     this.blue = blue;
   }
+  
+  @JsIgnore
+  public RgbColor(String hex) {
+     this.red =  Integer.valueOf( hex.substring( 0, 2 ), 16 );
+     this.green = Integer.valueOf( hex.substring( 2, 4 ), 16 );
+     this.blue = Integer.valueOf( hex.substring( 4, 6 ), 16 );
+  }
 
   /** @return the CSS color expression for this color. */
+  @JsProperty
   public String getCssColor() {
     return "rgb(" + red + "," + green + "," + blue + ")";
   }
 
   /** @return the Hex RGB value for this color */
+  @JsProperty
   public String getHexColor() {
     return Joiner.on("").join("#", Integer.toHexString(red), Integer.toHexString(green), Integer.toHexString(blue));   
   }

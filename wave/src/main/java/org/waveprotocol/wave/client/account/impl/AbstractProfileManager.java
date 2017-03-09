@@ -25,6 +25,7 @@ import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
+import org.waveprotocol.wave.client.common.util.RgbColorPalette;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -49,27 +50,13 @@ public abstract class AbstractProfileManager implements ProfileManager {
   public interface RequestProfileCallback {    
     void onCompleted(RawProfileData rawData);    
   }
-  
-  // Do proper random colours at some point...
-  private static final RgbColor[] COLOURS = new RgbColor[] {
-    new RgbColor(252, 146, 41), // Orange
-    new RgbColor(81, 209, 63), // Green
-    new RgbColor(183, 68, 209), // Purple
-    new RgbColor(59, 201, 209), // Cyan
-    new RgbColor(209, 59, 69), // Pinky Red
-    new RgbColor(70, 95, 230), // Blue
-    new RgbColor(244, 27, 219), // Magenta
-    new RgbColor(183, 172, 74), // Vomit
-    new RgbColor(114, 50, 38) // Poo
-  };
 
   
   private int currentColourIndex = 0;
-  private int refreshInterval = 180 * 1000;
+  private int refreshInterval = ProfileManager.USER_INACTIVE_WAIT;
     
   protected final StringMap<Profile> profiles = CollectionUtils.createStringMap();
-  protected final StringMap<ProfileSession> sessions = CollectionUtils.createStringMap();
-  
+  protected final StringMap<ProfileSession> sessions = CollectionUtils.createStringMap();  
   protected final CopyOnWriteSet<ProfileListener> listeners = CopyOnWriteSet.create();
   
   private final Scheduler.IncrementalTask checkStatusTask = new Scheduler.IncrementalTask() {
@@ -102,7 +89,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
   }
   
   @Override
-  public void autoRefresh(boolean enable) {
+  public void autoCheckStatus(boolean enable) {
     
     if (enable) {
     
@@ -125,8 +112,8 @@ public abstract class AbstractProfileManager implements ProfileManager {
   /** Internal helper that rotates through the colours. */
   private RgbColor getNextColour() {
     
-    RgbColor colour = COLOURS[currentColourIndex];
-    currentColourIndex = (currentColourIndex + 1) % COLOURS.length;
+    RgbColor colour = RgbColorPalette.PALETTE[currentColourIndex].get("400");
+    currentColourIndex = (currentColourIndex + 1) % RgbColorPalette.PALETTE.length;
     return colour;  
   }
   

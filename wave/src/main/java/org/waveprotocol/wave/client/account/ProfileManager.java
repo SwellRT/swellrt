@@ -22,6 +22,7 @@ package org.waveprotocol.wave.client.account;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
@@ -32,6 +33,9 @@ import jsinterop.annotations.JsType;
  */
 @JsType(namespace = "swellrt", name = "ProfileManager")
 public interface ProfileManager extends SourcesEvents<ProfileListener> {
+  
+  @JsIgnore
+  public static int USER_INACTIVE_WAIT = 240 * 1000; // ms (4 mins)
   
   /**
    * Gets the profile for a participant.
@@ -75,11 +79,12 @@ public interface ProfileManager extends SourcesEvents<ProfileListener> {
   Profile getCurrentProfile();
 
   /**
-   * Start/Stop auto refresh of profiles and their online status
+   * Start/Stop events on session status changes (online/offline).
+   * Default status is false. 
    * 
    * @param enable
    */
-  void autoRefresh(boolean enable);
+  void autoCheckStatus(boolean enable);
   
   
 }

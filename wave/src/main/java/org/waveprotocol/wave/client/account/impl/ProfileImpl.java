@@ -21,12 +21,12 @@ package org.waveprotocol.wave.client.account.impl;
 
 import java.util.List;
 
+import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
@@ -73,7 +73,7 @@ public final class ProfileImpl implements Profile {
   private final AbstractProfileManager manager;
   
   private String name = "";
-  private String imageUrl = "static/images/unknown.jpg";  
+  private String imageUrl = null;  
   private String shortName = "";
   private String email;
   private String locale;
@@ -134,8 +134,10 @@ public final class ProfileImpl implements Profile {
   }
 
   @Override
-  public void setName(String name) {
+  public void setName(String name) {       
     if (this.name.equals(name)) return;
+    
+    Console.log("profile set name: "+name);
     
     this.name = name;
     this.shortName = name;

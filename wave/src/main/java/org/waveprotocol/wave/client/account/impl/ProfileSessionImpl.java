@@ -2,6 +2,7 @@ package org.waveprotocol.wave.client.account.impl;
 
 import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.account.Profile;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.ProfileSession;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 
@@ -9,9 +10,7 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 
 public class ProfileSessionImpl implements ProfileSession {
-
-  private static long USER_INACTIVE_WAIT = 60 * 1000; // ms
-  
+ 
   private final String id;
   private final RgbColor color;
   private final Profile profile;
@@ -27,7 +26,7 @@ public class ProfileSessionImpl implements ProfileSession {
   }
   
   @Override
-  public String getSessionId() {
+  public String getId() {
     return id;
   }
 
@@ -43,10 +42,27 @@ public class ProfileSessionImpl implements ProfileSession {
   
   @Override
   public void trackActivity(double timestamp) {
-    if ((timestamp - lastActivityTime) > USER_INACTIVE_WAIT) {
+    boolean fireEvent = false;
+    
+    if (lastActivityTime == 0) {
+      fireEvent = (getCurrentTime() - timestamp) < ProfileManager.USER_INACTIVE_WAIT;  
+      if (fireEvent)
+        lastActivityTime = getCurrentTime();
+      else
+        lastActivityTime = timestamp;
+      
+    } else {
+      fireEvent = (timestamp - lastActivityTime) > ProfileManager.USER_INACTIVE_WAIT;
+      lastActivityTime = timestamp;
+    }
+ 
+    Console.log("track activity ("+profile.getShortName()+") "+timestamp+ " - "+lastActivityTime);
+    
+    if (fireEvent) {
       this.manager.fireOnOnline(this);
     }
-    this.lastActivityTime = timestamp;
+    
+    
   }
 
   @Override
@@ -57,7 +73,8 @@ public class ProfileSessionImpl implements ProfileSession {
   
   @Override
   public boolean isOnline() {
-    return USER_INACTIVE_WAIT < (getCurrentTime() - lastActivityTime);    
+    double timeSpan = (getCurrentTime() - lastActivityTime);
+    return timeSpan < ProfileManager.USER_INACTIVE_WAIT;  
   }
 
   @Override
@@ -69,5 +86,10 @@ public class ProfileSessionImpl implements ProfileSession {
     return GWT.isClient()
         ? Duration.currentTimeMillis()
         : System.currentTimeMillis();
+  }
+
+  @Override
+  public double getLastActivityTime() {
+    return this.lastActivityTime;
   }
 }

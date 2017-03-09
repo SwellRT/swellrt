@@ -9,8 +9,8 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swellrt", name = "ProfileSession")
 public interface ProfileSession {
   
-  @JsProperty
-  String getSessionId();
+  @JsProperty(name = "id")
+  String getId();
   
   @JsProperty
   RgbColor getColor();
@@ -30,5 +30,6 @@ public interface ProfileSession {
   @JsProperty
   Profile getProfile();
 
-  
+  @JsProperty
+  double getLastActivityTime();
 }
