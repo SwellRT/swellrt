@@ -121,4 +121,10 @@ public final class ProfilePopupPresenter implements ProfileListener, ProfilePopu
     // TODO Auto-generated method stub
     
   }
+
+  @Override
+  public void onLoaded(ProfileSession profile) {
+    // TODO Auto-generated method stub
+    
+  }
 }

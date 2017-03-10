@@ -625,4 +625,10 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   @Override
   public void onOnline(ProfileSession profile) {  
   }
+
+  @Override
+  public void onLoaded(ProfileSession profile) {
+    // TODO Auto-generated method stub
+    
+  }
 }

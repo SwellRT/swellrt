@@ -30,10 +30,41 @@ import jsinterop.annotations.JsType;
 @JsType(isNative = true)
 public interface ProfileListener {  
   
+  /**
+   * A profile's data is updated, both from server or from
+   * a remote session.
+   * 
+   * @param profile
+   */
   void onUpdated(Profile profile);
   
+  /**
+   * A session object is loaded in the current editor context.
+   * <p>
+   * Before editor takes control of the
+   * document, this event is launched for all previous sessions
+   * in the document.
+   * <p>
+   * After editor takes control of the document,
+   * this events is launched for every new session connected
+   * to the document.
+   * 
+   * @param profile
+   */
+  void onLoaded(ProfileSession profile);
+   
+  /**
+   * A session gets offline in the current editor.
+   * 
+   * @param profile
+   */
   void onOffline(ProfileSession profile);
   
+  /**
+   * A session gets online in the current editor.
+   * 
+   * @param profile
+   */
   void onOnline(ProfileSession profile);
   
 }

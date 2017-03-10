@@ -1,6 +1,5 @@
 package org.waveprotocol.wave.client.account.impl;
 
-import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.ProfileSession;
@@ -56,8 +55,7 @@ public class ProfileSessionImpl implements ProfileSession {
       lastActivityTime = timestamp;
     }
  
-    Console.log("track activity ("+profile.getShortName()+") "+timestamp+ " - "+lastActivityTime);
-    
+       
     if (fireEvent) {
       this.manager.fireOnOnline(this);
     }

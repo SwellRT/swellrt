@@ -83,5 +83,8 @@ public interface Profile {
    * @return true iff it is the logged in user
    */
   boolean isCurrentSessionProfile();
+
+  @JsProperty
+  boolean getAnonymous();
   
 }

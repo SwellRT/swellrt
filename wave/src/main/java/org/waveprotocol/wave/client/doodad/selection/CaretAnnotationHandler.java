@@ -662,5 +662,10 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
   public void onOnline(ProfileSession profile) {
   
   }
+
+  @Override
+  public void onLoaded(ProfileSession profile) {
+    
+  }
   
 }

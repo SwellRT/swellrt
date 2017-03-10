@@ -21,7 +21,6 @@ package org.waveprotocol.wave.client.account.impl;
 
 import java.util.List;
 
-import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.RawProfileData;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -69,6 +68,7 @@ public final class ProfileImpl implements Profile {
     }
   }
   
+  
   private final ParticipantId id;
   private final AbstractProfileManager manager;
   
@@ -77,14 +77,11 @@ public final class ProfileImpl implements Profile {
   private String shortName = "";
   private String email;
   private String locale;
-  
-  private long lastOnlineTime = 0;
-
-  
+   
 
   public ProfileImpl(ParticipantId id, AbstractProfileManager manager) {
     this.id = id;
-    this.shortName = id.getName();
+    this.shortName = buildName(id);
     this.name = buildName(id);
     this.manager = manager;
   }
@@ -136,19 +133,19 @@ public final class ProfileImpl implements Profile {
   @Override
   public void setName(String name) {       
     if (this.name.equals(name)) return;
-    
-    Console.log("profile set name: "+name);
-    
     this.name = name;
-    this.shortName = name;
     manager.fireOnUpdated(this);
   }
   
 
   @Override
   public boolean isCurrentSessionProfile() {
-    return manager.getCurrentParticipantId().equals(id);
-    
+    return manager.getCurrentParticipantId().equals(id);    
+  }
+  
+  @Override
+  public boolean getAnonymous() {
+    return id.isAnonymous();
   }
   
 }

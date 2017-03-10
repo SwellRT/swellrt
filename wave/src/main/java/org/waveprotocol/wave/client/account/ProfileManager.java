@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.client.account;
 
+import org.waveprotocol.wave.client.doodad.selection.CaretAnnotationHandler;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 
@@ -27,9 +28,24 @@ import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 /**
- * Manages profiles for participants.
+ * Manages profiles and sessions for participants.
+ * <p>
+ * Session activity changes are detected when
+ * a component invokes {@link ProfileSession#trackActivity()}.
+ * <p>
+ * Profile data is updated when a component invokes a setter
+ * in a {@link Profile} or when implementations of this class
+ * do as necessary.
+ * <p>
+ * TODO:
+ * In current version of SwellRT, online status is managed by
+ * the {@link CaretAnnotationHandler} of the editor. Move this logic to
+ * a separated component that doesn't rely on the document blip to
+ * store presence data. 
+ * <p>
  *
  * @author kalman@google.com (Benjamin Kalman)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 @JsType(namespace = "swellrt", name = "ProfileManager")
 public interface ProfileManager extends SourcesEvents<ProfileListener> {
@@ -84,7 +100,7 @@ public interface ProfileManager extends SourcesEvents<ProfileListener> {
    * 
    * @param enable
    */
-  void autoCheckStatus(boolean enable);
+  void enableStatusEvents(boolean enable);
   
   
 }

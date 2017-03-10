@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.client.account.impl;
 
+import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -51,7 +52,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
     void onCompleted(RawProfileData rawData);    
   }
 
-  
+
   private int currentColourIndex = 0;
   private int refreshInterval = ProfileManager.USER_INACTIVE_WAIT;
     
@@ -63,11 +64,12 @@ public abstract class AbstractProfileManager implements ProfileManager {
     
     @Override
     public boolean execute() {
+      Console.log("Refreshing sessions status ");
 
       sessions.each(new ProcV<ProfileSession>() {
 
         @Override
-        public void apply(String key, ProfileSession value) {
+        public void apply(String key, ProfileSession value) {          
           if (!value.isOnline()) {
             fireOnOffline(value);
           }
@@ -89,7 +91,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
   }
   
   @Override
-  public void autoCheckStatus(boolean enable) {
+  public void enableStatusEvents(boolean enable) {
     
     if (enable) {
     
@@ -110,10 +112,9 @@ public abstract class AbstractProfileManager implements ProfileManager {
 
       
   /** Internal helper that rotates through the colours. */
-  private RgbColor getNextColour() {
-    
-    RgbColor colour = RgbColorPalette.PALETTE[currentColourIndex].get("400");
-    currentColourIndex = (currentColourIndex + 1) % RgbColorPalette.PALETTE.length;
+  private RgbColor getNextColour(String id) {
+    int colorIndex = id.hashCode() % RgbColorPalette.PALETTE.length;
+    RgbColor colour = RgbColorPalette.PALETTE[colorIndex].get("400");
     return colour;  
   }
   
@@ -149,7 +150,8 @@ public abstract class AbstractProfileManager implements ProfileManager {
       Profile profile = getProfile(participantId);  
       
       if (!sessions.containsKey(sessionId)) {
-        sessions.put(sessionId, new ProfileSessionImpl(profile, this, sessionId, getNextColour()));
+        sessions.put(sessionId, new ProfileSessionImpl(profile, this, sessionId, getNextColour(sessionId)));
+        fireOnLoaded(sessions.get(sessionId));
       }    
     }
     
@@ -198,6 +200,12 @@ public abstract class AbstractProfileManager implements ProfileManager {
   protected void fireOnOnline(ProfileSession profile) {
     for (ProfileListener listener : listeners) {
       listener.onOnline(profile);
+    }
+  }  
+  
+  protected void fireOnLoaded(ProfileSession profile) {
+    for (ProfileListener listener : listeners) {
+      listener.onLoaded(profile);
     }
   }  
   
