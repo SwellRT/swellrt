@@ -17,7 +17,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Red= JsoStringMap.create();
 
   static {
-    Red.put("500",new RgbColor("f44336"));
+
     Red.put("50",new RgbColor("ffebee"));
     Red.put("100",new RgbColor("ffcdd2"));
     Red.put("200",new RgbColor("ef9a9a"));
@@ -38,7 +38,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Pink= JsoStringMap.create();
 
   static {
-    Pink.put("500",new RgbColor("e91e63"));
+
     Pink.put("50",new RgbColor("fce4ec"));
     Pink.put("100",new RgbColor("f8bbd0"));
     Pink.put("200",new RgbColor("f48fb1"));
@@ -62,7 +62,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Purple= JsoStringMap.create();
 
   static {
-    Purple.put("500",new RgbColor("9c27b0"));
+
     Purple.put("50",new RgbColor("f3e5f5"));
     Purple.put("100",new RgbColor("e1bee7"));
     Purple.put("200",new RgbColor("ce93d8"));
@@ -82,7 +82,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Deep_Purple= JsoStringMap.create();
 
   static {
-    Deep_Purple.put("500",new RgbColor("673ab7"));
+
     Deep_Purple.put("50",new RgbColor("ede7f6"));
     Deep_Purple.put("100",new RgbColor("d1c4e9"));
     Deep_Purple.put("200",new RgbColor("b39ddb"));
@@ -102,7 +102,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Indigo= JsoStringMap.create();
 
   static {
-    Indigo.put("500",new RgbColor("3f51b5"));
+
     Indigo.put("50",new RgbColor("e8eaf6"));
     Indigo.put("100",new RgbColor("c5cae9"));
     Indigo.put("200",new RgbColor("9fa8da"));
@@ -122,7 +122,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Blue= JsoStringMap.create();
 
   static {
-    Blue.put("500",new RgbColor("2196f3"));
+
     Blue.put("50",new RgbColor("e3f2fd"));
     Blue.put("100",new RgbColor("bbdefb"));
     Blue.put("200",new RgbColor("90caf9"));
@@ -142,7 +142,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Light_Blue= JsoStringMap.create();
 
   static {
-    Light_Blue.put("500",new RgbColor("03a9f4"));
+
     Light_Blue.put("50",new RgbColor("e1f5fe"));
     Light_Blue.put("100",new RgbColor("b3e5fc"));
     Light_Blue.put("200",new RgbColor("81d4fa"));
@@ -162,7 +162,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Cyan= JsoStringMap.create();
 
   static {
-    Cyan.put("500",new RgbColor("00bcd4"));
+
     Cyan.put("50",new RgbColor("e0f7fa"));
     Cyan.put("100",new RgbColor("b2ebf2"));
     Cyan.put("200",new RgbColor("80deea"));
@@ -183,7 +183,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Teal= JsoStringMap.create();
 
   static {
-    Teal.put("500",new RgbColor("009688"));
+
     Teal.put("50",new RgbColor("e0f2f1"));
     Teal.put("100",new RgbColor("b2dfdb"));
     Teal.put("200",new RgbColor("80cbc4"));
@@ -203,7 +203,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Green= JsoStringMap.create();
 
   static {
-    Green.put("500",new RgbColor("4caf50"));
+
     Green.put("50",new RgbColor("e8f5e9"));
     Green.put("100",new RgbColor("c8e6c9"));
     Green.put("200",new RgbColor("a5d6a7"));
@@ -229,7 +229,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Light_Green= JsoStringMap.create();
 
   static {
-    Light_Green.put("500",new RgbColor("8bc34a"));
+
     Light_Green.put("50",new RgbColor("f1f8e9"));
     Light_Green.put("100",new RgbColor("dcedc8"));
     Light_Green.put("200",new RgbColor("c5e1a5"));
@@ -253,7 +253,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Lime= JsoStringMap.create();
 
   static {
-    Lime.put("500",new RgbColor("cddc39"));
+
     Lime.put("50",new RgbColor("f9fbe7"));
     Lime.put("100",new RgbColor("f0f4c3"));
     Lime.put("200",new RgbColor("e6ee9c"));
@@ -279,7 +279,6 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Yellow= JsoStringMap.create();
 
   static {
-    Yellow.put("500",new RgbColor("ffeb3b"));
     Yellow.put("50",new RgbColor("fffde7"));
     Yellow.put("100",new RgbColor("fff9c4"));
     Yellow.put("200",new RgbColor("fff59d"));
@@ -299,7 +298,6 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Amber= JsoStringMap.create();
 
   static {
-    Amber.put("500",new RgbColor("ffc107"));
     Amber.put("50",new RgbColor("fff8e1"));
     Amber.put("100",new RgbColor("ffecb3"));
     Amber.put("200",new RgbColor("ffe082"));
@@ -319,7 +317,6 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Orange= JsoStringMap.create();
 
   static {
-    Orange.put("500",new RgbColor("ff9800"));
     Orange.put("50",new RgbColor("fff3e0"));
     Orange.put("100",new RgbColor("ffe0b2"));
     Orange.put("200",new RgbColor("ffcc80"));
@@ -339,7 +336,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Deep_Orange= JsoStringMap.create();
 
   static {
-    Deep_Orange.put("500",new RgbColor("ff5722"));
+
     Deep_Orange.put("50",new RgbColor("fbe9e7"));
     Deep_Orange.put("100",new RgbColor("ffccbc"));
     Deep_Orange.put("200",new RgbColor("ffab91"));
@@ -360,7 +357,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Brown= JsoStringMap.create();
 
   static {
-    Brown.put("500",new RgbColor("795548"));
+
     Brown.put("50",new RgbColor("efebe9"));
     Brown.put("100",new RgbColor("d7ccc8"));
     Brown.put("200",new RgbColor("bcaaa4"));
@@ -382,7 +379,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Grey= JsoStringMap.create();
 
   static {
-    Grey.put("500",new RgbColor("9e9e9e"));
+
     Grey.put("50",new RgbColor("fafafa"));
     Grey.put("100",new RgbColor("f5f5f5"));
     Grey.put("200",new RgbColor("eeeeee"));
@@ -402,7 +399,7 @@ public class RgbColorPalette {
   public static StringMap<RgbColor> Blue_Grey= JsoStringMap.create();
 
   static {
-    Blue_Grey.put("500",new RgbColor("607d8b"));
+
     Blue_Grey.put("50",new RgbColor("eceff1"));
     Blue_Grey.put("100",new RgbColor("cfd8dc"));
     Blue_Grey.put("200",new RgbColor("b0bec5"));

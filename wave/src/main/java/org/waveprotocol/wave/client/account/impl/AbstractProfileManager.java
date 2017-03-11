@@ -113,7 +113,8 @@ public abstract class AbstractProfileManager implements ProfileManager {
       
   /** Internal helper that rotates through the colours. */
   private RgbColor getNextColour(String id) {
-    int colorIndex = id.hashCode() % RgbColorPalette.PALETTE.length;
+    int colorIndex = id.hashCode() % RgbColorPalette.PALETTE.length;    
+    colorIndex = colorIndex < 0 ? -colorIndex : colorIndex;  
     RgbColor colour = RgbColorPalette.PALETTE[colorIndex].get("400");
     return colour;  
   }
