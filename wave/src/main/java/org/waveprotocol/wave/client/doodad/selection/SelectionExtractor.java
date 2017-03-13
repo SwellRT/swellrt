@@ -70,7 +70,7 @@ public class SelectionExtractor implements EditorUpdateListener {
     String endKey = SelectionAnnotationHandler.endKey(sessionId);
     String dataKey = SelectionAnnotationHandler.dataKey(sessionId);
 
-    document.setAnnotation(0, size, dataKey, null);
+    //document.setAnnotation(0, size, dataKey, null);
     document.setAnnotation(0, size, rangeKey, null);
     document.setAnnotation(0, size, endKey, null);
   }
@@ -172,7 +172,7 @@ public class SelectionExtractor implements EditorUpdateListener {
         // no new selection, clear old one
         document.setAnnotation(currentFocus, size, endKey, null);
         document.setAnnotation(currentStart, currentEnd, rangeKey, null);
-        document.setAnnotation(0, 1, dataKey, null);
+        //document.setAnnotation(0, 1, dataKey, null);
       }
     } else {
       // no old selection

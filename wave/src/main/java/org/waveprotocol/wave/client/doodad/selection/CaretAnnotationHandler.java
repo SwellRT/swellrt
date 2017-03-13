@@ -415,8 +415,8 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
   }
   
   
-  private void updateCaretData(String sessionId, String value, DocumentContext<?, ?, ?> doc) {
-    
+  private void updateCaretData(String sessionId, String value, DocumentContext<?, ?, ?> doc, boolean isCurrentUser) {
+
     String[] components = value.split(",");
     if (components.length < 2) {
       return; // invalid input
@@ -440,28 +440,37 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
       return;
     }
     
+    
+    String name = components.length >= 4 ? components[3] : null;
+    
     // Access directly from the map because the high level getter filters stale carets,
     // and this could result in memory leaks.
     CaretData data = sessions.get(sessionId);
-    
+
     
     
     if (data == null) {
       ProfileSession profile = profileManager.getSession(sessionId, participantId);
       data = new CaretData(markerFactory.createMarker(), profile, address, sessionId);
+      if (name != null)
+        data.getProfileSession().getProfile().setName(name);
     }
     
-    double lastActivityTime = Math.min(timeStamp, scheduler.currentTimeMillis());
-    double expiry = lastActivityTime + STALE_CARET_TIMEOUT_MS;
-    activate(data, expiry, doc);
-
-    data.compositionStateUpdated(components.length >= 3 ? components[2] : "");
-
-    data.getProfileSession().trackActivity(lastActivityTime);
+    // Avoid update this for the current user, it is not necessary
+    if (!isCurrentUser) {
     
-    // update the name of remote anonymous users
-    if (components.length >= 4) {
-      data.getProfileSession().getProfile().setName(components[3]);
+      double lastActivityTime = Math.min(timeStamp, scheduler.currentTimeMillis());
+      double expiry = lastActivityTime + STALE_CARET_TIMEOUT_MS;
+      activate(data, expiry, doc);
+  
+      data.compositionStateUpdated(components.length >= 3 ? components[2] : "");
+  
+      data.getProfileSession().trackActivity(lastActivityTime);
+      
+      // update the name of remote anonymous users
+      if (name != null) {
+        data.getProfileSession().getProfile().setName(name);
+      }
     }
   }
 
@@ -591,17 +600,14 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
     if (profileManager == null)
       return;
     
-    // skip if we shouldn't render any carets, or this particular caret.
-    if (profileManager != null && key.endsWith("/" + profileManager.getCurrentSessionId())) {
-      return;
-    }
+    boolean isCurrentUser = key.endsWith("/" + profileManager.getCurrentSessionId());
 
     if (key.startsWith(AnnotationConstants.USER_DATA) && newValue != null) {
       
       // User activity
-      updateCaretData(dataSuffix(key), (String) newValue, bundle);     
+      updateCaretData(dataSuffix(key), (String) newValue, bundle, isCurrentUser);     
       
-    } else if (key.startsWith(AnnotationConstants.USER_RANGE)) {
+    } else if (key.startsWith(AnnotationConstants.USER_RANGE) && !isCurrentUser) {
       
       // The selection
       
@@ -609,7 +615,7 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler, Profil
           CollectionUtils.newStringSet(key), spreadFunc);
       painterRegistry.getPainter().scheduleRepaint(bundle, start, end);
 
-    } else {
+    } else if (key.startsWith(AnnotationConstants.USER_END) && !isCurrentUser) {
       
       // The caret
       
