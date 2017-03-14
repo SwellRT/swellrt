@@ -308,7 +308,7 @@ public class WaveSocketAtmosphere implements WaveSocket {
             if (scriptUrl.lastIndexOf("/") == scriptUrl.length() - 1)
               scriptUrl = scriptUrl.substring(0, scriptUrl.length() - 1);
 
-            scriptUrl += "/atmosphere/atmosphere.js";
+            scriptUrl += "/atmosphere/atmosphere-min.js";
 
             ScriptInjector.fromUrl(scriptUrl).setCallback(new Callback<Void, Exception>() {
               public void onFailure(Exception reason) {

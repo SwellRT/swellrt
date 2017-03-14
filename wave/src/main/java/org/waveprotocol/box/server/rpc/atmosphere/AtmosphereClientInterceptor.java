@@ -74,10 +74,11 @@ import java.io.OutputStream;
         String[] parts = path.split("/");
 
         // Serve the file
-        if (parts.length > 0 && "GET".equals(resource.getRequest().getMethod()) && "atmosphere.js".equals(parts[0])) {
+        if (parts.length > 0 && "GET".equals(resource.getRequest().getMethod()) 
+            && ( "atmosphere.js".equals(parts[0]) || "atmosphere-min.js".equals(parts[0])) ) {
           resource.getResponse().setContentType("text/javascript");
           InputStream is =
-              this.getClass().getResourceAsStream("atmosphere.js");
+              this.getClass().getResourceAsStream(parts[0]);
           OutputStream os = resource.getResponse().getOutputStream();
           ByteStreams.copy(is, os);
           return Action.CANCELLED;
