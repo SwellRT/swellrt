@@ -37,7 +37,7 @@ public class CacheHeaderFilter implements Filter {
             "GET"))
         || (requestUri.matches("/attachment/.+") && httpRequest.getMethod().equals("GET"))
         || (requestUri.matches("/thumbnail/.+") && httpRequest.getMethod().equals("GET"))) {
-      httpResponse.addHeader("Cache-Control", "max-age=31536000");
+      httpResponse.addHeader("Cache-Control", "max-age=31536000, public");
     }
 
     chain.doFilter(request, response);
