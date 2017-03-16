@@ -174,6 +174,7 @@ federation_rc_concurrent: 30
 Run the following in previous terminal
 ```
 synctl start
+register_new_matrix_user -c homeserver.yaml https://localhost:8448 -u wave -p 123123 -a
 
 cd ..
 mkdir test
@@ -219,10 +220,9 @@ federation_rc_concurrent: 30
 Run the following in previous terminal
 ```
 synctl start
+register_new_matrix_user -c homeserver.yaml https://localhost:8449 -u wave -p 123123 -a
 ```
 #### Configuring Wave Server
-
-Now the servers are created. We now need to register a wave client in both server. This is needed because sync requests for Matrix app servers are not working yet so we need to use a normal client for our federation. Open “https://localhost:8448/_matrix/client” and “https://localhost:8449/_matrix/client” and register user with name "wave" and password "123123" on both.
 
 Next we have to set up local srv records. First install bind9
 ```
