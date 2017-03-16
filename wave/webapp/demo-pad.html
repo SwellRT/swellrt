@@ -93,12 +93,12 @@
 
     // Configure websocket transport
     __atmosphere_config = {
-      logLevel: 'debug' // 'info', 'debug' and 'error'
+      logLevel: 'error' // 'info', 'debug' and 'error'
     }
 
     // Configure editor globals
     __swellrt_editor_config = {
-      enableLog: false
+      enableLog: true
     };
   </script>
 
@@ -138,8 +138,13 @@
 
       service.profilesManager.addStatusHandler({
 
+
         onUpdated: function(profile) {
           console.log("profile update -> "+profile.address);
+        },
+
+        onLoaded: function(session) {
+          console.log("profile is LOADED -> "+session.profile.address);
         },
 
         onOffline: function(session) {
@@ -150,9 +155,10 @@
           console.log("profile is ONLINE -> "+session.profile.address);
         }
 
+
       });
 
-      service.profilesManager.autoRefresh(true);
+      service.profilesManager.enableStatusEvents(true);
 
       // Create editor instance, reusable
       editor = swellrt.Editor.createWithId("editor", service);
