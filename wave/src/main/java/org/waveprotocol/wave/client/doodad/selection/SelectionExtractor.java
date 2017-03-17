@@ -65,7 +65,7 @@ public class SelectionExtractor implements EditorUpdateListener {
     context.removeUpdateListener(this);
     MutableAnnotationSet.Persistent document = context.getDocument();
     int size = document.size();
-    String sessionId = profiles.getCurrentParticipantId().getAddress();
+    String sessionId = profiles.getCurrentSessionId();
     String rangeKey = SelectionAnnotationHandler.rangeKey(sessionId);
     String endKey = SelectionAnnotationHandler.endKey(sessionId);
     String dataKey = SelectionAnnotationHandler.dataKey(sessionId);
