@@ -9,9 +9,9 @@
 	
 	<!-- 
 		Warning: not setting all possible user agents causes
-		a runtime mistake on choosing DOMImpl implementation 
+		a runtime mistake on choosing DOMImpl implementation
 	-->
-	<set-property name="user.agent" value="ie8, gecko1_8, safari, ie9, ie10" />
+	<set-property name="user.agent" value="ie8, gecko1_8, safari, ie9, ie10"  />
   	<set-property name="mobile.user.agent" value="android, iphone, not_mobile" />
 
 	<!-- Stack emulation is too slow to use in production. -->
@@ -28,8 +28,8 @@
 
 	<!-- Work around for source map offset problem https://code.google.com/p/google-web-toolkit/issues/detail?id=7862 -->
 	<set-property name="compiler.useSymbolMaps" value="true" />
-	
 	<set-property name="compiler.useSourceMaps" value="true" />
 	
     <collapse-all-properties />
+    
 </module>

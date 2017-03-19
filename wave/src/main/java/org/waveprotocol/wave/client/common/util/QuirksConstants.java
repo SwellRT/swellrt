@@ -49,6 +49,7 @@ public final class QuirksConstants {
    *
    * Will IE9 give us mutation events? probably not.
    */
+  @Deprecated
   public static final boolean PROVIDES_MUTATION_EVENTS =
       UserAgent.isFirefox() || UserAgent.isWebkit();
 
@@ -59,6 +60,7 @@ public final class QuirksConstants {
    * Tested:
    * Safari 3*, Safari 4 beta, Firefox 3.0, IE7, IE8
    */
+  @Deprecated
   public static final boolean USUALLY_LEFT_NORMALISES =
       UserAgent.isWebkit() || UserAgent.isWebkit();
 
@@ -84,6 +86,7 @@ public final class QuirksConstants {
    *
    * TODO(danilatos): check IE7
    */
+  @Deprecated
   public static final boolean DOES_NOT_LEFT_NORMALISE_AT_LINK_END_BOUNDARY =
       UserAgent.isIE();
 
@@ -96,6 +99,7 @@ public final class QuirksConstants {
    *
    * Untested exceptions: Any IME on Linux!
    */
+  @Deprecated
   public static final boolean ALWAYS_GIVES_KEY_EVENT_BEFORE_CHANGING_DOM =
       UserAgent.isFirefox() || UserAgent.isIE7();
 
@@ -108,6 +112,7 @@ public final class QuirksConstants {
    *
    * Untested exceptions: Any IME on Linux!
    */
+  @Deprecated
   public static final boolean CAN_TELL_WHEN_FIRST_KEY_EVENT_IS_IME =
       UserAgent.isIE() || UserAgent.isWebkit() || UserAgent.isWin();
 
@@ -119,6 +124,7 @@ public final class QuirksConstants {
    *
    * Untested exceptions: Safari on Windows
    */
+  @Deprecated
   public static final boolean HAS_OLD_SCHOOL_CLIPBOARD_SHORTCUTS =
       UserAgent.isWin() || UserAgent.isLinux();
 
@@ -215,6 +221,7 @@ public final class QuirksConstants {
    * Tested:
    * Safari 3.2.1, FF 3.0, 3.5, Chrome 1, IE7, IE8
    */
+  @Deprecated
   public static final boolean PRESERVES_IME_STATE_ACROSS_ADJACENT_CHANGES =
       UserAgent.isIE();
 
@@ -253,6 +260,7 @@ public final class QuirksConstants {
    * Safari 4
    * Chrome 5
    */
+  @Deprecated
   public static final boolean SUPPORTS_EVENT_GET_RANGE_METHODS =
       UserAgent.isFirefox();
 
@@ -282,6 +290,7 @@ public final class QuirksConstants {
    * Safari 4
    * IE 8
    */
+  @Deprecated
   public static final boolean CONTEXTMENU_SETS_SELECTION =
       !UserAgent.isFirefox();
 
@@ -289,13 +298,16 @@ public final class QuirksConstants {
    * True if the browser has the setBaseAndExtent JS method to allow better setting of
    * the selection within the browser.
    *
-   * So far, only webkit browsers have this in their API, and documentation is scarce. See:
+   * In general, only webkit browsers have this in their API, and documentation is scarce. See:
    * http://developer.apple.com/DOCUMENTATION/AppleApplications/Reference/WebKitDOMRef
    *       /DOMSelection_idl/Classes/DOMSelection/index.html#//apple_ref/idl/instm
    *       /DOMSelection/setBaseAndExtent/void/(inNode,inlong,inNode,inlong)
+   *       
+   * Adopted in Firefox 53      
+   * https://developer.mozilla.org/en-US/docs/Web/API/Selection/setBaseAndExtent       
    */
   public static final boolean HAS_BASE_AND_EXTENT =
-      UserAgent.isWebkit();
+      UserAgent.isWebkit() || (UserAgent.isFirefox() && UserAgent.isAtLeastVersion(53, 0));
 
   /**
    * Chrome on Mac generates doesn't keypress for command combos, only keydown.
@@ -315,6 +327,7 @@ public final class QuirksConstants {
    * Tested:
    * Chrome, Safari 3.1, Firefox 3.0
    */
+  @Deprecated
   public static final boolean SUPPORTS_GET_ELEMENTS_BY_CLASSNAME =
       GWT.isScript() && checkGetElementsByClassNameSupport();
 
@@ -331,7 +344,7 @@ public final class QuirksConstants {
    */
   public static final boolean SUPPORTS_COMPOSITION_EVENTS =
       UserAgent.isFirefox() || (UserAgent.isWebkit()
- && UserAgent.isAtLeastVersion(532, 5) && !UserAgent.isMobileWebkit());
+          && UserAgent.isAtLeastVersion(532, 5) && !UserAgent.isMobileWebkit());
 
   /**
    * True if the browser does an extra modification of the DOM after the
@@ -371,6 +384,7 @@ public final class QuirksConstants {
    * Tested:
    * Chrome 4.0.302.3; Safari 4.05 Mac
    */
+  @Deprecated
   public static final boolean PLAINTEXT_PASTE_DOES_NOT_EMIT_PASTE_EVENT =
     UserAgent.isSafari();
 
@@ -380,6 +394,7 @@ public final class QuirksConstants {
    * Tested:
    * Chrome 9.0, Chrome 4.0
    */
+  @Deprecated
   public static final boolean SUPPORTS_SEARCH_INPUT =
     UserAgent.isWebkit();
 

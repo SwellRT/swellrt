@@ -2,6 +2,8 @@
 <module>
 
 	<!--  TODO filter out modules -->
+	
+	
 	<inherits name="com.google.common.base.Base" />
 	<inherits name="com.google.common.util.concurrent.Concurrent" />
 	
@@ -13,6 +15,7 @@
  	-->
 
 	<inherits name='com.google.gwt.json.JSON' />
+	<inherits name='org.waveprotocol.wave.client.common.util.Util' />
 	<inherits name='org.waveprotocol.wave.client.Client' />
 	<!-- 
 	<inherits name='com.google.gwt.websockets.WebSockets' />	

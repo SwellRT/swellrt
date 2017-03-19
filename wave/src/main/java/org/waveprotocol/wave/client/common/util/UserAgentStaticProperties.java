@@ -31,11 +31,26 @@ import com.google.gwt.core.client.GWT;
  * http://groups.google.com/group/Google-Web-Toolkit-Contributors/browse_thread/thread/6745dee7a85eb585/bd58d1a9f2344b34
  *
  * FIXME: GWT superdev recompilation fails when this class is abstract
+ * 
+ * DEPRECATED:
+ * <p> 
+ * The original Wave's mobile.user.agent doesn't make sense currently. It can't differentiate
+ * mobile platforms (android or ios) for other browsers but Webkit.
+ * <p>
+ * In addition, to have conditional compilation based on mobile user agents is not an advantage
+ * in terms of size of compiled code.
+ * <p>
+ * To check user agent properties at runtime is much more stable and flexible.
+ * <p>
+ * We keep this class and the module definition "org/waveprotocol/wave/client/common/util/Util.gwt.xml"
+ * but we ensure not to call UserAgentStaticProperties methods.
+ * 
  *
  */
+@Deprecated
 public class UserAgentStaticProperties {
 
-  static UserAgentStaticProperties get() {
+  public static UserAgentStaticProperties get() {
     return INSTANCE;
   }
 

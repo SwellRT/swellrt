@@ -62,6 +62,14 @@
     </div>
 
     <div class="row">
+      <div class="col-md-offset-2 col-md-8">
+        <p id="ua"></p>
+        <input id="debugOn" class="btn btn-default" type="submit" value="Debug On" onclick="debugOn()">
+        <input id="debugOff" class="btn btn-default" type="submit" value="Debug Off" onclick="debugOff()">
+      </div>
+    </div>
+
+    <div class="row">
 
       <div class="col-md-offset-1 col-xs-4 col-md-3 document-list">
         <h4>Documents</h4>
@@ -318,8 +326,35 @@
       netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
   }
 
+
+  function debugOn() {
+    var host = document.location.host;
+    window.__gwt_bookmarklet_params = {'server_url':'http://'+host+':9876/'};
+    var s = document.createElement('script');
+    s.src = 'http://' +host+ ':9876/dev_mode_on.js';
+    void(document.getElementsByTagName('head')[0].appendChild(s));
+  }
+
+  function debugOff() {
+      var toRemove = [];
+      for(var i = 0; i<sessionStorage.length; i++) {
+        var key = sessionStorage.key(i);
+        if (key.indexOf('__gwtDevModeHook:') == 0) {
+          toRemove.push(key);
+        }
+      }
+
+      for (var j = 0; j<toRemove.length; j++) {
+        sessionStorage.removeItem(toRemove[j]);
+      }
+      window.location.reload();
+  }
+
   </script>
 
+  <script>
+    document.getElementById("ua").innerHTML = navigator.userAgent;
+  </script>
 
 </body>
 </html>
