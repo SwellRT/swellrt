@@ -19,8 +19,6 @@ SwellRT enables easily real-time collaboration in your apps:
 * Ubiquitous User Experience across devices
 
 
-
-
 **Federation:**
 
 SwellRT servers can be federated using Matrix.org open protocol.
@@ -28,7 +26,7 @@ SwellRT servers can be federated using Matrix.org open protocol.
 
 _(*) Note: native mobile clients are not still available_
 
-### Build 
+### Build
 
  **Prerequisites**
 
@@ -101,18 +99,18 @@ The aim of SwellRT API is to provide easy programming of real-time collaboration
 
 **Collaborators**
 
-Users registered in any SwellRT server. Also there is a special _anonymous_ collaborator. 
+Users registered in any SwellRT server. Also there is a special _anonymous_ collaborator.
 Each collaborator belongs to a server instance, and their ID has the syntax _(user name)@(server name)_
 
- 
+
 **Collaborative Objects**
 
 A collaborative object is a data structure shared by one or more _collaborators_.
 Each collaborator can have different level of access to an object and its parts.
 
-An object, when it is used by a collaborator has three different data zones: 
+An object, when it is used by a collaborator has three different data zones:
 
-- Persisted zone: any change in this zone is automatically sync and persisted among collaborators. 
+- Persisted zone: any change in this zone is automatically sync and persisted among collaborators.
 - Private zone: only the current collaborator has access to this zone. This data is persisted.
 - Transient zone*: any change in this zone is automatically among collaborators, but it is never persisted.
 
@@ -120,8 +118,8 @@ Each zone is a nested structured of arrays, maps and primitive values. For examp
 an object.
 
 _(*) Transient zones are not still available._
- 
-#### First steps 
+
+#### First steps
 
 
 First of all, make your Web project to load the client:
@@ -138,7 +136,7 @@ Get a reference of the API instance (we name it, "service" or "s"):
   swellrt.onReady( (service) => {
     window.service = service;
    });
-   
+
 </script>    
 ```
 
@@ -155,7 +153,7 @@ To handle objects a login is required:
     .then(profile => {  ...  });
 ```
 
-Anonymous users are associated with the current browser session. 
+Anonymous users are associated with the current browser session.
 
 **Creating and getting objects**
 
@@ -165,18 +163,18 @@ Leave _id_ field empty to create an object with an auto generated id.
 
 ```
 	service.open({
-	
+
 	    id : "my-first-collaborative-object"
-	
+
 	})
-	.then( (result) => { 
-		
+	.then( (result) => {
+
 		let obj = result.controller;
 		obj.setPublic(true);
-			
+
 	})
-	.catch( (exception) => { 
-			
+	.catch( (exception) => {
+
 	});
 ```
 
@@ -200,13 +198,13 @@ Using objects with map syntax
 	obj.put("name", "Kelly Slater");
 	obj.put("job", "Pro Surfer");
 	obj.put("age", 42);
-	
+
 	// add nested map
 	obj.put("address", swellrt.Map.create().put("street", "North Coast Avenue").put("zip", 12345).put("city","Honololu"));
-	
+
 	// get root level keys (properties)
 	obj.keys();
-	
+
 	// access values
 	obj.get("address").get("street");
 
@@ -218,25 +216,25 @@ Using objects with JavaScript syntax
 ```
 	// Get a javascript proxy
 	jso = obj.asNative();
-	
+
 	// Reading properties
 	jso.address.street;
-	
+
 	// Adding properties
 	jso.address.state = "Hawaii";
-	
-	
+
+
 	// Adding nested map - as mutable properties
-	
+
 	jso.quiver = swellrt.Map.create();
 	jso.quiver.put("surfboard-1-size", "6.1, 18 1/2, 3 1/4");
 	jso.quiver.put("surfboard-2-size", "5.11, 19 , 2 3/4");
-	
-	
+
+
 	// Adding nested map - (bulk javascript)
 	// the whole javascript object is stored as a single item,
 	// changes in properties won't throw events.
-	
+
 	jso.prize = {
 		contest: "Fiji Pro",
 		year: "2015",
@@ -249,7 +247,7 @@ Using objects with JavaScript syntax
 When an object is opened by different collaborators (e.g. in two different browser windows, open the same public object)
 any change in a data property is automatically sync and updated in each open instance. If you want to listen when changes are made,
 register a listener in a property:
- 
+
 ```
 	service.listen(jso.quiver, (event) => {
 
@@ -258,7 +256,7 @@ register a listener in a property:
         if (event.key == "surfboard-2-size" && event.type == swellrt.Event.UPDATED_VALUE) {
           let updatedValue = event.value.get();
         }
-        
+
    });
 ```
 
@@ -338,7 +336,7 @@ Distribution Tasks:
 
 
 
-## Source code 
+## Source code
 
 SwellRT client's source code is written in Java/GWT-JsInterop. It is designed to target eventually...
 
