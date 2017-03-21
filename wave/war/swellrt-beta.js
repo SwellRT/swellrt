@@ -10,7 +10,7 @@ window.swellrt = {
          return;
 
        if (window.swellrt.runtime) {
-          handler.apply(window, window.swellrt.runtime.get());
+          handler(window.swellrt.runtime.get());
        } else {
           if (!window._lh)
             window._lh = [];
