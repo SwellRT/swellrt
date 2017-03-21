@@ -61,7 +61,6 @@
       </h4>
     </div>
 
-    <!--
     <div class="row">
       <div class="col-md-offset-2 col-md-8">
         <p id="ua"></p>
@@ -69,9 +68,12 @@
         <input id="debugOff" class="btn btn-default" type="submit" value="Debug Off" onclick="debugOff()">
       </div>
     </div>
-  -->
 
     <div class="row">
+      <div id="log" class="col-md-offset-2 col-md-8">
+        <p>Log...</p>
+      </div>
+    </div>
 
       <div class="col-md-offset-1 col-xs-4 col-md-3 document-list">
         <h4>Documents</h4>
@@ -100,6 +102,8 @@
   </div><!-- container -->
 
   <script>
+
+
     function isProxySupported() {
 
       if (typeof Proxy === "undefined") return false;
@@ -113,6 +117,49 @@
 
       return true;
     }
+
+    var logElement = document.getElementById("log");
+    var preLoadLog = "";
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+      logElement = document.getElementById("log")
+      logElement.innerHTML = preLoadLog;
+    });
+
+    function takeOverConsole(){
+        var original = window.console
+        window.console = {
+            log: function(){
+                var m = arguments[0] + "<br>";
+                if (!logElement) {
+                  preLoadLog += m;
+                } else {
+                  logElement.innerHTML += m;
+                }
+                original.log.apply(original, arguments)
+            }
+            , warn: function(){
+                var m = arguments[0] + "<br>";
+                if (!logElement) {
+                  preLoadLog += m;
+                } else {
+                  logElement.innerHTML += m;
+                }
+                original.warn.apply(original, arguments)
+            }
+            , error: function(){
+                var m = arguments[0] + "<br>";
+                if (!logElement) {
+                  preLoadLog += m;
+                } else {
+                  logElement.innerHTML += m;
+                }
+                original.error.apply(original, arguments)
+            }
+        }
+    }
+
+    takeOverConsole();
   </script>
 
   <script>
@@ -164,6 +211,7 @@
 
 
       service.profilesManager.addStatusHandler({
+
 
         onUpdated: function(profile) {
           console.log("profile update -> "+profile.address);
@@ -369,6 +417,9 @@
 
   </script>
 
+  <script>
+    document.getElementById("ua").innerHTML = navigator.userAgent;
+  </script>
 
 </body>
 </html>

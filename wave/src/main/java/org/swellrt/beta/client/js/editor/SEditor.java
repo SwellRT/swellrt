@@ -17,6 +17,7 @@ import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
+import org.waveprotocol.wave.client.common.util.UserAgentStaticProperties;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.selection.CaretAnnotationHandler;
@@ -192,6 +193,37 @@ public class SEditor implements EditorUpdateListener {
 
     WidgetDoodad.register(Editor.ROOT_REGISTRIES.getElementHandlerRegistry(), widgetRegistry);
     */
+   
+    // Debugging user agent
+
+    if (SEditorConfig.enableLog()) {
+
+      EditorStaticDeps.logger.trace().log("User Agent String: "+UserAgent.debugUserAgentString());
+      
+      String s = "";
+      
+      s += "Android: "+UserAgent.isAndroid()+", ";
+      s += "IPhone: "+UserAgent.isIPhone()+", ";
+      
+      
+      s += "Linux: "+UserAgent.isLinux()+", ";
+      s += "Mac: "+UserAgent.isMac()+", ";
+      s += "Win: "+UserAgent.isWin()+", ";
+      
+      s += "Mobile Webkit: "+UserAgent.isMobileWebkit()+", ";    
+      s += "Webkit: "+UserAgent.isWebkit()+", ";      
+      
+      s += "Safari: "+UserAgent.isSafari()+", ";
+      s += "Chrome: "+UserAgent.isChrome()+", ";
+      s += "Firefox: "+UserAgent.isFirefox()+", ";
+      
+      s += "IE: "+UserAgent.isIE()+", ";
+      s += "IE7: "+UserAgent.isIE7()+", ";
+      s += "IE8: "+UserAgent.isIE8()+", ";
+      
+      EditorStaticDeps.logger.trace().log("User Agent Properties: "+s);
+    }
+    
     
   }
   

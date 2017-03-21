@@ -21,8 +21,8 @@
 
 	<!-- Work around for source map offset problem https://code.google.com/p/google-web-toolkit/issues/detail?id=7862 -->
 	<set-property name="compiler.useSymbolMaps" value="false" />
-	
 	<set-property name="compiler.useSourceMaps" value="false" />
-	
+
     <collapse-all-properties />
+
 </module>

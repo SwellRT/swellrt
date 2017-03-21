@@ -48,9 +48,17 @@ public class UserAgentRuntimeProperties {
   private final boolean isMac;
   private final boolean isWin;
   private final boolean isLinux;
+  
+  private final boolean isAndroid;
+  private final boolean isiOS;
+
+  private final boolean isIe;
   private final boolean isIe7;
   private final boolean isIe8;
   private final boolean isChrome;
+  private final boolean isSafari;
+  private final boolean isWebkit;
+  private final boolean isFirefox;
 
   @VisibleForTesting
   public UserAgentRuntimeProperties(String userAgent) {
@@ -59,9 +67,17 @@ public class UserAgentRuntimeProperties {
     this.isMac = calculateIsMac(userAgent);
     this.isWin = calculateIsWin(userAgent);
     this.isLinux = calculateIsLinux(userAgent);
+    
+    this.isIe = calculateIe(userAgent);
     this.isIe7 = calculateIe7(userAgent);
     this.isIe8 = calculateIe8(userAgent);
     this.isChrome = calculateIsChrome(userAgent);
+    
+    this.isAndroid = calculateIsAndroid(userAgent);
+    this.isiOS = calculateIsisOS(userAgent);
+    this.isSafari = calculateIsSafari(userAgent);
+    this.isWebkit = calculateIsWebkit(userAgent);
+    this.isFirefox = calculateIsFirefox(userAgent);
   }
 
   @VisibleForTesting
@@ -83,6 +99,11 @@ public class UserAgentRuntimeProperties {
   public boolean isLinux() {
     return isLinux;
   }
+  
+  @VisibleForTesting
+  public boolean isIE() {
+    return isIe;
+  }
 
   @VisibleForTesting
   public boolean isIe7() {
@@ -99,6 +120,32 @@ public class UserAgentRuntimeProperties {
     return isChrome;
   }
 
+  @VisibleForTesting
+  public boolean isAndroid() {
+    return isAndroid && isSafari();
+  }
+
+  @VisibleForTesting
+  public boolean isiOS() {
+    return isiOS;
+  }
+  
+  @VisibleForTesting
+  public boolean isSafari() {
+    return isSafari;
+  }
+  
+  @VisibleForTesting
+  public boolean isWebkit() {
+    return isWebkit;
+  }
+  
+  
+  @VisibleForTesting
+  public boolean isFirefox() {
+    return isFirefox;
+  }
+  
   /**
    * @return whether the current user agent version is at least the one given by
    *         the method parameters.
@@ -129,6 +176,11 @@ public class UserAgentRuntimeProperties {
   private static native String getNativeUserAgent() /*-{
     return navigator.userAgent;
   }-*/;
+  
+  private static boolean calculateIe(String userAgent) {
+    return userAgent.indexOf(" MSIE ") != -1 ||
+        userAgent.toLowerCase().indexOf("trident") != -1;
+  }
 
   private static boolean calculateIe7(String userAgent) {
     return userAgent.indexOf(" MSIE 7.") != -1;
@@ -153,7 +205,29 @@ public class UserAgentRuntimeProperties {
   private static boolean calculateIsChrome(String userAgent) {
     return userAgent.indexOf("Chrome") != -1;
   }
+  
+  private static boolean calculateIsSafari(String userAgent) {
+    return userAgent.indexOf("Safari") != -1;
+  }
 
+  private static boolean calculateIsisOS(String userAgent) {
+    return userAgent.toLowerCase().indexOf("iphone") != -1 ||
+          userAgent.toLowerCase().indexOf("ipod") != -1 ||
+          userAgent.toLowerCase().indexOf("ipad") != -1;
+  }
+  
+  private static boolean calculateIsAndroid(String userAgent) {
+    return userAgent.toLowerCase().indexOf("android") != -1;
+  }
+  
+  private static boolean calculateIsWebkit(String userAgent) {
+    return userAgent.toLowerCase().indexOf("webkit") != -1;
+  }
+  
+  private static boolean calculateIsFirefox(String userAgent) {
+    return userAgent.toLowerCase().indexOf("firefox") != -1;
+  }
+  
   private static int calculateVersion(String userAgent) {
     if (userAgent == null || userAgent.isEmpty()) {
       return -1;

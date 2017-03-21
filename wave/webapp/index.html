@@ -102,6 +102,20 @@
   <script src="/swellrt-beta.js"></script>
   <script>
 
+    function isProxySupported() {
+
+      if (typeof Proxy === "undefined") return false;
+
+      try {
+        var o = new Object();
+        var p = new Proxy(o, {});
+      } catch(e) {
+        return false;
+      }
+
+      return true;
+    }
+
     swellrt.onReady(function(s) {
 
       service = s;
@@ -113,28 +127,43 @@
         id : "_anonymous_",
         password : ""
       })
-      .then(r=>{
+      .then(function(r) {
         return service.open({
           id : "local.net/status-echo"
         });
       })
-      .then(r=>{
+      .then(function(r) {
 
         // throw "TESTING ERROR";
 
         var controller = r.controller;
-        var object = controller.asNative();
 
-        if (!object.signal) {
-            object.signal = new Date();
-            controller.setPublic(true);
+        if (!isProxySupported()) {
+          // Using API without proxies
+          var object = controller;
+          if (!object.has("signal")) {
+            object.put("signal", (new Date()).toString());
+            object.setPublic(true);
+          }
+          console.log("checking swellrt status signal -> "+object.get("signal"));
+          object.put("signal", (new Date()).toString());
+
+        } else {
+          // Using API with proxies
+          var object = controller.asNative();
+          if (!object.signal) {
+              object.signal = (new Date()).toString();
+              controller.setPublic(true);
+          }
+          console.log("checking swellrt status signal -> "+object.signal);
+          object.signal = (new Date()).toString();
         }
-        console.log("checking swellrt status signal -> "+object.signal);
-        object.signal = (new Date()).toString();
+
+
         document.getElementById('topics-ok').classList.remove('hidden');
         __status__ = true;
       })
-      .catch(e=>{
+      .catch(function(e) {
         console.log(e);
         document.getElementById('topics-error').classList.remove('hidden');
         __status__ = false;

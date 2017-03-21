@@ -52,49 +52,53 @@ public abstract class UserAgent {
    * @return true iff the user agent uses webkit
    */
   public static boolean isWebkit() {
-    return UserAgentStaticProperties.get().isWebkit();
+    return UserAgentRuntimeProperties.get().isWebkit();
   }
 
   /**
    * @return true iff the user agent uses mobile webkit
    */
   public static boolean isMobileWebkit() {
-    return UserAgentStaticProperties.get().isMobileWebkit();
+    return (UserAgentRuntimeProperties.get().isAndroid() ||
+           UserAgentRuntimeProperties.get().isiOS()) &&
+        UserAgentRuntimeProperties.get().isWebkit();
   }
 
   /**
-   * @return true iff the user.agent GWT property is "safari"
+   * @return true iff we are in safari or chrome, 
+   * This mimics original GWT user agent property behavior.
    */
   public static boolean isSafari() {
-    return UserAgentStaticProperties.get().isSafari();
+    return UserAgentRuntimeProperties.get().isSafari() ||
+        UserAgentRuntimeProperties.get().isChrome();
   }
 
   /**
-   * @return true iff the user.agent GWT property is "gecko" or "gecko1_8"
+   * @return true iff we are in a firefox
    */
   public static boolean isFirefox() {
-    return UserAgentStaticProperties.get().isFirefox();
+    return UserAgentRuntimeProperties.get().isFirefox();
   }
 
   /**
-   * @return true iff the user.agent GWT property is "ie6"
+   * @return true iff the browser is any MSIE
    */
   public static boolean isIE() {
-    return UserAgentStaticProperties.get().isIE();
+    return UserAgentRuntimeProperties.get().isIE();
   }
 
   /**
-   * @return true iff the user.agent GWT property is "android"
+   * @return true iff the browser is on Android
    */
   public static boolean isAndroid() {
-    return UserAgentStaticProperties.get().isAndroid();
+    return UserAgentRuntimeProperties.get().isAndroid();
   }
 
   /**
-   * @return true iff the user.agent GWT property is "iphone"
+   * @return true iff the browser is on iOS
    */
   public static boolean isIPhone() {
-    return UserAgentStaticProperties.get().isIPhone();
+    return UserAgentRuntimeProperties.get().isiOS();
   }
 
   /**
