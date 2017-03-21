@@ -1,12 +1,5 @@
 package org.swellrt.beta.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
@@ -82,7 +75,7 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
       console.log("swellrt object not ready yet! wtf?")
     }
       
-    for(var i=0; i < $wnd._lh.length; i++) {
+    for(var i in $wnd._lh) {
       $wnd._lh[i](sf);
     }
 
