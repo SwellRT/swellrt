@@ -34,11 +34,10 @@ import com.google.gwt.core.client.GWT;
  * 
  * DEPRECATED:
  * <p> 
- * The original Wave's mobile.user.agent doesn't make sense currently. It can't differentiate
- * mobile platforms (android or ios) for other browsers but Webkit.
+ * The original Wave's mobile.user.agent property is misleading cause it only marks when 
+ * safari UA is Android or iOS.
  * <p>
- * In addition, to have conditional compilation based on mobile user agents is not an advantage
- * in terms of size of compiled code.
+ * In addition, to have conditional compilation based on mobile user agents is not an advantage anymore.
  * <p>
  * To check user agent properties at runtime is much more stable and flexible.
  * <p>
@@ -80,7 +79,7 @@ public class UserAgentStaticProperties {
   }
 
   final boolean isWebkit() {
-    return isSafari() || isMobileWebkit();
+    return isSafari();
   }
 
   /**

@@ -65,10 +65,12 @@ public abstract class UserAgent {
   }
 
   /**
-   * @return true iff we are in safari (but not chrome)
+   * @return true iff we are in safari or chrome, 
+   * This mimics original GWT user agent property behavior.
    */
   public static boolean isSafari() {
-    return UserAgentRuntimeProperties.get().isSafari();
+    return UserAgentRuntimeProperties.get().isSafari() ||
+        UserAgentRuntimeProperties.get().isChrome();
   }
 
   /**

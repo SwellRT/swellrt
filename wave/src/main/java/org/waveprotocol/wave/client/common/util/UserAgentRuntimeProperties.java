@@ -122,7 +122,7 @@ public class UserAgentRuntimeProperties {
 
   @VisibleForTesting
   public boolean isAndroid() {
-    return isAndroid;
+    return isAndroid && isSafari();
   }
 
   @VisibleForTesting
@@ -132,7 +132,7 @@ public class UserAgentRuntimeProperties {
   
   @VisibleForTesting
   public boolean isSafari() {
-    return isSafari && !isChrome;
+    return isSafari;
   }
   
   @VisibleForTesting
