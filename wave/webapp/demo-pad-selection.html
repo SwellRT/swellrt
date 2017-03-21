@@ -45,6 +45,20 @@
 
   }
 
+  .selection {
+    background-color: red;
+  }
+
+  .selection-menu {
+    float: right;
+    position: absolute;
+    background-color: rgba(255,255,255,0.3);
+    color: black;
+    font-size: 8pt;
+    z-index: 400;
+    padding: 10px;
+  }
+
   </style>
 </head>
 
@@ -60,16 +74,6 @@
         <span class="title">Text Pad Demo</span><span class="net-status" id="netStatus"></span>
       </h4>
     </div>
-
-    <!--
-    <div class="row">
-      <div class="col-md-offset-2 col-md-8">
-        <p id="ua"></p>
-        <input id="debugOn" class="btn btn-default" type="submit" value="Debug On" onclick="debugOn()">
-        <input id="debugOff" class="btn btn-default" type="submit" value="Debug Off" onclick="debugOff()">
-      </div>
-    </div>
-  -->
 
     <div class="row">
 
@@ -99,34 +103,7 @@
 
   </div><!-- container -->
 
-  <script>
-    function isProxySupported() {
 
-      if (typeof Proxy === "undefined") return false;
-
-      try {
-        var o = new Object();
-        var p = new Proxy(o, {});
-      } catch(e) {
-        return false;
-      }
-
-      return true;
-    }
-  </script>
-
-  <script>
-
-    // Configure websocket transport
-    __atmosphere_config = {
-      logLevel: 'error' // 'info', 'debug' and 'error'
-    }
-
-    // Configure editor globals
-    __swellrt_editor_config = {
-      enableLog: true
-    };
-  </script>
 
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
@@ -135,8 +112,35 @@
   <script>
 
   swellrt.onReady(function(service) {
-
     window.service = service;
+
+    var editorElt = document.getElementById("editor");
+    window.menu = document.createElement("div");
+    window.menu.className = "selection-menu";
+    window.menu.innerHTML = "Context Menu here..."
+    window.menu.style.visibility = "hidden";
+    editorElt.appendChild(window.menu);
+
+    swellrt.Annotation.Registry.define("@selection","selection");
+    swellrt.Annotation.Registry.setHandler("@selection", (type, annot, event) => {
+
+      if (type == swellrt.Annotation.EVENT_ADDED) {
+
+        var sel = annot.node;  //document.getElementsByClassName("@selection")[0];
+        if (sel) {
+
+          window.menu.style.top = (sel.offsetTop - sel.offsetHeight -   window.menu.offsetHeight) + "px";
+          window.menu.style.left = (sel.offsetLeft +    ((sel.offsetWidth -   window.menu.offsetWidth) / 2) ) + "px";
+          window.menu.style.visibility = "visible";
+        }
+
+      } else if (type == swellrt.Annotation.EVENT_REMOVED) {
+        window.menu.style.visibility = "hidden";
+      }
+
+
+
+    });
 
     // Put on eye on live commucation turbulences
     service.addConnectionHandler(connectionHandler);
@@ -146,48 +150,37 @@
       id : swellrt.Service.ANONYMOUS_USER_ID,
       password : ""
     })
-    .then(function(profile) {
+    .then(profile => {
       // Open the collaborative object to store text documents
       return service.open({ id : "demo-pad-list" });
     })
-    .then(function(r) {
+    .then(r => {
 
       controller = r.controller;
-      object = controller; // sugar syntax
+      object = controller.asNative();
 
-      if (!object.has("documents")) {
+      if (!object.documents) {
         // Create a live map
-        object.put("documents", swellrt.Map.create());
+        object.documents = swellrt.Map.create();
         // Make public after initialization
-        object.setPublic(true);
+        controller.setPublic(true);
       }
 
-
-      service.profilesManager.addStatusHandler({
-
-        onUpdated: function(profile) {
-          console.log("profile update -> "+profile.address);
-        },
-
-        onLoaded: function(session) {
-          console.log("profile is LOADED -> "+session.profile.address);
-        },
-
-        onOffline: function(session) {
-          console.log("profile is OFFLINE -> "+session.profile.address);
-        },
-
-        onOnline: function(session) {
-          console.log("profile is ONLINE -> "+session.profile.address);
-        }
-
-
-      });
-
-      service.profilesManager.enableStatusEvents(true);
-
       // Create editor instance, reusable
-      editor = swellrt.Editor.createWithId("editor", service);
+      editor = swellrt.Editor.createWithId("editor");
+
+
+      editor.setSelectionHandler((range, editor, point) => {
+          console.log("new selection");
+
+          if (editor._lastSelectionAnnotation) {
+            editor._lastSelectionAnnotation.clear();
+            delete editor._lastSelectionAnnotation;
+          }
+          editor._lastSelectionAnnotation =
+                editor.setAnnotation("@selection", "dummy", range);
+    
+      });
 
       // Configure editor with a empty document
       configEditor();
@@ -195,12 +188,12 @@
       renderDocumentList();
       // Listen for changes in the set of documents
       // update the displayed list.
-      object.get("documents").listen(function(e) {
+      object.documents.__controller.listen(function(e) {
           renderDocumentList();
       });
 
     })
-    .catch(function(e) {
+    .catch(e=>{
       _exception = e;
       console.log(e);
       window.alert("Error: "+e);
@@ -212,7 +205,7 @@
     var documentList = document.getElementById("documentList");
     documentList.innerHTML = "";
 
-    var keys = object.get("documents").keys();
+    var keys = object.__controller.get("documents").keys();
     for (i = 0; i < keys.length; i++) {
 
           var name = keys[i];
@@ -254,7 +247,7 @@
       isLocal = true;
       configButton("saveBtn","Save...");
     } else {
-      text = object.get("documents").get(name);
+      text = object.documents[name];
       isLocal = false;
       configButton("saveBtn","Save", true);
     }
@@ -262,6 +255,7 @@
     // Show the text in the editor,
     // edit mode is disabled by default
     editor.set(text);
+
     // Show title for new document
     configTitle(name);
     // Show Edit button
@@ -292,13 +286,14 @@
 
     // Add text document to the collaborative object
     // Be careful! text var is still the old reference
-    object.get("documents").put(name, text);
+    object.documents[name] = text;
     // Set up the editor with the new text object
     configEditor(name);
   }
 
   function removeDocument(name) {
-    object.get("documents").remove(name);
+    object.documents.__controller.remove(name);
+
   }
 
 
@@ -341,30 +336,6 @@
 
     if (s == "ERROR")
       netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
-  }
-
-
-  function debugOn() {
-    var host = document.location.host;
-    window.__gwt_bookmarklet_params = {'server_url':'http://'+host+':9876/'};
-    var s = document.createElement('script');
-    s.src = 'http://' +host+ ':9876/dev_mode_on.js';
-    void(document.getElementsByTagName('head')[0].appendChild(s));
-  }
-
-  function debugOff() {
-      var toRemove = [];
-      for(var i = 0; i<sessionStorage.length; i++) {
-        var key = sessionStorage.key(i);
-        if (key.indexOf('__gwtDevModeHook:') == 0) {
-          toRemove.push(key);
-        }
-      }
-
-      for (var j = 0; j<toRemove.length; j++) {
-        sessionStorage.removeItem(toRemove[j]);
-      }
-      window.location.reload();
   }
 
   </script>
