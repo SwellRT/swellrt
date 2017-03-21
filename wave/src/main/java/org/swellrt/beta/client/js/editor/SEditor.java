@@ -221,7 +221,6 @@ public class SEditor implements EditorUpdateListener {
       s += "IE7: "+UserAgent.isIE7()+", ";
       s += "IE8: "+UserAgent.isIE8()+", ";
       
-      EditorStaticDeps.logger.trace().log("Static user agent: "+UserAgentStaticProperties.get().getClass().getName());
       EditorStaticDeps.logger.trace().log("User Agent Properties: "+s);
     }
     
