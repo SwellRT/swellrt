@@ -7,7 +7,6 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
-import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.js.HasJsProxy;

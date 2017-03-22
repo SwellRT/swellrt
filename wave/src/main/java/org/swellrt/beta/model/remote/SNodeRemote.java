@@ -13,7 +13,6 @@ import org.swellrt.beta.model.SNode;
  *
  */
 public abstract class SNodeRemote implements SNode {
-
   
   /** the substrate id (wavelet/document id pair) */
   private final SubstrateId substrateId;

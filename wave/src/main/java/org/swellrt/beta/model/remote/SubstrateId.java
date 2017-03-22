@@ -27,6 +27,7 @@ public class SubstrateId {
 
   private static final String SEPARATOR = ":";
   private static final String MAP_TYPE_PREFIX = "m";
+  private static final String LIST_TYPE_PREFIX = "l";
   private static final String TEXT_TYPE_PREFIX = "t";
   private static final String TOKEN_SEPARATOR = "+";
 
@@ -64,6 +65,11 @@ public class SubstrateId {
   public static SubstrateId ofMap(WaveletId containerId, String substrateId) {
     Preconditions.checkArgument(substrateId.startsWith(MAP_TYPE_PREFIX+TOKEN_SEPARATOR), "Bad substrate id format");
     return of(MAP_TYPE_PREFIX, containerId, substrateId);
+  }
+  
+  public static SubstrateId ofList(WaveletId containerId, String substrateId) {
+    Preconditions.checkArgument(substrateId.startsWith(LIST_TYPE_PREFIX+TOKEN_SEPARATOR), "Bad substrate id format");
+    return of(LIST_TYPE_PREFIX, containerId, substrateId);
   }
   
   public static SubstrateId ofText(WaveletId containerId, String substrateId) {
@@ -104,6 +110,10 @@ public class SubstrateId {
     return of(MAP_TYPE_PREFIX, containerId, MAP_TYPE_PREFIX+TOKEN_SEPARATOR+tokenGenerator.newUniqueToken());
   }
   
+  public static SubstrateId createForList(WaveletId containerId, IdGenerator tokenGenerator) {
+    return of(LIST_TYPE_PREFIX, containerId, LIST_TYPE_PREFIX+TOKEN_SEPARATOR+tokenGenerator.newUniqueToken());
+  }
+  
   public static SubstrateId createForText(WaveletId containerId, IdGenerator tokenGenerator) {
     return of(TEXT_TYPE_PREFIX, containerId, TEXT_TYPE_PREFIX+TOKEN_SEPARATOR+tokenGenerator.newUniqueToken());
   }
@@ -114,6 +124,10 @@ public class SubstrateId {
     this.documentId = substrateId;
     this.str = type+SEPARATOR+ModernIdSerialiser.INSTANCE.serialiseWaveletId(containerId)+SEPARATOR+substrateId;            
 
+  }
+  
+  public boolean isList() {    
+    return LIST_TYPE_PREFIX.equals(type);
   }
   
   public boolean isMap() {    

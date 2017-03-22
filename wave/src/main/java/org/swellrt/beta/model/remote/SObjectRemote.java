@@ -8,6 +8,7 @@ import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.client.WaveStatus;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
@@ -19,6 +20,9 @@ import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.remote.wave.DocumentBasedBasicRMap;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
+import org.waveprotocol.wave.model.adt.ObservableElementList;
+import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
+import org.waveprotocol.wave.model.adt.docbased.Initializer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.Document;
@@ -26,6 +30,7 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletId;
@@ -100,50 +105,66 @@ import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
  */
 public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObservable {
    
+  
+  private static String serialize(SNodeRemote x) {
+    
+    // Order matters check SPrimitive first 
+    if (x instanceof SPrimitive) {        
+      SPrimitive p = (SPrimitive) x;
+      return p.serialize();
+    }
+    
+    if (x instanceof SNodeRemote) {
+      SNodeRemote r = (SNodeRemote) x;  
+      SubstrateId id = r.getSubstrateId();
+      if (id != null) 
+        return id.serialize();
+    }
+    
+    return null;
+  }
+  
   /**
-   * A serializer/deserializer of CNode objects to/from a Wave concurrent map
+   * A serializer/deserializer of SNode objects to/from a Wave's list
+   */
+  public class SubstrateListSerializer implements org.waveprotocol.wave.model.adt.docbased.Factory<Doc.E, SNodeRemote, SNodeRemote> {
+
+   
+    @Override
+    public SNodeRemote adapt(DocumentEventRouter<? super E, E, ?> router, E element) {
+      Map<String, String> attributes = router.getDocument().getAttributes(element);      
+      return deserialize(attributes.get(LIST_ENTRY_VALUE_ATTR));
+    }
+
+    @Override
+    public Initializer createInitializer(SNodeRemote node) {
+      return new org.waveprotocol.wave.model.adt.docbased.Initializer() {
+
+        @Override
+        public void initialize(Map<String, String> target) {
+          target.put(LIST_ENTRY_KEY_ATTR, String.valueOf(System.currentTimeMillis())); // temp
+          target.put(LIST_ENTRY_VALUE_ATTR, serialize(node));
+        }
+        
+    };
+    }
+    
+  }
+  
+  /**
+   * A serializer/deserializer of SNode objects to/from a Wave's map
    */
   public class SubstrateMapSerializer implements org.waveprotocol.wave.model.util.Serializer<SNodeRemote> {
 
     
     @Override
     public String toString(SNodeRemote x) {
-
-      // Order matters check SPrimitive first 
-      if (x instanceof SPrimitive) {        
-        SPrimitive p = (SPrimitive) x;
-        return p.serialize();
-      }
-      
-      if (x instanceof SNodeRemote) {
-        SNodeRemote r = (SNodeRemote) x;  
-        SubstrateId id = r.getSubstrateId();
-        if (id != null) 
-          return id.serialize();
-      }
-      
-      return null;
+      return serialize(x);
     }
 
     @Override
     public SNodeRemote fromString(String s) {            
-      Preconditions.checkNotNull(s, "Unable to deserialize a null value");    
-     
-      SubstrateId substrateId = SubstrateId.deserialize(s);
-      if (substrateId != null) {
-      
-        if (substrateId.isMap())
-          return loadMap(substrateId);
-        
-        if (substrateId.isText())
-          return loadText(substrateId, null);
-        
-        return null;
-      
-      } else {      
-        return SPrimitive.deserialize(s);      
-      }
-      
+      return deserialize(s);
     }
 
     @Override
@@ -161,6 +182,11 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   private static final String MAP_ENTRY_TAG = "entry";
   private static final String MAP_ENTRY_KEY_ATTR = "k";
   private static final String MAP_ENTRY_VALUE_ATTR = "v";
+  
+  private static final String LIST_TAG = "list";
+  private static final String LIST_ENTRY_TAG = "entry";
+  private static final String LIST_ENTRY_KEY_ATTR = "k";
+  private static final String LIST_ENTRY_VALUE_ATTR = "v";
   
   private static final String USER_ROOT_SUBSTRATED_ID = "m+root";
   
@@ -334,7 +360,18 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    */
   private SNodeRemote asRemote(SNode node, SNodeRemoteContainer parentNode, ObservableWavelet containerWavelet)  throws SException {
         
-    if (node instanceof SMap) {
+    if (node instanceof SList) {
+      SList list = (SList) node;
+      SListRemote remoteList = loadList(SubstrateId.createForList(containerWavelet.getId(), idGenerator));
+      remoteList.attach(parentNode);
+      
+      for (SNode n: list.values()) {
+        remoteList.add(asRemote(n, remoteList, containerWavelet));
+      }
+      
+      return remoteList;
+    
+    } else if (node instanceof SMap) {
       SMap map = (SMap) node;
       SMapRemote remoteMap = loadMap(SubstrateId.createForMap(containerWavelet.getId(), idGenerator));
       remoteMap.attach(parentNode);
@@ -407,6 +444,55 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
 
     
     SMapRemote n = SMapRemote.create(this, substrateId, map);
+    nodeStore.put(substrateId, n);
+    
+    return n;
+  }
+  
+  private SNodeRemote deserialize(String s) {
+    Preconditions.checkNotNull(s, "Unable to deserialize a null value");    
+
+    SubstrateId substrateId = SubstrateId.deserialize(s);
+    if (substrateId != null) {
+      
+      if (substrateId.isList())
+        return loadList(substrateId);
+
+      if (substrateId.isMap())
+        return loadMap(substrateId);
+
+      if (substrateId.isText())
+        return loadText(substrateId, null);
+
+      return null;
+
+    } else {      
+      return SPrimitive.deserialize(s);      
+    }  
+  }
+  
+  private SListRemote loadList(SubstrateId substrateId) {
+    
+    // Reuse instances
+    if (nodeStore.containsKey(substrateId)) {
+      return (SListRemote) nodeStore.get(substrateId);    
+    }
+    
+    // Create new instance
+    ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());
+    ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());    
+    DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
+    
+    E listElement = DocHelper.getElementWithTagName(document, LIST_TAG);
+    if (listElement == null) {
+      listElement = document.createChildElement(document.getDocumentElement(), LIST_TAG,
+          Collections.<String, String> emptyMap());
+    }
+    
+    ObservableElementList<SNodeRemote, SNodeRemote> list =
+        DocumentBasedElementList.create(router, listElement, LIST_ENTRY_TAG, new SubstrateListSerializer());
+    
+    SListRemote n = SListRemote.create(this, substrateId, list);
     nodeStore.put(substrateId, n);
     
     return n;
