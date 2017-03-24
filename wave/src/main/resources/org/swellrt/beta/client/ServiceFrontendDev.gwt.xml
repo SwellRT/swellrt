@@ -24,7 +24,7 @@
 
 	<!-- Allow super-dev debug in custom host name -->
 	<set-configuration-property name="devModeUrlWhitelistRegexp"
-		value="http://(localhost|127\.0\.0\.1|showcase\.net)(:\d+)?/.*" />
+		value="http://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?/.*" />
 
 	<!-- Work around for source map offset problem https://code.google.com/p/google-web-toolkit/issues/detail?id=7862 -->
 	<set-property name="compiler.useSymbolMaps" value="true" />
