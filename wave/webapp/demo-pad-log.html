@@ -393,7 +393,7 @@
 
 
   function debugOn() {
-    var host = document.location.host;
+    var host = document.location.hostname;
     window.__gwt_bookmarklet_params = {'server_url':'http://'+host+':9876/'};
     var s = document.createElement('script');
     s.src = 'http://' +host+ ':9876/dev_mode_on.js';
