@@ -122,7 +122,7 @@ public class UserAgentRuntimeProperties {
 
   @VisibleForTesting
   public boolean isAndroid() {
-    return isAndroid && isSafari();
+    return isAndroid;
   }
 
   @VisibleForTesting
@@ -203,7 +203,8 @@ public class UserAgentRuntimeProperties {
   }
 
   private static boolean calculateIsChrome(String userAgent) {
-    return userAgent.indexOf("Chrome") != -1;
+    return userAgent.indexOf("Chrome") != -1 ||
+        userAgent.indexOf("CriOS") != -1;
   }
   
   private static boolean calculateIsSafari(String userAgent) {
