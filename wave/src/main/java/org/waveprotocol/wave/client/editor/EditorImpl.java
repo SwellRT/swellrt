@@ -2105,7 +2105,19 @@ public class EditorImpl extends LogicalPanel.Impl implements
     try {
       EditorEvent event = SignalEventImpl.create(EditorEventImpl.FACTORY,
           rawEvent, !hackEditorNeverConsumes);
-
+      
+      /*
+      EditorEvent signal = event;
+      if (signal != null) {
+        EditorStaticDeps.logger.trace().log("Signal ("+signal.getType()+"): "
+            + "composition="+signal.isCompositionEvent() + ", "
+            + "mutation="+signal.isMutationEvent() + ", "
+            + "target="+signal.getTarget().getTagName());
+      } else {
+        EditorStaticDeps.logger.trace().log("Event with no signal: "+name+ ", "+rawEvent.getEventTarget().toString());
+      }
+      */
+      
       try {
         if (UserAgent.isMac() &&
             rawEvent.getCtrlKey() && rawEvent.getAltKey()
