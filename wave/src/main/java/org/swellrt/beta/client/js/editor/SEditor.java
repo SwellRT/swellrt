@@ -17,7 +17,6 @@ import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
-import org.waveprotocol.wave.client.common.util.UserAgentStaticProperties;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.selection.CaretAnnotationHandler;
@@ -34,7 +33,6 @@ import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
-import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
@@ -44,7 +42,6 @@ import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.DocHelper;
-import org.waveprotocol.wave.model.document.util.FocusedPointRange;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Range;
 
@@ -52,7 +49,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.DOM;
 
 import jsinterop.annotations.JsFunction;
@@ -62,6 +58,11 @@ import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "Editor")
 public class SEditor implements EditorUpdateListener {
+  
+  
+  public final static String COMPAT_MODE_NONE = "none";
+  public final static String COMPAT_MODE_READONLY = "readonly";
+  public final static String COMPAT_MODE_EDIT = "edit";
 
   @JsFunction
   public interface SelectionChangeHandler {   
@@ -346,6 +347,9 @@ public class SEditor implements EditorUpdateListener {
    */
   public void set(STextWeb text) throws SException {
 
+    if (checkBrowserCompat().equals(COMPAT_MODE_NONE))
+      throw new SEditorException("Browser not supported");
+    
     Editor e = getEditor();
     clean();
     
@@ -374,7 +378,7 @@ public class SEditor implements EditorUpdateListener {
    * @param editOn
    */
   public void edit(boolean editOn) {
-    if (editor != null && editor.hasDocument()) {
+    if (editor != null && editor.hasDocument() && checkBrowserCompat().equals(COMPAT_MODE_EDIT)) {
       if (editor.isEditing() != editOn) { 
         editor.setEditing(editOn);
       }
@@ -674,5 +678,13 @@ public class SEditor implements EditorUpdateListener {
       selectionHandler.exec(range, this, SSelection.get());
     }
   }
- 
+
+  
+  public String checkBrowserCompat() {    
+    if (UserAgent.isAndroid() || (UserAgent.isIPhone() && UserAgent.isChrome()))
+      return COMPAT_MODE_READONLY;
+        
+    return COMPAT_MODE_EDIT;    
+  }
+  
 }
