@@ -123,7 +123,7 @@ public class AnnotationAction {
       addAllAnnotations();
     
     // Text annotations
-    TextAnnotation.clearRange(editor.getDocument(), editor.getCaretAnnotations(), textAnnotationsNames, range.getStart(), range.getEnd());
+    TextAnnotation.clearRange(editor.getDocument(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations(), textAnnotationsNames, range.getStart(), range.getEnd());
     
     // Paragraph annotations
     ParagraphAnnotation.clearRange(editor.getContent(), range, paragraphAnnotations);
