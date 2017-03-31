@@ -328,7 +328,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       containerWavelet = createContainerWavelet();
     }
 
-    return asRemote(node, parentNode, containerWavelet);
+    return transformToRemote(node, parentNode, containerWavelet);
   }
   
   /**
@@ -358,7 +358,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    * @param containerWavelet
    * @return
    */
-  private SNodeRemote asRemote(SNode node, SNodeRemoteContainer parentNode, ObservableWavelet containerWavelet)  throws SException {
+  private SNodeRemote transformToRemote(SNode node, SNodeRemoteContainer parentNode, ObservableWavelet containerWavelet)  throws SException {
         
     if (node instanceof SList) {
       SList list = (SList) node;
@@ -366,7 +366,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       remoteList.attach(parentNode);
       
       for (SNode n: list.values()) {
-        remoteList.add(asRemote(n, remoteList, containerWavelet));
+        remoteList.add(transformToRemote(n, remoteList, containerWavelet));
       }
       
       return remoteList;
@@ -378,7 +378,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
       
       for (String k: map.keys()) {
         SNode v = map.getNode(k);
-        remoteMap.put(k, asRemote(v, remoteMap, containerWavelet));
+        remoteMap.put(k, transformToRemote(v, remoteMap, containerWavelet));
       }
       
       return remoteMap;
