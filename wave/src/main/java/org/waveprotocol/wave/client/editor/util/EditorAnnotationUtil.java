@@ -19,12 +19,18 @@
 
 package org.waveprotocol.wave.client.editor.util;
 
+import java.util.ArrayList;
+import java.util.function.Consumer;
+
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.misc.CaretAnnotations;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
+import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.ReadableAnnotationSet;
 import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.document.util.RangedAnnotationImpl;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
@@ -306,4 +312,164 @@ public class EditorAnnotationUtil {
       }
     });
   }
+  
+  /**
+   * Set an annotation in the interval, if there is any annotation (with same key) within the interval, add the value to it.
+   *  
+   * @param doc Document
+   * @param key the annotation key
+   * @param value the annotation value
+   * @param start start location
+   * @param end end location
+   */
+  public static void setAnnotationWithOverlap(final MutableAnnotationSet<String> doc, String key, String value, int start, int end) {
+     
+    final int[] rRange = { start, end };
+    
+    doc.rangedAnnotations(start, end, CollectionUtils.newStringSet(key))
+    .forEach(new Consumer<RangedAnnotation<String>>(){
+
+     
+      @Override
+      public void accept(RangedAnnotation<String> anot) {
+        
+        if (!anot.key().equals(key) || anot.value() == null) return;
+     
+        if (rRange[0] >= rRange[1]) return;
+        
+        if (anot.start() <= rRange[0] &&
+            anot.end() < rRange[1]) {
+          
+          // Case 1
+          //
+          // |------ anot -----| 
+          //      |-------- range -----
+          //
+          // results:
+          //
+          //  anot   anot+new
+          // |----|------------|---- range'
+          //
+          
+          int s1 = anot.start();
+          int e1 = rRange[0]-1;
+                   
+          int s2 = rRange[0];
+          int e2 = anot.end();
+          
+          
+          if (s1 < e1) {
+            doc.setAnnotation(s1, e1, key, anot.value());
+          }          
+          
+          if (s2 < e2) {
+            doc.setAnnotation(s1, e1, key, anot.value()+","+value);
+          }
+             
+          rRange[0] = e2+1;
+
+          
+        } else if (rRange[0] <= anot.start() && 
+            anot.end() <= rRange[1]) {
+          
+            
+          // Case 2
+          //
+          //         |------ anot -----| 
+          //  |-------- range -------------------
+          //
+          // results:
+          //
+          //   new       anot+new
+          // |-------|-----------------|---- range'
+          //
+          
+          int s1 = rRange[0];
+          int e1 = anot.start()-1;
+          
+          int s2 = anot.start();
+          int e2 = anot.end();
+          
+          if (s1 < e1) {
+            doc.setAnnotation(s1, e1, key, value);
+          }
+          
+          if (s2 < e2) {
+            doc.setAnnotation(s2, e2, key, value+","+anot.value());
+          }
+  
+          rRange[0] = e2+1;
+          
+          
+        } else if (rRange[0] <= anot.start() &&
+            rRange[1] < anot.end()) {
+                
+          // Case 3
+          //
+          //         |-------- anot ------- 
+          // |-------- range -----|
+          //
+          // results:
+          //
+          //    new      anot+new
+          // |-------|------------|---- anot
+          //
+          
+          int s1 = rRange[0];
+          int e1 = anot.start()-1;
+          
+          int s2 = anot.start();
+          int e2 = rRange[1];
+          
+          if (s1 < e1)
+             doc.setAnnotation(s1, s1, key, value);
+          
+          if (s2 < e2)
+            doc.setAnnotation(s2, e2, key, anot.value()+","+value);
+         
+          // the last part of 'anot' will remain cause the
+          // setAnnotation() logic
+          
+          rRange[0] = e2+1;
+        }
+
+      } 
+      
+    });
+    
+    // if there is still a range not overlapped, create annotation
+    if (rRange[0] < rRange[1])
+      doc.setAnnotation(rRange[0], rRange[1], key, value);
+  }
+  
+  /**
+   * Collect all annotations with same key and containing same value in the provided range
+   * 
+   * @param doc Document
+   * @param key the annotation key
+   * @param value the annotation value
+   * @param start start location
+   * @param end end location
+   * @return
+   */
+  public static Iterable<RangedAnnotation<String>> getAnnotationSpread(final MutableAnnotationSet<String> doc, String key, String value, int start, int end) {
+
+    final ArrayList<RangedAnnotation<String>> resultSet = new ArrayList<RangedAnnotation<String>>();
+    
+    doc.rangedAnnotations(start, end, CollectionUtils.newStringSet(key))
+    .forEach(new Consumer<RangedAnnotation<String>>(){
+
+      @Override
+      public void accept(RangedAnnotation<String> anot) {
+
+        if (anot.key().equals(key) && anot.value() != null && anot.value().contains(value)) {
+          resultSet.add(new RangedAnnotationImpl<String>(anot));
+        }
+        
+      }
+    });
+    
+    return resultSet;
+  }
+  
 }
