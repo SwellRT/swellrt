@@ -10,8 +10,12 @@ import org.waveprotocol.wave.client.editor.content.misc.CaretAnnotations;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
 import org.waveprotocol.wave.model.document.indexed.LocationMapper;
+import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
+import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
+import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.user.client.Event;
 
@@ -26,10 +30,22 @@ import com.google.gwt.user.client.Event;
 public class TextAnnotation implements Annotation, Annotation.Listenable, AnnotationPaint.EventHandler, AnnotationPaint.MutationHandler {
 
   
-  public static void clearRange(MutableAnnotationSet<String> doc,
+  public static void clearRange(MutableAnnotationSet<String> doc, MutableAnnotationSet<Object> localAnnotations,
       CaretAnnotations caret, ReadableStringSet keys, int start, int end) {
+
+    StringSet nonLocalKeys = CollectionUtils.newStringSet();
+    keys.each(new Proc(){
+
+      @Override
+      public void apply(String key) {
+        if (Annotations.isLocal(key))
+          localAnnotations.setAnnotation(start, end, key, null);
+        else
+          nonLocalKeys.add(key);          
+      }      
+    });
     
-    EditorAnnotationUtil.clearAnnotationsOverRange(doc, caret, keys, start, end);
+    EditorAnnotationUtil.clearAnnotationsOverRange(doc, caret, nonLocalKeys, start, end);
   }
   
   private final String name;
