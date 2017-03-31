@@ -53,7 +53,7 @@ public class AnnotationInstance {
   public static final int MATCH_OUT = 1;
   
   public static int getRangeMatch(Range selectionRange, Range annotationRange) {  
-    boolean in = selectionRange.equals(annotationRange) || ( selectionRange.getStart() >= annotationRange.getStart() && selectionRange.getEnd() <= annotationRange.getEnd());     
+    boolean in = ( selectionRange.getStart() >= annotationRange.getStart() && selectionRange.getEnd() <= annotationRange.getEnd());     
     return in ? AnnotationInstance.MATCH_IN : AnnotationInstance.MATCH_OUT;
   }
 
