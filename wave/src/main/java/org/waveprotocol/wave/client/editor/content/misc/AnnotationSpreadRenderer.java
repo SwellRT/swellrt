@@ -173,10 +173,18 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     //    
     else if (name.startsWith(AnnotationPaint.VALUE_ATTR_PREFIX)) {    	
       String annotationName = AnnotationPaint.extractKey(AnnotationPaint.VALUE_ATTR_PREFIX, name);
-              	   			
-    	implNodelet.addClassName(annotationName);    	
-    	implNodelet.setAttribute(HTML_DATA_ATTR_PREFIX + htmlSafeKey(annotationName), 
-    	     newValue);   
+      String safeAnnotationName = htmlSafeKey(annotationName);       	   			
+    	implNodelet.addClassName(safeAnnotationName);
+    	
+    	String data = implNodelet.getAttribute(HTML_DATA_ATTR_PREFIX + safeAnnotationName);
+    	if (!data.contains(newValue)) {
+    	  if (!data.isEmpty())
+    	    data += ",";
+    	  
+    	  data += newValue;
+    	}
+    	implNodelet.setAttribute(HTML_DATA_ATTR_PREFIX + safeAnnotationName, 
+    	     data);   
     	
     } else if (name.startsWith(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX)) {   
       
