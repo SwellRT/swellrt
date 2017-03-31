@@ -173,7 +173,6 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         address.
    * @throws InvalidParticipantAddress if the validation on the address fails.
    */
-  @JsIgnore
   public static ParticipantId of(String address) throws InvalidParticipantAddress {
     validate(address);
     return new ParticipantId(address);
