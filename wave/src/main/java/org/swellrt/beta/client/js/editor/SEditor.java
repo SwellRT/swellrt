@@ -2,6 +2,7 @@ package org.swellrt.beta.client.js.editor;
 
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
@@ -15,6 +16,7 @@ import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
 import org.swellrt.beta.client.js.editor.annotation.ParagraphAnnotation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
@@ -29,10 +31,12 @@ import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.Editors;
+import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
+import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
@@ -41,9 +45,11 @@ import org.waveprotocol.wave.common.logging.AbstractLogger;
 import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.common.logging.LogSink;
 import org.waveprotocol.wave.model.conversation.Blips;
+import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -507,6 +513,9 @@ public class SEditor implements EditorUpdateListener {
   
   /**
    * Reset annotations in an specific doc range or in the current selection otherwise.
+   *   
+   * TODO(pablojan) consider to avoid AnnotationAction to implement this method and to replace
+   * with a more straightforward approach like in seekTextAnnotations()
    * 
    * @param names
    * @param range
@@ -543,9 +552,15 @@ public class SEditor implements EditorUpdateListener {
   
   /**
    * Get annotations in an specific doc range or in the current selection otherwise.
+   * <p>
+   * By default, get only effective annotations, that is those containing entirely the range.
+   * <p>
+   * TODO(pablojan) consider to avoid AnnotationAction to implement this method and to replace
+   * with a more straightforward approach like in seekTextAnnotations(
    * 
-   * @param names
-   * @param range
+   * @param names a string or array of string
+   * @param range optional document range of search
+   * @param all retrieve effective or not annotations
    * @return
    * @throws SEditorException
    */
@@ -572,6 +587,148 @@ public class SEditor implements EditorUpdateListener {
      
     
     return getAction.get();   
+  }
+  
+  
+  /**
+   * Seeks text annotations in the provided range, or in the current selection otherwise,
+   * for a set of keys. 
+   * 
+   * @param keys
+   * @param range
+   * @param onlyWithinRange only return annotations fully within the range
+   * @return
+   * @throws SEditorException 
+   */
+  public JavaScriptObject seekTextAnnotations(JavaScriptObject keys, @JsOptional Range range, @JsOptional Boolean onlyWithinRange) throws SEditorException {
+
+    final Range actualRange = checkRangeArgument(range);
+    
+    JsoView result = JsoView.as(JavaScriptObject.createObject());
+    boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
+    
+    StringSet keySet = JsUtils.toStringSet(keys);
+    
+    editor.getDocument().rangedAnnotations(actualRange.getStart(), actualRange.getEnd(), keySet)
+      .forEach(new Consumer<RangedAnnotation<String>>(){
+
+        @Override
+        public void accept(RangedAnnotation<String> t) {
+          
+          if (!result.containsKey(t.key())) {
+            result.setJso(t.key(), JavaScriptObject.createArray());
+          }
+          
+          Range anotRange = new Range(t.start(), t.end());
+          int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
+                  
+          if (withinRange && !actualRange.contains(anotRange))
+            return; // skip
+          
+          AnnotationInstance anot =
+              AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, rangeMatch);
+          
+          JsUtils.addToArray(result.getJso(t.key()), anot);
+        }
+      
+    });
+    
+    return result;    
+  }
+  
+  /**
+   * Seeks all annotations having same key and same value in the provided range.
+   * 
+   * @param key
+   * @param value
+   * @param range
+   * @return
+   * @throws SEditorException
+   */
+  public JavaScriptObject seekTextAnnotationsByValue(String key, String value, @JsOptional Range range) throws SEditorException {
+
+    final Range actualRange = checkRangeArgument(range);
+    JsoView result = JsoView.as(JavaScriptObject.createObject());
+    result.setJso(key, JavaScriptObject.createArray());
+    
+    EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
+      .forEach(new Consumer<RangedAnnotation<String>>(){
+
+        @Override
+        public void accept(RangedAnnotation<String> t) {
+                    
+          Range anotRange = new Range(t.start(), t.end());
+          int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
+          AnnotationInstance anot =
+              AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, rangeMatch);
+          
+          JsUtils.addToArray(result.getJso(key), anot);
+        }
+      });
+    
+    return result;
+  }
+  
+  /**
+   * Set a text annotation in the provided range creating or updating annotations in overlapped locations
+   * 
+   * @param key
+   * @param value
+   * @param range
+   *
+   * @return
+   * @throws SEditorException 
+   */
+  public void setTextAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
+    
+    final Range actualRange = checkRangeArgument(range);
+    final CMutableDocument doc = editor.getDocument();
+    
+    if (value == null)
+      throw new SEditorException("Null value not allowed for overlapping annotations");
+      
+    doc.beginMutationGroup();    
+    EditorAnnotationUtil.setAnnotationWithOverlap(doc, key, value, actualRange.getStart(), actualRange.getEnd());    
+    doc.endMutationGroup();    
+  }
+
+  /**
+   * Clear a text annotation in the provided range deleting or updating annotations in overlapped locations
+   * 
+   * @param key
+   * @param value
+   * @param range
+   * @throws SEditorException
+   */
+  public void clearTextAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
+
+    final Range actualRange = checkRangeArgument(range);
+    final CMutableDocument doc = editor.getDocument();   
+    
+    EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
+    .forEach(new Consumer<RangedAnnotation<String>>(){
+
+      @Override
+      public void accept(RangedAnnotation<String> t) {
+   
+        String newValue = null;
+        if (t.value().contains(",")) {
+          newValue = t.value().replace(value, "");
+          
+          newValue = newValue.replace(",,", ",");
+          
+          if (newValue.charAt(0) == ',')
+            newValue = newValue.substring(1, newValue.length());
+          
+          if (newValue.charAt(newValue.length()-1) == ',')
+            newValue = newValue.substring(0, newValue.length()-1);
+     
+        }
+        // This can remove or update an annotation
+        doc.setAnnotation(t.start(), t.end(), key, newValue);
+      }
+    });
+    
   }
   
   
