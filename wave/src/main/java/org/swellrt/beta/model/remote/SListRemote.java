@@ -57,7 +57,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList, HasJsPro
   @Override
   public SList add(SNode value) throws SException {
     check();
-    SNodeRemote remoteValue =  getObject().asRemote(value, this, false);
+    SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
     this.list.add(remoteValue);
     return this;
   }

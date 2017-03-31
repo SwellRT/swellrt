@@ -2,6 +2,7 @@ package org.swellrt.beta.model;
 
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.local.SListLocal;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
@@ -11,13 +12,11 @@ import jsinterop.annotations.JsType;
 public interface SList extends SNode {
  
   public static SList create(@JsOptional Object data) throws IllegalCastException {
-	/*  
-	if (data != null && data instanceof JavaScriptObject)
-		return SListJs.create((JavaScriptObject) data);
-	  
-    return new SListLocal();
+    /*  
+	  if (data != null && data instanceof JavaScriptObject)
+		  return SListJs.create((JavaScriptObject) data);	    
     */
-    return null;
+    return new SListLocal();
   } 
     
   /**

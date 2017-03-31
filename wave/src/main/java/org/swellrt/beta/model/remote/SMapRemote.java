@@ -141,7 +141,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   public SMap put(String key, SNode value) throws SException {
     check();
     getObject().checkWritable(getNode(key));
-    SNodeRemote remoteValue =  getObject().asRemote(value, this, false);
+    SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
     map.put(key, remoteValue);
     cache.put(key, remoteValue);
     return this;

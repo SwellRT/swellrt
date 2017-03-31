@@ -317,7 +317,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
    * @param newContainer
    * @return
    */
-  protected SNodeRemote asRemote(SNode node, SNodeRemoteContainer parentNode, boolean newContainer)  throws SException {
+  protected SNodeRemote transformToRemote(SNode node, SNodeRemoteContainer parentNode, boolean newContainer)  throws SException {
 
     if (node instanceof SNodeRemote)
       return (SNodeRemote) node;
