@@ -121,5 +121,9 @@ public final class Range {
         + (isCollapsed() ? "" : "-" + getEnd())
         + ")";
   }
+  
+  public boolean contains(Range r) {
+    return this.start <= r.start && r.end <= this.end; 
+  }
 
 }
