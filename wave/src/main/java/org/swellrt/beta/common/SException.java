@@ -49,6 +49,8 @@ public class SException extends Exception {
   
   public static final int DATA_ERROR = 114;
   
+  public static final int OUT_OF_BOUNDS_INDEX = 115;
+  
   // Codes above 200 are reserved for editors
 
   // Codes from ResponseCode
