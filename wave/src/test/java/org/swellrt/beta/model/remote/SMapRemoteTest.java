@@ -24,6 +24,20 @@ import com.google.gwt.user.client.Command;
 public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
   
+  protected void populatePrimitiveValues(SMap map) throws SException {
+    
+    map.put("k0", new SPrimitive("A value for k0", new SNodeAccessControl()));
+    map.put("k1", "A value for k1");
+    
+  }
+  
+  protected void assertPrimitiveValues(SMap map) throws SException {
+    
+    assertEquals("A value for k0", (String) map.get("k0"));
+    assertEquals("A value for k1", (String) map.get("k1"));
+    
+  }
+  
   /**
    * Put only primitive values in the root map.
    * 
