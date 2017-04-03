@@ -53,6 +53,10 @@ public class SEvent {
   
   @Override
   public String toString() {
-    return "SEvent ["+targetKey+","+value+"]";
+    String s = "?";
+    if (type == ADDED_VALUE) s = "added";
+    if (type == REMOVED_VALUE) s = "removed";
+    if (type == UPDATED_VALUE) s = "updated";
+    return "SEvent(type="+s+") ["+targetKey+","+value+"]";
   }
 }
