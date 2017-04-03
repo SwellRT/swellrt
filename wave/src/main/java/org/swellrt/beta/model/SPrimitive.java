@@ -43,6 +43,60 @@ public class SPrimitive extends SNodeRemote {
    */
   private String nameKey = null;
   
+  @JsIgnore
+  public static String asString(SNode node) {
+    try{
+      if (node != null && node instanceof SPrimitive) {
+        return (String) ((SPrimitive) node).get();
+      }
+    } catch (ClassCastException e)
+    {
+      
+    }
+    return null;
+  }
+  
+  @JsIgnore
+  public static Double asDouble(SNode node) {
+    try{
+      if (node != null && node instanceof SPrimitive) {
+        return (double) ((SPrimitive) node).get();
+      }
+    } catch (ClassCastException e)
+    {
+      
+    }
+    return null;
+  }
+  
+  @JsIgnore
+  public static Integer asInt(SNode node) {
+    try{
+      if (node != null && node instanceof SPrimitive) {
+        return (int) ((SPrimitive) node).get();
+      }
+    } catch (ClassCastException e)
+    {
+      
+    }
+    return null;
+  }
+  
+  @JsIgnore
+  public static Boolean asBoolean(SNode node) {
+    try{
+      if (node != null && node instanceof SPrimitive) {
+        return (boolean) ((SPrimitive) node).get();
+      }
+    } catch (ClassCastException e)
+    {
+      
+    }
+    return null;
+  }
+
+  
+  
   /**
    * Deserialize a SPrimitive value
    * <p>
