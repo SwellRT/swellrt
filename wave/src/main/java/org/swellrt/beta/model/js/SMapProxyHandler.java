@@ -15,6 +15,14 @@ import com.google.gwt.core.client.JavaScriptObject;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
+/**
+ * A Javascript proxy for SMap. 
+ * 
+ * TODO implement unit test
+ * 
+ * @author pablojan@gmail.com (Pablo Ojanguren)
+ *
+ */
 @JsType(namespace = "swellrt")
 public class SMapProxyHandler extends ProxyHandler {
   
