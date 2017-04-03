@@ -22,6 +22,11 @@ public interface SMap extends SNode {
     return new SMapLocal();
   } 
     
+  @JsIgnore 
+  public static SMap create() {
+    return new SMapLocal();
+  } 
+  
   /**
    * Returns a container or a primitive value.
    * @param key

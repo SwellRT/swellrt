@@ -361,26 +361,27 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   private SNodeRemote transformToRemote(SNode node, SNodeRemoteContainer parentNode, ObservableWavelet containerWavelet)  throws SException {
         
     if (node instanceof SList) {
-      SList list = (SList) node;
+      @SuppressWarnings("unchecked")
+      SList<SNode> list = (SList<SNode>) node;
       SListRemote remoteList = loadList(SubstrateId.createForList(containerWavelet.getId(), idGenerator));
       remoteList.attach(parentNode);
-      
+      remoteList.enableEvents(false);
       for (SNode n: list.values()) {
         remoteList.add(transformToRemote(n, remoteList, containerWavelet));
       }
-      
+      remoteList.enableEvents(true);
       return remoteList;
     
     } else if (node instanceof SMap) {
       SMap map = (SMap) node;
       SMapRemote remoteMap = loadMap(SubstrateId.createForMap(containerWavelet.getId(), idGenerator));
       remoteMap.attach(parentNode);
-      
+      remoteMap.enableEvents(false);
       for (String k: map.keys()) {
         SNode v = map.getNode(k);
         remoteMap.put(k, transformToRemote(v, remoteMap, containerWavelet));
       }
-      
+      remoteMap.enableEvents(true);
       return remoteMap;
     
     } else if (node instanceof SText) {
@@ -417,7 +418,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
 
     Preconditions.checkArgument(substrateId.isMap(), "Expected a map susbtrate id");
     
-    // Reuse instances
+    // Cache instances
     if (nodeStore.containsKey(substrateId)) {
       return (SMapRemote) nodeStore.get(substrateId);    
     }
@@ -473,7 +474,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
   
   private SListRemote loadList(SubstrateId substrateId) {
     
-    // Reuse instances
+    // Cache instances
     if (nodeStore.containsKey(substrateId)) {
       return (SListRemote) nodeStore.get(substrateId);    
     }
@@ -503,7 +504,7 @@ public class SObjectRemote extends SNodeRemoteContainer implements SObject, SObs
 
     Preconditions.checkArgument(substrateId.isText(), "Expected a text susbtrate id");
     
-    // Reuse instances
+    // Cache instances
     if (nodeStore.containsKey(substrateId)) {
       return (STextRemote) nodeStore.get(substrateId);    
     }

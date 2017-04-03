@@ -10,8 +10,11 @@ import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
+import org.swellrt.beta.model.js.SListProxyHandler;
 
-public class SListLocal implements SList, HasJsProxy {
+import jsinterop.annotations.JsOptional;
+
+public class SListLocal implements SList<SNode>, HasJsProxy {
 
   private List<SNode> list = new ArrayList<SNode>();
   private Proxy proxy = null;
@@ -31,19 +34,35 @@ public class SListLocal implements SList, HasJsProxy {
   }
 
   @Override
-  public SList add(SNode value) throws SException {
+  public SList<SNode> add(SNode value) throws SException {
     list.add(value);
     return this;
   }
 
   @Override
-  public SList add(Object object) throws SException {
+  public SList<SNode> add(SNode value, int index) throws SException {
+    list.add(index, value);
+    return this;
+  }
+  
+  @Override
+  public SList<SNode> add(Object object) throws SException {
     SNode node = SUtils.castToSNode(object);
     return add(node);
   }
+  
+  @Override
+  public SList<SNode> add(Object object, @JsOptional Object index) throws SException {
+    SNode node = SUtils.castToSNode(object);
+    if (index != null) {
+      return add(node, (int) index);
+    } else {
+      return add(node);
+    }
+  }
 
   @Override
-  public SList remove(int index) throws SException {
+  public SList<SNode> remove(int index) throws SException {
     list.remove(index);
     return this;
   }
@@ -75,8 +94,9 @@ public class SListLocal implements SList, HasJsProxy {
 
   @Override
   public Object asNative() {
-    // return new Proxy(this, new SListProxyHandler());
-    return null;
+    if (proxy == null)
+      proxy = new Proxy(this, new SListProxyHandler());
+    return proxy;
   }
   
   //
@@ -92,7 +112,5 @@ public class SListLocal implements SList, HasJsProxy {
   public void setJsProxy(Proxy proxy) {
     this.proxy = proxy;
   }
-
-  
 
 }

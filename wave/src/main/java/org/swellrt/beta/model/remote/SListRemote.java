@@ -8,10 +8,12 @@ import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
-import org.swellrt.beta.model.js.SMapProxyHandler;
+import org.swellrt.beta.model.js.SListProxyHandler;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 
-public class SListRemote extends SNodeRemoteContainer implements SList, HasJsProxy, ObservableElementList.Listener<SNodeRemote> {
+import jsinterop.annotations.JsOptional;
+
+public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemote>, HasJsProxy, ObservableElementList.Listener<SNodeRemote> {
 
   public static SListRemote create(SObjectRemote object, SubstrateId substrateId, ObservableElementList<SNodeRemote, SNodeRemote> list) {
     return new SListRemote(object, substrateId, list);
@@ -55,33 +57,59 @@ public class SListRemote extends SNodeRemoteContainer implements SList, HasJsPro
   }
 
   @Override
-  public SList add(SNode value) throws SException {
+  public SList<SNodeRemote> add(SNode value) throws SException {
     check();
     SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
     this.list.add(remoteValue);
     return this;
   }
 
+    
   @Override
-  public SList add(Object value) throws SException {
+  public SList<SNodeRemote> add(Object value) throws SException {
     SNode node = SUtils.castToSNode(value);
     return add(node);
   }
 
   @Override
-  public SList remove(int index) throws SException {
-    this.list.remove((SNodeRemote) getNode(index));
+  public SList<SNodeRemote> add(SNode value, int index) throws SException {
+    check();
+    if (index >= 0 && index <= this.list.size()) {
+      SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
+      this.list.add(index, remoteValue);  
+    } else {
+      throw new SException(SException.OUT_OF_BOUNDS_INDEX);
+    }
     return this;
   }
 
   @Override
-  public int indexOf(SNode node) { 
-    if (node instanceof SNodeRemote)   
-      return this.list.indexOf((SNodeRemote) node);
-    
-    return -1;
+  public SList<SNodeRemote> add(Object value, @JsOptional Object index) throws SException {
+    SNode node = SUtils.castToSNode(value);
+    if (index != null) {
+      return add(node, (int) index);
+    } else {      
+      return add(node);
+    }
   }
   
+  @Override
+  public SList<SNodeRemote> remove(int index) throws SException {
+    check();
+    SNodeRemote node = (SNodeRemote) getNode(index);
+    getObject().checkWritable(node);
+    
+    if (node instanceof SNodeRemoteContainer) {
+      SNodeRemoteContainer nrc = (SNodeRemoteContainer) node;
+      nrc.deattach();
+    }
+    
+    this.list.remove(node);    
+    getObject().deleteNode(node);    
+    
+    return this;
+  }
+
   @Override
   public void clear() throws SException {
     this.list.clear();
@@ -99,8 +127,9 @@ public class SListRemote extends SNodeRemoteContainer implements SList, HasJsPro
 
   @Override
   public Object asNative() {
-    // return new Proxy(this, new SListProxyHandler());
-    return null;
+    if (proxy == null)
+      proxy = new Proxy(this, new SListProxyHandler());
+    return proxy;
   }
 
   //  
@@ -168,13 +197,18 @@ public class SListRemote extends SNodeRemoteContainer implements SList, HasJsPro
   }
 
   @Override
-  public Iterable<SNode> values() {
-    return null;
+  public Iterable<SNodeRemote> values() {
+    return list.getValues();
   }
   
   @Override
   public String toString() {
     return "SMListRemote ["+getSubstrateId()+"]";
+  }
+
+  @Override
+  public int indexOf(SNodeRemote node) throws SException {
+      return this.list.indexOf((SNodeRemote) node);
   }
 
 }

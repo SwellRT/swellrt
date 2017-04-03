@@ -59,4 +59,8 @@ public abstract class SNodeRemote implements SNode {
   public SNodeRemoteContainer getParent() {
     return this.parent;
   }
+  
+  public boolean isAttached() {
+    return this.parent != null;
+  }
 }

@@ -181,7 +181,9 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
   @Override
   public Object asNative() {
-    return new Proxy(this, new SMapProxyHandler());
+    if (proxy == null)
+      proxy = new Proxy(this, new SMapProxyHandler());
+    return proxy;
   }
 
   @Override

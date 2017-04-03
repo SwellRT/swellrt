@@ -9,8 +9,9 @@ import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "List")
-public interface SList extends SNode {
+public interface SList<T extends SNode> extends SNode {
  
+  @SuppressWarnings("rawtypes")
   public static SList create(@JsOptional Object data) throws IllegalCastException {
     /*  
 	  if (data != null && data instanceof JavaScriptObject)
@@ -18,7 +19,13 @@ public interface SList extends SNode {
     */
     return new SListLocal();
   } 
-    
+  
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
+  public static SList create() {    
+    return new SListLocal();
+  } 
+  
   /**
    * Returns a container or a primitive value.
    * @param key
@@ -34,13 +41,19 @@ public interface SList extends SNode {
   public SNode getNode(int index) throws SException;
   
   @JsIgnore
-  public SList add(SNode value) throws SException;
+  public SList<T> add(SNode value) throws SException;
   
-  public SList add(Object object) throws SException;
+  @JsIgnore
+  public SList<T> add(SNode value, int index) throws SException;
   
-  public SList remove(int index) throws SException;
+  public SList<T> add(Object object, @JsOptional Object index) throws SException;
   
-  public int indexOf(SNode node) throws SException;
+  @JsIgnore
+  public SList<T> add(Object object) throws SException;
+  
+  public SList<T> remove(int index) throws SException;
+  
+  public int indexOf(T node) throws SException;
   
   public void clear() throws SException;
 
@@ -49,7 +62,7 @@ public interface SList extends SNode {
   public int size();
   
   @JsIgnore
-  public Iterable<SNode> values();
+  public Iterable<T> values();
   
   Object asNative();
 }
