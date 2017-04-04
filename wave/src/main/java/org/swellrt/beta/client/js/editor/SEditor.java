@@ -615,6 +615,10 @@ public class SEditor implements EditorUpdateListener {
         @Override
         public void accept(RangedAnnotation<String> t) {
           
+          // ignore annotations with null value, are just editor's internal stuff 
+          if (t.value() == null)
+            return; 
+          
           if (!result.containsKey(t.key())) {
             result.setJso(t.key(), JavaScriptObject.createArray());
           }
@@ -656,7 +660,11 @@ public class SEditor implements EditorUpdateListener {
 
         @Override
         public void accept(RangedAnnotation<String> t) {
-                    
+                
+          // ignore annotations with null value, are just editor's internal stuff 
+          if (t.value() == null)
+            return; 
+          
           Range anotRange = new Range(t.start(), t.end());
           int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
           AnnotationInstance anot =
@@ -686,10 +694,17 @@ public class SEditor implements EditorUpdateListener {
     
     if (value == null)
       throw new SEditorException("Null value not allowed for overlapping annotations");
+    
+    editor.undoableSequence(new Runnable(){
+
+      @Override
+      public void run() {
+        doc.beginMutationGroup();    
+        EditorAnnotationUtil.setAnnotationWithOverlap(doc, key, value, actualRange.getStart(), actualRange.getEnd());    
+        doc.endMutationGroup();          
+      }
       
-    doc.beginMutationGroup();    
-    EditorAnnotationUtil.setAnnotationWithOverlap(doc, key, value, actualRange.getStart(), actualRange.getEnd());    
-    doc.endMutationGroup();    
+    });
   }
 
   /**
@@ -705,29 +720,44 @@ public class SEditor implements EditorUpdateListener {
     final Range actualRange = checkRangeArgument(range);
     final CMutableDocument doc = editor.getDocument();   
     
-    EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
-    .forEach(new Consumer<RangedAnnotation<String>>(){
+    editor.undoableSequence(new Runnable(){
 
       @Override
-      public void accept(RangedAnnotation<String> t) {
-   
-        String newValue = null;
-        if (t.value().contains(",")) {
-          newValue = t.value().replace(value, "");
-          
-          newValue = newValue.replace(",,", ",");
-          
-          if (newValue.charAt(0) == ',')
-            newValue = newValue.substring(1, newValue.length());
-          
-          if (newValue.charAt(newValue.length()-1) == ',')
-            newValue = newValue.substring(0, newValue.length()-1);
-     
-        }
-        // This can remove or update an annotation
-        doc.setAnnotation(t.start(), t.end(), key, newValue);
+      public void run() {
+        
+        EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
+        .forEach(new Consumer<RangedAnnotation<String>>(){
+
+          @Override
+          public void accept(RangedAnnotation<String> t) {
+       
+            // ignore annotations with null value, are just editor's internal stuff 
+            if (t.value() == null)
+              return; 
+            
+            String newValue = null;
+            if (t.value().contains(",")) {
+              newValue = t.value().replace(value, "");
+              
+              newValue = newValue.replace(",,", ",");
+              
+              if (newValue.charAt(0) == ',')
+                newValue = newValue.substring(1, newValue.length());
+              
+              if (newValue.charAt(newValue.length()-1) == ',')
+                newValue = newValue.substring(0, newValue.length()-1);
+         
+            }
+            // This can remove or update an annotation
+            doc.setAnnotation(t.start(), t.end(), key, newValue);
+          }
+        });
+        
       }
+    
     });
+    
+    
     
   }
   
