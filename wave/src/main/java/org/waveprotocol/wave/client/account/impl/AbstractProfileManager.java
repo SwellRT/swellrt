@@ -35,6 +35,8 @@ import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import com.google.gwt.core.shared.GWT;
+
 import jsinterop.annotations.JsOptional;
 
 /**
@@ -112,10 +114,14 @@ public abstract class AbstractProfileManager implements ProfileManager {
       
   /** Internal helper that rotates through the colours. */
   private RgbColor getNextColour(String id) {
-    int colorIndex = id.hashCode() % RgbColorPalette.PALETTE.length;    
-    colorIndex = colorIndex < 0 ? -colorIndex : colorIndex;  
-    RgbColor colour = RgbColorPalette.PALETTE[colorIndex].get("400");
-    return colour;  
+    if (GWT.isClient()) {
+      int colorIndex = id.hashCode() % RgbColorPalette.PALETTE.length;    
+      colorIndex = colorIndex < 0 ? -colorIndex : colorIndex;  
+      RgbColor colour = RgbColorPalette.PALETTE[colorIndex].get("400");
+      return colour;  
+    } else {
+      return RgbColor.WHITE;
+    }
   }
   
     
