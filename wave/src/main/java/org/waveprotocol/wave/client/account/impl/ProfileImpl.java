@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -77,13 +78,14 @@ public final class ProfileImpl implements Profile {
   private String shortName = "";
   private String email;
   private String locale;
-   
+  private final RgbColor color;
 
-  public ProfileImpl(ParticipantId id, AbstractProfileManager manager) {
+  public ProfileImpl(ParticipantId id, AbstractProfileManager manager, RgbColor color) {
     this.id = id;
     this.shortName = buildName(id);
     this.name = buildName(id);
     this.manager = manager;
+    this.color = color;
   }
 
   public void update(RawProfileData data) {
@@ -146,6 +148,21 @@ public final class ProfileImpl implements Profile {
   @Override
   public boolean getAnonymous() {
     return id.isAnonymous();
+  }
+
+  @Override
+  public RgbColor getColor() {
+    return color;
+  }
+
+  @Override
+  public void trackActivity(String sessionId, double timestamp) {
+    // TODO implement, move track activity logic from session to profile
+  }
+
+  @Override
+  public void trackActivity(String sessionId) {
+    // TODO implement, move track activity logic from session to profile    
   }
   
 }

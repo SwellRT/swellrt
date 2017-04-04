@@ -11,14 +11,12 @@ import com.google.gwt.core.client.GWT;
 public class ProfileSessionImpl implements ProfileSession {
  
   private final String id;
-  private final RgbColor color;
   private final Profile profile;
   private final AbstractProfileManager manager;
   
   private double lastActivityTime = 0;
   
-  public ProfileSessionImpl(Profile profile, AbstractProfileManager manager, String sessionId, RgbColor color) {
-    this.color = color;
+  public ProfileSessionImpl(Profile profile, AbstractProfileManager manager, String sessionId) {
     this.id = sessionId;
     this.profile = profile;
     this.manager = manager;
@@ -31,7 +29,7 @@ public class ProfileSessionImpl implements ProfileSession {
 
   @Override
   public RgbColor getColor() {
-    return color;
+    return profile.getColor();
   }
 
   @Override

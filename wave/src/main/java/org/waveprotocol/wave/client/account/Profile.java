@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.client.account;
 
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
@@ -86,5 +87,14 @@ public interface Profile {
 
   @JsProperty
   boolean getAnonymous();
+  
+  @JsProperty
+  RgbColor getColor();
+  
+  @JsIgnore
+  void trackActivity(String sessionId, double timestamp);
+  
+  @JsIgnore
+  void trackActivity(String sessionId);
   
 }

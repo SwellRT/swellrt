@@ -53,7 +53,6 @@ public abstract class AbstractProfileManager implements ProfileManager {
   }
 
 
-  private int currentColourIndex = 0;
   private int refreshInterval = ProfileManager.USER_INACTIVE_WAIT;
     
   protected final StringMap<Profile> profiles = CollectionUtils.createStringMap();
@@ -151,7 +150,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
       Profile profile = getProfile(participantId);  
       
       if (!sessions.containsKey(sessionId)) {
-        sessions.put(sessionId, new ProfileSessionImpl(profile, this, sessionId, getNextColour(sessionId)));
+        sessions.put(sessionId, new ProfileSessionImpl(profile, this, sessionId));
         fireOnLoaded(sessions.get(sessionId));
       }    
     }
@@ -161,7 +160,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
   
   
   private Profile createBareProfile(ParticipantId participantId) {
-    return new ProfileImpl(participantId, this);
+    return new ProfileImpl(participantId, this, getNextColour(participantId.getAddress()));
   }
   
   
