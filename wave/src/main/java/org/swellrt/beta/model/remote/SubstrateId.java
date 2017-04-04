@@ -84,12 +84,14 @@ public class SubstrateId {
       if (parts.length != 3)
         return null;
       
-      // TODO add list check
+
       if (!parts[0].equals(MAP_TYPE_PREFIX) &&
+          !parts[0].equals(LIST_TYPE_PREFIX) &&
           !parts[0].equals(TEXT_TYPE_PREFIX)) 
         return null;
 
       if (!parts[2].startsWith(MAP_TYPE_PREFIX+TOKEN_SEPARATOR) &&
+          !parts[2].startsWith(LIST_TYPE_PREFIX+TOKEN_SEPARATOR) &&
           !parts[2].startsWith(TEXT_TYPE_PREFIX+TOKEN_SEPARATOR))
         return null;
       
