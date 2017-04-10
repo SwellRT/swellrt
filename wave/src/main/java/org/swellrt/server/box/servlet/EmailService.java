@@ -249,8 +249,12 @@ public class EmailService extends BaseService {
                 String body =
                     decTemplates.getTemplateMessage(t, RECOVER_PASSWORD_BUNDLE, ctx, locale);
 
-                emailSender.send(new InternetAddress(emailAddress), subject, body, null);
-
+                if (emailAddress != null) {
+                  emailSender.send(new InternetAddress(emailAddress), subject, body, null);
+                } else {
+                  response.sendError(HttpServletResponse.SC_CONFLICT,
+                      "the user have not provided an email address and could not be contacted");
+                }
               }
             }
 

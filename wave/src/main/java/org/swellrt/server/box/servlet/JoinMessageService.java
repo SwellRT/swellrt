@@ -140,17 +140,21 @@ public class JoinMessageService extends BaseService {
 
       String body = decTemplates.getTemplateMessage(t, JOIN_MESSAGE_BUNDLE, params, locale);
 
-      emailSender.send(new InternetAddress(adminEmail), subject, body,
-          new InternetAddress(joinerEmail, joinerNickOrEmail));
+      if (adminEmail != null) {
+        emailSender.send(new InternetAddress(adminEmail), subject, body,
+            new InternetAddress(joinerEmail, joinerNickOrEmail));
+      } else {
+        response.sendError(HttpServletResponse.SC_CONFLICT,
+            "the user have not provided an email address and could not be contacted");
+      }
 
     } catch (AddressException e) {
-        // TODO Auto-generated catch block
       e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     } catch (MessagingException e) {
-        // TODO Auto-generated catch block
       e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       }
     }
-
 
 }

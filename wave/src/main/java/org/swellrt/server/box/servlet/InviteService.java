@@ -134,7 +134,13 @@ public class InviteService extends BaseService {
         replyTo = new InternetAddress(hum.getEmail(), inviter);
       }
 
-      emailSender.send(new InternetAddress(emailAddress), subject, body, replyTo);
+      if (emailAddress != null) {
+        emailSender.send(new InternetAddress(emailAddress), subject, body, replyTo);
+      } else {
+        response.sendError(HttpServletResponse.SC_CONFLICT,
+            "the user have not provided an email address and could not be contacted");
+      }
+
     } catch (AddressException e) {
         // TODO Auto-generated catch block
       e.printStackTrace();
