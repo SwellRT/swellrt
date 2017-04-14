@@ -535,6 +535,7 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
     }
   }
 
+
   void removeChildrenInner(ContentNode fromIncl, ContentNode toExcl, boolean affectImpl) {
     List<ContentNode> removedNodes = new ArrayList<ContentNode>();
     for (ContentNode node = fromIncl; node != toExcl; ) {
@@ -551,10 +552,22 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
 
       if (affectImpl) {
         Node nodelet = oldChild.normaliseImpl();
-        if (nodelet != null) {
-          // removeFromParent() checks if parent is null
-          nodelet.removeFromParent();
+        try {
+          if (nodelet != null) {
+            nodelet.removeFromParent();
+          }
+        } catch (RuntimeException e) {
+          // The nodelet couldn't been deleted because it was replaced with other
+          // by an async event handler?
+          // Try to get the actual nodelet and delete it.
+          
+          Node nodeletOther = oldChild.normaliseImpl();
+          if (nodeletOther != nodelet)
+            if (nodelet != null) {
+              nodelet.removeFromParent();
+            }
         }
+        
       }
 
       removedNodes.add(oldChild);
