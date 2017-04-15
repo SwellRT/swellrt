@@ -50,8 +50,11 @@ import org.waveprotocol.wave.model.document.util.Point;
  */
 public class Repairer {
 
-  /** For testing/debug purposes, treat repairs as fatal errors */
-  @VisibleForTesting public static boolean debugRepairIsFatal = getAssertionsOn();
+  /** 
+   * For testing/debug purposes, treat repairs as fatal errors 
+   * (pablojan) set to false to have same behaviour in dev and prod.  
+   */
+  @VisibleForTesting public static boolean debugRepairIsFatal = false; // getAssertionsOn();
 
   private static boolean getAssertionsOn() {
     try {
