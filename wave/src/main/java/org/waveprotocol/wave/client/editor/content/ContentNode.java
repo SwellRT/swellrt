@@ -556,8 +556,7 @@ public abstract class ContentNode implements Doc.N,
       ContentNode from, ContentNode to, ContentNode refChild, Element oldContainerNodelet) {
     try {
       staticImplInsertBefore(parent, from, to, refChild, oldContainerNodelet);
-    } catch (RuntimeException e) {
-      e.printStackTrace();
+    } catch (RuntimeException e) {   
       // Safe to swallow the exception, the impl mutation code does not
       // transitively affect external state.
       noteErrorWithImplMutation(e);

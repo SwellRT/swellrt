@@ -552,20 +552,23 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
 
       if (affectImpl) {
         Node nodelet = oldChild.normaliseImpl();
-        try {
-          if (nodelet != null) {
-            nodelet.removeFromParent();
-          }
-        } catch (RuntimeException e) {
-          // The nodelet couldn't been deleted because it was replaced with other
-          // by an async event handler?
-          // Try to get the actual nodelet and delete it.
-          
-          Node nodeletOther = oldChild.normaliseImpl();
-          if (nodeletOther != nodelet)
+        boolean stop = false;
+        while (!stop) {          
+          try {
             if (nodelet != null) {
               nodelet.removeFromParent();
             }
+            stop = true;
+          } catch (RuntimeException e) {
+            // The nodelet couldn't been deleted because it was replaced with other
+            // by an async event handler?
+            // Try to get the actual nodelet and delete it.          
+            Node nodeletOther = oldChild.normaliseImpl();
+            if (nodeletOther != nodelet)
+              nodelet = nodeletOther;
+            else
+              stop = true;
+          }
         }
         
       }
