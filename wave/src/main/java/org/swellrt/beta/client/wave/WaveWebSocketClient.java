@@ -148,7 +148,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private String sessionId = null;
 
 
-  public WaveWebSocketClient(String serverUrl, String clientVersion) {
+  public WaveWebSocketClient(String serverUrl, String clientVersion, ) {
     submitRequestCallbacks = CollectionUtils.createIntMap();
     socket = new WaveSocketWS(serverUrl, this);
   }
