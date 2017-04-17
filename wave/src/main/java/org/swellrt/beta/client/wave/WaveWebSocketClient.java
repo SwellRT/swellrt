@@ -48,11 +48,9 @@ import java.util.Queue;
 
 
 /**
- * Wrapper around Atmosphere connections that handles the Wave client-server
- * protocol.
- *
- * Catch exceptions on handling server messages and provide them to client as
- * events.
+ * Handle raw Wave protocol's messages from/to underlying transport protocol (usually WebSockets)
+ * <p>
+ * Exposes connection status to the app. This status don't need to be same as WebSocket state.  
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
@@ -150,9 +148,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private String sessionId = null;
 
 
-  public WaveWebSocketClient(String urlBase, String clientVersion) {
+  public WaveWebSocketClient(String serverUrl, String clientVersion) {
     submitRequestCallbacks = CollectionUtils.createIntMap();
-    socket = WaveSocketFactory.create(urlBase, clientVersion, this);
+    socket = new WaveSocketWS(serverUrl, this);
   }
 
   /**

@@ -28,19 +28,14 @@ package org.swellrt.beta.client.wave;
 public interface WaveSocket {
 
 
-  interface WaveSocketStartCallback {
-    void onSuccess();
-    void onFailure(Throwable e);
-  }
-
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
-    void onError(Throwable e);
+    void onError();
     void onMessage(String message);
   }
   
-  void connect(String sessionId);
+  void connect();
   void disconnect();
   void sendMessage(String message);
 

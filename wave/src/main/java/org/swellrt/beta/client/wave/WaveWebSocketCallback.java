@@ -23,11 +23,6 @@ import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
 import org.waveprotocol.wave.communication.gwt.JsonHelper;
 import org.waveprotocol.wave.communication.gwt.JsonMessage;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
-import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
-import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
-import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.id.WaveletId;
 
 /**
  * Callback for a wave websocket.
