@@ -4,6 +4,7 @@ import org.swellrt.beta.client.js.Console;
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
 import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
 import org.waveprotocol.wave.model.document.util.FocusedPointRange;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.IntRange;
 
 import com.google.gwt.dom.client.Node;
@@ -13,7 +14,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swellrt.Editor", name = "Selection")
 public class SSelection {
 
-  protected static SSelection get() {
+  protected static SSelection get(Range textRange) {
     
     FocusedPointRange<Node> range = NativeSelectionUtil.get();
     
@@ -33,6 +34,8 @@ public class SSelection {
       s.position = NativeSelectionUtil.slowGetPosition();    
       s.anchorPosition = NativeSelectionUtil.slowGetAnchorPosition();
     
+      s.range = textRange;
+      
     return s;
     
     } catch (RuntimeException e) {
@@ -63,4 +66,6 @@ public class SSelection {
   public OffsetPosition position;
   
   public OffsetPosition anchorPosition;
+  
+  public Range range;
 }

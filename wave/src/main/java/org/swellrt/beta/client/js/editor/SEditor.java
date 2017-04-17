@@ -771,9 +771,10 @@ public class SEditor implements EditorUpdateListener {
     return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
   }
   
-  public Range getSelection() {
+  public SSelection getSelection() {
     try { 
-      return checkRangeArgument(null);
+      Range r = checkRangeArgument(null);
+      return SSelection.get(r);
     } catch (Exception e) {
       return null;
     }
@@ -862,7 +863,7 @@ public class SEditor implements EditorUpdateListener {
     
     if (selectionHandler != null) {
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();    
-      selectionHandler.exec(range, this, SSelection.get());
+      selectionHandler.exec(range, this, SSelection.get(range));
     }
   }
 
