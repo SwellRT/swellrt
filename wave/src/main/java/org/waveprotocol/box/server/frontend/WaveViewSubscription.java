@@ -129,7 +129,7 @@ final class WaveViewSubscription {
     }
     Preconditions.checkState(!state.hasOutstandingSubmit,
         "Received overlapping submit requests to subscription %s", this);
-    LOG.info("Submit oustandinding on channel " + channelId);
+    LOG.fine("Submit oustandinding on channel " + channelId);
     state.hasOutstandingSubmit = true;
   }
 
@@ -149,7 +149,7 @@ final class WaveViewSubscription {
     Preconditions.checkState(state.hasOutstandingSubmit);
     state.submittedEndVersions.add(version.getVersion());
     state.hasOutstandingSubmit = false;
-    LOG.info("Submit resolved on channel " + channelId);
+    LOG.fine("Submit resolved on channel " + channelId);
 
     // Forward any queued deltas.
     List<TransformedWaveletDelta> filteredDeltas =  filterOwnDeltas(state.heldBackDeltas, state);
