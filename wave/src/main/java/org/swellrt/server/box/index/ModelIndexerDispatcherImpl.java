@@ -128,10 +128,10 @@ public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
       try {
         index(wavelet, committedDeltas);
       } catch (RuntimeException e) {
-        LOG.info("Error indexing model " + waveletName.toString() + ", " + e.getMessage());
+        LOG.warning("Error indexing model " + waveletName.toString() + ", " + e.getMessage());
       }
     } else {
-      LOG.warning("Wavelet committed but data not found");
+      LOG.fine("Wavelet committed but data not found");
     }
   }
 
@@ -146,7 +146,7 @@ public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
     UnmutableModel model = UnmutableModel.create(wavelet);
 
     if (model == null) {
-      LOG.warning("Unable to build a data model from wavelet " + waveletName.toString());
+      LOG.fine("Unable to build a data model from wavelet " + waveletName.toString());
       return;
     }
 
@@ -180,7 +180,7 @@ public class ModelIndexerDispatcherImpl implements ModelIndexerDispatcher {
         modelStore.update(keyObj, dataModelDBObject, true,
           false);
 
-      LOG.info("Data model indexed successfully " + waveletName.toString());
+      LOG.fine("Data model indexed successfully " + waveletName.toString());
     } catch (Exception e) {
       LOG.warning("Error indexing data model " + waveletName.toString(), e);
     }
