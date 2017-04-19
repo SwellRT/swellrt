@@ -28,7 +28,6 @@ import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.communication.gson.GsonException;
 import org.waveprotocol.wave.communication.gson.GsonSerializable;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.gson.Gson;
@@ -103,7 +102,7 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
     this.serializer = new ProtoSerializer();
   }
 
-  public void handleMessageString(String data, ParticipantId loggedInUser) {
+  protected void handleMessageString(String data) {
     LOG.fine("received JSON message " + data);
     if (Timing.isEnabled()) {
       Timing.enterScope();
@@ -121,7 +120,7 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
         e.printStackTrace();
         return;
       }
-      callback.message(wrapper.sequenceNumber, message, loggedInUser);
+      callback.message(wrapper.sequenceNumber, message);
     } finally {
       Timing.exitScope();
     }

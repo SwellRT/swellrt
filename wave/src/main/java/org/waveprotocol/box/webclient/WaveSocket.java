@@ -17,37 +17,22 @@
  * under the License.
  */
 
-package org.waveprotocol.box.webclient.client.atmosphere;
+package org.waveprotocol.box.webclient;
 
 /**
- * The atmosphere connection interface for wrapping the javascript
- * client in GWT
+ * This interface serves as a proxy interface wrapper for concrete socket implementations
+ * like {@link com.google.gwt.websockets.client.WebSocket}.
  *
- * @author pablojan@gmail.com (Pablo Ojanguren)
- *
+ * @author tad.glines@gmail.com (Tad Glines)
  */
-public interface AtmosphereConnection {
+public interface WaveSocket {
+  interface WaveSocketCallback {
+    void onConnect();
+    void onDisconnect();
+    void onMessage(String message);
+  }
 
-
-  /**
-   * Initiate a connection attempt.
-   *
-   */
   void connect();
-
-  /**
-   * Initiate an orderly close of the connection.
-   *
-   */
-  void close();
-
-
-  /**
-   * Send a message.
-   *
-   * @param message
-   */
+  void disconnect();
   void sendMessage(String message);
-
-
 }

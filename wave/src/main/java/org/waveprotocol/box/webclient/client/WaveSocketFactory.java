@@ -19,13 +19,12 @@
 
 package org.waveprotocol.box.webclient.client;
 
-import org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphere;
-import org.waveprotocol.box.webclient.client.atmosphere.WaveSocketAtmosphereCallback;
+import com.google.gwt.websockets.client.WebSocket;
+import com.google.gwt.websockets.client.WebSocketCallback;
 
 
 /**
- * Factory to create proxy wrappers around either {@link com.google.gwt.websockets.client.WebSocket}
- * or {@link org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection}.
+ * Factory to create proxy wrappers for {@link com.google.gwt.websockets.client.WebSocket}
  *
  * @author tad.glines@gmail.com (Tad Glines)
  */
@@ -33,16 +32,42 @@ public class WaveSocketFactory {
 
   /**
    * Create a WaveSocket instance that wraps a concrete socket implementation.
-   * If useWebSocketAlt is true an instance of {@link org.waveprotocol.box.webclient.client.atmosphere.AtmosphereConnection}
-   * is wrapped, otherwise an instance of {@link com.google.gwt.websockets.client.WebSocket} is
-   * wrapped.
    */
-  public static WaveSocket create(String urlBase, String sessionId, String clientVersion,
-      WaveSocket.WaveSocketCallback callback) {
+  public static WaveSocket create(final String urlBase,
+      final WaveSocket.WaveSocketCallback callback) {
 
-    // Handle special atmosphere features enabled in SwellRT
-    WaveSocketAtmosphereCallback swellRTCallbackSwellRT = new WaveSocketAtmosphereCallback(callback);
+      return new WaveSocket() {
+        final WebSocket socket = new WebSocket(new WebSocketCallback() {
+          @Override
+          public void onConnect() {
+            callback.onConnect();
+          }
 
-    return new WaveSocketAtmosphere(swellRTCallbackSwellRT, urlBase, sessionId, clientVersion);
+          @Override
+          public void onDisconnect() {
+            callback.onDisconnect();
+          }
+
+          @Override
+          public void onMessage(String message) {
+            callback.onMessage(message);
+          }
+        });
+
+        @Override
+        public void connect() {
+          socket.connect(urlBase + "socket");
+        }
+
+        @Override
+        public void disconnect() {
+          socket.close();
+        }
+
+        @Override
+        public void sendMessage(String message) {
+          socket.send(message);
+        }
+      };
   }
 }

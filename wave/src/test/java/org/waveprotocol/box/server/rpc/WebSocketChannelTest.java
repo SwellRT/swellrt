@@ -43,7 +43,7 @@ public class WebSocketChannelTest extends TestCase {
     }
 
     @Override
-    protected void sendMessageString(final String data) {
+    public void sendMessageString(final String data) {
       this.message = data;
     }
   }
@@ -53,7 +53,7 @@ public class WebSocketChannelTest extends TestCase {
       long sequenceNumber;
 
       @Override
-      public void message(int sequenceNo, final Message message, ParticipantId loggedInUser) {
+      public void message(int sequenceNo, final Message message) {
         this.sequenceNumber = sequenceNo;
         this.savedMessage = message;
       }
@@ -84,7 +84,7 @@ public class WebSocketChannelTest extends TestCase {
     String sentRequest = channel.message;
     assertNotNull(sentRequest);
     System.out.println(sentRequest);
-    channel.handleMessageString(sentRequest, null);
+    channel.handleMessageString(sentRequest);
     assertNotNull(callback.savedMessage);
     assertEquals(SEQUENCE_NUMBER, callback.sequenceNumber);
     assertEquals(sourceRequest, callback.savedMessage);

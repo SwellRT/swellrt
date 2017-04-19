@@ -26,17 +26,9 @@ package org.waveprotocol.box.webclient.client;
  * @author tad.glines@gmail.com (Tad Glines)
  */
 public interface WaveSocket {
-
-
-  interface WaveSocketStartCallback {
-    void onSuccess();
-    void onFailure();
-  }
-
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
-    void onError(String errorCode);
     void onMessage(String message);
   }
 

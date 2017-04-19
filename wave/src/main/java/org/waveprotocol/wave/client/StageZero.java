@@ -45,7 +45,7 @@ public interface StageZero {
     protected final void create(Accessor<StageZero> whenReady) {
       onStageInit();
       // TODO: enable webdriver hook.
-      GWT.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
+      //GWT.setUncaughtExceptionHandler(createUncaughtExceptionHandler());
       if (GWT.isScript()) {
         CollectionUtils.setDefaultCollectionFactory(new JsoCollectionFactory());
       }

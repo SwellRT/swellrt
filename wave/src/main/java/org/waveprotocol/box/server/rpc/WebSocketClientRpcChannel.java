@@ -19,6 +19,17 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.waveprotocol.wave.util.logging.Log;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -26,18 +37,6 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
-
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of {@link ClientRpcChannel} based on a
@@ -63,7 +62,7 @@ public class WebSocketClientRpcChannel implements ClientRpcChannel {
 
     ProtoCallback callback = new ProtoCallback() {
       @Override
-      public void message(int sequenceNo, Message message, ParticipantId loggedInUSer) {
+      public void message(int sequenceNo, Message message) {
         final ClientRpcController controller;
         synchronized (activeMethodMap) {
           controller = activeMethodMap.get(sequenceNo);

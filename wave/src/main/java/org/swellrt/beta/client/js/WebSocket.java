@@ -1,35 +1,48 @@
 package org.swellrt.beta.client.js;
 
 
+import org.swellrt.beta.client.js.event.CloseEvent;
+import org.swellrt.beta.client.js.event.Event;
+import org.swellrt.beta.client.js.event.MessageEvent;
+
 import jsinterop.annotations.JsConstructor;
 import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "WebSocket")
 public class WebSocket {
+
+  @JsOverlay
+  public static final int CONNECTING = 0;
   
-  public final static int STATE_CONNECTING = 0;
-  public final static int STATE_OPEN = 1;
-  public final static int STATE_CLOSING = 2;
-  public final static int STATE_CLOSED = 3;
+  @JsOverlay
+  public static final int OPEN = 1;
+  
+  @JsOverlay
+  public static final int CLOSING = 2;
+  
+  @JsOverlay
+  public static final int CLOSED = 3;
+  
   
   @JsFunction
   public interface Function<T> {
     void exec(T o);
   }
-  
+ 
   @JsConstructor
   public WebSocket(String server) {
   }  
   
-  public Function<Void> onopen;
+  public Function<Event> onopen;
   
-  public Function<String> onmessage;
+  public Function<MessageEvent> onmessage;
   
-  public Function<Void> onclose;
+  public Function<CloseEvent> onclose;
   
-  public Function<String> onerror;
+  public Function<Event> onerror;
   
   public int readyState; // read-only
   

@@ -3,6 +3,7 @@ package org.swellrt.beta.client;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
+import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.SException;
@@ -111,14 +112,15 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
 	}
 
 	public void close() {
-	  loader.destroy();
+	  if (loader != null)
+	    loader.destroy();
 	}
 	
 	@Override
 	public void onFailure(ChannelException e) {
 	  this.lastException = e;
 		this.state = ERROR;
-			
+		Console.log("ChannelException: "+e.toString());
 		// If an exception occurs during stage loader (WaveLoader)
 		// it will reach here. Check the future so.
 		if (!this.sobjectFuture.isDone()) {	  

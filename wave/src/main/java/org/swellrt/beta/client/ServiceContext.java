@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
+import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
-import org.swellrt.beta.client.wave.WaveSocket.WaveSocketStartCallback;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SObjectRemote;
@@ -180,15 +180,12 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     
     waveRegistry.clear();
     
-    if (websocketClient != null &&
-        (websocketClient.getState() == WaveWebSocketClient.ConnectState.CONNECTED  ||
-        websocketClient.getState() == WaveWebSocketClient.ConnectState.CONNECTING))
-      websocketClient.disconnect(false);
+    if (websocketClient != null) {
+      websocketClient.stop(false);
+      websocketClient = null;
+    }
     
-    websocketClient = new WaveWebSocketClient(websocketAddress, SWELL_DATAMODEL_VERSION);
-    
-    serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create();
-    
+    serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer>create();    
     sessionManager.removeSession();
     
   }
@@ -254,31 +251,11 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    */
   private boolean startWebsocket() {
     
-    if (websocketClient.getState() == WaveWebSocketClient.ConnectState.NEW ||
-        websocketClient.getState() == WaveWebSocketClient.ConnectState.ERROR) {
-
+    if (websocketClient == null) {      
+      websocketClient = new WaveWebSocketClient(sessionManager.getSessionToken(), websocketAddress);
       websocketClient.attachStatusListener(ServiceContext.this);
-      websocketClient.connect(sessionManager.getSessionToken(), new WaveSocketStartCallback() {
-  
-        @Override
-        public void onSuccess() {
-  
-          RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(websocketClient, sessionManager.getUserId());
-          for (WaveContext wc : waveRegistry.values())
-            wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);
-          
-          serviceMultiplexerFuture.set(serviceMultiplexer);
-        }
-  
-        @Override
-        public void onFailure(Throwable t) {
-          handleWebsocketError(t);
-        }
-  
-      });
-    
-      return true;
-      
+      websocketClient.start();         
+      return true;      
     }
 
     return false;
@@ -286,43 +263,43 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   }
 
   /**
-   * Handle Websocket turbulences
+   * Handle WebSocket status
    */
   @Override
-  public void onStateChange(ConnectState state, Throwable e) {
+  public void onStateChange(ConnectState state, String e) {
+
+    if (state.equals(ConnectState.CONNECTED)) {
+      
+      // This is first time connection
+      if (!serviceMultiplexerFuture.isDone()) {        
+        RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(websocketClient, sessionManager.getUserId());
+        for (WaveContext wc : waveRegistry.values())
+          wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);        
+        serviceMultiplexerFuture.set(serviceMultiplexer);
+      }
+    }
+    
     // At this moment we cannot get recovered from
     // a Websocket fatal error, so in that case, let's shutdown
     // all Wave contexts gracefully
+    SException sexception = null;
+    
     if (state.equals(ConnectState.ERROR)) {
-      handleWebsocketError(e);      
-    }
-    
-    SException se = null;
-    if (e != null)
-      se = new SException(ResponseCode.WEBSOCKET_ERROR.getValue(), e, "Websocket error");
+      sexception = new SException(ResponseCode.WEBSOCKET_ERROR.getValue(), null, e);
       
-    
+      if (!serviceMultiplexerFuture.isDone())
+        serviceMultiplexerFuture.setException(new SException(ResponseCode.WEBSOCKET_ERROR));
+      
+      for (WaveContext ctx: waveRegistry.values()) {
+        ctx.onFailure(new ChannelException(ResponseCode.WEBSOCKET_ERROR, e, null, Recoverable.NOT_RECOVERABLE, null, null));
+      }          
+    }
+
+    //     
     for (ServiceFrontend.ConnectionHandler ch: connectionHandlers)
-      ch.exec(state.toString(), se);
+      ch.exec(state.toString(), sexception);
   }
   
-  /**
-   * Handles a websocket's (fatal) error. Basic implementation just
-   * set this context in a definitive erroneous state.
-   * <p>
-   * Future implementations could handle a reconnection policy.
-   */
-  private void handleWebsocketError(Throwable e) {
-    
-    if (!serviceMultiplexerFuture.isDone())
-      serviceMultiplexerFuture.setException(new SException(ResponseCode.WEBSOCKET_ERROR));
-    
-    for (WaveContext ctx: waveRegistry.values()) {
-      ctx.onFailure(new ChannelException(ResponseCode.WEBSOCKET_ERROR, e.getMessage(), e, Recoverable.NOT_RECOVERABLE, null, null));
-    }
-    
-  }
-
   @Override
   public void check() throws SException {
     

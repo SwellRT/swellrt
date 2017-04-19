@@ -32,12 +32,17 @@ import java.io.IOException;
  * A channel implementation for websocket.
  *
  * @author akaplanov@gmai.com (A. Kaplanov)
+ * @author pablojan@gmai.com (Pablo Ojanguren)
  */
 @WebSocket
 public class WebSocketChannelImpl extends WebSocketChannel {
   private static final Log LOG = Log.get(WebSocketChannelImpl.class);
 
+  private final static String SIGNAL_HEARTBEAT = "[hb]";
+  private final static String SIGNAL_RECONNECTION = "[rc]";
+  
   private Session session;
+  private int sessionCount = -1;
 
   public WebSocketChannelImpl(ProtoCallback callback) {
     super(callback);
@@ -46,13 +51,32 @@ public class WebSocketChannelImpl extends WebSocketChannel {
   @OnWebSocketConnect
   public void onOpen(Session session) {
     synchronized (this) {
-      this.session = session;
+      this.session = session; 
+      sessionCount++;
     }
   }
 
   @OnWebSocketMessage
   public void onMessage(String data) {
-    handleMessageString(data, null);
+
+    if (data.equals(SIGNAL_HEARTBEAT)) {
+      // Response an echo hearbeat to client
+      try {
+        sendMessageString(SIGNAL_HEARTBEAT);
+      } catch (IOException e) {
+        // swallow it
+      }     
+      return;
+    }
+    
+    if (data.equals(SIGNAL_RECONNECTION)) {
+      if (sessionCount == 0) {
+        session.close(1002, "Server connection reset"); // CLOSE_PROTOCOL_ERROR
+      }
+      return;
+    }
+    
+    handleMessageString(data);
   }
 
   @OnWebSocketClose
@@ -64,7 +88,7 @@ public class WebSocketChannelImpl extends WebSocketChannel {
   }
 
   @Override
-  protected void sendMessageString(String data) throws IOException {
+  public void sendMessageString(String data) throws IOException {
     synchronized (this) {
       if (session == null) {
         LOG.warning("Websocket is not connected");
@@ -73,4 +97,5 @@ public class WebSocketChannelImpl extends WebSocketChannel {
       }
     }
   }
+
 }

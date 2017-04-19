@@ -127,7 +127,7 @@ public class WebClient implements EntryPoint {
     return popup;
   }
 
-  private final ProfileManager profiles = null;
+  private final ProfileManager profiles = new RemoteProfileManagerImpl();
   private final UniversalPopup turbulencePopup = createTurbulencePopup();
 
   @UiField
@@ -194,7 +194,7 @@ public class WebClient implements EntryPoint {
     HistorySupport.init(new HistoryProviderDefault());
     HistoryChangeListener.init();
 
-    websocket = new WaveWebSocketClient(getWebSocketBaseUrl(), "1.0");
+    websocket = new WaveWebSocketClient(websocketNotAvailable(), getWebSocketBaseUrl());
     websocket.connect();
 
     if (Session.get().isLoggedIn()) {

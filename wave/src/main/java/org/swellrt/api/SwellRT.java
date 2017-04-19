@@ -1,21 +1,10 @@
 package org.swellrt.api;
 
-import com.google.gwt.core.client.Callback;
-import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.ui.RootPanel;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.swellrt.api.ServiceCallback.JavaScriptResponse;
 import org.swellrt.api.js.generic.ModelJS;
@@ -27,7 +16,6 @@ import org.swellrt.model.generic.TypeIdGenerator;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.box.webclient.client.ClientIdGenerator;
 import org.waveprotocol.box.webclient.client.RemoteViewServiceMultiplexer;
-import org.waveprotocol.box.webclient.client.WaveSocket.WaveSocketStartCallback;
 import org.waveprotocol.box.webclient.client.WaveWebSocketClient;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.JsoView;
@@ -49,12 +37,22 @@ import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * A generic module to manage Wave's top operations. It encapsulates
@@ -190,7 +188,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       entry.getValue().destroy();
 
     waveRegistry.clear();
-    websocket.disconnect(true);
+    // websocket.disconnect(true);
     channel = null;
   }
   
@@ -256,8 +254,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
           // Clean everything before setting new session
           cleanSessionData();
           shouldOpenWebsocket = true;
-          if (websocket != null)
-            websocket.disconnect(true);
+//          if (websocket != null)
+//            websocket.disconnect(true);
 
           JavaScriptResponse responseData =
               ServiceCallback.JavaScriptResponse.success(response.getText());
@@ -350,8 +348,8 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
           // Clean everything before setting new session
           shouldOpenWebsocket = true;
-          if (websocket != null)
-            websocket.disconnect(true);
+//          if (websocket != null)
+//            websocket.disconnect(true);
 
           JavaScriptResponse responseData =
               ServiceCallback.JavaScriptResponse.success(response.getText());
@@ -412,7 +410,7 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
 
       shouldOpenWebsocket = true;
       if (websocket != null) {
-        websocket.disconnect(false);
+        //websocket.disconnect(false);
         websocket = null;
       }
 
@@ -468,22 +466,22 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
     setWebsocketAddress(baseServerUrl);
 
     // Use Model.MODEL_VERSION to get the client version
-    websocket = new WaveWebSocketClient(SwellRTUtils.toWebsocketAddress(baseServerUrl), "1.0");
-    websocket.connect(new WaveSocketStartCallback() {
-
-      @Override
-      public void onSuccess() {
-        channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
-        shouldOpenWebsocket = false;
-        callback.onSuccess((Void) null);
-      }
-
-      @Override
-      public void onFailure() {
-        callback.onFailure((Void) null);
-
-      }
-    });
+    websocket = new WaveWebSocketClient(false, SwellRTUtils.toWebsocketAddress(baseServerUrl));
+//    websocket.connect(new WaveSocketStartCallback() {
+//
+//      @Override
+//      public void onSuccess() {
+//        channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
+//        shouldOpenWebsocket = false;
+//        callback.onSuccess((Void) null);
+//      }
+//
+//      @Override
+//      public void onFailure() {
+//        callback.onFailure((Void) null);
+//
+//      }
+//    });
 
   }
 
@@ -798,28 +796,28 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       webSocketURL = webSocketURL.replace("https://", "wss://");
 
     // Use Model.MODEL_VERSION to get the client version
-    websocket = new WaveWebSocketClient(webSocketURL, "1.0");
-    websocket.connect(new WaveSocketStartCallback() {
-
-      @Override
-      public void onSuccess() {
-
-        channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
-        callback.onSuccess((Void) null);
-      }
-
-      @Override
-      public void onFailure() {
-        callback.onFailure((Void) null);
-
-      }
-    });
+//    websocket = new WaveWebSocketClient(webSocketURL, "1.0");
+//    websocket.connect(new WaveSocketStartCallback() {
+//
+//      @Override
+//      public void onSuccess() {
+//
+//        channel = new RemoteViewServiceMultiplexer(websocket, loggedInUser.getAddress());
+//        callback.onSuccess((Void) null);
+//      }
+//
+//      @Override
+//      public void onFailure() {
+//        callback.onFailure((Void) null);
+//
+//      }
+//    });
 
 
   }
 
   private void stopComms() {
-    websocket.disconnect(true);
+    // websocket.disconnect(true);
     channel = null;
   }
 
@@ -1060,9 +1058,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new SessionNotStartedException();
     }
 
-    if (!websocket.isConnected()) {
-      throw new NetworkException();
-    }
+//    if (!websocket.isConnected()) {
+//      throw new NetworkException();
+//    }
 
 
 
@@ -1103,9 +1101,9 @@ public class SwellRT implements EntryPoint, UnsavedDataListener {
       throw new SessionNotStartedException();
     }
 
-    if (!websocket.isConnected()) {
-      throw new NetworkException();
-    }
+//    if (!websocket.isConnected()) {
+//      throw new NetworkException();
+//    }
 
 
     final WaveLoader waveWrapper = getWaveWrapper(waveId, false);

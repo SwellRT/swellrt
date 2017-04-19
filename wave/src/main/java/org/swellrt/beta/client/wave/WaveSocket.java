@@ -22,6 +22,9 @@ package org.swellrt.beta.client.wave;
 /**
  * This interface serves as a proxy interface wrapper for concrete socket implementations
  * like {@link com.google.gwt.websockets.client.WebSocket}.
+ * <p>
+ * Note(pablojan): onError() callback is intend to signal fatal errors that can't be recovered. They must force to
+ * start a fresh new SwellRT/Wave infrastructure (see ServiceContext) 
  *
  * @author tad.glines@gmail.com (Tad Glines)
  */
@@ -31,7 +34,8 @@ public interface WaveSocket {
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
-    void onError();
+    /** Use to signal fatal errors that force app to reload */
+    void onError(String reason); 
     void onMessage(String message);
   }
   
