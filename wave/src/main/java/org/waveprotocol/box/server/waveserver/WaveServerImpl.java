@@ -543,7 +543,7 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
     Preconditions.checkArgument(delta.getOperationCount() > 0, "empty delta");
 
     if (isLocalWavelet(waveletName)) {
-      LOG.info("Submit to " + waveletName + " by " + delta.getAuthor() + " @ "
+      LOG.fine("Submit to " + waveletName + " by " + delta.getAuthor() + " @ "
           + delta.getHashedVersion().getVersion() + " with " + delta.getOperationCount() + " ops");
 
       // TODO(arb): add v0 policer here.
@@ -566,7 +566,7 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
       try {
         WaveletDeltaRecord submitResult = wavelet.submitRequest(waveletName, signedDelta);
         TransformedWaveletDelta transformedDelta = submitResult.getTransformedDelta();
-        LOG.info("Submit result for " + waveletName + " by "
+        LOG.fine("Submit result for " + waveletName + " by "
             + transformedDelta.getAuthor() + " applied "
             + transformedDelta.size() + " ops at v: "
             + transformedDelta.getAppliedAtVersion() + " t: "
