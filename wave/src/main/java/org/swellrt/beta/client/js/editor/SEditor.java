@@ -273,11 +273,11 @@ public class SEditor implements EditorUpdateListener {
   private SelectionExtractor selectionExtractor;
   
   private ProfileManager profileManager;
-  
-  private boolean wasEditingOnDiscconnect = true;
-  
+
   private SelectionChangeHandler selectionHandler = null;
   
+  private boolean canEdit = true;
+
   private ConnectionHandler connectionHandler = new ConnectionHandler() {
 
     @Override
@@ -286,19 +286,8 @@ public class SEditor implements EditorUpdateListener {
       if (editor == null)
         return;
       
-      if (!state.equals(ServiceFrontend.STATUS_CONNECTED)) {
-        
-        if (editor.isEditing()) {
-          wasEditingOnDiscconnect = true;      
-          edit(false);
-        }
-
-      } else {
-        
-        if (wasEditingOnDiscconnect && !editor.isEditing())
-          edit(true);
-        
-      }
+      canEdit = state.equals(ServiceFrontend.STATUS_CONNECTED);     
+      edit(canEdit);
     }
     
   };

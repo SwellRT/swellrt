@@ -10,18 +10,48 @@ import jsinterop.annotations.JsType;
 public class Config {
 
   @JsProperty
-  public static native Integer getWebSocketKeepAliveInterval();
+  public static native Integer getWebsocketHeartbeatInterval();
 
+  @JsProperty
+  public static native Integer getWebsocketHeartbeatTimeout();
+
+  @JsProperty
+  public static native Boolean getWebsocketDebugLog();
+  
   
   @JsOverlay
-  public final static int webSocketKeepAliveInterval() {
+  public final static int websocketHeartbeatInterval() {
     int DEFAULT = 60000; // ms
     try {
-      Integer value = getWebSocketKeepAliveInterval();
+      Integer value = getWebsocketHeartbeatInterval();
+      return value != null ? value : DEFAULT;
+    } catch (RuntimeException e) {
+      return DEFAULT;
+    }
+  }
+
+  @JsOverlay
+  public final static int websocketHeartbeatTimeout() {
+    int DEFAULT = 2000; // ms
+    try {
+      Integer value = getWebsocketHeartbeatTimeout();
+      return value != null ? value : DEFAULT;
+    } catch (RuntimeException e) {
+      return DEFAULT;
+    }
+  }
+
+  @JsOverlay
+  public final static boolean websocketDebugLog() {
+    boolean DEFAULT = false;
+    try {
+      Boolean value = getWebsocketDebugLog();
       return value != null ? value : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }   
   }
+  
+  
   
 }

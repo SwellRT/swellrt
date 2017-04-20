@@ -19,18 +19,41 @@
 
 package org.waveprotocol.box.server.rpc;
 
+import java.io.IOException;
+import java.util.Queue;
+
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.swellrt.beta.client.wave.WaveSocketWS;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.util.logging.Log;
-
-import java.io.IOException;
 
 /**
  * A channel implementation for websocket.
- *
+ * 
+ * <p><br>
+ * <li>Implements heart beat on the WebSocket to detect network turbulence.
+ * <li>Implements a transparent reconnection mechanism with message reconciliation. 
+ * 
+ * <br><br>
+ * Reconciliation mechanism is implemented as follows:
+ * <li>We assume web socket messages preserve order
+ * <li>Queue each message to be sent in sentMessages
+ * <li>Increment recvCount for each incoming message.
+ * <li>On send heart beat message with the value of recvCount 
+ * (the other side will remove oldest recvCount messages from its queue)
+ * <li>On Receive heart beat response: reset recvCount and
+ * remove oldest values from sentMessages according to received value.  
+ * <br>
+ * On reconnection:
+ * <li>Send reconnection message with recvCount, and reset recvCount
+ * <li>On received reconnection message: discard the specified n oldest messages from the setMessages queue. Sent rest of the queue.
+ * 
+ * See counter part class for client {@link WaveSocketWS}
+ * 
  * @author akaplanov@gmai.com (A. Kaplanov)
  * @author pablojan@gmai.com (Pablo Ojanguren)
  */
@@ -38,50 +61,53 @@ import java.io.IOException;
 public class WebSocketChannelImpl extends WebSocketChannel {
   private static final Log LOG = Log.get(WebSocketChannelImpl.class);
 
-  private final static String SIGNAL_HEARTBEAT = "[hb]";
-  private final static String SIGNAL_RECONNECTION = "[rc]";
+  /** The heart beat signal string */
+  private static final String HEARTBEAT_DATA_PREFIX = "hb:";
+  
+  private static final String RECONNECTION_DATA_PREFIX = "rc:";
   
   private Session session;
-  private int sessionCount = -1;
+  private int count = 0;
+  private final String connectionId;
+  
+  private final Queue<String> sentMessages = CollectionUtils.createQueue();
+  private int recvCount = 0;
 
-  public WebSocketChannelImpl(ProtoCallback callback) {
+  public WebSocketChannelImpl(String connectionId, ProtoCallback callback) {
     super(callback);
+    this.connectionId = connectionId;
   }
 
   @OnWebSocketConnect
   public void onOpen(Session session) {
     synchronized (this) {
       this.session = session; 
-      sessionCount++;
+      count++;
     }
+    
+    LOG.info("Websocket["+connectionId+"] open (#"+count+")");
   }
 
   @OnWebSocketMessage
   public void onMessage(String data) {
 
-    if (data.equals(SIGNAL_HEARTBEAT)) {
-      // Response an echo hearbeat to client
-      try {
-        sendMessageString(SIGNAL_HEARTBEAT);
-      } catch (IOException e) {
-        // swallow it
-      }     
+    if (data.startsWith(HEARTBEAT_DATA_PREFIX)) {
+      handleHeartbeatMessage(data);
       return;
     }
     
-    if (data.equals(SIGNAL_RECONNECTION)) {
-      if (sessionCount == 0) {
-        session.close(1002, "Server connection reset"); // CLOSE_PROTOCOL_ERROR
-      }
+    if (data.startsWith(RECONNECTION_DATA_PREFIX)) {
+      handleReconnectionMessage(data);
       return;
     }
     
+    recvCount++;
     handleMessageString(data);
   }
 
   @OnWebSocketClose
   public void onClose(int closeCode, String closeReason) {
-    LOG.fine("websocket disconnected (" + closeCode + " - " + closeReason + "): " + this);
+    LOG.info("Websocket["+connectionId+"] disconnected (" + closeCode + " - " + closeReason + ")");
     synchronized (this) {
       session = null;
     }
@@ -90,12 +116,80 @@ public class WebSocketChannelImpl extends WebSocketChannel {
   @Override
   public void sendMessageString(String data) throws IOException {
     synchronized (this) {
+      sentMessages.add(data);
       if (session == null) {
-        LOG.warning("Websocket is not connected");
+        LOG.fine("Websocket["+connectionId+"] is not connected");
       } else {
         session.getRemote().sendStringByFuture(data);
       }
     }
+  }
+
+  
+  /** 
+   * @param message the message starting with {@link #RECONNECTION_DATA_PREFIX}
+   */
+  protected void handleReconnectionMessage(String message) {
+    
+    try {
+      String tmp = message.substring(3);
+      int n = Integer.parseInt(tmp);
+      
+      for (int i=0; i<n; i++)
+        sentMessages.poll();
+      
+      synchronized (this) {
+        if (session != null) {
+          while (!sentMessages.isEmpty()) {
+            session.getRemote().sendStringByFuture(sentMessages.poll());
+          }
+          
+          // Reset our recv. counter optimistically: we assume
+          // the client will receive this message (thus update its queue). 
+          session.getRemote().sendStringByFuture(RECONNECTION_DATA_PREFIX+recvCount);
+          recvCount = 0;
+        }
+      }
+      
+    } catch (Exception ex) {
+      LOG.warning("Error processing reconnection message: "+ex.getMessage());
+    }       
+  }
+  
+  /** 
+   * @param message the message starting with {@link #HEARTBEAT_DATA_PREFIX}
+   */
+  protected void handleHeartbeatMessage(String message) {
+    
+    //
+    // Heart beat data format is
+    // hb:<n> 
+    // where n = number of messages ACK'ed by the server
+    //
+    // remove oldest n messages in the queue
+    //
+    
+    try {
+      String tmp = message.substring(3);
+      int n = Integer.parseInt(tmp);
+      
+      for (int i=0; i<n; i++)
+        sentMessages.poll();
+      
+    } catch (Exception ex) {
+       LOG.warning("Error processing heart beat message: "+ex.getMessage());
+    }
+        
+    
+    synchronized (this) {
+      if (session != null) {
+        session.getRemote().sendStringByFuture(HEARTBEAT_DATA_PREFIX + recvCount);
+        // Reset our recv. counter optimistically: we assume
+        // the client will receive this message (thus update its queue).
+        recvCount = 0;
+      }
+    }
+ 
   }
 
 }

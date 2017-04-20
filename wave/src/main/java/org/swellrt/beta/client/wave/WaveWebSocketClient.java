@@ -114,16 +114,20 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final IntMap<SubmitResponseCallback> submitRequestCallbacks;
 
   /**
-   * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594;
-   * DISCONNECTED)&#8727; &#8594; ERROR;
-   *
+   * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594; (TURBULENCE | 
+   * DISCONNECTED))&#8727; &#8594; ERROR;
+   * <p><br>
    * The WaveSocket tries to keep the connection alive continuously. But under
    * some circumstances severe errors happen like server reboot or session
    * expiration.
-   *
+   * <p><br>
+   * A turbulence happens when server ACK's for heart beat messages are not received
+   * before timeout. This means a slow network connection, server down, a ghost connection.
+   * Consider here which is the right response to this situation.
+   * 
    */
   public enum ConnectState {
-    CONNECTED, CONNECTING, DISCONNECTED, ERROR;
+    CONNECTED, CONNECTING, DISCONNECTED, ERROR, TURBULENCE;
 
     public String toString() {
 
@@ -131,6 +135,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       if (this == CONNECTING) return "CONNECTING";
       if (this == DISCONNECTED) return "DISCONNECTED";
       if (this == ERROR) return "ERROR";
+      if (this == TURBULENCE) return "TURBULENCE";
       
       return "UNKOWN";
     }
@@ -235,14 +240,6 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
           send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
         }
         
-      } else {
-      
-        // Reconnection signal [rc] 
-        // Sends a signal to check whether the server can resume connection or not:
-        // The server won't send any response if reconnection is possible,
-        // but it will close the websocket otherwise with status 1002
-        socket.sendMessage("[rc]");
-      
       }
         
       connectedAtLeastOnce = true;
@@ -356,6 +353,17 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     SchedulerInstance.getLowPriorityTimer().cancel(reconnectTask);
     reconnectionDisabled = true;
     setState(ConnectState.ERROR, reason);
+  }
+
+  @Override
+  public void onTurbulence(boolean finished) {
+    if (!finished) {
+      // this will cache messages in pending queue      
+      setState(ConnectState.DISCONNECTED);
+      // Don't start here a reconnection process, just wait.   
+    } else {
+      onConnect(); // flush pending messages
+    }
   }
 
   protected void setState(ConnectState state) {    

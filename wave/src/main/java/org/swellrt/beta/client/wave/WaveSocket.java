@@ -34,9 +34,11 @@ public interface WaveSocket {
   interface WaveSocketCallback {
     void onConnect();
     void onDisconnect();
-    /** Use to signal fatal errors that force app to reload */
+    /** Only for fatal errors that force client to restart */
     void onError(String reason); 
     void onMessage(String message);
+    /** When network is to slow (heartbeat ack is timeout) */ 
+    void onTurbulence(boolean finished);
   }
   
   void connect();

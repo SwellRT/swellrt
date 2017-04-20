@@ -23,5 +23,7 @@ import com.google.protobuf.Message;
 
 public interface ProtoCallback {
   public void message(int sequenceNo, Message message);
+  /** Invoke on any error to clean connection state gracefully */ 
+  public void cancel();
 }
 

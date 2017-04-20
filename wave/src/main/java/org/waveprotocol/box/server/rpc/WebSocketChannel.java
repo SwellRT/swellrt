@@ -86,6 +86,8 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
   private final Gson gson = new Gson();
   private final ProtoSerializer serializer;
 
+  protected boolean isActive = true;
+
   /**
    * Constructs a new WebSocketChannel, using the callback to handle any
    * incoming messages.
@@ -171,11 +173,17 @@ public abstract class WebSocketChannel extends MessageExpectingChannel {
       LOG.fine("sent JSON message over websocket, sequence number " + sequenceNo
           + ", message " + message);
     } catch (IOException e) {
+      cancel();
       // TODO(anorth): This failure should be communicated to the caller
       // so it can attempt retransmission.
       LOG.warning("Failed to transmit message on socket, sequence number " + sequenceNo
           + ", message " + message, e);
       return;
     }
+  }
+
+  protected void cancel() {
+    isActive = false;
+    callback.cancel();
   }
 }

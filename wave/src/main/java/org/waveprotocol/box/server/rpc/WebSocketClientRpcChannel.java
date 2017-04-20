@@ -79,8 +79,14 @@ public class WebSocketClientRpcChannel implements ClientRpcChannel {
           controller.response(message);
         }
       }
+
+      @Override
+      public void cancel() {
+        // TODO Auto-generated method stub
+        
+      }
     };
-    clientChannel = new WebSocketChannelImpl(callback);
+    clientChannel = new WebSocketChannelImpl("<void>",callback);
     socketClient = openWebSocket(clientChannel, (InetSocketAddress) serverAddress);
     clientChannel.expectMessage(Rpc.RpcFinished.getDefaultInstance());
     LOG.fine("Opened a new WebSocketClientRpcChannel to " + serverAddress);

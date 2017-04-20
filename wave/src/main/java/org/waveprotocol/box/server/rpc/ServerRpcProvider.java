@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,7 @@ public class ServerRpcProvider {
   private final String sslKeystorePassword;
 
   
-  ConcurrentHashMap<String, WebSocketConnection> wsConnectionRegistry = new ConcurrentHashMap<String, WebSocketConnection>();
+  private final Map<String, WebSocketConnection> wsConnectionRegistry = new HashMap<String, WebSocketConnection>();
   
   // Mapping from incoming protocol buffer type -> specific handler.
   private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices =
@@ -147,10 +148,10 @@ public class ServerRpcProvider {
   static class WebSocketConnection extends Connection {
     private final WebSocketChannel socketChannel;
 
-    WebSocketConnection(ParticipantId loggedInUser, ServerRpcProvider provider) {
-      super(loggedInUser, provider);
-      socketChannel = new WebSocketChannelImpl(this);
-      LOG.info("New websocket connection set up for user " + loggedInUser);
+    WebSocketConnection(String connectionId, ParticipantId loggedInUser, ServerRpcProvider provider) {
+      super(connectionId, loggedInUser, provider);
+      socketChannel = new WebSocketChannelImpl(connectionId, this);
+      LOG.info("Websocket["+connectionId+"] created");
       expectMessages(socketChannel);
     }
 
@@ -181,14 +182,23 @@ public class ServerRpcProvider {
 
     private boolean isStatusOk = true;
 
+    private final String connectionId;
+
     /**
      * @param loggedInUser The currently logged in user, or null if no user is
      *        logged in.
      * @param provider the provider
      */
-    public Connection(ParticipantId loggedInUser, ServerRpcProvider provider) {
+    public Connection(String connectionId, ParticipantId loggedInUser, ServerRpcProvider provider) {
+      this.connectionId = connectionId;
       this.loggedInUser = loggedInUser;
       this.provider = provider;
+    }
+
+    @Override
+    public void cancel() {
+      // remove itself from the registry of ws connections
+      provider.wsConnectionRegistry.remove(connectionId);
     }
 
     protected void expectMessages(MessageExpectingChannel channel) {
@@ -238,15 +248,17 @@ public class ServerRpcProvider {
         // On server's reboot, clients can get reconnected (sequenceNo !=0) but
         // server won't be able to process the request.
         LOG.info("First RPC request but sequence number >0");
-        throw new IllegalStateException("First RPC request nut sequence number >0");
+        cancel();
+        throw new IllegalStateException("First RPC request but sequence number >0");
       }
 
       isFirstRequest = false;
       
       if (message instanceof Rpc.CancelRpc) {
         final ServerRpcController controller = activeRpcs.get(sequenceNo);
+        cancel();
         if (controller == null) {
-          throw new IllegalStateException("Trying to cancel an RPC that is not active!");
+          throw new IllegalStateException("Trying to cancel an RPC that is not active!");          
         } else {
           LOG.info("Cancelling open RPC " + sequenceNo);
           controller.cancel();
@@ -267,6 +279,7 @@ public class ServerRpcProvider {
         
         if (!this.loggedInUser.equals(authenticatedAs)) {
           LOG.info("Request's participant doesn't match connection's participant. Spoofing?");
+          cancel();
           throw new IllegalStateException(
               "Request's participant doesn't match connection's participant.");
         }        
@@ -274,6 +287,7 @@ public class ServerRpcProvider {
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
+          cancel();
           throw new IllegalStateException(
               "Can't invoke a new RPC with a sequence number already in use.");
         } else {
@@ -307,6 +321,7 @@ public class ServerRpcProvider {
           provider.threadPool.execute(controller);
         }
       } else {
+        cancel();
         // Sent a message type we understand, but don't expect - erronous case!
         throw new IllegalStateException(
             "Got expected but unknown message  (" + message + ") for sequence: " + sequenceNo);
@@ -641,9 +656,10 @@ public class ServerRpcProvider {
           
           // If no logged in user is detected, let the websocket fail when auth message
           // is sent by client.
-          
+          String token = null;
           if (tokenParam != null && !tokenParam.isEmpty()) {
-            tokenSession = provider.sessionManager.getSessionFromToken(tokenParam.get(0));
+            token = tokenParam.get(0);
+            tokenSession = provider.sessionManager.getSessionFromToken(token);
             if (tokenSession != null) {              
 
               // In case of having a session cookie, for shake of security, check its session id
@@ -652,6 +668,8 @@ public class ServerRpcProvider {
               if (cookieSession != null) {
                 if (cookieSession.getId().equals(tokenSession.getId())) {
                   loggedInUser = provider.sessionManager.getLoggedInUser(tokenSession);
+                } else {
+                  // Let the connection fail later.
                 }
               } else {
                 loggedInUser = provider.sessionManager.getLoggedInUser(tokenSession);
@@ -661,9 +679,26 @@ public class ServerRpcProvider {
             
           }
 
+          String connectionId = null;
+          if (token != null)
+            connectionId = token+":"+loggedInUser.getAddress();
+
+          WebSocketConnection wsConnection = null;
           
-          
-          return new WebSocketConnection(loggedInUser, provider).getWebSocketServerChannel();
+          if (connectionId != null) {
+
+              if (!provider.wsConnectionRegistry.containsKey(connectionId)) {             
+                provider.wsConnectionRegistry.put(
+                    connectionId,
+                    new WebSocketConnection(connectionId, loggedInUser, provider));
+              }
+              wsConnection = provider.wsConnectionRegistry.get(connectionId);
+
+          } else {
+            wsConnection = new WebSocketConnection(connectionId, loggedInUser, provider);
+          }
+
+          return wsConnection.getWebSocketServerChannel();
         }
       });
     }
