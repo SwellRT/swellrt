@@ -18,13 +18,11 @@
  */
 package org.waveprotocol.box.server.rpc;
 
+import org.waveprotocol.box.common.comms.WaveClientRpc;
+
 import com.google.protobuf.Message;
-import com.google.protobuf.UnknownFieldSet;
 
 import junit.framework.TestCase;
-
-import org.waveprotocol.box.common.comms.WaveClientRpc;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * @author arb@google.com
@@ -49,15 +47,21 @@ public class WebSocketChannelTest extends TestCase {
   }
 
   class TestCallback implements ProtoCallback {
-      Message savedMessage = null;
-      long sequenceNumber;
+    Message savedMessage = null;
+    long sequenceNumber;
 
-      @Override
-      public void message(int sequenceNo, final Message message) {
-        this.sequenceNumber = sequenceNo;
-        this.savedMessage = message;
-      }
+    @Override
+    public void message(int sequenceNo, final Message message) {
+      this.sequenceNumber = sequenceNo;
+      this.savedMessage = message;
     }
+
+    @Override
+    public void cancel() {
+      // TODO Auto-generated method stub
+
+    }
+  }
 
   @Override
   public void setUp() {
@@ -91,8 +95,8 @@ public class WebSocketChannelTest extends TestCase {
   }
 
   private WaveClientRpc.ProtocolOpenRequest.Builder buildProtocolOpenRequest() {
-    WaveClientRpc.ProtocolOpenRequest.Builder sourceBuilder =
-        WaveClientRpc.ProtocolOpenRequest.newBuilder();
+    WaveClientRpc.ProtocolOpenRequest.Builder sourceBuilder = WaveClientRpc.ProtocolOpenRequest
+        .newBuilder();
     sourceBuilder.setParticipantId("test@example.com");
     sourceBuilder.setWaveId("example.com!w+test");
     return sourceBuilder;
