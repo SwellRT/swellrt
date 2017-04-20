@@ -314,6 +314,7 @@ public class ServerRpcProvider {
                       LOG.fine("error = " + ((Rpc.RpcFinished) message).getErrorText());
                     }
                     activeRpcs.remove(sequenceNo);
+                    cancel();
                   }
                   sendMessage(sequenceNo, message);
                   if (profilingTimer != null) {
