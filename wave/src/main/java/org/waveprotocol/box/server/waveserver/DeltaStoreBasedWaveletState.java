@@ -346,7 +346,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
         version = latestVersionToPersist;
       }
       if (last != null && version.getVersion() <= last.getVersion()) {
-        LOG.info("Attempt to persist version " + version
+        LOG.fine("Attempt to persist version " + version
             + " smaller than last persisted version " + last);
         // Done, version is already persisted.
         version = last;
