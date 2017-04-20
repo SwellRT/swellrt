@@ -136,7 +136,7 @@ public class MongoDBSnapshotStore {
     
     
     
-    LOG.info("Stored snaphost for "+waveId+"/"+waveletId+" version "+ waveletData.getHashedVersion().getVersion());
+    LOG.fine("Stored snaphost for "+waveId+"/"+waveletId+" version "+ waveletData.getHashedVersion().getVersion());
   }
   
   
