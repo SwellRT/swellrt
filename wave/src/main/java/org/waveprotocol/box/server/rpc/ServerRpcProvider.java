@@ -98,8 +98,9 @@ import com.typesafe.config.Config;
 public class ServerRpcProvider {
   private static final Log LOG = Log.get(ServerRpcProvider.class);
   /**
-   * The buffer size is passed to implementations of {@link WaveWebSocketServlet} as init
-   * param. It defines the response buffer size.
+   * The buffer size is passed to implementations of
+   * {@link WaveWebSocketServlet} as init param. It defines the response buffer
+   * size.
    */
   private static final int BUFFER_SIZE = 1024 * 1024;
 
@@ -112,12 +113,11 @@ public class ServerRpcProvider {
   private final String sslKeystorePath;
   private final String sslKeystorePassword;
 
-  
   private final Map<String, WebSocketConnection> wsConnectionRegistry = new HashMap<String, WebSocketConnection>();
-  
+
   // Mapping from incoming protocol buffer type -> specific handler.
-  private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices =
-      Maps.newHashMap();
+  private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices = Maps
+      .newHashMap();
 
   // List of webApp source directories ("./war", etc)
   private final String[] resourceBases;
@@ -148,10 +148,11 @@ public class ServerRpcProvider {
   static class WebSocketConnection extends Connection {
     private final WebSocketChannel socketChannel;
 
-    WebSocketConnection(String connectionId, ParticipantId loggedInUser, ServerRpcProvider provider) {
+    WebSocketConnection(String connectionId, ParticipantId loggedInUser,
+        ServerRpcProvider provider) {
       super(connectionId, loggedInUser, provider);
       socketChannel = new WebSocketChannelImpl(connectionId, this);
-      LOG.info("Websocket["+connectionId+"] created");
+      LOG.info("Websocket[" + connectionId + "] created");
       expectMessages(socketChannel);
     }
 
@@ -165,10 +166,8 @@ public class ServerRpcProvider {
     }
   }
 
-
   static abstract class Connection implements ProtoCallback {
-    private final Map<Integer, ServerRpcController> activeRpcs =
-        new ConcurrentHashMap<Integer, ServerRpcController>();
+    private final Map<Integer, ServerRpcController> activeRpcs = new ConcurrentHashMap<Integer, ServerRpcController>();
 
     // The logged in user.
     // Note: Due to this bug:
@@ -185,9 +184,10 @@ public class ServerRpcProvider {
     private final String connectionId;
 
     /**
-     * @param loggedInUser The currently logged in user, or null if no user is
-     *        logged in.
-     * @param provider the provider
+     * @param loggedInUser
+     *          The currently logged in user, or null if no user is logged in.
+     * @param provider
+     *          the provider
      */
     public Connection(String connectionId, ParticipantId loggedInUser, ServerRpcProvider provider) {
       this.connectionId = connectionId;
@@ -253,12 +253,12 @@ public class ServerRpcProvider {
       }
 
       isFirstRequest = false;
-      
+
       if (message instanceof Rpc.CancelRpc) {
         final ServerRpcController controller = activeRpcs.get(sequenceNo);
         cancel();
         if (controller == null) {
-          throw new IllegalStateException("Trying to cancel an RPC that is not active!");          
+          throw new IllegalStateException("Trying to cancel an RPC that is not active!");
         } else {
           LOG.info("Cancelling open RPC " + sequenceNo);
           controller.cancel();
@@ -275,46 +275,52 @@ public class ServerRpcProvider {
 
         ProtocolAuthenticate authMessage = (ProtocolAuthenticate) message;
         ParticipantId authenticatedAs = authenticate(authMessage.getToken());
-        Preconditions.checkArgument(authenticatedAs != null, "WebSocket authentication token invalid");
-        
+        Preconditions.checkArgument(authenticatedAs != null,
+            "WebSocket authentication token invalid");
+
         if (!this.loggedInUser.equals(authenticatedAs)) {
           LOG.info("Request's participant doesn't match connection's participant. Spoofing?");
           cancel();
           throw new IllegalStateException(
               "Request's participant doesn't match connection's participant.");
-        }        
-        
+        }
+
         sendMessage(sequenceNo, ProtocolAuthenticationResult.getDefaultInstance());
       } else if (provider.registeredServices.containsKey(message.getDescriptorForType())) {
         if (activeRpcs.containsKey(sequenceNo)) {
-          cancel();
-          throw new IllegalStateException(
-              "Can't invoke a new RPC with a sequence number already in use.");
+
+          LOG.info("Receiving a RPC seqNo already active: ingnoring, is this a reconnection?");
+          /*
+           * cancel(); throw new IllegalStateException(
+           * "Can't invoke a new RPC with a sequence number already in use.");
+           */
+
         } else {
-          final RegisteredServiceMethod serviceMethod =
-              provider.registeredServices.get(message.getDescriptorForType());
+          final RegisteredServiceMethod serviceMethod = provider.registeredServices
+              .get(message.getDescriptorForType());
 
           // Create the internal ServerRpcController used to invoke the call.
-          final ServerRpcController controller =
-              new ServerRpcControllerImpl(message, serviceMethod.service, serviceMethod.method,
-                  loggedInUser, new RpcCallback<Message>() {
-                    @Override
-                    synchronized public void run(Message message) {
-                      if (message instanceof Rpc.RpcFinished
-                          || !serviceMethod.method.getOptions().getExtension(Rpc.isStreamingRpc)) {
-                        // This RPC is over - remove it from the map.
-                        boolean failed = message instanceof Rpc.RpcFinished && ((Rpc.RpcFinished) message).getFailed();
-                        if (failed) {
-                          LOG.fine("error = " + ((Rpc.RpcFinished) message).getErrorText());
-                        }
-                        activeRpcs.remove(sequenceNo);
-                      }
-                      sendMessage(sequenceNo, message);
-                      if (profilingTimer != null) {
-                        Timing.stop(profilingTimer);
-                      }
+          final ServerRpcController controller = new ServerRpcControllerImpl(message,
+              serviceMethod.service, serviceMethod.method, loggedInUser,
+              new RpcCallback<Message>() {
+                @Override
+                synchronized public void run(Message message) {
+                  if (message instanceof Rpc.RpcFinished
+                      || !serviceMethod.method.getOptions().getExtension(Rpc.isStreamingRpc)) {
+                    // This RPC is over - remove it from the map.
+                    boolean failed = message instanceof Rpc.RpcFinished
+                        && ((Rpc.RpcFinished) message).getFailed();
+                    if (failed) {
+                      LOG.fine("error = " + ((Rpc.RpcFinished) message).getErrorText());
                     }
-                  });
+                    activeRpcs.remove(sequenceNo);
+                  }
+                  sendMessage(sequenceNo, message);
+                  if (profilingTimer != null) {
+                    Timing.stop(profilingTimer);
+                  }
+                }
+              });
 
           // Kick off a new thread specific to this RPC.
           activeRpcs.put(sequenceNo, controller);
@@ -330,13 +336,13 @@ public class ServerRpcProvider {
   }
 
   /**
-   * Construct a new ServerRpcProvider, hosting on the specified
-   * WebSocket addresses.
+   * Construct a new ServerRpcProvider, hosting on the specified WebSocket
+   * addresses.
    *
    * Also accepts an ExecutorService for spawning managing threads.
    */
-  public ServerRpcProvider(InetSocketAddress[] httpAddresses,
-      String[] resourceBases, Executor threadPool, SessionManager sessionManager,
+  public ServerRpcProvider(InetSocketAddress[] httpAddresses, String[] resourceBases,
+      Executor threadPool, SessionManager sessionManager,
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
       int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
@@ -360,38 +366,33 @@ public class ServerRpcProvider {
   /**
    * Constructs a new ServerRpcProvider with a default ExecutorService.
    */
-  public ServerRpcProvider(InetSocketAddress[] httpAddresses,
-      String[] resourceBases, SessionManager sessionManager,
-      org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
-      boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
-      Executor executor, int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
-      int sessionMaxInactiveTime, int sessionCookieMaxAge) {
-    this(httpAddresses, resourceBases, executor,
-        sessionManager, jettySessionManager, sessionStoreDir, sslEnabled, sslKeystorePath,
-        sslKeystorePassword, webSocketMaxIdleTime, webSocketMaxMessageSize, websocketHeartbeat,
-        sessionMaxInactiveTime, sessionCookieMaxAge);
+  public ServerRpcProvider(InetSocketAddress[] httpAddresses, String[] resourceBases,
+      SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
+      String sessionStoreDir, boolean sslEnabled, String sslKeystorePath,
+      String sslKeystorePassword, Executor executor, int webSocketMaxIdleTime,
+      int webSocketMaxMessageSize, int websocketHeartbeat, int sessionMaxInactiveTime,
+      int sessionCookieMaxAge) {
+    this(httpAddresses, resourceBases, executor, sessionManager, jettySessionManager,
+        sessionStoreDir, sslEnabled, sslKeystorePath, sslKeystorePassword, webSocketMaxIdleTime,
+        webSocketMaxMessageSize, websocketHeartbeat, sessionMaxInactiveTime, sessionCookieMaxAge);
   }
 
   @Inject
-  public ServerRpcProvider(Config config,
-                           SessionManager sessionManager, org.eclipse.jetty.server.SessionManager jettySessionManager,
-                           @ClientServerExecutor Executor executorService) {
-    this(parseAddressList(config.getStringList("core.http_frontend_addresses"),
-                    config.getString("core.http_websocket_public_address")),
-            config.getStringList("core.resource_bases").toArray(new String[0]),
-            sessionManager,
-            jettySessionManager,
-            config.getString("core.sessions_store_directory"),
-            config.getBoolean("security.enable_ssl"),
-            config.getString("security.ssl_keystore_path"),
-            config.getString("security.ssl_keystore_password"),
-            executorService,
-            config.getInt("network.websocket_max_idle_time"),
-            config.getInt("network.websocket_max_message_size"),
-            config.getInt("network.websocket_heartbeat"),
-            config.getInt("network.session_max_inactive_time"),
-            config.getInt("network.session_cookie_max_age")
-            );
+  public ServerRpcProvider(Config config, SessionManager sessionManager,
+      org.eclipse.jetty.server.SessionManager jettySessionManager,
+      @ClientServerExecutor Executor executorService) {
+    this(
+        parseAddressList(config.getStringList("core.http_frontend_addresses"),
+            config.getString("core.http_websocket_public_address")),
+        config.getStringList("core.resource_bases").toArray(new String[0]), sessionManager,
+        jettySessionManager, config.getString("core.sessions_store_directory"),
+        config.getBoolean("security.enable_ssl"), config.getString("security.ssl_keystore_path"),
+        config.getString("security.ssl_keystore_password"), executorService,
+        config.getInt("network.websocket_max_idle_time"),
+        config.getInt("network.websocket_max_message_size"),
+        config.getInt("network.websocket_heartbeat"),
+        config.getInt("network.session_max_inactive_time"),
+        config.getInt("network.session_cookie_max_age"));
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -409,27 +410,29 @@ public class ServerRpcProvider {
     context.setParentLoaderPriority(true);
 
     if (jettySessionManager != null) {
-    	
-		jettySessionManager.addEventListener(new HttpSessionListener() {
-		
-			@Override
-			public void sessionCreated(HttpSessionEvent arg0) {
-				LOG.info("Session created, id=" + arg0.getSession().getId() + " t=" + System.currentTimeMillis());
-				if (sessionMaxInactiveTime == 0)
-					arg0.getSession().setMaxInactiveInterval(Integer.MAX_VALUE);
-			      else
-			    	arg0.getSession().setMaxInactiveInterval(sessionMaxInactiveTime);
-			}
-		
-			@Override
-			public void sessionDestroyed(HttpSessionEvent arg0) {
-				LOG.info("Session destroyed, id=" + arg0.getSession().getId() + " t=" + System.currentTimeMillis());
-			}
-		
-		});
-      
+
+      jettySessionManager.addEventListener(new HttpSessionListener() {
+
+        @Override
+        public void sessionCreated(HttpSessionEvent arg0) {
+          LOG.info("Session created, id=" + arg0.getSession().getId() + " t="
+              + System.currentTimeMillis());
+          if (sessionMaxInactiveTime == 0)
+            arg0.getSession().setMaxInactiveInterval(Integer.MAX_VALUE);
+          else
+            arg0.getSession().setMaxInactiveInterval(sessionMaxInactiveTime);
+        }
+
+        @Override
+        public void sessionDestroyed(HttpSessionEvent arg0) {
+          LOG.info("Session destroyed, id=" + arg0.getSession().getId() + " t="
+              + System.currentTimeMillis());
+        }
+
+      });
+
       context.getSessionHandler().setSessionManager(jettySessionManager);
-      
+
       Set<SessionTrackingMode> sessionTrackingModes = new HashSet<SessionTrackingMode>();
       sessionTrackingModes.add(SessionTrackingMode.URL);
       sessionTrackingModes.add(SessionTrackingMode.COOKIE);
@@ -441,15 +444,19 @@ public class ServerRpcProvider {
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
 
-    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie", SessionManager.SESSION_COOKIE_NAME);
+    context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie",
+        SessionManager.SESSION_COOKIE_NAME);
     if (sessionCookieMaxAge == 0)
-    	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(Integer.MAX_VALUE));
+      context.setInitParameter("org.eclipse.jetty.servlet.MaxAge",
+          String.valueOf(Integer.MAX_VALUE));
     else
-    	context.setInitParameter("org.eclipse.jetty.servlet.MaxAge", String.valueOf(sessionCookieMaxAge));
+      context.setInitParameter("org.eclipse.jetty.servlet.MaxAge",
+          String.valueOf(sessionCookieMaxAge));
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
     corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
     // Set explicit methods to allow CORS with DELETE
-    corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,POST,DELETE,PUT,HEAD");
+    corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM,
+        "GET,POST,DELETE,PUT,HEAD");
     corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM,
         "X-Requested-With,Content-Type,Accept,Origin,X-window-id");
     context.addFilter(corsFilterHolder, "/*", EnumSet.allOf(DispatcherType.class));
@@ -492,14 +499,15 @@ public class ServerRpcProvider {
   private void restoreSessions() {
     try {
       HashSessionManager hashSessionManager = (HashSessionManager) jettySessionManager;
-      hashSessionManager.setStoreDirectory(FileUtils.createDirIfNotExists(sessionStoreDir,
-          "Session persistence"));
+      hashSessionManager.setStoreDirectory(
+          FileUtils.createDirIfNotExists(sessionStoreDir, "Session persistence"));
       hashSessionManager.setSavePeriod(60);
       hashSessionManager.restoreSessions();
     } catch (Exception e) {
       LOG.warning("Cannot restore sessions");
     }
   }
+
   public void addWebSocketServlets() {
     // Servlet where the websocket connection is served from.
     ServletHolder wsholder = addServlet("/socket", WaveWebSocketServlet.class);
@@ -517,7 +525,8 @@ public class ServerRpcProvider {
     return new ServletModule() {
       @Override
       protected void configureServlets() {
-        // We add servlets here to override the DefaultServlet automatic registered by WebAppContext
+        // We add servlets here to override the DefaultServlet automatic
+        // registered by WebAppContext
         // in path "/" with our WaveClientServlet. Any other way to do this?
         // Related question (unanswered 08-Apr-2011)
         // http://web.archiveorange.com/archive/v/d0LdlXf1kN0OXyPNyQZp
@@ -525,8 +534,8 @@ public class ServerRpcProvider {
           String url = servlet.getFirst();
           @SuppressWarnings("unchecked")
           Class<HttpServlet> clazz = (Class<HttpServlet>) servlet.getSecond().getHeldClass();
-          Map<String,String> params = servlet.getSecond().getInitParameters();
-          serve(url).with(clazz,params);
+          Map<String, String> params = servlet.getSecond().getInitParameters();
+          serve(url).with(clazz, params);
           bind(clazz).in(Singleton.class);
         }
         for (Pair<String, Class<? extends Filter>> filter : filterRegistry) {
@@ -536,7 +545,8 @@ public class ServerRpcProvider {
     };
   }
 
-  private static InetSocketAddress[] parseAddressList(List<String> addressList, String websocketAddress) {
+  private static InetSocketAddress[] parseAddressList(List<String> addressList,
+      String websocketAddress) {
     if (addressList == null || addressList.size() == 0) {
       return new InetSocketAddress[0];
     } else {
@@ -555,9 +565,8 @@ public class ServerRpcProvider {
             if (!addresses.contains(address)) {
               addresses.add(address);
             } else {
-              LOG.warning(
-                  "Ignoring duplicate address in http addresses list: Duplicate entry '" + str
-                      + "' resolved to " + address.getAddress().getHostAddress());
+              LOG.warning("Ignoring duplicate address in http addresses list: Duplicate entry '"
+                  + str + "' resolved to " + address.getAddress().getHostAddress());
             }
           } catch (IOException e) {
             LOG.severe("Unable to process address " + str, e);
@@ -569,16 +578,16 @@ public class ServerRpcProvider {
   }
 
   /**
-   * @return a list of {@link Connector} each bound to a host:port
-   *         pair form the list addresses.
+   * @return a list of {@link Connector} each bound to a host:port pair form the
+   *         list addresses.
    */
-  private List<Connector> getSelectChannelConnectors(
-      InetSocketAddress[] httpAddresses) {
+  private List<Connector> getSelectChannelConnectors(InetSocketAddress[] httpAddresses) {
     List<Connector> list = Lists.newArrayList();
-    String[] excludeCiphers = {"SSL_RSA_EXPORT_WITH_RC4_40_MD5", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
-                               "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_RSA_WITH_DES_CBC_SHA",
-                               "SSL_DHE_RSA_WITH_DES_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-                               "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA"};
+    String[] excludeCiphers = { "SSL_RSA_EXPORT_WITH_RC4_40_MD5",
+        "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
+        "SSL_RSA_WITH_DES_CBC_SHA", "SSL_DHE_RSA_WITH_DES_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_256_CBC_SHA" };
     SslContextFactory sslContextFactory = null;
 
     if (sslEnabled) {
@@ -644,25 +653,27 @@ public class ServerRpcProvider {
       factory.setCreator(new WebSocketCreator() {
         @Override
         public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
-          
+
           ParticipantId loggedInUser = null;
           HttpSession tokenSession = null;
           List<String> tokenParam = req.getParameterMap().get(SESSION_TOKEN_PARAM);
 
-          
-          // Rely on the session token provided as query parameter to identify the user
+          // Rely on the session token provided as query parameter to identify
+          // the user
           // because it includes the window id.
           // This also allows to work on browsers without cookies enabled.
-          
-          // If no logged in user is detected, let the websocket fail when auth message
+
+          // If no logged in user is detected, let the websocket fail when auth
+          // message
           // is sent by client.
           String token = null;
           if (tokenParam != null && !tokenParam.isEmpty()) {
             token = tokenParam.get(0);
             tokenSession = provider.sessionManager.getSessionFromToken(token);
-            if (tokenSession != null) {              
+            if (tokenSession != null) {
 
-              // In case of having a session cookie, for shake of security, check its session id
+              // In case of having a session cookie, for shake of security,
+              // check its session id
               // against the one in parameter
               HttpSession cookieSession = req.getSession();
               if (cookieSession != null) {
@@ -674,25 +685,24 @@ public class ServerRpcProvider {
               } else {
                 loggedInUser = provider.sessionManager.getLoggedInUser(tokenSession);
               }
-                            
+
             }
-            
+
           }
 
           String connectionId = null;
           if (token != null)
-            connectionId = token+":"+loggedInUser.getAddress();
+            connectionId = token + ":" + loggedInUser.getAddress();
 
           WebSocketConnection wsConnection = null;
-          
+
           if (connectionId != null) {
 
-              if (!provider.wsConnectionRegistry.containsKey(connectionId)) {             
-                provider.wsConnectionRegistry.put(
-                    connectionId,
-                    new WebSocketConnection(connectionId, loggedInUser, provider));
-              }
-              wsConnection = provider.wsConnectionRegistry.get(connectionId);
+            if (!provider.wsConnectionRegistry.containsKey(connectionId)) {
+              provider.wsConnectionRegistry.put(connectionId,
+                  new WebSocketConnection(connectionId, loggedInUser, provider));
+            }
+            wsConnection = provider.wsConnectionRegistry.get(connectionId);
 
           } else {
             wsConnection = new WebSocketConnection(connectionId, loggedInUser, provider);
@@ -704,7 +714,6 @@ public class ServerRpcProvider {
     }
   }
 
-
   /**
    * Returns the socket the WebSocket server is listening on.
    */
@@ -712,7 +721,7 @@ public class ServerRpcProvider {
     if (httpServer == null) {
       return null;
     } else {
-      ServerConnector c = (ServerConnector)httpServer.getConnectors()[0];
+      ServerConnector c = (ServerConnector) httpServer.getConnectors()[0];
       return new InetSocketAddress(c.getHost(), c.getLocalPort());
     }
   }
@@ -755,9 +764,12 @@ public class ServerRpcProvider {
    * Add a servlet to the servlet registry. This servlet will be attached to the
    * specified URL pattern when the server is started up.
    *
-   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
-   * @param servlet the servlet class to bind to the specified paths.
-   * @param initParams the map with init params, can be null or empty.
+   * @param urlPattern
+   *          the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   * @param servlet
+   *          the servlet class to bind to the specified paths.
+   * @param initParams
+   *          the map with init params, can be null or empty.
    * @return the {@link ServletHolder} that holds the servlet.
    */
   public ServletHolder addServlet(String urlPattern, Class<? extends HttpServlet> servlet,
@@ -773,8 +785,11 @@ public class ServerRpcProvider {
   /**
    * Add a servlet to the servlet registry. This servlet will be attached to the
    * specified URL pattern when the server is started up.
-   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
-   * @param servlet the servlet class to bind to the specified paths.
+   *
+   * @param urlPattern
+   *          the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   * @param servlet
+   *          the servlet class to bind to the specified paths.
    * @return the {@link ServletHolder} that holds the servlet.
    */
   public ServletHolder addServlet(String urlPattern, Class<? extends HttpServlet> servlet) {
@@ -785,7 +800,8 @@ public class ServerRpcProvider {
    * Add a filter to the filter registry. This filter will be attached to the
    * specified URL pattern when the server is started up.
    *
-   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   * @param urlPattern
+   *          the URL pattern for paths. Eg, '/foo', '/foo/*'.
    *
    */
   public void addFilter(String urlPattern, Class<? extends Filter> filter) {
@@ -793,12 +809,16 @@ public class ServerRpcProvider {
   }
 
   /**
-   * Add a transparent proxy to the servlet registry. The servlet will proxy to the
-   * specified URL pattern.
-   * For example: addTransparentProxy("/gadgets/*","http://gmodules:80/gadgets", "/gadgets")
-   * @param urlPattern the URL pattern for paths. Eg, '/foo', '/foo/*'.
-   * @param proxyTo the URL to proxy to.
-   * @param prefix the prefix that should be proxied.
+   * Add a transparent proxy to the servlet registry. The servlet will proxy to
+   * the specified URL pattern. For example:
+   * addTransparentProxy("/gadgets/*","http://gmodules:80/gadgets", "/gadgets")
+   *
+   * @param urlPattern
+   *          the URL pattern for paths. Eg, '/foo', '/foo/*'.
+   * @param proxyTo
+   *          the URL to proxy to.
+   * @param prefix
+   *          the prefix that should be proxied.
    */
   public void addTransparentProxy(String urlPattern, String proxyTo, String prefix) {
     Preconditions.checkNotNull(urlPattern);
