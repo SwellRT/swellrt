@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Queue;
 
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -113,6 +114,12 @@ public class WebSocketChannelImpl extends WebSocketChannel {
     LOG.info(
         "Websocket[" + connectionId + "] disconnected (" + closeCode + " - " + closeReason + ")");
     synchronized (this) {
+      if (closeCode == 1001) {
+        // the client browser has closed the connection, we can clean up this
+        // connection.
+        cancel();
+      }
+
       session = null;
     }
   }
@@ -124,7 +131,11 @@ public class WebSocketChannelImpl extends WebSocketChannel {
       if (session == null) {
         LOG.fine("Websocket[" + connectionId + "] is not connected");
       } else {
-        session.getRemote().sendStringByFuture(data);
+        try {
+          session.getRemote().sendStringByFuture(data);
+        } catch (WebSocketException e) {
+          LOG.fine("Websocket[" + connectionId + "] send exception: " + e.getMessage());
+        }
       }
     }
   }
