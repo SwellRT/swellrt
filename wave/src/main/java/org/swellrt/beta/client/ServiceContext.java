@@ -254,8 +254,18 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private boolean startWebsocket() {
 
     if (websocketClient == null) {
+
       websocketClient = new WaveWebSocketClient(sessionManager.getSessionToken(), websocketAddress);
       websocketClient.attachStatusListener(ServiceContext.this);
+
+      RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(
+          websocketClient, sessionManager.getUserId());
+
+      for (WaveContext wc : waveRegistry.values())
+        wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);
+
+      serviceMultiplexerFuture.set(serviceMultiplexer);
+
       websocketClient.start();
       return true;
     }
@@ -273,18 +283,6 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     if (connectState == ConnectState.ERROR) {
       // ignore further error messages
       return;
-    }
-
-    if (state.equals(ConnectState.CONNECTED)) {
-
-      // This is first time connection
-      if (!serviceMultiplexerFuture.isDone()) {
-        RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(
-            websocketClient, sessionManager.getUserId());
-        for (WaveContext wc : waveRegistry.values())
-          wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);
-        serviceMultiplexerFuture.set(serviceMultiplexer);
-      }
     }
 
     // At this moment we cannot get recovered from
