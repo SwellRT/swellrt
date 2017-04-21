@@ -9,6 +9,9 @@ import jsinterop.annotations.JsType;
 public class Config {
 
   @JsProperty
+  public static native Boolean getCaptureExceptions();
+
+  @JsProperty
   public static native Integer getWebsocketHeartbeatInterval();
 
   @JsProperty
@@ -44,6 +47,17 @@ public class Config {
     boolean DEFAULT = false;
     try {
       Boolean value = getWebsocketDebugLog();
+      return value != null ? value : DEFAULT;
+    } catch (RuntimeException e) {
+      return DEFAULT;
+    }
+  }
+
+  @JsOverlay
+  public final static boolean captureExceptions() {
+    boolean DEFAULT = true;
+    try {
+      Boolean value = getCaptureExceptions();
       return value != null ? value : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
