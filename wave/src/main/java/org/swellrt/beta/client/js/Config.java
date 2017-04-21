@@ -5,8 +5,7 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(isNative = true, name="__swellrt_config", namespace = JsPackage.GLOBAL)
-
+@JsType(isNative = true, name = "__swellrt_config", namespace = JsPackage.GLOBAL)
 public class Config {
 
   @JsProperty
@@ -17,8 +16,7 @@ public class Config {
 
   @JsProperty
   public static native Boolean getWebsocketDebugLog();
-  
-  
+
   @JsOverlay
   public final static int websocketHeartbeatInterval() {
     int DEFAULT = 60000; // ms
@@ -49,9 +47,7 @@ public class Config {
       return value != null ? value : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
-  
-  
+
 }
