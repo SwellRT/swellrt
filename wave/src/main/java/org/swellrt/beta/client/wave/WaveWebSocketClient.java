@@ -26,7 +26,7 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsIn
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsObject;
 import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
 
-import com.google.common.base.Preconditions;
+import java.util.Queue;
 
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.wave.WaveWebSocketCallback.RpcFinished;
@@ -45,13 +45,13 @@ import org.waveprotocol.wave.communication.json.JsonException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
-import java.util.Queue;
+import com.google.common.base.Preconditions;
 
 
 /**
  * Handle raw Wave protocol's messages from/to underlying transport protocol (usually WebSockets)
  * <p>
- * Exposes connection status to the app. This status don't need to match WebSocket's status.  
+ * Exposes connection status to the app. This status don't need to match WebSocket's status.
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
@@ -60,8 +60,14 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
 
   public static interface StatusListener {
-
     public void onStateChange(ConnectState state, String error);
+  }
+
+  public static interface StartCallback {
+
+    public void onStart();
+
+    public void onFailure(String e);
 
   }
 
@@ -99,12 +105,13 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       return getPropertyAsObject(this, "message").<T>cast();
     }
   }
-  
+
   private final Scheduler.Task reconnectTask = new Scheduler.Task() {
+    @Override
     public void execute() {
       if (reconnectionDisabled)
         return;
-      
+
       connect();
     }
   };
@@ -114,7 +121,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final IntMap<SubmitResponseCallback> submitRequestCallbacks;
 
   /**
-   * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594; (TURBULENCE | 
+   * Lifecycle of a socket is: (CONNECTING &#8594; CONNECTED &#8594; (TURBULENCE |
    * DISCONNECTED))&#8727; &#8594; ERROR;
    * <p><br>
    * The WaveSocket tries to keep the connection alive continuously. But under
@@ -124,11 +131,12 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    * A turbulence happens when server ACK's for heart beat messages are not received
    * before timeout. This means a slow network connection, server down, a ghost connection.
    * Consider here which is the right response to this situation.
-   * 
+   *
    */
   public enum ConnectState {
     CONNECTED, CONNECTING, DISCONNECTED, ERROR, TURBULENCE;
 
+    @Override
     public String toString() {
 
       if (this == CONNECTED) return "CONNECTED";
@@ -136,7 +144,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       if (this == DISCONNECTED) return "DISCONNECTED";
       if (this == ERROR) return "ERROR";
       if (this == TURBULENCE) return "TURBULENCE";
-      
+
       return "UNKOWN";
     }
 
@@ -152,11 +160,12 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private boolean connectedAtLeastOnce = false;
   /** Workaround, I can't make scheduler.cancel() work! */
   private boolean reconnectionDisabled = false;
-  
+
   private final String sessionToken;
   private final String serverUrl;
 
-  
+  private StartCallback startCallback;
+
   public WaveWebSocketClient(String sessionToken, String serverUrl) {
     this.sessionToken = sessionToken;
     this.serverUrl = serverUrl;
@@ -182,8 +191,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   /**
    * Opens this connection first time.
    */
-  public void start() {    
+  public void start(StartCallback startCallback) {
     try {
+      this.startCallback = startCallback;
       setState(ConnectState.CONNECTING);
       connectedAtLeastOnce = false;
       sequenceNo = 0;
@@ -192,12 +202,14 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     } catch (Exception e) {
       // Report exception if it's first attempt to connect the websocket
       Console.log("WaveWebSocketClient.start() error: "+e.getMessage());
+      startCallback.onFailure(e.getMessage());
+      startCallback = null;
       setState(ConnectState.ERROR, e.getMessage());
     }
   }
 
   /**
-   * Connect again an already started websocket 
+   * Connect again an already started websocket
    */
   protected void connect() {
     try {
@@ -216,19 +228,19 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
    */
   public void stop(boolean discardInFlightMessages) {
     setState(ConnectState.DISCONNECTED);
-    socket.disconnect();    
-    connectedAtLeastOnce = false;    
+    socket.disconnect();
+    connectedAtLeastOnce = false;
     if (discardInFlightMessages) messages.clear();
   }
 
 
   @Override
   public void onConnect() {
-    
+
     setState(ConnectState.CONNECTED);
-    
+
     try {
-      
+
       // Sends the session cookie to the server via an RPC to work around
       // browser bugs.
       // See: http://code.google.com/p/wave-protocol/issues/detail?id=119
@@ -239,9 +251,13 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
           auth.setToken(token);
           send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
         }
-        
       }
-        
+
+      if (startCallback != null) {
+        startCallback.onStart();
+        startCallback = null;
+      }
+
       connectedAtLeastOnce = true;
       // Flush queued messages.
       while (!messages.isEmpty() && connectState == ConnectState.CONNECTED) {
@@ -257,7 +273,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onDisconnect() {
     setState(ConnectState.DISCONNECTED);
-    SchedulerInstance.getLowPriorityTimer().scheduleDelayed(reconnectTask, 5000);    
+    SchedulerInstance.getLowPriorityTimer().scheduleDelayed(reconnectTask, 5000);
   }
 
 
@@ -347,10 +363,17 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   public ConnectState getState() {
     return this.connectState;
   }
-  
+
   @Override
   public void onError(String reason) {
-    SchedulerInstance.getLowPriorityTimer().cancel(reconnectTask);
+    if (connectedAtLeastOnce)
+      SchedulerInstance.getLowPriorityTimer().cancel(reconnectTask);
+
+    if (startCallback != null) {
+      startCallback.onFailure(reason);
+      startCallback = null;
+    }
+
     reconnectionDisabled = true;
     setState(ConnectState.ERROR, reason);
   }
@@ -358,15 +381,15 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onTurbulence(boolean finished) {
     if (!finished) {
-      // this will cache messages in pending queue      
+      // this will cache messages in pending queue
       setState(ConnectState.DISCONNECTED);
-      // Don't start here a reconnection process, just wait.   
+      // Don't start here a reconnection process, just wait.
     } else {
       onConnect(); // flush pending messages
     }
   }
 
-  protected void setState(ConnectState state) {    
+  protected void setState(ConnectState state) {
     setState(state, null);
   }
 

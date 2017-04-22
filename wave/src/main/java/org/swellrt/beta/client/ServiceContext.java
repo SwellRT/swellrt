@@ -7,6 +7,7 @@ import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
+import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.waveprotocol.wave.client.account.RawProfileData;
@@ -261,12 +262,21 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
       RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(
           websocketClient, sessionManager.getUserId());
 
-      for (WaveContext wc : waveRegistry.values())
-        wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);
+      websocketClient.start(new StartCallback() {
 
-      serviceMultiplexerFuture.set(serviceMultiplexer);
+        @Override
+        public void onStart() {
+          for (WaveContext wc : waveRegistry.values())
+            wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);
 
-      websocketClient.start();
+          serviceMultiplexerFuture.set(serviceMultiplexer);
+        }
+
+        @Override
+        public void onFailure(String e) {
+          onStateChange(ConnectState.ERROR, e);
+        }
+      });
       return true;
     }
 
