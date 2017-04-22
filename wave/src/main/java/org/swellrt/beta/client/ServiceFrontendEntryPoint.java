@@ -4,6 +4,7 @@ import org.swellrt.beta.client.js.Config;
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.PromisableServiceFrontend;
 import org.swellrt.beta.client.js.SessionManagerJs;
+import org.swellrt.beta.client.js.editor.SEditorConfig;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -70,25 +71,45 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
    * See "swellrt.js" file for details.
    */
   private static native void procOnReadyHandlers(
-      PromisableServiceFrontend sf) /*-{
+    PromisableServiceFrontend sf) /*-{
 
-                                    if (!$wnd.swellrt) {
-                                    console.log("swellrt object not ready yet! wtf?")
-                                    }
+    if (!$wnd.swellrt) {
+      console.log("swellrt object not ready yet! wtf?")
+    }
 
-                                    for(var i in $wnd._lh) {
-                                    $wnd._lh[i](sf);
-                                    }
+    for(var i in $wnd._lh) {
+      $wnd._lh[i](sf);
+    }
 
-                                    delete $wnd._lh;
+    delete $wnd._lh;
 
-                                    }-*/;
+  }-*/;
+
+  /**
+   * Initialize some native JavaScript objects.
+   * See {@link Config} and {@link SEditorConfig}
+   *
+   */
+  private static native void initNativeObjects() /*-{
+
+    if (!$wnd.__swellrt_config) {
+      $wnd.__swellrt_config = {};
+    }
+
+    if (!$wnd.__swellrt_editor_config) {
+      $wnd.__swellrt_editor_config = {};
+    }
+
+  }-*/;
+
 
   @JsIgnore
   @Override
   public void onModuleLoad() {
 
-    if (Config.getCaptureExceptions()) {
+    initNativeObjects();
+
+    if (Config.captureExceptions()) {
 
       GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
 

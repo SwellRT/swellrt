@@ -6,8 +6,8 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Wrapper for native object containing editor configuration 
- * properties. 
+ * Wrapper for native object containing editor configuration
+ * properties.
  * <p><br>
  * To be effectively used, add a script section before
  * loading SwellRT javascript declaring the config object:
@@ -22,34 +22,34 @@ import jsinterop.annotations.JsType;
  */
 @JsType(isNative = true, name="__swellrt_editor_config", namespace = JsPackage.GLOBAL)
 public class SEditorConfig {
-  
-  @JsProperty
-  public static native Boolean getEnableLog();
 
   @JsProperty
-  public static native Boolean getDebugDialog();
+  private static native Boolean getEnableLog();
 
   @JsProperty
-  public static native Boolean getUndo();
-  
-  @JsProperty
-  public static native Boolean getFancyCursorBias();
-  
-  @JsProperty
-  public static native Boolean getSemanticCopyPaste();
-      
-  @JsProperty
-  public static native Boolean getWhitelistEditor();
+  private static native Boolean getDebugDialog();
 
   @JsProperty
-  public static native Boolean getWebkitComposition();
+  private static native Boolean getUndo();
+
+  @JsProperty
+  private static native Boolean getFancyCursorBias();
+
+  @JsProperty
+  private static native Boolean getSemanticCopyPaste();
+
+  @JsProperty
+  private static native Boolean getWhitelistEditor();
+
+  @JsProperty
+  private static native Boolean getWebkitComposition();
 
 
   /*
    * Methods with secure fall back value
    * if property is not available
    */
-  
+
   @JsOverlay
   public final static boolean enableLog() {
     boolean DEFAULT = false;
@@ -57,9 +57,9 @@ public class SEditorConfig {
       return getEnableLog() != null ? getEnableLog() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
+
   @JsOverlay
   public final static boolean debugDialog() {
     boolean DEFAULT = false;
@@ -67,9 +67,9 @@ public class SEditorConfig {
       return getDebugDialog() != null ? getDebugDialog() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
+
   @JsOverlay
   public final static boolean undo() {
     boolean DEFAULT = true;
@@ -77,7 +77,7 @@ public class SEditorConfig {
       return getUndo() != null ? getUndo() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
 
   @JsOverlay
@@ -87,9 +87,9 @@ public class SEditorConfig {
       return getFancyCursorBias() != null ? getFancyCursorBias() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
+
   @JsOverlay
   public final static boolean semanticCopyPaste() {
     boolean DEFAULT = false;
@@ -97,9 +97,9 @@ public class SEditorConfig {
       return getSemanticCopyPaste() != null ? getSemanticCopyPaste() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
+
   @JsOverlay
   public final static boolean whitelistEditor() {
     boolean DEFAULT = false;
@@ -107,9 +107,9 @@ public class SEditorConfig {
       return getWhitelistEditor() != null ? getWhitelistEditor() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
+
   @JsOverlay
   public final static boolean webkitComposition() {
     boolean DEFAULT = false;
@@ -117,7 +117,7 @@ public class SEditorConfig {
       return getWebkitComposition() != null ? getWebkitComposition() : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
-    }   
+    }
   }
-  
+
 }

@@ -9,16 +9,16 @@ import jsinterop.annotations.JsType;
 public class Config {
 
   @JsProperty
-  public static native Boolean getCaptureExceptions();
+  private static native Boolean getCaptureExceptions();
 
   @JsProperty
-  public static native Integer getWebsocketHeartbeatInterval();
+  private static native Integer getWebsocketHeartbeatInterval();
 
   @JsProperty
-  public static native Integer getWebsocketHeartbeatTimeout();
+  private static native Integer getWebsocketHeartbeatTimeout();
 
   @JsProperty
-  public static native Boolean getWebsocketDebugLog();
+  private static native Boolean getWebsocketDebugLog();
 
   @JsOverlay
   public final static int websocketHeartbeatInterval() {
