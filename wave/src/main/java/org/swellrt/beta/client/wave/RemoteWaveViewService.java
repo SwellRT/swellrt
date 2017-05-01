@@ -36,7 +36,6 @@ import org.waveprotocol.box.webclient.common.WaveletOperationSerializer;
 import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.client.events.Log;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
-import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.federation.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
@@ -323,9 +322,9 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
       }
     }
   }
-  
+
   @Override
-  public void onFinished(RpcFinished message) {	
+  public void onFinished(RpcFinished message) {
     callback.onException(message.getChannelException());
   }
 
@@ -364,6 +363,10 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
     if (deltas == null) {
       return null;
     } else {
+      //
+      // Bad code. See WAVE-446
+      // Workaround is implemented in the server side (WaveViewService)
+      //
       List<TransformedWaveletDelta> parsed = new ArrayList<TransformedWaveletDelta>();
       for (int i = 0; i < deltas.size(); i++) {
         ProtocolHashedVersion thisEnd = //

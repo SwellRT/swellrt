@@ -19,13 +19,10 @@
 
 package org.waveprotocol.box.server.frontend;
 
-import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.wave.model.id.IdFilter;
@@ -36,11 +33,13 @@ import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * A client's subscription to a wave view.
@@ -154,7 +153,19 @@ final class WaveViewSubscription {
     // Forward any queued deltas.
     List<TransformedWaveletDelta> filteredDeltas =  filterOwnDeltas(state.heldBackDeltas, state);
     if (!filteredDeltas.isEmpty()) {
-      sendUpdate(waveletName, filteredDeltas, null);
+      //
+      // Workaround for WAVE-446 (pablojan@apache.org)
+      // Client/server protocol implementation fails (under some circumstances)
+      // when more than one update is sent as single response message.
+      // This is a workaround, actual error is located in the deserialization of
+      // TransformedWaveletDelta objects in
+      // the client side.
+      //
+      for (TransformedWaveletDelta delta : filteredDeltas) {
+        List<TransformedWaveletDelta> singleDeltaList = new ArrayList<TransformedWaveletDelta>();
+        singleDeltaList.add(delta);
+        sendUpdate(waveletName, singleDeltaList, null);
+      }
     }
     state.heldBackDeltas.clear();
   }
