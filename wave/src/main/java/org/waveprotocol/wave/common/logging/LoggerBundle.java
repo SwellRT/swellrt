@@ -95,4 +95,103 @@ public interface LoggerBundle {
     @Override
     public void log(Level level, Object... messages) {}
   };
+
+  public static final LoggerBundle CONSOLE_IMPL = new LoggerBundle() {
+
+    private native void console(String s) /*-{
+      console.log(s);
+    }-*/;
+
+    Logger logger = new Logger() {
+
+      @Override
+      public void log(String msg) {
+        console(msg);
+      }
+
+      @Override
+      public void log(Object... messages) {
+        String s = "";
+        for (Object o : messages)
+          s += " " + o.toString();
+
+        console(s);
+      }
+
+      @Override
+      public void logPlainText(String msg) {
+        console(msg);
+      }
+
+      @Override
+      public void logPlainText(String msg, Throwable t) {
+        console(msg);
+      }
+
+      @Override
+      public void logXml(String xml) {
+        console(xml);
+      }
+
+      @Override
+      public void log(String label, Object o) {
+        console(label + ":" + o.toString());
+      }
+
+      @Override
+      public void log(Throwable t) {
+        console(t.getMessage());
+      }
+
+      @Override
+      public void log(String label, Throwable t) {
+        console(label + ":" + t.getMessage());
+
+      }
+
+      @Override
+      public void logLazyObjects(Object... objects) {
+        String s = "";
+        for (Object o : objects)
+          s += " " + o.toString();
+
+        console(s);
+      }
+
+      @Override
+      public boolean shouldLog() {
+        return true;
+      }
+
+    };
+
+    @Override
+    public void log(Level level, Object... messages) {
+      String s = "";
+      for (Object o : messages)
+        s += " " + o.toString();
+
+      console(s);
+    }
+
+    @Override
+    public Logger trace() {
+      return logger;
+    }
+
+    @Override
+    public Logger error() {
+      return logger;
+    }
+
+    @Override
+    public Logger fatal() {
+      return logger;
+    }
+
+    @Override
+    public boolean isModuleEnabled() {
+      return true;
+    }
+  };
 }
