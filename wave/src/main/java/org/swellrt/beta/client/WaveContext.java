@@ -168,6 +168,10 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
     return this.state == ERROR;
   }
 
+  public boolean isActive() {
+    return this.state == ACTIVE;
+  }
+
   @Override
   public void check() throws SException {
 

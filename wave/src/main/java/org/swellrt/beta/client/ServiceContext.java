@@ -220,30 +220,27 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
     WaveContext waveContext = waveRegistry.get(waveId);
 
-    // a WaveContext must be reset if it was previously loaded and its state
-    // is error
-    boolean resetWaveContext = !startWebsocket() && waveContext.isError();
+    lazyWebsocketStart();
 
-    if (resetWaveContext) {
-      Futures.addCallback(serviceMultiplexerFuture,
-          new FutureCallback<RemoteViewServiceMultiplexer>() {
+    Futures.addCallback(serviceMultiplexerFuture,
+        new FutureCallback<RemoteViewServiceMultiplexer>() {
 
-            @Override
-            public void onSuccess(RemoteViewServiceMultiplexer result) {
-              waveContext.init(result, ServiceContext.this.legacyIdGenerator);
-              waveContext.getSObject(callback);
-            }
+          @Override
+          public void onSuccess(RemoteViewServiceMultiplexer multiplexer) {
 
-            @Override
-            public void onFailure(Throwable t) {
-              callback.onFailure(t);
-            }
+            if (!waveContext.isActive())
+              waveContext.init(multiplexer, ServiceContext.this.legacyIdGenerator);
 
-          });
+            waveContext.getSObject(callback);
+          }
 
-    } else {
-      waveContext.getSObject(callback);
-    }
+          @Override
+          public void onFailure(Throwable t) {
+            callback.onFailure(t);
+          }
+
+        });
+
 
   }
 
@@ -252,7 +249,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    *
    * @return true if this call actually starts a new connection
    */
-  private boolean startWebsocket() {
+  private boolean lazyWebsocketStart() {
 
     if (websocketClient == null) {
 
@@ -266,14 +263,13 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
         @Override
         public void onStart() {
-          for (WaveContext wc : waveRegistry.values())
-            wc.init(serviceMultiplexer, ServiceContext.this.legacyIdGenerator);
-
           serviceMultiplexerFuture.set(serviceMultiplexer);
         }
 
         @Override
         public void onFailure(String e) {
+          serviceMultiplexerFuture
+              .setException(new SException(SException.WEBSOCKET_ERROR, null, e));
           onStateChange(ConnectState.ERROR, e);
         }
       });
@@ -301,10 +297,10 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     SException sexception = null;
 
     if (state.equals(ConnectState.ERROR)) {
-      sexception = new SException(ResponseCode.WEBSOCKET_ERROR.getValue(), null, e);
+      sexception = new SException(SException.WEBSOCKET_ERROR, null, e);
 
       if (!serviceMultiplexerFuture.isDone())
-        serviceMultiplexerFuture.setException(new SException(ResponseCode.WEBSOCKET_ERROR));
+        serviceMultiplexerFuture.setException(new SException(SException.WEBSOCKET_ERROR));
 
       for (WaveContext ctx : waveRegistry.values()) {
         ctx.onFailure(new ChannelException(ResponseCode.WEBSOCKET_ERROR, e, null,

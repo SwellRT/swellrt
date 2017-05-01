@@ -253,11 +253,6 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         }
       }
 
-      if (startCallback != null) {
-        startCallback.onStart();
-        startCallback = null;
-      }
-
       connectedAtLeastOnce = true;
       // Flush queued messages.
       while (!messages.isEmpty() && connectState == ConnectState.CONNECTED) {
@@ -309,6 +304,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     } else if ("ProtocolSubmitResponse".equals(messageType)) {
       int seqno = wrapper.getSequenceNumber();
       SubmitResponseCallback callback = submitRequestCallbacks.get(seqno);
+
       if (callback != null) {
 
         try {
@@ -320,11 +316,20 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
           setState(ConnectState.ERROR, e.getMessage());
         }
 
+
+      } else {
+        Console.log("Submit response received (" + seqno + ") but not callback found of "
+            + submitRequestCallbacks.countEntries() + " entries");
       }
     } else if ("RpcFinished".equals(messageType)) {
         if (callback != null) {
            callback.onFinished(wrapper.<RpcFinished>getPayload());
         }
+    } else if ("ProtocolAuthenticationResult".equals(messageType)) {
+      if (startCallback != null) {
+        startCallback.onStart();
+        startCallback = null;
+      }
     }
   }
 
