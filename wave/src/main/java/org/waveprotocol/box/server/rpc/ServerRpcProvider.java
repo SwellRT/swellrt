@@ -698,12 +698,13 @@ public class ServerRpcProvider {
           WebSocketConnection wsConnection = null;
 
           if (connectionId != null) {
-
-            if (!provider.wsConnectionRegistry.containsKey(connectionId)) {
-              provider.wsConnectionRegistry.put(connectionId,
-                  new WebSocketConnection(connectionId, loggedInUser, provider));
+            synchronized (this) {
+              if (!provider.wsConnectionRegistry.containsKey(connectionId)) {
+                provider.wsConnectionRegistry.put(connectionId,
+                    new WebSocketConnection(connectionId, loggedInUser, provider));
+              }
+              wsConnection = provider.wsConnectionRegistry.get(connectionId);
             }
-            wsConnection = provider.wsConnectionRegistry.get(connectionId);
 
           } else {
             wsConnection = new WebSocketConnection(connectionId, loggedInUser, provider);
