@@ -1,9 +1,9 @@
-# SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt)
+# SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
 
 SwellRT is an open source **backend-as-a-service**. It allows to develop Web and _mobile_(*) apps faster by providing a set of common backend features:
 
 
-**Features:**
+### Features:
 
 * Real-time storage (NoSQL)
 * User management
@@ -26,9 +26,13 @@ SwellRT servers can be federated using Matrix.org open protocol.
 
 _(*) Note: native mobile clients are not still available_
 
-### Build
+## Running SwellRT Server
 
- **Prerequisites**
+You can build the server yourself or use our pre-built Docker image. 
+
+### Building on your own
+
+Prerequisites
 
 - [Java JDK 8](http://openjdk.java.net/install/)
 - [MongoDB 2.4](https://docs.mongodb.com/manual/administration/install-community/)
@@ -63,10 +67,23 @@ A docker image of the latest release of SwellRT is provided at [Docker Hub](http
 $ docker pull p2pvalue/swellrt
 ```
 
-This image doesn't include a MongoDB server. To pass connection data for a MongoDB instance to the container pass following environment variables to the container:
+This image doesn't include a MongoDB server. Setup mongo instance by pulling the latest release of mongo image:
+```sh
+$ docker pull mongo
+```
+
+To pass connection data for a MongoDB instance to the container pass following environment variables to the container:
 
 ```sh
 $ docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db name> -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+```
+
+Sample Setup: 
+
+```sh
+$ docker run -p 27017:27017 --name mongo -d mongo
+
+$ docker run -e MONGODB_HOST=mongo -e MONGODB_PORT=27017 -e MONGODB_DB=swellrt  -p 9898:9898 -h swellrt --name swellrt --link mongo:mongo -d p2pvalue/swellrt
 ```
 
 Some SwellRT's configuration and data files must be stored out of the Docker container to avoid losing data when the image is updated. Map these folders in your host machine use following parameters:
@@ -86,11 +103,11 @@ List of docker's image folders that should be placed outside the container (in y
 Visit "http://localhost:9898" to check server installation and try some demos.
 
 
-### API (JavaScript Web)
+## API (JavaScript Web)
 
 At the moment, SwellRT only provides a JavaScript client for Web projects.
 
-A good starting point is the source code of [form demo](https://github.com/P2Pvalue/swellrt/blob/master/wave/webapp/demo-form.html)and [text editor demo](https://github.com/P2Pvalue/swellrt/blob/master/wave/webapp/demo-pad.html)
+A good starting point is the source code of [form demo](https://github.com/P2Pvalue/swellrt/blob/master/wave/webapp/demo-form.html) and [text editor demo](https://github.com/P2Pvalue/swellrt/blob/master/wave/webapp/demo-pad.html)
 
 #### Basic Concepts
 
@@ -119,146 +136,16 @@ an object.
 
 _(*) Transient zones are not still available._
 
-#### First steps
+## First steps
 
 
-First of all, make your Web project to load the client:
+Ensure that SwellRT Server is running on "http://localhost:9898". To make your Web project load the client:
 
 ```
 <script src='http://localhost:9898/swellrt-beta.js'></script>
 ```
 
-Get a reference of the API instance (we name it, "service" or "s"):
-
-```
-<script>
-
-  swellrt.onReady( (service) => {
-    window.service = service;
-   });
-
-</script>    
-```
-
-
-**Login**
-
-To handle objects a login is required:
-
-```
-    service.login({
-      id : swellrt.Service.ANONYMOUS_USER_ID,
-      password : ""
-    })
-    .then(profile => {  ...  });
-```
-
-Anonymous users are associated with the current browser session.
-
-**Creating and getting objects**
-
-_open()_ will load an object or create it, if it doesn't exist.
-Leave _id_ field empty to create an object with an auto generated id.
-
-
-```
-	service.open({
-
-	    id : "my-first-collaborative-object"
-
-	})
-	.then( (result) => {
-
-		let obj = result.controller;
-		obj.setPublic(true);
-
-	})
-	.catch( (exception) => {
-
-	});
-```
-
-_obj_ is the view of the collaborative object for the logged in collaborator. It is the persisted zone.
-For this example, lets set the object as _public_ in order to be accessible by other anonymous collaborators.
-
-To get the personal zone use:
-
-```
-	let privObj = obj.getPrivateArea();
-```
-
-
-**Working with collaborative objects**
-
-
-Using objects with map syntax
-
-```
-	// primitive values
-	obj.put("name", "Kelly Slater");
-	obj.put("job", "Pro Surfer");
-	obj.put("age", 42);
-
-	// add nested map
-	obj.put("address", swellrt.Map.create().put("street", "North Coast Avenue").put("zip", 12345).put("city","Honololu"));
-
-	// get root level keys (properties)
-	obj.keys();
-
-	// access values
-	obj.get("address").get("street");
-
-```
-
-
-
-Using objects with JavaScript syntax
-```
-	// Get a javascript proxy
-	jso = obj.asNative();
-
-	// Reading properties
-	jso.address.street;
-
-	// Adding properties
-	jso.address.state = "Hawaii";
-
-
-	// Adding nested map - as mutable properties
-
-	jso.quiver = swellrt.Map.create();
-	jso.quiver.put("surfboard-1-size", "6.1, 18 1/2, 3 1/4");
-	jso.quiver.put("surfboard-2-size", "5.11, 19 , 2 3/4");
-
-
-	// Adding nested map - (bulk javascript)
-	// the whole javascript object is stored as a single item,
-	// changes in properties won't throw events.
-
-	jso.prize = {
-		contest: "Fiji Pro",
-		year: "2015",
-		points: 12000
-	};
-
-
-```
-
-When an object is opened by different collaborators (e.g. in two different browser windows, open the same public object)
-any change in a data property is automatically sync and updated in each open instance. If you want to listen when changes are made,
-register a listener in a property:
-
-```
-	service.listen(jso.quiver, (event) => {
-
-        // Note: this handler is invoked for local and remote changes.
-
-        if (event.key == "surfboard-2-size" && event.type == swellrt.Event.UPDATED_VALUE) {
-          let updatedValue = event.value.get();
-        }
-
-   });
-```
+Head over to our [GH Wiki](https://github.com/P2Pvalue/swellrt/wiki/Get-Started#basic-steps) for a quick jumpstart! 
 
 ## Contact and Support
 
@@ -266,108 +153,7 @@ Visit our [Gitter Channel](https://gitter.im/P2Pvalue/swellrt) or email to swell
 
 ## Contributing
 
-### Getting the source
-
-Clone the SwellRT source code from the GitHub repo:
-
-```sh
-$ git clone https://github.com/P2Pvalue/swellrt
-```
-
-Please, send Pull Requests only against the **develop** branch of the repo.
-
-
-### Setup Dev
-
-SwellRT can be setup for eclipse and intellij IDE's.
-
-Running `./gradlew eclipse` or `./gradlew idea` will generate all project files needed.
-In a situation where dependencies have changed or project structure has changed
-run `./gradlew cleanEclipse` or `./gradlew cleanIdea` depending on your IDE.
-
-
-### Gradle Tasks
-
-Java 8 and Gradle 2.8+ are required to build the project.
-
-Gradle tasks can be run by:
-
-```sh
-$ ./gradlew [task name]
-```
-
-
-Build:
-
-- **compileJava**: builds server.
-
-- **devWeb**: compile Javascript Web client for development.
-- **prodWeb**: compile Javascript Web client for production (optimized, minimized).
-
-Test:
-
-- **test**: runs the standard unit tests.
-
-Run server:
-
-- **run**: runs server. By default, Javascript client is at [http://localhost:9898/swellrt-beta.js](http://localhost:9898/swellrt-beta.js)
-
-Debug server:
-
-- **run --debug-jvm**: the server process will accept connection of remote debugger on port 5005.
-
-Debug Web API:
-
-- **debugWeb**: starts the [GWT dev mode](http://www.gwtproject.org/articles/superdevmode.html) to debug the Javascript client. Debug mode only works for one target browser, according to settings in _/wave/src/main/resources/org/swellrt/beta/client/ServiceFrontendDebug.gwt.xml_
-
-
-
-Distribution Tasks:
-
-- **jar**: builds jar file for the project.
-- **sourcesJar**: builds a source jar file for each project.
-- **createDist**: builds the zip and tar file for bin and source.
-- **createDistBin**: builds the zip for distribution.
-- **createDistBinZip**: builds the zip for distribution.
-- **createDistBinTar**: builds the tar for distribution.
-- **createDistSource**: builds the zip and tar file for distributing the source.
-- **createDistSourceZip**: builds the zip for distributing the source.
-- **createDistSourceTar**: builds the tar for distributing the source.
-
-
-
-## Source code
-
-SwellRT client's source code is written in Java/GWT-JsInterop. It is designed to target eventually...
-
-- a JavaScript library to be used in Web (currently available)
-- a GWT module be imported in GWT projects (currently available but not tested yet)
-
-- a Java Android library (requires to replace platform dependent HTTP/Websocket libraries)
-- a JavaScript library for NodeJs (requires to replace platform dependent HTTP/Websocket libraries)
-- ideally, a Objective-C version using java2Objc (future plan)
-
-
-Java Packages:
-
-- **org.swellrt.beta** container for all Beta source code.
-
-- **org.swellrt.beta.model**  SwellRT data model interfaces and common classes
-- **org.swellrt.beta.model.local** implementation of data model interfaces, backed by client's data structures
-- **org.swellrt.beta.model.remote** implementation of data model interfaces backed by Waves and Wavelets
-- **org.swellrt.beta.model.js** Javascript/Browser specific binding classes (ES6 Proxies)
-
-- **org.swellrt.beta.wave.transport** Wave client protocol classes related with transport. In general this is platform dependent code
-
-- **org.swellrt.beta.client** Client API implementation. Shared interface for Java, GWT, and JS (JsInterop)
-- **org.swellrt.beta.client.operation** Implementation of each API operation including HTTP
-- **org.swellrt.beta.client.js** JsInterop Browser specific bindings  
-
-Get more info about data model implementation in **org.swellrt.beta.model.remote.SObjectRemote**  Javadoc.  
-
-
-
-
+Read our [contributing guide](https://github.com/prastut/swellrt/blob/install-docs-fix/CONTRIBUTING.MD) to learn more about our development process, how to propose bugfixes and improvements, and how to build and test your changes to SwellRT.
 
 ## Acknowledgments
 
