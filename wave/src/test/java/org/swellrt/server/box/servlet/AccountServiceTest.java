@@ -7,9 +7,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import junit.framework.TestCase;
+import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.swellrt.server.box.servlet.AccountService.AccountServiceData;
 import org.waveprotocol.box.server.account.HumanAccountData;
@@ -23,20 +33,9 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
+import com.google.common.collect.ImmutableMap;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import junit.framework.TestCase;
 
 public class AccountServiceTest extends TestCase {
 
@@ -71,6 +70,7 @@ public class AccountServiceTest extends TestCase {
   SessionManager sessionManager;
 
 
+  @Override
   protected void setUp() throws Exception {
 
     accountStore = new MemoryStore();
@@ -337,8 +337,8 @@ public class AccountServiceTest extends TestCase {
     when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
         ACCOUNT_MAT.getId());
 
-    when(sessionManager.getAllLoggedInUser((HttpSession) anyObject())).thenReturn(CollectionUtils.immutableSet(ACCOUNT_MAT.getId()));
-    
+    when(sessionManager.getAllLoggedInUser((HttpServletRequest) anyObject())).thenReturn(CollectionUtils.immutableSet(ACCOUNT_MAT.getId()));
+
     // Test
     AccountServiceData requestData = new AccountServiceData();
 

@@ -22,7 +22,7 @@ package org.waveprotocol.wave.client.account.impl;
 import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
-import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -88,7 +88,7 @@ public final class ProfileImpl implements Profile {
     this.color = color;
   }
 
-  public void update(RawProfileData data) {
+  public void update(ServerAccountData data) {
   
     Preconditions.checkArgument(id.getAddress().equals(data.getId()));
     

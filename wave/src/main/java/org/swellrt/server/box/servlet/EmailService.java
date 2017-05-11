@@ -1,24 +1,6 @@
 package org.swellrt.server.box.servlet;
 
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.velocity.Template;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.tools.ConversionUtils;
-import org.apache.velocity.tools.ToolManager;
-import org.waveprotocol.box.server.account.AccountData;
-import org.waveprotocol.box.server.account.HumanAccountData;
-import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.persistence.AccountStore;
-import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.util.logging.Log;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -39,7 +21,23 @@ import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.velocity.Template;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.tools.ConversionUtils;
+import org.apache.velocity.tools.ToolManager;
+import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.box.server.account.HumanAccountData;
+import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.AccountStore;
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 public class EmailService extends BaseService {
 
@@ -81,7 +79,7 @@ public class EmailService extends BaseService {
   private DecoupledTemplates decTemplates;
 
   @Inject
-  public EmailService(SessionManager sessionManager, AccountStore accountStore, Config config, 
+  public EmailService(SessionManager sessionManager, AccountStore accountStore, Config config,
       EmailSender emailSender, DecoupledTemplates decTemplates) {
     super(sessionManager);
     this.accountStore = accountStore;
@@ -158,8 +156,7 @@ public class EmailService extends BaseService {
       switch (method) {
 
         case SET:
-          HttpSession session = sessionManager.getSession(req);
-          HumanAccountData account = sessionManager.getLoggedInAccount(session).asHuman();
+          HumanAccountData account = sessionManager.getLoggedInAccount(req).asHuman();
 
           if (account != null && account.getId().isAnonymous()) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "User is anonymous");

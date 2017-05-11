@@ -4,7 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.account.ServerAccountData;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -16,18 +16,21 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
 
     @JsProperty
     public String getId();
-        
+
+    @JsProperty
+    public String getIndex();
+
   }
-  
+
   @JsType(isNative = true)
-  public interface Response extends Operation.Response, RawProfileData {
-    
+  public interface Response extends Operation.Response, ServerAccountData {
+
 
   }
 
-  
+
   public ResumeOperation(ServiceContext context) {
-    super(context);    
+    super(context);
   }
 
 
@@ -42,7 +45,7 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
   protected void onSuccess(int statusCode, String data, Callback<Response> callback) {
     Response response = generateResponse(data);
     getServiceContext().init(response);
-    
+
     if (callback != null)
       callback.onSuccess(response);
   }
@@ -51,12 +54,12 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
   @Override
   public void execute(Options options, Callback<Response> callback) {
     addPathElement("auth");
-    if (options.getId() != null)
-      addPathElement(options.getId());
-      
-    executeGet(callback);
+
+    setBody(generateBody(options));
+
+    executePost(callback);
   }
-  
-  
-  
+
+
+
 }

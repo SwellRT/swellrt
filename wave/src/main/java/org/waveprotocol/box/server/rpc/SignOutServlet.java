@@ -19,18 +19,17 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
-
-import org.waveprotocol.box.server.authentication.SessionManager;
-
 import java.io.IOException;
 
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+
+import org.waveprotocol.box.server.authentication.SessionManager;
+
+import com.google.common.base.Preconditions;
+import com.google.inject.Inject;
 
 /**
  * A servlet for signing out the user.
@@ -53,8 +52,7 @@ public class SignOutServlet extends HttpServlet {
    */
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    HttpSession session = sessionManager.getSession(req);
-    sessionManager.logout(session);
+    sessionManager.logout(req.getSession());
 
     String redirectUrl = req.getParameter("r");
     if (redirectUrl != null && redirectUrl.startsWith("/")) {

@@ -244,7 +244,7 @@ public class AuthenticationServlet extends HttpServlet {
 
     }
 
-    HttpSession session = sessionManager.getSession(req, true);
+    HttpSession session = req.getSession(true);
 
     // Anonymous log in
     if (loggedInAddress == null) {

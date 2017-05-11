@@ -9,7 +9,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -70,6 +69,7 @@ public class AccountService extends BaseService {
     public String avatarUrl;
     public String locale;
     public String sessionId;
+    public String transientSessionId;
     public String domain;
 
     public AccountServiceData() {
@@ -98,7 +98,7 @@ public class AccountService extends BaseService {
       Config config) {
 	  this(sessionManager, accountStore, attachmentAccountStore, config.getString("core.wave_server_domain"));
   }
-  
+
   protected AccountService(SessionManager sessionManager, AccountStore accountStore,
       AccountAttachmentStore attachmentAccountStore, String waveDomain) {
 	    super(sessionManager);
@@ -262,7 +262,7 @@ public class AccountService extends BaseService {
       HumanAccountData account = accountData.asHuman();
 
 
-      if (userData.isParsedField("email")) {
+      if (userData.has("email")) {
         try {
           if (userData.email.isEmpty())
             account.setEmail(null);
@@ -274,10 +274,10 @@ public class AccountService extends BaseService {
         }
       }
 
-      if (userData.isParsedField("locale")) account.setLocale(userData.locale);
+      if (userData.has("locale")) account.setLocale(userData.locale);
 
 
-      if (userData.isParsedField("avatarData")) {
+      if (userData.has("avatarData")) {
         if (userData.avatarData == null || userData.avatarData.isEmpty()
             || "data:".equals(userData.avatarData)) {
           // Delete avatar
@@ -289,8 +289,8 @@ public class AccountService extends BaseService {
           account.setAvatarFileId(avatarFileId);
         }
       }
-       
-      if (userData.isParsedField("name")) account.setName(userData.name);
+
+      if (userData.has("name")) account.setName(userData.name);
 
       accountStore.putAccount(account);
 
@@ -311,7 +311,7 @@ public class AccountService extends BaseService {
 
   /**
    * Returns an avatar image from the provided participant
-   * 
+   *
    * @param avatarOwnerAddress
    * @param req
    * @param response
@@ -324,9 +324,9 @@ public class AccountService extends BaseService {
 
       // We require an open session, at least anonymous
       checkAnySession(req);
-      
+
       ParticipantId avatarOwnerId = getParticipantFromRequest(req);
-      
+
       // Retrieve the avatar's owner account data
       AccountData accountData = accountStore.getAccount(avatarOwnerId);
 
@@ -403,7 +403,7 @@ public class AccountService extends BaseService {
     } catch (InvalidParticipantAddress e) {
       throw new ServiceException("Can't get participant from request" ,HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX, e);
     }
-    
+
   }
 
 
@@ -412,7 +412,7 @@ public class AccountService extends BaseService {
 
 
     // GET /account?p=joe@local.net;tom@local.net
-    
+
     // We require an open session, at least anonymous
     checkAnySession(req);
 
@@ -457,7 +457,7 @@ public class AccountService extends BaseService {
             getParticipantAccount(req, response);
 
         } else {
-          
+
           queryParticipantAccount(req, response);
 
         }
@@ -470,7 +470,7 @@ public class AccountService extends BaseService {
       sendResponseError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR);
       return;
     }
-    
+
   }
 
 
@@ -567,7 +567,7 @@ public class AccountService extends BaseService {
     data.avatarUrl = avatarUrl == null ? "" : avatarUrl;
     data.locale = account.getLocale() == null ? "" : account.getLocale();
     data.name = account.getName() == null ? "" : account.getName();
-    
+
     return data;
   }
 

@@ -1,19 +1,57 @@
 package org.swellrt.server.box.servlet;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+
 import org.waveprotocol.box.server.authentication.SessionManager;
 
 import com.google.common.base.Preconditions;
 
 public class ServiceUtils {
 
-  
+
+  /**
+   * Extracts the session id string from the URL's path if present.
+   * For example: ";sid=fds342534sdf"
+   *
+   * This function assumes that ";sid=..." string is always at the
+   * end of the URL's path part.
+   *
+   * @param request the HTTP request
+   * @return the session string or empty string
+   */
+  public static String getSessionIdFromPath(HttpServletRequest request) {
+    Preconditions.checkNotNull(request, "Request can't be null");
+
+    if (request.getPathInfo() == null || request.getPathInfo().isEmpty()) return "";
+
+    // The ';sid=' syntax is jetty specific.
+    int indexSid = request.getPathInfo().indexOf(";"+SessionManager.SESSION_URL_PARAM+"=");
+
+    if (indexSid >= 0) {
+      return request.getPathInfo().substring(indexSid, request.getPathInfo().length());
+    }
+
+    return "";
+  }
+
+  public static Cookie getCookie(HttpServletRequest request, String name) {
+
+    Preconditions.checkNotNull(request, "Request can't be null");
+    Preconditions.checkNotNull(name, "Cookie name can't be null");
+
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null)
+      for (Cookie c: cookies) {
+        if (c.getName().equalsIgnoreCase(name))
+          return c;
+      }
+    return null;
+
+  }
+
   public static String getSessionUrlRewrite(HttpServletRequest request) {
-   if (SessionManager.hasSessionCookie(request))
-     return "";
-   else 
-     return SessionManager.getSessionStringFromPath(request);
-      
+    return getCookie(request, SessionManager.SESSION_COOKIE_NAME) != null ? "" : getSessionIdFromPath(request);
   }
 
 

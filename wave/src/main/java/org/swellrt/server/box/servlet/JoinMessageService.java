@@ -11,7 +11,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.tools.ConversionUtils;
@@ -51,8 +50,7 @@ public class JoinMessageService extends BaseService {
 
     ParticipantId participantId = sessionManager.getLoggedInUser(req);
 
-    HttpSession session = sessionManager.getSession(req);
-    HumanAccountData hum = sessionManager.getLoggedInAccount(session).asHuman();
+    HumanAccountData hum = sessionManager.getAccountData(participantId).asHuman();
 
     Locale locale;
 

@@ -19,7 +19,6 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.IOUtils;
 import org.waveprotocol.box.server.authentication.HttpRequestBasedCallbackHandler;
@@ -44,19 +43,23 @@ import com.typesafe.config.Config;
  *
  * Login
  *
- * POST /auth { id : <ParticipantId> password : <Password> }
+ * POST /auth { id : <ParticipantId>, password : <Password>, remember : <boolean> (optional) }
  *
  * Login (Anonymous)
  *
- * POST /auth { id : "_anonymous_" password : "_anonymous_" }
+ * POST /auth { id : "_anonymous_", password : "_anonymous_" }
  *
- * Resume existing session
+ * Resume
+ *
+ * POST /auth { index : <user_session_index> (optional) }
+ *
+ * Listing existing users in session
  *
  * GET /auth { }
  *
  * Close session
  *
- * POST /auth { }
+ * DELETE /auth {id : <ParticipantId> }
  *
  * Original code taken from {@AuthenticationServlet}.
  *
@@ -73,6 +76,8 @@ public class AuthenticationService extends BaseService {
     public String id;
     public String password;
     public String status;
+    public boolean remember;
+    public int index;
 
     public AuthenticationServiceData() {
 
@@ -135,7 +140,6 @@ public class AuthenticationService extends BaseService {
   }
 
 
-  @SuppressWarnings("unchecked")
   private LoginContext login(String address, String password) throws IOException, LoginException {
     Subject subject = new Subject();
 
@@ -180,6 +184,8 @@ public class AuthenticationService extends BaseService {
             subject.getPrincipals().add(principal);
           }
           loggedInAddress = getLoggedInUser(subject);
+          doLogin(req, resp, loggedInAddress, false);
+          return;
         }
       } catch (InvalidParticipantAddress e1) {
         sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_INVALID_ACCOUNT_ID_SYNTAX);
@@ -187,79 +193,94 @@ public class AuthenticationService extends BaseService {
       }
     }
 
-    HttpSession session = null;
+    AuthenticationServiceData authData = new AuthenticationServiceData();
 
-    if (loggedInAddress == null) {
-
-      AuthenticationServiceData authData = new AuthenticationServiceData();
-
-      try {
-        authData = getRequestServiceData(req);
-      } catch (JsonParseException e) {
-        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
-        return;
-      }
-
-
-      if (authData.isParsedField("id") && authData.id != null && authData.isParsedField("password")
-          && authData.password != null) {
-
-        if (!ParticipantId.isAnonymousName(authData.id)) {
-
-          try {
-
-            context = login(authData.id, authData.password);
-            subject = context.getSubject();
-            loggedInAddress = getLoggedInUser(subject);
-            session = sessionManager.getSession(req, true);
-
-          } catch (LoginException e) {
-
-            sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
-            return;
-
-          } catch (InvalidParticipantAddress e1) {
-
-            sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_INVALID_ACCOUNT_ID_SYNTAX);
-            return;
-
-          }
-
-        } else if (authData.id != null) {
-
-          session = sessionManager.getSession(req, true);
-          loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
-
-        }
-      } else {
-        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_MISSING_PARAMETER);
-        return;
-      }
+    try {
+      authData = getRequestServiceData(req);
+    } catch (JsonParseException e) {
+      sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
+      return;
     }
 
- 
-    sessionManager.login(session, loggedInAddress);
-    LOG.info("Authenticated user " + loggedInAddress);
 
+    if (authData.has("id") && authData.id != null) {
+
+      if (!ParticipantId.isAnonymousName(authData.id)) {
+
+        try {
+
+          String password = (authData.has("password")  && authData.password != null ? authData.password : "");
+          context = login(authData.id, password);
+          subject = context.getSubject();
+          loggedInAddress = getLoggedInUser(subject);
+          doLogin(req, resp, loggedInAddress, authData.has("remember") ?  authData.remember : false);
+
+        } catch (LoginException e) {
+
+          sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
+          return;
+
+        } catch (InvalidParticipantAddress e1) {
+
+          sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_INVALID_ACCOUNT_ID_SYNTAX);
+          return;
+
+        }
+
+      } else {
+        doLogin(req, resp, ParticipantId.anonymousOfUnsafe(domain), false);
+
+      }
+
+    } else {
+      doResume(req, resp, authData.has("index") ? authData.index : -1);
+
+    }
+  }
+
+  protected AccountService.AccountServiceData getAccountData(HttpServletRequest req, ParticipantId participantId) throws PersistenceException {
     AccountService.AccountServiceData accountData;
 
-    if (!loggedInAddress.isAnonymous())
+    if (!participantId.isAnonymous())
       accountData =
           AccountService.toServiceData(ServiceUtils.getUrlBuilder(req),
-              accountStore.getAccount(loggedInAddress).asHuman());
+              accountStore.getAccount(participantId).asHuman());
     else
-      accountData = new AccountService.AccountServiceData(loggedInAddress.getAddress());
+      accountData = new AccountService.AccountServiceData(participantId.getAddress());
 
-    accountData.sessionId = req.getSession().getId();
+    accountData.sessionId = sessionManager.getSessionId(req);
+    accountData.transientSessionId = sessionManager.getTransientSessionId(req);
     accountData.domain = domain;
 
-    sendResponse(resp, accountData);
-
+    return accountData;
   }
+
+  protected void doLogin(HttpServletRequest req, HttpServletResponse resp, ParticipantId participantId, boolean keepLogin) throws IOException, PersistenceException {
+    sessionManager.login(req, participantId, keepLogin);
+    LOG.info("Authenticated user " + participantId);
+    sendResponse(resp, getAccountData(req, participantId));
+  }
+
+  protected void doLoginAnonymous(HttpServletRequest req, HttpServletResponse resp) throws IOException, PersistenceException {
+    ParticipantId participantId = ParticipantId.anonymousOfUnsafe(sessionManager.getSessionId(req),domain);
+    LOG.info("Authenticated user " + participantId);
+    sendResponse(resp, getAccountData(req, participantId));
+  }
+
+  protected void doResume(HttpServletRequest req, HttpServletResponse resp, int userSessionIndex) throws IOException, PersistenceException {
+    ParticipantId participantId = sessionManager.resume(req, userSessionIndex);
+    if (participantId == null) {
+      sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
+    } else {
+      LOG.info("Authenticated user " + participantId);
+      sendResponse(resp, getAccountData(req, participantId));
+    }
+  }
+
 
   /**
    * DELETE a session
-   * 
+   *
    * @param req
    * @param resp
    * @throws IOException
@@ -268,24 +289,20 @@ public class AuthenticationService extends BaseService {
 
     String[] pathTokens = SwellRtServlet.getCleanPathInfo(req).split("/");
     String participantToken =  pathTokens.length > 2 ? pathTokens[2] : null;
-    
-    HttpSession session = sessionManager.getSession(req);
-    
+
     boolean wasDelete = false;
-    
-    if (participantToken != null && !participantToken.isEmpty()) {      
+
+    if (participantToken != null && !participantToken.isEmpty()) {
       ParticipantId participantId;
       try {
         participantId = ParticipantId.of(participantToken);
       } catch (InvalidParticipantAddress e) {
         sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
         return;
-      }  
-      wasDelete = sessionManager.logout(session, participantId);            
-    } else {      
-      wasDelete = sessionManager.logout(session);      
+      }
+      wasDelete = sessionManager.logout(req, participantId);
     }
-    
+
     if (wasDelete) {
       sendResponse(resp, new AuthenticationServiceData("SESSION_CLOSED"));
       return;
@@ -393,66 +410,13 @@ public class AuthenticationService extends BaseService {
   }
 
   /**
-   * On GET, try to resume an existing session matching the session cookie
+   * GET, return a list of active users within the http session
    *
    * @throws PersistenceException
    */
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException,
       PersistenceException {
-
-    AuthenticationServiceData authData;
-    
-    try {
-      authData = getRequestServiceData(req); 
-    } catch (JsonParseException e) {
-      sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_JSON_SYNTAX);
-      return;
-    }
-    
-    ParticipantId participantId = null;
-
-    if (authData != null && authData.isParsedField("id") && authData.id != null) {            
-      try {
-        participantId = ParticipantId.of(authData.id);
-      } catch (InvalidParticipantAddress e) {
-        sendResponseError(resp, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX);
-        return;
-      }  
-    } 
-    
-    participantId = sessionManager.resume(participantId, req);
-     
-    if (participantId != null) {
-
-      AccountService.AccountServiceData accountData;
-
-      if (!participantId.isAnonymous())
-        accountData =
-            AccountService.toServiceData(ServiceUtils.getUrlBuilder(req),
-                accountStore.getAccount(participantId).asHuman());
-      else
-        accountData = new AccountService.AccountServiceData(participantId.getAddress());
-
-      accountData.sessionId = req.getSession().getId();
-      accountData.domain = domain;
-
-      // Resuming the session
-      LOG.info("Resuming Authenticated user " + participantId);
-      sendResponse(resp, accountData);
-      return;
-
-    } else {
-      if (isClientAuthEnabled && !failedClientAuth) {
-        X509Certificate[] certs =
-            (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
-        if (certs != null) {
-          doPost(req, resp);
-        }
-      }
-
-      // Login is required
-      sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
-    }
+    sendResponse(resp, sessionManager.getSessionUsersIndex(req));
   }
 
   protected AuthenticationServiceData getRequestServiceData(HttpServletRequest request)
@@ -460,7 +424,7 @@ public class AuthenticationService extends BaseService {
 
     StringWriter writer = new StringWriter();
     IOUtils.copy(request.getInputStream(), writer, Charset.forName("UTF-8"));
-    
+
     String json = writer.toString();
 
     if (json == null)

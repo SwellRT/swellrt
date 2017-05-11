@@ -1,17 +1,16 @@
 package org.swellrt.beta.client.js;
 
 import org.swellrt.beta.client.SessionManager;
-import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.account.ServerAccountData;
 
 import com.google.gwt.user.client.Cookies;
 
 public class SessionManagerJs implements SessionManager {
 
   private static final String SESSION_COOKIE_NAME = "WSESSIONID";
-  private static final String WINDOW_ID_COUNTER_ITEM = "swellrt_wid_counter";
-  
-  
-  private final RawProfileData emptyProfile = new RawProfileData() {
+  private static final String TRANSIENT_SESSION_COOKIE_NAME = "TSESSIONID";
+
+  private final ServerAccountData emptyAccountData = new ServerAccountData() {
 
     @Override
     public String getId() {
@@ -47,88 +46,73 @@ public class SessionManagerJs implements SessionManager {
     public String getDomain() {
       return null;
     }
-    
+
+    @Override
+    public String getTransientSessionId() {
+      return null;
+    }
+
   };
- 
-  
-  private RawProfileData profile = emptyProfile;
-  private String windowId = null;
-  
-  
+
+
+  private ServerAccountData accountData = emptyAccountData;
+
+
   public static SessionManagerJs create() {
     SessionManagerJs sm = new SessionManagerJs();
     sm.init();
     return sm;
   }
-  
-  
+
+
   private SessionManagerJs() {
-    
+
   }
- 
+
   protected void init() {
-    
-    try {
-      
-      if (LocalStorage.getItem(WINDOW_ID_COUNTER_ITEM) == null) {
-        LocalStorage.setItem(WINDOW_ID_COUNTER_ITEM, 0);
-      }
-      
-      String counterStr = (String) LocalStorage.getItem(WINDOW_ID_COUNTER_ITEM);
-      int counter = Integer.parseInt(counterStr);
-      counter++;      
-      LocalStorage.setItem(WINDOW_ID_COUNTER_ITEM, counter);
-      windowId = Integer.toString(counter);
-      
-    } catch (Exception e) {
-      // I don't know which exception would be thrown by JSInterop    
-    }
-    
+
   }
 
-
-  @Override
-  public String getWindowId() {        
-    return windowId;
-  }
 
   @Override
   public String getSessionId() {
-    return profile.getSessionId();
-  }
-
-  @Override
-  public String getSessionToken() {
-    return profile.getSessionId()+ (windowId != null ? ":"+windowId : "");
+    return accountData.getSessionId();
   }
 
 
   @Override
-  public void setSession(RawProfileData profile) {
-    this.profile = profile;    
+  public String getTransientSessionId() {
+    return accountData.getTransientSessionId();
   }
 
 
   @Override
-  public void removeSession() {          
+  public void setSession(ServerAccountData profile) {
+    this.accountData = profile;
+  }
+
+
+  @Override
+  public void removeSession() {
     Cookies.removeCookie(SESSION_COOKIE_NAME);
-    this.profile = emptyProfile;
+    Cookies.removeCookie(TRANSIENT_SESSION_COOKIE_NAME);
+    this.accountData = emptyAccountData;
   }
-  
+
   @Override
   public boolean isSession() {
-    return (this.profile != emptyProfile);
+    return (this.accountData != emptyAccountData);
   }
 
 
   @Override
   public String getWaveDomain() {
-    return this.profile.getDomain();
+    return this.accountData.getDomain();
   }
-  
-  @Override 
+
+  @Override
   public String getUserId() {
-    return this.profile.getId();
+    return this.accountData.getId();
   }
 
 }

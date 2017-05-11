@@ -1,18 +1,17 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.inject.Inject;
+import java.io.IOException;
+import java.util.Enumeration;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.swellrt.server.box.events.gcm.GCMSubscriptionStore;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.io.IOException;
-import java.util.Enumeration;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import com.google.inject.Inject;
 
 public class NotificationService extends BaseService {
 
@@ -46,8 +45,7 @@ public class NotificationService extends BaseService {
       String name = paramNames.nextElement();
       String value = req.getParameter(name);
 
-      HttpSession session = sessionManager.getSession(req);
-      String account = sessionManager.getLoggedInAccount(session).getId().getAddress();
+      String account = sessionManager.getLoggedInAccount(req).getId().getAddress();
 
       switch (name) {
 

@@ -19,10 +19,22 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import com.google.common.net.MediaType;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -38,20 +50,13 @@ import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.wave.media.model.AttachmentId;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.net.URLDecoder;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
+import com.google.common.net.MediaType;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.typesafe.config.Config;
 
 /**
  * Serves attachments from a provided store.
@@ -111,17 +116,17 @@ public class AttachmentServlet extends HttpServlet {
     } else {
       waveletName = AttachmentUtil.waveRef2WaveletName(metadata.getWaveRef());
     }
-    
+
     // the same HTTP cookie-based session could handle different per browser tab sessions
     // however, we can't distinguish the actual participant requesting an image because
-    // img requests can't carry the header with the browser tab id. 
+    // img requests can't carry the header with the browser tab id.
     // Workaround is to grant access to the image to all sessions in the browser.
-    Set<ParticipantId> participants = sessionManager.getAllLoggedInUser(sessionManager.getSession(request));
+    Set<ParticipantId> participants = sessionManager.getAllLoggedInUser(request);
     boolean isAuthorized = false;
     for (ParticipantId p: participants) {
       try {
         isAuthorized = waveletProvider.checkAccessPermission(waveletName, p);
-        if (isAuthorized) 
+        if (isAuthorized)
           break;
       } catch (WaveServerException e) {
         LOG.warning("Problem while authorizing user: " + p + " for wavelet: " + waveletName, e);
@@ -175,10 +180,10 @@ public class AttachmentServlet extends HttpServlet {
 
     response.setContentType(contentType);
     response.setContentLength((int)data.getSize());
-    
+
     if (!isWebContent(contentType))
       response.setHeader("Content-Disposition", "attachment; filename=\"" + metadata.getFileName() + "\"");
-    
+
     response.setStatus(HttpServletResponse.SC_OK);
     response.setDateHeader("Last-Modified", Calendar.getInstance().getTimeInMillis());
     AttachmentUtil.writeTo(data.getInputStream(), response.getOutputStream());
@@ -368,7 +373,7 @@ public class AttachmentServlet extends HttpServlet {
     }
     return waveRefStr;
   }
-  
+
   /**
    * Check if mime type is suitable to be deliver as an inline content
    * or as a file.
@@ -379,11 +384,11 @@ public class AttachmentServlet extends HttpServlet {
     boolean isWebContent = false;
     try {
       MediaType mt = MediaType.parse(mimeType);
-      isWebContent = mt.is(MediaType.ANY_IMAGE_TYPE) || mt.is(MediaType.ANY_VIDEO_TYPE);      
+      isWebContent = mt.is(MediaType.ANY_IMAGE_TYPE) || mt.is(MediaType.ANY_VIDEO_TYPE);
     } catch (IllegalArgumentException e) {
       LOG.warning("Unable to decode mime type "+mimeType != null ? mimeType : "null");
     }
-    
+
     return isWebContent;
   }
 }

@@ -6,7 +6,7 @@ import com.google.gwt.user.client.Cookies;
 /**
  * Shared logic to manage session data in the browser side.
  * 
- * See {@link SessionManagerImpl} and {@link HttpWindowSessionFilter} classes for
+ * See {@link SessionManagerImpl} and {@link WindowIdFilter} classes for
  * server side related logic. 
  * 
  * @author pablojan@gmail.com (Pablo Ojanguren)

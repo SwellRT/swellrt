@@ -48,7 +48,7 @@ public interface Profile {
   ParticipantId getParticipantId();
   
   @JsIgnore
-  void update(RawProfileData rawData);
+  void update(ServerAccountData rawData);
 
   /**
    * @return the address for this profile, same as {@link #getParticipantId()}

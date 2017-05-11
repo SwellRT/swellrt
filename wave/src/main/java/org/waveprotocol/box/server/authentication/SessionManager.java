@@ -19,99 +19,62 @@
 
 package org.waveprotocol.box.server.authentication;
 
-import org.waveprotocol.box.server.account.AccountData;
-import org.waveprotocol.wave.model.wave.ParticipantId;
-
-import com.google.common.base.Preconditions;
-
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.waveprotocol.box.server.account.AccountData;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
 
 /**
  * Utility class for managing the session's authentication status.
+ * <p>
+ * This version includes major modifications from original Wave version.
+ * Old methods are kept until old code was removed.
+ * <p><br>
+ * Sessions are tracked using three components:
+ * <li>A permanent session cookie, managed by Jetty container
+ * <li>A transient session cookie, managed by {@see TransientSessionFilter}
+ * <li>The current browsers window id, managed by {@see WindowIdFilter}
+ * <br>
+ * This approach allows to support following session features:
+ * <li>Resuming sessions of previous logged in users
+ * <li>Different user sessions per each browser window/tab
+ * <li>Remember session after browser/tab is closed.
+ * <li>Forgot session after browser/tab is closed.
+ * <li>List all active users / sessions in the browser.
  *
- * @author josephg@gmail.com (Joseph Gentle)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public interface SessionManager {
-  static final String USER_FIELD = "user";
 
+  // Old stuff
+  static final String USER_FIELD = "user";
   static final String SIGN_IN_URL = "/auth/signin";
 
+  // New stuff
   public final static String SESSION_URL_PARAM = "sid";
   public final static String SESSION_COOKIE_NAME = "WSESSIONID";
+  public final static String TRASIENT_SESSION_COOKIE_NAME = "TSESSIONID";
 
-  /**
-   * Checks if the session cookie is in the request.
-   * 
-   * @param request
-   * @return true if cookie session is present
-   */
-  public static boolean hasSessionCookie(HttpServletRequest request) {
-    Preconditions.checkNotNull(request, "Request can't be null");
-    
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null)
-      for (Cookie c: cookies) {
-        if (c.getName().equalsIgnoreCase(SESSION_COOKIE_NAME))
-          return true;
-      }
-    return false;
-  }
-  
-  /**
-   * Extracts the session id string from the URL's path if present.
-   * For example: ";sid=fds342534sdf"
-   * 
-   * This function assumes that ";sid=..." string is always at the
-   * end of the URL's path part.
-   * 
-   * @param request the HTTP request
-   * @return the session string or empty string
-   */
-  public static String getSessionStringFromPath(HttpServletRequest request) {
-    Preconditions.checkNotNull(request, "Request can't be null");
 
-    if (request.getPathInfo() == null || request.getPathInfo().isEmpty()) return "";
-
-    // The ';sid=' syntax is jetty specific.
-    int indexSid = request.getPathInfo().indexOf(";sid=");
-
-    if (indexSid >= 0) {
-      return request.getPathInfo().substring(indexSid, request.getPathInfo().length());
-    }
-
-    return "";    
-  }
-  
   /**
    * Get the participant id of the currently logged in user from the user's HTTP
    * session.
    *
-   *  If the session is null, or if the user is not logged in, this function
+   * If the session is null, or if the user is not logged in, this function
    * returns null.
    *
    * @param session The user's HTTP session, usually obtained from
    *        request.getSession(false);
    * @return the user's participant id, or null if the user is not logged in.
    */
+  @Deprecated
   ParticipantId getLoggedInUser(HttpSession session);
-
-  /**
-   * Get account data of the currently logged in user.
-   *
-   *  If the session is null, or if the user is not logged in, this function
-   * returns null.
-   *
-   * @param session The user's HTTP session, usually obtained from
-   *        request.getSession(false);
-   * @return the user's account data, or null if the user is not logged in.
-   */
-  AccountData getLoggedInAccount(HttpSession session);
 
   /**
    * Bind the user's participant id to the user's session.
@@ -122,6 +85,7 @@ public interface SessionManager {
    *        request.getSession(true);
    * @param id the user who has been logged in
    */
+  @Deprecated
   void login(HttpSession session, ParticipantId id);
 
   /**
@@ -132,28 +96,34 @@ public interface SessionManager {
    * @param session The user's HTTP session, obtainable from
    *        request.getSession(false);
    */
+  @Deprecated
   boolean logout(HttpSession session);
-  
+
   /**
-   * Log the user out.
+   * Get account data of the currently logged in user.
    *
-   * If session is null, this function has no effect.
-   *
-   * @param session The user's HTTP session, obtainable from
-   *        request.getSession(false); 
-   * @param participant to be log out
+   * @param current HTTP session
+   * @return the user's account data, or null if the user is not logged in.
    */
-  boolean logout(HttpSession session, ParticipantId id);
-  
+  @Deprecated
+  AccountData getLoggedInAccount(HttpSession session);
+
+
   /**
-   * Resume a session, with the last user log in any 
-   * window session or with specific one
-   * 
+   * Get account data of the currently logged in user.
+   *
    * @param request
-   * @param participant, a
-   * @return the participant or null
+   * @return
    */
-  ParticipantId resume(ParticipantId participant, HttpServletRequest request);
+  AccountData getLoggedInAccount(HttpServletRequest request);
+
+  /**
+   * Get account data of the participant
+   *
+   * @param the participant
+   * @return
+   */
+  AccountData getAccountData(ParticipantId participantId);
 
   /**
    * Get the relative URL to redirect the user to the login page.
@@ -166,39 +136,18 @@ public interface SessionManager {
   String getLoginUrl(String redirect);
 
   /**
-   * Get a user's HttpSession from their session token.
-   * 
-   * A token may include an optional window Id.
-   * 
-   * @param token the session token with optional window id. Eg,
-   *        "JSESSION=abcdef123567890:23"
-   * @return the user's HttpSession, or null if the token is invalid.
-   */
-  HttpSession getSessionFromToken(String token);
-
-
-  /**
-   * Get the session for the provided request, create a new one if it doesn't
-   * exist.
-   * 
+   * A convenience method to extract the logged in participant from a token
+   * compound of "session ID:transient session ID:browser window ID"
+   *
    * @param request
    * @return
    */
-  HttpSession getSession(HttpServletRequest request, boolean create);
-
-  /**
-   * Get the session for the provided request, return null if it doesn't exist.
-   * 
-   * @param request
-   * @return
-   */
-  HttpSession getSession(HttpServletRequest request);
-
+  ParticipantId getLoggedInUser(String token);
 
   /**
    * A convenience method to extract the logged in participant from the request
    * in only one step.
-   * 
+   *
    * @param request
    * @return
    */
@@ -206,11 +155,85 @@ public interface SessionManager {
 
 
   /**
-   * Get all the participants sharing the same HTTP session.
-   * 
+   * Get all the participants logged in with the same HTTP session.
+   *
    * @param session the HTTP session object
    * @return a set of participants, maybe empty, but never null.
    */
-  Set<ParticipantId> getAllLoggedInUser(HttpSession session);
+  Set<ParticipantId> getAllLoggedInUser(HttpServletRequest request);
+
+
+  //
+  // New logic
+  //
+
+  /**
+   * Associate a participant with the current session/transient session/window id.
+   *
+   *
+   * @param request the request
+   * @param participantId the participant id
+   * @param rememberMe Allow resume of the participant session even after browser is closed
+   * @return
+   */
+  public int login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe);
+
+  /**
+   * Resume an user session, use provided user session index or the last active session otherwise
+   * <p>
+   * Trying to resume an existing user session within the HTTP session is always
+   * better than rejecting the request.
+   *
+   * @param request
+   * @param userIndex
+   * @return
+   */
+  public ParticipantId resume(HttpServletRequest request, Integer userIndex);
+
+  /**
+   * Remove association of the participant with the current session/transient session/window id.
+   *
+   * @param request
+   * @param participantId
+   * @return
+   */
+  public boolean logout(HttpServletRequest request, ParticipantId participantId);
+
+
+  /**
+   * Get all participants in the session mapped by its index.
+   *
+   * @param request
+   * @return
+   */
+  public Map<Integer, ParticipantId> getSessionUsersIndex(HttpServletRequest request);
+
+  /**
+   * Get the transient session cookie. Transient session only lives until browser is closed.
+   * @param request
+   * @return
+   */
+  public Cookie getTransientSessionCookie(HttpServletRequest request);
+
+  /**
+   * Get the session cookie
+   * @param request
+   * @return
+   */
+  public Cookie getSessionCookie(HttpServletRequest request);
+
+  /**
+   * Get the transient session id. Transient session only lives until browser is closed.
+   * @param request
+   * @return
+   */
+  public String getTransientSessionId(HttpServletRequest request);
+
+  /**
+   * Get the permanent session id.This session lives even after browser is closed.
+   * @param request
+   * @return
+   */
+  public String getSessionId(HttpServletRequest request);
 
 }

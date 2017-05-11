@@ -21,13 +21,10 @@ package org.waveprotocol.box.server.authentication;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyBoolean;
 
-
-import junit.framework.TestCase;
+import javax.servlet.http.HttpSession;
 
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.waveprotocol.box.server.account.HumanAccountData;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
@@ -35,8 +32,7 @@ import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryStore;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import junit.framework.TestCase;
 
 /**
  * Unit tests for {@link SessionManagerImpl}.
@@ -77,7 +73,7 @@ public class SessionManagerTest extends TestCase {
 
   public void testNullSessionReturnsNull() {
     assertNull(sessionManager.getLoggedInUser((HttpSession) null));
-    assertNull(sessionManager.getLoggedInAccount(null));
+    assertNull(sessionManager.getLoggedInAccount((HttpSession) null));
   }
 
   public void testGetLoginUrlWithNoArgument() {
@@ -96,34 +92,4 @@ public class SessionManagerTest extends TestCase {
         SessionManager.SIGN_IN_URL + "?r=" + encoded_url, sessionManager.getLoginUrl(url));
   }
 
-  public void testGetSessionFromToken() {
-    HttpSession session = mock(HttpSession.class);
-    when(session.getId()).thenReturn("abc123");
-    HttpWindowSession wSession = HttpWindowSession.of(session, null);
-    Mockito.when(jettySessionManager.getHttpSession("abc123")).thenReturn(session);
-    assertEquals(wSession, sessionManager.getSessionFromToken("abc123"));
-  }
-
-  public void testGetSessionFromUnknownToken() {
-    HttpSession session = mock(HttpSession.class);
-    Mockito.when(jettySessionManager.getHttpSession("abc123")).thenReturn(null);
-    assertNull(sessionManager.getSessionFromToken("abc123"));
-  }
-
-  public void testGetSessionFromRequest() {
-
-    HttpSession session = mock(HttpSession.class);
-    when(session.getId()).thenReturn("abc123");
-
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    when(request.getHeader(HttpWindowSession.WINDOW_SESSION_HEADER_NAME)).thenReturn("456");
-    when((String) request.getAttribute((HttpWindowSession.WINDOW_SESSION_REQUEST_ATTR)))
-        .thenReturn("456");
-    when(request.getSession(anyBoolean())).thenReturn(session);
-
-    HttpWindowSession wSession = HttpWindowSession.of(session, "456");
-
-    assertEquals(wSession, sessionManager.getSession(request));
-
-  }
 }

@@ -5,9 +5,7 @@ import java.io.IOException;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.waveprotocol.box.server.authentication.HttpWindowSession;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -15,20 +13,19 @@ import com.google.inject.Inject;
 
 /**
  * A echo service to acknowledge if session cookie is sent by
- * the browser. 
- * 
+ * the browser.
+ *
  * A false response means that third party cookies are disabled.
  * Pass a session id token to cache the request
- * 
+ *
  * GET /echo/{sessionId}
- * 
+ *
  * 200 OK
  * {
  *    sessionCookie: true,
- *    sessionId: ... 
- *    windowId: ...
+ *    sessionId: ...
  * }
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
@@ -36,23 +33,23 @@ import com.google.inject.Inject;
 public class EchoService extends BaseService {
 
   private static final Log LOG = Log.get(EchoService.class);
-  
-  
+
+
   public static class EchoServiceData extends ServiceData {
 
     protected final boolean sessionCookie;
     protected final String sessionId;
-    protected final String windowId;
-    
+    protected final String transientSessionId;
 
-    public EchoServiceData(boolean sessionCookie, String sessionId, String windowId) {
+
+    public EchoServiceData(boolean sessionCookie, String sessionId, String transientSessionId) {
       this.sessionCookie = sessionCookie;
       this.sessionId = sessionId;
-      this.windowId = windowId;
+      this.transientSessionId = transientSessionId;
     }
 
   }
-  
+
   @Inject
   public EchoService(SessionManager sessionManager) {
     super(sessionManager);
@@ -60,7 +57,7 @@ public class EchoService extends BaseService {
 
   @Override
   public void execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
+
     try {
 
       if (request.getMethod().equals("GET"))
@@ -72,17 +69,15 @@ public class EchoService extends BaseService {
           RC_INTERNAL_SERVER_ERROR);
       LOG.warning(e.getMessage(), e);
     }
-    
+
   }
-  
+
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
-    boolean hasSessionCookie = SessionManager.hasSessionCookie(request);
-    HttpSession httpSession = sessionManager.getSession(request);
-    HttpWindowSession httpWindowSession = httpSession instanceof HttpWindowSession ? (HttpWindowSession) httpSession : null;
-    
-    EchoServiceData responseData = new EchoServiceData(hasSessionCookie, httpSession != null ? httpSession.getId() : "", httpWindowSession != null ? httpWindowSession.getWindowId() : "");
-    
+    boolean hasSessionCookie = sessionManager.getSessionCookie(request) != null;
+    String sessionId = sessionManager.getSessionId(request);
+    String transientSessionId = sessionManager.getTransientSessionId(request);
+
+    EchoServiceData responseData = new EchoServiceData(hasSessionCookie, sessionId, transientSessionId);
     sendResponse(response, responseData);
   }
 

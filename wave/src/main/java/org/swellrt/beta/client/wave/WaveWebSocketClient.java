@@ -49,9 +49,12 @@ import com.google.common.base.Preconditions;
 
 
 /**
- * Handle raw Wave protocol's messages from/to underlying transport protocol (usually WebSockets)
+ * Handle raw Wave protocol's messages from/to underlying transport protocol (WebSockets)
  * <p>
- * Exposes connection status to the app. This status don't need to match WebSocket's status.
+ * This class will reconnect to the server transparently creating new websockets if it is necessary.
+ * The server will identify the connection despite of active websocket using the connection token (see constructor).
+ * <p>
+ *
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
@@ -166,6 +169,13 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   private StartCallback startCallback;
 
+  /**
+   * Create a new connection handler.
+   *
+   * @param connectionToken random token to identify same client connection despite which websocket is active
+   * @param sessionToken HTTP session token
+   * @param serverUrl server URL ws://, wss://
+   */
   public WaveWebSocketClient(String sessionToken, String serverUrl) {
     this.sessionToken = sessionToken;
     this.serverUrl = serverUrl;

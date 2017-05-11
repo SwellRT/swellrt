@@ -24,7 +24,7 @@ import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.ProfileSession;
-import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.common.util.RgbColorPalette;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
@@ -51,7 +51,7 @@ import jsinterop.annotations.JsOptional;
 public abstract class AbstractProfileManager implements ProfileManager {
       
   public interface RequestProfileCallback {    
-    void onCompleted(RawProfileData rawData);    
+    void onCompleted(ServerAccountData rawData);    
   }
 
 
@@ -135,7 +135,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
       requestProfile(participantId, new RequestProfileCallback() {
         
         @Override
-        public void onCompleted(RawProfileData rawData) {
+        public void onCompleted(ServerAccountData rawData) {
           profile.update(rawData);
           fireOnUpdated(profile);
         }

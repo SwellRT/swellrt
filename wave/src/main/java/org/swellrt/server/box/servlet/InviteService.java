@@ -12,7 +12,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.velocity.Template;
@@ -56,8 +55,7 @@ public class InviteService extends BaseService {
       return;
     }
 
-    HttpSession session = sessionManager.getSession(req);
-    HumanAccountData hum = sessionManager.getLoggedInAccount(session).asHuman();
+    HumanAccountData hum = sessionManager.getAccountData(participantId).asHuman();
 
     Locale locale;
 

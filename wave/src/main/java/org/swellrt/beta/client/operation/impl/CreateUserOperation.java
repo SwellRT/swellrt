@@ -4,7 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.account.ServerAccountData;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -36,7 +36,7 @@ public final class CreateUserOperation extends HTTPOperation<CreateUserOperation
   }
   
   @JsType(isNative = true)
-  public interface Response extends Operation.Response, RawProfileData {
+  public interface Response extends Operation.Response, ServerAccountData {
         
   }
 

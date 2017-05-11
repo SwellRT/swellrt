@@ -10,7 +10,7 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SObjectRemote;
-import org.waveprotocol.wave.client.account.RawProfileData;
+import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -84,6 +84,15 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     return websocketAddress;
   }
 
+  private static String WINDOW_ID = getRandomBase64(4);
+
+  static {
+    String now = String.valueOf(System.currentTimeMillis());
+    WINDOW_ID += now.substring(now.length()-4, now.length());
+  }
+
+
+
   private Map<WaveId, WaveContext> waveRegistry = new HashMap<WaveId, WaveContext>();
 
   private IdGenerator legacyIdGenerator;
@@ -149,20 +158,24 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    * Initializes the service context, resetting first if it is necessary and
    * setting a new session.
    *
-   * @param profile
+   * @param accountData
    */
-  public void init(RawProfileData profile) {
+  public void init(ServerAccountData accountData) {
     reset();
-    sessionManager.setSession(profile);
+    sessionManager.setSession(accountData);
     setupIdGenerator();
-  }
-
-  public String getWindowId() {
-    return sessionManager.getWindowId();
   }
 
   public String getSessionId() {
     return sessionManager.getSessionId();
+  }
+
+  public String getTransientSessionId() {
+    return sessionManager.getTransientSessionId();
+  }
+
+  public String getWindowId() {
+    return WINDOW_ID;
   }
 
   public String getParticipantId() {
@@ -253,7 +266,8 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
     if (websocketClient == null) {
 
-      websocketClient = new WaveWebSocketClient(sessionManager.getSessionToken(), websocketAddress);
+      String sessionToken = sessionManager.getSessionId()+":"+getTransientSessionId()+":"+getWindowId();
+      websocketClient = new WaveWebSocketClient(sessionToken, websocketAddress);
       websocketClient.attachStatusListener(ServiceContext.this);
 
       RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(

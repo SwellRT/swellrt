@@ -70,7 +70,7 @@ public abstract class ServiceData {
    * @param field
    * @return true if the field was in the original Json
    */
-  public boolean isParsedField(String field) {
+  public boolean has(String field) {
     return json.has(field);
 
   }

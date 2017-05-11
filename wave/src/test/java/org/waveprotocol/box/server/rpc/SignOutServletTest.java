@@ -20,23 +20,23 @@
 package org.waveprotocol.box.server.rpc;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.eq;
-
-import junit.framework.TestCase;
-
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.waveprotocol.box.server.authentication.SessionManager;
 
 import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.waveprotocol.box.server.authentication.SessionManager;
+
+import junit.framework.TestCase;
 
 /**
  * @author josephg@gmail.com (Joseph Gentle)
@@ -55,7 +55,7 @@ public class SignOutServletTest extends TestCase {
     servlet = new SignOutServlet(sessionManager);
 
     when(req.getSession(eq(false))).thenReturn(session);
-    when(sessionManager.getSession(eq(req))).thenReturn(session);
+    when(req.getSession()).thenReturn(session);
     PrintWriter writer = mock(PrintWriter.class);
     when(resp.getWriter()).thenReturn(writer);
   }
@@ -87,7 +87,6 @@ public class SignOutServletTest extends TestCase {
 
   public void testServletWorksWhenSessionIsMissing() throws Exception {
     when(req.getSession(false)).thenReturn(null);
-    when(sessionManager.getSession(eq(req))).thenReturn(null);
 
     servlet.doGet(req, resp);
 

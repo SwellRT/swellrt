@@ -44,7 +44,7 @@ public class WaveSocketWS implements WaveSocket {
 
   private final static String WEBSOCKET_CONTEXT = "socket";
 
-  private final static String SESSION_TOKEN_PARAM = "st";
+  private final static String CONNECTION_TOKEN_PARAM = "ct";
 
   /** The heart beat signal string */
   private static final String HEARTBEAT_DATA_PREFIX = "hb:";
@@ -105,14 +105,14 @@ public class WaveSocketWS implements WaveSocket {
   private final Queue<String> sentMessages = CollectionUtils.createQueue();
   private int recvCount = 0;
 
-  public WaveSocketWS(String serverUrl, String sessionToken, WaveSocketCallback callback) {
+  public WaveSocketWS(String serverUrl, String connectionToken, WaveSocketCallback callback) {
     if (serverUrl.charAt(serverUrl.length() - 1) != '/')
       serverUrl += "/" + WEBSOCKET_CONTEXT;
     else
       serverUrl += WEBSOCKET_CONTEXT;
 
-    if (sessionToken != null) {
-      serverUrl += "?" + SESSION_TOKEN_PARAM + "=" + sessionToken;
+    if (connectionToken != null) {
+      serverUrl += "?" + CONNECTION_TOKEN_PARAM + "=" + connectionToken;
     }
 
     this.serverUrl = serverUrl;

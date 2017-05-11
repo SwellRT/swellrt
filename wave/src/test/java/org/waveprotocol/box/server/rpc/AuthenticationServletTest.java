@@ -26,10 +26,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import junit.framework.TestCase;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Locale;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,16 +52,11 @@ import org.waveprotocol.box.server.robots.agent.welcome.WelcomeRobot;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.Locale;
+import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import junit.framework.TestCase;
 
 /**
  * @author josephg@gmail.com (Joseph Gentle)
@@ -197,8 +198,7 @@ public class AuthenticationServletTest extends TestCase {
     when(req.getSession(eq(false))).thenReturn(null);
     when(req.getSession(eq(true))).thenReturn(session);
     when(req.getLocale()).thenReturn(Locale.ENGLISH);
-    when(manager.getSession(eq(req), Mockito.anyBoolean())).thenReturn(session);
-    when(manager.getSession(eq(req))).thenReturn(session);
+
 
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.

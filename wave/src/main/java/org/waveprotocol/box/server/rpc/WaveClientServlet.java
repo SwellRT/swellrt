@@ -19,11 +19,17 @@
 
 package org.waveprotocol.box.server.rpc;
 
-import com.google.common.collect.Maps;
-import com.google.gxp.base.GxpContext;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-import com.typesafe.config.Config;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.inject.Singleton;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,16 +46,11 @@ import org.waveprotocol.wave.common.bootstrap.FlagConstants;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import javax.inject.Singleton;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
+import com.google.common.collect.Maps;
+import com.google.gxp.base.GxpContext;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import com.typesafe.config.Config;
 
 /**
  * The HTTP servlet for serving a wave client along with content generated on
@@ -108,8 +109,7 @@ public class WaveClientServlet extends HttpServlet {
       return;
     }
 
-    HttpSession session = sessionManager.getSession(request);
-    AccountData account = sessionManager.getLoggedInAccount(session);
+    AccountData account = sessionManager.getLoggedInAccount(request);
     if (account != null) {
       String locale = account.asHuman().getLocale();
       if (locale != null) {

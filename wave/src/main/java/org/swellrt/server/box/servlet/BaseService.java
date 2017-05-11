@@ -1,16 +1,15 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.io.IOException;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 public abstract class BaseService {
 
@@ -69,7 +68,7 @@ public abstract class BaseService {
 	    response.getWriter().append(responseData.toString());
 	    response.getWriter().flush(); // Commit the response
 	  }
-  
+
   protected void sendResponseError(HttpServletResponse response, int httpStatus,
       final String appErrorCode) throws IOException {
 
@@ -87,7 +86,7 @@ public abstract class BaseService {
     return req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
   }
 
-  
+
 	protected ParticipantId getLoggedInUser(HttpServletRequest req) throws ServiceException {
 		ParticipantId pid = sessionManager.getLoggedInUser(req);
 		if (pid == null) {
@@ -95,22 +94,22 @@ public abstract class BaseService {
 		}
 		return pid;
 	}
-	
+
 	// Browser must have at least one window with authenticated user
 	protected void checkAnySession(HttpServletRequest req) throws ServiceException {
-	  if (sessionManager.getAllLoggedInUser(sessionManager.getSession(req)).isEmpty())
+	  if (sessionManager.getAllLoggedInUser(req).isEmpty())
 	    throw new ServiceException("No active sessions found in the browser", HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
 	}
 
   /**
    * Check if a participant is in the HTTP current session. It means that at
    * least is logged in one Window session.
-   * 
+   *
    * @param participantId
    * @return
    */
   protected boolean isSessionParticipant(HttpServletRequest req, ParticipantId participantId) {
-    return sessionManager.getAllLoggedInUser(req.getSession()).contains(participantId);
+    return sessionManager.getAllLoggedInUser(req).contains(participantId);
   }
 
 }

@@ -38,7 +38,6 @@ import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
@@ -214,8 +213,7 @@ public class ServerRpcProvider {
     protected abstract void sendMessage(int sequenceNo, Message message);
 
     private ParticipantId authenticate(String token) {
-      HttpSession session = provider.sessionManager.getSessionFromToken(token);
-      ParticipantId user = provider.sessionManager.getLoggedInUser(session);
+      ParticipantId user = provider.sessionManager.getLoggedInUser(token);
       return user;
     }
 
@@ -445,6 +443,8 @@ public class ServerRpcProvider {
     final ResourceCollection resources = new ResourceCollection(resourceBases);
     context.setBaseResource(resources);
 
+    // Permanent Session
+    context.setInitParameter("org.eclipse.jetty.servlet.SessionDomain", "local.net");
     context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie",
         SessionManager.SESSION_COOKIE_NAME);
     if (sessionCookieMaxAge == 0)
@@ -453,6 +453,18 @@ public class ServerRpcProvider {
     else
       context.setInitParameter("org.eclipse.jetty.servlet.MaxAge",
           String.valueOf(sessionCookieMaxAge));
+
+
+    // Transient Session
+    FilterHolder transSessionFilter = new FilterHolder(TransientSessionFilter.class);
+    transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_DOMAIN, "local.net");
+    transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_NAME, SessionManager.TRASIENT_SESSION_COOKIE_NAME);
+    context.addFilter(transSessionFilter, "/*", EnumSet.allOf(DispatcherType.class));
+
+    // Transient Session
+    FilterHolder browserWindowIdFilter = new FilterHolder(WindowIdFilter.class);
+    context.addFilter(browserWindowIdFilter, "/*", EnumSet.allOf(DispatcherType.class));
+
     FilterHolder corsFilterHolder = new FilterHolder(CrossOriginFilter.class);
     corsFilterHolder.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
     // Set explicit methods to allow CORS with DELETE
@@ -628,7 +640,7 @@ public class ServerRpcProvider {
   @Singleton
   public static class WaveWebSocketServlet extends WebSocketServlet {
 
-    final static String SESSION_TOKEN_PARAM = "st";
+    final static String SESSION_TOKEN = "ct";
     final ServerRpcProvider provider;
     final int websocketMaxIdleTime;
     final int websocketMaxMessageSize;
@@ -656,39 +668,14 @@ public class ServerRpcProvider {
         public Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
 
           ParticipantId loggedInUser = null;
-          HttpSession tokenSession = null;
-          List<String> tokenParam = req.getParameterMap().get(SESSION_TOKEN_PARAM);
-
-          // Rely on the session token provided as query parameter to identify
-          // the user
-          // because it includes the window id.
-          // This also allows to work on browsers without cookies enabled.
+          List<String> tokenParam = req.getParameterMap().get(SESSION_TOKEN);
 
           // If no logged in user is detected, let the websocket fail when auth
-          // message
-          // is sent by client.
+          // message is sent by client.
           String token = null;
           if (tokenParam != null && !tokenParam.isEmpty()) {
             token = tokenParam.get(0);
-            tokenSession = provider.sessionManager.getSessionFromToken(token);
-            if (tokenSession != null) {
-
-              // In case of having a session cookie, for shake of security,
-              // check its session id
-              // against the one in parameter
-              HttpSession cookieSession = req.getSession();
-              if (cookieSession != null) {
-                if (cookieSession.getId().equals(tokenSession.getId())) {
-                  loggedInUser = provider.sessionManager.getLoggedInUser(tokenSession);
-                } else {
-                  // Let the connection fail later.
-                }
-              } else {
-                loggedInUser = provider.sessionManager.getLoggedInUser(tokenSession);
-              }
-
-            }
-
+            loggedInUser = provider.sessionManager.getLoggedInUser(token);
           }
 
           String connectionId = null;
