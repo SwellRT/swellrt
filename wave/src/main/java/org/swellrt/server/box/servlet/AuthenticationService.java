@@ -256,13 +256,11 @@ public class AuthenticationService extends BaseService {
   }
 
   protected void doLogin(HttpServletRequest req, HttpServletResponse resp, ParticipantId participantId, boolean keepLogin) throws IOException, PersistenceException {
+    if (participantId.isAnonymous()) {
+      participantId = ParticipantId.anonymousOfUnsafe(sessionManager.getSessionId(req), domain);
+      keepLogin = false;
+    }
     sessionManager.login(req, participantId, keepLogin);
-    LOG.info("Authenticated user " + participantId);
-    sendResponse(resp, getAccountData(req, participantId));
-  }
-
-  protected void doLoginAnonymous(HttpServletRequest req, HttpServletResponse resp) throws IOException, PersistenceException {
-    ParticipantId participantId = ParticipantId.anonymousOfUnsafe(sessionManager.getSessionId(req),domain);
     LOG.info("Authenticated user " + participantId);
     sendResponse(resp, getAccountData(req, participantId));
   }
