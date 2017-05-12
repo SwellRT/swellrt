@@ -459,7 +459,7 @@ public class ServerRpcProvider {
     FilterHolder transSessionFilter = new FilterHolder(TransientSessionFilter.class);
     transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_DOMAIN, "local.net");
     transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_NAME, SessionManager.TRASIENT_SESSION_COOKIE_NAME);
-    context.addFilter(transSessionFilter, "/*", EnumSet.allOf(DispatcherType.class));
+    context.addFilter(transSessionFilter, "/swell/*", EnumSet.allOf(DispatcherType.class));
 
     // Transient Session
     FilterHolder browserWindowIdFilter = new FilterHolder(WindowIdFilter.class);
@@ -680,7 +680,7 @@ public class ServerRpcProvider {
 
           String connectionId = null;
           if (token != null)
-            connectionId = token + ":" + loggedInUser.getAddress();
+            connectionId = token +  (loggedInUser != null ? ":" + loggedInUser.getAddress() : "");
 
           WebSocketConnection wsConnection = null;
 
