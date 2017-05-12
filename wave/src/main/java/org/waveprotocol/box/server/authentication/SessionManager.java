@@ -236,4 +236,18 @@ public interface SessionManager {
    */
   public String getSessionId(HttpServletRequest request);
 
+  /**
+   * Get map of properties stored in the logged in user's session
+   * @param request
+   * @return
+   */
+  public Map<String, String> getSessionProperties(HttpServletRequest request);
+
+  /**
+   * Store map of properties in the logged in user's session. This methods overwrite previous map.
+   * @param request
+   * @param properties
+   */
+  public void setSessionProperties(HttpServletRequest request, Map<String, String> properties);
+
 }

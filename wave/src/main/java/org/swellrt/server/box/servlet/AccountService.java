@@ -7,7 +7,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +44,7 @@ import com.typesafe.config.Config;
  * POST /account { id : <ParticipantId>, password : <String>, ... }
  *
  *
- * Edit accoun profile (empty values are deleted)
+ * Edit account profile (empty values are deleted)
  *
  * POST /account/{ParticipantId.name} { ... }
  *
@@ -56,6 +58,7 @@ import com.typesafe.config.Config;
  *
  * GET /account?p=user1@domain;user2@domain
  */
+@SuppressWarnings("deprecation")
 public class AccountService extends BaseService {
 
 
@@ -242,13 +245,6 @@ public class AccountService extends BaseService {
 
       ParticipantId participantId = getParticipantFromRequest(req);
 
-      AccountData accountData = accountStore.getAccount(participantId);
-
-      if (accountData == null) {
-        sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_FOUND);
-        return;
-      }
-
       // if the account exists, only the user can modify the profile
       if (!participantId.equals(loggedInUser)) {
         sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
@@ -259,45 +255,22 @@ public class AccountService extends BaseService {
 
       AccountServiceData userData = getRequestServiceData(req);
 
-      HumanAccountData account = accountData.asHuman();
+      if (participantId.isAnonymous()) {
+        updateAccountInSession(req, userData);
+        sendResponse(response, "");
+      } else {
 
+        AccountData accountData = accountStore.getAccount(participantId);
 
-      if (userData.has("email")) {
-        try {
-          if (userData.email.isEmpty())
-            account.setEmail(null);
-          else
-            account.setEmail(userData.email);
-        } catch (IllegalArgumentException e) {
-          sendResponseError(response, HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_EMAIL_ADDRESS);
+        if (accountData == null) {
+          sendResponseError(response, HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_FOUND);
           return;
         }
+
+        HumanAccountData account = accountData.asHuman();
+        updateAccountInStore(participantId, userData, account);
+        sendResponse(response, toServiceData(urlBuilder, account));
       }
-
-      if (userData.has("locale")) account.setLocale(userData.locale);
-
-
-      if (userData.has("avatarData")) {
-        if (userData.avatarData == null || userData.avatarData.isEmpty()
-            || "data:".equals(userData.avatarData)) {
-          // Delete avatar
-          deleteAvatar(account.getAvatarFileId());
-          account.setAvatarFileId(null);
-        } else {
-          String avatarFileId =
-              storeAvatar(participantId, userData.avatarData, account.getAvatarFileName());
-          account.setAvatarFileId(avatarFileId);
-        }
-      }
-
-      if (userData.has("name")) account.setName(userData.name);
-
-      accountStore.putAccount(account);
-
-
-      sendResponse(response, toServiceData(urlBuilder, account));
-      return;
-
 
     } catch (PersistenceException e) {
       throw new ServiceException("Can't write account to storage", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR ,e);
@@ -306,6 +279,58 @@ public class AccountService extends BaseService {
     } catch (InvalidParticipantAddress e) {
       throw new ServiceException("Can't get participant from request" ,HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_ACCOUNT_ID_SYNTAX, e);
     }
+
+  }
+
+  protected void updateAccountInSession(HttpServletRequest req, AccountServiceData receivedData) {
+
+    Map<String, String> sessionProps = new HashMap<String, String>();
+
+    if (receivedData.has("email") && !receivedData.email.isEmpty()) {
+      sessionProps.put("email", receivedData.email);
+    }
+
+    if (receivedData.has("name") && !receivedData.name.isEmpty())  {
+      sessionProps.put("name", receivedData.name);
+    }
+
+    sessionManager.setSessionProperties(req, sessionProps);
+
+  }
+
+
+  protected void updateAccountInStore(ParticipantId participantId, AccountServiceData receivedData, HumanAccountData account) throws ServiceException, IOException, PersistenceException {
+
+    if (receivedData.has("email")) {
+      try {
+        if (receivedData.email.isEmpty())
+          account.setEmail(null);
+        else
+          account.setEmail(receivedData.email);
+      } catch (IllegalArgumentException e) {
+        throw new ServiceException("Invalid email address", HttpServletResponse.SC_BAD_REQUEST, RC_INVALID_EMAIL_ADDRESS);
+      }
+    }
+
+    if (receivedData.has("locale")) account.setLocale(receivedData.locale);
+
+
+    if (receivedData.has("avatarData")) {
+      if (receivedData.avatarData == null || receivedData.avatarData.isEmpty()
+          || "data:".equals(receivedData.avatarData)) {
+        // Delete avatar
+        deleteAvatar(account.getAvatarFileId());
+        account.setAvatarFileId(null);
+      } else {
+        String avatarFileId =
+            storeAvatar(participantId, receivedData.avatarData, account.getAvatarFileName());
+        account.setAvatarFileId(avatarFileId);
+      }
+    }
+
+    if (receivedData.has("name")) account.setName(receivedData.name);
+
+    accountStore.putAccount(account);
 
   }
 
@@ -374,27 +399,41 @@ public class AccountService extends BaseService {
 
       ParticipantId participantId = getParticipantFromRequest(req);
 
-      AccountData accountData = accountStore.getAccount(participantId);
-
-      if (accountData == null) {
-        sendResponseError(response, HttpServletResponse.SC_NOT_FOUND, RC_ACCOUNT_NOT_FOUND);
-      }
-
       if (!participantId.equals(loggedInUser)) {
 
         // GET /account/joe retrieve user's account data only public fields
 
-
+        AccountData accountData = accountStore.getAccount(participantId);
+        if (accountData == null) {
+          sendResponseError(response, HttpServletResponse.SC_NOT_FOUND, RC_ACCOUNT_NOT_FOUND);
+        }
         sendResponse(response, toPublicServiceData(urlBuilder, accountData.asHuman()));
-        return;
 
       } else {
-
 
         // GET /account/joe retrieve user's account data including private
         // fields
 
-        sendResponse(response, toServiceData(urlBuilder, accountData.asHuman()));
+        if (participantId.isAnonymous()) {
+
+          Map<String, String> properties = sessionManager.getSessionProperties(req);
+
+          AccountServiceData data = new AccountServiceData();
+          data.id = participantId.getAddress();
+          data.email = properties.containsKey("email") ? properties.get("email") : "";
+          data.name = properties.containsKey("name") ? properties.get("name") : "";
+
+          sendResponse(response, data);
+
+        } else {
+
+          AccountData accountData = accountStore.getAccount(participantId);
+          if (accountData == null) {
+            sendResponseError(response, HttpServletResponse.SC_NOT_FOUND, RC_ACCOUNT_NOT_FOUND);
+          }
+          sendResponse(response, toServiceData(urlBuilder, accountData.asHuman()));
+        }
+
         return;
       }
 

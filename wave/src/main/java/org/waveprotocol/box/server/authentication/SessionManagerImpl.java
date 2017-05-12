@@ -100,14 +100,18 @@ public final class SessionManagerImpl implements SessionManager {
     private void propertyMapToString(Map<String, String> m) {
       String s = "";
       for (Entry<String, String> e: m.entrySet()) {
-        s+= e.getKey()+"="+e.getValue() +"|";
+        s+= e.getKey()+"="+e.getValue().replace(";", "") +";";
       }
       properties = s;
     }
 
     private Map<String, String> propertyStringToMap() {
-      String[] propertyArray = properties.split("|");
+
       Map<String,String> map = new HashMap<String, String>();
+      if (properties.isEmpty()) {
+        return map;
+      }
+      String[] propertyArray = properties.split(";");
       for (String s: propertyArray) {
         if (s != null) {
           String[] keyValue = s.split("=");
@@ -127,6 +131,14 @@ public final class SessionManagerImpl implements SessionManager {
     public String getProperty(String key) {
       Map<String, String> propertyMap = propertyStringToMap();
       return propertyMap.get(key);
+    }
+
+    public Map<String, String> getProperties() {
+      return propertyStringToMap();
+    }
+
+    public void setProperties(Map<String, String> properties) {
+      propertyMapToString(properties);
     }
 
   }
@@ -473,6 +485,17 @@ public final class SessionManagerImpl implements SessionManager {
     return request.getSession().getId();
   }
 
+  @Override
+  public Map<String, String> getSessionProperties(HttpServletRequest request) {
+    ParticipantId participantId = getLoggedInUser(request);
+    return getSessionUser(request.getSession(), participantId).getProperties();
+  }
+
+  @Override
+  public void setSessionProperties(HttpServletRequest request, Map<String, String> properties) {
+    ParticipantId participantId = getLoggedInUser(request);
+    getSessionUser(request.getSession(), participantId).setProperties(properties);
+  }
 
   protected static Cookie getCookie(HttpServletRequest request, String name) {
 
