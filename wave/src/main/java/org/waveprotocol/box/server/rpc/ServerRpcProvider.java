@@ -130,6 +130,8 @@ public class ServerRpcProvider {
   private final int sessionMaxInactiveTime;
   private final int sessionCookieMaxAge;
 
+  private final String cookieDomain;
+
   /**
    * Internal, static container class for any specific registered service
    * method.
@@ -345,7 +347,7 @@ public class ServerRpcProvider {
       org.eclipse.jetty.server.SessionManager jettySessionManager, String sessionStoreDir,
       boolean sslEnabled, String sslKeystorePath, String sslKeystorePassword,
       int webSocketMaxIdleTime, int webSocketMaxMessageSize, int websocketHeartbeat,
-      int sessionMaxInactiveTime, int sessionCookieMaxAge) {
+      int sessionMaxInactiveTime, int sessionCookieMaxAge, String cookieDomain) {
     this.httpAddresses = httpAddresses;
     this.resourceBases = resourceBases;
     this.threadPool = threadPool;
@@ -360,6 +362,7 @@ public class ServerRpcProvider {
     this.websocketHeartbeat = websocketHeartbeat;
     this.sessionMaxInactiveTime = sessionMaxInactiveTime;
     this.sessionCookieMaxAge = sessionCookieMaxAge;
+    this.cookieDomain = cookieDomain;
   }
 
   /**
@@ -370,10 +373,10 @@ public class ServerRpcProvider {
       String sessionStoreDir, boolean sslEnabled, String sslKeystorePath,
       String sslKeystorePassword, Executor executor, int webSocketMaxIdleTime,
       int webSocketMaxMessageSize, int websocketHeartbeat, int sessionMaxInactiveTime,
-      int sessionCookieMaxAge) {
+      int sessionCookieMaxAge, String cookieDomain) {
     this(httpAddresses, resourceBases, executor, sessionManager, jettySessionManager,
         sessionStoreDir, sslEnabled, sslKeystorePath, sslKeystorePassword, webSocketMaxIdleTime,
-        webSocketMaxMessageSize, websocketHeartbeat, sessionMaxInactiveTime, sessionCookieMaxAge);
+        webSocketMaxMessageSize, websocketHeartbeat, sessionMaxInactiveTime, sessionCookieMaxAge, cookieDomain);
   }
 
   @Inject
@@ -391,7 +394,8 @@ public class ServerRpcProvider {
         config.getInt("network.websocket_max_message_size"),
         config.getInt("network.websocket_heartbeat"),
         config.getInt("network.session_max_inactive_time"),
-        config.getInt("network.session_cookie_max_age"));
+        config.getInt("network.session_cookie_max_age"),
+        config.hasPath("network.session_cookie_domain") ? config.getString("network.session_cookie_domain") : null);
   }
 
   public void startWebSocketServer(final Injector injector) {
@@ -444,7 +448,7 @@ public class ServerRpcProvider {
     context.setBaseResource(resources);
 
     // Permanent Session
-    context.setInitParameter("org.eclipse.jetty.servlet.SessionDomain", "local.net");
+    if (cookieDomain != null) context.setInitParameter("org.eclipse.jetty.servlet.SessionDomain", cookieDomain);
     context.setInitParameter("org.eclipse.jetty.servlet.SessionCookie",
         SessionManager.SESSION_COOKIE_NAME);
     if (sessionCookieMaxAge == 0)
@@ -457,7 +461,7 @@ public class ServerRpcProvider {
 
     // Transient Session
     FilterHolder transSessionFilter = new FilterHolder(TransientSessionFilter.class);
-    transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_DOMAIN, "local.net");
+    if (cookieDomain != null) transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_DOMAIN, cookieDomain);
     transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_NAME, SessionManager.TRASIENT_SESSION_COOKIE_NAME);
     context.addFilter(transSessionFilter, "/swell/*", EnumSet.allOf(DispatcherType.class));
 
