@@ -110,18 +110,23 @@ public class TransientSessionFilter  implements Filter {
 
     Cookie tsCookie = req.getCookies() != null ? getTSCookie(req.getCookies()) : null;
 
-    String tsParam = null;
+    String urlPart = null;
     if (req.getQueryString() != null
         && req.getQueryString().contains(QUERY_PARAM_NAME + "=")) {
-      String s = req.getQueryString();
-      s =
-          s.substring(s.indexOf(QUERY_PARAM_NAME + "=")
-          + QUERY_PARAM_NAME.length() + 1);
+      urlPart = req.getQueryString();
+    } else if (req.getRequestURI() != null
+        && req.getRequestURI().contains(QUERY_PARAM_NAME + "=")) {
+      urlPart = req.getRequestURI();
+    }
 
-      if (s.contains("&")) {
-        s = s.substring(0, s.indexOf("&"));
-      }
 
+    String tsParam = null;
+    if (urlPart != null) {
+      String s = urlPart;
+      int start = s.indexOf(QUERY_PARAM_NAME + "=") + QUERY_PARAM_NAME.length() + 1;
+      int end = s.indexOf(";", start) > 0 ? s.indexOf(";", start) : urlPart.length();
+
+      s = s.substring(start,end);
       if (s != null && !s.isEmpty())
         tsParam = s;
     }
