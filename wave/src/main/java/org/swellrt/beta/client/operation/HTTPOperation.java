@@ -230,7 +230,7 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
         return JsonUtils.stringify((JavaScriptObject) options);
       }
     }
-    return "";
+    return "Options couldn't be serialized to JSON";
   }
 
   @SuppressWarnings("unchecked")
