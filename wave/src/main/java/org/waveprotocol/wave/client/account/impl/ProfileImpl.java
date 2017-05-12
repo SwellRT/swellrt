@@ -36,25 +36,25 @@ import com.google.common.base.Preconditions;
  *
  * @author kalman@google.com (Benjamin Kalman)
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public final class ProfileImpl implements Profile {
-  
+
   private final static String ANONYMOUS_NAME = "Anonymous";
-  
+
   private static String capitalize(String s) {
     return s.isEmpty() ? s : (Character.toUpperCase(s.charAt(0))) + s.substring(1);
   }
-  
+
   private static String buildName(ParticipantId id) {
-    
+
     List<String> names = CollectionUtils.newArrayList();
     String nameWithoutDomain = id.getName();
-    
+
     if (ParticipantId.isAnonymousName(nameWithoutDomain)) {
-      return ANONYMOUS_NAME;      
+      return ANONYMOUS_NAME;
     } else if (nameWithoutDomain != null && !nameWithoutDomain.isEmpty()) {
-      
+
       // Include empty names from fragment, so split with a -ve.
       for (String fragment : nameWithoutDomain.split("[._]", -1)) {
         if (!fragment.isEmpty()) {
@@ -62,19 +62,19 @@ public final class ProfileImpl implements Profile {
         }
       }
       // ParticipantId normalization implies names can not be empty.
-      assert !names.isEmpty();      
+      assert !names.isEmpty();
       return Joiner.on(' ').join(names);
     } else {
       return "";
     }
   }
-  
-  
+
+
   private final ParticipantId id;
   private final AbstractProfileManager manager;
-  
+
   private String name = "";
-  private String imageUrl = null;  
+  private String imageUrl = null;
   private String shortName = "";
   private String email;
   private String locale;
@@ -88,10 +88,11 @@ public final class ProfileImpl implements Profile {
     this.color = color;
   }
 
+  @Override
   public void update(ServerAccountData data) {
-  
+
     Preconditions.checkArgument(id.getAddress().equals(data.getId()));
-    
+
     imageUrl = data.getAvatarUrl() != null ? data.getAvatarUrl() : null;
     email = data.getEmail();
     name = data.getName();
@@ -99,7 +100,7 @@ public final class ProfileImpl implements Profile {
     locale = data.getLocale();
 
   }
-  
+
   @Override
   public ParticipantId getParticipantId() {
     return id;
@@ -110,19 +111,19 @@ public final class ProfileImpl implements Profile {
     return id.getAddress();
   }
 
-  
+
   @Override
   public String getImageUrl() {
     return imageUrl;
   }
 
   @Override
-  public String getName() {    
+  public String getName() {
     return name;
   }
 
   @Override
-  public String getShortName() {   
+  public String getShortName() {
     return shortName;
   }
 
@@ -133,18 +134,18 @@ public final class ProfileImpl implements Profile {
   }
 
   @Override
-  public void setName(String name) {       
+  public void setName(String name) {
     if (this.name.equals(name)) return;
     this.name = name;
-    manager.fireOnUpdated(this);
+    manager.updateProfile(this);
   }
-  
+
 
   @Override
   public boolean isCurrentSessionProfile() {
-    return manager.getCurrentParticipantId().equals(id);    
+    return manager.getCurrentParticipantId().equals(id);
   }
-  
+
   @Override
   public boolean getAnonymous() {
     return id.isAnonymous();
@@ -162,7 +163,7 @@ public final class ProfileImpl implements Profile {
 
   @Override
   public void trackActivity(String sessionId) {
-    // TODO implement, move track activity logic from session to profile    
+    // TODO implement, move track activity logic from session to profile
   }
-  
+
 }

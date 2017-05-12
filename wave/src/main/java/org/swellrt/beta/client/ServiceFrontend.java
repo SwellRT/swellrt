@@ -1,19 +1,27 @@
 package org.swellrt.beta.client;
 
+import org.swellrt.beta.client.js.Console;
+import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
+import org.swellrt.beta.client.operation.impl.GetUserOperation;
+import org.swellrt.beta.client.operation.impl.GetUserOperation.Response;
 import org.swellrt.beta.client.operation.impl.LoginOperation;
 import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
+import org.swellrt.beta.client.operation.impl.UpdateUserOperation;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.remote.SNodeRemoteContainer;
+import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
+import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -65,7 +73,52 @@ public class ServiceFrontend implements ServiceBasis {
 
     @Override
     protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
-       // TODO complete request to service
+      GetUserOperation op = new GetUserOperation(context);
+      GetUserOperation.Options options = new GetUserOperation.Options() {
+
+        @Override
+        public String getId() {
+          return participantId.getAddress();
+        }
+
+      };
+
+      op.execute(options, new Operation.Callback<GetUserOperation.Response>() {
+
+        @Override
+        public void onError(SException exception) {
+          Console.log("Error loading profile "+exception.getMessage());
+        }
+
+        @Override
+        public void onSuccess(Response response) {
+          callback.onCompleted(response);
+        }
+
+      });
+    }
+
+    @Override
+    protected void storeProfile(Profile profile) {
+
+      UpdateUserOperation op = new UpdateUserOperation(context);
+      JsoView options = JsoView.create();
+      options.setString("id", profile.getAddress());
+      options.setString("name", profile.getName());
+
+      op.execute(options.<UpdateUserOperation.JsoOptions>cast(), new Operation.Callback<UpdateUserOperation.Response>() {
+
+        @Override
+        public void onError(SException exception) {
+          Console.log("Error storing profile "+exception.getMessage());
+        }
+
+        @Override
+        public void onSuccess(UpdateUserOperation.Response response) {
+        }
+
+      });
+
     }
 
   };

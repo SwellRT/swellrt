@@ -21,6 +21,7 @@ package org.waveprotocol.box.webclient.profile;
 
 import org.waveprotocol.box.profile.ProfileResponse;
 import org.waveprotocol.box.profile.ProfileResponse.FetchedProfile;
+import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileImpl;
@@ -30,7 +31,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * A {@link ProfileManager} that returns profiles fetched from the server.
- * 
+ *
  * @author yurize@apache.org (Yuri Zelikov)
  */
 public final class RemoteProfileManagerImpl extends AbstractProfileManager implements
@@ -78,7 +79,7 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager imple
   @Override
   protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -91,6 +92,10 @@ public final class RemoteProfileManagerImpl extends AbstractProfileManager imple
   public ParticipantId getCurrentParticipantId() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  protected void storeProfile(Profile profile) {
   }
 
 

@@ -27,13 +27,13 @@ import static org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationH
 import static org.waveprotocol.wave.model.document.util.DocCompare.ATTRS;
 import static org.waveprotocol.wave.model.document.util.DocCompare.STRUCTURE;
 
-import junit.framework.TestCase;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileImpl;
-import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
-import org.waveprotocol.wave.client.account.impl.AbstractProfileManager.RequestProfileCallback;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.doodad.selection.CaretView.CaretViewFactory;
 import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler.CaretListener;
@@ -57,8 +57,7 @@ import org.waveprotocol.wave.model.document.util.DocCompare;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.util.HashMap;
-import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * Tests for {@link SelectionAnnotationHandler}.
@@ -100,27 +99,31 @@ public class SelectionAnnotationHandlerTest extends TestCase {
     ProfileManager manager;
 
     public FakeSession(String name) {
-      
+
       pid = ParticipantId.ofUnsafe(name + "@example.com");
       id = "#" + name + "#";
-      
+
       manager = new AbstractProfileManager() {
-        
+
         @Override
         public String getCurrentSessionId() {
           return id;
         }
-        
+
         @Override
         public ParticipantId getCurrentParticipantId() {
           return pid;
         }
-        
+
         @Override
-        protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {     
+        protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
+        }
+
+        @Override
+        protected void storeProfile(Profile profile) {
         }
       };
-      
+
       profile = (ProfileImpl) manager.getProfile(pid);
       extractor = new SelectionExtractor(handlerTimer, manager);
       displayName = profile.getName();
@@ -158,14 +161,14 @@ public class SelectionAnnotationHandlerTest extends TestCase {
 
           @Override
           public void onActive(String address, RgbColor color) {
-            // no op            
+            // no op
           }
 
           @Override
           public void onExpire(String address) {
-            // no op            
+            // no op
           }
-          
+
         });
 
     String content = "abcdefghij";

@@ -19,6 +19,7 @@
 
 package org.waveprotocol.wave.client.account.impl;
 
+import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -31,7 +32,7 @@ public final class ProfileManagerImpl extends AbstractProfileManager {
 
   @Override
   protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
-    // Nothing to do    
+    // Nothing to do
   }
 
   @Override
@@ -42,6 +43,11 @@ public final class ProfileManagerImpl extends AbstractProfileManager {
   @Override
   public ParticipantId getCurrentParticipantId() {
     return ParticipantId.ofUnsafe("dummy@example.com");
+  }
+
+  @Override
+  protected void storeProfile(Profile profile) {
+
   }
 
 
