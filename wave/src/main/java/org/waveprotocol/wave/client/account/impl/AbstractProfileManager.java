@@ -231,8 +231,17 @@ public abstract class AbstractProfileManager implements ProfileManager {
   protected abstract void storeProfile(Profile profile);
 
 
+  /**
+   * Update the profile. Store in the backend iff change is for
+   * the current participant (i.e. the participant has performed the change).
+   * <p>
+   * Notify to listeners anyway.
+   *
+   * @param profile
+   */
   protected void updateProfile(Profile profile) {
-    storeProfile(profile);
+    if (getCurrentParticipantId().equals(profile.getParticipantId()))
+      storeProfile(profile);
     fireOnUpdated(profile);
   }
 
