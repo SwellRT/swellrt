@@ -80,7 +80,7 @@ public class FetchServletTest extends TestCase {
         mock(org.eclipse.jetty.server.SessionManager.class);
     SessionManager sessionManager = new SessionManagerImpl(accountStore, jettySessionManager);
     session = mock(HttpSession.class);
-    when(session.getAttribute(SessionManager.USER_FIELD)).thenReturn("fred@example.com");
+    when(session.getAttribute(SessionManager.USER_FIELD)).thenReturn(ParticipantId.ofUnsafe("fred@example.com"));
     servlet = new FetchServlet(waveletProvider, protoSerializer, sessionManager);
   }
 

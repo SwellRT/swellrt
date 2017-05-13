@@ -226,7 +226,7 @@ public final class SessionManagerImpl implements SessionManager {
   public void login(HttpSession session, ParticipantId id) {
     Preconditions.checkNotNull(session, "Session is null");
     Preconditions.checkNotNull(id, "Participant id is null");
-    session.setAttribute(OLD_USER_ID_ATTR, id.getAddress());
+    session.setAttribute(OLD_USER_ID_ATTR, id);
   }
 
   @Override
@@ -240,8 +240,7 @@ public final class SessionManagerImpl implements SessionManager {
 
   @Override
   public ParticipantId getLoggedInUser(HttpSession session) {
-    String address = (String) session.getAttribute(OLD_USER_ID_ATTR);
-    return address != null ? ParticipantId.ofUnsafe(address) : null;
+    return session != null ? (ParticipantId) session.getAttribute(OLD_USER_ID_ATTR) : null;
   }
 
 

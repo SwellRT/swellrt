@@ -67,7 +67,6 @@ public class SessionManagerTest extends TestCase {
   public void testUnknownUserReturnsNull() {
     HttpSession session = mock(HttpSession.class);
     when(session.getAttribute("user")).thenReturn(ParticipantId.ofUnsafe("missing@example.com"));
-
     assertNull(sessionManager.getLoggedInAccount(session));
   }
 
