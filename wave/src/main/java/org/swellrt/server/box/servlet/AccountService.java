@@ -420,8 +420,8 @@ public class AccountService extends BaseService {
 
           AccountServiceData data = new AccountServiceData();
           data.id = participantId.getAddress();
-          data.email = properties.containsKey("email") ? properties.get("email") : "";
-          data.name = properties.containsKey("name") ? properties.get("name") : "";
+          data.email = properties.containsKey("email") ? properties.get("email") : null;
+          data.name = properties.containsKey("name") && !properties.get("name").isEmpty() ? properties.get("name") : "Anonymous";
 
           sendResponse(response, data);
 
