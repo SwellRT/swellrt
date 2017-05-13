@@ -132,14 +132,21 @@ public abstract class AbstractProfileManager implements ProfileManager {
 
       final Profile profile = createBareProfile(participantId);
 
-      requestProfile(participantId, new RequestProfileCallback() {
+      // Request profile info for non anonymous users
+      // or the current user, even if it is anonymous
+      if (!participantId.isAnonymous()
+          || (participantId.isAnonymous() && participantId.equals(getCurrentParticipantId()))) {
 
-        @Override
-        public void onCompleted(ServerAccountData rawData) {
-          profile.update(rawData);
-          fireOnUpdated(profile);
-        }
-      });
+        requestProfile(participantId, new RequestProfileCallback() {
+
+          @Override
+          public void onCompleted(ServerAccountData rawData) {
+            profile.update(rawData);
+            fireOnUpdated(profile);
+          }
+        });
+
+      }
 
       profiles.put(participantId.getAddress(), profile);
     }
