@@ -26,12 +26,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.protobuf.Message;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
-import junit.framework.TestCase;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.mockito.Matchers;
 import org.waveprotocol.box.common.comms.WaveClientRpc.WaveletSnapshot;
 import org.waveprotocol.box.server.account.HumanAccountDataImpl;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -48,11 +50,11 @@ import org.waveprotocol.wave.model.wave.data.WaveletData;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.protobuf.Message;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import junit.framework.TestCase;
 
 /**
  * Tests for the FetchServlet. The fetch servlet provides wavelet snapshots
@@ -67,6 +69,7 @@ public class FetchServletTest extends TestCase {
   private static final ProtoSerializer protoSerializer = new ProtoSerializer();
   private WaveletProviderStub waveletProvider;
   private FetchServlet servlet;
+  private HttpSession session;
 
   @Override
   protected void setUp() throws Exception {
@@ -76,14 +79,16 @@ public class FetchServletTest extends TestCase {
     org.eclipse.jetty.server.SessionManager jettySessionManager =
         mock(org.eclipse.jetty.server.SessionManager.class);
     SessionManager sessionManager = new SessionManagerImpl(accountStore, jettySessionManager);
+    session = mock(HttpSession.class);
+    when(session.getAttribute(SessionManager.USER_FIELD)).thenReturn("fred@example.com");
     servlet = new FetchServlet(waveletProvider, protoSerializer, sessionManager);
   }
 
   public void testGetInvalidWaverefReturnsNotFound() throws Exception {
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
-
     when(request.getPathInfo()).thenReturn("/invalidwaveref");
+    when(request.getSession(Matchers.anyBoolean())).thenReturn(session);
     servlet.doGet(request, response);
     verify(response, times(1)).sendError(HttpServletResponse.SC_NOT_FOUND);
   }
@@ -161,6 +166,7 @@ public class FetchServletTest extends TestCase {
   private void requestWaveRef(WaveRef waveref, HttpServletResponse response) throws Exception {
     HttpServletRequest request = mock(HttpServletRequest.class);
     when(request.getPathInfo()).thenReturn("/" + JavaWaverefEncoder.encodeToUriPathSegment(waveref));
+    when(request.getSession(Matchers.anyBoolean())).thenReturn(session);
     servlet.doGet(request, response);
   }
 
