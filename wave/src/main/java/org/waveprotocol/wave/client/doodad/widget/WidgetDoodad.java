@@ -15,11 +15,13 @@ import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.event.EditorEvent;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.DocHelper.NodeAction;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.StringMap;
 
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
@@ -271,6 +273,29 @@ public class WidgetDoodad {
 			  return null;
 		  		  
 		  return JsoWidget.create(widgetElement.getImplNodelet(), widgetElement);
+	  }
+	  
+	  public static JsArray<JsoWidget> getWidgets(CMutableDocument doc, String type) {
+		  
+		  @SuppressWarnings("unchecked")
+		  JsArray<JsoWidget> widgets = (JsArray<JsoWidget>) JsArray.createArray();
+	  
+		  DocHelper.traverse(doc, doc.getDocumentElement(), new NodeAction<ContentNode>() {
+
+			@Override
+			public void apply(ContentNode node) {
+				if (node.isElement()) {
+					ContentElement element = node.asElement();
+					if (element.getTagName().equals(TAG) &&
+						element.getAttribute(ATTR_TYPE).equals(type)){
+						widgets.push(JsoWidget.create(element.getImplNodelet(), element));
+					}
+				}
+			}
+			  
+		  });
+		  
+		return widgets;  
 	  }
 
 	
