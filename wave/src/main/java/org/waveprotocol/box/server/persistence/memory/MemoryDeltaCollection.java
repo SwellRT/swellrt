@@ -145,10 +145,13 @@ public class MemoryDeltaCollection implements DeltasAccess {
             .getVersion()));
 
     long count = 0;
-    for (long v = startVersion; v <= endVersion; v++) {
-      if (!receiver.put(deltas.get(v))) {
-        throw new IllegalStateException("error processing deltas from memory");
+    long v = startVersion;
+    while (v < endVersion) {
+      WaveletDeltaRecord delta = deltas.get(v);
+      if (!receiver.put(delta)) {
+        break;
       }
+      v = delta.getResultingVersion().getVersion();
       count++;
     }
 

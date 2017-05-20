@@ -618,11 +618,20 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     final HashedVersion endVersion, final Receiver<TransformedWaveletDelta> receiver) {
     try {
 
-
       deltasAccess.getDeltasInRange(startVersion.getVersion(), endVersion.getVersion(), new Receiver<WaveletDeltaRecord>() {
 
         @Override
         public boolean put(WaveletDeltaRecord delta) {
+
+          if (delta.getAppliedAtVersion().getVersion() == startVersion.getVersion())
+            Preconditions.checkArgument(delta.getAppliedAtVersion().equals(startVersion),
+                "invalid start version");
+
+
+          if (delta.getResultingVersion().getVersion() == endVersion.getVersion())
+            Preconditions.checkArgument(delta.getResultingVersion().equals(endVersion),
+                "invalid end version");
+
           return receiver.put(delta.getTransformedDelta());
         }
 
@@ -691,6 +700,16 @@ class DeltaStoreBasedWaveletState implements WaveletState {
 
         @Override
         public boolean put(WaveletDeltaRecord delta) {
+          if (delta.getAppliedAtVersion().getVersion() == startVersion.getVersion())
+            Preconditions.checkArgument(delta.getAppliedAtVersion().equals(startVersion),
+                "invalid start version");
+
+
+          if (delta.getResultingVersion().getVersion() == endVersion.getVersion())
+            Preconditions.checkArgument(delta.getResultingVersion().equals(endVersion),
+                "invalid end version");
+
+
           return receiver.put(delta.getAppliedDelta());
         }
 

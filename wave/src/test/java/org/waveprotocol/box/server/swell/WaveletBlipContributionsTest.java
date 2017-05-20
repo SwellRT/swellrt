@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.waveprotocol.box.server.swell.WaveletContributions;
 import org.waveprotocol.box.server.swell.WaveletContributions.BlipContributions;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.Doc;
@@ -34,7 +33,7 @@ import junit.framework.TestCase;
 
 public class WaveletBlipContributionsTest extends TestCase {
 
-  static final String BLIP_ID = "b+dummy";
+  static final String BLIP_ID = "t+dummy";
   static final WaveletId WAVELET_ID = WaveletId.of("local.net", "dummy");
 
   ParticipantId alice, bob, creator;
