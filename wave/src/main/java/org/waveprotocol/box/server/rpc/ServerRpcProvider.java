@@ -463,7 +463,7 @@ public class ServerRpcProvider {
     FilterHolder transSessionFilter = new FilterHolder(TransientSessionFilter.class);
     if (cookieDomain != null) transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_DOMAIN, cookieDomain);
     transSessionFilter.setInitParameter(TransientSessionFilter.PARAM_COOKIE_NAME, SessionManager.TRASIENT_SESSION_COOKIE_NAME);
-    context.addFilter(transSessionFilter, "/swell/*", EnumSet.allOf(DispatcherType.class));
+    context.addFilter(transSessionFilter, "/*", EnumSet.allOf(DispatcherType.class));
 
     // Transient Session
     FilterHolder browserWindowIdFilter = new FilterHolder(WindowIdFilter.class);
