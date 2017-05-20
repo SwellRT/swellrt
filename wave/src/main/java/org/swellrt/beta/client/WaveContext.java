@@ -9,6 +9,7 @@ import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.remote.SObjectRemote;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -48,14 +49,17 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
   private SettableFuture<SObjectRemote> sobjectFuture;
   private ChannelException lastException;
 
+  private final DocContributionsFetcher contributionsFetcher;
+
   public WaveContext(WaveId waveId, String waveDomain, ParticipantId participant,
-      ServiceStatus serviceStatus) {
+      ServiceStatus serviceStatus, DocContributionsFetcher.Factory contributionsFetcherFactory) {
     super();
     this.waveId = waveId;
     this.waveDomain = waveDomain;
     this.participant = participant;
     this.serviceStatus = serviceStatus;
     this.sobjectFuture = SettableFuture.<SObjectRemote> create();
+    this.contributionsFetcher = contributionsFetcherFactory.create(waveId);
   }
 
   public void init(RemoteViewServiceMultiplexer viewServiceMultiplexer, IdGenerator idGenerator) {
@@ -77,7 +81,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
     state = ACTIVE;
 
     loader = new WaveLoader(waveId, viewServiceMultiplexer, idGenerator, waveDomain,
-        Collections.<ParticipantId> emptySet(), participant, this, this);
+        Collections.<ParticipantId> emptySet(), participant, this, this, this.contributionsFetcher);
 
     try {
 

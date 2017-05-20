@@ -5,10 +5,7 @@ import org.swellrt.beta.model.SUtils;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.editor.content.ContentElement;
-import org.waveprotocol.wave.client.editor.content.ContentNode;
-import org.waveprotocol.wave.model.document.Doc.E;
-import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.Preconditions;
 
@@ -16,28 +13,35 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 
 public class STextWebImpl implements STextWeb {
-  
+
+  private final InteractiveDocument idoc;
   private final ContentDocument doc;
   private LogicalPanel.Impl docDisplay;
-  
+
   protected STextWebImpl(ContentDocument doc) {
     this.doc = doc;
+    this.idoc = null;
   }
-  
+
+  protected STextWebImpl(InteractiveDocument doc) {
+    this.idoc = doc;
+    this.doc = doc.getDocument();
+  }
+
   @Override
-  public ContentDocument getContentDocument() {
-    return doc;
+  public InteractiveDocument getInteractiveDocument() {
+    return idoc;
   }
-  
+
   /**
    * Attach and display this document into a DOM container.
-   * 
+   *
    * @param element
    * @throws SException
    */
   @Override
   public void setParent(Element element) throws SException {
-    
+
     Preconditions.checkArgument(element != null, "DOM element is null");
 
     docDisplay = new LogicalPanel.Impl() {
@@ -45,18 +49,21 @@ public class STextWebImpl implements STextWeb {
         setElement(element);
       }
     };
-    
+
+    doc.setRendering();
+
     docDisplay.getElement().appendChild(
         doc.getFullContentView().getDocumentElement().getImplNodelet());
 
   }
-  
-  
+
+
+  @Override
   public void setRendered() {
     doc.setRendering();
   }
-  
-  
+
+
   @Override
   public void setInteractive() throws SException {
     if (docDisplay == null) {
@@ -79,7 +86,7 @@ public class STextWebImpl implements STextWeb {
     try {
       doc.setShelved();
     } catch (IllegalStateException e) {
-      
+
     }
   }
 
@@ -93,8 +100,8 @@ public class STextWebImpl implements STextWeb {
   }
 
   @Override
-  public boolean isEmpty() {    
-    return SUtils.isEmptyDocument(doc.getMutableDoc());    
+  public boolean isEmpty() {
+    return SUtils.isEmptyDocument(doc.getMutableDoc());
   }
 
   @Override
@@ -111,10 +118,29 @@ public class STextWebImpl implements STextWeb {
   @Override
   public Range replace(Range at, String content) {
     Preconditions.checkArgument(at != null, "Can't replace text of a null range");
-    if (!at.isCollapsed())     
+    if (!at.isCollapsed())
       doc.getMutableDoc().deleteRange(at.getStart(), at.getEnd());
-    
-    return insert(at, content);    
+
+    return insert(at, content);
+  }
+
+  @Override
+  public ContentDocument getContentDocument() {
+    return doc;
+  }
+
+  @Override
+  public void showDiffHighlight() {
+    if (idoc != null) {
+      idoc.startShowDiffs();
+    }
+  }
+
+  @Override
+  public void hideDiffHighlight() {
+    if (idoc != null) {
+      idoc.stopShowDiffs();
+    }
   }
 
 

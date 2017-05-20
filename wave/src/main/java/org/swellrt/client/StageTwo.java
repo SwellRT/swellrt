@@ -20,8 +20,9 @@
 
 package org.swellrt.client;
 
-import com.google.common.base.Preconditions;
-import com.google.gwt.user.client.Command;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 
 import org.swellrt.model.generic.Model;
 import org.waveprotocol.wave.client.OptimalGroupingScheduler;
@@ -33,22 +34,17 @@ import org.waveprotocol.wave.client.concurrencycontrol.LiveChannelBinder;
 import org.waveprotocol.wave.client.concurrencycontrol.MuxConnector;
 import org.waveprotocol.wave.client.concurrencycontrol.WaveletOperationalizer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
+import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
-import org.waveprotocol.wave.client.state.BlipReadStateMonitor;
-import org.waveprotocol.wave.client.state.BlipReadStateMonitorImpl;
 import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.LocalSupplementedWave;
-import org.waveprotocol.wave.client.wave.LocalSupplementedWaveImpl;
 import org.waveprotocol.wave.client.wave.RegistriesHolder;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
-import org.waveprotocol.wave.client.wavepanel.view.ModelIdMapper;
-import org.waveprotocol.wave.client.wavepanel.view.ModelIdMapperImpl;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactories;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactory;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.WavePanelResourceLoader;
@@ -74,11 +70,7 @@ import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
-import org.waveprotocol.wave.model.supplement.LiveSupplementedWaveImpl;
-import org.waveprotocol.wave.model.supplement.ObservablePrimitiveSupplement;
-import org.waveprotocol.wave.model.supplement.ObservableSupplementedWave;
-import org.waveprotocol.wave.model.supplement.SupplementedWaveImpl.DefaultFollow;
-import org.waveprotocol.wave.model.supplement.WaveletBasedSupplement;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler.CollectiveScheduler;
 import org.waveprotocol.wave.model.util.Scheduler;
@@ -86,7 +78,6 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.version.HashedVersionZeroFactoryImpl;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.Wavelet;
 import org.waveprotocol.wave.model.wave.data.DocumentFactory;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.WaveViewData;
@@ -98,9 +89,8 @@ import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletConfigurator;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
+import com.google.common.base.Preconditions;
+import com.google.gwt.user.client.Command;
 
 /**
  * The second stage of client code.
@@ -168,7 +158,7 @@ public interface StageTwo {
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
 
-    private DocOperationLog operationLog; // tracks ops and contributors
+    private DocContributionsLog operationLog; // tracks ops and contributors
 
     // Model objects
 
@@ -355,13 +345,13 @@ public interface StageTwo {
       DocumentFactory<LazyContentDocument> blipDocFactory =
           new DocumentFactory<LazyContentDocument>() {
             private final Registries registries = RegistriesHolder.get();
-            private final DocOperationLog opLog = DefaultProvider.this.getDocOperationLog();
+            private final DocContributionsLog opLog = DefaultProvider.this.getDocOperationLog();
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff, opLog);
+              return LazyContentDocument.create(registries, noDiff, opLog, waveletId, docId);
             }
           };
 
@@ -516,7 +506,7 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocOperationLog getDocOperationLog() {
+    protected DocContributionsLog getDocOperationLog() {
       return operationLog == null ? operationLog = createOperationLog() : operationLog;
     }
 
@@ -525,8 +515,8 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocOperationLog createOperationLog() {
-      return new DocOperationLog();
+    protected DocContributionsLog createOperationLog() {
+      return new DocContributionsLog(CollectionUtils.newStringSet("t"), null);
     }
 
   }

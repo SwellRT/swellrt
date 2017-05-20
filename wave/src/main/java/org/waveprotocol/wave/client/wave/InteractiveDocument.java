@@ -97,4 +97,15 @@ public interface InteractiveDocument {
 
   /** @return true if this document has no state other than diff state. */
   boolean isCompleteDiff();
+
+  /**
+   * Render all diff annotations at the current version of the doc
+   * and show new diffs in real time
+   */
+  void startShowDiffs();
+
+  /**
+   * Clear all rendered diffs and don't show new diffs in real time.
+   */
+  public void stopShowDiffs();
 }

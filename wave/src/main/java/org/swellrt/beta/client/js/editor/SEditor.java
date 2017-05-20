@@ -19,6 +19,8 @@ import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
+import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
+import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.selection.CaretAnnotationHandler;
@@ -64,23 +66,23 @@ import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "Editor")
 public class SEditor implements EditorUpdateListener {
-  
-  
+
+
   public final static String COMPAT_MODE_NONE = "none";
   public final static String COMPAT_MODE_READONLY = "readonly";
   public final static String COMPAT_MODE_EDIT = "edit";
 
   @JsFunction
-  public interface SelectionChangeHandler {   
-    void exec(Range range, SEditor editor, SSelection node);    
+  public interface SelectionChangeHandler {
+    void exec(Range range, SEditor editor, SSelection node);
   }
-    
+
   //
   // Static private properties
   //
-  
+
   private static final String TOPLEVEL_CONTAINER_TAGNAME = "body";
-  
+
   /*
    * A browser's console log
    */
@@ -98,15 +100,15 @@ public class SEditor implements EditorUpdateListener {
       }
     }
   }
-  
+
   /**
-   * 
+   *
    */
   protected static class CustomLogger extends AbstractLogger {
 
-    
+
     private boolean enabled = SEditorConfig.enableLog();
-    
+
     public CustomLogger(LogSink sink) {
       super(sink);
     }
@@ -122,25 +124,26 @@ public class SEditor implements EditorUpdateListener {
     }
   }
 
-  // 
+  //
   // Put together here all static initialization.
   // Delegate all registry instances to those in Editor class,
   // but put here all initialization logic.
   //
   // Use always Editor.ROOT_REGISTRIES as reference for editor's registers
-  
+
   protected static CaretAnnotationHandler caretAnnotationHandler;
-  
+
   static {
-    
+
     if (SEditorConfig.enableLog())
       EditorStaticDeps.logger = new CustomLogger(new ConsoleLogSink());
-    
+
     Editors.initRootRegistries();
 
-           
+
     EditorStaticDeps.setPopupProvider(Popup.LIGHTWEIGHT_POPUP_PROVIDER);
     EditorStaticDeps.setPopupChromeProvider(new PopupChromeProvider() {
+      @Override
       public PopupChrome createPopupChrome() {
         return null;
       }
@@ -150,29 +153,28 @@ public class SEditor implements EditorUpdateListener {
     // Register Doodads: all are statically handled
     //
 
-    
+
     // Code taken from RegistriesHolder
     Blips.init();
     LineRendering.registerContainer(TOPLEVEL_CONTAINER_TAGNAME, Editor.ROOT_REGISTRIES.getElementHandlerRegistry());
     LineContainers.setTopLevelContainerTagname(TOPLEVEL_CONTAINER_TAGNAME);
 
-    
+
     StyleAnnotationHandler.register(Editor.ROOT_REGISTRIES);
-    
+
     // Listen for Diff annotations to paint new content or to insert a
     // delete-content tag
     // to be rendered by the DiffDeleteRendere
-    /*
+
     DiffAnnotationHandler.register(
         Editor.ROOT_REGISTRIES.getAnnotationHandlerRegistry(),
         Editor.ROOT_REGISTRIES.getPaintRegistry());
-    
+
     DiffDeleteRenderer.register(
         Editor.ROOT_REGISTRIES.getElementHandlerRegistry());
-        */
-    
+
     caretAnnotationHandler = CaretAnnotationHandler.register(Editor.ROOT_REGISTRIES);
-    
+
     //
     // Reuse existing link annotation handler, but also support external
     // controller to get notified on mutation or input events
@@ -184,10 +186,10 @@ public class SEditor implements EditorUpdateListener {
         return current;
       }
     });
-    
+
     // TODO register widgets. Widgets definitions are (so far) statically registered
     // so they shouldn't be associated with any particular instance of SEditor
-    
+
     /*
     widgetRegistry.each(new ProcV<JsoWidgetController>() {
 
@@ -195,103 +197,103 @@ public class SEditor implements EditorUpdateListener {
       public void apply(String key, JsoWidgetController value) {
         value.setEditorJsFacade(editorJsFacade);
       }
-      
+
     });
 
     WidgetDoodad.register(Editor.ROOT_REGISTRIES.getElementHandlerRegistry(), widgetRegistry);
     */
-   
+
     // Debugging user agent
 
     if (SEditorConfig.enableLog()) {
 
       EditorStaticDeps.logger.trace().log("User Agent String: "+UserAgent.debugUserAgentString());
-      
+
       String s = "";
-      
+
       s += "Android: "+UserAgent.isAndroid()+", ";
       s += "IPhone: "+UserAgent.isIPhone()+", ";
-      
-      
+
+
       s += "Linux: "+UserAgent.isLinux()+", ";
       s += "Mac: "+UserAgent.isMac()+", ";
       s += "Win: "+UserAgent.isWin()+", ";
-      
-      s += "Mobile Webkit: "+UserAgent.isMobileWebkit()+", ";    
-      s += "Webkit: "+UserAgent.isWebkit()+", ";      
-      
+
+      s += "Mobile Webkit: "+UserAgent.isMobileWebkit()+", ";
+      s += "Webkit: "+UserAgent.isWebkit()+", ";
+
       s += "Safari: "+UserAgent.isSafari()+", ";
       s += "Chrome: "+UserAgent.isChrome()+", ";
       s += "Firefox: "+UserAgent.isFirefox()+", ";
-      
+
       s += "IE: "+UserAgent.isIE()+", ";
       s += "IE7: "+UserAgent.isIE7()+", ";
       s += "IE8: "+UserAgent.isIE8()+", ";
-      
+
       EditorStaticDeps.logger.trace().log("User Agent Properties: "+s);
     }
-    
-    
+
+
   }
-  
-  
+
+
   public static SEditor createWithId(String containerId, @JsOptional ServiceFrontend sf) throws SException {
     Element containerElement = DOM.getElementById(containerId);
     if (containerElement == null || !containerElement.getNodeName().equalsIgnoreCase("div"))
       throw new SException(SException.INTERNAL_ERROR, null, "Container element must be a div");
-    
+
     SEditor se = new SEditor(containerElement);
     if (sf != null) se.registerService(sf);
     return se;
   }
-  
+
   public static SEditor createWithElement(Element containerElement, @JsOptional ServiceFrontend sf) throws SException {
     if (containerElement == null || !containerElement.getNodeName().equalsIgnoreCase("div"))
       throw new SException(SException.INTERNAL_ERROR, null, "Container element must be a div");
-    
-    SEditor se = new SEditor(containerElement);  
+
+    SEditor se = new SEditor(containerElement);
     if (sf != null) se.registerService(sf);
     return se;
   }
-  
+
   public static SEditor create() {
-    SEditor se = new SEditor();  
+    SEditor se = new SEditor();
     return se;
   }
-  
-  
+
+
   private LogicalPanel.Impl editorPanel;
-  
+
   /** Don't use this prop directly, use getter instead */
-  private EditorImpl editor;  
+  private EditorImpl editor;
   /** Don't use this prop directly, use getter instead */
   private KeyBindingRegistry keyBindingRegistry;
-  
+
   /** A service to listen to connection events */
   ServiceBasis service;
-   
+
   private SelectionExtractor selectionExtractor;
-  
+
   private ProfileManager profileManager;
 
   private SelectionChangeHandler selectionHandler = null;
-  
+
   private boolean canEdit = true;
 
   private ConnectionHandler connectionHandler = new ConnectionHandler() {
 
     @Override
     public void exec(String state, SException e) {
-      
+
       if (editor == null)
         return;
-      
-      canEdit = state.equals(ServiceFrontend.STATUS_CONNECTED);     
+
+      canEdit = state.equals(ServiceFrontend.STATUS_CONNECTED);
       edit(canEdit);
     }
-    
+
   };
-  
+
   /**
    * Create editor instance tied to a DOM element
    * @param containerElement
@@ -303,7 +305,7 @@ public class SEditor implements EditorUpdateListener {
       }
     };
   }
-  
+
   /**
    * Create editor instance no tied to a DOM element
    */
@@ -314,11 +316,11 @@ public class SEditor implements EditorUpdateListener {
       }
     };
   }
-  
+
   /**
    * Attach the editor panel to an existing DOM element
    * iff the panel is not already attached.
-   * 
+   *
    * @param element the parent element
    */
   public void setParent(Element element) {
@@ -332,11 +334,11 @@ public class SEditor implements EditorUpdateListener {
     }
 
   }
-  
+
   /**
    * Attach a text object to this editor. The text will be
    * shown instantly.
-   * 
+   *
    * @param text a text object
    * @throws SException
    */
@@ -344,12 +346,11 @@ public class SEditor implements EditorUpdateListener {
 
     if (checkBrowserCompat().equals(COMPAT_MODE_NONE))
       throw new SEditorException("Browser not supported");
-    
+
     Editor e = getEditor();
     clean();
-    
-    ContentDocument doc = text.getContentDocument();
 
+    ContentDocument doc = text.getContentDocument();
     // Ensure the document is rendered and listen for events
     // in a deattached DOM node
     text.setInteractive();
@@ -360,165 +361,165 @@ public class SEditor implements EditorUpdateListener {
 
     // make editor aware of the document
     e.setContent(doc);
-    
+
     // start live carets
     if (selectionExtractor != null)
       selectionExtractor.start(e);
-       
+
     AnnotationRegistry.muteHandlers(false);
   }
-  
+
   /**
    * Enable or disable edit mode.
    * @param editOn
    */
   public void edit(boolean editOn) {
     if (editor != null && editor.hasDocument() && checkBrowserCompat().equals(COMPAT_MODE_EDIT)) {
-      if (editor.isEditing() != editOn) { 
+      if (editor.isEditing() != editOn) {
         editor.setEditing(editOn);
       }
     }
-    
+
   }
-  
+
   /**
    * Reset the state of the editor, deattaching the document
    * if it is necessary.
    */
-  public void clean() {    
+  public void clean() {
     if (editor != null && editor.hasDocument()) {
-      
-      if (selectionExtractor != null) {       
+
+      if (selectionExtractor != null) {
         selectionExtractor.stop(editor);
         // ensures selection extractor is create for each new doc.
-        selectionExtractor = null; 
+        selectionExtractor = null;
       }
-      
+
       editor.removeContentAndUnrender();
-      editor.reset();  
+      editor.reset();
       editor.addUpdateListener(this);
       AnnotationRegistry.muteHandlers(true);
-      
+
       caretAnnotationHandler.clear();
     }
   }
-  
+
   /**
    * @return true iff the editor is in edit mode
    */
   public boolean isEditing() {
     return editor != null && editor.isEditing();
   }
-  
+
   /**
    * @return true iff a document is attached to this editor.
    */
   public boolean hasDocument() {
     return editor != null && editor.hasDocument();
   }
-  
+
   public void focus() {
     if (editor != null && editor.hasDocument()) {
       editor.focus(false);
     }
   }
-  
+
   public void blur() {
     if (editor != null && editor.hasDocument()) {
       editor.blur();
     }
   }
-  
+
   public void setSelectionHandler(SelectionChangeHandler handler) {
     this.selectionHandler = handler;
   }
-  
-  
+
+
   //
   // Annotation methods
   //
-  
-  
+
+
   /**
-   * Implements a safe logic to a range argument. 
-   * 
+   * Implements a safe logic to a range argument.
+   *
    * @param range
    * @return the original range or the current selection
    * @throws SEditorException if not valid range can be privided
    */
   protected Range checkRangeArgument(Range range) throws SEditorException {
-    
+
     if (Range.ALL.equals(range))
       range = SEditorHelper.getFullValidRange(editor);
 
     if (range == null)
       range = editor.getSelectionHelper().getOrderedSelectionRange();
-    
+
     if (range == null)
       throw new SEditorException("A valid range must be provided or a selection must be active");
-    
+
     return range;
   }
-   
+
   /**
    * Set annotation in an specific doc range or in the current selection otherwise.
-   * 
+   *
    * @param name annotation's name
    * @param value a valid value for the annotation
    * @param range a range or null
    */
   public AnnotationInstance setAnnotation(String name, String value, @JsOptional Range range) throws SEditorException {
-    
+
     if (!editor.isEditing())
       return null;
-    
+
     Annotation antn = AnnotationRegistry.get(name);
     if (antn == null)
       throw new SEditorException(SEditorException.UNKNOWN_ANNOTATION, "Unknown annotation");
-    
+
     final Range effectiveRange = checkRangeArgument(range);
     final Editor editor = getEditor();
-    
-    
+
+
     if (antn instanceof ParagraphAnnotation) {
-      
+
       editor.undoableSequence(new Runnable(){
         @Override
         public void run() {
-          antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);           
-        }        
+          antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);
+        }
       });
       return null;
-      
+
     } else {
- 
-      antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);           
+
+      antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);
       return AnnotationInstance.create(editor.getContent(), name, value, effectiveRange, AnnotationInstance.MATCH_IN);
 
     }
-    
+
   }
-  
-  
+
+
   /**
    * Reset annotations in an specific doc range or in the current selection otherwise.
-   *   
+   *
    * TODO(pablojan) consider to avoid AnnotationAction to implement this method and to replace
    * with a more straightforward approach like in seekTextAnnotations()
-   * 
+   *
    * @param names
    * @param range
    * @throws SEditorException
    */
   public void clearAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
-    
+
     if (!editor.isEditing())
       return;
-    
+
     Range effectiveRange = checkRangeArgument(range);
-    
+
     AnnotationAction resetAction = new AnnotationAction(editor, effectiveRange);
-    
+
     if (names != null) {
       if (JsUtils.isArray(names)) {
         resetAction.add((JsArrayString) names);
@@ -529,16 +530,16 @@ public class SEditor implements EditorUpdateListener {
         throw new SEditorException("Expected array or string as first argument");
       }
     }
-    
+
     editor.undoableSequence(new Runnable(){
       @Override
       public void run() {
-        resetAction.reset();       
+        resetAction.reset();
       }
     });
-      
+
   }
-  
+
   /**
    * Get annotations in an specific doc range or in the current selection otherwise.
    * <p>
@@ -546,7 +547,7 @@ public class SEditor implements EditorUpdateListener {
    * <p>
    * TODO(pablojan) consider to avoid AnnotationAction to implement this method and to replace
    * with a more straightforward approach like in seekTextAnnotations(
-   * 
+   *
    * @param names a string or array of string
    * @param range optional document range of search
    * @param all retrieve effective or not annotations
@@ -554,15 +555,15 @@ public class SEditor implements EditorUpdateListener {
    * @throws SEditorException
    */
   public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range, @JsOptional Boolean all) throws SEditorException {
-        
+
     range = checkRangeArgument(range);
-    
+
     AnnotationAction getAction = new AnnotationAction(editor, range);
-    
+
     getAction.deepTraverse(all != null ? all : false);
-    // By default only consider effective annotations 
-    getAction.onlyEffectiveAnnotations( !(all != null && all.equals(Boolean.TRUE)) ); 
-    
+    // By default only consider effective annotations
+    getAction.onlyEffectiveAnnotations( !(all != null && all.equals(Boolean.TRUE)) );
+
     if (names != null) {
       if (JsUtils.isArray(names)) {
         getAction.add((JsArrayString) names);
@@ -572,66 +573,66 @@ public class SEditor implements EditorUpdateListener {
         throw new SEditorException("Expected array or string as first argument");
       }
     }
-    
-     
-    
-    return getAction.get();   
+
+
+
+    return getAction.get();
   }
-  
-  
+
+
   /**
    * Seeks text annotations in the provided range, or in the current selection otherwise,
-   * for a set of keys. 
-   * 
+   * for a set of keys.
+   *
    * @param keys
    * @param range
    * @param onlyWithinRange only return annotations fully within the range
    * @return
-   * @throws SEditorException 
+   * @throws SEditorException
    */
   public JavaScriptObject seekTextAnnotations(JavaScriptObject keys, @JsOptional Range range, @JsOptional Boolean onlyWithinRange) throws SEditorException {
 
     final Range actualRange = checkRangeArgument(range);
-    
+
     JsoView result = JsoView.as(JavaScriptObject.createObject());
     boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
-    
+
     StringSet keySet = JsUtils.toStringSet(keys);
-    
+
     editor.getDocument().rangedAnnotations(actualRange.getStart(), actualRange.getEnd(), keySet)
       .forEach(new Consumer<RangedAnnotation<String>>(){
 
         @Override
         public void accept(RangedAnnotation<String> t) {
-          
-          // ignore annotations with null value, are just editor's internal stuff 
+
+          // ignore annotations with null value, are just editor's internal stuff
           if (t.value() == null)
-            return; 
-          
+            return;
+
           if (!result.containsKey(t.key())) {
             result.setJso(t.key(), JavaScriptObject.createArray());
           }
-          
+
           Range anotRange = new Range(t.start(), t.end());
           int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
-                  
+
           if (withinRange && !actualRange.contains(anotRange))
             return; // skip
-          
+
           AnnotationInstance anot =
               AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, rangeMatch);
-          
+
           JsUtils.addToArray(result.getJso(t.key()), anot);
         }
-      
+
     });
-    
-    return result;    
+
+    return result;
   }
-  
+
   /**
    * Seeks all annotations having same key and same value in the provided range.
-   * 
+   *
    * @param key
    * @param value
    * @param range
@@ -643,62 +644,62 @@ public class SEditor implements EditorUpdateListener {
     final Range actualRange = checkRangeArgument(range);
     JsoView result = JsoView.as(JavaScriptObject.createObject());
     result.setJso(key, JavaScriptObject.createArray());
-    
+
     EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
       .forEach(new Consumer<RangedAnnotation<String>>(){
 
         @Override
         public void accept(RangedAnnotation<String> t) {
-                
-          // ignore annotations with null value, are just editor's internal stuff 
+
+          // ignore annotations with null value, are just editor's internal stuff
           if (t.value() == null)
-            return; 
-          
+            return;
+
           Range anotRange = new Range(t.start(), t.end());
           int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
           AnnotationInstance anot =
               AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, rangeMatch);
-          
+
           JsUtils.addToArray(result.getJso(key), anot);
         }
       });
-    
+
     return result;
   }
-  
+
   /**
    * Set a text annotation in the provided range creating or updating annotations in overlapped locations
-   * 
+   *
    * @param key
    * @param value
    * @param range
    *
    * @return
-   * @throws SEditorException 
+   * @throws SEditorException
    */
   public void setTextAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
-    
+
     final Range actualRange = checkRangeArgument(range);
     final CMutableDocument doc = editor.getDocument();
-    
+
     if (value == null)
       throw new SEditorException("Null value not allowed for overlapping annotations");
-    
+
     editor.undoableSequence(new Runnable(){
 
       @Override
       public void run() {
-        doc.beginMutationGroup();    
-        EditorAnnotationUtil.setAnnotationWithOverlap(doc, key, value, actualRange.getStart(), actualRange.getEnd());    
-        doc.endMutationGroup();          
+        doc.beginMutationGroup();
+        EditorAnnotationUtil.setAnnotationWithOverlap(doc, key, value, actualRange.getStart(), actualRange.getEnd());
+        doc.endMutationGroup();
       }
-      
+
     });
   }
 
   /**
    * Clear a text annotation in the provided range deleting or updating annotations in overlapped locations
-   * 
+   *
    * @param key
    * @param value
    * @param range
@@ -707,50 +708,50 @@ public class SEditor implements EditorUpdateListener {
   public void clearTextAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
 
     final Range actualRange = checkRangeArgument(range);
-    final CMutableDocument doc = editor.getDocument();   
-    
+    final CMutableDocument doc = editor.getDocument();
+
     editor.undoableSequence(new Runnable(){
 
       @Override
       public void run() {
-        
+
         EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
         .forEach(new Consumer<RangedAnnotation<String>>(){
 
           @Override
           public void accept(RangedAnnotation<String> t) {
-       
-            // ignore annotations with null value, are just editor's internal stuff 
+
+            // ignore annotations with null value, are just editor's internal stuff
             if (t.value() == null)
-              return; 
-            
+              return;
+
             String newValue = null;
             if (t.value().contains(",")) {
               newValue = t.value().replace(value, "");
-              
+
               newValue = newValue.replace(",,", ",");
-              
+
               if (newValue.charAt(0) == ',')
                 newValue = newValue.substring(1, newValue.length());
-              
+
               if (newValue.charAt(newValue.length()-1) == ',')
                 newValue = newValue.substring(0, newValue.length()-1);
-         
+
             }
             // This can remove or update an annotation
             doc.setAnnotation(t.start(), t.end(), key, newValue);
           }
         });
-        
+
       }
-    
+
     });
-    
-    
-    
+
+
+
   }
-  
-  
+
+
   public String getText(@JsOptional Range range) {
     try {
       range = checkRangeArgument(range);
@@ -759,9 +760,9 @@ public class SEditor implements EditorUpdateListener {
     }
     return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
   }
-  
+
   public SSelection getSelection() {
-    try { 
+    try {
       Range r = checkRangeArgument(null);
       return SSelection.get(r);
     } catch (Exception e) {
@@ -770,8 +771,8 @@ public class SEditor implements EditorUpdateListener {
   }
   //
   // Internal stuff
-  // 
-  
+  //
+
   /**
    * Make editor instance to listen to service's connection
    * events.
@@ -779,32 +780,33 @@ public class SEditor implements EditorUpdateListener {
    * We prefer to register the service on the editor instead
    * the contrary way, because service must be agnostic
    * from any platform dependent component.
-   * 
+   *
    * @param serviceFrontend
    */
   public void registerService(ServiceBasis service) {
-    
+
     if (this.service != null)
       unregisterService();
-    
+
     this.service = service;
     this.service.addConnectionHandler(connectionHandler);
     this.profileManager = service.getProfilesManager();
+    EditorStaticDeps.setProfileManager(profileManager);
     if (this.profileManager != null)
       caretAnnotationHandler.setProfileManager(profileManager);
   }
-  
+
   public void unregisterService() {
     if (service != null)
       service.removeConnectionHandler(connectionHandler);
-    
+
     caretAnnotationHandler.setProfileManager(null);
-    
+
     this.profileManager = null;
   }
-  
+
   protected EditorSettings getSettings() {
-    
+
     return new EditorSettings()
     .setHasDebugDialog(SEditorConfig.debugDialog())
     .setUndoEnabled(SEditorConfig.undo())
@@ -812,56 +814,56 @@ public class SEditor implements EditorUpdateListener {
     .setUseSemanticCopyPaste(SEditorConfig.semanticCopyPaste())
     .setUseWhitelistInEditor(SEditorConfig.whitelistEditor())
     .setUseWebkitCompositionEvents(SEditorConfig.webkitComposition());
-    
+
   }
-  
+
   protected KeyBindingRegistry getKeyBindingRegistry() {
-    
-    if (keyBindingRegistry == null) 
+
+    if (keyBindingRegistry == null)
       keyBindingRegistry = new KeyBindingRegistry();
-    
+
     return keyBindingRegistry;
   }
-  
+
   protected Editor getEditor() {
-    
+
     if (editor == null) {
       editor =
-        UserAgent.isMobileWebkit() ? new EditorImplWebkitMobile(false, editorPanel.getElement()) 
+        UserAgent.isMobileWebkit() ? new EditorImplWebkitMobile(false, editorPanel.getElement())
             : new EditorImpl(false, editorPanel.getElement());
-       
-        editor.init(null, getKeyBindingRegistry(), getSettings());       
-        editor.addUpdateListener(this);        
-    }
-    
-    if (selectionExtractor == null && profileManager != null) {
-      selectionExtractor = new SelectionExtractor(SchedulerInstance.getLowPriorityTimer(), profileManager);     
-    }
-    
 
-    
+        editor.init(null, getKeyBindingRegistry(), getSettings());
+        editor.addUpdateListener(this);
+    }
+
+    if (selectionExtractor == null && profileManager != null) {
+      selectionExtractor = new SelectionExtractor(SchedulerInstance.getLowPriorityTimer(), profileManager);
+    }
+
+
+
     return editor;
   }
 
   Element caretMarker = null;
-  
+
   @JsIgnore
   @Override
   public void onUpdate(EditorUpdateEvent event) {
     Editor editor = this.getEditor();
-    
+
     if (selectionHandler != null) {
-      Range range = editor.getSelectionHelper().getOrderedSelectionRange();    
+      Range range = editor.getSelectionHelper().getOrderedSelectionRange();
       selectionHandler.exec(range, this, SSelection.get(range));
     }
   }
 
-  
-  public String checkBrowserCompat() {    
+
+  public String checkBrowserCompat() {
     if (UserAgent.isAndroid() || (UserAgent.isIPhone() && UserAgent.isChrome()))
       return COMPAT_MODE_READONLY;
-        
-    return COMPAT_MODE_EDIT;    
+
+    return COMPAT_MODE_EDIT;
   }
-  
+
 }

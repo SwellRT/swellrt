@@ -19,6 +19,12 @@
 
 package org.waveprotocol.wave.client.doodad.diff;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.waveprotocol.wave.client.account.Profile;
+import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.BoundaryFunction;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFunction;
@@ -32,9 +38,7 @@ import org.waveprotocol.wave.model.document.util.DocumentContext;
 import org.waveprotocol.wave.model.document.util.LocalDocument;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
-
-import java.util.Collections;
-import java.util.Map;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * Defines behaviour for rendering diffs
@@ -43,7 +47,7 @@ import java.util.Map;
  */
 public class DiffAnnotationHandler implements AnnotationMutationHandler {
   /** Colour used for diff hilights of new content. */
-  private static final String HILIGHT_COLOUR = "yellow";
+  private static final String DEFAULT_HILIGHT_COLOUR = "yellow";
 
   /** Annotation key prefix. */
   public static final String PREFIX = DiffHighlightingFilter.DIFF_KEY;
@@ -56,10 +60,6 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
   private final static ReadableStringSet BOUNDARY_KEYS =
     CollectionUtils.newStringSet(DiffHighlightingFilter.DIFF_DELETE_KEY);
 
-  /** Map of annotations for the diff paint renderer. */
-  @Deprecated
-  private final static Map<String, String> PAINT_PROPERTIES =
-      Collections.singletonMap("backgroundColor", HILIGHT_COLOUR);
 
   /**
    * Create and register a style annotation handler
@@ -85,10 +85,20 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
    * content .
    */
   private static final PaintFunction paintFunc = new PaintFunction() {
+    @Override
     public Map<String, String> apply(Map<String, Object> from, boolean isEditing) {
-      String author = (String) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
+      ParticipantId author = (ParticipantId) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
       if (author != null) {
-        return Collections.emptyMap();
+        String color = DEFAULT_HILIGHT_COLOUR;
+        ProfileManager profileManager = EditorStaticDeps.getProfileManager();
+        if (profileManager != null) {
+          Profile profile = profileManager.getProfile(author);
+          if (profile != null) {
+            color = profile.getColor().getHexColor();
+          }
+        }
+
+        return color != null ? Collections.singletonMap("backgroundColor", color) : Collections.emptyMap();
       } else {
         return Collections.emptyMap();
       }
@@ -97,6 +107,7 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
 
   /** Paint function for diff deletions. */
   private static final BoundaryFunction boundaryFunc = new BoundaryFunction() {
+        @Override
         public <N, E extends N, T extends N> E apply(LocalDocument<N, E, T> localDoc, E parent,
         N nodeAfter, Map<String, Object> before, Map<String, Object> after, boolean isEditing) {
       Object obj = after.get(DiffHighlightingFilter.DIFF_DELETE_KEY);

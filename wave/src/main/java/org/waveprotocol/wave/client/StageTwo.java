@@ -20,9 +20,8 @@
 
 package org.waveprotocol.wave.client;
 
-import com.google.common.base.Preconditions;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Command;
+import java.util.Collections;
+import java.util.Map;
 
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
@@ -41,9 +40,8 @@ import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
-import org.waveprotocol.wave.client.doodad.selection.SelectionAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.title.TitleAnnotationHandler;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
+import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.gadget.Gadget;
@@ -109,6 +107,7 @@ import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
+import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
@@ -117,6 +116,7 @@ import org.waveprotocol.wave.model.supplement.ObservablePrimitiveSupplement;
 import org.waveprotocol.wave.model.supplement.ObservableSupplementedWave;
 import org.waveprotocol.wave.model.supplement.SupplementedWaveImpl.DefaultFollow;
 import org.waveprotocol.wave.model.supplement.WaveletBasedSupplement;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler.CollectiveScheduler;
 import org.waveprotocol.wave.model.util.IdentityMap;
@@ -137,8 +137,9 @@ import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletConfigurator;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletFactory;
 
-import java.util.Collections;
-import java.util.Map;
+import com.google.common.base.Preconditions;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Command;
 
 /**
  * The second stage of client code.
@@ -228,7 +229,7 @@ public interface StageTwo {
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
 
-    private DocOperationLog operationLog; // tracks ops and contributors
+    private DocContributionsLog operationLog; // tracks ops and contributors
 
     // Model objects
 
@@ -508,13 +509,13 @@ public interface StageTwo {
       DocumentFactory<LazyContentDocument> blipDocFactory =
           new DocumentFactory<LazyContentDocument>() {
             private final Registries registries = RegistriesHolder.get();
-            private final DocOperationLog opLog = DefaultProvider.this.getDocOperationLog();
+            private final DocContributionsLog opLog = DefaultProvider.this.getDocOperationLog();
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff, opLog);
+              return LazyContentDocument.create(registries, noDiff, opLog, waveletId, docId);
             }
           };
 
@@ -689,8 +690,8 @@ public interface StageTwo {
           DiffDeleteRenderer.register(r.getElementHandlerRegistry());
           StyleAnnotationHandler.register(r);
           TitleAnnotationHandler.register(r);
-          LinkAnnotationHandler.register(r, createLinkAttributeAugmenter());          
-          //SelectionAnnotationHandler.register(r, getSessionId(), getProfileManager(), null);          
+          LinkAnnotationHandler.register(r, createLinkAttributeAugmenter());
+          //SelectionAnnotationHandler.register(r, getSessionId(), getProfileManager(), null);
           ImageThumbnail.register(r.getElementHandlerRegistry(), AttachmentManagerProvider.get(),
               new ImageThumbnail.ThumbnailActionHandler() {
 
@@ -763,20 +764,20 @@ public interface StageTwo {
 
     /**
      * Get the shared wavelet operation logger
-     * 
+     *
      * @return
      */
-    protected DocOperationLog getDocOperationLog() {
+    protected DocContributionsLog getDocOperationLog() {
       return operationLog == null ? operationLog = createOperationLog() : operationLog;
     }
 
     /**
      * Create the shared wavelet operation logger
-     * 
+     *
      * @return
      */
-    protected DocOperationLog createOperationLog() {
-      return new DocOperationLog();
+    protected DocContributionsLog createOperationLog() {
+      return new DocContributionsLog(CollectionUtils.newStringSet(IdUtil.BLIP_PREFIX), null);
     }
 
   }

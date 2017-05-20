@@ -19,10 +19,10 @@
 
 package org.swellrt.beta.client.wave;
 
-import com.google.common.base.Preconditions;
-import com.google.gwt.user.client.Command;
+import java.util.Set;
 
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -35,7 +35,8 @@ import org.waveprotocol.wave.model.wave.data.WaveViewData;
 import org.waveprotocol.wave.model.wave.data.impl.WaveViewDataImpl;
 import org.waveprotocol.wave.model.waveref.WaveRef;
 
-import java.util.Set;
+import com.google.common.base.Preconditions;
+import com.google.gwt.user.client.Command;
 
 /**
  * Provides stage 2 of the staged loading of the wave panel
@@ -49,7 +50,8 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   private final boolean isNewWave;
   private final IdGenerator idGenerator;
   private final ParticipantId participant;
-  
+  private final DocContributionsFetcher contributionsFetcher;
+
   /**
    * Continuation to progress to the next stage. This will disappear with the
    * new protocol.
@@ -68,7 +70,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       boolean isNewWave, IdGenerator idGenerator,
-      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants, ParticipantId participant, TurbulenceListener turbulenceListener) {
+      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants, ParticipantId participant, TurbulenceListener turbulenceListener, DocContributionsFetcher contributionsFetcher) {
     super(stageOne, unsavedDataListener, turbulenceListener);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
@@ -79,6 +81,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
     this.idGenerator = idGenerator;
     this.otherParticipants = otherParticipants;
     this.participant = participant;
+    this.contributionsFetcher = contributionsFetcher;
   }
 
   @Override
@@ -162,5 +165,10 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   @Override
   protected void fetchWave(final AsyncHolder.Accessor<WaveViewData> whenReady) {
     whenReady.use(WaveViewDataImpl.create(waveRef.getWaveId()));
+  }
+
+  @Override
+  public DocContributionsFetcher getContributionsFetcher() {
+    return contributionsFetcher;
   }
 }

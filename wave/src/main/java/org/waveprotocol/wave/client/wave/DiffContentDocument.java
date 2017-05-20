@@ -20,15 +20,16 @@
 
 package org.waveprotocol.wave.client.wave;
 
-import com.google.common.base.Preconditions;
-
-import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
+import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.operation.OperationRuntimeException;
+
+import com.google.common.base.Preconditions;
 
 /**
  * Wraps a {@link ContentDocument}, exposing its diff highlighting capabilities
@@ -43,6 +44,7 @@ public final class DiffContentDocument implements DiffSink {
   private final DiffHighlightingFilter differ;
   /** True when there are consumed diffs that have not been cleared. */
   private boolean hasDiffs;
+  /** Wavelet if where this doc belongs to */
 
   private DiffContentDocument(ContentDocument document, DiffHighlightingFilter differ) {
     this.document = document;
@@ -52,10 +54,17 @@ public final class DiffContentDocument implements DiffSink {
   /**
    * Creates a diff-handling wrapper for a content document.
    */
-  public static DiffContentDocument create(ContentDocument doc, DocOperationLog operationLog) {
-    DiffHighlightingFilter differ =
-        new DiffHighlightingFilter(doc.getDiffTarget(), operationLog);
+  public static DiffContentDocument create(ContentDocument doc, DocContributionsLog operationLog,
+      WaveletId waveletId, String documentId) {
+    DiffHighlightingFilter differ = new DiffHighlightingFilter(doc.getDiffTarget(), operationLog, waveletId, documentId);
     return new DiffContentDocument(doc, differ);
+  }
+
+  /**
+   * Set diff annotations for the current state of the document at once.
+   */
+  public void initDiffs() {
+    differ.initDiffs();
   }
 
   @Override

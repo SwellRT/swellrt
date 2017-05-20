@@ -20,7 +20,7 @@
 package org.swellrt.beta.client.wave.concurrencycontrol;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
+import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
@@ -41,7 +41,7 @@ public final class StaticChannelBinder {
 
   private final WaveletOperationalizer operationalizer;
   private final SWaveDocuments<? extends CcDocument> docRegistry;
-  private final DocOperationLog opRegistry;
+  private final DocContributionsLog opRegistry;
 
   /**
    * Creates a binder for a wave.
@@ -65,7 +65,7 @@ public final class StaticChannelBinder {
    *        ops
    */
   public StaticChannelBinder(WaveletOperationalizer operationalizer,
-      SWaveDocuments<? extends CcDocument> docRegistry, DocOperationLog opRegistry) {
+      SWaveDocuments<? extends CcDocument> docRegistry, DocContributionsLog opRegistry) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
     this.opRegistry = opRegistry;

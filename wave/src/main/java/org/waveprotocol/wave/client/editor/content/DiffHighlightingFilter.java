@@ -19,18 +19,18 @@
 
 package org.waveprotocol.wave.client.editor.content;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.Style;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher.DocContribution;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher.DocContributionValue;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher.WaveletContributions;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
-
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
@@ -41,7 +41,10 @@ import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.operation.ModifiableDocument;
 import org.waveprotocol.wave.model.document.util.Annotations;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.operation.OperationException;
+import org.waveprotocol.wave.model.operation.wave.WaveletOperationContext;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -49,10 +52,14 @@ import org.waveprotocol.wave.model.util.ReadableIntMap;
 import org.waveprotocol.wave.model.util.ReadableStringMap;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.StringMap;
+import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Style;
 
 /**
  * A wrapper for a content document, for the purpose of displaying diffs.
@@ -142,11 +149,11 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   @Deprecated
   private static final Object INSERT_MARKER = new Object(); // Replaced by participantId
 
-  public static final String UKNOWN_PARTICIPANT = "Unknown";
+  public static final ParticipantId UKNOWN_PARTICIPANT = ParticipantId.ofUnsafe("unknown@unknown.com");
 
   private final DiffHighlightTarget inner;
 
-  private final DocOperationLog operationLog; // To track op's owners
+  private final DocContributionsLog contribLog; // To track op's owners
 
   // Munging to wrap the op
 
@@ -157,11 +164,11 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   /**
    * Participant who performs the op.
    */
-  private String author;
+  private ParticipantId author;
 
   // Diff state
 
-  private int diffDepth = 0;
+  private int cursorDepth = 0;
 
   private DeleteInfo currentDeleteInfo = null;
 
@@ -171,16 +178,65 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   int currentLocation = 0;
 
+  private final String waveletIdStr;
+  private final String documentId;
+
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument) {
-    this.inner = contentDocument;
-    this.operationLog = null;
+    this(contentDocument, null, null, null);
   }
 
-  public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocOperationLog operationLog) {
+  public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocContributionsLog contribLog, WaveletId waveletId, String documentId) {
     this.inner = contentDocument;
-    this.operationLog = operationLog;
+    this.contribLog = contribLog;
+    this.waveletIdStr = ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId);
+    this.documentId = documentId;
   }
 
+  /**
+   * Get document contributions at current version of the wavelet
+   * and show them as diff annotations.
+   */
+  public void initDiffs() {
+
+    HashedVersion waveletVersion = contribLog.getWaveletLastVersion(this.waveletIdStr);
+    assert waveletVersion != null;
+
+
+    contribLog.fetchContributions(waveletIdStr, waveletVersion, new DocContributionsFetcher.Callback() {
+
+      @Override
+      public void onSuccess(WaveletContributions waveletContributions) {
+
+        // Clear annotations, we are going to render again all of them.
+        clearDiffs();
+
+        DocContribution[] allContributions = waveletContributions.getDocContributions(documentId);
+        if (allContributions == null) return;
+        for (DocContribution dc: allContributions) {
+          if (dc.getValues() != null) {
+
+            for (DocContributionValue value: dc.getValues()) {
+              if (value.getKey().equals("author")) {
+
+                try {
+                  inner.setAnnotation(dc.getStart(), dc.getEnd(), DIFF_INSERT_KEY, ParticipantId.of(value.getValue()));
+                } catch (InvalidParticipantAddress e) {
+
+                }
+              }
+            }
+          }
+        }
+
+      }
+
+      @Override
+      public void onException(Exception e) {
+        // Opps!
+      }
+    });
+
+  }
 
   @Override
   public void consume(DocOp op) throws OperationException {
@@ -188,9 +244,11 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     operation = op;
 
-    if (operationLog != null) {
-      author = operationLog.getAuthorAndForget(op);
-      if (author == null) {
+    if (contribLog != null) {
+      WaveletOperationContext opContext =  contribLog.peekOpContext(waveletIdStr, documentId, op);
+      if (opContext != null) {
+        author = opContext.getCreator();
+      } else {
         author = UKNOWN_PARTICIPANT;
       }
     }
@@ -200,6 +258,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     final int size = inner.size();
 
     deleteInfos.each(new ReadableIntMap.ProcV<Object>() {
+      @Override
       public void apply(int location, Object _item) {
         assert location <= size;
 
@@ -255,11 +314,11 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     @Override
     public void elementStart(String tagName, Attributes attributes) {
-      if (diffDepth == 0) {
+      if (cursorDepth == 0) {
         inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
-      diffDepth++;
+      cursorDepth++;
 
       target.elementStart(tagName, attributes);
       currentLocation++;
@@ -270,23 +329,23 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       target.elementEnd();
       currentLocation++;
 
-      diffDepth--;
+      cursorDepth--;
 
-      if (diffDepth == 0) {
+      if (cursorDepth == 0) {
         inner.endLocalAnnotation(DIFF_INSERT_KEY);
       }
     }
 
     @Override
     public void characters(String characters) {
-      if (diffDepth == 0) {
+      if (cursorDepth == 0) {
         inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
       target.characters(characters);
       currentLocation += characters.length();
 
-      if (diffDepth == 0) {
+      if (cursorDepth == 0) {
         inner.endLocalAnnotation(DIFF_INSERT_KEY);
       }
     }
@@ -305,7 +364,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     @Override
     public void deleteElementStart(String type, Attributes attrs) {
-      if (diffDepth == 0 && isOutsideInsertionAnnotation()) {
+      if (cursorDepth == 0 && isOutsideInsertionAnnotation()) {
         ContentElement currentElement = (ContentElement) inner.getCurrentNode();
         Element e = currentElement.getImplNodelet();
 
@@ -329,7 +388,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
         }
       }
 
-      diffDepth++;
+      cursorDepth++;
 
       target.deleteElementStart(type, attrs);
     }
@@ -338,7 +397,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     public void deleteElementEnd() {
       target.deleteElementEnd();
 
-      diffDepth--;
+      cursorDepth--;
     }
 
     private boolean isOutsideInsertionAnnotation() {
@@ -353,7 +412,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
         return;
       }
 
-      DiffManager.styleElement(element, DiffType.DELETE, author);
+      DiffManager.styleElement(element, DiffType.DELETE, author.getName());
       DomHelper.makeUnselectable(element);
 
       for (Node n = element.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -365,7 +424,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     @Override
     public void deleteCharacters(String text) {
-      if (diffDepth == 0 && isOutsideInsertionAnnotation()) {
+      if (cursorDepth == 0 && isOutsideInsertionAnnotation()) {
         int endLocation = currentLocation + text.length();
 
         updateDeleteInfo();
@@ -460,7 +519,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     private void createDeleteElement(String innerText, ReadableStringMap<Object> annotations) {
       Element element = Document.get().createSpanElement();
       applyAnnotationsToElement(element, annotations);
-      DiffManager.styleElement(element, DiffType.DELETE, author);
+      DiffManager.styleElement(element, DiffType.DELETE, author.getName());
       element.setInnerText(innerText);
       currentDeleteInfo.htmlElements.add(element);
     }

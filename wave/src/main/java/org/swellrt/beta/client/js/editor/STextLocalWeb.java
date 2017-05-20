@@ -6,6 +6,7 @@ import org.swellrt.beta.model.wave.SWaveSchemas;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.Nindo;
 import org.waveprotocol.wave.model.document.util.DocProviders;
@@ -15,25 +16,25 @@ import com.google.gwt.dom.client.Element;
 
 public class STextLocalWeb implements STextWeb, STextLocal {
 
-    
+
   public static STextLocalWeb create(String text) throws SException {
-    
+
     String xml = "<body><line/>"+text+"</body>";
-    
+
     DocInitialization op;
     try {
       op = DocProviders.POJO.parse(xml).asOperation();
     } catch (IllegalArgumentException e) {
       throw new SException(SException.INTERNAL_ERROR, e);
     }
-  
+
     return new STextLocalWeb(new ContentDocument(Editor.ROOT_REGISTRIES, op, SWaveSchemas.STEXT_SCHEMA_CONSTRAINTS));
   }
 
   private final STextWebImpl textWeb;
-  
+
   protected STextLocalWeb(ContentDocument doc) {
-    this.textWeb = new STextWebImpl(doc); 
+    this.textWeb = new STextWebImpl(doc);
   }
 
   @Override
@@ -45,10 +46,10 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   public DocInitialization getInitContent() {
     return textWeb.getContentDocument().asOperation();
   }
-  
+
   @Override
-  public ContentDocument getContentDocument() {
-    return textWeb.getContentDocument();
+  public InteractiveDocument getInteractiveDocument() {
+    return textWeb.getInteractiveDocument();
   }
 
   @Override
@@ -94,6 +95,21 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   @Override
   public Range replace(Range at, String content) {
     return textWeb.replace(at, content);
+  }
+
+  @Override
+  public ContentDocument getContentDocument() {
+    return textWeb.getContentDocument();
+  }
+
+  @Override
+  public void showDiffHighlight() {
+    // nothing to do
+  }
+
+  @Override
+  public void hideDiffHighlight() {
+    // nothing to do
   }
 
 }

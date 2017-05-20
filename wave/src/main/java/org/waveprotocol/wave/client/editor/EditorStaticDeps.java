@@ -19,8 +19,7 @@
 
 package org.waveprotocol.wave.client.editor;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Widget;
+import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.PopupEventListener;
@@ -28,6 +27,9 @@ import org.waveprotocol.wave.client.widget.popup.PopupProvider;
 import org.waveprotocol.wave.client.widget.popup.RelativePopupPositioner;
 import org.waveprotocol.wave.client.widget.popup.UniversalPopup;
 import org.waveprotocol.wave.common.logging.LoggerBundle;
+
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Place holder for static dependencies.
@@ -145,5 +147,22 @@ public class EditorStaticDeps {
     ignoreMutations--;
     assert ignoreMutations >= 0;
   }
+
+  /**
+   * Profile manager is required by some static annotation painters.
+   * The right component should set this static dependency before
+   * painters are executed.
+   */
+  private static ProfileManager profileManager = null;
+
+  public static void setProfileManager(ProfileManager pm) {
+    profileManager = pm;
+  }
+
+  public static ProfileManager getProfileManager() {
+    return profileManager;
+  }
+
+
 
 }

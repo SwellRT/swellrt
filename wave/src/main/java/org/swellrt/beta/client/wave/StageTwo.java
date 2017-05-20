@@ -20,27 +20,28 @@
 
 package org.swellrt.beta.client.wave;
 
-import com.google.common.base.Preconditions;
-import com.google.gwt.user.client.Command;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 
 import org.swellrt.beta.client.wave.concurrencycontrol.LiveChannelBinder;
 import org.swellrt.beta.client.wave.concurrencycontrol.MuxConnector;
 import org.swellrt.beta.client.wave.concurrencycontrol.WaveletOperationalizer;
+import org.swellrt.beta.common.SwellConstants;
 import org.waveprotocol.wave.client.OptimalGroupingScheduler;
-import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
 import org.waveprotocol.wave.client.editor.Editor;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
+import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
-import org.waveprotocol.wave.client.wave.LocalSupplementedWave;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactories;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactory;
@@ -59,7 +60,6 @@ import org.waveprotocol.wave.model.conversation.ObservableConversationView;
 import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
-import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
@@ -68,6 +68,7 @@ import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler;
 import org.waveprotocol.wave.model.util.FuzzingBackOffScheduler.CollectiveScheduler;
 import org.waveprotocol.wave.model.util.Scheduler;
@@ -86,9 +87,8 @@ import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletConfigurator;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
+import com.google.common.base.Preconditions;
+import com.google.gwt.user.client.Command;
 
 /**
  * The second stage of client code.
@@ -124,6 +124,9 @@ public interface StageTwo {
   /** @return stage one. */
   StageOne getStageOne();
 
+  /** @return a contributions fetcher instance */
+  DocContributionsFetcher getContributionsFetcher();
+
 
 
   /**
@@ -156,7 +159,7 @@ public interface StageTwo {
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
 
-    private DocOperationLog operationLog; // tracks ops and contributors
+    private DocContributionsLog operationLog; // tracks ops and contributors
 
 
     private final UnsavedDataListener unsavedDataListener;
@@ -318,6 +321,7 @@ public interface StageTwo {
 
       // Populate the initial state.
       for (ObservableWaveletData waveletData : snapshot.getWavelets()) {
+        getDocOperationLog().registerSnapshot(waveletData);
         wave.addWavelet(operationalizer.operationalize(waveletData));
       }
       return wave;
@@ -335,17 +339,17 @@ public interface StageTwo {
 
       DocumentFactory<?> dataDocFactory =
           ObservablePluggableMutableDocument.createFactory(createSchemas());
-      
+
       DocumentFactory<LazyContentDocument> textDocFactory =
           new DocumentFactory<LazyContentDocument>() {
             private final Registries registries = Editor.ROOT_REGISTRIES;
-            private final DocOperationLog opLog = DefaultProvider.this.getDocOperationLog();
+            private final DocContributionsLog opLog = DefaultProvider.this.getDocOperationLog();
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff, opLog);
+              return LazyContentDocument.create(registries, noDiff, opLog, waveletId, docId);
             }
           };
 
@@ -501,7 +505,7 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocOperationLog getDocOperationLog() {
+    protected DocContributionsLog getDocOperationLog() {
       return operationLog == null ? operationLog = createOperationLog() : operationLog;
     }
 
@@ -510,8 +514,8 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocOperationLog createOperationLog() {
-      return new DocOperationLog();
+    protected DocContributionsLog createOperationLog() {
+      return new DocContributionsLog(CollectionUtils.newStringSet(SwellConstants.TEXT_BLIP_ID_PREFIX), getContributionsFetcher());
     }
 
   }

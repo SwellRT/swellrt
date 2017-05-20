@@ -93,6 +93,19 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
     sessionInURL = state;
   }
 
+  /**
+   * The path's context, with no "/" at the beginning
+   * @param context
+   * @return
+   */
+  protected HTTPOperation<O, R> setPathContext(String context) {
+    //Preconditions.checkArgument(element != null && !element.isEmpty(), "Empty string");
+    if (context.startsWith(pathSeparator))
+      context = context.substring(1);
+    path = context;
+    return this;
+  }
+
   protected HTTPOperation<O, R> addPathElement(String element) {
     //Preconditions.checkArgument(element != null && !element.isEmpty(), "Empty string");
     path += pathSeparator+element;

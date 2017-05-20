@@ -19,12 +19,10 @@
 
 package org.swellrt.beta.client.wave.concurrencycontrol;
 
-import com.google.common.base.Preconditions;
-import com.google.gwt.user.client.Command;
+import java.util.Collection;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
-import org.waveprotocol.wave.client.editor.DocOperationLog;
-import org.waveprotocol.wave.client.wave.WaveDocuments;
+import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.concurrencycontrol.channel.Accessibility;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiplexer;
@@ -42,7 +40,8 @@ import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl;
 
-import java.util.Collection;
+import com.google.common.base.Preconditions;
+import com.google.gwt.user.client.Command;
 
 /**
  * Binds operation channels from a {@link OperationChannelMultiplexer mux} with
@@ -59,6 +58,7 @@ public final class LiveChannelBinder
   private final WaveViewImpl<OpBasedWavelet> wave;
   private final OperationChannelMultiplexer mux;
   private final Command whenOpened;
+  private final DocContributionsLog docOpLog;
 
   /**
    * Operation channels waiting to be bound. This map is populated from {@link
@@ -89,12 +89,13 @@ public final class LiveChannelBinder
   //
 
   private LiveChannelBinder(StaticChannelBinder binder, WaveletOperationalizer operationalizer,
-      WaveViewImpl<OpBasedWavelet> wave, OperationChannelMultiplexer mux, Command whenOpened) {
+      WaveViewImpl<OpBasedWavelet> wave, OperationChannelMultiplexer mux, Command whenOpened, DocContributionsLog docOpLog) {
     this.binder = binder;
     this.operationalizer = operationalizer;
     this.wave = wave;
     this.mux = mux;
     this.whenOpened = whenOpened;
+    this.docOpLog = docOpLog;
   }
 
   /**
@@ -107,10 +108,10 @@ public final class LiveChannelBinder
       OperationChannelMultiplexer mux,
       IdFilter filter,
       Command whenOpened,
-      DocOperationLog operationLog) {
+      DocContributionsLog operationLog) {
     StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry, operationLog);
     LiveChannelBinder liveBinder =
-        new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened);
+        new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened, operationLog);
 
     final Collection<KnownWavelet> remoteWavelets = CollectionUtils.createQueue();
     final Collection<ObservableWaveletData> localWavelets = CollectionUtils.createQueue();
@@ -141,7 +142,7 @@ public final class LiveChannelBinder
   @Override
   public void onFailed(CorruptionDetail detail) {
 	 // Avoid throwing unchecked exceptions,
-	 // use the TurbulenceListener instead	  
+	 // use the TurbulenceListener instead
 	 // throw new RuntimeException(detail);
   }
 
@@ -175,6 +176,8 @@ public final class LiveChannelBinder
 
     Preconditions.checkState(!channels.containsKey(id));
     channels.put(id, channel);
+
+    docOpLog.registerSnapshot(snapshot);
 
     if (wave.getWavelet(wid) != null) {
       connect(id);
