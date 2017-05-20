@@ -19,25 +19,26 @@
 
 package org.waveprotocol.box.server.persistence.memory;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 
 import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.swell.WaveletContributions;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
-import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
 import org.waveprotocol.box.server.waveserver.DeltaStore.Snapshot;
+import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.data.WaveletData;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * An in-memory implementation of DeltasAccess
@@ -168,5 +169,23 @@ public class MemoryDeltaCollection implements DeltasAccess {
   @Override
   public WaveletDeltaRecord getLastDelta() throws IOException {
     return endDeltas.get(endVersion.getVersion());
+  }
+
+  @Override
+  public WaveletContributions loadContributions() throws PersistenceException {
+    // Not supported!
+    return null;
+  }
+
+  @Override
+  public WaveletContributions loadContributionsForVersion(long version)
+      throws PersistenceException {
+    // Not supported!
+    return null;
+  }
+
+  @Override
+  public void storeContributions(WaveletContributions contributions) throws PersistenceException {
+    // Not supported!
   }
 }

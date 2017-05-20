@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.swell.WaveletContributions;
 import org.waveprotocol.box.server.waveserver.ByteStringMessage;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
@@ -53,21 +54,21 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
   private static final Log LOG = Log.get(MongoDbDeltaCollection.class);
 
 
-  
+
   /** Wavelet name to work with. */
   private final WaveletName waveletName;
 
   /** MongoDB Collection object for delta storage */
   private final DBCollection deltasCollection;
-  
+
   /** MongoDB based wavelet snapshot store */
   private final MongoDBSnapshotStore snapshotStore;
 
-  
+
   public static MongoDbDeltaCollection create(WaveletName waveletName, DBCollection deltasCollection, MongoDBSnapshotStore snapshotStore) {
     return new MongoDbDeltaCollection(waveletName, deltasCollection, snapshotStore);
   }
-  
+
   /**
    * Construct a new Delta Access object for the wavelet
    *
@@ -227,9 +228,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     DBObject query = createWaveletDBQuery();
 
     BasicDBObject sort = new BasicDBObject();
-    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, 1);
-    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED + "."
-        + MongoDbDeltaStoreUtil.FIELD_APPLICATIONTIMESTAMP, 1);
+    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, 1);
 
     DBCursor result = deltasCollection.find(query).sort(sort);
 
@@ -311,7 +310,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   @Override
   public WaveletDeltaRecord getLastDelta() throws IOException {
-    
+
     // Search the max of delta.getTransformedDelta().getResultingVersion()
 
     DBObject query = createWaveletDBQuery();
@@ -328,21 +327,39 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     } catch (PersistenceException e) {
       throw new IOException(e);
     }
-    
+
   }
-  
+
   @Override
-  public DeltaStore.Snapshot loadSnapshot() throws PersistenceException {           
+  public DeltaStore.Snapshot loadSnapshot() throws PersistenceException {
     return snapshotStore.load(waveletName);
   }
 
   @Override
   public void storeSnapshot(WaveletData waveletData)
       throws PersistenceException {
-    
-    Preconditions.checkArgument(waveletName.equals(WaveletName.of(waveletData.getWaveId(), waveletData.getWaveletId())), 
+
+    Preconditions.checkArgument(waveletName.equals(WaveletName.of(waveletData.getWaveId(), waveletData.getWaveletId())),
         "Can't store snapshots for different wavelet");
-    
-    snapshotStore.store(waveletData);  
+
+    snapshotStore.store(waveletData);
+  }
+
+  @Override
+  public WaveletContributions loadContributions() throws PersistenceException {
+    LOG.info("Wavelet contributions storage is not yet available");
+    return null;
+  }
+
+  @Override
+  public WaveletContributions loadContributionsForVersion(long version)
+      throws PersistenceException {
+    LOG.info("Wavelet contributions storage is not yet available");
+    return null;
+  }
+
+  @Override
+  public void storeContributions(WaveletContributions contributions) throws PersistenceException {
+    LOG.info("Wavelet contributions storage is not yet available");
   }
 }

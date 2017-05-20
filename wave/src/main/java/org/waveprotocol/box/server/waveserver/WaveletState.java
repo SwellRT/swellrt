@@ -19,18 +19,19 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 
 import org.waveprotocol.box.common.Receiver;
-
+import org.waveprotocol.box.server.swell.ReadableWaveletContributions;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
+
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * The state of a wavelet, including its delta history. Combines persisted and
@@ -53,6 +54,11 @@ interface WaveletState {
    *         the internal state.
    */
   ReadableWaveletData getSnapshot();
+
+  /**
+   * @return a copy of the contributions set of the wavelet.
+   */
+  ReadableWaveletContributions getContributions();
 
   /**
    * @return the current hashed version.

@@ -20,26 +20,35 @@
 package org.waveprotocol.box.server.frontend;
 
 
-import com.google.common.base.Preconditions;
-
+import org.waveprotocol.box.server.swell.ReadableWaveletContributions;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A wavelet snapshot with committed version.
  *
  * @author anorth@google.com (Alex North)
+ * @author pablojan@apache.org (Pablo Ojanguren)
 */
 public final class CommittedWaveletSnapshot {
   public final ReadableWaveletData snapshot;
   public final HashedVersion committedVersion;
+  public final ReadableWaveletContributions contributions;
 
   public CommittedWaveletSnapshot(ReadableWaveletData snapshot,
       HashedVersion committedVersion) {
+    this(snapshot, committedVersion, null);
+  }
+
+  public CommittedWaveletSnapshot(ReadableWaveletData snapshot,
+      HashedVersion committedVersion, ReadableWaveletContributions contributions) {
     Preconditions.checkNotNull(snapshot);
     Preconditions.checkNotNull(committedVersion);
     this.snapshot = snapshot;
     this.committedVersion = committedVersion;
+    this.contributions = contributions;
   }
 
   @Override

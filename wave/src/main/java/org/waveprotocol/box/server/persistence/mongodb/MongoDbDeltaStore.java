@@ -19,15 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import com.google.common.collect.ImmutableSet;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
+import java.util.List;
 
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.FileNotFoundPersistenceException;
@@ -38,54 +30,71 @@ import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
+import com.mongodb.WriteConcern;
 
 /**
  * A MongoDB based Delta Store implementation using a <b>deltas</b>
  * collection and a snapshots collection.
- * 
+ *
  * Each deltas is stored as a MongoDb document.
- * 
+ *
  * For snapshots store details check out {@link MongoDBSnapshotStore}
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
 public class MongoDbDeltaStore implements DeltaStore {
-  
+
   private static final Log LOG = Log.get(MongoDbDeltaStore.class);
-  
+
   /** Name of the MongoDB collection to store Deltas */
   private static final String DELTAS_COLLECTION = "deltas";
 
   /** MongoDB Collection for deltas */
   private final DBCollection deltasCollection;
-  
+
   /** A specific class handling snapshots */
   private final MongoDBSnapshotStore snapshotStore;
 
   /**
    * Creates a mongoDB based delta/snapshot store.
-   * 
+   *
    * @param database
    * @return
    */
   public static MongoDbDeltaStore create(DB database) {
-    
-    DBCollection deltasCollection = database.getCollection(DELTAS_COLLECTION);    
+
+    DBCollection deltasCollection = database.getCollection(DELTAS_COLLECTION);
     checkDeltasCollectionIndexes(deltasCollection);
     MongoDBSnapshotStore snapshotStore = MongoDBSnapshotStore.create(database);
-    
+
     return new MongoDbDeltaStore(deltasCollection, snapshotStore);
   }
-  
+
   private static void checkDeltasCollectionIndexes(DBCollection deltasCollection) {
-    
-    LOG.info("For production environments, set MongoDB index in 'deltas' collection with fields 'waveid', 'waveletid' and 'transformed.resultingversion'");
-    
+    // List<DBObject> indexInfo = deltasCollection.getIndexInfo();
+
+    LOG.info("Ensure MongoDB indexes for 'deltas' collection on 'waveid', 'waveletid' and 'transformed.resultingversion' fields");
+
+    DBObject newIndex = new BasicDBObject();
+    newIndex.put("transformed.resultingversion", 1);
+    deltasCollection.createIndex(newIndex);
+
+    newIndex = new BasicDBObject();
+    newIndex.put("waveid", 1);
+    newIndex.put("waveletid", 1);
+    deltasCollection.createIndex(newIndex);
+    deltasCollection.createIndex(newIndex);
   }
-  
-  
+
+
   /**
    * Construct a new store instance
    *
@@ -95,8 +104,8 @@ public class MongoDbDeltaStore implements DeltaStore {
     this.deltasCollection = deltasCollection;
     this.snapshotStore = snapshotStore;
   }
-  
-  
+
+
 
   @Override
   public DeltasAccess open(WaveletName waveletName) throws PersistenceException {
@@ -118,7 +127,7 @@ public class MongoDbDeltaStore implements DeltaStore {
     } catch (MongoException e) {
       throw new PersistenceException(e);
     }
-    
+
     // Also delete wavelet snapshots
     snapshotStore.deleteSnapshot(waveletName);
 
@@ -176,5 +185,5 @@ public class MongoDbDeltaStore implements DeltaStore {
 
     return ExceptionalIterator.FromIterator.create(builder.build().iterator());
   }
-  
+
 }

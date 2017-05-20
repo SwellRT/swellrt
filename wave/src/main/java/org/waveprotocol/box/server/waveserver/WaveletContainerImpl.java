@@ -19,20 +19,22 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import org.waveprotocol.box.common.Receiver;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.annotation.Nullable;
 
 import org.waveprotocol.box.common.DeltaSequence;
+import org.waveprotocol.box.common.ListReceiver;
+import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.util.WaveletDataUtil;
-import org.waveprotocol.box.common.ListReceiver;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.OperationException;
@@ -49,15 +51,13 @@ import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.annotation.Nullable;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * Contains the history of a wavelet - applied and transformed deltas plus the
@@ -313,7 +313,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
     try {
       checkStateOk();
       return new CommittedWaveletSnapshot(waveletState.getSnapshot(),
-          waveletState.getLastPersistedVersion());
+          waveletState.getLastPersistedVersion(), waveletState.getContributions());
     } finally {
       releaseReadLock();
     }

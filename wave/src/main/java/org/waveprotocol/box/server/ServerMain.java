@@ -52,7 +52,6 @@ import org.waveprotocol.box.server.robots.passive.RobotsGateway;
 import org.waveprotocol.box.server.rpc.AttachmentInfoServlet;
 import org.waveprotocol.box.server.rpc.AttachmentServlet;
 import org.waveprotocol.box.server.rpc.AuthenticationServlet;
-import org.waveprotocol.box.server.rpc.WindowIdFilter;
 import org.waveprotocol.box.server.rpc.ServerRpcProvider;
 import org.waveprotocol.box.server.shutdown.ShutdownManager;
 import org.waveprotocol.box.server.shutdown.ShutdownPriority;
@@ -60,6 +59,7 @@ import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.server.stat.RequestScopeFilter;
 import org.waveprotocol.box.server.stat.StatuszServlet;
 import org.waveprotocol.box.server.stat.TimingFilter;
+import org.waveprotocol.box.server.swell.ContributionsServlet;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
@@ -134,7 +134,7 @@ public class ServerMain {
     // injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
     //    federationModule, searchModule, profileFetcherModule);
     injector = injector.createChildInjector(serverModule, persistenceModule, federationModule, eventsModule, modelIndexerModule, emailModule);
-    
+
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
 
@@ -225,8 +225,11 @@ public class ServerMain {
     // DSWG experimental
     // server.addServlet("/shared/*", DSFileServlet.class);
 
-    // SwellRt
+    // SwellRT
     server.addServlet("/swell/*", SwellRtServlet.class);
+
+    // Contributions
+    server.addServlet("/contrib/*", ContributionsServlet.class);
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {
@@ -287,19 +290,19 @@ public class ServerMain {
 //      LOG.warning("Error initializating SwellRtIndexerDispatcher", e);
     // }
     waveBus.subscribe(indexerDispatcher);
-    
+
     // Initialize Events
     // TODO get rules as inject. dependency
     Collection<EventRule> rules =
             EventRule.fromFile(System.getProperty("event-rules.config.file", "config/event-rules.config"));
-    
+
     EventDispatcher eventDispatcher = injector.getInstance(EventDispatcher.class);
     eventDispatcher.setRules(rules);
     eventDispatcher.subscribe(injector.getInstance(DummyDispatcher.class), DummyDispatcher.NAME);
     eventDispatcher.subscribe(injector.getInstance(GCMDispatcher.class), GCMDispatcher.NAME);
     eventDispatcher.subscribe(injector.getInstance(HttpDispatcher.class), HttpDispatcher.NAME);
 
-    
+
     DeltaBasedEventSource eventSource = injector.getInstance(DeltaBasedEventSource.class);
     waveBus.subscribe(eventSource);
   }

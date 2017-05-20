@@ -19,31 +19,6 @@
 
 package org.waveprotocol.box.server.persistence.file;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import org.waveprotocol.box.common.Receiver;
-import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
-import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreData.ProtoTransformedWaveletDelta;
-import org.waveprotocol.box.server.shutdown.LifeCycle;
-import org.waveprotocol.box.server.shutdown.ShutdownPriority;
-import org.waveprotocol.box.server.shutdown.Shutdownable;
-import org.waveprotocol.box.server.waveserver.AppliedDeltaUtil;
-import org.waveprotocol.box.server.waveserver.ByteStringMessage;
-import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
-import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
-import org.waveprotocol.box.server.waveserver.DeltaStore.Snapshot;
-import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
-import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
-import org.waveprotocol.wave.model.util.Pair;
-import org.waveprotocol.wave.model.version.HashedVersion;
-import org.waveprotocol.wave.model.wave.data.WaveletData;
-import org.waveprotocol.wave.util.logging.Log;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,6 +27,32 @@ import java.nio.channels.Channels;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+
+import org.waveprotocol.box.common.Receiver;
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreData.ProtoTransformedWaveletDelta;
+import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
+import org.waveprotocol.box.server.shutdown.LifeCycle;
+import org.waveprotocol.box.server.shutdown.ShutdownPriority;
+import org.waveprotocol.box.server.shutdown.Shutdownable;
+import org.waveprotocol.box.server.swell.WaveletContributions;
+import org.waveprotocol.box.server.waveserver.AppliedDeltaUtil;
+import org.waveprotocol.box.server.waveserver.ByteStringMessage;
+import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
+import org.waveprotocol.box.server.waveserver.DeltaStore.Snapshot;
+import org.waveprotocol.box.server.waveserver.WaveletDeltaRecord;
+import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
+import org.waveprotocol.wave.model.util.Pair;
+import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.data.WaveletData;
+import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * A flat file based implementation of DeltasAccess. This class provides a storage backend for the
@@ -649,7 +650,7 @@ public class FileDeltaCollection implements DeltasAccess {
   }
 
   @Override
-  public Snapshot loadSnapshot() throws PersistenceException {    
+  public Snapshot loadSnapshot() throws PersistenceException {
     // Not supported!
     return null;
   }
@@ -657,13 +658,31 @@ public class FileDeltaCollection implements DeltasAccess {
   @Override
   public void storeSnapshot(WaveletData waveletData)
       throws PersistenceException {
-    // No-op    
+    // No-op
   }
 
   @Override
   public WaveletDeltaRecord getLastDelta() throws IOException {
     return getDeltaByEndVersion(endVersion.getVersion());
   }
-  
-  
+
+  @Override
+  public WaveletContributions loadContributions() throws PersistenceException {
+    // Not supported!
+    return null;
+  }
+
+  @Override
+  public WaveletContributions loadContributionsForVersion(long version)
+      throws PersistenceException {
+    // Not supported!
+    return null;
+  }
+
+  @Override
+  public void storeContributions(WaveletContributions contributions) throws PersistenceException {
+    // Not supported!
+  }
+
+
 }

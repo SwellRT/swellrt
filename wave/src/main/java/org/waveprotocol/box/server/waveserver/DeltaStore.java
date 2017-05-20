@@ -19,12 +19,12 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.wave.model.version.HashedVersion;
-import org.waveprotocol.wave.model.wave.data.WaveletData;
-
 import java.io.Closeable;
 import java.util.Collection;
+
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.swell.WaveletContributions;
+import org.waveprotocol.wave.model.wave.data.WaveletData;
 
 /**
  * Stores wavelet deltas.
@@ -36,20 +36,20 @@ public interface DeltaStore extends WaveletStore<DeltaStore.DeltasAccess> {
 
   /**
    * Wavelet snapshot and resulting version together.
-   * 
+   *
    * @author pablojan@gmail.com (Pablo Ojanguren)
    */
   interface Snapshot {
-    
+
     /** Gets the wavelet snapshot */
     public WaveletData getWaveletData();
   }
-  
+
   /**
    * Accesses the delta history for a wavelet.
    * Permits reading historical deltas and appending deltas to the history.
-   * 
-   * Optionally, it can provide service to load and store snapshots. 
+   *
+   * Optionally, it can provide service to load and store snapshots.
    */
   interface DeltasAccess extends WaveletDeltaRecordReader, Closeable {
     /**
@@ -66,24 +66,52 @@ public interface DeltaStore extends WaveletStore<DeltaStore.DeltasAccess> {
      *         storage.
      */
     void append(Collection<WaveletDeltaRecord> deltas) throws PersistenceException;
-    
+
     /**
      * Loads the last snapshot of the wavelet.
-     * 
+     *
      * @return the wavelet data object
      * @throws PersistenceException if anything goes wrong with the underlying
      *         storage.
      */
     Snapshot loadSnapshot() throws PersistenceException;
-    
+
     /**
-     * Stores a wavelet snapshot as the last one.  
-     * 
+     * Stores a wavelet snapshot as the last one.
+     *
      * @param waveletData the wavelet data
      * @throws PersistenceException if anything goes wrong with the underlying
      *         storage.
      */
     void storeSnapshot(WaveletData waveletData) throws PersistenceException;
-    
+
+
+   /**
+    * Load the set of participant contributions for the last version.
+    *
+    * @return
+    * @throws PersistenceException
+    */
+   WaveletContributions loadContributions() throws PersistenceException;
+
+   /**
+    * Load the set of participant contributions up to a delta target version.
+    *
+    * @return
+    * @throws PersistenceException
+    */
+   WaveletContributions loadContributionsForVersion(long version) throws PersistenceException;
+
+   /**
+    * Store the set of participant contributions of the wavelet.
+    *
+    * @param contributions
+    * @throws PersistenceException
+    */
+   void storeContributions(WaveletContributions contributions) throws PersistenceException;
+
+
+
+
   }
 }

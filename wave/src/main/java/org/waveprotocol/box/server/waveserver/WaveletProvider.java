@@ -19,8 +19,6 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import com.google.common.collect.ImmutableSet;
-
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
@@ -31,6 +29,8 @@ import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Provides wavelet snapshots and history, and accepts delta submissions to
@@ -130,4 +130,7 @@ public interface WaveletProvider {
    *         a bad state
    */
   CommittedWaveletSnapshot getSnapshot(WaveletName waveletName) throws WaveServerException;
+
+
+
 }
