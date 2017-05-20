@@ -1,0 +1,289 @@
+<!--
+  SwellRT Pad demo
+  Author: Pablo Ojanguren (pablojan@gmail.com)
+
+  A simple editor canvas.
+  Get the doc (SwellRT object) id from URL parameter
+
+  Example:
+
+  http://localhost:9898/test-pad.html?id=test3
+
+
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SwellRT, Test Pad Page</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/swellrt.css">
+  <style type="text/css">
+
+  .bg-canvas {
+    background-color: #b8beab;
+  }
+
+  .editor-canvas {
+    padding: 10px;
+    font-family: 'Overpass Mono', monospace;
+    font-size: 14px;
+    min-height: 450px;
+    background-color: #F2F2F2;
+    overflow-y: scroll;
+  }
+
+  .status-item {
+    margin-left: 10px;
+  }
+
+
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container-fluid">
+
+    <div class="page-header">
+      <h4>
+        <span class="text-swellrt">
+          <span class="text-swell">Swell</span><span class="text-rt">RT</span>
+        </span>
+        <span class="title">Pad Test page</span><span class="net-status" id="netStatus"></span>
+      </h4>
+    </div>
+
+    <!--
+    <div class="row">
+      <div class="col-md-offset-2 col-md-8">
+        <p id="ua"></p>
+        <input id="debugOn" class="btn btn-default" type="submit" value="Debug On" onclick="debugOn()">
+        <input id="debugOff" class="btn btn-default" type="submit" value="Debug Off" onclick="debugOff()">
+      </div>
+    </div>
+  -->
+
+    <div class="row">
+      <div class="col-md-offset-2 col-md-10">
+          <span class="status-title">Live Status:</span>
+          <span id="inflight" class="status-item"></span>
+          <span id="ack-pending" class="status-item"></span>
+          <span id="commit-pending" class="status-item"></span>
+          <span id="version-last-ack" class="status-item"></span>
+          <span id="version-last-commit" class="status-item"></span>
+          <span id="status" class="status-item"></span>
+          <span id="error" class="status-item"></span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-offset-1 col-md-10">
+        <div id="editor" class="editor-canvas">
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-offset-1 col-md-10">
+        <span>Static text view</span>
+        <div id="text" class="editor-canvas">
+        </div>
+      </div>
+    </div>
+
+
+  </div><!-- container -->
+
+  <script>
+    function isProxySupported() {
+
+      if (typeof Proxy === "undefined") return false;
+
+      try {
+        var o = new Object();
+        var p = new Proxy(o, {});
+      } catch(e) {
+        return false;
+      }
+
+      return true;
+    }
+
+    // http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters
+    function getQueryParams(qs) {
+      qs = qs.split('+').join(' ');
+
+      var params = {},
+          tokens,
+          re = /[?&]?([^=]+)=([^&]*)/g;
+
+      while (tokens = re.exec(qs)) {
+          params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+      }
+
+      return params;
+    }
+
+    function setElementText(elementId, text) {
+      document.getElementById(elementId).innerText = ""+text;
+    }
+  </script>
+
+  <script>
+
+    __swellrt_config = {
+        websocketDebugLog: true,
+        captureExceptions: false,
+        websocketHeartbeatInterval: 30000
+    };
+
+    // Configure editor globals
+    __swellrt_editor_config = {
+      enableLog: false,
+      webkitComposition: false
+    };
+  </script>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="/swellrt-beta.js"></script>
+
+  <script>
+
+
+
+
+  swellrt.onReady(function(service) {
+
+    window.params = getQueryParams(window.location.search);
+
+    window.service = service;
+
+    // Put on eye on live commucation turbulences
+    service.addConnectionHandler(connectionHandler);
+
+    // We work with anonymous user
+    service.login({
+      id : swellrt.Service.ANONYMOUS_USER_ID,
+      password : ""
+    })
+    .then(function(profile) {
+      // Open the collaborative object to store text documents
+
+      var docId = "write-test"
+      if (params.id) {
+          docId = params.id;
+      }
+      return service.open({ id : docId });
+
+    })
+    .then(function(r) {
+
+      controller = r.controller;
+      object = controller; // sugar syntax
+
+      setElementText("status", "OK");
+      object.setStatusHandler(event => {
+
+        if (event.type == 2) { // update
+          setElementText("inflight", event.inflight);
+          setElementText("ack-pending", event.unacknowledge);
+          setElementText("commit-pending", event.uncommitted);
+          setElementText("version-last-ack", event.lastAckVersion);
+          setElementText("version-last-commit", event.lastCommittedVersion);
+        }
+
+        if (event.type == 1) { // error
+           setElementText("status", "ERROR");
+           setElementText("error",  event.exception.code);
+        }
+
+      });
+
+      if (!object.has("created")) {
+        // Create a doc
+        object.put("created", true);
+        object.put("text", swellrt.Text.create("This is a document to perform automated testing. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"));
+        // Make public after initialization
+        object.setPublic(true);
+      }
+
+      // Create editor instance, reusable
+
+      if (!params.static) {
+
+        editor = swellrt.Editor.createWithId("editor", service);
+
+        var text = object.get("text");
+        editor.set(text);
+        editor.edit(true);
+
+      } else {
+
+        var text = object.get("text");
+        text.setParent(document.getElementById("text"));
+        text.setInteractive();
+
+      }
+
+    })
+    .catch(function(e) {
+      _exception = e;
+      console.log(e);
+
+    });
+
+  });
+
+
+  function connectionHandler(s, e) {
+    console.log(s);
+    var netStatus = document.getElementById("netStatus");
+
+    if (s == "CONNECTED")
+      netStatus.innerHTML = '<span class="label label-info">Connected</span>';
+
+    if (s == "CONNECTING")
+      netStatus.innerHTML = '<span class="label label-warning">Connecting</span>';
+
+    if (s == "DISCONNECTED")
+      netStatus.innerHTML = '<span class="label label-danger">Disconnected</span>';
+
+    if (s == "ERROR")
+      netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
+  }
+
+
+  function debugOn() {
+    var host = document.location.hostname;
+    window.__gwt_bookmarklet_params = {'server_url':'http://'+host+':9876/'};
+    var s = document.createElement('script');
+    s.src = 'http://' +host+ ':9876/dev_mode_on.js';
+    void(document.getElementsByTagName('head')[0].appendChild(s));
+  }
+
+  function debugOff() {
+      var toRemove = [];
+      for(var i = 0; i<sessionStorage.length; i++) {
+        var key = sessionStorage.key(i);
+        if (key.indexOf('__gwtDevModeHook:') == 0) {
+          toRemove.push(key);
+        }
+      }
+
+      for (var j = 0; j<toRemove.length; j++) {
+        sessionStorage.removeItem(toRemove[j]);
+      }
+      window.location.reload();
+  }
+
+  </script>
+
+
+</body>
+</html>
