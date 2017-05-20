@@ -5,6 +5,7 @@ import java.util.Set;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
+import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -16,7 +17,7 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
 
 /**
  * Wave Loader orchestrate the process of instantiate a Wavelet with its Blip/Documents,
- * and connect it to the server. 
+ * and connect it to the server.
  * <p>
  * It uses the original stage-based load process optimized for browsers and the
  * conversational model. TODO consider to simplify the staged loader.
@@ -24,9 +25,9 @@ import org.waveprotocol.wave.model.waveref.WaveRef;
  * Important! This class and all Stage classes are platform dependent.
  * <p>
  * Use the method {@link Stages#load} to launch the load process.
- * 
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
- * 
+ *
  */
 public class WaveLoader extends Stages {
 
@@ -53,12 +54,13 @@ public class WaveLoader extends Stages {
   private UnsavedDataListener dataListener;
   protected ParticipantId loggedInUser;
   private TurbulenceListener turbulenceListener;
+  private DocContributionsFetcher contribFetcher;
 
 
   public WaveLoader(WaveId waveId, RemoteViewServiceMultiplexer channel,
       IdGenerator idGenerator, String localDomain,
  Set<ParticipantId> participants, ParticipantId loggedInUser,
-      UnsavedDataListener dataListener, TurbulenceListener turbulenceListener) {
+      UnsavedDataListener dataListener, TurbulenceListener turbulenceListener, DocContributionsFetcher contribFetcher) {
     super();
     this.waveId = waveId;
     this.channel = channel;
@@ -68,6 +70,7 @@ public class WaveLoader extends Stages {
     this.loggedInUser = loggedInUser;
     this.dataListener = dataListener;
     this.turbulenceListener = turbulenceListener;
+    this.contribFetcher = contribFetcher;
 
   }
 
@@ -90,7 +93,7 @@ public class WaveLoader extends Stages {
   protected AsyncHolder<StageTwo> createStageTwoLoader(StageOne one) {
     return haltIfClosed(new StageTwoProvider(this.one = one, WaveRef.of(this.waveId), this.channel,
         this.isNewWave, this.idGenerator, this.dataListener,
-        this.participants, this.loggedInUser, turbulenceListener));
+        this.participants, this.loggedInUser, turbulenceListener, this.contribFetcher));
   }
 
   @Override
