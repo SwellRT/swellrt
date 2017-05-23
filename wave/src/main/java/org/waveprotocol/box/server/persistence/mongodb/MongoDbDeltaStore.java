@@ -84,7 +84,7 @@ public class MongoDbDeltaStore implements DeltaStore {
     LOG.info("Ensure MongoDB indexes for 'deltas' collection on 'waveid', 'waveletid' and 'transformed.resultingversion' fields");
 
     DBObject newIndex = new BasicDBObject();
-    newIndex.put("transformed.resultingversion", 1);
+    newIndex.put("transformed.resultingversion.version", 1);
     deltasCollection.createIndex(newIndex);
 
     newIndex = new BasicDBObject();
