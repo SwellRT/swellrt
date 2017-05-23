@@ -41,6 +41,7 @@ import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.operation.ModifiableDocument;
 import org.waveprotocol.wave.model.document.util.Annotations;
+import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.operation.OperationException;
@@ -174,6 +175,9 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   private int currentDeleteLocation = 0;
 
+  private List<Range> insertAnnotationsRanges = new ArrayList<Range>();
+  private int elementStart, elementEnd;
+
   IntMap<Object> deleteInfos;
 
   int currentLocation = 0;
@@ -255,6 +259,16 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     inner.consume(opWrapper);
 
+    // Set annotations here, at once after processing the doc op,
+    // instead of using annotation interleaves (startLocalAnnotation, endLocalAnnotation).
+    // This avoid bad rendering of diff annotations when a participant A inserts text inside
+    // a range of text written by participant B. In the former annotation setting way, the
+    // inserted text shown diff color of the participant author of the surrounding text, instead of the color
+    // of the new author.
+    insertAnnotationsRanges.forEach( r -> {
+      inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, author);
+    });
+
     final int size = inner.size();
 
     deleteInfos.each(new ReadableIntMap.ProcV<Object>() {
@@ -296,12 +310,14 @@ public class DiffHighlightingFilter implements ModifiableDocument {
           currentDeleteInfo = null;
           currentDeleteLocation = -1;
           currentLocation = 0;
+          insertAnnotationsRanges.clear();
 
           operation.apply(filter);
 
           maybeSavePreviousDeleteInfo();
 
           target = null;
+
         }
 
         @Override
@@ -315,7 +331,8 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     @Override
     public void elementStart(String tagName, Attributes attributes) {
       if (cursorDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
+        elementStart = currentLocation;
+        //inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
       cursorDepth++;
@@ -332,21 +349,27 @@ public class DiffHighlightingFilter implements ModifiableDocument {
       cursorDepth--;
 
       if (cursorDepth == 0) {
-        inner.endLocalAnnotation(DIFF_INSERT_KEY);
+        elementEnd = currentLocation;
+        insertAnnotationsRanges.add(new Range(elementStart, elementEnd));
+        // inner.endLocalAnnotation(DIFF_INSERT_KEY);
       }
     }
 
     @Override
     public void characters(String characters) {
+      int start,end;
       if (cursorDepth == 0) {
-        inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
+        // inner.startLocalAnnotation(DIFF_INSERT_KEY, author);
       }
 
+      start = currentLocation;
       target.characters(characters);
       currentLocation += characters.length();
+      end = currentLocation;
 
       if (cursorDepth == 0) {
-        inner.endLocalAnnotation(DIFF_INSERT_KEY);
+        // inner.endLocalAnnotation(DIFF_INSERT_KEY);
+        insertAnnotationsRanges.add(new Range(start, end));
       }
     }
 
