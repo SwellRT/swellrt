@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.common.util.RgbColorUtil;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.BoundaryFunction;
@@ -94,7 +95,7 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
         if (profileManager != null) {
           Profile profile = profileManager.getProfile(author);
           if (profile != null) {
-            color = profile.getColor().getHexColor();
+            color = RgbColorUtil.getLighter(profile.getColor(), 0.6).getHexColor();
           }
         }
 
