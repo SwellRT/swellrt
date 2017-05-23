@@ -11,7 +11,6 @@ import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.swell.WaveletContributions.BlipContributions;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
-import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
@@ -25,6 +24,7 @@ import org.waveprotocol.wave.model.version.HashedVersionZeroFactoryImpl;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.waveref.InvalidWaveRefException;
 import org.waveprotocol.wave.model.waveref.WaveRef;
+import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -71,7 +71,7 @@ public final class ContributionsServlet extends HttpServlet {
   private final SessionManager sessionManager;
 
   HashedVersionFactory HASHER =
-      new HashedVersionZeroFactoryImpl(new IdURIEncoderDecoder(new ClientPercentEncoderDecoder()));
+      new HashedVersionZeroFactoryImpl(new IdURIEncoderDecoder(new JavaUrlCodec()));
 
   static class DeltaToContributionsReceiver implements Receiver<TransformedWaveletDelta> {
 
