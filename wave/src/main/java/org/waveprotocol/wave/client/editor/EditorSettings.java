@@ -82,6 +82,7 @@ public class EditorSettings {
   private boolean useWhitelistInEditor = false;
   private boolean useWebkitCompositionEvents = true;
   private int closeSuggestionsMenuDelayMs = 500;
+  private boolean showDebugPasteBuffer = false;
 
   public boolean hasDebugDialog() {
     return hasDebugDialog;
@@ -113,6 +114,10 @@ public class EditorSettings {
 
   public int closeSuggestionsMenuDelayMs() {
     return closeSuggestionsMenuDelayMs;
+  }
+
+  public boolean showDebugPasetBuffer() {
+    return showDebugPasteBuffer;
   }
 
   public EditorSettings setHasDebugDialog(boolean hasDebugDialog) {
@@ -153,6 +158,11 @@ public class EditorSettings {
 
   public EditorSettings setCloseSuggestionsMenuDelayMs(int closeSuggestionsMenuDelayMs) {
     this.closeSuggestionsMenuDelayMs = closeSuggestionsMenuDelayMs;
+    return this;
+  }
+
+  public EditorSettings setShowDebugPasteBuffer(boolean show) {
+    this.showDebugPasteBuffer = show;
     return this;
   }
 }
