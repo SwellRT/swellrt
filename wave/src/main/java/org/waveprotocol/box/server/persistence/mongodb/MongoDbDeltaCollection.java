@@ -347,19 +347,19 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   @Override
   public WaveletContributions loadContributions() throws PersistenceException {
-    LOG.info("Wavelet contributions storage is not yet available");
+    LOG.fine("Wavelet contributions storage is not yet available");
     return null;
   }
 
   @Override
   public WaveletContributions loadContributionsForVersion(long version)
       throws PersistenceException {
-    LOG.info("Wavelet contributions storage is not yet available");
+    LOG.fine("Wavelet contributions storage is not yet available");
     return null;
   }
 
   @Override
   public void storeContributions(WaveletContributions contributions) throws PersistenceException {
-    LOG.info("Wavelet contributions storage is not yet available");
+    LOG.fine("Wavelet contributions storage is not yet available");
   }
 }
