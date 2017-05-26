@@ -60,6 +60,7 @@ import org.waveprotocol.box.server.stat.RequestScopeFilter;
 import org.waveprotocol.box.server.stat.StatuszServlet;
 import org.waveprotocol.box.server.stat.TimingFilter;
 import org.waveprotocol.box.server.swell.ContributionsServlet;
+import org.waveprotocol.box.server.swell.VersionServlet;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
@@ -230,6 +231,9 @@ public class ServerMain {
 
     // Contributions
     server.addServlet("/contrib/*", ContributionsServlet.class);
+
+    // Contributions
+    server.addServlet("/version/*", VersionServlet.class);
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {
