@@ -376,6 +376,99 @@ class DeltaStoreBasedWaveletState implements WaveletState {
         "invalid end version");
   }
 
+  private static class DeltaRecordTrackerReceiver implements Receiver<WaveletDeltaRecord> {
+
+    Receiver<WaveletDeltaRecord> target;
+    WaveletDeltaRecord lastDelta = null;
+
+    public DeltaRecordTrackerReceiver(Receiver<WaveletDeltaRecord> target) {
+      this.target = target;
+    }
+
+    @Override
+    public boolean put(WaveletDeltaRecord delta) {
+      lastDelta = delta;
+      return target.put(delta);
+    }
+
+  }
+
+  /**
+   * A smart method to read a range of deltas from database in one request and
+   * maybe some others from in memory cache (those deltas not yet persisted).
+   * <p>
+   * Use instead of former method
+   * {@link #readDeltasInRange(WaveletDeltaRecordReader, ConcurrentNavigableMap, HashedVersion, HashedVersion, Receiver)
+   * for efficient storages like MongoDB
+   * <p><br>
+   * Look up deltas in storage first, then look up in memory
+   * if is necessary the rest of the range
+   * <p>
+   * <pre>
+   * |---- stored deltas ---|--- cached deltas ---|
+   *            |-----requested range---|
+   *           start                    end
+   * </pre>
+   *
+   *
+   * @param reader
+   * @param cachedDeltas
+   * @param startVersion
+   * @param endVersion
+   * @param receiver
+   * @throws IOException
+   */
+  private static void readDeltasInRangeSmart(WaveletDeltaRecordReader reader,
+      ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas,
+      HashedVersion startVersion, HashedVersion endVersion, Receiver<WaveletDeltaRecord> receiver)
+      throws IOException {
+
+    DeltaRecordTrackerReceiver internalReceiver = new DeltaRecordTrackerReceiver(receiver);
+
+    reader.getDeltasInRange(startVersion.getVersion(), endVersion.getVersion(), internalReceiver);
+
+    HashedVersion startVersionCache = null;
+    HashedVersion endVersionCache = null;
+
+    if (internalReceiver.lastDelta == null) {
+      startVersionCache = startVersion;
+      endVersionCache = endVersion;
+    } else if (internalReceiver.lastDelta.getResultingVersion().getVersion() < endVersion
+        .getVersion()) {
+      startVersionCache = internalReceiver.lastDelta.getResultingVersion();
+      endVersionCache = endVersion;
+    } else {
+      return; // all deltas have been collected from storage
+    }
+
+    WaveletDeltaRecord delta = internalReceiver.lastDelta;
+    if (cachedDeltas != null) {
+
+      // Read deltas range from cache
+      delta = cachedDeltas.get(startVersionCache);
+      Preconditions.checkArgument(
+          delta != null && delta.getAppliedAtVersion().equals(startVersionCache),
+          "invalid start version");
+      for (;;) {
+        if (!receiver.put(delta)) {
+          return;
+        }
+        if (delta.getResultingVersion().getVersion() >= endVersion.getVersion()) {
+          break;
+        }
+        delta = cachedDeltas.get(delta.getResultingVersion());
+        if (delta == null) {
+          break;
+        }
+      }
+    }
+
+    Preconditions.checkArgument(
+        delta != null && delta.getResultingVersion().equals(endVersionCache),
+        "invalid end version");
+
+  }
+
   private static WaveletDeltaRecord getDelta(WaveletDeltaRecordReader reader,
       ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas,
       HashedVersion version) throws IOException {
@@ -618,34 +711,25 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     final HashedVersion endVersion, final Receiver<TransformedWaveletDelta> receiver) {
     try {
 
-      deltasAccess.getDeltasInRange(startVersion.getVersion(), endVersion.getVersion(), new Receiver<WaveletDeltaRecord>() {
 
-        @Override
-        public boolean put(WaveletDeltaRecord delta) {
-
-          if (delta.getAppliedAtVersion().getVersion() == startVersion.getVersion())
-            Preconditions.checkArgument(delta.getAppliedAtVersion().equals(startVersion),
-                "invalid start version");
-
-
-          if (delta.getResultingVersion().getVersion() == endVersion.getVersion())
-            Preconditions.checkArgument(delta.getResultingVersion().equals(endVersion),
-                "invalid end version");
-
-          return receiver.put(delta.getTransformedDelta());
-        }
-
-      });
-
-      /*
-      readDeltasInRange(deltasAccess, cachedDeltas, startVersion, endVersion,
+      readDeltasInRangeSmart(deltasAccess, cachedDeltas, startVersion, endVersion,
           new Receiver<WaveletDeltaRecord>() {
             @Override
             public boolean put(WaveletDeltaRecord delta) {
+
+              if (delta.getAppliedAtVersion().getVersion() == startVersion.getVersion())
+                Preconditions.checkArgument(delta.getAppliedAtVersion().equals(startVersion),
+                    "invalid start version");
+
+
+              if (delta.getResultingVersion().getVersion() == endVersion.getVersion())
+                Preconditions.checkArgument(delta.getResultingVersion().equals(endVersion),
+                    "invalid end version");
+
               return receiver.put(delta.getTransformedDelta());
             }
           });
-       */
+
 
     } catch (IOException e) {
       throw new RuntimeIOException(new IOException(format("Start version : %s, end version: %s",
@@ -696,10 +780,11 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     Preconditions.checkArgument(startVersion.getVersion() < endVersion.getVersion());
     try {
 
-      deltasAccess.getDeltasInRange(startVersion.getVersion(), endVersion.getVersion(), new Receiver<WaveletDeltaRecord>() {
-
+      readDeltasInRangeSmart(deltasAccess, cachedDeltas, startVersion, endVersion,
+          new Receiver<WaveletDeltaRecord>() {
         @Override
         public boolean put(WaveletDeltaRecord delta) {
+
           if (delta.getAppliedAtVersion().getVersion() == startVersion.getVersion())
             Preconditions.checkArgument(delta.getAppliedAtVersion().equals(startVersion),
                 "invalid start version");
@@ -709,21 +794,9 @@ class DeltaStoreBasedWaveletState implements WaveletState {
             Preconditions.checkArgument(delta.getResultingVersion().equals(endVersion),
                 "invalid end version");
 
-
           return receiver.put(delta.getAppliedDelta());
         }
-
       });
-
-      // Old method to read deltas one by one
-      /*
-      readDeltasInRange(deltasAccess, cachedDeltas, startVersion, endVersion, new Receiver<WaveletDeltaRecord>() {
-        @Override
-        public boolean put(WaveletDeltaRecord delta) {
-
-        }
-      });
-      */
 
     } catch (IOException e) {
       throw new RuntimeIOException(new IOException(format("Start version : %s, end version: %s",
@@ -828,4 +901,5 @@ class DeltaStoreBasedWaveletState implements WaveletState {
   public ReadableWaveletContributions getContributions() {
     return contributions;
   }
+
 }

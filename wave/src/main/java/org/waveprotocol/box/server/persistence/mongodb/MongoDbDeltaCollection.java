@@ -272,8 +272,10 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, 1);
 
     DBObject query = createWaveletDBQuery();
+    query.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION,
+        new BasicDBObject("$gte", startVersion));
     query.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION,
-        new BasicDBObject("$gt", startVersion).append("$lte", endVersion));
+        new BasicDBObject("$lte", endVersion));
 
     DBCursor result = deltasCollection.find(query).sort(sort);
 
