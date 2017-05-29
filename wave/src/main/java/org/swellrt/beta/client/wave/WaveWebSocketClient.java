@@ -332,9 +332,11 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
             + submitRequestCallbacks.countEntries() + " entries");
       }
     } else if ("RpcFinished".equals(messageType)) {
+      RpcFinished m = wrapper.<RpcFinished> getPayload();
         if (callback != null) {
-           callback.onFinished(wrapper.<RpcFinished>getPayload());
+        callback.onFinished(m);
         }
+      setState(ConnectState.ERROR, "Server has closed the RPC connection: " + m.getErrorText());
     } else if ("ProtocolAuthenticationResult".equals(messageType)) {
       if (startCallback != null) {
         startCallback.onStart();
