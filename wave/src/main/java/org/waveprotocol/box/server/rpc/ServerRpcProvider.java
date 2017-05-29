@@ -205,7 +205,8 @@ public class ServerRpcProvider {
     @Override
     public void cancel() {
       // remove itself from the registry of ws connections
-      provider.wsConnectionRegistry.invalidate(connectionId);
+      if (provider.wsConnectionRegistry.asMap().containsKey(connectionId))
+        provider.wsConnectionRegistry.invalidate(connectionId);
     }
 
     protected void expectMessages(MessageExpectingChannel channel) {
