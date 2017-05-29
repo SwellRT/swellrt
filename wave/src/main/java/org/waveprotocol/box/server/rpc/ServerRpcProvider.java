@@ -24,13 +24,15 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 import javax.servlet.DispatcherType;
@@ -72,6 +74,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -112,7 +116,9 @@ public class ServerRpcProvider {
   private final String sslKeystorePath;
   private final String sslKeystorePassword;
 
-  private final Map<String, WebSocketConnection> wsConnectionRegistry = new HashMap<String, WebSocketConnection>();
+  private final Cache<String, WebSocketConnection> wsConnectionRegistry = CacheBuilder.newBuilder()
+      .expireAfterAccess(24, TimeUnit.HOURS).build();
+
 
   // Mapping from incoming protocol buffer type -> specific handler.
   private final Map<Descriptors.Descriptor, RegisteredServiceMethod> registeredServices = Maps
@@ -199,7 +205,7 @@ public class ServerRpcProvider {
     @Override
     public void cancel() {
       // remove itself from the registry of ws connections
-      provider.wsConnectionRegistry.remove(connectionId);
+      provider.wsConnectionRegistry.invalidate(connectionId);
     }
 
     protected void expectMessages(MessageExpectingChannel channel) {
@@ -682,23 +688,34 @@ public class ServerRpcProvider {
             loggedInUser = provider.sessionManager.getLoggedInUser(token);
           }
 
-          String connectionId = null;
-          if (token != null)
-            connectionId = token +  (loggedInUser != null ? ":" + loggedInUser.getAddress() : "");
-
           WebSocketConnection wsConnection = null;
 
-          if (connectionId != null) {
-            synchronized (this) {
-              if (!provider.wsConnectionRegistry.containsKey(connectionId)) {
-                provider.wsConnectionRegistry.put(connectionId,
-                    new WebSocketConnection(connectionId, loggedInUser, provider));
-              }
-              wsConnection = provider.wsConnectionRegistry.get(connectionId);
+          if (token != null) {
+
+            try {
+
+              final String connectionId = token
+                  + (loggedInUser != null ? ":" + loggedInUser.getAddress() : "");
+
+              final ParticipantId participantId = loggedInUser;
+
+              wsConnection = provider.wsConnectionRegistry.get(connectionId,
+                  new Callable<WebSocketConnection>() {
+
+                    @Override
+                    public WebSocketConnection call() throws Exception {
+                      return new WebSocketConnection(connectionId, participantId, provider);
+                    }
+
+                  });
+
+            } catch (ExecutionException e) {
+              LOG.info("Error creating WebSocket connection ", e);
             }
 
           } else {
-            wsConnection = new WebSocketConnection(connectionId, loggedInUser, provider);
+            // Transient WebSocketConnection
+            wsConnection = new WebSocketConnection(null, loggedInUser, provider);
           }
 
           return wsConnection.getWebSocketServerChannel();
