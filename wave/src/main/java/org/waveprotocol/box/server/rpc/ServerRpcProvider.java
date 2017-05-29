@@ -317,7 +317,8 @@ public class ServerRpcProvider {
                     boolean failed = message instanceof Rpc.RpcFinished
                         && ((Rpc.RpcFinished) message).getFailed();
                     if (failed) {
-                      LOG.fine("error = " + ((Rpc.RpcFinished) message).getErrorText());
+                      LOG.info("Sending RpcFinished with error: "
+                          + ((Rpc.RpcFinished) message).getErrorText());
                     }
                     activeRpcs.remove(sequenceNo);
                     cancel();
