@@ -108,47 +108,53 @@ public class TransientSessionFilter  implements Filter {
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse res = (HttpServletResponse) response;
 
-    Cookie tsCookie = req.getCookies() != null ? getTSCookie(req.getCookies()) : null;
+    // Only set session for some HTTP methods to avoid redundant set-cookie
+    // headers
+    if (req.getMethod().equalsIgnoreCase("GET")
+        || req.getMethod().equalsIgnoreCase("POST")
+        || req.getMethod().equalsIgnoreCase("DELETE")) {
 
-    String urlPart = null;
-    if (req.getQueryString() != null
-        && req.getQueryString().contains(QUERY_PARAM_NAME + "=")) {
-      urlPart = req.getQueryString();
-    } else if (req.getRequestURI() != null
-        && req.getRequestURI().contains(QUERY_PARAM_NAME + "=")) {
-      urlPart = req.getRequestURI();
-    }
+      Cookie tsCookie = req.getCookies() != null ? getTSCookie(req.getCookies()) : null;
 
-
-    String tsParam = null;
-    if (urlPart != null) {
-      String s = urlPart;
-      int start = s.indexOf(QUERY_PARAM_NAME + "=") + QUERY_PARAM_NAME.length() + 1;
-      int end = s.indexOf(";", start) > 0 ? s.indexOf(";", start) : urlPart.length();
-
-      s = s.substring(start,end);
-      if (s != null && !s.isEmpty())
-        tsParam = s;
-    }
-
-
-    String tsessionId = null;
-
-    if (tsCookie == null) {
-      if (tsParam == null) {
-        tsessionId = newId(req, System.currentTimeMillis());
-        tsCookie = new Cookie(confCookieName, tsessionId);
-        tsCookie.setDomain(confCookieDomain);;
-        tsCookie.setMaxAge(-1);
-        res.addCookie(tsCookie);
-      } else {
-        tsessionId = tsParam;
+      String urlPart = null;
+      if (req.getQueryString() != null && req.getQueryString().contains(QUERY_PARAM_NAME + "=")) {
+        urlPart = req.getQueryString();
+      } else if (req.getRequestURI() != null
+          && req.getRequestURI().contains(QUERY_PARAM_NAME + "=")) {
+        urlPart = req.getRequestURI();
       }
-    } else {
-       tsessionId = tsCookie.getValue();
-    }
 
-    request.setAttribute(REQUEST_ATTR_TSESSION_ID, tsessionId);
+      String tsParam = null;
+      if (urlPart != null) {
+        String s = urlPart;
+        int start = s.indexOf(QUERY_PARAM_NAME + "=") + QUERY_PARAM_NAME.length() + 1;
+        int end = s.indexOf(";", start) > 0 ? s.indexOf(";", start) : urlPart.length();
+
+        s = s.substring(start, end);
+        if (s != null && !s.isEmpty())
+          tsParam = s;
+      }
+
+      String tsessionId = null;
+
+      if (tsCookie == null) {
+        if (tsParam == null) {
+          tsessionId = newId(req, System.currentTimeMillis());
+          tsCookie = new Cookie(confCookieName, tsessionId);
+          tsCookie.setDomain(confCookieDomain);
+          ;
+          tsCookie.setMaxAge(-1);
+          res.addCookie(tsCookie);
+        } else {
+          tsessionId = tsParam;
+        }
+      } else {
+        tsessionId = tsCookie.getValue();
+      }
+
+      request.setAttribute(REQUEST_ATTR_TSESSION_ID, tsessionId);
+
+    }
 
     try {
       chain.doFilter(request, response);
