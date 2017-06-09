@@ -40,7 +40,8 @@ public class ServiceFrontend implements ServiceBasis {
   public static final String STATUS_DISCONNECTED = WaveWebSocketClient.ConnectState.DISCONNECTED.toString();
   public static final String STATUS_ERROR = WaveWebSocketClient.ConnectState.ERROR.toString();
   public static final String STATUS_CONNECTING = WaveWebSocketClient.ConnectState.CONNECTING.toString();
-
+  public static final String STATUS_TURBULENCE = WaveWebSocketClient.ConnectState.TURBULENCE
+      .toString();
 
   @JsIgnore
   public static ServiceFrontend create(ServiceContext context) {
