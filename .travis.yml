@@ -16,5 +16,3 @@ script:
 
 after_success:
   - .travis/deploy.sh
-  on:
-    tags: true
