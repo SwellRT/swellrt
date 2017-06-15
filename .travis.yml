@@ -1,2 +1,19 @@
+sudo: required
+
+addons:
+  ssh_known_hosts:
+    - demo.swellrt.org
+    - assange.fdi.ucm.es
+
 language: java
 jdk: oraclejdk8
+
+services:
+  - docker
+
+script:
+  - ./gradlew clean jar prodWeb test createDistBin
+
+after_success:
+  - .travis/deploy.sh
+
