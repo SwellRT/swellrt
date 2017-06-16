@@ -27,7 +27,7 @@ if [ -n "$TRAVIS_TAG" ]; then
     echo "SwellRT version at wave/build.gradle is set to: $VERSION"
 fi
 
-if [[ "$TRAVIS_TAG" == *-alpha && "v$VERSION" === "$TRAVIS_TAG"]]; then
+if [[ "$TRAVIS_TAG" == *-alpha && "v$VERSION" == "$TRAVIS_TAG"]]; then
    echo "Creating docker image..."
    docker build -t p2pvalue/swellrt:"$VERSION" .
    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
