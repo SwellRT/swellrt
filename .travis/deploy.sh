@@ -22,7 +22,7 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
    docker push p2pvalue/swellrt
 fi
 
-if [[ "$TRAVIS_BRANCH" == "alpha-develop" && "$TRAVIS_TAG" == *-alpha ]]; then
+if [ "$TRAVIS_TAG" == *-alpha ]; then
    echo "Creating docker image..."
    docker build -t p2pvalue/swellrt:"$TRAVIS_TAG" .
    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
