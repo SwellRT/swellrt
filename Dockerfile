@@ -3,6 +3,8 @@ MAINTAINER SwellRT Community <swellrt@gmail.com>
 
 # SwellRT port
 EXPOSE 9898
+# JVM Remote Monitoring
+EXPOSE 5000
 
 ENV home /usr/local/swellrt/
 

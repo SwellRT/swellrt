@@ -2,12 +2,16 @@ version: '2'
 services:
   swellrt:
     image: p2pvalue/swellrt:latest
+    # Enable JVM monitoring
+    # command: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=5000 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false
     hostname: swellrt.<your_domain>
     restart: always
     depends_on:
       - mongo
     ports:
       - "127.0.0.1:9898:9898"
+      # Expose JVM monitoring port
+      # - "127.0.0.1:5000:5000"
     volumes:
       - ./swellrt/config:/usr/local/swellrt/config
       - ./swellrt/log:/usr/local/swellrt/log
