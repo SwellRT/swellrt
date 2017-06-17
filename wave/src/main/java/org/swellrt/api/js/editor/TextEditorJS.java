@@ -134,6 +134,10 @@ public class TextEditorJS extends JavaScriptObject {
       
       deleteText: function(range) {
          delegate.@org.swellrt.client.editor.TextEditor::deleteText(Lorg/waveprotocol/wave/client/doodad/annotation/jso/JsoRange;)(range); 
+      },
+      
+      getWidgets: function(type) {
+      	delegate.@org.swellrt.client.editor.TextEditor::getWidgets(Ljava/lang/String;)(type);
       }
 
     }; 

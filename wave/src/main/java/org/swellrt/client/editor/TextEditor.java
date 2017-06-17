@@ -976,4 +976,9 @@ public class TextEditor implements EditorUpdateListener {
     }
   }
   
+  
+  public JsArray<JsoWidget> getWidgets(String type) {
+	  return WidgetDoodad.getWidgets(editor.getDocument(), type);			  
+  }
+  
 }
