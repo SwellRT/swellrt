@@ -18,18 +18,18 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
 
   private List<SNode> list = new ArrayList<SNode>();
   private Proxy proxy = null;
-  
+
   @Override
   public Object get(int index) throws SException {
     SNode node = list.get(index);
     if (node instanceof SPrimitive)
       return ((SPrimitive) node).get();
-    
+
     return node;
   }
 
   @Override
-  public SNode getNode(int index) throws SException {
+  public SNode node(int index) throws SException {
     return list.get(index);
   }
 
@@ -44,13 +44,13 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
     list.add(index, value);
     return this;
   }
-  
+
   @Override
   public SList<SNode> add(Object object) throws SException {
     SNode node = SUtils.castToSNode(object);
     return add(node);
   }
-  
+
   @Override
   public SList<SNode> add(Object object, @JsOptional Object index) throws SException {
     SNode node = SUtils.castToSNode(object);
@@ -93,21 +93,26 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
   }
 
   @Override
-  public Object asNative() {
+  public Object js() {
     if (proxy == null)
       proxy = new Proxy(this, new SListProxyHandler());
     return proxy;
   }
-  
+
+  @Override
+  public Object json() {
+    return null;
+  }
+
   //
   // Js Proxy
   //
-  
+
   @Override
   public Proxy getJsProxy() {
-    return proxy;       
+    return proxy;
   }
-  
+
   @Override
   public void setJsProxy(Proxy proxy) {
     this.proxy = proxy;

@@ -38,7 +38,7 @@ public interface SList<T extends SNode> extends SNode {
    * @param key
    * @return
    */
-  public SNode getNode(int index) throws SException;
+  public SNode node(int index) throws SException;
   
   @JsIgnore
   public SList<T> add(SNode value) throws SException;
@@ -64,5 +64,4 @@ public interface SList<T extends SNode> extends SNode {
   @JsIgnore
   public Iterable<T> values();
   
-  Object asNative();
 }

@@ -39,7 +39,7 @@ public interface SMap extends SNode {
    * @param key
    * @return
    */
-  public SNode getNode(String key) throws SException;
+  public SNode node(String key) throws SException;
   
   @JsIgnore
   public SMap put(String key, SNode value) throws SException;
@@ -58,5 +58,5 @@ public interface SMap extends SNode {
   
   int size();
   
-  Object asNative();
+  Object js();
 }

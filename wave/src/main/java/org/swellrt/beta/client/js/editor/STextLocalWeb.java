@@ -112,4 +112,14 @@ public class STextLocalWeb implements STextWeb, STextLocal {
     // nothing to do
   }
 
+  @Override
+  public Object js() {
+    return null;
+  }
+
+  @Override
+  public Object json() {
+    return null;
+  }
+
 }

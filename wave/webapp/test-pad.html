@@ -182,10 +182,9 @@
       return service.open({ id : docId });
 
     })
-    .then(function(r) {
+    .then(function(_object) {
 
-      controller = r.controller;
-      object = controller; // sugar syntax
+      object = _object; // global var... yes, a bit nasty!
 
       setElementText("status", "OK");
       object.setStatusHandler(event => {

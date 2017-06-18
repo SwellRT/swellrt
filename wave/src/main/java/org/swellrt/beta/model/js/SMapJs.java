@@ -11,7 +11,7 @@ import org.waveprotocol.wave.client.common.util.JsoView;
 import com.google.gwt.core.client.JavaScriptObject;
 
 public class SMapJs implements SMap {
-	
+
 	public interface Func {
 		public void apply(String key, Object value);
 	}
@@ -19,23 +19,23 @@ public class SMapJs implements SMap {
 	private static native boolean isObject(JavaScriptObject jso) /*-{
 		return typeof jso == "object";
 	}-*/;
-	
+
 	private static native boolean isArray(JavaScriptObject jso) /*-{
 	    return Array.isArray(jso);
 	}-*/;
 
 	private static native boolean isPrimitive(JavaScriptObject jso) /*-{
-		
+
 		if (typeof jso == "number" ||
 			typeof jso == "boolean" ||
 			typeof jso == "string") {
-			
+
 			return true;
-		
+
 			}
-			
+
 		return false;
-	
+
 	}-*/;
 
 	private static native void iterateObject(JavaScriptObject jso, Func f) /*-{
@@ -45,68 +45,68 @@ public class SMapJs implements SMap {
 	       f.@org.swellrt.beta.model.js.SMapJs.Func::apply(Ljava/lang/String;Ljava/lang/Object;)(property, jso[property]);
 	      }
 	    }
-	
+
 	}-*/;
 
 	private static native void iterateArray(JavaScriptObject jso, Func f) /*-{
-	
+
 	    for (var i = 0; i < jso.lenght; i++) {
 	      f.@org.swellrt.beta.model.js.SMapJs.Func::apply(Ljava/lang/String;Ljava/lang/Object;)(i+"", jso[i]);
 	    }
 
 	}-*/;
-	 
 
-	
-	
+
+
+
 
 	private static SNode castToSNode(JavaScriptObject object) throws IllegalCastException {
 		if (object == null)
 			throw new IllegalCastException("Error casting a null javascript object");
-		
-		if (isPrimitive(object)) {			
+
+		if (isPrimitive(object)) {
 			// We assume primite JS values are transparently converted to Java primitives
-			return SUtils.castToSNode(object);			
+			return SUtils.castToSNode(object);
 		} else if (isObject(object)) {
-			return new SMapJs(object);		
-		} else if (isArray(object)) {			
+			return new SMapJs(object);
+		} else if (isArray(object)) {
 			// TBC
 			throw new IllegalCastException("Error casting from javascript to SNode");
 		}
 
 		throw new IllegalCastException("Error casting from javascript to SNode");
 	}
-	
-	
-	
-	
-	private static Object castToValue(JavaScriptObject object) throws IllegalCastException {		
+
+
+
+
+	private static Object castToValue(JavaScriptObject object) throws IllegalCastException {
 		if (object == null)
 			throw new IllegalCastException("Error casting a null javascript object");
-		
-		if (isPrimitive(object)) {			
+
+		if (isPrimitive(object)) {
 			return object;
 		} else if (isObject(object)) {
-			return new SMapJs(object);		
-		} else if (isArray(object)) {			
+			return new SMapJs(object);
+		} else if (isArray(object)) {
 			// TBC
 			throw new IllegalCastException("Error casting from javascript to value");
 		}
-		
+
 		throw new IllegalCastException("Error casting from javascript to value");
 	}
-	 
+
 	public static SMapJs create(JavaScriptObject jso) throws IllegalCastException {
 		if (jso == null || !isObject(jso)) {
 			throw new IllegalCastException("JavaScript type is not an object or it is null");
-		}		
+		}
 		return new SMapJs(jso);
-		
+
 	}
-	
+
 	private final JavaScriptObject jso;
 	private final JsoView jsv;
-	
+
 	protected SMapJs(JavaScriptObject jso) {
 		this.jso = jso;
 		this.jsv = JsoView.as(jso);
@@ -114,25 +114,25 @@ public class SMapJs implements SMap {
 
 	@Override
 	public Object get(String key) {
-		
+
 		if (key == null)
 			return null;
-		
+
 		try {
-			return castToValue(jsv.getJso(key));		
+			return castToValue(jsv.getJso(key));
 		} catch (IllegalCastException e) {
 			return null;
 		}
 	}
 
 	@Override
-	public SNode getNode(String key) {
-		
+	public SNode node(String key) {
+
 		if (key == null)
 			return null;
-		
+
 		try {
-			return castToSNode(jsv.getJso(key));		
+			return castToSNode(jsv.getJso(key));
 		} catch (IllegalCastException e) {
 			return null;
 		}
@@ -150,7 +150,7 @@ public class SMapJs implements SMap {
 
 	@Override
 	public void remove(String key) {
-		throw new IllegalStateException("Wrapped Javascript SNode's can't be mutated");	
+		throw new IllegalStateException("Wrapped Javascript SNode's can't be mutated");
 	}
 
 	@Override
@@ -160,22 +160,22 @@ public class SMapJs implements SMap {
 
 	@Override
 	public String[] keys() {
-		
+
 		ArrayList<String> keyList = new ArrayList<String>();
-		
+
 		iterateObject(this.jso, new Func() {
 			@Override
 			public void apply(String key, Object value) {
 				keyList.add(key);
-			}			
+			}
 		});
-		
+
 		return keyList.toArray(new String[keyList.size()]);
 	}
 
 	@Override
 	public void clear() {
-		throw new IllegalStateException("Wrapped Javascript SNode's can't be mutated");			
+		throw new IllegalStateException("Wrapped Javascript SNode's can't be mutated");
 	}
 
 	@Override
@@ -189,7 +189,12 @@ public class SMapJs implements SMap {
 	}
 
 	@Override
-	public Object asNative() {
+	public Object js() {
 		return jso;
 	}
+
+  @Override
+  public Object json() {
+    return jso;
+  }
 }

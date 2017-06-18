@@ -116,4 +116,14 @@ public class STextRemoteWeb extends STextRemote implements STextWeb {
       idoc.stopShowDiffs();
     }
   }
+
+  @Override
+  public Object js() {
+    return null;
+  }
+
+  @Override
+  public Object json() {
+    return null;
+  }
 }

@@ -152,11 +152,10 @@
       // Open the collaborative object to store text documents
       return service.open({ id : "demo-pad-list" });
     })
-    .then(function(r) {
+    .then(function(_object) {
 
-      controller = r.controller;
-      object = controller; // sugar syntax
-
+      object = _object; // global var... yes, a bit nasty!
+    
       if (!object.has("documents")) {
         // Create a live map
         object.put("documents", swellrt.Map.create());

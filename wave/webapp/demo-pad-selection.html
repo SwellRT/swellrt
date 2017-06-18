@@ -121,8 +121,8 @@
     window.menu.style.visibility = "hidden";
     editorElt.appendChild(window.menu);
 
-    swellrt.Annotation.Registry.define("@selection","selection");
-    swellrt.Annotation.Registry.setHandler("@selection", (type, annot, event) => {
+    swellrt.Editor.AnnotationRegistry.define("@selection","selection");
+    swellrt.Editor.AnnotationRegistry.setHandler("@selection", (type, annot, event) => {
 
       if (type == swellrt.Annotation.EVENT_ADDED) {
 
@@ -154,10 +154,9 @@
       // Open the collaborative object to store text documents
       return service.open({ id : "demo-pad-list" });
     })
-    .then(r => {
+    .then(_object => {
 
-      controller = r.controller;
-      object = controller.asNative();
+      object = _object.js(); // get Javascript view
 
       if (!object.documents) {
         // Create a live map

@@ -12,25 +12,26 @@ import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swellrt", name = "LocalObject")
 public class SObjectLocal implements SObject {
-  
-  
+
+
   private final Set<String> participants;
   private final SMap delegateMap;
 
   public static SObjectLocal create() {
     return new SObjectLocal(new SMapLocal());
   }
-  
+
   @JsIgnore
   public SObjectLocal(SMap map) {
     this.delegateMap = map;
     this.participants = new HashSet<String>();
   }
-  
+
   @Override
   public Object get(String key) throws SException {
     return delegateMap.get(key);
@@ -54,7 +55,7 @@ public class SObjectLocal implements SObject {
     delegateMap.remove(key);
   }
 
-  
+
   @Override
   public boolean has(String key) throws SException {
     return delegateMap.has(key);
@@ -66,20 +67,25 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public Object asNative() {
+  public Object js() {
     return new Proxy(delegateMap, new SMapProxyHandler());
   }
 
-
   @Override
-  public String getId() {   
+  public Object json() {
+    return null;
+  }
+
+  @JsProperty
+  @Override
+  public String getId() {
     return null;
   }
 
   @Override
   public void addParticipant(String participantId) {
     participants.add(participantId);
-    
+
   }
 
   @Override
@@ -93,8 +99,8 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public SNode getNode(String key) throws SException  {
-    return delegateMap.getNode(key);
+  public SNode node(String key) throws SException  {
+    return delegateMap.node(key);
   }
 
   @Override
@@ -124,17 +130,17 @@ public class SObjectLocal implements SObject {
 
   @Override
   public void setStatusHandler(StatusHandler h) {
-    // Ignore for local objects    
+    // Ignore for local objects
   }
 
   @Override
   public void setPublic(boolean isPublic) {
-    // Ignore for local objects    
+    // Ignore for local objects
   }
 
   @Override
-  public SMap getPrivateArea() {
+  public SMap getUserObject() {
     return null;
   }
-  
+
 }

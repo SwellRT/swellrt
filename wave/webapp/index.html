@@ -132,15 +132,10 @@
           id : "local.net/status-echo"
         });
       })
-      .then(function(r) {
-
-        // throw "TESTING ERROR";
-
-        var controller = r.controller;
+      .then(function(object) {
 
         if (!isProxySupported()) {
           // Using API without proxies
-          var object = controller;
           if (!object.has("signal")) {
             object.put("signal", (new Date()).toString());
             object.setPublic(true);
@@ -150,7 +145,7 @@
 
         } else {
           // Using API with proxies
-          var object = controller.asNative();
+          var object = object.js();
           if (!object.signal) {
               object.signal = (new Date()).toString();
               controller.setPublic(true);

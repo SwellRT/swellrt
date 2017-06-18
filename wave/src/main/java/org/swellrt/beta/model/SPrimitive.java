@@ -21,7 +21,7 @@ public class SPrimitive extends SNodeRemote {
   private static final String INTEGER_TYPE_PREFIX  = "i";
   private static final String DOUBLE_TYPE_PREFIX  = "d";
   private static final String JSO_TYPE_PREFIX  = "js";
-  
+
   private static final int TYPE_INT = 1;
   private static final int TYPE_DOUBLE = 2;
   private static final int TYPE_STRING = 3;
@@ -34,15 +34,15 @@ public class SPrimitive extends SNodeRemote {
   private final String stringValue;
   private final Boolean boolValue;
   private final JavaScriptObject jsoValue;
-  
-  private final SNodeAccessControl accessControl; 
 
-  /** 
+  private final SNodeAccessControl accessControl;
+
+  /**
    * the key associated with this value in its parent container
    * if it is a map.
    */
   private String nameKey = null;
-  
+
   @JsIgnore
   public static String asString(SNode node) {
     try{
@@ -51,11 +51,11 @@ public class SPrimitive extends SNodeRemote {
       }
     } catch (ClassCastException e)
     {
-      
+
     }
     return null;
   }
-  
+
   @JsIgnore
   public static Double asDouble(SNode node) {
     try{
@@ -64,11 +64,11 @@ public class SPrimitive extends SNodeRemote {
       }
     } catch (ClassCastException e)
     {
-      
+
     }
     return null;
   }
-  
+
   @JsIgnore
   public static Integer asInt(SNode node) {
     try{
@@ -77,11 +77,11 @@ public class SPrimitive extends SNodeRemote {
       }
     } catch (ClassCastException e)
     {
-      
+
     }
     return null;
   }
-  
+
   @JsIgnore
   public static Boolean asBoolean(SNode node) {
     try{
@@ -90,36 +90,36 @@ public class SPrimitive extends SNodeRemote {
       }
     } catch (ClassCastException e)
     {
-      
+
     }
     return null;
   }
 
-  
-  
+
+
   /**
    * Deserialize a SPrimitive value
    * <p>
-   * @param s the serialized representation of the primitive value. 
+   * @param s the serialized representation of the primitive value.
    * @return the primitive value or null if is not a valid serialized string
    */
   public static SPrimitive deserialize(String s) {
     Preconditions.checkArgument(s != null && !s.isEmpty(), "Null or empty string");
-    
+
     SNodeAccessControl acToken = null;
     if (SNodeAccessControl.isToken(s)) {
       int firstSepIndex = s.indexOf(SEPARATOR);
-      acToken = SNodeAccessControl.deserialize(s.substring(0, firstSepIndex));     
+      acToken = SNodeAccessControl.deserialize(s.substring(0, firstSepIndex));
       s = s.substring(firstSepIndex+1);
     } else {
       acToken = new SNodeAccessControl();
     }
-    
-    
+
+
     if (s.startsWith(STRING_TYPE_PREFIX+SEPARATOR)) {
       return new SPrimitive(s.substring(2), acToken);
     }
-    
+
     if (s.startsWith(INTEGER_TYPE_PREFIX+SEPARATOR)) {
       try {
        return new SPrimitive(Integer.parseInt(s.substring(2)), acToken);
@@ -137,45 +137,45 @@ public class SPrimitive extends SNodeRemote {
         return null;
       }
     }
-    
+
     if (s.startsWith(BOOLEAN_TYPE_PREFIX+SEPARATOR)) {
        return new SPrimitive(Boolean.parseBoolean(s.substring(2)), acToken);
     }
-    
+
     if (s.startsWith(JSO_TYPE_PREFIX+SEPARATOR)) {
       return new SPrimitive(JsonUtils.<JavaScriptObject>safeEval(s.substring(3)), acToken);
     }
-    
+
     return null;
   }
-  
-  
+
+
   public String serialize() {
-    
+
     String token = accessControl.serialize();
     if (!token.isEmpty())
       token += SEPARATOR;
-      
-    
+
+
     if (type == TYPE_STRING)
       return token + STRING_TYPE_PREFIX+SEPARATOR+stringValue;
-    
+
     if (type == TYPE_BOOL)
       return token + BOOLEAN_TYPE_PREFIX+SEPARATOR+Boolean.toString(boolValue);
-    
+
     if (type == TYPE_INT)
       return token + INTEGER_TYPE_PREFIX+SEPARATOR+Integer.toString(intValue);
-    
+
     if (type == TYPE_DOUBLE)
       return token + DOUBLE_TYPE_PREFIX+SEPARATOR+Double.toString(doubleValue);
-    
+
     if (type == TYPE_JSO)
       return token + JSO_TYPE_PREFIX+SEPARATOR+JsonUtils.stringify(jsoValue);
-    
-    return null;    
+
+    return null;
   }
 
-  
+
   @JsIgnore
   public SPrimitive(int value, SNodeAccessControl token) {
     type = TYPE_INT;
@@ -195,7 +195,7 @@ public class SPrimitive extends SNodeRemote {
     stringValue = null;
     boolValue = null;
     jsoValue = null;
-    accessControl = token;    
+    accessControl = token;
   }
 
   @JsIgnore
@@ -206,7 +206,7 @@ public class SPrimitive extends SNodeRemote {
     stringValue = value;
     boolValue = null;
     jsoValue = null;
-    accessControl = token;    
+    accessControl = token;
   }
 
   @JsIgnore
@@ -217,7 +217,7 @@ public class SPrimitive extends SNodeRemote {
     stringValue = null;
     boolValue = value;
     jsoValue = null;
-    accessControl = token;    
+    accessControl = token;
   }
 
   @JsIgnore
@@ -228,7 +228,7 @@ public class SPrimitive extends SNodeRemote {
     stringValue = null;
     boolValue = null;
     jsoValue = value;
-    accessControl = token;    
+    accessControl = token;
   }
 
   @JsProperty
@@ -255,24 +255,24 @@ public class SPrimitive extends SNodeRemote {
 
     return null;
   }
-  
+
   @Override
   public String toString() {
-    return "Primitive Value ["+ serialize()+"]";    
+    return "Primitive Value ["+ serialize()+"]";
   }
 
   @JsIgnore
   public void setNameKey(String nameKey) {
     this.nameKey = nameKey;
   }
-  
+
   @JsIgnore
   public String getNameKey() {
     return this.nameKey;
   }
 
-  
-  
+
+
   /**
    * Check if this value can be written by a participant
    * @param node
@@ -283,7 +283,7 @@ public class SPrimitive extends SNodeRemote {
   public boolean canWrite(ParticipantId participantId) {
     return accessControl.canWrite(participantId);
   }
-  
+
   /**
    * Check if this value can be read by a participant
    * @param node
@@ -294,8 +294,18 @@ public class SPrimitive extends SNodeRemote {
   public boolean canRead(ParticipantId participantId) {
     return accessControl.canRead(participantId);
   }
-  
+
   protected SNodeAccessControl getNodeAccessControl() {
     return accessControl;
+  }
+
+  @Override
+  public Object js() {
+    return get();
+  }
+
+  @Override
+  public Object json() {
+    return get();
   }
 }

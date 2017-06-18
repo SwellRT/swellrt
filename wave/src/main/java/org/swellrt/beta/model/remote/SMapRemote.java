@@ -17,29 +17,29 @@ import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 
 
 public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy, ObservableBasicMap.Listener<String, SNodeRemote> {
-  
-  
+
+
   public static SMapRemote create(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
     return new SMapRemote(object, substrateId, map);
   }
-  
+
   /** the underlying wave map */
-  private final ObservableBasicMap<String, SNodeRemote> map;  
-  
-  /** cache of SNodeRemote instances in the map */ 
+  private final ObservableBasicMap<String, SNodeRemote> map;
+
+  /** cache of SNodeRemote instances in the map */
   private final HashMap<String, SNodeRemote> cache;
-  
+
   private Proxy proxy;
 
-      
+
   protected SMapRemote(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
     super(substrateId, object);
     this.cache = new HashMap<String, SNodeRemote>();
     this.map = map;
     this.map.addListener(this);
   }
-  
-  
+
+
   @Override
   protected void clearCache() {
     cache.clear();
@@ -47,7 +47,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       if (n instanceof SNodeRemoteContainer)
         ((SNodeRemoteContainer) n).clearCache();
   }
-  
+
   /**
    * Perform a sanity check. Raise an exception if this node
    * can't perform the operation or the container object is
@@ -59,19 +59,19 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   protected void check() throws SException {
     if (this.getParent() == null)
       throw new SException(SException.NOT_ATTACHED_NODE);
-    
+
     getObject().check();
   }
-  
+
   @Override
   public void clear() throws SException {
     check();
-    
+
     Set<String> keys = map.keySet();
     for (String k: keys) {
       map.remove(k);
     }
-    
+
     cache.clear();
   }
 
@@ -81,48 +81,48 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     return map.keySet().contains(key);
   }
 
-  @Override 
-  public SNode getNode(String key) throws SException {
+  @Override
+  public SNode node(String key) throws SException {
 
     // Don't call check here, this is a read operation!
-    
+
     if (!map.keySet().contains(key))
       return null;
-    
+
     SNodeRemote node = null;
-    
+
     if (!cache.containsKey(key)) {
       node = map.get(key);
-      
+
       if (node instanceof SPrimitive) {
         ((SPrimitive) node).setNameKey(key);
       }
-      
+
       // This should be always true!
       if (node instanceof SNodeRemote)
-       ((SNodeRemote) node).attach(this); // lazily set parent
-      
+       node.attach(this); // lazily set parent
+
       cache.put(key, node);
-    
+
     } else {
       node = cache.get(key);
     }
-    
+
     return node;
   }
 
   @Override
   public Object get(String key) throws SException {
 
-    SNode node = getNode(key);
+    SNode node = node(key);
     getObject().checkReadable(node);
-    
+
     if (node == null)
       return null;
-        
+
     if (node instanceof SPrimitive)
       return ((SPrimitive) node).get();
-    
+
     return node;
   }
 
@@ -140,7 +140,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public SMap put(String key, SNode value) throws SException {
     check();
-    getObject().checkWritable(getNode(key));
+    getObject().checkWritable(node(key));
     SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
     map.put(key, remoteValue);
     cache.put(key, remoteValue);
@@ -152,26 +152,26 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
      SNode node = SUtils.castToSNode(value);
      return put(key, node);
   }
- 
- 
+
+
   @Override
   public void remove(String key) throws SException {
     check();
-    getObject().checkWritable(getNode(key));
-    
+    getObject().checkWritable(node(key));
+
     if (!map.keySet().contains(key))
       return;
-    
+
     SNodeRemote nr = map.get(key);
     if (nr instanceof SNodeRemoteContainer) {
       SNodeRemoteContainer nrc = (SNodeRemoteContainer) nr;
       nrc.deattach();
-    }   
+    }
 
     map.remove(key);
     cache.remove(key);
-    
-    getObject().deleteNode(nr);    
+
+    getObject().deleteNode(nr);
   }
 
   @Override
@@ -180,10 +180,15 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   }
 
   @Override
-  public Object asNative() {
+  public Object js() {
     if (proxy == null)
       proxy = new Proxy(this, new SMapProxyHandler());
     return proxy;
+  }
+
+  @Override
+  public Object json() {
+    return null;
   }
 
   @Override
@@ -195,53 +200,53 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   public Proxy getJsProxy() {
 	  return this.proxy;
   }
-  
+
   //
   // Event handling
   //
-  
+
 
   @Override
   public void onEntrySet(String key, SNodeRemote oldValue, SNodeRemote newValue) {
      //System.out.println("Map("+this.toString()+") onEntrySet [key="+key+" oldValue="+(oldValue != null ? oldValue : "null")+ " newValue="+(newValue != null ? newValue : "null")+"]");
      try {
-       
+
        check(); // Ignore events if state is inconsistent
-       
+
        SNode eventValue = null;
        int eventType = -1;
-      
+
        SNode cachedValue = cache.remove(key); // refresh cache in any case
-       
+
        // on removed
        if (newValue == null) {
-         eventType = SEvent.REMOVED_VALUE;        
+         eventType = SEvent.REMOVED_VALUE;
          if (cachedValue instanceof SNodeRemoteContainer)
-             ((SNodeRemoteContainer) cachedValue).deattach();           
+             ((SNodeRemoteContainer) cachedValue).deattach();
 
          eventValue = cachedValue;
-       
+
        // on added
        } else if (oldValue == null) {
          eventType = SEvent.ADDED_VALUE;
-         // ensure attach the node, set keyname       
-         eventValue = getNode(key); 
-         
-       // on updated  
+         // ensure attach the node, set keyname
+         eventValue = node(key);
+
+       // on updated
        } else {
          eventType = SEvent.UPDATED_VALUE;
          // ensure attach the node, set keyname
-         eventValue = getNode(key);
-         
+         eventValue = node(key);
+
        }
-      
+
        SEvent e = new SEvent(eventType, this, key, eventValue);
        triggerEvent(e);
-       
-     } catch (SException e) {       
+
+     } catch (SException e) {
        // Swallow it
      }
-     
+
   }
 
   @Override

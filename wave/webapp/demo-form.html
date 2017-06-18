@@ -95,7 +95,7 @@
   swellrt.onReady(function(service) {
     window.service;
 
-    // Put on eye on live commucation turbulences
+    // Put on eye on live communication turbulence
     service.addConnectionHandler(connectionHandler);
 
     service.login({
@@ -104,13 +104,12 @@
     })
     .then(r=>{
       return service.open({
-        id : "demo-form-1"
+        id : "demo-form-3"
       });
     })
-    .then(r => {
+    .then(swellObject => {
 
-      controller = r.controller;
-      object = controller.asNative();
+      object = swellObject.js();
 
       var lastVersion;
 
@@ -131,7 +130,7 @@
         };
 
         // Make public after initialization
-        controller.setPublic(true);
+        swellObject.setPublic(true);
         lastVersion = 0;
 
       } else {

@@ -164,14 +164,16 @@
 
   <script>
 
-    // Configure websocket transport
-    __atmosphere_config = {
-      logLevel: 'error' // 'info', 'debug' and 'error'
-    }
+    __swellrt_config = {
+        websocketDebugLog: true,
+        captureExceptions: false,
+        websocketHeartbeatInterval: 30000
+    };
 
     // Configure editor globals
     __swellrt_editor_config = {
-      enableLog: true
+      enableLog: false,
+      webkitComposition: false
     };
   </script>
 
@@ -197,10 +199,9 @@
       // Open the collaborative object to store text documents
       return service.open({ id : "demo-pad-list" });
     })
-    .then(function(r) {
+    .then(function(_object) {
 
-      controller = r.controller;
-      object = controller; // sugar syntax
+      object = _object; // global var... yes, a bit nasty!
 
       if (!object.has("documents")) {
         // Create a live map

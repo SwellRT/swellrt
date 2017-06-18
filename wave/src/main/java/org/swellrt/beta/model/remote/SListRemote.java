@@ -18,35 +18,35 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   public static SListRemote create(SObjectRemote object, SubstrateId substrateId, ObservableElementList<SNodeRemote, SNodeRemote> list) {
     return new SListRemote(object, substrateId, list);
   }
-    
+
   private final ObservableElementList<SNodeRemote, SNodeRemote> list;
-  
+
   private Proxy proxy;
 
-  
+
   protected SListRemote(SObjectRemote object, SubstrateId substrateId, ObservableElementList<SNodeRemote, SNodeRemote> list) {
     super(substrateId, object);
     this.list = list;
     this.list.addListener(this);
   }
-  
+
   @Override
-  public Object get(int index) throws SException {    
-    
-    SNode node = getNode(index);
+  public Object get(int index) throws SException {
+
+    SNode node = node(index);
     getObject().checkReadable(node);
-    
+
     if (node == null)
       return null;
-        
+
     if (node instanceof SPrimitive)
       return ((SPrimitive) node).get();
-    
+
     return node;
   }
 
   @Override
-  public SNode getNode(int index) throws SException {
+  public SNode node(int index) throws SException {
     try {
       return list.get(index);
     } catch (IndexOutOfBoundsException e) {
@@ -64,7 +64,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
     return this;
   }
 
-    
+
   @Override
   public SList<SNodeRemote> add(Object value) throws SException {
     SNode node = SUtils.castToSNode(value);
@@ -76,7 +76,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
     check();
     if (index >= 0 && index <= this.list.size()) {
       SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
-      this.list.add(index, remoteValue);  
+      this.list.add(index, remoteValue);
     } else {
       throw new SException(SException.OUT_OF_BOUNDS_INDEX);
     }
@@ -88,25 +88,25 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
     SNode node = SUtils.castToSNode(value);
     if (index != null) {
       return add(node, (int) index);
-    } else {      
+    } else {
       return add(node);
     }
   }
-  
+
   @Override
   public SList<SNodeRemote> remove(int index) throws SException {
     check();
-    SNodeRemote node = (SNodeRemote) getNode(index);
+    SNodeRemote node = (SNodeRemote) node(index);
     getObject().checkWritable(node);
-    
+
     if (node instanceof SNodeRemoteContainer) {
       SNodeRemoteContainer nrc = (SNodeRemoteContainer) node;
       nrc.deattach();
     }
-    
-    this.list.remove(node);    
-    getObject().deleteNode(node);    
-    
+
+    this.list.remove(node);
+    getObject().deleteNode(node);
+
     return this;
   }
 
@@ -126,21 +126,26 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public Object asNative() {
+  public Object js() {
     if (proxy == null)
       proxy = new Proxy(this, new SListProxyHandler());
     return proxy;
   }
 
-  //  
-  // Node remote container 
+  @Override
+  public Object json() {
+    return null;
+  }
+
   //
-  
+  // Node remote container
+  //
+
   @Override
   protected void clearCache() {
-    // TODO Auto-generated method stub    
+    // TODO Auto-generated method stub
   }
-  
+
   /**
    * Perform a sanity check. Raise an exception if this node
    * can't perform the operation or the container object is
@@ -152,35 +157,35 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   protected void check() throws SException {
     if (this.getParent() == null)
       throw new SException(SException.NOT_ATTACHED_NODE);
-    
+
     getObject().check();
   }
-  
+
   //
   // Js Proxies
   //
 
   @Override
   public void setJsProxy(Proxy proxy) {
-    this.proxy = proxy;    
+    this.proxy = proxy;
   }
 
   @Override
   public Proxy getJsProxy() {
     return this.proxy;
   }
-  
+
   //
   // Event handling
   //
-  
+
   @Override
   public void onValueAdded(SNodeRemote entry) {
     try {
       check(); // Ignore events if state is inconsistent
       SEvent e = new SEvent(SEvent.ADDED_VALUE, this, ""+list.indexOf(entry), entry);
       triggerEvent(e);
-    } catch (SException e) {       
+    } catch (SException e) {
       // Swallow it
     }
   }
@@ -191,16 +196,16 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
       check(); // Ignore events if state is inconsistent
       SEvent e = new SEvent(SEvent.REMOVED_VALUE, this, ""+list.indexOf(entry), entry);
       triggerEvent(e);
-    } catch (SException e) {       
+    } catch (SException e) {
       // Swallow it
-    }    
+    }
   }
 
   @Override
   public Iterable<SNodeRemote> values() {
     return list.getValues();
   }
-  
+
   @Override
   public String toString() {
     return "SMListRemote ["+getSubstrateId()+"]";
@@ -208,7 +213,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
 
   @Override
   public int indexOf(SNodeRemote node) throws SException {
-      return this.list.indexOf((SNodeRemote) node);
+      return this.list.indexOf(node);
   }
 
 }

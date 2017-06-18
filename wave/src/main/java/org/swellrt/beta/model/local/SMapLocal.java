@@ -16,27 +16,27 @@ import org.swellrt.beta.model.js.SMapProxyHandler;
 public class SMapLocal implements SMap, HasJsProxy {
 
   public SMapLocal() {
-    
+
   }
-  
+
   private Map<String, SNode> map = new HashMap<String, SNode>();
   private Proxy proxy = null;
-  
+
   @Override
-  public Object get(String key) {  
+  public Object get(String key) {
     SNode node = map.get(key);
     if (node instanceof SPrimitive)
       return ((SPrimitive) node).get();
-    
+
     return node;
   }
 
   @Override
   public SMap put(String key, SNode value) {
-    map.put(key, value);  
+    map.put(key, value);
     return this;
   }
-  
+
   @Override
   public SMap put(String key, Object object) throws IllegalCastException {
     SNode node = SUtils.castToSNode(object);
@@ -47,7 +47,7 @@ public class SMapLocal implements SMap, HasJsProxy {
   public void remove(String key) {
     map.remove(key);
   }
-  
+
   @Override
   public boolean has(String key) {
     return map.containsKey(key);
@@ -57,19 +57,19 @@ public class SMapLocal implements SMap, HasJsProxy {
   public String[] keys() {
     return map.keySet().toArray(new String[map.size()]);
   }
-  
+
   @Override
   public Proxy getJsProxy() {
-    return proxy;       
+    return proxy;
   }
-  
+
   @Override
   public void setJsProxy(Proxy proxy) {
     this.proxy = proxy;
   }
 
   @Override
-  public SNode getNode(String key) {
+  public SNode node(String key) {
     SNode n = map.get(key);
     return n;
   }
@@ -90,10 +90,15 @@ public class SMapLocal implements SMap, HasJsProxy {
   }
 
   @Override
-  public Object asNative() {
+  public Object js() {
     if (proxy == null)
-      proxy = new Proxy(this, new SMapProxyHandler()); 
+      proxy = new Proxy(this, new SMapProxyHandler());
     return proxy;
   }
-  
+
+  @Override
+  public Object json() {
+    return null;
+  }
+
 }

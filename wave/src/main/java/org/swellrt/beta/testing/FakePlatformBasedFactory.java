@@ -6,7 +6,6 @@ import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.model.remote.STextRemote;
 import org.swellrt.beta.model.remote.SubstrateId;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
-import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.wave.Blip;
 
 public class FakePlatformBasedFactory implements PlatformBasedFactory {
@@ -35,7 +34,17 @@ public class FakePlatformBasedFactory implements PlatformBasedFactory {
       public boolean isEmpty() {
         return SUtils.isEmptyDocument(blip.getContent());
       }
-      
+
+      @Override
+      public Object js() {
+        return null;
+      }
+
+      @Override
+      public Object json() {
+        return null;
+      }
+
     };
   }
 
