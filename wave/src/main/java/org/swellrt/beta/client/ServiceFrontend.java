@@ -13,7 +13,6 @@ import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.operation.impl.UpdateUserOperation;
-import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
@@ -31,17 +30,10 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
-@JsType(namespace = "swellrt", name = "Service")
+@JsType(namespace = "swell", name = "Service")
 public class ServiceFrontend implements ServiceBasis {
 
-  public static final String ANONYMOUS_USER_ID  = "_anonymous_";
 
-  public static final String STATUS_CONNECTED = WaveWebSocketClient.ConnectState.CONNECTED.toString();
-  public static final String STATUS_DISCONNECTED = WaveWebSocketClient.ConnectState.DISCONNECTED.toString();
-  public static final String STATUS_ERROR = WaveWebSocketClient.ConnectState.ERROR.toString();
-  public static final String STATUS_CONNECTING = WaveWebSocketClient.ConnectState.CONNECTING.toString();
-  public static final String STATUS_TURBULENCE = WaveWebSocketClient.ConnectState.TURBULENCE
-      .toString();
 
   @JsIgnore
   public static ServiceFrontend create(ServiceContext context) {

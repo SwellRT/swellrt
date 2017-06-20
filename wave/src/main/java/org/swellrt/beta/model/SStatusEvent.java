@@ -7,7 +7,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "StatusEvent")
+@JsType(namespace = "swell", name = "StatusEvent")
 public class SStatusEvent {
 
   public static final int UNKNOW = -1;

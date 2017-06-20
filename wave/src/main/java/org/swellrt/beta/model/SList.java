@@ -8,7 +8,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "List")
+@JsType(namespace = "swell", name = "List")
 public interface SList<T extends SNode> extends SNode {
  
   @SuppressWarnings("rawtypes")

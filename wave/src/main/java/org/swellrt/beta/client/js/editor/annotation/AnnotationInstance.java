@@ -33,7 +33,7 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com
  *
  */
-@JsType(namespace = "swellrt", name = "Annotation")
+@JsType(namespace = "swell", name = "Annotation")
 public class AnnotationInstance {
 
   public static final int EVENT_ADDED = 1;

@@ -4,7 +4,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "Event")
+@JsType(namespace = "swell", name = "Event")
 public class SEvent {
 
   public static final int ADDED_VALUE = 11;

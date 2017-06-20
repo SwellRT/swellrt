@@ -12,7 +12,7 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
-@JsType(namespace = "swellrt", name = "Primitive")
+@JsType(namespace = "swell", name = "Primitive")
 public class SPrimitive extends SNodeRemote {
 
   private static final String SEPARATOR = ":";

@@ -3,7 +3,7 @@ package org.swellrt.beta.model;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "Helper")
+@JsType(namespace = "swell", name = "Helper")
 
 public class SHelper {
   

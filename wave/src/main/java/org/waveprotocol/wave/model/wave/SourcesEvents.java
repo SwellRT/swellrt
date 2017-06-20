@@ -27,7 +27,7 @@ import jsinterop.annotations.JsType;
  *
  *
  */
-@JsType(namespace = "swellrt")
+@JsType(namespace = "swell")
 public interface SourcesEvents<Listener> {
   
   /**

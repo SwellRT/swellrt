@@ -82,7 +82,7 @@ public class SwellRtServlet extends HttpServlet {
 
     if (entity.equals("model")) {
 
-      injector.getInstance(QueryModelService.class).execute(req, response);
+      // injector.getInstance(QueryModelService.class).execute(req, response);
 
     } else if (entity.equals("account")) {
 
@@ -94,10 +94,10 @@ public class SwellRtServlet extends HttpServlet {
 
     } else if (entity.equals("object")) {
 
-       injector.getInstance(ObjectApiService.class).execute(req, response);
-       
+      // injector.getInstance(ObjectApiService.class).execute(req, response);
+
     } else if (entity.equals("echo")) {
-      
+
       injector.getInstance(EchoService.class).execute(req, response);
 
     } else {
@@ -119,7 +119,7 @@ public class SwellRtServlet extends HttpServlet {
 
     if (entity.equals("notification")) {
 
-      injector.getInstance(NotificationService.class).execute(req, response);
+      // injector.getInstance(NotificationService.class).execute(req, response);
 
     } else if (entity.equals("email")) {
 
@@ -147,7 +147,7 @@ public class SwellRtServlet extends HttpServlet {
 
     } else if (entity.equals("object")) {
 
-        injector.getInstance(ObjectApiService.class).execute(req, response);
+      // injector.getInstance(ObjectApiService.class).execute(req, response);
 
      } else {
 

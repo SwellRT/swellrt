@@ -47,7 +47,7 @@ import jsinterop.annotations.JsType;
  * @author kalman@google.com (Benjamin Kalman)
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-@JsType(namespace = "swellrt", name = "ProfileManager")
+@JsType(namespace = "swell", name = "ProfileManager")
 public interface ProfileManager extends SourcesEvents<ProfileListener> {
   
   @JsIgnore

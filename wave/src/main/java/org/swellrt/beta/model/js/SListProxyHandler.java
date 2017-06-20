@@ -27,7 +27,7 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-@JsType(namespace = "swellrt")
+@JsType(namespace = "swell")
 public class SListProxyHandler extends ProxyHandler {
   
   

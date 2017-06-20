@@ -15,7 +15,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "LocalObject")
+@JsType(namespace = "swell", name = "LocalObject")
 public class SObjectLocal implements SObject {
 
 

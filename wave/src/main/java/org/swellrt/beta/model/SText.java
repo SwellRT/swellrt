@@ -8,7 +8,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "Text")
+@JsType(namespace = "swell", name = "Text")
 public interface SText extends SNode {
   
   public static SText create(@JsOptional Object data) throws SException {

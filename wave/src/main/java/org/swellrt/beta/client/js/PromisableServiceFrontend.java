@@ -25,7 +25,7 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-@JsType(namespace = "swellrt", name = "PromisableService")
+@JsType(namespace = "swell", name = "PromisableService")
 public class PromisableServiceFrontend implements ServiceBasis {
 
 	private final ServiceFrontend service;

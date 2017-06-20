@@ -3,14 +3,14 @@
 
 // A fake SwellRT object to register on ready handlers
 // before the GWT module is loaded
-window.swellrt = {
+window.swell = {
 
-  onReady: function(handler) {
+  ready: function(handler) {
        if (!handler || typeof handler !== "function")
          return;
 
        if (window.swellrt.runtime) {
-          handler(window.swellrt.runtime.get());
+          handler(window.swell.runtime.get());
        } else {
           if (!window._lh)
             window._lh = [];
@@ -18,6 +18,10 @@ window.swellrt = {
        }
     }
 }
+
+// Some alias
+window.swellrt = window.swell;
+window.swell.onReady = window.swell.ready;
 
 var scripts = document.getElementsByTagName('script');
 var thisScript = scripts[scripts.length -1];
@@ -41,5 +45,5 @@ if (thisScript) {
   var scriptSrc = p.protocol + "//" +p.host  + "/swellrt_beta/swellrt_beta.nocache.js";
   document.write("<script src='"+scriptSrc+"'></script>");
 } else {
-  console.log("Unable to inject swellrt script!");
+  console.log("Unable to inject swell script!");
 }

@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
+import org.swellrt.beta.client.ServiceConstants;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.JsUtils;
@@ -64,7 +65,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "Editor")
+@JsType(namespace = "swell", name = "Editor")
 public class SEditor implements EditorUpdateListener {
 
 
@@ -288,7 +289,7 @@ public class SEditor implements EditorUpdateListener {
       if (editor == null)
         return;
 
-      canEdit = state.equals(ServiceFrontend.STATUS_CONNECTED);
+      canEdit = state.equals(ServiceConstants.STATUS_CONNECTED);
       edit(canEdit);
     }
 

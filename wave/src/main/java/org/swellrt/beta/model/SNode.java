@@ -2,7 +2,7 @@ package org.swellrt.beta.model;
 
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "Node")
+@JsType(namespace = "swell", name = "Node")
 public interface SNode {
 
   Object js();

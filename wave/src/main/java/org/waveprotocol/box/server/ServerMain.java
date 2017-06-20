@@ -20,18 +20,8 @@
 package org.waveprotocol.box.server;
 
 import java.io.File;
-import java.util.Collection;
 
 import org.apache.commons.configuration.ConfigurationException;
-import org.swellrt.server.box.events.DeltaBasedEventSource;
-import org.swellrt.server.box.events.EventDispatcher;
-import org.swellrt.server.box.events.EventRule;
-import org.swellrt.server.box.events.EventsModule;
-import org.swellrt.server.box.events.dummy.DummyDispatcher;
-import org.swellrt.server.box.events.gcm.GCMDispatcher;
-import org.swellrt.server.box.events.http.HttpDispatcher;
-import org.swellrt.server.box.index.ModelIndexerDispatcher;
-import org.swellrt.server.box.index.ModelIndexerModule;
 import org.swellrt.server.box.servlet.EmailModule;
 import org.swellrt.server.box.servlet.SwellRtServlet;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveClientRpc;
@@ -128,13 +118,11 @@ public class ServerMain {
     // Module robotApiModule = new RobotApiModule();
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
     // Module searchModule = injector.getInstance(SearchModule.class);
-    Module modelIndexerModule = injector.getInstance(ModelIndexerModule.class); // SwellRT
-    Module eventsModule = injector.getInstance(EventsModule.class); // SwellRT
     // Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
     Module emailModule = injector.getInstance(EmailModule.class); // SwellRT
     // injector = injector.createChildInjector(serverModule, persistenceModule, robotApiModule,
     //    federationModule, searchModule, profileFetcherModule);
-    injector = injector.createChildInjector(serverModule, persistenceModule, federationModule, eventsModule, modelIndexerModule, emailModule);
+    injector = injector.createChildInjector(serverModule, persistenceModule, federationModule, emailModule);
 
     ServerRpcProvider server = injector.getInstance(ServerRpcProvider.class);
     WaveBus waveBus = injector.getInstance(WaveBus.class);
@@ -283,32 +271,6 @@ public class ServerMain {
 
   private static void initializeSwellRt(Injector injector, WaveBus waveBus) {
 
-    // Initialize Indexer
-
-    ModelIndexerDispatcher indexerDispatcher =
-        injector.getInstance(ModelIndexerDispatcher.class);
-
-//    try {
-//      indexerDispatcher.initialize();
-//    } catch (WaveServerException e) {
-//      LOG.warning("Error initializating SwellRtIndexerDispatcher", e);
-    // }
-    waveBus.subscribe(indexerDispatcher);
-
-    // Initialize Events
-    // TODO get rules as inject. dependency
-    Collection<EventRule> rules =
-            EventRule.fromFile(System.getProperty("event-rules.config.file", "config/event-rules.config"));
-
-    EventDispatcher eventDispatcher = injector.getInstance(EventDispatcher.class);
-    eventDispatcher.setRules(rules);
-    eventDispatcher.subscribe(injector.getInstance(DummyDispatcher.class), DummyDispatcher.NAME);
-    eventDispatcher.subscribe(injector.getInstance(GCMDispatcher.class), GCMDispatcher.NAME);
-    eventDispatcher.subscribe(injector.getInstance(HttpDispatcher.class), HttpDispatcher.NAME);
-
-
-    DeltaBasedEventSource eventSource = injector.getInstance(DeltaBasedEventSource.class);
-    waveBus.subscribe(eventSource);
   }
 
 }

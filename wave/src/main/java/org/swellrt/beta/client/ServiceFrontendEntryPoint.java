@@ -20,7 +20,7 @@ import jsinterop.annotations.JsType;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-@JsType(namespace = "swellrt", name = "runtime")
+@JsType(namespace = "swell", name = "runtime")
 public class ServiceFrontendEntryPoint implements EntryPoint {
 
   private static ServiceContext context;
@@ -73,8 +73,8 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
   private static native void procOnReadyHandlers(
     PromisableServiceFrontend sf) /*-{
 
-    if (!$wnd.swellrt) {
-      console.log("swellrt object not ready yet! wtf?")
+    if (!$wnd.swell) {
+      console.log("Swell object not ready yet! wtf?")
     }
 
     for(var i in $wnd._lh) {
@@ -92,12 +92,12 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
    */
   private static native void initNativeObjects() /*-{
 
-    if (!$wnd.__swellrt_config) {
-      $wnd.__swellrt_config = {};
+    if (!$wnd.__swell_config) {
+      $wnd.__swell_config = {};
     }
 
-    if (!$wnd.__swellrt_editor_config) {
-      $wnd.__swellrt_editor_config = {};
+    if (!$wnd.__swell_editor_config) {
+      $wnd.__swell_editor_config = {};
     }
 
   }-*/;

@@ -12,7 +12,7 @@ import com.google.gwt.dom.client.Element;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "TextWeb")
+@JsType(namespace = "swell", name = "TextWeb")
 public interface STextWeb {
 
   public void setInteractive() throws SException;

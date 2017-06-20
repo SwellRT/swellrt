@@ -6,7 +6,7 @@ import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "Object")
+@JsType(namespace = "swell", name = "Object")
 public interface SObject extends SMap {
 
   @JsFunction

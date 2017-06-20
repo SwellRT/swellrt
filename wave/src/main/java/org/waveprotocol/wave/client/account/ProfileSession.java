@@ -6,7 +6,7 @@ import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "ProfileSession")
+@JsType(namespace = "swell", name = "ProfileSession")
 public interface ProfileSession {
   
   @JsProperty(name = "id")

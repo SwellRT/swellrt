@@ -8,7 +8,7 @@ import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "ListenableNode")
+@JsType(namespace = "swell", name = "ListenableNode")
 public abstract class SNodeRemoteContainer extends SNodeRemote implements SObservable {
 
   @JsIgnore

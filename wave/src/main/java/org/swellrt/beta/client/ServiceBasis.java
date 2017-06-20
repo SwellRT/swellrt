@@ -8,7 +8,7 @@ import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(namespace = "swellrt", name = "ServiceBasis")
+@JsType(namespace = "swell", name = "ServiceBasis")
 public interface ServiceBasis {
  
   /**
