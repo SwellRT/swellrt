@@ -19,9 +19,10 @@
 
 package org.waveprotocol.wave.client.editor.content;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.Text;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.common.util.JsoView;
@@ -37,12 +38,12 @@ import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 import org.waveprotocol.wave.model.util.StringMap;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.Text;
 
 /**
  * Content Element.
@@ -553,7 +554,7 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
       if (affectImpl) {
         Node nodelet = oldChild.normaliseImpl();
         boolean stop = false;
-        while (!stop) {          
+        while (!stop) {
           try {
             if (nodelet != null) {
               nodelet.removeFromParent();
@@ -562,7 +563,7 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
           } catch (RuntimeException e) {
             // The nodelet couldn't been deleted because it was replaced with other
             // by an async event handler?
-            // Try to get the actual nodelet and delete it.          
+            // Try to get the actual nodelet and delete it.
             Node nodeletOther = oldChild.normaliseImpl();
             if (nodeletOther != nodelet)
               nodelet = nodeletOther;
@@ -570,7 +571,7 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
               stop = true;
           }
         }
-        
+
       }
 
       removedNodes.add(oldChild);
@@ -796,7 +797,7 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
     /** Run action on paragraph */
     void execute(ContentElement e, Range r);
   }
-  
+
   /**
    * This must be called whenever this element's children have mutated.
    * Calls onDescendantsMutated() on this node and all ancestors.
@@ -872,4 +873,24 @@ public class ContentElement extends ContentNode implements Doc.E, HasHandlers, H
 
     super.debugAssertHealthy();
   }
+
+  @Override
+  public String toString() {
+
+    String str = "[ContentElement] "+tagName+ " ";
+
+    final String[] _str = { "" };
+    attributes.each(new ProcV<String>() {
+
+      @Override
+      public void apply(String key, String value) {
+        _str[0] += "" + key + "=" + value + ", ";
+      }
+
+    });
+
+    return str + _str[0];
+  }
+
 }
+
