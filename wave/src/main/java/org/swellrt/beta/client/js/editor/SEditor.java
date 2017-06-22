@@ -376,11 +376,16 @@ public class SEditor implements EditorUpdateListener {
    */
   public void edit(boolean editOn) {
     if (editor != null && editor.hasDocument() && checkBrowserCompat().equals(COMPAT_MODE_EDIT)) {
+
+      if (editOn)
+        editor.addUpdateListener(this);
+      else
+        editor.removeUpdateListener(this);
+
       if (editor.isEditing() != editOn) {
         editor.setEditing(editOn);
       }
     }
-
   }
 
   /**
@@ -398,7 +403,7 @@ public class SEditor implements EditorUpdateListener {
 
       editor.removeContentAndUnrender();
       editor.reset();
-      editor.addUpdateListener(this);
+      editor.removeUpdateListener(this);
       AnnotationRegistry.muteHandlers(true);
 
       caretAnnotationHandler.clear();
@@ -834,7 +839,6 @@ public class SEditor implements EditorUpdateListener {
             : new EditorImpl(false, editorPanel.getElement());
 
         editor.init(null, getKeyBindingRegistry(), getSettings());
-        editor.addUpdateListener(this);
     }
 
     if (selectionExtractor == null && profileManager != null) {
