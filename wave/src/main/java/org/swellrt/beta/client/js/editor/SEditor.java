@@ -855,7 +855,8 @@ public class SEditor implements EditorUpdateListener {
 
     if (selectionHandler != null) {
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();
-      selectionHandler.exec(range, this, SSelection.get(range));
+      if (range != null)
+        selectionHandler.exec(range, this, SSelection.get(range));
     }
   }
 
