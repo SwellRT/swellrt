@@ -12,6 +12,8 @@ import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
+import org.swellrt.beta.client.operation.impl.EditUserOperation;
+import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -182,7 +184,49 @@ public class PromisableServiceFrontend implements ServiceBasis {
 			}
 		});			
 	}
+	
+	public Promise<EditUserOperation.Response, SException> editUser(EditUserOperation.Options options) {
+	  return new Promise<EditUserOperation.Response, SException>(new ConstructorParam<EditUserOperation.Response, SException>() {
 
+	    @Override
+	    public void exec(FunctionParam<EditUserOperation.Response> resolve, FunctionParam<SException> reject) {
+
+	      service.editUser(options, new Callback<EditUserOperation.Response>() {
+	        @Override
+	        public void onError(SException exception) {
+	          reject.exec(exception);
+	        }
+	        @Override
+	        public void onSuccess(EditUserOperation.Response response) {
+	          resolve.exec(response);
+	        }       
+	      });
+
+	    }
+	  });     
+	}
+
+	public Promise<ListLoginOperation.Response, SException> listLogin(ListLoginOperation.Options options) {
+	  return new Promise<ListLoginOperation.Response, SException>(new ConstructorParam<ListLoginOperation.Response, SException>() {
+
+	    @Override
+	    public void exec(FunctionParam<ListLoginOperation.Response> resolve, FunctionParam<SException> reject) {
+
+	      service.listLogin(options, new Callback<ListLoginOperation.Response>() {
+	        @Override
+	        public void onError(SException exception) {
+	          reject.exec(exception);
+	        }
+	        @Override
+	        public void onSuccess(ListLoginOperation.Response response) {
+	          resolve.exec(response);
+	        }       
+	      });
+
+	    }
+	  });     
+	}
+	
 	@Override
   public void addConnectionHandler(ConnectionHandler h) {
     service.addConnectionHandler(h);

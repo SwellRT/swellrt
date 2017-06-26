@@ -4,6 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.common.SwellUtils;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 
 import jsinterop.annotations.JsProperty;
@@ -56,7 +57,8 @@ public final class GetUserOperation extends HTTPOperation<GetUserOperation.Optio
     }
 
     addPathElement("account");
-    addPathElement(options.getId());
+    addPathElement(
+        SwellUtils.addDomainToParticipant(options.getId(), getServiceContext().getWaveDomain()));
     executeGet(callback);
   }
 

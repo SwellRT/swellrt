@@ -4,6 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.common.SwellUtils;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
@@ -12,7 +13,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-public final class UpdateUserOperation extends HTTPOperation<UpdateUserOperation.Options, UpdateUserOperation.Response> {
+public final class EditUserOperation extends HTTPOperation<EditUserOperation.Options, EditUserOperation.Response> {
 
   @JsType(isNative = true)
   public interface Options extends Operation.Options  {
@@ -81,7 +82,7 @@ public final class UpdateUserOperation extends HTTPOperation<UpdateUserOperation
   }
 
 
-  public UpdateUserOperation(ServiceContext context) {
+  public EditUserOperation(ServiceContext context) {
     super(context);
   }
 
@@ -104,6 +105,41 @@ public final class UpdateUserOperation extends HTTPOperation<UpdateUserOperation
   @Override
   public void execute(Options options, Callback<Response> callback) {
 
+    Options adaptedOptions = new Options() {
+
+      @Override
+      public String getId() {
+        return SwellUtils.addDomainToParticipant(options.getId(),
+            getServiceContext().getWaveDomain());
+      }
+
+      @Override
+      public String getPassword() {
+        return options.getPassword();
+      }
+
+      @Override
+      public String getEmail() {
+        return options.getEmail();
+      }
+
+      @Override
+      public String getLocale() {
+        return options.getLocale();
+      }
+
+      @Override
+      public String getName() {
+        return options.getName();
+      }
+
+      @Override
+      public String getAvatarData() {
+        return options.getAvatarData();
+      }
+
+    };
+
     if (options == null ||
         options.getId() == null) {
 
@@ -112,8 +148,8 @@ public final class UpdateUserOperation extends HTTPOperation<UpdateUserOperation
     }
 
     addPathElement("account");
-    addPathElement(options.getId());
-    setBody(generateBody(options));
+    addPathElement(adaptedOptions.getId());
+    setBody(generateBody(adaptedOptions));
     executePost(callback);
   }
 

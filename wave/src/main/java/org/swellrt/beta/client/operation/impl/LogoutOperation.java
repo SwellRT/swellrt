@@ -4,6 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.common.SwellUtils;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -15,18 +16,18 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
 
     @JsProperty
     public String getId();
-        
+
   }
-  
+
   @JsType(isNative = true)
   public interface Response extends Operation.Response {
-    
+
 
   }
 
-  
+
   public LogoutOperation(ServiceContext context) {
-    super(context);    
+    super(context);
   }
 
 
@@ -46,16 +47,17 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
 
   @Override
   public void execute(Options options, Callback<Response> callback) {
-    
+
     getServiceContext().reset();
-    
+
     addPathElement("auth");
     if (options.getId() != null)
-      addPathElement(options.getId());
-      
+      addPathElement(
+          SwellUtils.addDomainToParticipant(options.getId(), getServiceContext().getWaveDomain()));
+
     executeDelete(callback);
   }
-  
-  
-  
+
+
+
 }

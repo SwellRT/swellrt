@@ -7,12 +7,13 @@ import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
 import org.swellrt.beta.client.operation.impl.GetUserOperation;
 import org.swellrt.beta.client.operation.impl.GetUserOperation.Response;
+import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.client.operation.impl.LoginOperation;
 import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
-import org.swellrt.beta.client.operation.impl.UpdateUserOperation;
+import org.swellrt.beta.client.operation.impl.EditUserOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
@@ -94,12 +95,12 @@ public class ServiceFrontend implements ServiceBasis {
     @Override
     protected void storeProfile(Profile profile) {
 
-      UpdateUserOperation op = new UpdateUserOperation(context);
+      EditUserOperation op = new EditUserOperation(context);
       JsoView options = JsoView.create();
       options.setString("id", profile.getAddress());
       options.setString("name", profile.getName());
 
-      op.execute(options.<UpdateUserOperation.JsoOptions>cast(), new Operation.Callback<UpdateUserOperation.Response>() {
+      op.execute(options.<EditUserOperation.JsoOptions>cast(), new Operation.Callback<EditUserOperation.Response>() {
 
         @Override
         public void onError(SException exception) {
@@ -107,7 +108,7 @@ public class ServiceFrontend implements ServiceBasis {
         }
 
         @Override
-        public void onSuccess(UpdateUserOperation.Response response) {
+        public void onSuccess(EditUserOperation.Response response) {
         }
 
       });
@@ -153,6 +154,21 @@ public class ServiceFrontend implements ServiceBasis {
 
   public void query(QueryOperation.Options options, Callback<QueryOperation.Response> callback) {
     QueryOperation op = new QueryOperation(context);
+    op.execute(options, callback);
+  }
+  
+  public void getUser(GetUserOperation.Options options, Callback<GetUserOperation.Response> callback) {
+    GetUserOperation op = new GetUserOperation(context);
+    op.execute(options, callback);
+  }
+  
+  public void editUser(EditUserOperation.Options options, Callback<EditUserOperation.Response> callback) {
+    EditUserOperation op = new EditUserOperation(context);
+    op.execute(options, callback);
+  }
+  
+  public void listLogin(ListLoginOperation.Options options, Callback<ListLoginOperation.Response> callback) {
+    ListLoginOperation op = new ListLoginOperation(context);
     op.execute(options, callback);
   }
 
