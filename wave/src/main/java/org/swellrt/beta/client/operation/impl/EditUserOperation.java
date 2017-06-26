@@ -4,7 +4,6 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.common.SwellUtils;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
@@ -105,40 +104,6 @@ public final class EditUserOperation extends HTTPOperation<EditUserOperation.Opt
   @Override
   public void execute(Options options, Callback<Response> callback) {
 
-    Options adaptedOptions = new Options() {
-
-      @Override
-      public String getId() {
-        return SwellUtils.addDomainToParticipant(options.getId(),
-            getServiceContext().getWaveDomain());
-      }
-
-      @Override
-      public String getPassword() {
-        return options.getPassword();
-      }
-
-      @Override
-      public String getEmail() {
-        return options.getEmail();
-      }
-
-      @Override
-      public String getLocale() {
-        return options.getLocale();
-      }
-
-      @Override
-      public String getName() {
-        return options.getName();
-      }
-
-      @Override
-      public String getAvatarData() {
-        return options.getAvatarData();
-      }
-
-    };
 
     if (options == null ||
         options.getId() == null) {
@@ -148,8 +113,8 @@ public final class EditUserOperation extends HTTPOperation<EditUserOperation.Opt
     }
 
     addPathElement("account");
-    addPathElement(adaptedOptions.getId());
-    setBody(generateBody(adaptedOptions));
+    addPathElement(options.getId());
+    setBody(generateBody(options));
     executePost(callback);
   }
 

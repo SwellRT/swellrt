@@ -241,6 +241,8 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
     if (options != null) {
       if (options instanceof JavaScriptObject) {
         return JsonUtils.stringify((JavaScriptObject) options);
+      } else {
+        // TODO when not a JavaScriptObject
       }
     }
     return "Options couldn't be serialized to JSON";

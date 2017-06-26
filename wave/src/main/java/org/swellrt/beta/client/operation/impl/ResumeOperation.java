@@ -4,7 +4,6 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.common.SwellUtils;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 
 import jsinterop.annotations.JsProperty;
@@ -56,22 +55,7 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
   public void execute(Options options, Callback<Response> callback) {
     addPathElement("auth");
 
-    Options adaptedOptions = new Options() {
-
-      @Override
-      public String getId() {
-        return SwellUtils.addDomainToParticipant(options.getId(),
-            getServiceContext().getWaveDomain());
-      }
-
-      @Override
-      public String getIndex() {
-        return getIndex();
-      }
-
-    };
-
-    setBody(generateBody(adaptedOptions));
+    setBody(generateBody(options));
 
     executePost(callback);
   }

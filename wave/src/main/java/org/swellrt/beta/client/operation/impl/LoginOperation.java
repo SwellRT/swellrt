@@ -4,7 +4,6 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.common.SwellUtils;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 
 import jsinterop.annotations.JsProperty;
@@ -48,27 +47,7 @@ public final class LoginOperation extends HTTPOperation<LoginOperation.Options, 
     setSessionInURLFlag(false);
     addPathElement("auth");
 
-    Options adaptedOptions = new Options() {
-
-      @Override
-      public String getId() {
-        return SwellUtils.addDomainToParticipant(options.getId(),
-            getServiceContext().getWaveDomain());
-      }
-
-      @Override
-      public String getPassword() {
-        return options.getPassword();
-      }
-
-      @Override
-      public boolean getRemember() {
-        return options.getRemember();
-      }
-
-    };
-
-    setBody(generateBody(adaptedOptions));
+    setBody(generateBody(options));
 
     executePost(callback);
   }

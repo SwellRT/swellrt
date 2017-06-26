@@ -13,6 +13,7 @@ import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.operation.impl.EditUserOperation;
+import org.swellrt.beta.client.operation.impl.GetUserOperation;
 import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
@@ -184,6 +185,27 @@ public class PromisableServiceFrontend implements ServiceBasis {
 			}
 		});			
 	}
+	
+ public Promise<GetUserOperation.Response, SException> getUser(GetUserOperation.Options options) {
+    return new Promise<GetUserOperation.Response, SException>(new ConstructorParam<GetUserOperation.Response, SException>() {
+
+      @Override
+      public void exec(FunctionParam<GetUserOperation.Response> resolve, FunctionParam<SException> reject) {
+
+        service.getUser(options, new Callback<GetUserOperation.Response>() {
+          @Override
+          public void onError(SException exception) {
+            reject.exec(exception);
+          }
+          @Override
+          public void onSuccess(GetUserOperation.Response response) {
+            resolve.exec(response);
+          }       
+        });
+
+      }
+    });     
+  }
 	
 	public Promise<EditUserOperation.Response, SException> editUser(EditUserOperation.Options options) {
 	  return new Promise<EditUserOperation.Response, SException>(new ConstructorParam<EditUserOperation.Response, SException>() {
