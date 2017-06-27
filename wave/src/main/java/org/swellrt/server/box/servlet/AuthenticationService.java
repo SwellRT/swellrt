@@ -6,6 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
@@ -51,7 +53,7 @@ import com.typesafe.config.Config;
  *
  * Resume
  *
- * POST /auth { index : <user_session_index> (optional) }
+ * POST /auth/{participantId}
  *
  * Listing existing users in session
  *
@@ -59,7 +61,7 @@ import com.typesafe.config.Config;
  *
  * Close session
  *
- * DELETE /auth {id : <ParticipantId> }
+ * DELETE /auth/{participantId}
  *
  * Original code taken from {@AuthenticationServlet}.
  *
@@ -203,7 +205,7 @@ public class AuthenticationService extends BaseService {
     }
 
 
-    if (authData.has("id") && authData.id != null) {
+    if (authData != null && authData.has("id") && authData.id != null) {
 
       if (!ParticipantId.isAnonymousName(authData.id)) {
 
@@ -233,7 +235,7 @@ public class AuthenticationService extends BaseService {
       }
 
     } else {
-      doResume(req, resp, authData.has("index") ? authData.index : -1);
+      doResume(req, resp);
 
     }
   }
@@ -265,8 +267,13 @@ public class AuthenticationService extends BaseService {
     sendResponse(resp, getAccountData(req, participantId));
   }
 
-  protected void doResume(HttpServletRequest req, HttpServletResponse resp, int userSessionIndex) throws IOException, PersistenceException {
-    ParticipantId participantId = sessionManager.resume(req, userSessionIndex);
+  protected void doResume(HttpServletRequest req, HttpServletResponse resp)
+      throws IOException, PersistenceException {
+
+    String[] pathTokens = SwellRtServlet.getCleanPathInfo(req).split("/");
+    String participantIdStr = pathTokens.length > 2 ? pathTokens[2] : null;
+
+    ParticipantId participantId = sessionManager.resume(req, participantIdStr);
     if (participantId == null) {
       sendResponseError(resp, HttpServletResponse.SC_FORBIDDEN, RC_LOGIN_FAILED);
     } else {
@@ -414,7 +421,13 @@ public class AuthenticationService extends BaseService {
    */
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException,
       PersistenceException {
-    sendResponse(resp, sessionManager.getSessionUsersIndex(req));
+    Set<ParticipantId> sessions = sessionManager.listLoggedInUsers(req);
+    String[] sessionsArray = new String[sessions.size()];
+    Iterator<ParticipantId> it = sessions.iterator();
+    for (int i = 0; i < sessions.size(); i++) {
+      sessionsArray[i] = it.next().getAddress();
+    }
+    sendResponse(resp, sessionsArray);
   }
 
   protected AuthenticationServiceData getRequestServiceData(HttpServletRequest request)

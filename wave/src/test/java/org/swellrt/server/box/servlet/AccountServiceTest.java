@@ -337,7 +337,7 @@ public class AccountServiceTest extends TestCase {
     when(sessionManager.getLoggedInUser((HttpServletRequest) anyObject())).thenReturn(
         ACCOUNT_MAT.getId());
 
-    when(sessionManager.getAllLoggedInUser((HttpServletRequest) anyObject())).thenReturn(CollectionUtils.immutableSet(ACCOUNT_MAT.getId()));
+    when(sessionManager.listLoggedInUsers((HttpServletRequest) anyObject())).thenReturn(CollectionUtils.immutableSet(ACCOUNT_MAT.getId()));
 
     // Test
     AccountServiceData requestData = new AccountServiceData();

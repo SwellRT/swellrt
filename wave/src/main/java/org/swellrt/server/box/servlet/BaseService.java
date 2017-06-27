@@ -97,7 +97,7 @@ public abstract class BaseService {
 
 	// Browser must have at least one window with authenticated user
 	protected void checkAnySession(HttpServletRequest req) throws ServiceException {
-	  if (sessionManager.getAllLoggedInUser(req).isEmpty())
+	  if (sessionManager.listLoggedInUsers(req).isEmpty())
 	    throw new ServiceException("No active sessions found in the browser", HttpServletResponse.SC_FORBIDDEN, RC_ACCOUNT_NOT_LOGGED_IN);
 	}
 
@@ -109,7 +109,7 @@ public abstract class BaseService {
    * @return
    */
   protected boolean isSessionParticipant(HttpServletRequest req, ParticipantId participantId) {
-    return sessionManager.getAllLoggedInUser(req).contains(participantId);
+    return sessionManager.listLoggedInUsers(req).contains(participantId);
   }
 
 }

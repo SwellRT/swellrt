@@ -20,7 +20,6 @@
 package org.waveprotocol.box.server.authentication;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +37,7 @@ import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.rpc.TransientSessionFilter;
 import org.waveprotocol.box.server.rpc.WindowIdFilter;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.escapers.PercentEscaper;
 import org.waveprotocol.wave.util.logging.Log;
@@ -144,11 +144,11 @@ public final class SessionManagerImpl implements SessionManager {
   }
 
 
-  protected static SessionUser getSessionUser(HttpSession session, ParticipantId participantId) {
+  protected static SessionUser readSessionUser(HttpSession session, ParticipantId participantId) {
     return (SessionUser) session.getAttribute(participantId.getAddress());
   }
 
-  protected static Map<ParticipantId, SessionUser> getSessionUsers(HttpSession session) {
+  protected static Map<ParticipantId, SessionUser> readAllSessionUser(HttpSession session) {
 
     Map<ParticipantId, SessionUser> map = new HashMap<ParticipantId, SessionUser>();
 
@@ -177,28 +177,24 @@ public final class SessionManagerImpl implements SessionManager {
     return map;
   }
 
-  protected static int addSessionUser(HttpSession session, SessionUser sessionUser) {
+  protected static void writeSessionUser(HttpSession session, SessionUser sessionUser) {
 
-    Map<ParticipantId, SessionUser> sessionUsers =  getSessionUsers(session);
-    Map<Integer, ParticipantId> sessionUserIndex = getSessionUserIndex(session);
+    Map<ParticipantId, SessionUser> sessionUsers =  readAllSessionUser(session);
 
-    if (!sessionUsers.containsKey(sessionUser.participanId)) {
-      int index = 0;
-      while (index < sessionUsers.size()) {
-        if (!sessionUserIndex.containsKey(index)) {
-          break;
-        }
-        index++;
-      }
-      sessionUser.index = index;
-    } else {
-      sessionUser.index = sessionUsers.get(sessionUser.participanId).index;
-    }
+    /*
+     * Map<Integer, ParticipantId> sessionUserIndex =
+     * getSessionUserIndex(session);
+     *
+     * if (!sessionUsers.containsKey(sessionUser.participanId)) { int index = 0;
+     * while (index < sessionUsers.size()) { if
+     * (!sessionUserIndex.containsKey(index)) { break; } index++; }
+     * sessionUser.index = index; } else { sessionUser.index =
+     * sessionUsers.get(sessionUser.participanId).index; }
+     */
 
     // Rewrite
     session.setAttribute(sessionUser.participanId.getAddress(), sessionUser);
 
-    return sessionUser.index;
   }
 
   protected static boolean removeSessionUser(HttpSession session, ParticipantId participantId) {
@@ -314,7 +310,7 @@ public final class SessionManagerImpl implements SessionManager {
   protected ParticipantId getLoggedInUser(HttpSession session, String transientSessionId, String browserWindowId) {
 
     SessionUser loggedSessionUser = null;
-    for (SessionUser su: getSessionUsers(session).values()) {
+    for (SessionUser su: readAllSessionUser(session).values()) {
       if (su.browserWindowId.equals(browserWindowId) && su.transientSessionId.equals(transientSessionId)) {
         if (loggedSessionUser == null) {
           loggedSessionUser = su;
@@ -330,7 +326,7 @@ public final class SessionManagerImpl implements SessionManager {
   }
 
   @Override
-  public Set<ParticipantId> getAllLoggedInUser(HttpServletRequest request) {
+  public Set<ParticipantId> listLoggedInUsers(HttpServletRequest request) {
 
     final Set<ParticipantId> participants = new HashSet<ParticipantId>();
     HttpSession session = request.getSession(false);
@@ -338,7 +334,7 @@ public final class SessionManagerImpl implements SessionManager {
     if (session == null)
       return participants;
 
-    getSessionUsers(session).values().forEach(su -> {
+    readAllSessionUser(session).values().forEach(su -> {
       if (isLoginSessionUser(request, su)) {
         participants.add(su.participanId);
       }
@@ -363,20 +359,20 @@ public final class SessionManagerImpl implements SessionManager {
 
 
   @Override
-  public int login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe) {
+  public void login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe) {
     Preconditions.checkNotNull(request, "Request is null");
     Preconditions.checkNotNull(participantId, "Participant id is null");
 
     HttpSession session = request.getSession(true);
 
     // Remember always session data
-    SessionUser su = getSessionUser(session, participantId);
+    SessionUser su = readSessionUser(session, participantId);
     if (su != null) {
         updateSessionUser(request, su);
-        return su.index;
+      return;
     } else {
       SessionUser userRecord =  new SessionUser(participantId, System.currentTimeMillis(), getTransientSessionId(request), getBrowserWindowId(request), rememberMe);
-      return addSessionUser(session, userRecord);
+      writeSessionUser(session, userRecord);
     }
   }
 
@@ -406,38 +402,46 @@ public final class SessionManagerImpl implements SessionManager {
     su.lastLoginTime = System.currentTimeMillis();
     su.browserWindowId = getBrowserWindowId(request);
     su.transientSessionId = getTransientSessionId(request);
-    addSessionUser(request.getSession(), su);
+    writeSessionUser(request.getSession(), su);
   }
 
   @Override
-  public ParticipantId resume(HttpServletRequest request, Integer userIndex) {
+  public ParticipantId resume(HttpServletRequest request, String participantIdStr) {
     Preconditions.checkNotNull(request, "Request is null");
 
+    ParticipantId participantId = null;
+    try {
+      participantId = ParticipantId.of(participantIdStr);
+    } catch (InvalidParticipantAddress e) {
+    }
     HttpSession session = request.getSession(true);
-    Map<ParticipantId, SessionUser> sessionUserMap = getSessionUsers(session);
-    Map<Integer, ParticipantId> sessionUserIndex = getSessionUserIndex(session);
-    if (userIndex == null || !sessionUserIndex.containsKey(userIndex)) {
+    Map<ParticipantId, SessionUser> sessionUserMap = readAllSessionUser(session);
 
-      // Return first valid user session
-      ParticipantId resumeAs = null;
+    if (sessionUserMap.isEmpty()) {
+      return null;
+
+    } else if (participantId == null || !sessionUserMap.containsKey(participantId)) {
+
+      long lastLoginTime = 0;
+      SessionUser pickedSessionUser = null;
+
       for (ParticipantId p: sessionUserMap.keySet()) {
         SessionUser su = sessionUserMap.get(p);
-        if (canResumeSessionUser(request, su)) {
-          updateSessionUser(request, su);
-          resumeAs = p;
-          break;
+        if (canResumeSessionUser(request, su) && lastLoginTime <= su.lastLoginTime) {
+          lastLoginTime = su.lastLoginTime;
+          pickedSessionUser = su;
         }
       }
 
-      return resumeAs;
+      updateSessionUser(request, pickedSessionUser);
+      return pickedSessionUser.participanId;
 
-    } else {
-      ParticipantId resumeAs = sessionUserIndex.get(userIndex);
-      SessionUser sessionUser = sessionUserMap.get(resumeAs);
-      if (canResumeSessionUser(request, sessionUser)) {
-        updateSessionUser(request, sessionUser);
-        return resumeAs;
-      }
+    } else if (participantId != null && sessionUserMap.containsKey(participantId)) {
+
+      SessionUser pickedSessionUser = sessionUserMap.get(participantId);
+      updateSessionUser(request, pickedSessionUser);
+      return pickedSessionUser.participanId;
+
     }
 
     return null;
@@ -451,13 +455,6 @@ public final class SessionManagerImpl implements SessionManager {
 
     HttpSession session = request.getSession(false);
     return session != null ? removeSessionUser(session, participantId) : false;
-  }
-
-  @Override
-  public Map<Integer, ParticipantId> getSessionUsersIndex(HttpServletRequest request) {
-    HttpSession session = request.getSession(false);
-    Map<Integer, ParticipantId> sessionUserIndex = session != null ?  getSessionUserIndex(session) : Collections.emptyMap();
-    return sessionUserIndex;
   }
 
   @Override
@@ -487,13 +484,13 @@ public final class SessionManagerImpl implements SessionManager {
   @Override
   public Map<String, String> getSessionProperties(HttpServletRequest request) {
     ParticipantId participantId = getLoggedInUser(request);
-    return getSessionUser(request.getSession(), participantId).getProperties();
+    return readSessionUser(request.getSession(), participantId).getProperties();
   }
 
   @Override
   public void setSessionProperties(HttpServletRequest request, Map<String, String> properties) {
     ParticipantId participantId = getLoggedInUser(request);
-    getSessionUser(request.getSession(), participantId).setProperties(properties);
+    readSessionUser(request.getSession(), participantId).setProperties(properties);
   }
 
   protected static Cookie getCookie(HttpServletRequest request, String name) {

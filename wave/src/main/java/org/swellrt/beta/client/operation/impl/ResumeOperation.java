@@ -17,9 +17,6 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
     @JsProperty
     public String getId();
 
-    @JsProperty
-    public String getIndex();
-
   }
 
   @JsType(isNative = true)
@@ -54,9 +51,7 @@ public final class ResumeOperation extends HTTPOperation<ResumeOperation.Options
   @Override
   public void execute(Options options, Callback<Response> callback) {
     addPathElement("auth");
-
-    setBody(generateBody(options));
-
+    addPathElement(options.getId());
     executePost(callback);
   }
 

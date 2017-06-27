@@ -121,7 +121,7 @@ public class AttachmentServlet extends HttpServlet {
     // however, we can't distinguish the actual participant requesting an image because
     // img requests can't carry the header with the browser tab id.
     // Workaround is to grant access to the image to all sessions in the browser.
-    Set<ParticipantId> participants = sessionManager.getAllLoggedInUser(request);
+    Set<ParticipantId> participants = sessionManager.listLoggedInUsers(request);
     boolean isAuthorized = false;
     for (ParticipantId p: participants) {
       try {

@@ -160,7 +160,7 @@ public interface SessionManager {
    * @param session the HTTP session object
    * @return a set of participants, maybe empty, but never null.
    */
-  Set<ParticipantId> getAllLoggedInUser(HttpServletRequest request);
+  Set<ParticipantId> listLoggedInUsers(HttpServletRequest request);
 
 
   //
@@ -176,19 +176,20 @@ public interface SessionManager {
    * @param rememberMe Allow resume of the participant session even after browser is closed
    * @return
    */
-  public int login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe);
+  public void login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe);
 
   /**
-   * Resume an user session, use provided user session index or the last active session otherwise
+   * Resume an user session, provided as argument or the last active session
+   * otherwise
    * <p>
    * Trying to resume an existing user session within the HTTP session is always
    * better than rejecting the request.
    *
    * @param request
-   * @param userIndex
+   * @param participantId
    * @return
    */
-  public ParticipantId resume(HttpServletRequest request, Integer userIndex);
+  public ParticipantId resume(HttpServletRequest request, String participantId);
 
   /**
    * Remove association of the participant with the current session/transient session/window id.
@@ -198,15 +199,6 @@ public interface SessionManager {
    * @return
    */
   public boolean logout(HttpServletRequest request, ParticipantId participantId);
-
-
-  /**
-   * Get all participants in the session mapped by its index.
-   *
-   * @param request
-   * @return
-   */
-  public Map<Integer, ParticipantId> getSessionUsersIndex(HttpServletRequest request);
 
   /**
    * Get the transient session cookie. Transient session only lives until browser is closed.
