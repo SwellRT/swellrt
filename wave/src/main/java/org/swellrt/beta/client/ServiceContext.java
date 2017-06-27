@@ -367,4 +367,15 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     return sessionManager.getWaveDomain();
   }
 
+  public void closeObject(WaveId waveId) throws SException {
+
+    WaveContext context = waveRegistry.get(waveId);
+    if (context == null) {
+      throw new SException(SException.INVALID_OPERATION, null, "Object is not opened");
+    }
+    context.close();
+    waveRegistry.remove(waveId);
+
+  }
+
 }

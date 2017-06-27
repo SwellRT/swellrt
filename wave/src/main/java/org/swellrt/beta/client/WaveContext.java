@@ -118,6 +118,8 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
   public void close() {
     if (loader != null)
       loader.destroy();
+
+    this.state = INACTIVE;
   }
 
   @Override
