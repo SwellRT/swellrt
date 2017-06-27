@@ -24,6 +24,7 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
 
   }
 
+  private boolean resetContext = false;
 
   public LogoutOperation(ServiceContext context) {
     super(context);
@@ -38,6 +39,11 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
 
   @Override
   protected void onSuccess(int statusCode, String data, Callback<Response> callback) {
+
+    // reset the context after http call to send cookies
+    if (resetContext)
+      getServiceContext().reset();
+
     if (callback != null)
       callback.onSuccess(new Response(){
       });
@@ -52,9 +58,8 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
     if (getServiceContext().isSession()) {
         if (options.getId() == null ||
             (options.getId() != null && options.getId().equals(getServiceContext().getParticipantId()))) {
-        // get the current participant id before reseting the context!
         addPathElement(getServiceContext().getParticipantId());
-          getServiceContext().reset();
+        resetContext = true;
         }
     } else if (options.getId() != null) {
       addPathElement(options.getId());
