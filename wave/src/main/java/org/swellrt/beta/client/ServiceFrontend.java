@@ -5,6 +5,8 @@ import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
+import org.swellrt.beta.client.operation.impl.EditUserOperation;
+import org.swellrt.beta.client.operation.impl.GetUserBatchOperation;
 import org.swellrt.beta.client.operation.impl.GetUserOperation;
 import org.swellrt.beta.client.operation.impl.GetUserOperation.Response;
 import org.swellrt.beta.client.operation.impl.ListLoginOperation;
@@ -13,7 +15,6 @@ import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
-import org.swellrt.beta.client.operation.impl.EditUserOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandler;
 import org.swellrt.beta.model.SUtils;
@@ -156,17 +157,23 @@ public class ServiceFrontend implements ServiceBasis {
     QueryOperation op = new QueryOperation(context);
     op.execute(options, callback);
   }
-  
+
   public void getUser(GetUserOperation.Options options, Callback<GetUserOperation.Response> callback) {
     GetUserOperation op = new GetUserOperation(context);
     op.execute(options, callback);
   }
-  
+
+  public void getUserBatch(GetUserBatchOperation.Options options,
+      Callback<GetUserBatchOperation.Response> callback) {
+    GetUserBatchOperation op = new GetUserBatchOperation(context);
+    op.execute(options, callback);
+  }
+
   public void editUser(EditUserOperation.Options options, Callback<EditUserOperation.Response> callback) {
     EditUserOperation op = new EditUserOperation(context);
     op.execute(options, callback);
   }
-  
+
   public void listLogin(ListLoginOperation.Options options, Callback<ListLoginOperation.Response> callback) {
     ListLoginOperation op = new ListLoginOperation(context);
     op.execute(options, callback);

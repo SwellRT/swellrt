@@ -13,6 +13,7 @@ import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.operation.impl.EditUserOperation;
+import org.swellrt.beta.client.operation.impl.GetUserBatchOperation;
 import org.swellrt.beta.client.operation.impl.GetUserOperation;
 import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.common.SException;
@@ -206,6 +207,27 @@ public class PromisableServiceFrontend implements ServiceBasis {
       }
     });     
   }
+ 
+ public Promise<GetUserBatchOperation.Response, SException> getUserBatch(GetUserBatchOperation.Options options) {
+   return new Promise<GetUserBatchOperation.Response, SException>(new ConstructorParam<GetUserBatchOperation.Response, SException>() {
+
+     @Override
+     public void exec(FunctionParam<GetUserBatchOperation.Response> resolve, FunctionParam<SException> reject) {
+
+       service.getUserBatch(options, new Callback<GetUserBatchOperation.Response>() {
+         @Override
+         public void onError(SException exception) {
+           reject.exec(exception);
+         }
+         @Override
+         public void onSuccess(GetUserBatchOperation.Response response) {
+           resolve.exec(response);
+         }       
+       });
+
+     }
+   });     
+ } 
 	
 	public Promise<EditUserOperation.Response, SException> editUser(EditUserOperation.Options options) {
 	  return new Promise<EditUserOperation.Response, SException>(new ConstructorParam<EditUserOperation.Response, SException>() {
