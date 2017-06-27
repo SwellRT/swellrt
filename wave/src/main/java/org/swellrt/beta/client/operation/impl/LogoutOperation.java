@@ -47,11 +47,21 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
   @Override
   public void execute(Options options, Callback<Response> callback) {
 
-    getServiceContext().reset();
-
     addPathElement("auth");
-    if (options.getId() != null)
+
+    if (getServiceContext().isSession()) {
+        if (options.getId() == null ||
+            (options.getId() != null && options.getId().equals(getServiceContext().getParticipantId()))) {
+        // get the current participant id before reseting the context!
+        addPathElement(getServiceContext().getParticipantId());
+          getServiceContext().reset();
+        }
+    } else if (options.getId() != null) {
       addPathElement(options.getId());
+    } else {
+      callback.onError(new SException(1, null, "Missing user parameter"));
+      return;
+    }
 
     executeDelete(callback);
   }
