@@ -347,9 +347,6 @@ public class AccountService extends BaseService {
     // GET /account/joe/avatar/[filename]
     try {
 
-      // We require an open session, at least anonymous
-      checkAnySession(req);
-
       ParticipantId avatarOwnerId = getParticipantFromRequest(req);
 
       // Retrieve the avatar's owner account data
