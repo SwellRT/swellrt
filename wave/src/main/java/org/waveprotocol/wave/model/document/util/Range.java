@@ -28,16 +28,16 @@ import jsinterop.annotations.JsType;
 /**
  * An immutable range of two locations integers
  */
-@JsType(namespace = "swellrt.Editor", name = "Range")
+@JsType(namespace = "swell.Editor", name = "Range")
 public final class Range {
 
-  public static final Range ALL = new Range(0,0); 
-  
+  public static final Range ALL = new Range(0,0);
+
   public static Range create(int start, int end) {
     return new Range(start, end);
   }
 
-  
+
   private final int start;
   private final int end;
 
@@ -121,9 +121,9 @@ public final class Range {
         + (isCollapsed() ? "" : "-" + getEnd())
         + ")";
   }
-  
+
   public boolean contains(Range r) {
-    return this.start <= r.start && r.end <= this.end; 
+    return this.start <= r.start && r.end <= this.end;
   }
 
 }

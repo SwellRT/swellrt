@@ -19,12 +19,6 @@
 
 package org.waveprotocol.wave.client.editor.selection.html;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
-
-import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsType;
-
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
 import org.waveprotocol.wave.client.common.util.UserAgent;
 import org.waveprotocol.wave.client.debug.logger.BufferedLogger;
@@ -35,11 +29,17 @@ import org.waveprotocol.wave.model.document.util.PointRange;
 import org.waveprotocol.wave.model.util.IntRange;
 import org.waveprotocol.wave.model.util.Preconditions;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
+
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
+
 /**
  * Document selection methods.
  *
  */
-@JsType(namespace = "swellrt.Editor", name = "Selection")
+@JsType(namespace = "swell.Editor", name = "Selection")
 public class NativeSelectionUtil {
   /**
    * For notification before/after transient DOM mutations, which can be
@@ -80,7 +80,7 @@ public class NativeSelectionUtil {
     // Nowadays things are easier: http://caniuse.com/#feat=selection-api
     if (UserAgent.isIE8()) {
       impl = new SelectionImplIE();
-      coordinateGetter = new SelectionCoordinatesHelperIEImpl();   
+      coordinateGetter = new SelectionCoordinatesHelperIEImpl();
     } else {
       SelectionImplW3C w3cImpl = new SelectionImplW3C();
       impl = w3cImpl;
@@ -130,7 +130,7 @@ public class NativeSelectionUtil {
 
   /**
    * Turning selection caching on
-   */  
+   */
   public static void cacheOn() {
     caching = true;
   }
@@ -243,7 +243,7 @@ public class NativeSelectionUtil {
 
   /**
    * Clears selection
-   */  
+   */
   public static void clear() {
     cache = null;
     impl.clear();
