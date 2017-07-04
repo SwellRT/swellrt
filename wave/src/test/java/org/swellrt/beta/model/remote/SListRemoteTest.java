@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SPrimitive;
@@ -30,16 +30,16 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     localList.add(localMap);
 
     object.put("list", localList);
-    SListRemote remoteList = (SListRemote) object.node("list");
+    SListRemote remoteList = (SListRemote) object.pick("list");
 
     assertNotNull(remoteList);
     assertEquals(4, remoteList.size());
-    assertEquals("hello world", SPrimitive.asString(remoteList.node(0)));
-    assertEquals(12345, SPrimitive.asInt(remoteList.node(1)).intValue());
-    assertEquals(false, SPrimitive.asBoolean(remoteList.node(2)).booleanValue());
-    assertTrue(remoteList.node(3) instanceof SMap);
+    assertEquals("hello world", SPrimitive.asString(remoteList.pick(0)));
+    assertEquals(12345, SPrimitive.asInt(remoteList.pick(1)).intValue());
+    assertEquals(false, SPrimitive.asBoolean(remoteList.pick(2)).booleanValue());
+    assertTrue(remoteList.pick(3) instanceof SMap);
 
-    SMapRemote remoteMap = (SMapRemote) remoteList.node(3);
+    SMapRemote remoteMap = (SMapRemote) remoteList.pick(3);
     assertEquals("value0", remoteMap.get("key0"));
     assertEquals("value1", remoteMap.get("key1"));
 
@@ -95,19 +95,19 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     localList.add(localMap);
 
     object.put("list", localList);
-    SList remoteList = (SList) object.node("list");
+    SList remoteList = (SList) object.pick("list");
     assertEquals(4, remoteList.size());
 
     // Remove first
     remoteList.remove(0);
     assertEquals(3, remoteList.size());
-    assertEquals(12345, SPrimitive.asInt(remoteList.node(0)).intValue());
+    assertEquals(12345, SPrimitive.asInt(remoteList.pick(0)).intValue());
 
     // Remove last
     remoteList.remove(2);
     assertEquals(2, remoteList.size());
-    assertEquals(12345, SPrimitive.asInt(remoteList.node(0)).intValue());
-    assertEquals(false, SPrimitive.asBoolean(remoteList.node(1)).booleanValue());
+    assertEquals(12345, SPrimitive.asInt(remoteList.pick(0)).intValue());
+    assertEquals(false, SPrimitive.asBoolean(remoteList.pick(1)).booleanValue());
 
   }
 
@@ -126,7 +126,7 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     localList.add(localMap);
 
     object.put("list", localList);
-    SList remoteList = (SList) object.node("list");
+    SList remoteList = (SList) object.pick("list");
     remoteList.clear();
     assertEquals(0, remoteList.size());
     assertTrue(remoteList.isEmpty());
@@ -148,12 +148,12 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     localList.add(localMap);
 
     object.put("list", localList);
-    SListRemote remoteList = (SListRemote) object.node("list");
+    SListRemote remoteList = (SListRemote) object.pick("list");
 
 
 
     final ArrayList<SEvent> recvEvents = new ArrayList<SEvent>();
-    SHandler eventHandler = new SHandler() {
+    SHandlerFunc eventHandler = new SHandlerFunc() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -166,7 +166,7 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
         return false;
       }
     };
-    remoteList.addListener(eventHandler);
+    remoteList.addListener(eventHandler, null);
 
     localMap = SMap.create();
     localMap.put("key0", "value0");

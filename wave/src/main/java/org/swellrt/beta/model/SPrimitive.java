@@ -1,5 +1,6 @@
 package org.swellrt.beta.model;
 
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.remote.SNodeRemote;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -55,7 +56,7 @@ public class SPrimitive extends SNodeRemote {
   public static String asString(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (String) ((SPrimitive) node).value();
+        return (String) ((SPrimitive) node).getValue();
       }
     } catch (ClassCastException e)
     {
@@ -68,7 +69,7 @@ public class SPrimitive extends SNodeRemote {
   public static Double asDouble(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (double) ((SPrimitive) node).value();
+        return (double) ((SPrimitive) node).getValue();
       }
     } catch (ClassCastException e)
     {
@@ -81,7 +82,7 @@ public class SPrimitive extends SNodeRemote {
   public static Integer asInt(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (int) ((SPrimitive) node).value();
+        return (int) ((SPrimitive) node).getValue();
       }
     } catch (ClassCastException e)
     {
@@ -94,7 +95,7 @@ public class SPrimitive extends SNodeRemote {
   public static Boolean asBoolean(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (boolean) ((SPrimitive) node).value();
+        return (boolean) ((SPrimitive) node).getValue();
       }
     } catch (ClassCastException e)
     {
@@ -260,7 +261,8 @@ public class SPrimitive extends SNodeRemote {
     return type;
   }
 
-  public Object value() {
+  @JsProperty
+  public Object getValue() {
 
     if (type == TYPE_STRING)
       return stringValue;
@@ -376,6 +378,11 @@ public class SPrimitive extends SNodeRemote {
 
   @Override
   public Object get(String path) {
+    return null;
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
     return null;
   }
 }

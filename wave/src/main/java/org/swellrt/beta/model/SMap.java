@@ -32,7 +32,7 @@ public interface SMap extends SNode {
    * @param key
    * @return
    */
-  public SNode node(String key) throws SException;
+  public SNode pick(String key) throws SException;
 
   @JsIgnore
   public SMap put(String key, SNode value) throws SException;

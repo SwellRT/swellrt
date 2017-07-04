@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.js.editor;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.model.remote.STextRemote;
@@ -162,6 +163,11 @@ public class STextRemoteWeb extends STextRemote implements STextWeb {
 
   @Override
   public Object get(String path) {
+    return null;
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
     return null;
   }
 

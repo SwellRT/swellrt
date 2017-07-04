@@ -19,7 +19,7 @@
 
   <title>SwellRT, Form Demo</title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/swellrt.css">
+  <link rel="stylesheet" href="css/swell.css">
   <style type="text/css">
 
 
@@ -86,18 +86,18 @@
 
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
-<script src="/swellrt-beta.js"></script>
+<script src="/swell.js"></script>
 
   <script>
 
-  swellrt.onReady(function(service) {
+  swell.onReady(function(service) {
     window.service = service;
 
     // Put on eye on live communication turbulence
     service.addConnectionHandler(connectionHandler);
 
     service.login({
-      id : swellrt.Constants.ANONYMOUS_USER_ID,
+      id : swell.Constants.ANONYMOUS_USER_ID,
       password : ""
     })
     .then(r=>{
@@ -105,20 +105,20 @@
         id : "demo-form-3"
       });
     })
-    .then(swellObject => {
+    .then(_object => {
 
-      object = swellObject.js();
+      object = _object;
 
       var lastVersion;
 
       // Initialize data
-      if (!object.form) {
+      if (!object.node('form')) {
         // This syntax create a single object
         // associated with property 'form'.
         // Changes in form.* are not captured,
         // instead you should replace whole form's
         // value.
-        object.form = {
+        form = {
           name: "",
           address : "",
           age : 0,
@@ -127,29 +127,32 @@
           version : 0
         };
 
+        object.set('form', form);
+
         // Make public after initialization
         swellObject.setPublic(true);
         lastVersion = 0;
 
       } else {
         // Show current data
-        populateFormData(object.form);
-        showVersion(object.form.version, object.form.timestamp);
-        lastVersion = object.form.version;
+        var form = object.get('form');
+        populateFormData(form);
+        showVersion(form.version, form.timestamp);
+        lastVersion = form.version;
       }
 
       // Listen updates in the form property
-      service.listen(object, function(event) {
+      object.addListener(function(event) {
 
         // Note: this hanlder is invoked
         // both from local or remote changes.
 
         if (!event) return;
 
-        if (event.key == "form" &&
-        event.type == swellrt.Event.UPDATED_VALUE) {
+        if (event.key == 'form' &&
+        event.type == swell.Event.UPDATED_VALUE) {
 
-          var formData = event.value.get();
+          var formData = event.node.value;
 
           if (lastVersion != formData.version) {
             lastVersion = formData.version;
@@ -168,7 +171,7 @@
         lastVersion = data.version = lastVersion+1;
 
         // update the object
-        object.form = data;
+        object.set('form', data);
         showVersion(data.version, data.timestamp);
 
         return false;

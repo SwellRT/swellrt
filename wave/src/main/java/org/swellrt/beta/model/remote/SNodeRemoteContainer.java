@@ -3,7 +3,7 @@ package org.swellrt.beta.model.remote;
 import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObservable;
 import org.swellrt.beta.model.SPrimitive;
@@ -73,11 +73,30 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
       return false;
     }
 
+    @Override
+    public void addListener(SHandlerFunc h, String path) throws SException {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void removeListener(SHandlerFunc h, String path) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public SNode node(String path) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
   };
 
   protected boolean eventsEnabled = false;
 
-  private final CopyOnWriteSet<SHandler> eventHandlerSet = CopyOnWriteSet.<SHandler>createHashSet();
+  private final CopyOnWriteSet<SHandlerFunc> eventHandlerSet = CopyOnWriteSet
+      .<SHandlerFunc> createHashSet();
 
   protected SNodeRemoteContainer() {
     super(null, null);
@@ -108,27 +127,52 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
   protected abstract void clearCache();
 
 
-  @Override
-  public void addListener(SHandler h, String event, String path) throws SException {
+  protected SNodeRemoteContainer lookUpListenableNode(String path) throws SException {
     SNode node = null;
     if (path != null)
       node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, this);
     else
       node = this;
 
-    // !!!!!!!!!!!!!!!!!!!!!!
+    SNodeRemoteContainer targetNode = null;
 
     if (node instanceof SPrimitive) {
-      SPrimitive primitiveNode = ((SPrimitive) node).getContainer();
+      SPrimitive primitiveNode = (SPrimitive) node;
+
+      if (primitiveNode.getContainer() == null) {
+        targetNode = primitiveNode.getParent();
+      } else {
+        targetNode = primitiveNode.getContainer().getParent();
+      }
+
+    } else if (node instanceof SNodeRemoteContainer) {
+      targetNode = (SNodeRemoteContainer) node;
     }
 
-    eventHandlerSet.add(h);
+    return targetNode;
+  }
+
+  @Override
+  public void addListener(SHandlerFunc h, String path) throws SException {
+
+    SNodeRemoteContainer targetNode = lookUpListenableNode(path);
+    if (targetNode != null)
+      targetNode.eventHandlerSet.add(h);
+    else
+      throw new SException(SException.OPERATION_EXCEPTION, null, "Node not found at " + path);
+
   }
 
 
   @Override
-  public void removeListener(SHandler h, String event, String path) {
-    eventHandlerSet.remove(h);
+  public void removeListener(SHandlerFunc h, String path) throws SException {
+
+    SNodeRemoteContainer targetNode = lookUpListenableNode(path);
+    if (targetNode != null)
+      eventHandlerSet.remove(h);
+    else
+      throw new SException(SException.OPERATION_EXCEPTION, null, "Node not found at " + path);
+
   }
 
 
@@ -140,7 +184,7 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
 
     boolean propagate = true;
 
-    for (SHandler h: eventHandlerSet) {
+    for (SHandlerFunc h : eventHandlerSet) {
       propagate = h.exec(e);
     }
 

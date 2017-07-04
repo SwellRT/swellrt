@@ -12,7 +12,7 @@
 
   <title>SwellRT Server</title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/swellrt.css">
+  <link rel="stylesheet" href="css/swell.css">
   <style type="text/css">
 
 
@@ -99,7 +99,7 @@
 
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
-  <script src="/swellrt-beta.js"></script>
+  <script src="/swell.js"></script>
   <script>
 
     function isProxySupported() {
@@ -116,7 +116,7 @@
       return true;
     }
 
-    swellrt.onReady(function(s) {
+    swell.onReady(function(s) {
 
       service = s;
 
@@ -135,7 +135,7 @@
       .then(function(object) {
 
         if (true) {
-          // Using API without proxies
+   
           if (!object.has("signal")) {
             object.put("signal", (new Date()).toString());
             object.setPublic(true);
@@ -143,15 +143,6 @@
           console.log("checking swellrt status signal -> "+object.get("signal"));
           object.put("signal", (new Date()).toString());
 
-        } else {
-          // Using API with proxies
-          var object = object.js();
-          if (!object.signal) {
-              object.signal = (new Date()).toString();
-              controller.setPublic(true);
-          }
-          console.log("checking swellrt status signal -> "+object.signal);
-          object.signal = (new Date()).toString();
         }
 
 

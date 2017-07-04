@@ -3,6 +3,7 @@ package org.swellrt.beta.model.local;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -64,7 +65,7 @@ public class SMapLocal implements SMap, HasJsProxy {
   }
 
   @Override
-  public SNode node(String key) {
+  public SNode pick(String key) {
     SNode n = map.get(key);
     return n;
   }
@@ -134,6 +135,11 @@ public class SMapLocal implements SMap, HasJsProxy {
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 
 }

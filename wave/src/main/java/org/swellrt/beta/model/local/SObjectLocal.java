@@ -91,8 +91,8 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public SNode node(String key) throws SException  {
-    return delegateMap.node(key);
+  public SNode pick(String key) throws SException {
+    return delegateMap.pick(key);
   }
 
   @Override
@@ -179,6 +179,11 @@ public class SObjectLocal implements SObject {
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 
 }

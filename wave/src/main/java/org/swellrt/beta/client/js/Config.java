@@ -5,7 +5,7 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType(isNative = true, name = "__swellrt_config", namespace = JsPackage.GLOBAL)
+@JsType(isNative = true, name = "__swell_config", namespace = JsPackage.GLOBAL)
 public class Config {
 
   @JsProperty

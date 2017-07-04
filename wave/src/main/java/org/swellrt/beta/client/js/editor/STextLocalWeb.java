@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.js.editor;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SWaveSchemas;
@@ -157,4 +158,8 @@ public class STextLocalWeb implements STextWeb, STextLocal {
     return null;
   }
 
+  @Override
+  public SNode node(String path) throws SException {
+    return null;
+  }
 }

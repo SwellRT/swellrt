@@ -1,6 +1,7 @@
 package org.swellrt.beta.testing;
 
 import org.swellrt.beta.client.PlatformBasedFactory;
+import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.remote.SObjectRemote;
@@ -71,6 +72,11 @@ public class FakePlatformBasedFactory implements PlatformBasedFactory {
       @Override
       public boolean contains(String path, String property) {
         return false;
+      }
+
+      @Override
+      public SNode node(String path) {
+        return null;
       }
 
     };

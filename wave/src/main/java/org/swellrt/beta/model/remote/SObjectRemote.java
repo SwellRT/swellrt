@@ -8,7 +8,7 @@ import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.client.WaveStatus;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -347,14 +347,14 @@ public class SObjectRemote extends SNodeRemoteContainer
   }
 
   @Override
-  public void addListener(SHandler h, String event, String path) {
-    root.addListener(h, event, path);
+  public void addListener(SHandlerFunc h, String path) throws SException {
+    root.addListener(h, path);
   }
 
 
   @Override
-  public void removeListener(SHandler h, String event, String path) {
-    root.removeListener(h, event, path);
+  public void removeListener(SHandlerFunc h, String path) throws SException {
+    root.removeListener(h, path);
   }
 
   /**
@@ -384,7 +384,7 @@ public class SObjectRemote extends SNodeRemoteContainer
       remoteMap.attach(parentNode);
       remoteMap.enableEvents(false);
       for (String k: map.keys()) {
-        SNode v = map.node(k);
+        SNode v = map.pick(k);
         remoteMap.put(k, transformToRemote(v, remoteMap, containerWavelet));
       }
       remoteMap.enableEvents(true);
@@ -610,8 +610,8 @@ public class SObjectRemote extends SNodeRemoteContainer
 
 
   @Override
-  public SNode node(String key) throws SException {
-    return root.node(key);
+  public SNode pick(String key) throws SException {
+    return root.pick(key);
   }
 
   @Override
@@ -763,6 +763,11 @@ public class SObjectRemote extends SNodeRemoteContainer
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 
 }

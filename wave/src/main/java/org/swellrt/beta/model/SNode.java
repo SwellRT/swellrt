@@ -68,7 +68,7 @@ public interface SNode {
         }
 
         // Update or set value inside JSO
-        JavaScriptObject jso = (JavaScriptObject) primitive.value();
+        JavaScriptObject jso = (JavaScriptObject) primitive.getValue();
         JsoView jsv = JsoView.as(jso);
         jsv.setObject(key, actualValue);
 
@@ -125,21 +125,21 @@ public interface SNode {
 
       if (node instanceof SMap) {
         SMap map = (SMap) node;
-        return PlatformBasedFactory.getViewBuilderForNode().getView(map.node(key));
+        return PlatformBasedFactory.getViewBuilderForNode().getView(map.pick(key));
 
       } else if (node instanceof SList) {
         @SuppressWarnings("rawtypes")
         SList list = (SList) node;
         int index = Integer.valueOf(key);
-        return PlatformBasedFactory.getViewBuilderForNode().getView(list.node(index));
+        return PlatformBasedFactory.getViewBuilderForNode().getView(list.pick(index));
 
       } else if (node instanceof SPrimitive) {
 
         SPrimitive primitive = (SPrimitive) node;
         if (primitive.getType() == SPrimitive.TYPE_JSO) {
-          return PlatformBasedFactory.extractNode((JavaScriptObject) primitive.value(), key);
+          return PlatformBasedFactory.extractNode((JavaScriptObject) primitive.getValue(), key);
         } else {
-          return primitive.value();
+          return primitive.getValue();
         }
 
       } else {
@@ -190,7 +190,7 @@ public interface SNode {
         @SuppressWarnings("rawtypes")
         SList list = (SList) node;
         Object object = PlatformBasedFactory.getViewBuilderForNode()
-            .getView(list.node(list.size() - 1));
+            .getView(list.pick(list.size() - 1));
         list.remove(list.size() - 1);
         return object;
       } else {
@@ -300,10 +300,20 @@ public interface SNode {
   }
 
 
+  public static SNode node(SNode root, String path) throws SException {
+    return PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+  }
 
   //
   // --------------------------------------------------------------
   //
+
+  /**
+   * Return a property in the object as node type
+   * 
+   * @throws SException
+   */
+  SNode node(String path) throws SException;
 
   /**
    * Set or update a property.

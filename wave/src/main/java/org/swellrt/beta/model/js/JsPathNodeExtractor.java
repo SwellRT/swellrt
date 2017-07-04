@@ -70,7 +70,7 @@ public class JsPathNodeExtractor implements PathNodeExtractor, SVisitor<SNode> {
 
       /* Traverse the JavaScriptObject if there is still path elements */
       JavaScriptObject jso = (JavaScriptObject) PlatformBasedFactory
-          .extractNode((JavaScriptObject) primitive.value(), path.get());
+          .extractNode((JavaScriptObject) primitive.getValue(), path.get());
       node = new SPrimitive(jso, new SNodeAccessControl(), primitive, path.getConsumed(),
           path.get());
 
@@ -86,7 +86,7 @@ public class JsPathNodeExtractor implements PathNodeExtractor, SVisitor<SNode> {
     if (pathElement != null) {
 
       try {
-        node = map.node(pathElement);
+        node = map.pick(pathElement);
         visit(node);
       } catch (SException e) {
         ex = e;
@@ -107,7 +107,7 @@ public class JsPathNodeExtractor implements PathNodeExtractor, SVisitor<SNode> {
       try {
 
         int index = Integer.valueOf(pathElement);
-        node = list.node(index);
+        node = list.pick(index);
         visit(node);
       } catch (SException e) {
         ex = e;

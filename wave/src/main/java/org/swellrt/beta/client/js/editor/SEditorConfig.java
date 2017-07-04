@@ -20,7 +20,7 @@ import jsinterop.annotations.JsType;
  * </code>
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-@JsType(isNative = true, name="__swellrt_editor_config", namespace = JsPackage.GLOBAL)
+@JsType(isNative = true, name = "__swell_editor_config", namespace = JsPackage.GLOBAL)
 public class SEditorConfig {
 
   @JsProperty

@@ -7,7 +7,7 @@ import java.util.List;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
@@ -33,8 +33,8 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
   protected void assertPrimitiveValues(SMap map) throws SException {
 
-    assertEquals("A value for k0", SPrimitive.asString(map.node("k0")));
-    assertEquals("A value for k1", SPrimitive.asString(map.node("k1")));
+    assertEquals("A value for k0", SPrimitive.asString(map.pick("k0")));
+    assertEquals("A value for k1", SPrimitive.asString(map.pick("k1")));
 
   }
 
@@ -77,7 +77,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
     object.put("submap", submap);
 
-    assertPrimitiveValues((SMap) object.node("submap"));
+    assertPrimitiveValues((SMap) object.pick("submap"));
 
 
   }
@@ -106,9 +106,9 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     // Clear cache and check retrieving values
     object.clearCache();
 
-    SMap remoteMapA = (SMap) object.node("mapA");
+    SMap remoteMapA = (SMap) object.pick("mapA");
     assertPrimitiveValues(remoteMapA);
-    SMap remoteMapB = (SMap) remoteMapA.node("mapB");
+    SMap remoteMapB = (SMap) remoteMapA.pick("mapB");
     assertPrimitiveValues(remoteMapB);
 
     // Make changes, no exceptions must be thrown
@@ -117,8 +117,8 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
     object.clearCache();
 
-    assertEquals("Some value kA1", SPrimitive.asString(remoteMapA.node("kA1")));
-    assertEquals("Some value kB1", SPrimitive.asString(remoteMapB.node("kB1")));
+    assertEquals("Some value kA1", SPrimitive.asString(remoteMapA.pick("kA1")));
+    assertEquals("Some value kB1", SPrimitive.asString(remoteMapB.pick("kB1")));
 
   }
 
@@ -133,7 +133,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
     List<SEvent> recvEvents = new ArrayList<SEvent>();
 
-    SHandler eventHandler = new SHandler() {
+    SHandlerFunc eventHandler = new SHandlerFunc() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -151,8 +151,8 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     SMap map = new SMapLocal();
     populatePrimitiveValues(map);
     object.put("map", map);
-    SMapRemote remoteMap = (SMapRemote) object.node("map");
-    remoteMap.addListener(eventHandler);
+    SMapRemote remoteMap = (SMapRemote) object.pick("map");
+    remoteMap.addListener(eventHandler, null);
 
     remoteMap.remove("k1");
     remoteMap.put("k2" , "This is new value");
@@ -164,24 +164,24 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
     // Check whether mutations were properly done
     assertEquals(2, remoteMap.size());
-    assertEquals(null, remoteMap.node("k1"));
-    assertEquals("This is new value", SPrimitive.asString(remoteMap.node("k2")));
-    assertEquals("This is updated value", SPrimitive.asString(remoteMap.node("k0")));
+    assertEquals(null, remoteMap.pick("k1"));
+    assertEquals("This is new value", SPrimitive.asString(remoteMap.pick("k2")));
+    assertEquals("This is updated value", SPrimitive.asString(remoteMap.pick("k0")));
 
     // Check events
     assertEquals(3, recvEvents.size());
 
     assertEquals(SEvent.REMOVED_VALUE, recvEvents.get(0).getType());
     assertEquals("k1", recvEvents.get(0).getKey());
-    assertEquals("A value for k1", (String) ((SPrimitive) recvEvents.get(0).getValue()).value());
+    assertEquals("A value for k1", (String) ((SPrimitive) recvEvents.get(0).getValue()).getValue());
 
     assertEquals(SEvent.ADDED_VALUE, recvEvents.get(1).getType());
     assertEquals("k2", recvEvents.get(1).getKey());
-    assertEquals("This is new value", (String) ((SPrimitive) recvEvents.get(1).getValue()).value());
+    assertEquals("This is new value", (String) ((SPrimitive) recvEvents.get(1).getValue()).getValue());
 
     assertEquals(SEvent.UPDATED_VALUE, recvEvents.get(2).getType());
     assertEquals("k0", recvEvents.get(2).getKey());
-    assertEquals("This is updated value", (String) ((SPrimitive) recvEvents.get(2).getValue()).value());
+    assertEquals("This is updated value", (String) ((SPrimitive) recvEvents.get(2).getValue()).getValue());
   }
 
 
@@ -207,27 +207,27 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
         SEvent e = capturedEventsMapB.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForC", (String) ((SPrimitive) e.getValue()).value());
+        assertEquals("valueForC", (String) ((SPrimitive) e.getValue()).getValue());
 
         // Case 2) Generate event in B
         // captured by handlerB but not in handlerA and handlerRoot
         e = capturedEventsMapB.get(1);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForB", (String) ((SPrimitive) e.getValue()).value());
+        assertEquals("valueForB", (String) ((SPrimitive) e.getValue()).getValue());
 
         // Case 3) Generate event in A
         // captured by handlerA and rootHandler
         e = capturedEventsMapA.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).value());
+        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).getValue());
         assertEquals(1, capturedEventsMapA.size()); // Assert case 1 and case 2, "but" parts
 
         e = capturedEventsRoot.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).value());
+        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).getValue());
         assertEquals(1, capturedEventsRoot.size()); // Assert case 1 and case 2, "but" parts
 
       }
@@ -235,7 +235,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
 
 
-    SHandler handlerRoot = new SHandler() {
+    SHandlerFunc handlerRoot = new SHandlerFunc() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -248,7 +248,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
     };
 
-    SHandler handlerMapA = new SHandler() {
+    SHandlerFunc handlerMapA = new SHandlerFunc() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -262,7 +262,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
 
     };
 
-    SHandler handlerMapB = new SHandler() {
+    SHandlerFunc handlerMapB = new SHandlerFunc() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -291,14 +291,14 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     //           -- mapC
     //
 
-    SMapRemote remoteMapA = (SMapRemote) object.put("mapA", new SMapLocal()).node("mapA");
-    SMapRemote remoteMapB = (SMapRemote) remoteMapA.put("mapB", new SMapLocal()).node("mapB");
-    SMapRemote remoteMapC = (SMapRemote) remoteMapB.put("mapC", new SMapLocal()).node("mapC");
+    SMapRemote remoteMapA = (SMapRemote) object.put("mapA", new SMapLocal()).pick("mapA");
+    SMapRemote remoteMapB = (SMapRemote) remoteMapA.put("mapB", new SMapLocal()).pick("mapB");
+    SMapRemote remoteMapC = (SMapRemote) remoteMapB.put("mapC", new SMapLocal()).pick("mapC");
 
     // Set handlers here to ignore events for initialization fields
-    remoteMapA.addListener(handlerMapA);
-    remoteMapB.addListener(handlerMapB);
-    object.addListener(handlerRoot);
+    remoteMapA.addListener(handlerMapA, null);
+    remoteMapB.addListener(handlerMapB, null);
+    object.addListener(handlerRoot, null);
 
     // Case 1) Generate event in C
     // captured by handlerB but not in handlerA and handlerRoot
@@ -327,7 +327,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     object.put("prop1", p);
 
     try {
-      object.node("prop1");
+      object.pick("prop1");
     } catch (Exception e) {
       assertTrue("SException not expected", false);
     }
@@ -351,7 +351,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     object.put("prop2", p);
 
     try {
-      object.node("prop2");
+      object.pick("prop2");
     } catch (Exception e) {
       assertTrue("SException not expected", false);
     }
@@ -376,7 +376,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     object.put("prop3", p);
 
     try {
-      object.node("prop3");
+      object.pick("prop3");
     } catch (Exception e) {
       assertTrue("SException not expected", false);
     }
@@ -400,7 +400,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     object.put("prop4", p);
 
     try {
-      object.node("prop4");
+      object.pick("prop4");
     } catch (Exception e) {
       assertTrue("SException expected, can't read", true);
     }
@@ -428,7 +428,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     object.put("prop5", p);
 
     try {
-      object.node("prop5");
+      object.pick("prop5");
     } catch (Exception e) {
       assertTrue("SException not expected", false);
     }

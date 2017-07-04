@@ -27,7 +27,7 @@ public class JsViewVisitor<T extends SNode> implements SViewBuilder, SVisitor<T>
 
   @Override
   public void visit(SPrimitive primitive) {
-    currentObject = primitive.value();
+    currentObject = primitive.getValue();
   }
 
   @Override
@@ -38,7 +38,7 @@ public class JsViewVisitor<T extends SNode> implements SViewBuilder, SVisitor<T>
     try {
 
       for (String key : map.keys()) {
-        map.node(key).accept(this);
+        map.pick(key).accept(this);
         jso.setObject(key, currentObject);
       }
 
@@ -61,7 +61,7 @@ public class JsViewVisitor<T extends SNode> implements SViewBuilder, SVisitor<T>
 
     for (int i = 0; i < list.size(); i++) {
       try {
-        list.node(i).accept(this);
+        list.pick(i).accept(this);
         jsArrayPush(jsarray, currentObject);
       } catch (SException e) {
         ex = e;

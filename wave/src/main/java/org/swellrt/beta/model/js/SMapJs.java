@@ -2,6 +2,7 @@ package org.swellrt.beta.model.js;
 
 import java.util.ArrayList;
 
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -117,7 +118,7 @@ public class SMapJs implements SMap {
 	}
 
 	@Override
-	public SNode node(String key) {
+	public SNode pick(String key) {
 
 		if (key == null)
 			return null;
@@ -224,5 +225,10 @@ public class SMapJs implements SMap {
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 }

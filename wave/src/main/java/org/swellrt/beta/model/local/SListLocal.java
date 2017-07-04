@@ -21,7 +21,7 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
   private Proxy proxy = null;
 
   @Override
-  public SNode node(int index) throws SException {
+  public SNode pick(int index) throws SException {
     return list.get(index);
   }
 
@@ -149,6 +149,11 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 
 }

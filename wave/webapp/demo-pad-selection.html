@@ -18,7 +18,7 @@
 
   <title>SwellRT, Text Pad Demo</title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/swellrt.css">
+  <link rel="stylesheet" href="css/swell.css">
   <style type="text/css">
 
   .bg-canvas {
@@ -108,7 +108,7 @@
   <script>
 
     // Configure editor globals
-    __swellrt_editor_config = {
+    __swell_editor_config = {
       enableLog: true
       //webkitComposition: false
     };
@@ -117,7 +117,7 @@
 
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
-  <script src="/swellrt-beta.js"></script>
+  <script src="/swell.js"></script>
 
   <script>
 
@@ -127,7 +127,7 @@
     currentSelectionRange = undefined;
     currentSelection = undefined;
 
-  swellrt.onReady(function(service) {
+  swell.onReady(function(service) {
     window.service = service;
 
     var editorElt = document.getElementById("editor");
@@ -137,10 +137,10 @@
     window.menu.style.visibility = "hidden";
     editorElt.appendChild(window.menu);
 
-    swellrt.Editor.AnnotationRegistry.define("@selection","selection");
-    swellrt.Editor.AnnotationRegistry.setHandler("@selection", (type, annot, event) => {
+    swell.Editor.AnnotationRegistry.define("@selection","selection");
+    swell.Editor.AnnotationRegistry.setHandler("@selection", (type, annot, event) => {
 
-      if (type == swellrt.Annotation.EVENT_ADDED && annot.value == currentSelectionId) {
+      if (type == swell.Annotation.EVENT_ADDED && annot.value == currentSelectionId) {
 
         var sel = annot.node;  //document.getElementsByClassName("@selection")[0];
         if (sel) {
@@ -152,7 +152,7 @@
 
       } 
       
-      if (type == swellrt.Annotation.EVENT_REMOVED && annot.value != currentSelectionId) {
+      if (type == swell.Annotation.EVENT_REMOVED && annot.value != currentSelectionId) {
         window.menu.style.visibility = "hidden";
       }
 
@@ -161,8 +161,8 @@
     });
 
 
-    swellrt.Editor.AnnotationRegistry.define("mark","mark");
-    swellrt.Editor.AnnotationRegistry.setHandler("mark", (type, annot, event) => {
+    swell.Editor.AnnotationRegistry.define("mark","mark");
+    swell.Editor.AnnotationRegistry.setHandler("mark", (type, annot, event) => {
 
       console.log("Mark annotation event("+type+") "+annot.value+", "+annot.range.start+":"+annot.range.end);
 
@@ -182,17 +182,17 @@
     })
     .then(_object => {
 
-      object = _object.js(); // get Javascript view
+      object = _object;
 
-      if (!object.documents) {
+      if (!object.node('documents')) {
         // Create a live map
-        object.documents = swellrt.Map.create();
+        object.put('documents', swell.Map.create());
         // Make public after initialization
-        controller.setPublic(true);
+        object.setPublic(true);
       }
 
       // Create editor instance, reusable
-      editor = swellrt.Editor.createWithId("editor");
+      editor = swell.Editor.createWithId("editor");
 
 
       editor.setSelectionHandler((range, editor, point) => {
@@ -227,7 +227,7 @@
       renderDocumentList();
       // Listen for changes in the set of documents
       // update the displayed list.
-      object.documents.__controller.listen(function(e) {
+      object.node('documents').addListener(function(e) {
           renderDocumentList();
       });
 
@@ -253,7 +253,7 @@
     var documentList = document.getElementById("documentList");
     documentList.innerHTML = "";
 
-    var keys = object.__controller.get("documents").keys();
+    var keys = object.node('documents').keys();
     for (i = 0; i < keys.length; i++) {
 
           var name = keys[i];
@@ -291,11 +291,11 @@
 
     if (!name) {
       // create a new text
-      text = swellrt.Text.create("Write here your document. This text is not stored yet!");
+      text = swell.Text.create("Write here your document. This text is not stored yet!");
       isLocal = true;
       configButton("saveBtn","Save...");
     } else {
-      text = object.documents[name];
+      text = object.get('documents.'+name);
       isLocal = false;
       configButton("saveBtn","Save", true);
     }
@@ -334,13 +334,13 @@
 
     // Add text document to the collaborative object
     // Be careful! text var is still the old reference
-    object.documents[name] = text;
+    object.node('documents').put('name', text)
     // Set up the editor with the new text object
     configEditor(name);
   }
 
   function removeDocument(name) {
-    object.documents.__controller.remove(name);
+    object.node('documents').remove(name);
 
   }
 

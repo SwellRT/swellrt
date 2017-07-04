@@ -32,7 +32,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public SNode node(int index) throws SException {
+  public SNode pick(int index) throws SException {
     try {
       SNodeRemote node = list.get(index);
 
@@ -88,7 +88,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   @Override
   public SList<SNodeRemote> remove(int index) throws SException {
     check();
-    SNodeRemote node = (SNodeRemote) node(index);
+    SNodeRemote node = (SNodeRemote) pick(index);
     getObject().checkWritable(node);
 
     if (node instanceof SNodeRemoteContainer) {
@@ -247,6 +247,11 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 
 }

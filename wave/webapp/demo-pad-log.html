@@ -18,7 +18,7 @@
 
   <title>SwellRT, Text Pad Demo</title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/swellrt.css">
+  <link rel="stylesheet" href="css/swell.css">
   <style type="text/css">
 
   .bg-canvas {
@@ -164,14 +164,14 @@
 
   <script>
 
-    __swellrt_config = {
+    __swell_config = {
         websocketDebugLog: true,
         captureExceptions: false,
         websocketHeartbeatInterval: 30000
     };
 
     // Configure editor globals
-    __swellrt_editor_config = {
+    __swell_editor_config = {
       enableLog: false,
       webkitComposition: false
     };
@@ -179,11 +179,11 @@
 
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
-  <script src="/swellrt-beta.js"></script>
+  <script src="/swell.js"></script>
 
   <script>
 
-  swellrt.onReady(function(service) {
+  swell.onReady(function(service) {
 
     window.service = service;
 
@@ -192,7 +192,7 @@
 
     // We work with anonymous user
     service.login({
-      id : swellrt.Service.ANONYMOUS_USER_ID,
+      id : swell.Constants.ANONYMOUS_USER_ID,
       password : ""
     })
     .then(function(profile) {
@@ -203,9 +203,9 @@
 
       object = _object; // global var... yes, a bit nasty!
 
-      if (!object.has("documents")) {
+      if (!object.node('documents')) {
         // Create a live map
-        object.put("documents", swellrt.Map.create());
+        object.put('documents', swell.Map.create());
         // Make public after initialization
         object.setPublic(true);
       }
@@ -236,7 +236,7 @@
       service.profilesManager.enableStatusEvents(true);
 
       // Create editor instance, reusable
-      editor = swellrt.Editor.createWithId("editor", service);
+      editor = swell.Editor.createWithId("editor", service);
 
       // Configure editor with a empty document
       configEditor();
@@ -244,7 +244,7 @@
       renderDocumentList();
       // Listen for changes in the set of documents
       // update the displayed list.
-      object.get("documents").listen(function(e) {
+      object.node('documents').addListener(function(e) {
           renderDocumentList();
       });
 
@@ -261,7 +261,7 @@
     var documentList = document.getElementById("documentList");
     documentList.innerHTML = "";
 
-    var keys = object.get("documents").keys();
+    var keys = object.node('documents').keys();
     for (i = 0; i < keys.length; i++) {
 
           var name = keys[i];
@@ -299,11 +299,11 @@
 
     if (!name) {
       // create a new text
-      text = swellrt.Text.create("Write here your document. This text is not stored yet!");
+      text = swell.Text.create("Write here your document. This text is not stored yet!");
       isLocal = true;
       configButton("saveBtn","Save...");
     } else {
-      text = object.get("documents").get(name);
+      text = object.node('documents').pick(name);
       isLocal = false;
       configButton("saveBtn","Save", true);
     }
@@ -341,13 +341,13 @@
 
     // Add text document to the collaborative object
     // Be careful! text var is still the old reference
-    object.get("documents").put(name, text);
+    object.node('documents').put(name, text);
     // Set up the editor with the new text object
     configEditor(name);
   }
 
   function removeDocument(name) {
-    object.get("documents").remove(name);
+    object.node('documents').remove(name);
   }
 
 

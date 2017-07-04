@@ -86,7 +86,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   }
 
   @Override
-  public SNode node(String key) throws SException {
+  public SNode pick(String key) throws SException {
 
     // Don't call check here, this is a read operation!
 
@@ -132,7 +132,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   public SMap put(String key, SNode value) throws SException {
     SUtils.isValidMapKey(key);
     check();
-    getObject().checkWritable(node(key));
+    getObject().checkWritable(pick(key));
     SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
     map.put(key, remoteValue);
     cache.put(key, remoteValue);
@@ -149,7 +149,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public void remove(String key) throws SException {
     check();
-    getObject().checkWritable(node(key));
+    getObject().checkWritable(pick(key));
 
     if (!map.keySet().contains(key))
       return;
@@ -217,13 +217,13 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
        } else if (oldValue == null) {
          eventType = SEvent.ADDED_VALUE;
          // ensure attach the node, set keyname
-         eventValue = node(key);
+         eventValue = pick(key);
 
        // on updated
        } else {
          eventType = SEvent.UPDATED_VALUE;
          // ensure attach the node, set keyname
-         eventValue = node(key);
+         eventValue = pick(key);
 
        }
 
@@ -285,5 +285,10 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public Object get(String path) {
     return SNode.get(this, path);
+  }
+
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
   }
 }

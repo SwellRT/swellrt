@@ -9,8 +9,8 @@ import org.swellrt.beta.common.SException;
  */
 public interface SObservable {
 
-  public void addListener(SHandler h, String event, String path) throws SException;
+  public void addListener(SHandlerFunc h, String path) throws SException;
 
-  public void removeListener(SHandler h, String event, String path);
+  public void removeListener(SHandlerFunc h, String path) throws SException;
 
 }

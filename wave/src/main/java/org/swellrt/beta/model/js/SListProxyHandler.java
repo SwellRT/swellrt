@@ -104,7 +104,7 @@ public class SListProxyHandler extends ProxyHandler {
     Object result = executeSafeArrayOp(target, property, null, new ArrayOp() {
       @Override
       public Object exec(SList target, int index, Object data) throws SException {
-        return getProxy(target.node(index));
+        return getProxy(target.pick(index));
       }
     });
 
@@ -143,7 +143,7 @@ public class SListProxyHandler extends ProxyHandler {
           Object o = null;
           try {
             int last = target.size()-1;
-            o = target.node(last);
+            o = target.pick(last);
             target.remove(last);
           } catch (SException e) {
           }
@@ -212,10 +212,10 @@ public class SListProxyHandler extends ProxyHandler {
         if (value != null) {
           // add
           target.add(value, new Integer(index));
-          return getProxy(target.node(index));
+          return getProxy(target.pick(index));
         } else {
           // remove
-          Object removedValue = target.node(index);
+          Object removedValue = target.pick(index);
           target.remove(index);
           return getProxy(removedValue);
         }
@@ -280,7 +280,7 @@ public class SListProxyHandler extends ProxyHandler {
       @Override
       public Object exec(SList target, int index, Object data) throws SException {
        JsoView descriptor = JsoView.as(JavaScriptObject.createObject());
-        descriptor.setObject("value", target.node(index));
+        descriptor.setObject("value", target.pick(index));
        descriptor.setBoolean("writable", true);
        descriptor.setBoolean("enumerable", true);
        descriptor.setBoolean("configurable", true);
