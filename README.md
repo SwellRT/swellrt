@@ -50,6 +50,8 @@ Build
 ./gradlew compileJava devWeb
 ```
 
+If you get a "User limit of inotify watches reached" error, please increase this limit following stesp [here](https://askubuntu.com/questions/770374/user-limit-of-inotify-watches-reached-on-ubuntu-16-04)
+
 Start the server
 
 ```
@@ -57,6 +59,8 @@ Start the server
 ```
 
 Visit "http://localhost:9898" to check server installation and try some demos.
+
+
 
 
 ### Docker
