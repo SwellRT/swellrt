@@ -42,13 +42,14 @@
   }
 
   .document-list {
-
   }
 
   .selection {
-    background-color: red;
   }
-
+  
+  .mark {
+    border-bottom: 2px dashed chartreuse;
+  }
   .selection-menu {
     float: right;
     position: absolute;
@@ -104,6 +105,15 @@
   </div><!-- container -->
 
 
+  <script>
+
+    // Configure editor globals
+    __swellrt_editor_config = {
+      enableLog: true
+      //webkitComposition: false
+    };
+
+  </script>
 
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
@@ -111,20 +121,26 @@
 
   <script>
 
+
+
+    currentSelectionId = undefined;
+    currentSelectionRange = undefined;
+    currentSelection = undefined;
+
   swellrt.onReady(function(service) {
     window.service = service;
 
     var editorElt = document.getElementById("editor");
     window.menu = document.createElement("div");
     window.menu.className = "selection-menu";
-    window.menu.innerHTML = "Context Menu here..."
+    window.menu.innerHTML = "<input type='button' onclick='switchMark();' value='Mark/Unmark text'>";
     window.menu.style.visibility = "hidden";
     editorElt.appendChild(window.menu);
 
     swellrt.Editor.AnnotationRegistry.define("@selection","selection");
     swellrt.Editor.AnnotationRegistry.setHandler("@selection", (type, annot, event) => {
 
-      if (type == swellrt.Annotation.EVENT_ADDED) {
+      if (type == swellrt.Annotation.EVENT_ADDED && annot.value == currentSelectionId) {
 
         var sel = annot.node;  //document.getElementsByClassName("@selection")[0];
         if (sel) {
@@ -134,11 +150,21 @@
           window.menu.style.visibility = "visible";
         }
 
-      } else if (type == swellrt.Annotation.EVENT_REMOVED) {
+      } 
+      
+      if (type == swellrt.Annotation.EVENT_REMOVED && annot.value != currentSelectionId) {
         window.menu.style.visibility = "hidden";
       }
 
 
+
+    });
+
+
+    swellrt.Editor.AnnotationRegistry.define("mark","mark");
+    swellrt.Editor.AnnotationRegistry.setHandler("mark", (type, annot, event) => {
+
+      console.log("Mark annotation event("+type+") "+annot.value+", "+annot.range.start+":"+annot.range.end);
 
     });
 
@@ -147,7 +173,7 @@
 
     // We work with anonymous user
     service.login({
-      id : swellrt.Service.ANONYMOUS_USER_ID,
+      id : swell.Constants.ANONYMOUS_USER_ID,
       password : ""
     })
     .then(profile => {
@@ -172,13 +198,27 @@
       editor.setSelectionHandler((range, editor, point) => {
           console.log("new selection");
 
+          // This annotation shows the contextual menu
           if (editor._lastSelectionAnnotation) {
             editor._lastSelectionAnnotation.clear();
             delete editor._lastSelectionAnnotation;
           }
+
+          if (range.isCollapsed) {
+            console.log("selection is collapsed");            
+            range = swell.Editor.Range.create(range.start, range.start + 1);
+          }
+
+          console.log("range is "+range.start+":"+range.end);          
+          currentSelectionId = "selection-"+(new Date()).getTime();
           editor._lastSelectionAnnotation =
-                editor.setAnnotation("@selection", "dummy", range);
-    
+                editor.setAnnotation("@selection", currentSelectionId , range);
+
+          
+          currentSelection = point;
+          currentSelectionRange = range;
+
+
       });
 
       // Configure editor with a empty document
@@ -199,6 +239,15 @@
     });
 
   });
+
+  function switchMark() {
+    console.log("Switch mark");
+
+    /*
+    editor._lastSelectionAnnotation =
+                editor.setAnnotation("@selection", "dummy", range);
+                */
+  }
 
   function renderDocumentList() {
     var documentList = document.getElementById("documentList");

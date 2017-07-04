@@ -7,17 +7,16 @@ import org.swellrt.beta.client.js.Promise.FunctionParam;
 import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
+import org.swellrt.beta.client.operation.impl.EditUserOperation;
+import org.swellrt.beta.client.operation.impl.GetUserBatchOperation;
+import org.swellrt.beta.client.operation.impl.GetUserOperation;
+import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.client.operation.impl.LoginOperation;
 import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
-import org.swellrt.beta.client.operation.impl.EditUserOperation;
-import org.swellrt.beta.client.operation.impl.GetUserBatchOperation;
-import org.swellrt.beta.client.operation.impl.GetUserOperation;
-import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SHandler;
 import org.waveprotocol.wave.client.account.ProfileManager;
 
 import jsinterop.annotations.JsProperty;
@@ -279,11 +278,6 @@ public class PromisableServiceFrontend implements ServiceBasis {
 	@Override
   public void removeConnectionHandler(ConnectionHandler h) {
     service.removeConnectionHandler(h);
-  }
-  
-	@Override
-  public void listen(Object object, SHandler handler) {
-    service.listen(object, handler);
   }
   
 	

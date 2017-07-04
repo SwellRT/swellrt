@@ -2,6 +2,7 @@ package org.swellrt.beta.testing;
 
 import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.model.remote.STextRemote;
 import org.swellrt.beta.model.remote.SubstrateId;
@@ -36,13 +37,40 @@ public class FakePlatformBasedFactory implements PlatformBasedFactory {
       }
 
       @Override
-      public Object js() {
+      public void accept(SVisitor visitor) {
+        visitor.visit(this);
+      }
+
+      @Override
+      public void set(String path, Object value) {
+      }
+
+      @Override
+      public Object get(String path) {
         return null;
       }
 
       @Override
-      public Object json() {
+      public void push(String path, Object value, Object index) {
+      }
+
+      @Override
+      public Object pop(String path) {
         return null;
+      }
+
+      @Override
+      public void delete(String path) {
+      }
+
+      @Override
+      public int length(String path) {
+        return 0;
+      }
+
+      @Override
+      public boolean contains(String path, String property) {
+        return false;
       }
 
     };

@@ -27,13 +27,6 @@ public interface SList<T extends SNode> extends SNode {
   } 
   
   /**
-   * Returns a container or a primitive value.
-   * @param key
-   * @return
-   */
-  public Object get(int index) throws SException;
-  
-  /**
    * Returns a container or a primitive value container.
    * @param key
    * @return

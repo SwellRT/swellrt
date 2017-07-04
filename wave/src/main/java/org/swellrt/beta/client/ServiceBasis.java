@@ -1,7 +1,6 @@
 package org.swellrt.beta.client;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SHandler;
 import org.waveprotocol.wave.client.account.ProfileManager;
 
 import jsinterop.annotations.JsFunction;
@@ -26,5 +25,4 @@ public interface ServiceBasis {
   
   public void removeConnectionHandler(ConnectionHandler h);
   
-  public void listen(Object object, SHandler handler);
 }

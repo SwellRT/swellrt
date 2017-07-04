@@ -8,10 +8,12 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -30,11 +32,6 @@ public class SObjectLocal implements SObject {
   public SObjectLocal(SMap map) {
     this.delegateMap = map;
     this.participants = new HashSet<String>();
-  }
-
-  @Override
-  public Object get(String key) throws SException {
-    return delegateMap.get(key);
   }
 
   @JsIgnore
@@ -66,15 +63,10 @@ public class SObjectLocal implements SObject {
     return delegateMap.keys();
   }
 
-  @Override
   public Object js() {
     return new Proxy(delegateMap, new SMapProxyHandler());
   }
 
-  @Override
-  public Object json() {
-    return null;
-  }
 
   @JsProperty
   @Override
@@ -141,6 +133,52 @@ public class SObjectLocal implements SObject {
   @Override
   public SMap getUserObject() {
     return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
+  @Override
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+    SNode.set(this, path, value);
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+    SNode.push(this, path, value, index);
+  }
+
+  @Override
+  public Object pop(String path) {
+    return SNode.pop(this, path);
+  }
+
+  @Override
+  public int length(String path) {
+    return SNode.length(this, path);
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return SNode.contains(this, path, property);
+  }
+
+  @Override
+  public void delete(String path) {
+    SNode.delete(this, path);
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
   }
 
 }

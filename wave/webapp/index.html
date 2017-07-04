@@ -134,7 +134,7 @@
       })
       .then(function(object) {
 
-        if (!isProxySupported()) {
+        if (true) {
           // Using API without proxies
           if (!object.has("signal")) {
             object.put("signal", (new Date()).toString());

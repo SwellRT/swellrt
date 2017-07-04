@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.js.editor;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SWaveSchemas;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
@@ -13,6 +14,8 @@ import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.dom.client.Element;
+
+import jsinterop.annotations.JsOptional;
 
 public class STextLocalWeb implements STextWeb, STextLocal {
 
@@ -112,13 +115,45 @@ public class STextLocalWeb implements STextWeb, STextLocal {
     // nothing to do
   }
 
+
   @Override
-  public Object js() {
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+  }
+
+  @Override
+  public Object pop(String path) {
     return null;
   }
 
   @Override
-  public Object json() {
+  public int length(String path) {
+    return -1;
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return false;
+  }
+
+  @Override
+  public void delete(String path) {
+  }
+
+  @Override
+  public Object get(String path) {
     return null;
   }
 

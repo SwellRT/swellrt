@@ -6,11 +6,14 @@ import java.util.Map;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
-import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
+
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 
 
 public class SMapLocal implements SMap, HasJsProxy {
@@ -22,14 +25,6 @@ public class SMapLocal implements SMap, HasJsProxy {
   private Map<String, SNode> map = new HashMap<String, SNode>();
   private Proxy proxy = null;
 
-  @Override
-  public Object get(String key) {
-    SNode node = map.get(key);
-    if (node instanceof SPrimitive)
-      return ((SPrimitive) node).get();
-
-    return node;
-  }
 
   @Override
   public SMap put(String key, SNode value) {
@@ -89,16 +84,56 @@ public class SMapLocal implements SMap, HasJsProxy {
     return map.size();
   }
 
-  @Override
   public Object js() {
     if (proxy == null)
       proxy = new Proxy(this, new SMapProxyHandler());
     return proxy;
   }
 
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
   @Override
-  public Object json() {
-    return null;
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+    SNode.set(this, path, value);
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+    SNode.push(this, path, value, index);
+  }
+
+  @Override
+  public Object pop(String path) {
+    return SNode.pop(this, path);
+  }
+
+  @Override
+  public int length(String path) {
+    return SNode.length(this, path);
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return SNode.contains(this, path, property);
+  }
+
+  @Override
+  public void delete(String path) {
+    SNode.delete(this, path);
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
   }
 
 }

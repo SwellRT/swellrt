@@ -6,9 +6,13 @@ import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.SVisitor;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
 import com.google.gwt.core.client.JavaScriptObject;
+
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 
 public class SMapJs implements SMap {
 
@@ -113,19 +117,6 @@ public class SMapJs implements SMap {
 	}
 
 	@Override
-	public Object get(String key) {
-
-		if (key == null)
-			return null;
-
-		try {
-			return castToValue(jsv.getJso(key));
-		} catch (IllegalCastException e) {
-			return null;
-		}
-	}
-
-	@Override
 	public SNode node(String key) {
 
 		if (key == null)
@@ -188,13 +179,50 @@ public class SMapJs implements SMap {
 		return keys().length;
 	}
 
-	@Override
-	public Object js() {
-		return jso;
-	}
+
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
+  @Override
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
 
   @Override
-  public Object json() {
-    return jso;
+  public void set(String path, Object value) {
+    SNode.set(this, path, value);
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+    SNode.push(this, path, value, index);
+  }
+
+  @Override
+  public Object pop(String path) {
+    return SNode.pop(this, path);
+  }
+
+  @Override
+  public int length(String path) {
+    return SNode.length(this, path);
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return SNode.contains(this, path, property);
+  }
+
+  @Override
+  public void delete(String path) {
+    SNode.delete(this, path);
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
   }
 }

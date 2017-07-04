@@ -5,14 +5,24 @@ import org.swellrt.beta.client.js.editor.STextRemoteWeb;
 import org.swellrt.beta.client.js.editor.STextWeb;
 import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.client.wave.WaveLoader;
+import org.swellrt.beta.common.PathWalker;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.PathNodeExtractor;
+import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
+import org.swellrt.beta.model.SViewBuilder;
+import org.swellrt.beta.model.js.JsPathNodeExtractor;
+import org.swellrt.beta.model.js.JsViewVisitor;
 import org.swellrt.beta.model.local.STextLocal;
+import org.swellrt.beta.model.remote.SNodeRemote;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.model.remote.STextRemote;
 import org.swellrt.beta.model.remote.SubstrateId;
+import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.wave.Blip;
+
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * A separated place to create platform dependent types of the SwellRT model.
@@ -44,6 +54,40 @@ public interface PlatformBasedFactory {
     }
   }
 
+  static final JsViewVisitor JSVISITOR_NODE = new JsViewVisitor<SNode>();
+  static final JsViewVisitor JSVISITOR_NODE_REMOTE = new JsViewVisitor<SNodeRemote>();
+
+
+  public static SViewBuilder getViewBuilderForNode() {
+    return new JsViewVisitor<SNode>();
+  }
+
+  public static SViewBuilder getViewBuilderForNodeRemote() {
+    return new JsViewVisitor<SNodeRemote>();
+  }
+
+  static final PathNodeExtractor PATH_NODE_EXTRACTOR = new JsPathNodeExtractor();
+
+  public static PathNodeExtractor getPathNodeExtractor() {
+    return PATH_NODE_EXTRACTOR;
+  }
+
+  public static Object extractNode(JavaScriptObject jso, String path) {
+
+    if (path == null || path.isEmpty())
+      return jso;
+
+    PathWalker pathw = new PathWalker(path);
+
+    String pathElement = pathw.nextPathElement();
+    while (pathElement != null && !pathElement.isEmpty() && jso != null) {
+      jso = JsoView.as(jso).getJso(pathElement);
+      pathElement = pathw.nextPathElement();
+    }
+
+    return jso;
+  }
+
   public class WebPlatformFactory implements PlatformBasedFactory {
 
     private final SWaveDocuments<? extends InteractiveDocument> documentRegistry;
@@ -66,11 +110,11 @@ public interface PlatformBasedFactory {
 
     }
 
+
+
   }
 
 
   /** Return an instance of STextRemote hiding actual platform-based implementation */
   public STextRemote getSTextRemote(SObjectRemote object, SubstrateId substrateId, Blip blip);
-
-
 }

@@ -16,9 +16,6 @@ import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SHandler;
-import org.swellrt.beta.model.SUtils;
-import org.swellrt.beta.model.remote.SNodeRemoteContainer;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
@@ -194,20 +191,4 @@ public class ServiceFrontend implements ServiceBasis {
   public void removeConnectionHandler(ConnectionHandler h) {
     context.removeConnectionHandler(h);
   }
-
-  @Override
-  public void listen(Object object, SHandler handler) {
-
-    if (handler == null)
-      return;
-
-
-    // As container
-    SNodeRemoteContainer nodeContainer = SUtils.asContainer(object);
-
-    if (nodeContainer != null)
-      nodeContainer.listen(handler);
-
-  }
-
 }

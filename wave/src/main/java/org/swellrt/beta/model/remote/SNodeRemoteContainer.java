@@ -1,11 +1,17 @@
 package org.swellrt.beta.model.remote;
 
+import org.swellrt.beta.client.PlatformBasedFactory;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SHandler;
+import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObservable;
+import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.SVisitor;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "ListenableNode")
@@ -19,15 +25,54 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
       // Nothing to do
     }
 
+    @SuppressWarnings("rawtypes")
+    @JsIgnore
     @Override
-    public Object js() {
+    public void accept(SVisitor visitor) {
+    }
+
+    @Override
+    public void set(String path, Object value) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Object get(String path) {
+      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
-    public Object json() {
+    public void push(String path, Object value, @JsOptional Object index) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Object pop(String path) {
+      // TODO Auto-generated method stub
       return null;
     }
+
+    @Override
+    public void delete(String path) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public int length(String path) {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public boolean contains(String path, String property) {
+      // TODO Auto-generated method stub
+      return false;
+    }
+
   };
 
   protected boolean eventsEnabled = false;
@@ -64,15 +109,28 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
 
 
   @Override
-  public void listen(SHandler h) {
+  public void addListener(SHandler h, String event, String path) throws SException {
+    SNode node = null;
+    if (path != null)
+      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, this);
+    else
+      node = this;
+
+    // !!!!!!!!!!!!!!!!!!!!!!
+
+    if (node instanceof SPrimitive) {
+      SPrimitive primitiveNode = ((SPrimitive) node).getContainer();
+    }
+
     eventHandlerSet.add(h);
   }
 
 
   @Override
-  public void unlisten(SHandler h) {
+  public void removeListener(SHandler h, String event, String path) {
     eventHandlerSet.remove(h);
   }
+
 
 
   protected void triggerEvent(SEvent e) {

@@ -19,7 +19,7 @@ public class SPrimitiveTest extends TestCase {
     
     SPrimitive pStringBis = SPrimitive.deserialize(pStringAsString);
     
-    assertEquals(pString.get(), pStringBis.get());
+    assertEquals(pString.value(), pStringBis.value());
     assertEquals(pStringBis.getNodeAccessControl(), pString.getNodeAccessControl());
   }
 

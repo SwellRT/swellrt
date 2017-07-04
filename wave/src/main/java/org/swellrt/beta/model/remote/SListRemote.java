@@ -4,13 +4,14 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SNode;
-import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SListProxyHandler;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 
+import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 
 public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemote>, HasJsProxy, ObservableElementList.Listener<SNodeRemote> {
@@ -31,24 +32,15 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public Object get(int index) throws SException {
-
-    SNode node = node(index);
-    getObject().checkReadable(node);
-
-    if (node == null)
-      return null;
-
-    if (node instanceof SPrimitive)
-      return ((SPrimitive) node).get();
-
-    return node;
-  }
-
-  @Override
   public SNode node(int index) throws SException {
     try {
-      return list.get(index);
+      SNodeRemote node = list.get(index);
+
+      // This should be always true!
+      if (node instanceof SNodeRemote)
+        node.attach(this); // lazily set parent
+
+      return node;
     } catch (IndexOutOfBoundsException e) {
       throw new SException(SException.DATA_ERROR, e);
     } catch (Exception e) {
@@ -125,17 +117,12 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
     return this.list.size();
   }
 
-  @Override
   public Object js() {
     if (proxy == null)
       proxy = new Proxy(this, new SListProxyHandler());
     return proxy;
   }
 
-  @Override
-  public Object json() {
-    return null;
-  }
 
   //
   // Node remote container
@@ -214,6 +201,52 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   @Override
   public int indexOf(SNodeRemote node) throws SException {
       return this.list.indexOf(node);
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @JsIgnore
+  @Override
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+    SNode.set(this, path, value);
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+    SNode.push(this, path, value, index);
+  }
+
+  @Override
+  public Object pop(String path) {
+    return SNode.pop(this, path);
+  }
+
+  @Override
+  public int length(String path) {
+    return SNode.length(this, path);
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return SNode.contains(this, path, property);
+  }
+
+  @Override
+  public void delete(String path) {
+    SNode.delete(this, path);
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
   }
 
 }

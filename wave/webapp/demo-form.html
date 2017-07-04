@@ -90,16 +90,14 @@
 
   <script>
 
-  var api;
-
   swellrt.onReady(function(service) {
-    window.service;
+    window.service = service;
 
     // Put on eye on live communication turbulence
     service.addConnectionHandler(connectionHandler);
 
     service.login({
-      id : swellrt.Service.ANONYMOUS_USER_ID,
+      id : swellrt.Constants.ANONYMOUS_USER_ID,
       password : ""
     })
     .then(r=>{

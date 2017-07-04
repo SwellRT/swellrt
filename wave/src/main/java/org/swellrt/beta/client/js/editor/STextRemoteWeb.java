@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.js.editor;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.remote.SObjectRemote;
 import org.swellrt.beta.model.remote.STextRemote;
 import org.swellrt.beta.model.remote.SubstrateId;
@@ -13,6 +14,9 @@ import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.dom.client.Element;
+
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 
 /**
  * A text document supported by a remote wave document.
@@ -117,13 +121,48 @@ public class STextRemoteWeb extends STextRemote implements STextWeb {
     }
   }
 
+
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
   @Override
-  public Object js() {
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+  }
+
+  @Override
+  public Object pop(String path) {
     return null;
   }
 
   @Override
-  public Object json() {
+  public int length(String path) {
+    return -1;
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return false;
+  }
+
+  @Override
+  public void delete(String path) {
+  }
+
+  @Override
+  public Object get(String path) {
     return null;
   }
+
 }

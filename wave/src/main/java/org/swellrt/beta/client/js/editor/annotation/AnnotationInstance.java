@@ -237,4 +237,15 @@ public class AnnotationInstance {
     }
   }
 
+  /**
+   * Checks if the annotation is still present in the document
+   *
+   * @return
+   */
+  public boolean checkContent() {
+    String valueInDoc = this.doc.getAnnotation(range.getStart() + 1, name);
+
+    return valueInDoc != null && valueInDoc.contains(value);
+  }
+
 }

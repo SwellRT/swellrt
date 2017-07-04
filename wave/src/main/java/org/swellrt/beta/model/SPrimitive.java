@@ -8,6 +8,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 
 import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -22,11 +23,11 @@ public class SPrimitive extends SNodeRemote {
   private static final String DOUBLE_TYPE_PREFIX  = "d";
   private static final String JSO_TYPE_PREFIX  = "js";
 
-  private static final int TYPE_INT = 1;
-  private static final int TYPE_DOUBLE = 2;
-  private static final int TYPE_STRING = 3;
-  private static final int TYPE_BOOL = 4;
-  private static final int TYPE_JSO = 5;
+  public static final int TYPE_INT = 1;
+  public static final int TYPE_DOUBLE = 2;
+  public static final int TYPE_STRING = 3;
+  public static final int TYPE_BOOL = 4;
+  public static final int TYPE_JSO = 5;
 
   private final int type;
   private final int intValue;
@@ -38,6 +39,13 @@ public class SPrimitive extends SNodeRemote {
   private final SNodeAccessControl accessControl;
 
   /**
+   * Json primitive objects can be referenced inside a primitive object.
+   */
+  private SPrimitive container;
+  private String containerPath;
+  private String valuePath;
+
+  /**
    * the key associated with this value in its parent container
    * if it is a map.
    */
@@ -47,7 +55,7 @@ public class SPrimitive extends SNodeRemote {
   public static String asString(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (String) ((SPrimitive) node).get();
+        return (String) ((SPrimitive) node).value();
       }
     } catch (ClassCastException e)
     {
@@ -60,7 +68,7 @@ public class SPrimitive extends SNodeRemote {
   public static Double asDouble(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (double) ((SPrimitive) node).get();
+        return (double) ((SPrimitive) node).value();
       }
     } catch (ClassCastException e)
     {
@@ -73,7 +81,7 @@ public class SPrimitive extends SNodeRemote {
   public static Integer asInt(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (int) ((SPrimitive) node).get();
+        return (int) ((SPrimitive) node).value();
       }
     } catch (ClassCastException e)
     {
@@ -86,7 +94,7 @@ public class SPrimitive extends SNodeRemote {
   public static Boolean asBoolean(SNode node) {
     try{
       if (node != null && node instanceof SPrimitive) {
-        return (boolean) ((SPrimitive) node).get();
+        return (boolean) ((SPrimitive) node).value();
       }
     } catch (ClassCastException e)
     {
@@ -231,12 +239,28 @@ public class SPrimitive extends SNodeRemote {
     accessControl = token;
   }
 
+  @JsIgnore
+  public SPrimitive(JavaScriptObject value, SNodeAccessControl token, SPrimitive container,
+      String containerPath, String valuePath) {
+    type = TYPE_JSO;
+    intValue = Integer.MAX_VALUE;
+    doubleValue = Double.NaN;
+    stringValue = null;
+    boolValue = null;
+    jsoValue = value;
+    accessControl = token;
+
+    this.container = container;
+    this.containerPath = containerPath;
+    this.valuePath = valuePath;
+  }
+
   @JsProperty
   public int getType() {
     return type;
   }
 
-  public Object get() {
+  public Object value() {
 
     if (type == TYPE_STRING)
       return stringValue;
@@ -299,13 +323,59 @@ public class SPrimitive extends SNodeRemote {
     return accessControl;
   }
 
+  @JsIgnore
   @Override
-  public Object js() {
-    return get();
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+
+  public SPrimitive getContainer() {
+    return this.container;
+  }
+
+  public String getContainerPath() {
+    return this.containerPath;
+  }
+
+  public String getValuePath() {
+    return valuePath;
+
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
   }
 
   @Override
-  public Object json() {
-    return get();
+  public void push(String path, Object value, @JsOptional Object index) {
+  }
+
+  @Override
+  public Object pop(String path) {
+    return null;
+  }
+
+  @Override
+  public int length(String path) {
+    return -1;
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return false;
+  }
+
+  @Override
+  public void delete(String path) {
+  }
+
+  @Override
+  public Object get(String path) {
+    return null;
   }
 }

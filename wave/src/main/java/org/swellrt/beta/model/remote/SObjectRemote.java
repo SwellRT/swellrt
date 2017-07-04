@@ -17,6 +17,7 @@ import org.swellrt.beta.model.SObservable;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.SText;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.remote.wave.DocumentBasedBasicRMap;
@@ -42,6 +43,9 @@ import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
+
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 
 
 /**
@@ -343,14 +347,14 @@ public class SObjectRemote extends SNodeRemoteContainer
   }
 
   @Override
-  public void listen(SHandler h) {
-    root.listen(h);
+  public void addListener(SHandler h, String event, String path) {
+    root.addListener(h, event, path);
   }
 
 
   @Override
-  public void unlisten(SHandler h) {
-    root.unlisten(h);
+  public void removeListener(SHandler h, String event, String path) {
+    root.removeListener(h, event, path);
   }
 
   /**
@@ -586,14 +590,8 @@ public class SObjectRemote extends SNodeRemoteContainer
     return array;
   }
 
-  @Override
   public Object js() {
     return new Proxy(root, new SMapProxyHandler());
-  }
-
-  @Override
-  public Object json() {
-    return null;
   }
 
   @Override
@@ -610,12 +608,6 @@ public class SObjectRemote extends SNodeRemoteContainer
   // SMap interface
   //
 
-
-
-  @Override
-  public Object get(String key) throws SException {
-    return root.get(key);
-  }
 
   @Override
   public SNode node(String key) throws SException {
@@ -727,5 +719,50 @@ public class SObjectRemote extends SNodeRemoteContainer
     return false;
   }
 
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
+  @Override
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+    SNode.set(this, path, value);
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+    SNode.push(this, path, value, index);
+  }
+
+  @Override
+  public Object pop(String path) {
+    return SNode.pop(this, path);
+  }
+
+  @Override
+  public int length(String path) {
+    return SNode.length(this, path);
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return SNode.contains(this, path, property);
+  }
+
+  @Override
+  public void delete(String path) {
+    SNode.delete(this, path);
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
+  }
 
 }

@@ -35,6 +35,10 @@ public class JsUtils {
     return null;
   }-*/;
   
+  public static native JavaScriptObject asJso(String s) /*-{
+    return s;
+  }-*/;
+  
   public static String[] stringSetToArray(ReadableStringSet s) {
     final String[] array = new String[s.countEntries()];
     

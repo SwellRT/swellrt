@@ -9,10 +9,14 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
+
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 
 
 
@@ -108,20 +112,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       node = cache.get(key);
     }
 
-    return node;
-  }
-
-  @Override
-  public Object get(String key) throws SException {
-
-    SNode node = node(key);
     getObject().checkReadable(node);
-
-    if (node == null)
-      return null;
-
-    if (node instanceof SPrimitive)
-      return ((SPrimitive) node).get();
 
     return node;
   }
@@ -139,6 +130,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
   @Override
   public SMap put(String key, SNode value) throws SException {
+    SUtils.isValidMapKey(key);
     check();
     getObject().checkWritable(node(key));
     SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
@@ -179,17 +171,12 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     return map.keySet().size();
   }
 
-  @Override
   public Object js() {
     if (proxy == null)
       proxy = new Proxy(this, new SMapProxyHandler());
     return proxy;
   }
 
-  @Override
-  public Object json() {
-    return null;
-  }
 
   @Override
   public void setJsProxy(Proxy proxy) {
@@ -252,5 +239,51 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public String toString() {
     return "SMapRemote ["+getSubstrateId()+"]";
+  }
+
+  @SuppressWarnings("rawtypes")
+  @JsIgnore
+  @Override
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  @Override
+  public void set(String path, Object value) {
+    SNode.set(this, path, value);
+  }
+
+  @Override
+  public void push(String path, Object value, @JsOptional Object index) {
+    SNode.push(this, path, value, index);
+  }
+
+  @Override
+  public Object pop(String path) {
+    return SNode.pop(this, path);
+  }
+
+  @Override
+  public int length(String path) {
+    return SNode.length(this, path);
+  }
+
+  @Override
+  public boolean contains(String path, String property) {
+    return SNode.contains(this, path, property);
+  }
+
+  @Override
+  public void delete(String path) {
+    SNode.delete(this, path);
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
   }
 }
