@@ -4,28 +4,35 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.account.ServerAccountData;
+
+import com.google.gwt.core.client.JavaScriptObject;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-public final class GetUserOperation extends HTTPOperation<GetUserOperation.Options, GetUserOperation.Response> {
+public final class PasswordRecoverOperation extends HTTPOperation<PasswordRecoverOperation.Options, PasswordRecoverOperation.Response> {
 
   @JsType(isNative = true)
   public interface Options extends Operation.Options {
 
     @JsProperty
-    public String getId();
+    public String getEmail();
+
+    @JsProperty
+    public String getUrl();
 
   }
 
-  @JsType(isNative = true)
-  public interface Response extends Operation.Response, ServerAccountData {
+  public static final class Response extends JavaScriptObject implements Operation.Response {
+
+    protected Response() {
+
+    }
 
   }
 
 
-  public GetUserOperation(ServiceContext context) {
+  public PasswordRecoverOperation(ServiceContext context) {
     super(context);
   }
 
@@ -39,26 +46,21 @@ public final class GetUserOperation extends HTTPOperation<GetUserOperation.Optio
 
   @Override
   protected void onSuccess(int statusCode, String data, Callback<Response> callback) {
-    Response response = generateResponse(data);
     if (callback != null)
-      callback.onSuccess(response);
+      callback.onSuccess(null);
   }
 
 
   @Override
   public void execute(Options options, Callback<Response> callback) {
 
-    if (!getServiceContext().isSession()) {
+    addPathElement("email");
 
-      if (callback != null)
-        callback.onError(new SException(SException.NOT_LOGGED_IN));
+    addQueryParam("email", options.getEmail());
+    addQueryParam("recover-url", options.getUrl());
+    addQueryParam("method", "password-reset");
 
-      return;
-    }
-
-    addPathElement("account");
-    addPathElement(getServiceContext().getParticipantId());
-    executeGet(callback);
+    executePost(callback);
   }
 
 

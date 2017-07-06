@@ -1,6 +1,10 @@
 package org.swellrt.server.box.servlet;
 
-import com.google.inject.Inject;
+import java.io.IOException;
+import java.util.Enumeration;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.waveprotocol.box.server.account.AccountData;
 import org.waveprotocol.box.server.account.HumanAccountData;
@@ -12,12 +16,17 @@ import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.io.IOException;
-import java.util.Enumeration;
+import com.google.inject.Inject;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+/**
+ * Service to change passwords
+ *
+ * POST
+ *
+ * /password?id={id}&token-or-password={tokenOrPassword}&new-password={newPassword}
+ *
+ *
+ */
 public class PasswordService extends BaseService {
 
   public static final String ID = "id";

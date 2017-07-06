@@ -39,6 +39,17 @@ import org.waveprotocol.wave.util.logging.Log;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
+/**
+ * Sends email for password recovery or reset
+ *
+ * POST /email?email={emailAddress}&method={ "set" |
+ * "password-reset"}&recover-url={recoverUrl}
+ *
+ * <p>
+ * <br>
+ * recoverUrl parameter must contain a valid URL with variables "$token" and
+ * "$user-id"
+ */
 public class EmailService extends BaseService {
 
   public static final String EMAIL = "email";

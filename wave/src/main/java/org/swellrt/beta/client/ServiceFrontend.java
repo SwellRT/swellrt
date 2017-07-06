@@ -13,6 +13,8 @@ import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.client.operation.impl.LoginOperation;
 import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
+import org.swellrt.beta.client.operation.impl.PasswordRecoverOperation;
+import org.swellrt.beta.client.operation.impl.PasswordOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.common.SException;
@@ -173,6 +175,16 @@ public class ServiceFrontend implements ServiceBasis {
 
   public void listLogin(ListLoginOperation.Options options, Callback<ListLoginOperation.Response> callback) {
     ListLoginOperation op = new ListLoginOperation(context);
+    op.execute(options, callback);
+  }
+
+  public void recoverPassword(PasswordRecoverOperation.Options options, Callback<PasswordRecoverOperation.Response> callback) {
+    PasswordRecoverOperation op = new PasswordRecoverOperation(context);
+    op.execute(options, callback);
+  }
+
+  public void password(PasswordOperation.Options options, Callback<PasswordOperation.Response> callback) {
+    PasswordOperation op = new PasswordOperation(context);
     op.execute(options, callback);
   }
 

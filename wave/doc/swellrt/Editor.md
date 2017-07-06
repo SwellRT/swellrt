@@ -1,11 +1,12 @@
 
 
+Swell Web API includes a rich-text editor highly customizable.
 
 
 
 ## Annotations
 
-An annotation is a pair *{key, value}* associated with a segments of text defined by a *range*. 
+An annotation is a pair *{key, value}* associated with a segment of text or *range* of the document. 
 
 ```
 	It was one of those March days when...
@@ -24,7 +25,7 @@ Annotations can also modify how text is rendered in order to provide visual effe
 
 ### Out of the box annotations
 
-The SwellRT editor provides a predefined set of annotations that helps to control appearence and styling of the text, following the CSS rules:
+The Swell editor provides a predefined set of annotations that helps to control appearence and styling of the text, following the CSS rules:
 
 **Paragraph style annotations**
 
@@ -230,17 +231,17 @@ Create, update and delete events are triggered anytime the editor renders an ann
 
 ### Show debug messages in Web console
 
-Set the following configuration property before SwellRT script is loaded:
+Set the following configuration property before Swell script is loaded:
 
 ```
-    __swellrt_editor_config = {
+    __swell_editor_config = {
       enableLog: true
     };
 ```
 
 ### Wave Editor 
 
-The Wave project included in SwellRT has a particular GWT module to try and debug the editor component:
+The Wave project included in Swell has a particular GWT module to try and debug the editor component:
 
 
 - Run `./gradlew gwtEditorDev`

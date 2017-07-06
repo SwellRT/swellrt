@@ -56,7 +56,7 @@ public final class LogoutOperation extends HTTPOperation<LogoutOperation.Options
     addPathElement("auth");
 
     if (getServiceContext().isSession()) {
-        if (options.getId() == null ||
+      if (options == null || options.getId() == null ||
             (options.getId() != null && options.getId().equals(getServiceContext().getParticipantId()))) {
         addPathElement(getServiceContext().getParticipantId());
         resetContext = true;

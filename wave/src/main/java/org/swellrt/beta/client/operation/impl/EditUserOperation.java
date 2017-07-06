@@ -104,16 +104,15 @@ public final class EditUserOperation extends HTTPOperation<EditUserOperation.Opt
   @Override
   public void execute(Options options, Callback<Response> callback) {
 
-
-    if (options == null ||
-        options.getId() == null) {
-
+    if (!getServiceContext().isSession()) {
       if (callback != null)
-    	  callback.onError(new SException(SException.MISSING_PARAMETERS));
+        callback.onError(new SException(SException.NOT_LOGGED_IN));
+
+      return;
     }
 
     addPathElement("account");
-    addPathElement(options.getId());
+    addPathElement(getServiceContext().getParticipantId());
     setBody(generateBody(options));
     executePost(callback);
   }
