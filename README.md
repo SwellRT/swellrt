@@ -1,36 +1,79 @@
 # SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
 
-SwellRT is an open source **backend-as-a-service**. It allows to develop Web and _mobile_(*) apps faster by providing a set of common backend features:
-
-
-### Features:
+SwellRT is an open source **backend as a service**, providing a set of handy features for Web apps:
 
 * Real-time storage (NoSQL)
 * User management
-* Auth
+* Authentication
 * Event based integration
 
-SwellRT enables easily real-time collaboration in your apps:
+SwellRT allow to develop all kind of real time collaborative applications as...
 
-* Collaborative text editing
-* Chats
+* Collaborative text editor
+* Instant messaging
 * Reactive user interface
 * Push notifications
-* Ubiquitous User Experience across devices
 
 
-**Federation:**
+The Web API enables a easy way of sharing objects. This is a summary
+of the syntax:
 
-SwellRT servers can be federated using Matrix.org open protocol.
+Open or create objects:
+
+```js
+
+service.open({
+
+	id: 'shared-object-id'
+
+}).then(object => {
+
+ 	// Anyone can open the object
+ 	
+	object.setPublic(true);
+
+});
+```
+
+Set and get a property:
+
+```js
+
+object.set('person', 
+  { 
+	name: 'Alice',
+	city: 'New York'
+  });
+  
+object.get('person.city');
+
+  
+```
+
+Listen for updates (local or remote):
+
+```js
+
+object.node('person').addListener( event => {
+	
+	console.log('Property Updated ');
+
+});	
+```
+
+## Documentation and examples
+
+API documentation can be found [here](https://github.com/P2Pvalue/swellrt/blob/master/wave/doc/swellrt/Reference.md)
+
+Basic examples can be found [here](https://github.com/P2Pvalue/swellrt/tree/master/wave/webapp). Try them running a SwellRT server
+and visiting *http://localhost:9898*
 
 
-_(*) Note: native mobile clients are not still available_
-
-## Running SwellRT Server
+## Running a SwellRT Server
 
 You can build the server yourself or use our pre-built Docker image. 
 
-### Building on your own
+### Building SwellRT from source code
 
 Prerequisites
 
@@ -104,52 +147,12 @@ List of docker's image folders that should be placed outside the container (in y
 - `/usr/local/swellrt/avatars` Folder storing user's avatar.
 - `/usr/local/swellrt/attachments` Folder storing attachment files (when MongoDB is not used as attachment storage).
 
+Remember to copy default configuration files from project's `wave/config` folder to the config folder outside the container. 
 Visit "http://localhost:9898" to check server installation and try some demos.
 
+## Federation
 
-## API (JavaScript Web)
-
-At the moment, SwellRT only provides a JavaScript client for Web projects.
-
-A good starting point is the source code of [form demo](https://github.com/P2Pvalue/swellrt/blob/master/wave/webapp/demo-form.html) and [text editor demo](https://github.com/P2Pvalue/swellrt/blob/master/wave/webapp/demo-pad.html)
-
-#### Basic Concepts
-
-The aim of SwellRT API is to provide easy programming of real-time collaboration. The programming model is based in two abstractions:
-
-
-**Collaborators**
-
-Users registered in any SwellRT server. Also there is a special _anonymous_ collaborator.
-Each collaborator belongs to a server instance, and their ID has the syntax _(user name)@(server name)_
-
-
-**Collaborative Objects**
-
-A collaborative object is a data structure shared by one or more _collaborators_.
-Each collaborator can have different level of access to an object and its parts.
-
-An object, when it is used by a collaborator has three different data zones:
-
-- Persisted zone: any change in this zone is automatically sync and persisted among collaborators.
-- Private zone: only the current collaborator has access to this zone. This data is persisted.
-- Transient zone*: any change in this zone is automatically among collaborators, but it is never persisted.
-
-Each zone is a nested structured of arrays, maps and primitive values. For example, in Javascript it can be seen as
-an object.
-
-_(*) Transient zones are not still available._
-
-## First steps
-
-
-Ensure that SwellRT Server is running on "http://localhost:9898". To make your Web project load the client:
-
-```
-<script src='http://localhost:9898/swellrt-beta.js'></script>
-```
-
-Head over to our [GH Wiki](https://github.com/P2Pvalue/swellrt/wiki/Get-Started#basic-steps) for a quick jumpstart! 
+SwellRT servers can be federated using Matrix.org open protocol.
 
 ## Contact and Support
 
