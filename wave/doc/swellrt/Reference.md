@@ -164,7 +164,7 @@ Changes the user's password having an old password or a temporary recovery token
 ```js
 service.password({
 
-    oldPassword: '******'
+    oldPassword: '******',
     newPassword: '******'
 })
 .then( result => {  })
@@ -191,9 +191,8 @@ Sends an email to the login user with a link containing password recovery token.
 ```js
 service.recoverPassword({
 
-    email: 'alice@jmail.com',
     url: 'http://myapp/rememberpassword?t=$token&id=$user-id'
-    
+
 })
 .then( result => {  })
 .catch( error => {  });
