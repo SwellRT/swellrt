@@ -16,6 +16,9 @@ public final class PasswordOperation extends HTTPOperation<PasswordOperation.Opt
   public interface Options extends Operation.Options {
 
     @JsProperty
+    public String getId();
+
+    @JsProperty
     public String getOldPassword();
 
     @JsProperty
@@ -57,17 +60,9 @@ public final class PasswordOperation extends HTTPOperation<PasswordOperation.Opt
   @Override
   public void execute(Options options, Callback<Response> callback) {
 
-    if (!getServiceContext().isSession()) {
-
-      if (callback != null)
-        callback.onError(new SException(SException.NOT_LOGGED_IN));
-
-      return;
-    }
-
 
     addPathElement("password");
-    addQueryParam("id", getServiceContext().getParticipantId());
+    addQueryParam("id", options.getId());
 
     if (options.getOldPassword() != null) {
       addQueryParam("token-or-password", options.getOldPassword());

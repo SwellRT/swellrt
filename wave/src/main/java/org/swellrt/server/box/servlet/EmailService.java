@@ -40,19 +40,34 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 /**
- * Sends email for password recovery or reset
  *
- * POST /email?email={emailAddress}&method={ "set" |
- * "password-reset"}&recover-url={recoverUrl}
+ * Set or update email address for the current logged in user
+ * <p>
  *
+ * <pre>
+ * POST /email?method=set&email={emailAddress}
+ * </pre>
  * <p>
  * <br>
+ * Send a reset password email for a user identified by email address or id.
+ * <p>
+ *
+ * <pre>
+ * POST /email?method=password-reset&id-or-email={idOrEmail}&recover-url={recoverUrl}
+ * </pre>
+ *
+ * <p>
  * recoverUrl parameter must contain a valid URL with variables "$token" and
  * "$user-id"
+ * <p>
+ * TODO: change service name to something more related to, e.g. POST password/recover, POST account/email
+ * TODO: control exceptions on missing parameters
  */
 public class EmailService extends BaseService {
 
   public static final String EMAIL = "email";
+
+  public static final String ID_EMAIL = "id-or-email";
 
   private static final String METHOD = "method";
 
@@ -195,7 +210,7 @@ public class EmailService extends BaseService {
         case PASSWORD_RESET:
 
           String recoverUrl = URLDecoder.decode(req.getParameter(RECOVER_URL), "UTF-8");
-          String idOrEmail = URLDecoder.decode(req.getParameter("id-or-email"), "UTF-8");
+          String idOrEmail = URLDecoder.decode(req.getParameter(ID_EMAIL), "UTF-8");
 
           String emailAddress = "";
           try {
@@ -204,7 +219,7 @@ public class EmailService extends BaseService {
             try {
               accounts = accountStore.getAccountByEmail(idOrEmail);
             } catch (NotImplementedException e) {
-              response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
 
             // try to find by username if not found by email
@@ -224,7 +239,8 @@ public class EmailService extends BaseService {
               for (AccountData a : accounts) {
 
             	String userAddress = a.getId().getAddress();
-            	String userName = a.getId().getAddress().split("@")[0];
+              String userName = a.asHuman().getName() != null ? a.asHuman().getName()
+                  : a.getId().getAddress().split("@")[0];
 
                 double random = Math.random();
 

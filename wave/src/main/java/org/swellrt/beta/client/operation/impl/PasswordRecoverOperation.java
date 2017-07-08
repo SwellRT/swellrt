@@ -6,6 +6,7 @@ import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.safehtml.shared.UriUtils;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -14,6 +15,9 @@ public final class PasswordRecoverOperation extends HTTPOperation<PasswordRecove
 
   @JsType(isNative = true)
   public interface Options extends Operation.Options {
+
+    @JsProperty
+    public String getId();
 
     @JsProperty
     public String getEmail();
@@ -56,7 +60,17 @@ public final class PasswordRecoverOperation extends HTTPOperation<PasswordRecove
 
     addPathElement("email");
 
-    addQueryParam("email", options.getEmail());
+    if (options.getId() != null)
+      addQueryParam("id-or-email", options.getId());
+    else if (options.getEmail() != null)
+      addQueryParam("id-or-email", UriUtils.encode(options.getEmail()));
+    else if (callback != null) {
+      callback.onError(
+          new SException(SException.MISSING_PARAMETERS, null, "User id or email is required"));
+
+      return;
+    }
+
     addQueryParam("recover-url", options.getUrl());
     addQueryParam("method", "password-reset");
 
