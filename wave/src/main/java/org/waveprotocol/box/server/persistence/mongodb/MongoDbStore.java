@@ -19,23 +19,20 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.wave.api.Context;
-import com.google.wave.api.ProtocolVersion;
-import com.google.wave.api.event.EventType;
-import com.google.wave.api.robot.Capability;
+import static com.mongodb.client.model.Filters.eq;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoException;
-import com.mongodb.gridfs.GridFS;
-import com.mongodb.gridfs.GridFSDBFile;
-import com.mongodb.gridfs.GridFSInputFile;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.commons.validator.EmailValidator;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.BasicBSONList;
 import org.waveprotocol.box.attachment.AttachmentMetadata;
 import org.waveprotocol.box.attachment.AttachmentProto;
@@ -47,7 +44,6 @@ import org.waveprotocol.box.server.account.RobotAccountData;
 import org.waveprotocol.box.server.account.RobotAccountDataImpl;
 import org.waveprotocol.box.server.account.SecretToken;
 import org.waveprotocol.box.server.authentication.PasswordDigest;
-import org.waveprotocol.box.server.persistence.AccountAttachmentStore;
 import org.waveprotocol.box.server.persistence.AccountStore;
 import org.waveprotocol.box.server.persistence.AttachmentStore;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -61,15 +57,25 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.wave.api.Context;
+import com.google.wave.api.ProtocolVersion;
+import com.google.wave.api.event.EventType;
+import com.google.wave.api.robot.Capability;
+import com.mongodb.BasicDBObject;
+import com.mongodb.Block;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSDownloadStream;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 
 /**
  * <b>CertPathStore:</b><br/>
@@ -116,16 +122,16 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   private static final String ACCOUNT_LOCALE = "locale";
   private static final String NAME_FIELD = "name";
 
-  private final DB database;
-  private final GridFS attachmentGrid;
-  private final GridFS thumbnailGrid;
-  private final GridFS metadataGrid;
+  private final MongoDatabase database;
+  private final GridFSBucket attachmentGrid;
+  private final GridFSBucket thumbnailGrid;
+  private final GridFSBucket metadataGrid;
 
-  MongoDbStore(DB database) {
+  MongoDbStore(MongoDatabase database) {
     this.database = database;
-    attachmentGrid = new GridFS(database, "attachments");
-    thumbnailGrid = new GridFS(database, "thumbnails");
-    metadataGrid = new GridFS(database, "metadata");
+    attachmentGrid = GridFSBuckets.create(database, "attachments");
+    thumbnailGrid = GridFSBuckets.create(database, "thumbnails");
+    metadataGrid = GridFSBuckets.create(database, "metadata");
   }
 
   @Override
@@ -133,12 +139,14 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     // Nothing to initialize
   }
 
+  private static Bson filterSignerInfoBy(byte[] signerId) {
+    return Filters.eq("_id", signerId);
+  }
+
   @Override
   public SignerInfo getSignerInfo(byte[] signerId) {
-    DBObject query = getDBObjectForSignerId(signerId);
-    DBCollection signerInfoCollection = getSignerInfoCollection();
-    DBObject signerInfoDBObject = signerInfoCollection.findOne(query);
 
+    BasicDBObject signerInfoDBObject = getSignerInfoCollection().find(filterSignerInfoBy(signerId)).first();
     // Sub-class contract specifies return null when not found
     SignerInfo signerInfo = null;
 
@@ -161,72 +169,103 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     byte[] signerId = signerInfo.getSignerId();
 
     // Not using a modifier here because rebuilding the object is not a lot of
-    // work. Doing implicit upsert by using save with a DBOBject that has an _id
-    // set.
-    DBObject signerInfoDBObject = getDBObjectForSignerId(signerId);
+    // work.
+    BasicDBObject signerInfoDBObject = new BasicDBObject("_id", signerId);
     signerInfoDBObject.put("protoBuff", protocolSignerInfo.toByteArray());
-    getSignerInfoCollection().save(signerInfoDBObject);
+
+    getSignerInfoCollection().replaceOne(filterSignerInfoBy(signerId), signerInfoDBObject,
+        new UpdateOptions().upsert(true));
   }
 
   /**
    * Returns an instance of {@link DBCollection} for storing SignerInfo.
    */
-  private DBCollection getSignerInfoCollection() {
-    return database.getCollection("signerInfo");
+  private MongoCollection<BasicDBObject> getSignerInfoCollection() {
+    return database.getCollection("signerInfo", BasicDBObject.class);
   }
 
-  /**
-   * Returns a {@link DBObject} which contains the key-value pair used to
-   * signify the signerId.
-   *
-   * @param signerId the signerId value to set.
-   * @return a new {@link DBObject} with the (_id,signerId) entry.
-   */
-  private DBObject getDBObjectForSignerId(byte[] signerId) {
-    DBObject query = new BasicDBObject();
-    query.put("_id", signerId);
-    return query;
-  }
+
 
   // *********** Attachments.
 
   @Override
   public AttachmentData getAttachment(AttachmentId attachmentId) {
 
-    final GridFSDBFile attachment = attachmentGrid.findOne(attachmentId.serialise());
-    return fileToAttachmentData(attachment);
+    GridFSFile gridFile = getAttachmentGridFSFile(attachmentId);
+
+    if (gridFile == null)
+      return null;
+
+
+    return fileToAttachmentData(gridFile);
   }
 
   @Override
-  public void storeAttachment(AttachmentId attachmentId, InputStream data)
+  public void storeAttachment(AttachmentId attachmentId, InputStream dataInputStream)
       throws IOException {
-    saveFile(attachmentGrid.createFile(data, attachmentId.serialise()));
+
+    GridFSUploadOptions options = new GridFSUploadOptions().chunkSizeBytes(1024)
+        .metadata(new Document("type", "attachment").append("id", attachmentId.serialise()));
+
+    attachmentGrid.uploadFromStream(attachmentId.serialise(), dataInputStream, options);
   }
 
   @Override
   public void deleteAttachment(AttachmentId attachmentId) {
-    attachmentGrid.remove(attachmentId.serialise());
-    thumbnailGrid.remove(attachmentId.serialise());
-    metadataGrid.remove(attachmentId.serialise());
+    GridFSFile attachmentFile = getAttachmentGridFSFile(attachmentId);
+    if (attachmentFile != null)
+      attachmentGrid.delete(attachmentFile.getObjectId());
+
+    GridFSFile thumbnailFile = getThumnailGridFSFile(attachmentId);
+    if (thumbnailFile != null)
+      thumbnailGrid.delete(thumbnailFile.getObjectId());
+
+    GridFSFile metadataFile = getMetadataGridFSFile(attachmentId);
+    if (metadataFile != null)
+      metadataGrid.delete(metadataFile.getObjectId());
   }
 
+  private GridFSFile getAttachmentGridFSFile(AttachmentId attachmentId) {
+    return attachmentGrid.find(eq("metadata.id", attachmentId.serialise())).first();
+  }
+
+  private GridFSFile getMetadataGridFSFile(AttachmentId attachmentId) {
+    return metadataGrid.find(eq("metadata.id", attachmentId.serialise())).first();
+  }
+
+  private GridFSFile getThumnailGridFSFile(AttachmentId attachmentId) {
+    return thumbnailGrid.find(eq("metadata.id", attachmentId.serialise())).first();
+  }
 
   @Override
   public AttachmentMetadata getMetadata(AttachmentId attachmentId) throws IOException {
-    final GridFSDBFile metadata = metadataGrid.findOne(attachmentId.serialise());
+    GridFSFile metadataFile = getMetadataGridFSFile(attachmentId);
 
-    if (metadata == null) {
+    if (metadataFile == null)
       return null;
+
+    try (GridFSDownloadStream metadataStream = metadataGrid
+        .openDownloadStream(metadataFile.getObjectId())) {
+
+      if (metadataStream == null) {
+        return null;
+      }
+
+      AttachmentProto.AttachmentMetadata protoMetadata = AttachmentProto.AttachmentMetadata
+          .parseFrom(metadataStream);
+
+      return new AttachmentMetadataProtoImpl(protoMetadata);
+
+    } catch (MongoException e) {
+      throw new IOException(e);
     }
-    AttachmentProto.AttachmentMetadata protoMetadata =
-        AttachmentProto.AttachmentMetadata.parseFrom(metadata.getInputStream());
-    return new AttachmentMetadataProtoImpl(protoMetadata);
+
   }
 
   @Override
   public AttachmentData getThumbnail(AttachmentId attachmentId) throws IOException {
-    final GridFSDBFile thumbnail = thumbnailGrid.findOne(attachmentId.serialise());
-    return fileToAttachmentData(thumbnail);
+    GridFSFile thumbFile = getThumnailGridFSFile(attachmentId);
+    return fileToAttachmentData(thumbFile);
   }
 
   @Override
@@ -234,52 +273,59 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       throws IOException {
     AttachmentMetadataProtoImpl proto = new AttachmentMetadataProtoImpl(metaData);
     byte[] bytes = proto.getPB().toByteArray();
-    GridFSInputFile file =
-        metadataGrid.createFile(new ByteArrayInputStream(bytes), attachmentId.serialise());
-    saveFile(file);
+
+    GridFSUploadOptions options = new GridFSUploadOptions().chunkSizeBytes(255)
+        .metadata(new Document("type", "metadata").append("id", attachmentId.serialise()));
+
+    metadataGrid.uploadFromStream(attachmentId.serialise(), new ByteArrayInputStream(bytes),
+        options);
   }
 
   @Override
-  public void storeThumbnail(AttachmentId attachmentId, InputStream dataData) throws IOException {
-    saveFile(thumbnailGrid.createFile(dataData, attachmentId.serialise()));
+  public void storeThumbnail(AttachmentId attachmentId, InputStream dataInputStream)
+      throws IOException {
+
+    GridFSUploadOptions options = new GridFSUploadOptions()
+        .chunkSizeBytes(1024)
+        .metadata(new Document("type", "thumbnail").append("id", attachmentId.serialise()));
+
+    thumbnailGrid.uploadFromStream(attachmentId.serialise(), dataInputStream,
+        options);
   }
 
-  private void saveFile(GridFSInputFile file) throws IOException {
-    try {
-      file.save();
-    } catch (MongoException e) {
-      // Unfortunately, file.save() wraps any IOException thrown in a
-      // 'MongoException'. Since the interface explicitly throws IOExceptions,
-      // we unwrap any IOExceptions thrown.
-      Throwable innerException = e.getCause();
-      if (innerException instanceof IOException) {
-        throw (IOException) innerException;
-      } else {
-        throw e;
-      }
-    };
-  }
 
-  private AttachmentData fileToAttachmentData(final GridFSDBFile attachmant) {
-    if (attachmant == null) {
+  private AttachmentData fileToAttachmentData(final GridFSFile attachmentFile) {
+    if (attachmentFile == null) {
       return null;
     } else {
       return new AttachmentData() {
 
         @Override
         public InputStream getInputStream() throws IOException {
-          return attachmant.getInputStream();
+          return attachmentGrid.openDownloadStream(attachmentFile.getObjectId());
         }
 
         @Override
         public long getSize() {
-          return attachmant.getLength();
+          return attachmentFile.getLength();
         }
       };
     }
   }
 
   // ******** AccountStore
+
+  private static Bson filterAccountBy(ParticipantId id) {
+    return Filters.eq("_id", id.getAddress());
+  }
+
+  private static Bson filterAccountByEmail(String email) {
+    return Filters.eq(ACCOUNT_HUMAN_DATA_FIELD + "." + EMAIL_FIELD, email);
+  }
+
+  private BasicDBObject getAccountDBObject(ParticipantId id) {
+    return getAccountCollection().find(filterAccountBy(id)).first();
+  }
 
   @Override
   public void initializeAccountStore() throws PersistenceException {
@@ -288,19 +334,19 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
 
   @Override
   public AccountData getAccount(ParticipantId id) {
-    DBObject query = getDBObjectForParticipant(id);
-    DBObject result = getAccountCollection().findOne(query);
+    BasicDBObject accountDBObject = getAccountDBObject(id);
 
-    if (result == null) {
+    if (accountDBObject == null) {
       return null;
     }
 
-    return accountFromQueryResult(result, id);
+    return accountFromQueryResult(accountDBObject, id);
   }
 
   @Override
   public void putAccount(AccountData account) {
-    DBObject object = getDBObjectForParticipant(account.getId());
+
+    BasicDBObject object = new BasicDBObject("_id", account.getId().getAddress());
 
     if (account.isHuman()) {
       object.put(ACCOUNT_HUMAN_DATA_FIELD, humanToObject(account.asHuman()));
@@ -310,23 +356,20 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       throw new IllegalStateException("Account is neither a human nor a robot");
     }
 
-    getAccountCollection().save(object);
+    getAccountCollection().replaceOne(
+        filterAccountBy(account.getId()),
+        object,
+        new UpdateOptions().upsert(true));
   }
 
   @Override
   public void removeAccount(ParticipantId id) {
-    DBObject object = getDBObjectForParticipant(id);
-    getAccountCollection().remove(object);
+    getAccountCollection().deleteOne(filterAccountBy(id));
   }
 
-  private DBObject getDBObjectForParticipant(ParticipantId id) {
-    DBObject query = new BasicDBObject();
-    query.put("_id", id.getAddress());
-    return query;
-  }
 
-  private DBCollection getAccountCollection() {
-    return database.getCollection(ACCOUNT_COLLECTION);
+  private MongoCollection<BasicDBObject> getAccountCollection() {
+    return database.getCollection(ACCOUNT_COLLECTION, BasicDBObject.class);
   }
 
   // ****** HumanAccountData serialization
@@ -364,7 +407,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
       object.put(NAME_FIELD, account.getName());
     }
 
-    
+
     return object;
   }
 
@@ -390,7 +433,7 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     locale = (String) object.get(ACCOUNT_LOCALE);
     avatarFileName = (String) object.get(ACCOUNT_AVATAR_FILE);
     name = (String) object.get(NAME_FIELD);
-    
+
     return new HumanAccountDataImpl(id, passwordDigest, email, token, locale, avatarFileName, name);
   }
 
@@ -473,19 +516,15 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
   public List<AccountData> getAccountByEmail(String email) throws PersistenceException {
 
     Preconditions.checkNotNull(email, "Email can't be null");
+    final ArrayList<AccountData> accounts = new ArrayList<AccountData>();
+    getAccountCollection().find(filterAccountByEmail(email)).forEach(new Block<BasicDBObject>() {
 
-    DBObject query = new BasicDBObject();
+      @Override
+      public void apply(BasicDBObject t) {
+        accounts.add(accountFromQueryResult(t, null));
+      }
 
-    query.put(ACCOUNT_HUMAN_DATA_FIELD + "." + EMAIL_FIELD, email);
-
-    DBCursor result = getAccountCollection().find(query);
-
-    ArrayList<AccountData> accounts = new ArrayList<AccountData>();
-
-    for (DBObject r : result) {
-      accounts.add(accountFromQueryResult(r, null));
-    }
-
+    });
     return accounts;
 
   }
@@ -509,5 +548,5 @@ public final class MongoDbStore implements SignerInfoStore, AttachmentStore, Acc
     throw new IllegalStateException("DB object contains neither a human nor a robot");
 
   }
-  
+
 }

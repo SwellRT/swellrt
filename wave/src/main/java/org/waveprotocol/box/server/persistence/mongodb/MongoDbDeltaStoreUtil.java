@@ -19,14 +19,6 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.persistence.protos.ProtoDeltaStoreDataSerializer;
@@ -45,6 +37,13 @@ import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperationContext;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
  * A utility class to serialize/deserialize delta objects to/from MongoDB. The
@@ -82,7 +81,8 @@ public class MongoDbDeltaStoreUtil {
   public static final String FIELD_WAVELET_ID = "waveletid";
   public static final String FIELD_WAVE_ID = "waveid";
 
-  public static DBObject serialize(WaveletDeltaRecord waveletDelta, String waveId, String waveletId) {
+  public static BasicDBObject serialize(WaveletDeltaRecord waveletDelta, String waveId,
+      String waveletId) {
 
     BasicDBObject mongoWaveletDelta = new BasicDBObject();
 
@@ -96,20 +96,20 @@ public class MongoDbDeltaStoreUtil {
     return mongoWaveletDelta;
   }
 
-  public static DBObject serialize(HashedVersion hashedVersion) {
+  public static BasicDBObject serialize(HashedVersion hashedVersion) {
     BasicDBObject mongoHashedVersion = new BasicDBObject();
     mongoHashedVersion.append(FIELD_VERSION, hashedVersion.getVersion());
     mongoHashedVersion.append(FIELD_HISTORYHASH, hashedVersion.getHistoryHash());
     return mongoHashedVersion;
   }
 
-  public static DBObject serialize(ParticipantId participantId) {
+  public static BasicDBObject serialize(ParticipantId participantId) {
     BasicDBObject mongoParticipantId = new BasicDBObject();
     mongoParticipantId.append(FIELD_ADDRESS, participantId.getAddress());
     return mongoParticipantId;
   }
 
-  public static DBObject serialize(TransformedWaveletDelta transformedWaveletDelta) {
+  public static BasicDBObject serialize(TransformedWaveletDelta transformedWaveletDelta) {
     BasicDBObject mongoTransformedWaveletDelta = new BasicDBObject();
     mongoTransformedWaveletDelta.append(FIELD_AUTHOR,
         serialize(transformedWaveletDelta.getAuthor()));
@@ -132,7 +132,7 @@ public class MongoDbDeltaStoreUtil {
     return mongoTransformedWaveletDelta;
   }
 
-  public static DBObject serialize(WaveletOperation waveletOp) {
+  public static BasicDBObject serialize(WaveletOperation waveletOp) {
     final BasicDBObject mongoOp = new BasicDBObject();
 
     if (waveletOp instanceof NoOp) {
@@ -164,13 +164,13 @@ public class MongoDbDeltaStoreUtil {
     return mongoOp;
   }
 
-  public static DBObject serialize(BlipContentOperation blipContentOp) {
+  public static BasicDBObject serialize(BlipContentOperation blipContentOp) {
     BasicDBObject mongoBlipContentOp = new BasicDBObject();
     mongoBlipContentOp.append(FIELD_CONTENTOP, serialize(blipContentOp.getContentOp()));
     return mongoBlipContentOp;
   }
 
-  public static DBObject serialize(DocOp docOp) {
+  public static BasicDBObject serialize(DocOp docOp) {
     BasicDBObject mongoDocOp = new BasicDBObject();
     mongoDocOp.append(FIELD_BYTES, CoreWaveletOperationSerializer.serialize(docOp).toByteArray());
     return mongoDocOp;

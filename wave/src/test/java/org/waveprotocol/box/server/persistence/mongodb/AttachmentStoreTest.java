@@ -19,10 +19,10 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import com.mongodb.DB;
-
 import org.waveprotocol.box.server.persistence.AttachmentStore;
 import org.waveprotocol.box.server.persistence.AttachmentStoreTestBase;
+
+import com.mongodb.client.MongoDatabase;
 
 /**
  * A wrapper around AttachmentStoreBase which tests the mongo-based attachment
@@ -32,7 +32,7 @@ public class AttachmentStoreTest extends AttachmentStoreTestBase {
   private static final String TEST_DATABASE = "AttachmentTest";
 
   private final MongoDbStore store;
-  private final DB database;
+  private final MongoDatabase database;
 
   /**
    * Initializes the MongoDB version of a {@link AttachmentStoreTestBase}.
@@ -46,12 +46,12 @@ public class AttachmentStoreTest extends AttachmentStoreTestBase {
   @Override
   protected void tearDown() throws Exception {
     super.tearDown();
-    database.dropDatabase();
+    database.drop();
   }
 
   @Override
   protected AttachmentStore newAttachmentStore() {
-    database.dropDatabase();
+    database.drop();
     return store;
   }
 }

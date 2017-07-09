@@ -19,19 +19,18 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
-
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.net.UnknownHostException;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+
 
 /**
  * Class to lazily setup and manage the MongoDb connection.
@@ -53,7 +52,7 @@ public class MongoDbProvider {
    * Our {@link MongoClient} instance, should be accessed by getMongo unless during
    * start().
    */
-  private Mongo mongo;
+  private MongoClient mongoClient;
 
   /**
    * Lazily instantiated {@link MongoDbStore}.
@@ -88,19 +87,9 @@ public class MongoDbProvider {
 
     String host = dbHost;
     int port = Integer.parseInt(dbPort);
-    try {
-      // New MongoDB Client, see http://docs.mongodb.org/manual/release-notes/drivers-write-concern/
-      mongo = new MongoClient(host, port);
-    } catch (UnknownHostException e) {
-      throw new PersistenceStartException("Unable to resolve the MongoDb hostname", e);
-    }
+    mongoClient = new MongoClient(host, port);
 
-    try {
-      // Check to see if we are alive
-      mongo.getDB(dbName).command("ping");
-    } catch (MongoException e) {
-      throw new PersistenceStartException("Can't ping MongoDb", e);
-    }
+    MongoDatabase database = mongoClient.getDatabase(dbName);
 
     isRunning = true;
     LOG.info("Started MongoDb persistence");
@@ -111,28 +100,30 @@ public class MongoDbProvider {
    * Returns the {@link DB} with the name that is specified in the properties
    * file.
    */
-  private DB getDatabase() {
+  private MongoDatabase getDatabase() {
     return getDatabaseForName(dbName);
   }
 
   /**
-   * Returns a {@link DB} instance for the database with the given name
+   * Returns a {@link MongoDatabase} instance for the database with the given
+   * name
    *
-   * @param name the name of the database
+   * @param name
+   *          the name of the database
    */
   @VisibleForTesting
-  DB getDatabaseForName(String name) {
-    return getMongo().getDB(name);
+  MongoDatabase getDatabaseForName(String name) {
+    return getMongoClient().getDatabase(name);
   }
 
   /**
    * Return the {@link Mongo} instance that we are managing.
    */
-  private Mongo getMongo() {
+  private MongoClient getMongoClient() {
     if (!isRunning) {
       start();
     }
-    return mongo;
+    return mongoClient;
   }
 
   /**
@@ -168,11 +159,11 @@ public class MongoDbProvider {
 
   /**
    * Expose MongoDB collections
-   * 
+   *
    * @param name Collection name
    * @return the DBCollection object
    */
-  public DBCollection getDBCollection(String name) {
-    return getDatabase().getCollection(name);
+  public MongoCollection<BasicDBObject> getDBCollection(String name) {
+    return getDatabase().getCollection(name, BasicDBObject.class);
   }
 }

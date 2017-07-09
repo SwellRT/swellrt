@@ -19,10 +19,10 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import com.mongodb.DB;
-
 import org.waveprotocol.box.server.persistence.CertPathStoreTestBase;
 import org.waveprotocol.wave.crypto.CertPathStore;
+
+import com.mongodb.client.MongoDatabase;
 
 /**
  * Testcase for the {@link CertPathStore} implementation in
@@ -36,7 +36,7 @@ public class CertPathStoreTest extends CertPathStoreTestBase {
   private static final String TEST_DATABASE = "CertPathTest";
 
   private final MongoDbStore certPathStore;
-  private final DB database;
+  private final MongoDatabase database;
 
   /**
    * Initializes the MongoDB version of a {@link CertPathStoreTestBase}.
@@ -49,13 +49,13 @@ public class CertPathStoreTest extends CertPathStoreTestBase {
 
   @Override
   protected CertPathStore newCertPathStore() {
-    database.dropDatabase();
+    database.drop();
     return certPathStore;
   }
 
   @Override
   protected void tearDown() throws Exception {
     super.tearDown();
-    database.dropDatabase();
+    database.drop();
   }
 }

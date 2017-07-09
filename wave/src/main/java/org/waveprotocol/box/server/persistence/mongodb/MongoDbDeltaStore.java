@@ -19,8 +19,6 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import java.util.List;
-
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.FileNotFoundPersistenceException;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -32,12 +30,11 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.common.collect.ImmutableSet;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.Block;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * A MongoDB based Delta Store implementation using a <b>deltas</b>
@@ -58,7 +55,7 @@ public class MongoDbDeltaStore implements DeltaStore {
   private static final String DELTAS_COLLECTION = "deltas";
 
   /** MongoDB Collection for deltas */
-  private final DBCollection deltasCollection;
+  private final MongoCollection<BasicDBObject> deltasCollection;
 
   /** A specific class handling snapshots */
   private final MongoDBSnapshotStore snapshotStore;
@@ -69,21 +66,23 @@ public class MongoDbDeltaStore implements DeltaStore {
    * @param database
    * @return
    */
-  public static MongoDbDeltaStore create(DB database) {
+  public static MongoDbDeltaStore create(MongoDatabase database) {
 
-    DBCollection deltasCollection = database.getCollection(DELTAS_COLLECTION);
+    MongoCollection<BasicDBObject> deltasCollection = database.getCollection(DELTAS_COLLECTION,
+        BasicDBObject.class);
     checkDeltasCollectionIndexes(deltasCollection);
     MongoDBSnapshotStore snapshotStore = MongoDBSnapshotStore.create(database);
 
     return new MongoDbDeltaStore(deltasCollection, snapshotStore);
   }
 
-  private static void checkDeltasCollectionIndexes(DBCollection deltasCollection) {
+  private static void checkDeltasCollectionIndexes(
+      MongoCollection<BasicDBObject> deltasCollection) {
     // List<DBObject> indexInfo = deltasCollection.getIndexInfo();
 
     LOG.info("Ensure MongoDB indexes for 'deltas' collection on 'waveid', 'waveletid' and 'transformed.resultingversion' fields");
 
-    DBObject newIndex = new BasicDBObject();
+    BasicDBObject newIndex = new BasicDBObject();
     newIndex.put("transformed.resultingversion.version", 1);
     deltasCollection.createIndex(newIndex);
 
@@ -100,7 +99,7 @@ public class MongoDbDeltaStore implements DeltaStore {
    *
    * @param database the database connection object
    */
-  private MongoDbDeltaStore(DBCollection deltasCollection, MongoDBSnapshotStore snapshotStore) {
+  private MongoDbDeltaStore(MongoCollection<BasicDBObject> deltasCollection, MongoDBSnapshotStore snapshotStore) {
     this.deltasCollection = deltasCollection;
     this.snapshotStore = snapshotStore;
   }
@@ -116,14 +115,14 @@ public class MongoDbDeltaStore implements DeltaStore {
   public void delete(WaveletName waveletName) throws PersistenceException,
       FileNotFoundPersistenceException {
 
-    DBObject criteria = new BasicDBObject();
+    BasicDBObject criteria = new BasicDBObject();
     criteria.put(MongoDbDeltaStoreUtil.FIELD_WAVE_ID, waveletName.waveId.serialise());
     criteria.put(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID, waveletName.waveletId.serialise());
 
     try {
       // Using Journaled Write Concern
       // (http://docs.mongodb.org/manual/core/write-concern/#journaled)
-      deltasCollection.remove(criteria, WriteConcern.JOURNALED);
+      deltasCollection.withWriteConcern(WriteConcern.JOURNALED).deleteMany(criteria);
     } catch (MongoException e) {
       throw new PersistenceException(e);
     }
@@ -137,31 +136,29 @@ public class MongoDbDeltaStore implements DeltaStore {
   public ImmutableSet<WaveletId> lookup(WaveId waveId) throws PersistenceException {
 
 
-    DBObject query = new BasicDBObject();
+    BasicDBObject query = new BasicDBObject();
     query.put(MongoDbDeltaStoreUtil.FIELD_WAVE_ID, waveId.serialise());
 
-    DBObject projection = new BasicDBObject();
+    BasicDBObject projection = new BasicDBObject();
     projection.put(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID, 1);
 
-    DBCursor cursor = null;
 
+    final ImmutableSet.Builder<WaveletId> builder = ImmutableSet.builder();
     try {
-      cursor = deltasCollection.find(query, projection);
+      deltasCollection.find(query).projection(projection).forEach(new Block<BasicDBObject>() {
+
+        @Override
+        public void apply(BasicDBObject t) {
+          builder
+              .add(WaveletId.deserialise((String) t.get(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID)));
+        }
+
+      });
     } catch (MongoException e) {
       throw new PersistenceException(e);
     }
 
-
-    if (cursor == null || !cursor.hasNext()) {
-      return ImmutableSet.of();
-    } else {
-      ImmutableSet.Builder<WaveletId> builder = ImmutableSet.builder();
-      for (DBObject waveletIdDBObject : cursor) {
-        builder.add(WaveletId.deserialise((String) waveletIdDBObject
-            .get(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID)));
-      }
-      return builder.build();
-    }
+    return builder.build();
   }
 
   @Override
@@ -172,11 +169,10 @@ public class MongoDbDeltaStore implements DeltaStore {
 
     try {
 
-      @SuppressWarnings("rawtypes")
-      List results = deltasCollection.distinct(MongoDbDeltaStoreUtil.FIELD_WAVE_ID);
-
-      for (Object o : results)
-        builder.add(WaveId.deserialise((String) o));
+      deltasCollection.distinct(MongoDbDeltaStoreUtil.FIELD_WAVE_ID, String.class)
+          .forEach((Block<String>) (String value) -> {
+            builder.add(WaveId.deserialise(value));
+          });
 
     } catch (MongoException e) {
       throw new PersistenceException(e);
