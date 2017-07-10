@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.model.remote.wave;
+package org.swellrt.beta.model.wave.adt;
 
 
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;

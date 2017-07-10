@@ -7,7 +7,7 @@ import org.swellrt.beta.common.SException;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public interface SObservable {
+public interface SObservableNode {
 
   public void addListener(SHandlerFunc h, String path) throws SException;
 

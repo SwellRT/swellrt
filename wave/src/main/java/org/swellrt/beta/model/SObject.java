@@ -60,13 +60,13 @@ public interface SObject extends SMap {
    *
    * @return
    */
-  public String[] _debug_getBlipList();
+  public String[] _getBlips();
 
   /**
    * Debug only. Return blip content.
    *
    * @return
    */
-  public String _debug_getBlip(String blipId);
+  public String getBlipXML(String blipId);
 
 }

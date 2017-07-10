@@ -3,9 +3,10 @@ package org.swellrt.beta.client.js.editor;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SVisitor;
-import org.swellrt.beta.model.remote.SObjectRemote;
-import org.swellrt.beta.model.remote.STextRemote;
-import org.swellrt.beta.model.remote.SubstrateId;
+import org.swellrt.beta.model.wave.SWaveNodeManager;
+import org.swellrt.beta.model.wave.SWaveObject;
+import org.swellrt.beta.model.wave.SWaveText;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
@@ -25,12 +26,12 @@ import jsinterop.annotations.JsOptional;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class STextRemoteWeb extends STextRemote implements STextWeb {
+public class STextRemoteWeb extends SWaveText implements STextWeb {
 
   private final STextWebImpl textWeb;
 
-  public STextRemoteWeb(SObjectRemote object, SubstrateId substrateId, Blip blip, InteractiveDocument doc) {
-    super(object, substrateId, blip);
+  public STextRemoteWeb(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip, InteractiveDocument doc) {
+    super(nodeManager, substrateId, blip);
     this.textWeb = new STextWebImpl(doc);
   }
 

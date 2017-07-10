@@ -5,9 +5,9 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
-import org.swellrt.beta.model.remote.SMapRemote;
-import org.swellrt.beta.model.remote.SNodeRemoteContainer;
-import org.swellrt.beta.model.remote.SObjectRemote;
+import org.swellrt.beta.model.wave.SWaveMap;
+import org.swellrt.beta.model.wave.SWaveNodeContainer;
+import org.swellrt.beta.model.wave.SWaveObject;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -39,13 +39,13 @@ public class SMapProxyHandler extends ProxyHandler {
   public Object get(SMap target, String property, ProxyHandler reciever) throws SException {
 
     boolean isRoot = false;
-    SObjectRemote object = null;
+    SWaveObject object = null;
 
-    if (target instanceof SMapRemote) {
-      SMapRemote targetRemote = (SMapRemote) target;
-      if (targetRemote.getParent().equals(SNodeRemoteContainer.Void)) {
+    if (target instanceof SWaveMap) {
+      SWaveMap targetRemote = (SWaveMap) target;
+      if (targetRemote.getParent().equals(SWaveNodeContainer.Void)) {
         isRoot = true;
-        object = targetRemote.getObject();
+        object = (SWaveObject) target;
       }
     }
 

@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.remote;
+package org.swellrt.beta.model.wave;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -20,25 +20,25 @@ import jsinterop.annotations.JsOptional;
 
 
 
-public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy, ObservableBasicMap.Listener<String, SNodeRemote> {
+public class SWaveMap extends SWaveNodeContainer implements SMap, HasJsProxy, ObservableBasicMap.Listener<String, SWaveNode> {
 
 
-  public static SMapRemote create(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
-    return new SMapRemote(object, substrateId, map);
+  public static SWaveMap create(SWaveNodeManager nodeManager, SubstrateId substrateId, ObservableBasicMap<String, SWaveNode> map) {
+    return new SWaveMap(nodeManager, substrateId, map);
   }
 
   /** the underlying wave map */
-  private final ObservableBasicMap<String, SNodeRemote> map;
+  private final ObservableBasicMap<String, SWaveNode> map;
 
   /** cache of SNodeRemote instances in the map */
-  private final HashMap<String, SNodeRemote> cache;
+  private final HashMap<String, SWaveNode> cache;
 
   private Proxy proxy;
 
 
-  protected SMapRemote(SObjectRemote object, SubstrateId substrateId, ObservableBasicMap<String, SNodeRemote> map) {
-    super(substrateId, object);
-    this.cache = new HashMap<String, SNodeRemote>();
+  protected SWaveMap(SWaveNodeManager nodeManager, SubstrateId substrateId, ObservableBasicMap<String, SWaveNode> map) {
+    super(substrateId, nodeManager);
+    this.cache = new HashMap<String, SWaveNode>();
     this.map = map;
     this.map.addListener(this);
   }
@@ -47,9 +47,9 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   protected void clearCache() {
     cache.clear();
-    for (SNodeRemote n: cache.values())
-      if (n instanceof SNodeRemoteContainer)
-        ((SNodeRemoteContainer) n).clearCache();
+    for (SWaveNode n: cache.values())
+      if (n instanceof SWaveNodeContainer)
+        ((SWaveNodeContainer) n).clearCache();
   }
 
   /**
@@ -64,7 +64,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     if (this.getParent() == null)
       throw new SException(SException.NOT_ATTACHED_NODE);
 
-    getObject().check();
+    getNodeManager().check();
   }
 
   @Override
@@ -93,7 +93,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
     if (!map.keySet().contains(key))
       return null;
 
-    SNodeRemote node = null;
+    SWaveNode node = null;
 
     if (!cache.containsKey(key)) {
       node = map.get(key);
@@ -103,7 +103,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       }
 
       // This should be always true!
-      if (node instanceof SNodeRemote)
+      if (node instanceof SWaveNode)
        node.attach(this); // lazily set parent
 
       cache.put(key, node);
@@ -112,7 +112,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
       node = cache.get(key);
     }
 
-    getObject().checkReadable(node);
+    getNodeManager().checkReadable(node);
 
     return node;
   }
@@ -132,8 +132,8 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   public SMap put(String key, SNode value) throws SException {
     SUtils.isValidMapKey(key);
     check();
-    getObject().checkWritable(pick(key));
-    SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
+    getNodeManager().checkWritable(pick(key));
+    SWaveNode remoteValue = getNodeManager().transformToWaveNode(value, this);
     map.put(key, remoteValue);
     cache.put(key, remoteValue);
     return this;
@@ -149,21 +149,21 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
   @Override
   public void remove(String key) throws SException {
     check();
-    getObject().checkWritable(pick(key));
+    getNodeManager().checkWritable(pick(key));
 
     if (!map.keySet().contains(key))
       return;
 
-    SNodeRemote nr = map.get(key);
-    if (nr instanceof SNodeRemoteContainer) {
-      SNodeRemoteContainer nrc = (SNodeRemoteContainer) nr;
+    SWaveNode nr = map.get(key);
+    if (nr instanceof SWaveNodeContainer) {
+      SWaveNodeContainer nrc = (SWaveNodeContainer) nr;
       nrc.deattach();
     }
 
     map.remove(key);
     cache.remove(key);
 
-    getObject().deleteNode(nr);
+    getNodeManager().deleteNode(nr);
   }
 
   @Override
@@ -194,7 +194,7 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
 
 
   @Override
-  public void onEntrySet(String key, SNodeRemote oldValue, SNodeRemote newValue) {
+  public void onEntrySet(String key, SWaveNode oldValue, SWaveNode newValue) {
      //System.out.println("Map("+this.toString()+") onEntrySet [key="+key+" oldValue="+(oldValue != null ? oldValue : "null")+ " newValue="+(newValue != null ? newValue : "null")+"]");
      try {
 
@@ -208,8 +208,8 @@ public class SMapRemote extends SNodeRemoteContainer implements SMap, HasJsProxy
        // on removed
        if (newValue == null) {
          eventType = SEvent.REMOVED_VALUE;
-         if (cachedValue instanceof SNodeRemoteContainer)
-             ((SNodeRemoteContainer) cachedValue).deattach();
+         if (cachedValue instanceof SWaveNodeContainer)
+             ((SWaveNodeContainer) cachedValue).deattach();
 
          eventValue = cachedValue;
 

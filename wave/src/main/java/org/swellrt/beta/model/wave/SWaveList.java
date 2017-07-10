@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.remote;
+package org.swellrt.beta.model.wave;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
@@ -14,19 +14,19 @@ import org.waveprotocol.wave.model.adt.ObservableElementList;
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
 
-public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemote>, HasJsProxy, ObservableElementList.Listener<SNodeRemote> {
+public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, HasJsProxy, ObservableElementList.Listener<SWaveNode> {
 
-  public static SListRemote create(SObjectRemote object, SubstrateId substrateId, ObservableElementList<SNodeRemote, SNodeRemote> list) {
-    return new SListRemote(object, substrateId, list);
+  public static SWaveList create(SWaveNodeManager nodeManager, SubstrateId substrateId, ObservableElementList<SWaveNode, SWaveNode> list) {
+    return new SWaveList(nodeManager, substrateId, list);
   }
 
-  private final ObservableElementList<SNodeRemote, SNodeRemote> list;
+  private final ObservableElementList<SWaveNode, SWaveNode> list;
 
   private Proxy proxy;
 
 
-  protected SListRemote(SObjectRemote object, SubstrateId substrateId, ObservableElementList<SNodeRemote, SNodeRemote> list) {
-    super(substrateId, object);
+  protected SWaveList(SWaveNodeManager nodeManager, SubstrateId substrateId, ObservableElementList<SWaveNode, SWaveNode> list) {
+    super(substrateId, nodeManager);
     this.list = list;
     this.list.addListener(this);
   }
@@ -34,10 +34,10 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   @Override
   public SNode pick(int index) throws SException {
     try {
-      SNodeRemote node = list.get(index);
+      SWaveNode node = list.get(index);
 
       // This should be always true!
-      if (node instanceof SNodeRemote)
+      if (node instanceof SWaveNode)
         node.attach(this); // lazily set parent
 
       return node;
@@ -49,25 +49,25 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public SList<SNodeRemote> add(SNode value) throws SException {
+  public SList<SWaveNode> add(SNode value) throws SException {
     check();
-    SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
+    SWaveNode remoteValue = getNodeManager().transformToWaveNode(value, this);
     this.list.add(remoteValue);
     return this;
   }
 
 
   @Override
-  public SList<SNodeRemote> add(Object value) throws SException {
+  public SList<SWaveNode> add(Object value) throws SException {
     SNode node = SUtils.castToSNode(value);
     return add(node);
   }
 
   @Override
-  public SList<SNodeRemote> add(SNode value, int index) throws SException {
+  public SList<SWaveNode> add(SNode value, int index) throws SException {
     check();
     if (index >= 0 && index <= this.list.size()) {
-      SNodeRemote remoteValue =  getObject().transformToRemote(value, this, false);
+      SWaveNode remoteValue = getNodeManager().transformToWaveNode(value, this);
       this.list.add(index, remoteValue);
     } else {
       throw new SException(SException.OUT_OF_BOUNDS_INDEX);
@@ -76,7 +76,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public SList<SNodeRemote> add(Object value, @JsOptional Object index) throws SException {
+  public SList<SWaveNode> add(Object value, @JsOptional Object index) throws SException {
     SNode node = SUtils.castToSNode(value);
     if (index != null) {
       return add(node, (int) index);
@@ -86,18 +86,18 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public SList<SNodeRemote> remove(int index) throws SException {
+  public SList<SWaveNode> remove(int index) throws SException {
     check();
-    SNodeRemote node = (SNodeRemote) pick(index);
-    getObject().checkWritable(node);
+    SWaveNode node = (SWaveNode) pick(index);
+    getNodeManager().checkWritable(node);
 
-    if (node instanceof SNodeRemoteContainer) {
-      SNodeRemoteContainer nrc = (SNodeRemoteContainer) node;
+    if (node instanceof SWaveNodeContainer) {
+      SWaveNodeContainer nrc = (SWaveNodeContainer) node;
       nrc.deattach();
     }
 
     this.list.remove(node);
-    getObject().deleteNode(node);
+    getNodeManager().deleteNode(node);
 
     return this;
   }
@@ -145,7 +145,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
     if (this.getParent() == null)
       throw new SException(SException.NOT_ATTACHED_NODE);
 
-    getObject().check();
+    getNodeManager().check();
   }
 
   //
@@ -167,7 +167,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   //
 
   @Override
-  public void onValueAdded(SNodeRemote entry) {
+  public void onValueAdded(SWaveNode entry) {
     try {
       check(); // Ignore events if state is inconsistent
       SEvent e = new SEvent(SEvent.ADDED_VALUE, this, ""+list.indexOf(entry), entry);
@@ -178,7 +178,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public void onValueRemoved(SNodeRemote entry) {
+  public void onValueRemoved(SWaveNode entry) {
     try {
       check(); // Ignore events if state is inconsistent
       SEvent e = new SEvent(SEvent.REMOVED_VALUE, this, ""+list.indexOf(entry), entry);
@@ -189,7 +189,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public Iterable<SNodeRemote> values() {
+  public Iterable<SWaveNode> values() {
     return list.getValues();
   }
 
@@ -199,7 +199,7 @@ public class SListRemote extends SNodeRemoteContainer implements SList<SNodeRemo
   }
 
   @Override
-  public int indexOf(SNodeRemote node) throws SException {
+  public int indexOf(SWaveNode node) throws SException {
       return this.list.indexOf(node);
   }
 

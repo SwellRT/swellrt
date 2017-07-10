@@ -1,7 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.remote.SNodeRemoteContainer;
+import org.swellrt.beta.model.wave.SWaveNodeContainer;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.model.document.ReadableDocument;
 import org.waveprotocol.wave.model.document.util.DocHelper;
@@ -45,21 +45,21 @@ public class SUtils {
    * @param object
    * @return
    */
-  public static SNodeRemoteContainer asContainer(Object object) {
+  public static SWaveNodeContainer asContainer(Object object) {
     if (object == null)
       return null;
 
-    SNodeRemoteContainer node = null;
+    SWaveNodeContainer node = null;
 
     if (object instanceof JavaScriptObject) {
       JsoView jso = JsoView.as((JavaScriptObject) object);
       Object targetObject = jso.getObject("__target__");
       if (targetObject != null) {
-        if (targetObject instanceof SNodeRemoteContainer)
-          node = (SNodeRemoteContainer) targetObject;
+        if (targetObject instanceof SWaveNodeContainer)
+          node = (SWaveNodeContainer) targetObject;
       }
-    } else if (object instanceof SNodeRemoteContainer) {
-      node = (SNodeRemoteContainer) object;
+    } else if (object instanceof SWaveNodeContainer) {
+      node = (SWaveNodeContainer) object;
     }
 
     return node;

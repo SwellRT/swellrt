@@ -1,7 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.remote.SNodeRemote;
+import org.swellrt.beta.model.wave.SWaveNode;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -15,7 +15,7 @@ import jsinterop.annotations.JsType;
 
 
 @JsType(namespace = "swell", name = "Primitive")
-public class SPrimitive extends SNodeRemote {
+public class SPrimitive extends SWaveNode {
 
   private static final String SEPARATOR = ":";
   private static final String STRING_TYPE_PREFIX  = "s";

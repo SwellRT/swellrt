@@ -9,7 +9,7 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.remote.SObjectRemote;
+import org.swellrt.beta.model.wave.SWaveObject;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
@@ -228,7 +228,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    * @param waveId
    * @param callback
    */
-  public void getObject(WaveId waveId, FutureCallback<SObjectRemote> callback) {
+  public void getObject(WaveId waveId, FutureCallback<SWaveObject> callback) {
 
     if (sessionManager == null || !sessionManager.isSession()) {
       callback.onFailure(new SException(ResponseCode.NOT_LOGGED_IN));

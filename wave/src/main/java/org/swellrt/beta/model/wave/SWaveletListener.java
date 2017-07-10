@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.remote;
+package org.swellrt.beta.model.wave;
 
 import org.swellrt.beta.model.SStatusEvent;
 import org.waveprotocol.wave.model.version.HashedVersion;
@@ -21,10 +21,10 @@ import org.waveprotocol.wave.model.wave.WaveletListener;
 public class SWaveletListener implements WaveletListener {
 
   
-  private final SObjectRemote sobject;
+  private final SWaveObject sobject;
   
   
-  public SWaveletListener(SObjectRemote sobject) {
+  public SWaveletListener(SWaveObject sobject) {
     super();
     this.sobject = sobject;
   }

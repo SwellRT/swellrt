@@ -3,7 +3,7 @@ package org.swellrt.beta.client.wave;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.swellrt.beta.model.remote.SubstrateId;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;

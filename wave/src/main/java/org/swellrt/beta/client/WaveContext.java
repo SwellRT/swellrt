@@ -8,7 +8,8 @@ import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SStatusEvent;
-import org.swellrt.beta.model.remote.SObjectRemote;
+import org.swellrt.beta.model.wave.SWaveNodeManager;
+import org.swellrt.beta.model.wave.SWaveObject;
 import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -46,7 +47,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
   private final ServiceStatus serviceStatus;
 
   private WaveLoader loader;
-  private SettableFuture<SObjectRemote> sobjectFuture;
+  private SettableFuture<SWaveObject> sobjectFuture;
   private ChannelException lastException;
 
   private final DocContributionsFetcher contributionsFetcher;
@@ -58,7 +59,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
     this.waveDomain = waveDomain;
     this.participant = participant;
     this.serviceStatus = serviceStatus;
-    this.sobjectFuture = SettableFuture.<SObjectRemote> create();
+    this.sobjectFuture = SettableFuture.<SWaveObject> create();
     this.contributionsFetcher = contributionsFetcherFactory.create(waveId);
   }
 
@@ -75,7 +76,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
 
     // Create a future for the object
     if (this.sobjectFuture == null || this.sobjectFuture.isDone())
-      this.sobjectFuture = SettableFuture.<SObjectRemote> create();
+      this.sobjectFuture = SettableFuture.<SWaveObject> create();
 
     // Load the wave and bind to the object
     state = ACTIVE;
@@ -93,9 +94,12 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
           try {
             // there was exception during loading process?
             check();
-            SObjectRemote sobject = SObjectRemote.inflateFromWave(participant,
-                loader.getIdGenerator(), loader.getLocalDomain(), loader.getWave(),
-                PlatformBasedFactory.getFactory(loader), WaveContext.this);
+            SWaveNodeManager nodeManager = SWaveNodeManager.of(participant, loader.getIdGenerator(),
+                loader.getLocalDomain(), loader.getWave(), WaveContext.this,
+                PlatformBasedFactory.getFactory(loader));
+
+            SWaveObject sobject = SWaveObject.materialize(nodeManager);
+
             sobjectFuture.set(sobject);
 
           } catch (SException ex) {
@@ -111,7 +115,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
 
   }
 
-  public void getSObject(FutureCallback<SObjectRemote> callback) {
+  public void getSObject(FutureCallback<SWaveObject> callback) {
     Futures.addCallback(this.sobjectFuture, callback);
   }
 

@@ -4,18 +4,19 @@ import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
-import org.swellrt.beta.model.remote.SObjectRemote;
-import org.swellrt.beta.model.remote.STextRemote;
-import org.swellrt.beta.model.remote.SubstrateId;
+import org.swellrt.beta.model.wave.SWaveNodeManager;
+import org.swellrt.beta.model.wave.SWaveText;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
 public class FakePlatformBasedFactory implements PlatformBasedFactory {
 
   @Override
-  public STextRemote getSTextRemote(SObjectRemote object, SubstrateId substrateId, Blip blip) {
+  public SWaveText getSTextRemote(SWaveNodeManager nodeManager, SubstrateId substrateId,
+      Blip blip) {
 
-    return new STextRemote(object, substrateId, blip) {
+    return new SWaveText(nodeManager, substrateId, blip) {
 
       @Override
       public String getRawContent() {

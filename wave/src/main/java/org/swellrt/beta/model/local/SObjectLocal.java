@@ -111,12 +111,12 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public String[] _debug_getBlipList() {
+  public String[] _getBlips() {
     return null;
   }
 
   @Override
-  public String _debug_getBlip(String blipId) {
+  public String getBlipXML(String blipId) {
    return null;
   }
 

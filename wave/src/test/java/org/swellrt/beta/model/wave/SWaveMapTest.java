@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.remote;
+package org.swellrt.beta.model.wave;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +12,7 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.local.SMapLocal;
+import org.swellrt.beta.model.wave.SWaveMap;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 
@@ -21,7 +22,7 @@ import com.google.gwt.user.client.Command;
 /**
  * Test SMapRemote
  */
-public class SMapRemoteTest extends SNodeRemoteAbstractTest {
+public class SWaveMapTest extends SWaveNodeAbstractTest {
 
 
   protected void populatePrimitiveValues(SMap map) throws SException {
@@ -151,7 +152,7 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     SMap map = new SMapLocal();
     populatePrimitiveValues(map);
     object.put("map", map);
-    SMapRemote remoteMap = (SMapRemote) object.pick("map");
+    SWaveMap remoteMap = (SWaveMap) object.pick("map");
     remoteMap.addListener(eventHandler, null);
 
     remoteMap.remove("k1");
@@ -291,9 +292,9 @@ public class SMapRemoteTest extends SNodeRemoteAbstractTest {
     //           -- mapC
     //
 
-    SMapRemote remoteMapA = (SMapRemote) object.put("mapA", new SMapLocal()).pick("mapA");
-    SMapRemote remoteMapB = (SMapRemote) remoteMapA.put("mapB", new SMapLocal()).pick("mapB");
-    SMapRemote remoteMapC = (SMapRemote) remoteMapB.put("mapC", new SMapLocal()).pick("mapC");
+    SWaveMap remoteMapA = (SWaveMap) object.put("mapA", new SMapLocal()).pick("mapA");
+    SWaveMap remoteMapB = (SWaveMap) remoteMapA.put("mapB", new SMapLocal()).pick("mapB");
+    SWaveMap remoteMapC = (SWaveMap) remoteMapB.put("mapC", new SMapLocal()).pick("mapC");
 
     // Set handlers here to ignore events for initialization fields
     remoteMapA.addListener(handlerMapA, null);

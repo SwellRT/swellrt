@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.remote;
+package org.swellrt.beta.model.wave;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -9,8 +9,11 @@ import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.wave.SWaveList;
+import org.swellrt.beta.model.wave.SWaveMap;
+import org.swellrt.beta.model.wave.SWaveNode;
 
-public class SListRemoteTest extends SNodeRemoteAbstractTest {
+public class SWaveListTest extends SWaveNodeAbstractTest {
 
 
 
@@ -30,7 +33,7 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     localList.add(localMap);
 
     object.put("list", localList);
-    SListRemote remoteList = (SListRemote) object.pick("list");
+    SWaveList remoteList = (SWaveList) object.pick("list");
 
     assertNotNull(remoteList);
     assertEquals(4, remoteList.size());
@@ -39,18 +42,18 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     assertEquals(false, SPrimitive.asBoolean(remoteList.pick(2)).booleanValue());
     assertTrue(remoteList.pick(3) instanceof SMap);
 
-    SMapRemote remoteMap = (SMapRemote) remoteList.pick(3);
+    SWaveMap remoteMap = (SWaveMap) remoteList.pick(3);
     assertEquals("value0", remoteMap.get("key0"));
     assertEquals("value1", remoteMap.get("key1"));
 
     assertEquals(3, remoteList.indexOf(remoteMap));
 
-    remoteList.values().forEach(new Consumer<SNodeRemote>() {
+    remoteList.values().forEach(new Consumer<SWaveNode>() {
 
       int counter = 0;
 
       @Override
-      public void accept(SNodeRemote t) {
+      public void accept(SWaveNode t) {
 
         switch(counter++) {
 
@@ -148,7 +151,7 @@ public class SListRemoteTest extends SNodeRemoteAbstractTest {
     localList.add(localMap);
 
     object.put("list", localList);
-    SListRemote remoteList = (SListRemote) object.pick("list");
+    SWaveList remoteList = (SWaveList) object.pick("list");
 
 
 

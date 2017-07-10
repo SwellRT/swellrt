@@ -3,7 +3,7 @@ package org.swellrt.beta.client.operation.impl;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.remote.SObjectRemote;
+import org.swellrt.beta.model.wave.SWaveObject;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
@@ -59,10 +59,10 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
         waveId = context.generateWaveId();
       }
 
-      context.getObject(waveId, new FutureCallback<SObjectRemote>() {
+      context.getObject(waveId, new FutureCallback<SWaveObject>() {
 
         @Override
-        public void onSuccess(SObjectRemote object) {
+        public void onSuccess(SWaveObject object) {
           callback.onSuccess(object);
         }
 

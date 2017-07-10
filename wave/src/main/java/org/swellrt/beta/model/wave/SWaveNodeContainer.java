@@ -1,11 +1,11 @@
-package org.swellrt.beta.model.remote;
+package org.swellrt.beta.model.wave;
 
 import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SNode;
-import org.swellrt.beta.model.SObservable;
+import org.swellrt.beta.model.SObservableNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SVisitor;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
@@ -15,10 +15,10 @@ import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "ListenableNode")
-public abstract class SNodeRemoteContainer extends SNodeRemote implements SObservable {
+public abstract class SWaveNodeContainer extends SWaveNode implements SObservableNode {
 
   @JsIgnore
-  public static SNodeRemoteContainer Void = new SNodeRemoteContainer() {
+  public static SWaveNodeContainer Void = new SWaveNodeContainer() {
 
     @Override
     protected void clearCache() {
@@ -98,16 +98,16 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
   private final CopyOnWriteSet<SHandlerFunc> eventHandlerSet = CopyOnWriteSet
       .<SHandlerFunc> createHashSet();
 
-  protected SNodeRemoteContainer() {
+  protected SWaveNodeContainer() {
     super(null, null);
   }
 
-  protected SNodeRemoteContainer(SubstrateId substrateId, SObjectRemote object) {
-    super(substrateId, object);
+  protected SWaveNodeContainer(SubstrateId substrateId, SWaveNodeManager nodeManager) {
+    super(substrateId, nodeManager);
   }
 
   @Override
-  protected void attach(SNodeRemoteContainer parent) {
+  protected void attach(SWaveNodeContainer parent) {
     super.attach(parent);
     this.eventHandlerSet.clear();
     this.eventsEnabled = true;
@@ -127,14 +127,14 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
   protected abstract void clearCache();
 
 
-  protected SNodeRemoteContainer lookUpListenableNode(String path) throws SException {
+  protected SWaveNodeContainer lookUpListenableNode(String path) throws SException {
     SNode node = null;
     if (path != null)
       node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, this);
     else
       node = this;
 
-    SNodeRemoteContainer targetNode = null;
+    SWaveNodeContainer targetNode = null;
 
     if (node instanceof SPrimitive) {
       SPrimitive primitiveNode = (SPrimitive) node;
@@ -145,8 +145,8 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
         targetNode = primitiveNode.getContainer().getParent();
       }
 
-    } else if (node instanceof SNodeRemoteContainer) {
-      targetNode = (SNodeRemoteContainer) node;
+    } else if (node instanceof SWaveNodeContainer) {
+      targetNode = (SWaveNodeContainer) node;
     }
 
     return targetNode;
@@ -155,7 +155,7 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
   @Override
   public void addListener(SHandlerFunc h, String path) throws SException {
 
-    SNodeRemoteContainer targetNode = lookUpListenableNode(path);
+    SWaveNodeContainer targetNode = lookUpListenableNode(path);
     if (targetNode != null)
       targetNode.eventHandlerSet.add(h);
     else
@@ -167,7 +167,7 @@ public abstract class SNodeRemoteContainer extends SNodeRemote implements SObser
   @Override
   public void removeListener(SHandlerFunc h, String path) throws SException {
 
-    SNodeRemoteContainer targetNode = lookUpListenableNode(path);
+    SWaveNodeContainer targetNode = lookUpListenableNode(path);
     if (targetNode != null)
       eventHandlerSet.remove(h);
     else

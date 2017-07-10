@@ -14,10 +14,10 @@ import org.swellrt.beta.model.SViewBuilder;
 import org.swellrt.beta.model.js.JsPathNodeExtractor;
 import org.swellrt.beta.model.js.JsViewVisitor;
 import org.swellrt.beta.model.local.STextLocal;
-import org.swellrt.beta.model.remote.SNodeRemote;
-import org.swellrt.beta.model.remote.SObjectRemote;
-import org.swellrt.beta.model.remote.STextRemote;
-import org.swellrt.beta.model.remote.SubstrateId;
+import org.swellrt.beta.model.wave.SWaveNode;
+import org.swellrt.beta.model.wave.SWaveNodeManager;
+import org.swellrt.beta.model.wave.SWaveText;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.wave.Blip;
@@ -55,7 +55,7 @@ public interface PlatformBasedFactory {
   }
 
   static final JsViewVisitor JSVISITOR_NODE = new JsViewVisitor<SNode>();
-  static final JsViewVisitor JSVISITOR_NODE_REMOTE = new JsViewVisitor<SNodeRemote>();
+  static final JsViewVisitor JSVISITOR_NODE_REMOTE = new JsViewVisitor<SWaveNode>();
 
 
   public static SViewBuilder getViewBuilderForNode() {
@@ -63,7 +63,7 @@ public interface PlatformBasedFactory {
   }
 
   public static SViewBuilder getViewBuilderForNodeRemote() {
-    return new JsViewVisitor<SNodeRemote>();
+    return new JsViewVisitor<SWaveNode>();
   }
 
   static final PathNodeExtractor PATH_NODE_EXTRACTOR = new JsPathNodeExtractor();
@@ -97,12 +97,13 @@ public interface PlatformBasedFactory {
     }
 
     @Override
-    public STextRemote getSTextRemote(SObjectRemote object, SubstrateId substrateId, Blip blip) {
+    public SWaveText getSTextRemote(SWaveNodeManager nodeManager, SubstrateId substrateId,
+        Blip blip) {
 
       InteractiveDocument idoc = documentRegistry.getTextDocument(substrateId);
 
       if (idoc != null) {
-        return new STextRemoteWeb(object,
+        return new STextRemoteWeb(nodeManager,
             substrateId,blip, idoc);
       }
 
@@ -116,5 +117,5 @@ public interface PlatformBasedFactory {
 
 
   /** Return an instance of STextRemote hiding actual platform-based implementation */
-  public STextRemote getSTextRemote(SObjectRemote object, SubstrateId substrateId, Blip blip);
+  public SWaveText getSTextRemote(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip);
 }
