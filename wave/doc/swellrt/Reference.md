@@ -159,11 +159,12 @@ service.getUserBatch({
 
 #### password()
 
-Changes the user's password having an old password or a temporary recovery token:
+Changes user's password having an old password or a temporary recovery token:
 
 ```js
 service.password({
 
+    id: 'alice',
     oldPassword: '******',
     newPassword: '******'
 })
@@ -175,6 +176,7 @@ service.password({
 ```js
 service.password({
 
+      id: 'alice',
     token: 'AX045KS934SLAN323',
     newPassword: '******'
 })
@@ -186,17 +188,35 @@ The recovery password is obteined calling to *recoverPassword()*
 
 #### recoverPassword()
 
-Sends an email to the login user with a link containing password recovery token.
+Sends an email to the given user with a link containing password recovery token.
+
+The user account can be identified with its email address or user id:
 
 ```js
 service.recoverPassword({
 
-    url: 'http://myapp/rememberpassword?t=$token&id=$user-id'
+    email: 'alice@mail.com',
+    url: 'http://myapp/rememberpassword/$token/$user-id'
 
 })
 .then( result => {  })
 .catch( error => {  });
 ```
+
+or
+
+
+```js
+service.recoverPassword({
+
+    id: 'alice',
+    url: 'http://myapp/rememberpassword/$token/$user-id'
+
+})
+.then( result => {  })
+.catch( error => {  });
+```
+
 The server will replace variables *$token* and *$user-id* with the actual values. 
 
 Your app shoud recognize and accept that URL, retrieve user's id and password token in order to call to *password()* method.
