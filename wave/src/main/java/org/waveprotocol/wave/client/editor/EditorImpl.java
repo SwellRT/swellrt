@@ -19,22 +19,12 @@
 
 package org.waveprotocol.wave.client.editor;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptException;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.StyleInjector;
-import com.google.gwt.dom.client.Text;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.resources.client.CssResource.NotStrict;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.impl.FocusImpl;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 import org.waveprotocol.wave.client.common.util.ClientDebugException;
 import org.waveprotocol.wave.client.common.util.DomHelper;
@@ -144,12 +134,22 @@ import org.waveprotocol.wave.model.util.IdentitySet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.ReadableIdentitySet.Proc;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.dom.client.Text;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.resources.client.CssResource.NotStrict;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 /**
  * The DOM structure for an editor is as follows:
@@ -1757,7 +1757,7 @@ public class EditorImpl extends LogicalPanel.Impl implements
 
       // setup event handling
       registerDomEventHandling();
-      
+
       // TODO(danilatos): If this is necessary, add comment why.  Also consider
       // scheduling with delay or at low priority, so as not to slow down initial
       // rendering.
@@ -2105,7 +2105,7 @@ public class EditorImpl extends LogicalPanel.Impl implements
     try {
       EditorEvent event = SignalEventImpl.create(EditorEventImpl.FACTORY,
           rawEvent, !hackEditorNeverConsumes);
-      
+
       /*
       EditorEvent signal = event;
       if (signal != null) {
@@ -2117,7 +2117,7 @@ public class EditorImpl extends LogicalPanel.Impl implements
         EditorStaticDeps.logger.trace().log("Event with no signal: "+name+ ", "+rawEvent.getEventTarget().toString());
       }
       */
-      
+
       try {
         if (UserAgent.isMac() &&
             rawEvent.getCtrlKey() && rawEvent.getAltKey()
@@ -2210,11 +2210,17 @@ public class EditorImpl extends LogicalPanel.Impl implements
             // shouldn't change the viewport back to the cursor if the user is
             // trying to look at another page
             if (!isMutationEvent) {
-              // TODO(user): Remove this check
-              boolean trackCursor = shouldTrackCursor(event);
 
-              scheduleSaveSelection();
-              scheduleUpdateNotification(trackCursor, trackCursor, false, false);
+              // Ignore mousedown event, only trigger selection events on click,
+              // to avoid nasty duplicated selection change events.
+              boolean skip = event.isMouseEvent() && !event.isClickEvent();
+
+              if (!skip) {
+                // TODO(user): Remove this check
+                boolean trackCursor = shouldTrackCursor(event);
+                scheduleSaveSelection();
+                scheduleUpdateNotification(trackCursor, trackCursor, false, false);
+              }
             }
           }
 
