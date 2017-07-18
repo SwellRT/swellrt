@@ -19,22 +19,9 @@
 
 package org.waveprotocol.wave.client.editor.harness;
 
-import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.RootPanel;
+import java.util.Map;
 
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.KeyCombo;
-import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler;
-import org.waveprotocol.wave.client.doodad.annotation.AnnotationHandler.Activator;
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoAnnotationController;
-import org.waveprotocol.wave.client.doodad.annotation.jso.JsoRange;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail;
 import org.waveprotocol.wave.client.doodad.attachment.ImageThumbnail.ThumbnailActionHandler;
 import org.waveprotocol.wave.client.doodad.attachment.render.ImageThumbnailWrapper;
@@ -48,16 +35,20 @@ import org.waveprotocol.wave.client.editor.EditorAction;
 import org.waveprotocol.wave.client.editor.EditorContext;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.testtools.TestConstants;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.util.CollectionUtils;
-import org.waveprotocol.wave.model.util.StringMap;
 
-import java.util.Map;
+import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * An EntryPoint class for the Editor Test Harness
@@ -123,20 +114,12 @@ public class DefaultTestHarness implements EntryPoint {
         // Custom annotations
         //
 
-        JsoAnnotationController customController = JsoAnnotationController.getDefault();
-        AnnotationHandler.register(registries, "generic/custom", customController, new Activator() {
-          
-          @Override
-          public boolean shouldFireEvent() {
-            return true;
-          }
-        });
 
       }
 
 	@Override
 	public void extendKeyBindings(KeyBindingRegistry registry) {
-	
+
 		//
 		// Links
 		//
@@ -152,14 +135,14 @@ public class DefaultTestHarness implements EntryPoint {
 				LinkerHelper.onClearLink(context);
 			}
 		});
-	
+
         //
         // Custom annotations
         //
 		registry.registerAction(KeyCombo.CTRL_ALT_C, new EditorAction() {
 			@Override
 			public void execute(EditorContext context) {
-	
+
 				FocusedRange range = context.getSelectionHelper().getSelectionRange();
 				if (range == null || range.isCollapsed()) {
 					logger.trace().log("Empty selection, default annotation can't be created");
@@ -169,7 +152,7 @@ public class DefaultTestHarness implements EntryPoint {
 				String annotationValue = EditorAnnotationUtil.getAnnotationOverRangeIfFull(
 						context.getDocument(), context.getCaretAnnotations(), "generic/custom", rg.getStart(),
 						rg.getEnd());
-	
+
 				if (annotationValue == null) {
 					EditorAnnotationUtil.setAnnotationOverSelection(context, "generic/custom",
 							"some-value");
@@ -178,9 +161,9 @@ public class DefaultTestHarness implements EntryPoint {
 				}
 			}
 		});
-	
+
 		}
-      
+
       @Override
       public String[] extendSampleContent() {
         String hills = "pics/hills.jpg";

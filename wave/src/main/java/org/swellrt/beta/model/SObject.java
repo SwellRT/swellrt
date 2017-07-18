@@ -67,6 +67,6 @@ public interface SObject extends SMap {
    *
    * @return
    */
-  public String getBlipXML(String blipId);
+  public String _getBlipXML(String blipId);
 
 }

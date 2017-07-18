@@ -21,29 +21,35 @@ import org.waveprotocol.wave.model.util.ReadableStringMap.ProcV;
 
 
 /**
- * A generic handler to support new (non paragraph) annotations. 
- * 
+ * A generic handler to support user defined (non paragraph) annotations.
+ *
  * @author Pablo Ojanguren (pablojan@gmail.com)
- * 
+ *
  */
-public class GeneralAnnotationHandler implements AnnotationMutationHandler {
+public class UserAnnotationHandler implements AnnotationMutationHandler {
 
   public interface Activator {
     public boolean shouldFireEvent();
   }
-  
-  private static GeneralAnnotationHandler handlerInstance = null;
-  
+
+  public interface ContentMutationHandler {
+    public <N, E extends N, T extends N> void handleMutation(DocumentContext<N, E, T> bundle,
+        int start, int end, String key,
+        Object newValue);
+  }
+
+  private static UserAnnotationHandler handlerInstance = null;
+
   private final AnnotationPainter painter;
 
-  
+
   public static String getSafeKey(String key) {
     return key.replace("/", "-");
   }
-  
+
   /**
    * Logic to set paint attributes for the annotation (see {@link AnnotationPaint}).
-   * Eventually, these attributes are rendered to HTML by {@link AnnotationSpreadRenderer}. 
+   * Eventually, these attributes are rendered to HTML by {@link AnnotationSpreadRenderer}.
    */
 	private static class RenderFunc implements PaintFunction {
 
@@ -93,42 +99,57 @@ public class GeneralAnnotationHandler implements AnnotationMutationHandler {
           }
         }
 
-        
+
       }
       return ret;
     }
-    
+
   }
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * @param registries
 	 * @param key
 	 * @param mutationHanlder
 	 * @param eventHandler
 	 */
-	public static void register(Registries registries, String key, String cssClass, JsoView cssStyle) {
+  public static void register(Registries registries, String key, String cssClass, JsoView cssStyle,
+      ContentMutationHandler contentMutationHandler, AnnotationPaint.EventHandler domEventHandler,
+      AnnotationPaint.MutationHandler domMutationHandler) {
 
 		PainterRegistry painterRegistry = registries.getPaintRegistry();
-		
+
 		if (handlerInstance == null)
-		  handlerInstance = new GeneralAnnotationHandler(painterRegistry.getPainter());
-		
+		  handlerInstance = new UserAnnotationHandler(painterRegistry.getPainter());
+
 		AnnotationRegistry annotationRegistry = registries.getAnnotationHandlerRegistry();
-		
+
 		annotationRegistry.registerHandler(key, handlerInstance);
     annotationRegistry.registerBehaviour(key, new DefaultAnnotationBehaviour(AnnotationFamily.CONTENT));
-		
+
     // Register painter to update attributes of the local view
     painterRegistry.registerPaintFunction(CollectionUtils.newStringSet(key), new RenderFunc(key, cssClass, cssStyle));
-    
-		// TODO (pablojan) Not sure if boundary functions are required
-		//painterRegistry.registerBoundaryFunction(,);
+
+    // TODO (pablojan) Not sure if boundary functions are required
+    // painterRegistry.registerBoundaryFunction(,);
+
+    if (contentMutationHandler != null)
+      contentMutationHandlers.put(key, contentMutationHandler);
+
+    if (domEventHandler != null)
+      AnnotationPaint.registerEventHandler(key, domEventHandler);
+
+    if (domMutationHandler != null)
+      AnnotationPaint.setMutationHandler(key, domMutationHandler);
+
+
 	}
 
-	
-  public GeneralAnnotationHandler(AnnotationPainter painter) {
+  private static final Map<String, ContentMutationHandler> contentMutationHandlers = new HashMap<String, ContentMutationHandler>();
+
+
+  public UserAnnotationHandler(AnnotationPainter painter) {
     this.painter = painter;
   }
 
@@ -137,12 +158,15 @@ public class GeneralAnnotationHandler implements AnnotationMutationHandler {
   public <N, E extends N, T extends N> void handleAnnotationChange(DocumentContext<N, E, T> bundle,
       int start, int end, String key, Object newValue) {
     painter.scheduleRepaint(bundle, start, end);
+    ContentMutationHandler handler = contentMutationHandlers.get(key);
+    if (handler != null)
+      handler.handleMutation(bundle, start, end, key, newValue);
   }
 
-  public static boolean isAnnotationNode(ContentNode node) { 
+  public static boolean isAnnotationNode(ContentNode node) {
 	  ContentElement element = node.asElement();
 	  if (element == null) return false;
 	  return element.getTagName().equals(AnnotationPaint.SPREAD_FULL_TAGNAME);
   }
-  
+
 }

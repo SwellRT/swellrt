@@ -3,6 +3,7 @@ package org.swellrt.beta.client.js.editor;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
@@ -10,11 +11,10 @@ import org.swellrt.beta.client.ServiceConstants;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.JsUtils;
-import org.swellrt.beta.client.js.editor.annotation.Annotation;
-import org.swellrt.beta.client.js.editor.annotation.AnnotationAction;
-import org.swellrt.beta.client.js.editor.annotation.AnnotationInstance;
+import org.swellrt.beta.client.js.editor.annotation.AnnotationController;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
-import org.swellrt.beta.client.js.editor.annotation.ParagraphAnnotation;
+import org.swellrt.beta.client.js.editor.annotation.AnnotationValue;
+import org.swellrt.beta.client.js.editor.annotation.AnnotationValueBuilder;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.JsoView;
@@ -52,10 +52,10 @@ import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 import org.waveprotocol.wave.model.document.util.Range;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
@@ -447,13 +447,14 @@ public class SEditor implements EditorUpdateListener {
 
 
   /**
-   * Implements a safe logic to a range argument.
+   * Implements a safe check of range arguments.
    *
    * @param range
    * @return the original range or the current selection
-   * @throws SEditorException if not valid range can be privided
+   * @throws SEditorException
+   *           if not valid range can be privided
    */
-  protected Range checkRangeArgument(Range range) throws SEditorException {
+  protected Range rangeSafeCheck(Range range) throws SEditorException {
 
     if (Range.ALL.equals(range))
       range = SEditorHelper.getFullValidRange(editor);
@@ -468,209 +469,150 @@ public class SEditor implements EditorUpdateListener {
   }
 
   /**
-   * Set annotation in an specific doc range or in the current selection otherwise.
+   * Set annotation in an specific doc range or in the current selection
+   * otherwise.
    *
-   * @param name annotation's name
-   * @param value a valid value for the annotation
-   * @param range a range or null
+   * @param key
+   *          annotation's name
+   * @param value
+   *          a valid value for the annotation
+   * @param range
+   *          a range or null
    */
-  public AnnotationInstance setAnnotation(String name, String value, @JsOptional Range range) throws SEditorException {
+  public AnnotationValue setAnnotation(String key, String value, @JsOptional Range range)
+      throws SEditorException {
 
     if (!editor.isEditing())
       return null;
 
-    Annotation antn = AnnotationRegistry.get(name);
-    if (antn == null)
-      throw new SEditorException(SEditorException.UNKNOWN_ANNOTATION, "Unknown annotation");
-
-    final Range effectiveRange = checkRangeArgument(range);
+    final Range effectiveRange = rangeSafeCheck(range);
     final Editor editor = getEditor();
 
-
-    if (antn instanceof ParagraphAnnotation) {
-
-      editor.undoableSequence(new Runnable(){
-        @Override
-        public void run() {
-          antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);
-        }
-      });
-      return null;
-
-    } else {
-
-      antn.set(editor.getDocument(), editor.getContent().getLocationMapper(), editor.getContent().getLocalAnnotations(), editor.getCaretAnnotations() , effectiveRange, value);
-      return AnnotationInstance.create(editor.getContent(), name, value, effectiveRange, AnnotationInstance.MATCH_IN);
-
-    }
+    return AnnotationController.set(editor, key, value, effectiveRange);
 
   }
 
 
+
   /**
-   * Reset annotations in an specific doc range or in the current selection otherwise.
+   * Clear annotations in a given range or current selection.
    *
-   * TODO(pablojan) consider to avoid AnnotationAction to implement this method and to replace
-   * with a more straightforward approach like in seekTextAnnotations()
    *
    * @param names
    * @param range
    * @throws SEditorException
    */
-  public void clearAnnotation(JavaScriptObject names, @JsOptional Range range) throws SEditorException {
+  public void clearAnnotation(JavaScriptObject keys, @JsOptional Range range)
+      throws SEditorException {
 
     if (!editor.isEditing())
       return;
 
-    Range effectiveRange = checkRangeArgument(range);
+    Range effectiveRange = rangeSafeCheck(range);
 
-    AnnotationAction resetAction = new AnnotationAction(editor, effectiveRange);
+    ReadableStringSet keySet = JsUtils.toStringSet(keys);
 
-    if (names != null) {
-      if (JsUtils.isArray(names)) {
-        resetAction.add((JsArrayString) names);
-      } else if (JsUtils.isString(names)){
-        String name = names.toString();
-        resetAction.add(name);
-      } else {
-        throw new SEditorException("Expected array or string as first argument");
-      }
-    }
+    AnnotationController.clearAnnotation(editor, keySet, effectiveRange);
 
-    editor.undoableSequence(new Runnable(){
-      @Override
-      public void run() {
-        resetAction.reset();
-      }
-    });
+
 
   }
 
-  /**
-   * Get annotations in an specific doc range or in the current selection otherwise.
-   * <p>
-   * By default, get only effective annotations, that is those containing entirely the range.
-   * <p>
-   * TODO(pablojan) consider to avoid AnnotationAction to implement this method and to replace
-   * with a more straightforward approach like in seekTextAnnotations(
-   *
-   * @param names a string or array of string
-   * @param range optional document range of search
-   * @param all retrieve effective or not annotations
-   * @return
-   * @throws SEditorException
-   */
-  public JavaScriptObject getAnnotation(JavaScriptObject names, @JsOptional Range range, @JsOptional Boolean all) throws SEditorException {
+  protected JavaScriptObject getAnnotationsWithFilters(JavaScriptObject keys,
+      Range range, Boolean onlyWithinRange,
+      Function<Object, Boolean> valueMatcher) throws SEditorException {
 
-    range = checkRangeArgument(range);
-
-    AnnotationAction getAction = new AnnotationAction(editor, range);
-
-    getAction.deepTraverse(all != null ? all : false);
-    // By default only consider effective annotations
-    getAction.onlyEffectiveAnnotations( !(all != null && all.equals(Boolean.TRUE)) );
-
-    if (names != null) {
-      if (JsUtils.isArray(names)) {
-        getAction.add((JsArrayString) names);
-      } else if (JsUtils.isString(names) && !names.toString().isEmpty()){
-        getAction.add(names.toString());
-      } else {
-        throw new SEditorException("Expected array or string as first argument");
-      }
-    }
-
-
-
-    return getAction.get();
-  }
-
-
-  /**
-   * Seeks text annotations in the provided range, or in the current selection otherwise,
-   * for a set of keys.
-   *
-   * @param keys
-   * @param range
-   * @param onlyWithinRange only return annotations fully within the range
-   * @return
-   * @throws SEditorException
-   */
-  public JavaScriptObject seekTextAnnotations(JavaScriptObject keys, @JsOptional Range range, @JsOptional Boolean onlyWithinRange) throws SEditorException {
-
-    final Range actualRange = checkRangeArgument(range);
+    final Range searchRange = rangeSafeCheck(range);
 
     JsoView result = JsoView.as(JavaScriptObject.createObject());
     boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
 
     StringSet keySet = JsUtils.toStringSet(keys);
 
-    editor.getDocument().rangedAnnotations(actualRange.getStart(), actualRange.getEnd(), keySet)
-      .forEach(new Consumer<RangedAnnotation<String>>(){
+    // Note: scan local annotations cause them include remote ones
 
-        @Override
-        public void accept(RangedAnnotation<String> t) {
+    editor.getContent().getLocalAnnotations().rangedAnnotations(searchRange.getStart(),
+        searchRange.getEnd(), keySet.isEmpty() ? null : keySet)
+        .forEach((RangedAnnotation<Object> ra) -> {
 
-          // ignore annotations with null value, are just editor's internal stuff
-          if (t.value() == null)
+          AnnotationController a = AnnotationRegistry.get(ra.key());
+          if (a == null)
+            return; // skip not registered annotations
+
+          // ignore annotations with null value, are just editor's internal
+          // stuff
+          if (ra.value() == null)
             return;
 
-          if (!result.containsKey(t.key())) {
-            result.setJso(t.key(), JavaScriptObject.createArray());
+          if (!result.containsKey(ra.key())) {
+            result.setJso(ra.key(), JavaScriptObject.createArray());
           }
 
-          Range anotRange = new Range(t.start(), t.end());
-          int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
+          Range anotRange = new Range(ra.start(), ra.end());
+          int rangeMatch = AnnotationValueBuilder.getRangeMatch(searchRange, anotRange);
 
-          if (withinRange && !actualRange.contains(anotRange))
+          if (withinRange && !searchRange.contains(anotRange))
             return; // skip
 
-          AnnotationInstance anot =
-              AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, rangeMatch);
+          if (valueMatcher != null && !valueMatcher.apply(ra.value()))
+            return; // skip
 
-          JsUtils.addToArray(result.getJso(t.key()), anot);
-        }
+          AnnotationValue anotationValue = AnnotationValueBuilder.buildWithRange(
+              editor.getContent().getMutableDoc(), ra.key(), ra.value(), anotRange, rangeMatch);
 
-    });
+          JsUtils.addToArray(result.getJso(ra.key()), anotationValue);
+        });
+
 
     return result;
+
   }
 
   /**
-   * Seeks all annotations having same key and same value in the provided range.
+   * Get annotations in the given range or in the selection otherwise.
+   * <p>
+   * Retrieve all if keys argument is empty.
    *
-   * @param key
-   * @param value
+   * @param keys
    * @param range
+   * @param onlyWithinRange
    * @return
    * @throws SEditorException
    */
-  public JavaScriptObject seekTextAnnotationsByValue(String key, String value, @JsOptional Range range) throws SEditorException {
+  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional Range range,
+      @JsOptional Boolean onlyWithinRange) throws SEditorException {
 
-    final Range actualRange = checkRangeArgument(range);
-    JsoView result = JsoView.as(JavaScriptObject.createObject());
-    result.setJso(key, JavaScriptObject.createArray());
+    return getAnnotationsWithFilters(keys, range, onlyWithinRange, null);
 
-    EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
-      .forEach(new Consumer<RangedAnnotation<String>>(){
+  }
 
-        @Override
-        public void accept(RangedAnnotation<String> t) {
 
-          // ignore annotations with null value, are just editor's internal stuff
-          if (t.value() == null)
-            return;
+  /**
+   * Get all annotations with given key and value in the given range or in the
+   * selection otherwise.
+   * <p>
+   * Retrieve all if keys argument is empty.
+   *
+   * @param keys
+   * @param value
+   * @param range
+   * @param onlyWithinRange
+   * @return
+   * @throws SEditorException
+   */
+  public JavaScriptObject getAnnotationsWithValue(JavaScriptObject keys, final String value,
+      @JsOptional Range range, @JsOptional Boolean onlyWithinRange)
+      throws SEditorException {
 
-          Range anotRange = new Range(t.start(), t.end());
-          int rangeMatch = AnnotationInstance.getRangeMatch(actualRange, anotRange);
-          AnnotationInstance anot =
-              AnnotationInstance.create(editor.getContent(), t.key(), t.value(), anotRange, rangeMatch);
+    return getAnnotationsWithFilters(keys, range, false, (Object o) -> {
 
-          JsUtils.addToArray(result.getJso(key), anot);
-        }
-      });
+      if (o instanceof String) {
+        return ((String) o).equals(value);
+      } else {
+        return o.toString().equals(value);
+      }
 
-    return result;
+    });
   }
 
   /**
@@ -683,9 +625,9 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public void setTextAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
+  public void setAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
 
-    final Range actualRange = checkRangeArgument(range);
+    final Range actualRange = rangeSafeCheck(range);
     final CMutableDocument doc = editor.getDocument();
 
     if (value == null)
@@ -704,17 +646,20 @@ public class SEditor implements EditorUpdateListener {
   }
 
   /**
-   * Clear a text annotation in the provided range deleting or updating annotations in overlapped locations
+   * Clear a text annotation in the given range. Create or update annotations in
+   * overlapped locations
    *
    * @param key
    * @param value
    * @param range
    * @throws SEditorException
    */
-  public void clearTextAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
+  public void clearAnnotationOverlap(String key, String value, @JsOptional Range range)
+      throws SEditorException {
 
-    final Range actualRange = checkRangeArgument(range);
+    final Range actualRange = rangeSafeCheck(range);
     final CMutableDocument doc = editor.getDocument();
+
 
     editor.undoableSequence(new Runnable(){
 
@@ -760,16 +705,29 @@ public class SEditor implements EditorUpdateListener {
 
   public String getText(@JsOptional Range range) {
     try {
-      range = checkRangeArgument(range);
+      range = rangeSafeCheck(range);
     } catch (Exception e) {
       return null;
     }
     return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
   }
 
+  public void replaceText(Range range, String text) {
+    editor.getDocument().deleteRange(range.getStart(), range.getEnd());
+    editor.getDocument().insertText(range.getStart(), text);
+  }
+
+  public void insertText(int position, String text) {
+    editor.getDocument().insertText(position, text);
+  }
+
+  public void deleteText(Range range) {
+    editor.getDocument().deleteRange(range.getStart(), range.getEnd());
+  }
+
   public SSelection getSelection() {
     try {
-      Range r = checkRangeArgument(null);
+      Range r = rangeSafeCheck(null);
       return SSelection.get(r);
     } catch (Exception e) {
       return null;

@@ -185,7 +185,7 @@ public class EditorAnnotationUtil {
    * @param end End offset of range.
    * @return true if annotations were actually changed
    */
-  public static boolean clearAnnotationsOverRange(MutableAnnotationSet<String> doc,
+  public static <T extends Object> boolean clearAnnotationsOverRange(MutableAnnotationSet<T> doc,
       CaretAnnotations caret, String[] keys, int start, int end) {
     boolean wasRemoved = false;
 
@@ -209,31 +209,31 @@ public class EditorAnnotationUtil {
     return wasRemoved;
   }
 
-  /** 
+  /**
    * Same as {{@link #clearAnnotationsOverRange(MutableAnnotationSet, CaretAnnotations, String[], int, int)}
-   * but allowing params keys as ReadableStringSet 
+   * but allowing params keys as ReadableStringSet
    */
-  public static void clearAnnotationsOverRange(MutableAnnotationSet<String> doc,
+  public static <T extends Object> void clearAnnotationsOverRange(MutableAnnotationSet<T> doc,
       CaretAnnotations caret, ReadableStringSet keys, int start, int end) {
 
     if (start == end) {
-      // clear from caret annotation if collapsed range      
+      // clear from caret annotation if collapsed range
       keys.each(new Proc(){
 
         @Override
         public void apply(String key) {
           if (caret.getAnnotation(key) != null) {
             caret.setAnnotation(key, null); // remove if present
-          }          
+          }
         }
-        
+
       });
 
     } else {
 
       // clear from the entire range
       keys.each(new Proc(){
-        
+
         @Override
         public void apply(String key) {
           if (doc.firstAnnotationChange(start, end, key, null) != -1) {
@@ -312,10 +312,10 @@ public class EditorAnnotationUtil {
       }
     });
   }
-  
+
   /**
    * Set an annotation in the interval, if there is any annotation (with same key) within the interval, add the value to it.
-   *  
+   *
    * @param doc Document
    * @param key the annotation key
    * @param value the annotation value
@@ -323,26 +323,26 @@ public class EditorAnnotationUtil {
    * @param end end location
    */
   public static void setAnnotationWithOverlap(final MutableAnnotationSet<String> doc, String key, String value, int start, int end) {
-     
+
     final int[] rRange = { start, end };
-    
+
     doc.rangedAnnotations(start, end, CollectionUtils.newStringSet(key))
     .forEach(new Consumer<RangedAnnotation<String>>(){
 
-     
+
       @Override
       public void accept(RangedAnnotation<String> anot) {
-        
+
         if (!anot.key().equals(key) || anot.value() == null) return;
-     
+
         if (rRange[0] >= rRange[1]) return;
-        
+
         if (anot.start() <= rRange[0] &&
             anot.end() < rRange[1]) {
-          
+
           // Case 1
           //
-          // |------ anot -----| 
+          // |------ anot -----|
           //      |-------- range -----
           //
           // results:
@@ -350,32 +350,32 @@ public class EditorAnnotationUtil {
           //  anot   anot+new
           // |----|------------|---- range'
           //
-          
+
           int s1 = anot.start();
           int e1 = rRange[0]-1;
-                   
+
           int s2 = rRange[0];
           int e2 = anot.end();
-          
-          
+
+
           if (s1 < e1) {
             doc.setAnnotation(s1, e1, key, anot.value());
-          }          
-          
+          }
+
           if (s2 < e2) {
             doc.setAnnotation(s1, e1, key, anot.value()+","+value);
           }
-             
+
           rRange[0] = e2+1;
 
-          
-        } else if (rRange[0] <= anot.start() && 
+
+        } else if (rRange[0] <= anot.start() &&
             anot.end() <= rRange[1]) {
-          
-            
+
+
           // Case 2
           //
-          //         |------ anot -----| 
+          //         |------ anot -----|
           //  |-------- range -------------------
           //
           // results:
@@ -383,30 +383,30 @@ public class EditorAnnotationUtil {
           //   new       anot+new
           // |-------|-----------------|---- range'
           //
-          
+
           int s1 = rRange[0];
           int e1 = anot.start()-1;
-          
+
           int s2 = anot.start();
           int e2 = anot.end();
-          
+
           if (s1 < e1) {
             doc.setAnnotation(s1, e1, key, value);
           }
-          
+
           if (s2 < e2) {
             doc.setAnnotation(s2, e2, key, value+","+anot.value());
           }
-  
+
           rRange[0] = e2+1;
-          
-          
+
+
         } else if (rRange[0] <= anot.start() &&
             rRange[1] < anot.end()) {
-                
+
           // Case 3
           //
-          //         |-------- anot ------- 
+          //         |-------- anot -------
           // |-------- range -----|
           //
           // results:
@@ -414,37 +414,37 @@ public class EditorAnnotationUtil {
           //    new      anot+new
           // |-------|------------|---- anot
           //
-          
+
           int s1 = rRange[0];
           int e1 = anot.start()-1;
-          
+
           int s2 = anot.start();
           int e2 = rRange[1];
-          
+
           if (s1 < e1)
              doc.setAnnotation(s1, s1, key, value);
-          
+
           if (s2 < e2)
             doc.setAnnotation(s2, e2, key, anot.value()+","+value);
-         
+
           // the last part of 'anot' will remain cause the
           // setAnnotation() logic
-          
+
           rRange[0] = e2+1;
         }
 
-      } 
-      
+      }
+
     });
-    
+
     // if there is still a range not overlapped, create annotation
     if (rRange[0] < rRange[1])
       doc.setAnnotation(rRange[0], rRange[1], key, value);
   }
-  
+
   /**
    * Collect all annotations with same key and containing same value in the provided range
-   * 
+   *
    * @param doc Document
    * @param key the annotation key
    * @param value the annotation value
@@ -455,7 +455,7 @@ public class EditorAnnotationUtil {
   public static Iterable<RangedAnnotation<String>> getAnnotationSpread(final MutableAnnotationSet<String> doc, String key, String value, int start, int end) {
 
     final ArrayList<RangedAnnotation<String>> resultSet = new ArrayList<RangedAnnotation<String>>();
-    
+
     doc.rangedAnnotations(start, end, CollectionUtils.newStringSet(key))
     .forEach(new Consumer<RangedAnnotation<String>>(){
 
@@ -465,11 +465,11 @@ public class EditorAnnotationUtil {
         if (anot.key().equals(key) && anot.value() != null && anot.value().contains(value)) {
           resultSet.add(new RangedAnnotationImpl<String>(anot));
         }
-        
+
       }
     });
-    
+
     return resultSet;
   }
-  
+
 }

@@ -28,10 +28,11 @@ import jsinterop.annotations.JsType;
 /**
  * An immutable range of two locations integers
  */
-@JsType(namespace = "swell.Editor", name = "Range")
+@JsType(namespace = "swell", name = "Range")
 public final class Range {
 
   public static final Range ALL = new Range(0,0);
+  public static final Range NONE = new Range();
 
   public static Range create(int start, int end) {
     return new Range(start, end);
@@ -40,6 +41,12 @@ public final class Range {
 
   private final int start;
   private final int end;
+
+  @JsIgnore
+  private Range() {
+    start = -1;
+    end = -1;
+  }
 
   /**
    * Construct a range

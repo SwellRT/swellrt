@@ -200,7 +200,7 @@ public class SWaveObject extends SWaveNodeContainer
 	}
 
 	@Override
-  public String getBlipXML(String blipId) {
+  public String _getBlipXML(String blipId) {
     return waveManager.getBlipXML(blipId);
 	}
 

@@ -109,7 +109,7 @@
 
     // Configure editor globals
     __swell_editor_config = {
-      enableLog: true
+      enableLog: false
       //webkitComposition: false
     };
 
@@ -138,10 +138,18 @@
     editorElt.appendChild(window.menu);
 
     swell.Editor.AnnotationRegistry.define("@selection","selection");
-    swell.Editor.AnnotationRegistry.setHandler("@selection", (type, annot, event) => {
+    swell.Editor.AnnotationRegistry.setHandler("@selection", (event) => {
+      console.log("@selection event("+event.type+") "+event.annotation.value+", "+event.annotation.start+":"+event.annotation.end);
+      
+      if (event.type == swell.AnnotationEvent.EVENT_UPDATED) {
+        _event = event;
+      }
 
-      if (type == swell.Annotation.EVENT_ADDED && annot.value == currentSelectionId) {
+      
+      /*
+      if (event.type == swell.Annotation.EVENT_DOM_ADDED && annot.value == currentSelectionId) {
 
+        _node = annot.node;
         var sel = annot.node;  //document.getElementsByClassName("@selection")[0];
         if (sel) {
 
@@ -155,16 +163,16 @@
       if (type == swell.Annotation.EVENT_REMOVED && annot.value != currentSelectionId) {
         window.menu.style.visibility = "hidden";
       }
-
+      */
 
 
     });
 
 
     swell.Editor.AnnotationRegistry.define("mark","mark");
-    swell.Editor.AnnotationRegistry.setHandler("mark", (type, annot, event) => {
+    swell.Editor.AnnotationRegistry.setHandler("mark", (event) => {
 
-      console.log("Mark annotation event("+type+") "+annot.value+", "+annot.range.start+":"+annot.range.end);
+      console.log("mark event("+event.type+") "+event.annotation.value+", "+event.annotation.start+":"+event.annotation.end);
 
     });
 
@@ -194,29 +202,28 @@
       // Create editor instance, reusable
       editor = swell.Editor.createWithId("editor");
 
+      _lastSelectionAnnotation = undefined;
 
       editor.setSelectionHandler((range, editor, point) => {
-          console.log("new selection");
-
+          console.log('selection changed');
+          /*
           // This annotation shows the contextual menu
-          if (editor._lastSelectionAnnotation) {
-            editor._lastSelectionAnnotation.clear();
-            delete editor._lastSelectionAnnotation;
+          if (_lastSelectionAnnotation) {
+            var r = swell.Range.create(_lastSelectionAnnotation.start, _lastSelectionAnnotation.end);
+            editor.clearAnnotation("@selection", r);
+             _lastSelectionAnnotation = undefined;
           }
 
-          if (range.isCollapsed) {
-            console.log("selection is collapsed");            
-            range = swell.Editor.Range.create(range.start, range.start + 1);
+          if (!range.isCollapsed()) {
+            
+              currentSelectionId = "selection-"+(new Date()).getTime();
+              _lastSelectionAnnotation = editor.setAnnotation("@selection", currentSelectionId , range);
+
+              currentSelection = point;
+              currentSelectionRange = range;
           }
+          */
 
-          console.log("range is "+range.start+":"+range.end);          
-          currentSelectionId = "selection-"+(new Date()).getTime();
-          editor._lastSelectionAnnotation =
-                editor.setAnnotation("@selection", currentSelectionId , range);
-
-          
-          currentSelection = point;
-          currentSelectionRange = range;
 
 
       });

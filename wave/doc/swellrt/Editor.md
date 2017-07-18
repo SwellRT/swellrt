@@ -76,29 +76,73 @@ In this example, when a *comment* annotation is rendered the editor will render 
 ### Working with annotations
 
 
-*editor.setAnnotation(name, value, [range])* 
+*editor.setAnnotation(key, value, [range])* 
 
-Sets a new "name" annotation in the provided range with "value".
+Sets a new *name* annotation in the provided range with a given *value*.
+Setting a *null* value removes the annotation only in given range, spliting the rest of the annotation.
 
-*editor.clearAnnotation(names, [range])*
+If no range is provided, current selection is assumed.
 
-Remove all annotations with name in the "names" array or object that are partially o totally contained in the range.
+*editor.clearAnnotation(keys, [range])*
+
+Remove all annotations within array *keys* that are partially o totally contained in the range.
+
+If no range is provided, current selection is assumed.
+
+*editor.getAnnotations(keys, [range], [onlyWithinRange])*
+
+Get all annotation values for the given keys. If *onlyWithinRange* is true, return those fully contained in the search range only.
+
+If *range* is not provided, current selection range is used.
+
+*editor.getAnnotationsWithValue(keys, value, [range], [onlyWithinRange])*
+
+Similar to previous function but filters out annotations with the given value.
+
+*Annotation values*
+
+Annotations obtained from *getAnnotationsXXX()* methods returns an object with an array for each annotation found, for example:
+
+```js
+{
+	link: [ ... ],
+	mark: [ ... ],
+	style/fontSize: [ {
+
+		key: 'style/fontSize',
+		value: '20px',
+		line: <dom element>,
+		node: <dom node>,
+		range: {
+			start: 10,
+			end: 21
+		},
+		text: 'hello world',
+		searchMatch: 0
 
 
-If *range* is ommitted the editor will assume the one from the current selected text.
+	} ]
+
+}
+```
+*searchMatch* value can take these values:
+
+- *swell.Annotation.MATCH_IN* the search range is equals or inside the annotations's range.
+- *swell.Annotation.MATCH_OUT* the search range is partially out of the annotation's range or spans beyond it.
 
 *Ranges*
 
 Usually you won't need to provide a hand written range (because you will get one from another part of the API) but if that is the case, create a new range object with:
 
-*var range = swell.Editor.Range.create(start, end);*
+*var range = swell.Range.create(start, end);*
 
 In situations when you need to indicate a range spaning the whole document use this constant:
 
-*var rangeAllText = swell.Editor.Range.ALL;*
+*var rangeAllText = swell.Range.ALL;*
 
 
-### Text annotations and overlapping
+
+### Overlapping Text annotations
 
 Overlapping of annotations with same name can be problematic for some specific logics. Let's imagine the following example of a annotated text representing a comment (with value A):
 
@@ -124,7 +168,7 @@ In this case, we have lost the reference of comment A in the word "March".
 
 To avoid this situation you can use specific methods for text annotations:
 
-*editor.setTextAnnotationOverlap(name, value, [range])*
+*editor.setAnnotationOverlap(name, value, [range])*
 
 For the previous example, this method will generate following annotations:
 
@@ -140,92 +184,48 @@ Now, the word "March" will be annotated with annotation "comment" with combined 
 
 In order to revert this annotation properly use the method:
 
-*editor.clearTextAnnotationOverlap(name, value, [range])*
+*editor.clearAnnotationOverlap(name, value, [range])*
 
-
-### Getting annotations
-
-*editor.seekTextAnnotations(names, [range], [onlyWithinRange])*
-
-Get all annotations matching a name. Optionally
-a range can be specified and a flag to only retrieve annotations fully withing that range.
-
-*names* argument can be a single string or an array of strings.
-
-*editor.seekTextAnnotationsByValue(name, value, [range])*
-
-Get all annotations matching the provided name and value. Optionally
-a range can be specified.
-
-The result object of these methods has a different array of *annotation instances* for each annotation name.
-
-```js
-{ 
-	annotation_name_1 : [ <array of annotation instances> ],
-	...
-	annotation_name_N : [ <array of annotation instances> ]
-}
-```
-
-### Annotation instances
-
-An *Annotation Instance* has the information of one annotation in a particular range of text, and it provides some methods to manipulate it:
-
-```js
-
-var annotationInstance = ...
-
-annotationInstance.range; // range.start, range.end
-annotationInstance.name; 
-annotationInstance.value;
-annotationInstance.text;
-annotationInstance.matchType; // how seek range matches annotation's range
-
-}
-
-```
-
-Match type can take following values:
-
-- *swell.Annotation.MATCH_IN* the seek range is equals or inside the annotations's range.
-- *swell.Annotation.MATCH_OUT* the seek range is partially out of the annotation's range or spans beyond it.
-
-
-An instance have following methods:
-
-*annotationInstance.clear()*
-
-Delete the annotation. The object can't be used any more.
-
-*annotationInstance.getLine()*
-
-Returns the DOM element of the nearest line containing the annotated text.
-
-*annotationInstance.getNode()*
-
-Returns the DOM element of the annotated text.
-
-*annotationInstance.mutate(text)*
-
-Changes the annotated text, this can change the range.
-
-*annotationInstance.update(value)*
-
-Changes the value of the annotation.
 
 ### Events
 
-Create, update and delete events are triggered anytime the editor renders an annotation. This doesn't happen only when the annotation is created or delete, as can be expected. They also happens when the annotation needs to be render again because of different situations, for example, when another annotation affecting the same is rendered.
+Annotation events are triggered both when the annotation is created or deleted in the document and when it is rendered or removed from the DOM view.
 
-*swell.Annotation.EVENT_MUTATED* 
+ Annotation's event handler must be set right after the an annotation is defined:
 
-- When the document is rendered.
-- When text withing the annotation changes.
+```js
+swell.Editor.AnnotationRegistry
+	.define("mark","mark");
+
+ swell.Editor.AnnotationRegistry
+ 	.setHandler("mark", (event) => {
+
+      console.log("Mark Event ("+event.type+") "+event.annotation.value+", "+event.annotation.start+":"+event.annotation.end);
+
+    });	
+```
+An event object is passed to the handler anytime the given annotation throws an event. This object has following properties:
+
+```js
+event = {
+
+	type: <int>,
+	annotation: <annotation value>
+	domEvent: <dom event>
+
+}
+```
+
+There are two type of events, for DOM and for document. DOM events are thrown when editor needs to repaint annotations:
+
+*swell.Annotation.EVENT_DOM_MUTATED* 
+*swell.Annotation.EVENT_DOM_CREATED*
+*swell.Annotation.EVENT_DOM_REMOVED*
+
+Document events are only thrown when an annotation value change in the document:
 
 *swell.Annotation.EVENT_CREATED*
-
 *swell.Annotation.EVENT_REMOVED*
-- Range null
 
 ## Development
 

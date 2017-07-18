@@ -116,7 +116,7 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public String getBlipXML(String blipId) {
+  public String _getBlipXML(String blipId) {
    return null;
   }
 
