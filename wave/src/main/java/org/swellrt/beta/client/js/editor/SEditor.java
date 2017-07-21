@@ -36,6 +36,8 @@ import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListene
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.editor.content.ContentNode;
+import org.waveprotocol.wave.client.editor.content.FullContentView;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
@@ -51,13 +53,14 @@ import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.LineContainers;
+import org.waveprotocol.wave.model.document.util.Pretty;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
-import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.DOM;
 
 import jsinterop.annotations.JsFunction;
@@ -482,6 +485,8 @@ public class SEditor implements EditorUpdateListener {
   public AnnotationValue setAnnotation(String key, String value, @JsOptional Range range)
       throws SEditorException {
 
+    key = AnnotationRegistry.normalizeKey(key);
+
     if (!editor.isEditing())
       return null;
 
@@ -510,7 +515,7 @@ public class SEditor implements EditorUpdateListener {
 
     Range effectiveRange = rangeSafeCheck(range);
 
-    ReadableStringSet keySet = JsUtils.toStringSet(keys);
+    ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
 
     AnnotationController.clearAnnotation(editor, keySet, effectiveRange);
 
@@ -527,7 +532,7 @@ public class SEditor implements EditorUpdateListener {
     JsoView result = JsoView.as(JavaScriptObject.createObject());
     boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
 
-    StringSet keySet = JsUtils.toStringSet(keys);
+    ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
 
     // Note: scan local annotations cause them include remote ones
 
@@ -627,6 +632,7 @@ public class SEditor implements EditorUpdateListener {
    */
   public void setAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
 
+
     final Range actualRange = rangeSafeCheck(range);
     final CMutableDocument doc = editor.getDocument();
 
@@ -638,7 +644,9 @@ public class SEditor implements EditorUpdateListener {
       @Override
       public void run() {
         doc.beginMutationGroup();
-        EditorAnnotationUtil.setAnnotationWithOverlap(doc, key, value, actualRange.getStart(), actualRange.getEnd());
+        EditorAnnotationUtil.setAnnotationWithOverlap(doc, AnnotationRegistry.normalizeKey(key),
+            value, actualRange.getStart(),
+            actualRange.getEnd());
         doc.endMutationGroup();
       }
 
@@ -660,13 +668,14 @@ public class SEditor implements EditorUpdateListener {
     final Range actualRange = rangeSafeCheck(range);
     final CMutableDocument doc = editor.getDocument();
 
+    final String nkey = AnnotationRegistry.normalizeKey(key);
 
     editor.undoableSequence(new Runnable(){
 
       @Override
       public void run() {
 
-        EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), key, value, actualRange.getStart(), actualRange.getEnd())
+        EditorAnnotationUtil.getAnnotationSpread(editor.getDocument(), nkey, value, actualRange.getStart(), actualRange.getEnd())
         .forEach(new Consumer<RangedAnnotation<String>>(){
 
           @Override
@@ -690,7 +699,7 @@ public class SEditor implements EditorUpdateListener {
 
             }
             // This can remove or update an annotation
-            doc.setAnnotation(t.start(), t.end(), key, newValue);
+            doc.setAnnotation(t.start(), t.end(), t.key(), newValue);
           }
         });
 
@@ -828,6 +837,19 @@ public class SEditor implements EditorUpdateListener {
       return COMPAT_MODE_READONLY;
 
     return COMPAT_MODE_EDIT;
+  }
+
+
+  public String __getContentView() {
+    ContentNode node = editor.getContent().getFullContentView().getDocumentElement();
+    return new Pretty<ContentNode>().print(FullContentView.INSTANCE, node);
+  }
+
+  public String __getHtmlView() {
+    ContentNode node = editor.getContent().getFullContentView().getDocumentElement();
+    return new Pretty<Node>().print(node.getContext().rendering().getFullHtmlView(),
+        node.getImplNodelet());
+
   }
 
 }

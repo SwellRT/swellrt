@@ -20,6 +20,9 @@ import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
+import org.waveprotocol.wave.model.util.ReadableStringSet;
+import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
+import org.waveprotocol.wave.model.util.StringSet;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
@@ -61,6 +64,7 @@ public class AnnotationRegistry {
   public static final String PARAGRAPH_LIST = "paragraph/list";
   public static final String PARAGRAPH_INDENT = "paragraph/indent";
 
+
   public static final String STYLE_BG_COLOR = AnnotationConstants.STYLE_BG_COLOR;
   public static final String STYLE_COLOR = AnnotationConstants.STYLE_COLOR;
   public static final String STYLE_FONT_FAMILY = AnnotationConstants.STYLE_FONT_FAMILY;
@@ -70,8 +74,9 @@ public class AnnotationRegistry {
   public static final String STYLE_TEXT_DECORATION = AnnotationConstants.STYLE_TEXT_DECORATION;
   public static final String STYLE_VERTICAL_ALIGN = AnnotationConstants.STYLE_VERTICAL_ALIGN;
 
-  public static final String LINK = AnnotationConstants.LINK_PREFIX;
-  public static final String PARAGRAPH = "paragraph";
+  public static final String STYLE_PREFIX = AnnotationConstants.STYLE_PREFIX;
+  public static final String LINK_PREFIX = AnnotationConstants.LINK_PREFIX;
+  public static final String PARAGRAPH_PREFIX = "paragraph";
 
   private static final JsoView CANONICAL_KEYS = JsoView.create();
 
@@ -197,23 +202,77 @@ public class AnnotationRegistry {
     return store.keySet();
   }
 
+  /**
+   * @param key,
+   *          a probably short-format annotation key
+   * @return a normalized annotation key
+   */
+  public static String normalizeKey(String key) {
+
+    if (!key.contains("/")) {
+      String ckey = CANONICAL_KEYS.getString(key);
+      key = ckey != null ? ckey : key;
+    }
+
+    return key;
+  }
+
+  /**
+   * @param key,
+   *          a probably short-format annotation key
+   * @return a normalized annotation key
+   */
+  @JsIgnore
+  public static ReadableStringSet normalizeKeys(ReadableStringSet keySet) {
+
+    StringSet normalizedKeySet = CollectionUtils.createStringSet();
+
+    keySet.each(new Proc() {
+
+      @Override
+      public void apply(String key) {
+        normalizedKeySet.add(normalizeKey(key));
+      }
+
+    });
+
+    return normalizedKeySet;
+  }
 
   /**
    * Retrieve a {@link Annotation} instance.
+   * <p>
+   * style/fontWeight
    *
    *
-   * @param name,
-   *          maybe including a suffix
+   * @param key,
+   *          annotation key or prefix
    * @return
    */
   @JsIgnore
   public static AnnotationController get(String key) {
-    if (key.contains("/") &&
-        !key.startsWith(LINK) && !key.startsWith(PARAGRAPH)) {
-      key = key.substring(0, key.indexOf("/"));
+
+    key = normalizeKey(key);
+
+    if (key.contains("/")) {
+
+      if (key.startsWith(PARAGRAPH_PREFIX)) {
+        // paragraph annotations have a different controller
+        // for each variation paragraph/list, paragraph/textAlign...
+        return store.get(key);
+      } else {
+        // Non paragraph annotations have only one controller
+        // for variation, referenced by its prefix
+        return store.get(key.substring(0, key.indexOf("/")));
+      }
+
+    } else {
+
+      return store.get(key);
+
     }
-    String canonicalName = CANONICAL_KEYS.getString(key);
-    return store.get(canonicalName != null ? canonicalName : key);
+
+
   }
 
 
