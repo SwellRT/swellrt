@@ -64,7 +64,6 @@ public class AnnotationRegistry {
   public static final String PARAGRAPH_LIST = "paragraph/list";
   public static final String PARAGRAPH_INDENT = "paragraph/indent";
 
-
   public static final String STYLE_BG_COLOR = AnnotationConstants.STYLE_BG_COLOR;
   public static final String STYLE_COLOR = AnnotationConstants.STYLE_COLOR;
   public static final String STYLE_FONT_FAMILY = AnnotationConstants.STYLE_FONT_FAMILY;
@@ -196,6 +195,12 @@ public class AnnotationRegistry {
         linkController.getTextEventHanlder());
   }
 
+  protected static final AnnotationController[] PARAGRAPH_STYLED_CONTROLLERS = {
+      store.get(PARAGRAPH_TEXT_ALIGN),
+      store.get(PARAGRAPH_LIST),
+      store.get(PARAGRAPH_HEADER)
+  };
+
 
   @JsIgnore
   public static Set<String> getKeys() {
@@ -237,6 +242,26 @@ public class AnnotationRegistry {
     });
 
     return normalizedKeySet;
+  }
+
+  /**
+   * Check whether given key matches in the key set. Match prefixes too.
+   *
+   * @param keySet,
+   *          set of annotation (normalized) keys or prefixes.
+   * @param key, normalized key, with no prefixes.
+   *
+   * @return a set of with all possible annotation keys
+   */
+  @JsIgnore
+  public static boolean matchKeys(ReadableStringSet keySet, String key) {
+
+    String prefix = key.contains("/") ? key.substring(0, key.indexOf("/")) : null;
+
+    if (keySet.contains(key) || (prefix != null && keySet.contains(prefix)))
+      return true;
+
+    return false;
   }
 
   /**

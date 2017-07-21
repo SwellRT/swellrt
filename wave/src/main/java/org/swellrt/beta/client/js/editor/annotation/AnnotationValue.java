@@ -2,7 +2,6 @@ package org.swellrt.beta.client.js.editor.annotation;
 
 import org.waveprotocol.wave.model.document.util.Range;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
 import jsinterop.annotations.JsType;
@@ -24,7 +23,7 @@ public class AnnotationValue {
   public Object value;
   public Object newValue;
   public Node node;
-  public Element line;
+  public Node line;
   public String text;
   public int searchMatch;
 

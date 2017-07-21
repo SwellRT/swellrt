@@ -1,21 +1,29 @@
 package org.swellrt.beta.client.js.editor.annotation;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
+import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.SEditorException;
+import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
+import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 import org.waveprotocol.wave.model.util.StringSet;
+
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
  * A single place to put all annotation related logic.
@@ -215,6 +223,122 @@ public class AnnotationController {
 
   }
 
+  public static JavaScriptObject getAnnotationsWithFilters(Editor editor, JavaScriptObject keys,
+      Range searchRange, Boolean onlyWithinRange, Function<Object, Boolean> valueMatcher)
+      throws SEditorException {
+
+    JsoView result = JsoView.as(JavaScriptObject.createObject());
+    boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
+
+    ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
+    StringSet paragraphKeySet = CollectionUtils.createStringSet();
+    StringSet textKeySet = CollectionUtils.createStringSet();
+    filterOutKeys(keySet, paragraphKeySet, textKeySet, AnnotationRegistry::isParagraphAnnotation);
+
+    // Note: scan local annotations cause them include remote ones
+
+    // get all annotations, filter later
+    editor.getContent().getLocalAnnotations()
+        .rangedAnnotations(searchRange.getStart(), searchRange.getEnd(), null)
+        .forEach((RangedAnnotation<Object> ra) -> {
+
+          // ignore annotations with null value, are just editor's internal
+          // stuff
+          if (ra.value() == null)
+            return;
+
+          // get all annotations and filter here
+          if (!keySet.isEmpty() && !AnnotationRegistry.matchKeys(textKeySet, ra.key()))
+            return;
+
+          AnnotationController a = AnnotationRegistry.get(ra.key());
+          if (a == null)
+            return; // skip not registered annotations
+
+          if (!result.containsKey(ra.key())) {
+            result.setJso(ra.key(), JavaScriptObject.createArray());
+          }
+
+          Range anotRange = new Range(ra.start(), ra.end());
+          int rangeMatch = AnnotationValueBuilder.getRangeMatch(searchRange, anotRange);
+
+          if (withinRange && !searchRange.contains(anotRange))
+            return; // skip
+
+          if (valueMatcher != null && !valueMatcher.apply(ra.value()))
+            return; // skip
+
+          AnnotationValue anotationValue = AnnotationValueBuilder.buildWithRange(
+              editor.getContent().getMutableDoc(), ra.key(), ra.value(), anotRange, rangeMatch);
+
+          JsUtils.addToArray(result.getJso(ra.key()), anotationValue);
+        });
+
+    //
+    // Paragraph annotations
+    //
+
+
+    List<AnnotationController> controllers = new ArrayList<AnnotationController>();
+    boolean allParagraphAnnotations = false;
+
+    // all annotations case and paragraph prefix selector
+    if (keySet.isEmpty() || paragraphKeySet.contains(AnnotationRegistry.PARAGRAPH_PREFIX)) {
+      allParagraphAnnotations = true;
+    }
+
+    if (!allParagraphAnnotations) {
+      paragraphKeySet.each(new Proc() {
+
+
+        @Override
+        public void apply(String key) {
+
+          AnnotationController c = AnnotationRegistry.get(key);
+          if (c.isParagraphStyle()) {
+            controllers.add(c);
+          }
+        }
+
+      });
+    }
+
+    final AnnotationController[] paragraphControllers = allParagraphAnnotations
+        ? AnnotationRegistry.PARAGRAPH_STYLED_CONTROLLERS
+        : controllers.toArray(new AnnotationController[] {});
+
+    Paragraph.traverse(editor.getContent().getLocationMapper(), searchRange.getStart(),
+        searchRange.getEnd(),
+        new ContentElement.Action() {
+
+          @Override
+          public void execute(ContentElement e) {
+
+            for (AnnotationController c : paragraphControllers) {
+              String styleValue = c.isAppliedParagraphStyle(e);
+              if (styleValue != null) {
+
+                AnnotationValue anotationValue = AnnotationValueBuilder.buildForParagraphNode(
+                    editor.getContent().getMutableDoc(), c.key, styleValue, e,
+                    AnnotationValue.MATCH_IN);
+
+                if (!result.containsKey(c.key)) {
+                  result.setJso(c.key, JavaScriptObject.createArray());
+                }
+
+                JsUtils.addToArray(result.getJso(c.key), anotationValue);
+
+              }
+            }
+
+          }
+
+        });
+
+    return result;
+
+  }
+
   private final Type type;
 
   /** Annotation key */
@@ -332,5 +456,28 @@ public class AnnotationController {
     return textEventHandler;
   }
 
+  /**
+   * @return the style value, null if style is not applied
+   */
+  public String isAppliedParagraphStyle(ContentElement element) {
+    if (styles == null) return null;
+
+    String[] value = { null };
+
+    styles.entrySet().forEach((Entry<String, LineStyle> e) -> {
+
+      if (value[0] == null && e.getValue().isApplied(element)) {
+        value[0] = e.getKey();
+      }
+
+    });
+
+    return value[0];
+
+  }
+
+  public boolean isParagraphStyle() {
+    return styles != null;
+  }
 
 }

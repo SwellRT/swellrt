@@ -3,7 +3,6 @@ package org.swellrt.beta.client.js.editor;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
@@ -14,10 +13,8 @@ import org.swellrt.beta.client.js.JsUtils;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationController;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationRegistry;
 import org.swellrt.beta.client.js.editor.annotation.AnnotationValue;
-import org.swellrt.beta.client.js.editor.annotation.AnnotationValueBuilder;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ProfileManager;
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
@@ -523,55 +520,7 @@ public class SEditor implements EditorUpdateListener {
 
   }
 
-  protected JavaScriptObject getAnnotationsWithFilters(JavaScriptObject keys,
-      Range range, Boolean onlyWithinRange,
-      Function<Object, Boolean> valueMatcher) throws SEditorException {
 
-    final Range searchRange = rangeSafeCheck(range);
-
-    JsoView result = JsoView.as(JavaScriptObject.createObject());
-    boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
-
-    ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
-
-    // Note: scan local annotations cause them include remote ones
-
-    editor.getContent().getLocalAnnotations().rangedAnnotations(searchRange.getStart(),
-        searchRange.getEnd(), keySet.isEmpty() ? null : keySet)
-        .forEach((RangedAnnotation<Object> ra) -> {
-
-          AnnotationController a = AnnotationRegistry.get(ra.key());
-          if (a == null)
-            return; // skip not registered annotations
-
-          // ignore annotations with null value, are just editor's internal
-          // stuff
-          if (ra.value() == null)
-            return;
-
-          if (!result.containsKey(ra.key())) {
-            result.setJso(ra.key(), JavaScriptObject.createArray());
-          }
-
-          Range anotRange = new Range(ra.start(), ra.end());
-          int rangeMatch = AnnotationValueBuilder.getRangeMatch(searchRange, anotRange);
-
-          if (withinRange && !searchRange.contains(anotRange))
-            return; // skip
-
-          if (valueMatcher != null && !valueMatcher.apply(ra.value()))
-            return; // skip
-
-          AnnotationValue anotationValue = AnnotationValueBuilder.buildWithRange(
-              editor.getContent().getMutableDoc(), ra.key(), ra.value(), anotRange, rangeMatch);
-
-          JsUtils.addToArray(result.getJso(ra.key()), anotationValue);
-        });
-
-
-    return result;
-
-  }
 
   /**
    * Get annotations in the given range or in the selection otherwise.
@@ -587,7 +536,8 @@ public class SEditor implements EditorUpdateListener {
   public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional Range range,
       @JsOptional Boolean onlyWithinRange) throws SEditorException {
 
-    return getAnnotationsWithFilters(keys, range, onlyWithinRange, null);
+    return AnnotationController.getAnnotationsWithFilters(editor, keys, rangeSafeCheck(range),
+        onlyWithinRange, null);
 
   }
 
@@ -609,7 +559,8 @@ public class SEditor implements EditorUpdateListener {
       @JsOptional Range range, @JsOptional Boolean onlyWithinRange)
       throws SEditorException {
 
-    return getAnnotationsWithFilters(keys, range, false, (Object o) -> {
+    return AnnotationController.getAnnotationsWithFilters(editor, keys, rangeSafeCheck(range),
+        false, (Object o) -> {
 
       if (o instanceof String) {
         return ((String) o).equals(value);

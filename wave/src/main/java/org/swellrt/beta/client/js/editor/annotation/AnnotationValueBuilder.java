@@ -91,6 +91,49 @@ public class AnnotationValueBuilder {
     return av;
   }
 
+  /**
+   * Use this method from annotation search. See {@link AnnotationRegistry}
+   */
+  @JsIgnore
+  public static AnnotationValue buildForParagraphNode(CMutableDocument doc, String key,
+      Object value, ContentElement element, int searchMatch) {
+
+    // element is the <line/> but we want the <l:p> node
+    ContentNode line = element.getNextSibling();
+
+    int start = element.getContext().locationMapper().getLocation(line);
+    ContentNode endLine = line.getNextSibling();
+    int end = -1;
+    if (endLine != null) {
+      end = element.getContext().locationMapper().getLocation(endLine);
+    } else {
+      Point<ContentNode> endPoint = Point.end(element.getContext().document().getDocumentElement());
+      end = element.getContext().locationMapper().getLocation(endPoint);
+    }
+
+    AnnotationValue av = new AnnotationValue();
+
+    av.key = key;
+    av.value = value;
+    av.range = Range.create(start, end);
+    av.searchMatch = searchMatch;
+
+    av.node = element.getImplNodeletRightwards();
+    av.line = av.node;
+    av.text = DocHelper.getText(doc, av.range.getStart(), av.range.getEnd());
+
+    // if (av.node.getNodeType() == Node.ELEMENT_NODE) {
+    // av.text = ((Element) av.node).getInnerText();
+    // } else if (av.node.getNodeType() == Node.TEXT_NODE) {
+    // av.text = ((Text) av.node).getData();
+    // } else {
+    //
+    // }
+
+    av.data = element;
+
+    return av;
+  }
 
   private static RangedAnnotation<String> getAnnotationFromNode(String key, String value,
       ContentElement node) {
