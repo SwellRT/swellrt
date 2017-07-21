@@ -505,9 +505,6 @@ object.set('tasks.20170501-01',
    }));
 ```
 
-The "swell.Map.create()" method 
-
-
 **delete(path)**
 
 Deletes a propery of the collaborative object. For example:
