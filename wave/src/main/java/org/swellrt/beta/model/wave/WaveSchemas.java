@@ -13,7 +13,7 @@ import org.waveprotocol.wave.model.schema.SchemaUtils;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class SWaveSchemas {
+public class WaveSchemas {
 
   
   /**

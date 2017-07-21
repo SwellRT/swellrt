@@ -1,7 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.wave.SWaveNodeContainer;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeContainer;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.model.document.ReadableDocument;
 import org.waveprotocol.wave.model.document.util.DocHelper;

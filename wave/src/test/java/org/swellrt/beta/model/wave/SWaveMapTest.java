@@ -12,7 +12,7 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.local.SMapLocal;
-import org.swellrt.beta.model.wave.SWaveMap;
+import org.swellrt.beta.model.wave.mutable.SWaveMap;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 

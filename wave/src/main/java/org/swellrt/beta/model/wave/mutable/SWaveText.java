@@ -1,6 +1,7 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.model.SText;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.wave.Blip;
 
 /**

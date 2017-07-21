@@ -59,7 +59,6 @@
 	 
 	<inherits name='org.swellrt.beta.common.Common' />
 	<inherits name='org.swellrt.beta.model.Model' />
-	<inherits name='org.swellrt.beta.wave.Wave' />
 
 	<set-configuration-property name="CssResource.obfuscationPrefix"
 		value="SWC" />
@@ -67,5 +66,7 @@
 	<source path="" />
 	<source path="operation/**" />
 	<source path="js/**" />
+	<source path="wave/**" />
+	
 		
 </module>

@@ -4,9 +4,9 @@ import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
-import org.swellrt.beta.model.wave.SWaveNodeManager;
-import org.swellrt.beta.model.wave.SWaveText;
 import org.swellrt.beta.model.wave.SubstrateId;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
+import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 

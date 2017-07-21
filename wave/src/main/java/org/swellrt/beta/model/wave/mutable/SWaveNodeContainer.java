@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
@@ -8,6 +8,7 @@ import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObservableNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SVisitor;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 
 import jsinterop.annotations.JsIgnore;

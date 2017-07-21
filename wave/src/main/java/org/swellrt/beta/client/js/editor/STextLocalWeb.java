@@ -4,7 +4,7 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.STextLocal;
-import org.swellrt.beta.model.wave.SWaveSchemas;
+import org.swellrt.beta.model.wave.WaveSchemas;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
@@ -32,7 +32,7 @@ public class STextLocalWeb implements STextWeb, STextLocal {
       throw new SException(SException.INTERNAL_ERROR, e);
     }
 
-    return new STextLocalWeb(new ContentDocument(Editor.ROOT_REGISTRIES, op, SWaveSchemas.STEXT_SCHEMA_CONSTRAINTS));
+    return new STextLocalWeb(new ContentDocument(Editor.ROOT_REGISTRIES, op, WaveSchemas.STEXT_SCHEMA_CONSTRAINTS));
   }
 
   private final STextWebImpl textWeb;

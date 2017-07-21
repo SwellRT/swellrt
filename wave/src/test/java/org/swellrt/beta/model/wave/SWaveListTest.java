@@ -9,9 +9,9 @@ import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SPrimitive;
-import org.swellrt.beta.model.wave.SWaveList;
-import org.swellrt.beta.model.wave.SWaveMap;
-import org.swellrt.beta.model.wave.SWaveNode;
+import org.swellrt.beta.model.wave.mutable.SWaveList;
+import org.swellrt.beta.model.wave.mutable.SWaveMap;
+import org.swellrt.beta.model.wave.mutable.SWaveNode;
 
 public class SWaveListTest extends SWaveNodeAbstractTest {
 

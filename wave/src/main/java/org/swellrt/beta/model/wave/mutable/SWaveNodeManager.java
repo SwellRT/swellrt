@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,13 +14,17 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SText;
-import org.swellrt.beta.model.wave.SWaveCommons.Deserializer;
-import org.swellrt.beta.model.wave.SWaveCommons.SubstrateListSerializer;
-import org.swellrt.beta.model.wave.SWaveCommons.SubstrateMapSerializer;
+import org.swellrt.beta.model.wave.SubstrateId;
+import org.swellrt.beta.model.wave.WaveCommons;
 import org.swellrt.beta.model.wave.adt.DocumentBasedBasicRMap;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.Deserializer;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.SubstrateListSerializer;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.SubstrateMapSerializer;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
+import org.waveprotocol.wave.model.adt.docbased.Factory;
+import org.waveprotocol.wave.model.adt.docbased.Initializer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.Document;
@@ -28,6 +32,7 @@ import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
@@ -96,7 +101,105 @@ import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
  */
 public class SWaveNodeManager {
 
-  private Deserializer d = new Deserializer() {
+  public static abstract class Deserializer {
+  
+    SWaveNode deserialize(String s) {
+  
+      Preconditions.checkNotNull(s, "Unable to deserialize a null value");
+  
+      SubstrateId substrateId = SubstrateId.deserialize(s);
+      if (substrateId != null) {
+  
+        if (substrateId.isList())
+          return materializeList(substrateId);
+  
+        if (substrateId.isMap())
+          return materializeMap(substrateId);
+  
+        if (substrateId.isText())
+          return materializeText(substrateId, null);
+  
+        return null;
+  
+      } else {
+        return SPrimitive.deserialize(s);
+      }
+  
+    }
+  
+    protected abstract SWaveNode materializeList(SubstrateId substrateId);
+  
+    protected abstract SWaveNode materializeMap(SubstrateId substrateId);
+  
+    protected abstract SWaveNode materializeText(SubstrateId substrateId, DocInitialization docInit);
+  
+  
+  
+  }
+
+  /**
+   * A serializer/deserializer of SNode objects to/from a Wave's list
+   */
+  public static class SubstrateListSerializer
+      implements org.waveprotocol.wave.model.adt.docbased.Factory<Doc.E, SWaveNode, SWaveNode> {
+  
+    Deserializer d;
+  
+    public SubstrateListSerializer(Deserializer d) {
+      this.d = d;
+    }
+  
+    @Override
+    public SWaveNode adapt(DocumentEventRouter<? super E, E, ?> router, E element) {
+      Map<String, String> attributes = router.getDocument().getAttributes(element);
+      return d.deserialize(attributes.get(WaveCommons.LIST_ENTRY_VALUE_ATTR));
+    }
+  
+    @Override
+    public Initializer createInitializer(SWaveNode node) {
+      return new org.waveprotocol.wave.model.adt.docbased.Initializer() {
+  
+        @Override
+        public void initialize(Map<String, String> target) {
+          target.put(WaveCommons.LIST_ENTRY_KEY_ATTR, String.valueOf(System.currentTimeMillis())); // temp
+          target.put(WaveCommons.LIST_ENTRY_VALUE_ATTR, serialize(node));
+        }
+  
+      };
+    }
+  
+  }
+
+  /**
+   * A serializer/deserializer of SNode objects to/from a Wave's map
+   */
+  public static class SubstrateMapSerializer
+      implements org.waveprotocol.wave.model.util.Serializer<SWaveNode> {
+  
+    Deserializer d;
+  
+    public SubstrateMapSerializer(Deserializer d) {
+      this.d = d;
+    }
+  
+    @Override
+    public String toString(SWaveNode x) {
+      return serialize(x);
+    }
+  
+    @Override
+    public SWaveNode fromString(String s) {
+      return d.deserialize(s);
+    }
+  
+    @Override
+    public SWaveNode fromString(String s, SWaveNode defaultValue) {
+      return fromString(s);
+    }
+  
+  }
+
+  private SWaveNodeManager.Deserializer d = new SWaveNodeManager.Deserializer() {
 
     @Override
     protected SWaveNode materializeList(SubstrateId substrateId) {
@@ -115,7 +218,7 @@ public class SWaveNodeManager {
 
   };
 
-  private SubstrateMapSerializer mapSerializer = new SubstrateMapSerializer(d);
+  private SWaveNodeManager.SubstrateMapSerializer mapSerializer = new SWaveNodeManager.SubstrateMapSerializer(d);
 
   private final Map<SubstrateId, SWaveNode> nodeStore = new HashMap<SubstrateId, SWaveNode>();
   private final ParticipantId participantId;
@@ -134,11 +237,11 @@ public class SWaveNodeManager {
       String domain, ObservableWaveView wave, WaveStatus waveStatus, PlatformBasedFactory platformBasedFactory) {
 
     ObservableWavelet masterWavelet = wave
-        .getWavelet(WaveletId.of(domain, SWaveCommons.MASTER_DATA_WAVELET_NAME));
+        .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
 
     if (masterWavelet == null) {
       masterWavelet = wave
-          .createWavelet(WaveletId.of(domain, SWaveCommons.MASTER_DATA_WAVELET_NAME));
+          .createWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
     }
 
     return new SWaveNodeManager(participantId, idGenerator, domain, wave, waveStatus,
@@ -152,14 +255,14 @@ public class SWaveNodeManager {
     this.domain = domain;
     this.wave = wave;
     this.masterContainerWavelet = wave
-        .getWavelet(WaveletId.of(domain, SWaveCommons.MASTER_DATA_WAVELET_NAME));
+        .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
     this.currentContainerWavelet = null;
     this.waveStatus = waveStatus;
     this.platformBasedFactory = platformBasedFactory;
   }
 
   public void setListener(SWaveletListener listener) {
-    this.wave.getWavelet(WaveletId.of(domain, SWaveCommons.MASTER_DATA_WAVELET_NAME))
+    this.wave.getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME))
         .addListener(listener);
   }
 
@@ -178,7 +281,7 @@ public class SWaveNodeManager {
    */
   public String createContainer() {
     ObservableWavelet wavelet = wave.createWavelet(WaveletId.of(domain,
-        SWaveCommons.CONTAINER_DATA_WAVELET_PREFIX + idGenerator.newUniqueToken()));
+        WaveCommons.CONTAINER_DATA_WAVELET_PREFIX + idGenerator.newUniqueToken()));
     return ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId());
   }
 
@@ -190,7 +293,7 @@ public class SWaveNodeManager {
     List<String> containerIds = new ArrayList<String>();
 
     wave.getWavelets().forEach((wavelet) -> {
-      if (wavelet.getId().getId().startsWith(SWaveCommons.CONTAINER_DATA_WAVELET_PREFIX)) {
+      if (wavelet.getId().getId().startsWith(WaveCommons.CONTAINER_DATA_WAVELET_PREFIX)) {
         containerIds.add(ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId()));
       }
     });
@@ -200,7 +303,7 @@ public class SWaveNodeManager {
 
   public SWaveMap loadRoot() {
     return loadMap(
-        SubstrateId.ofMap(masterContainerWavelet.getId(), SWaveCommons.ROOT_SUBSTRATE_ID));
+        SubstrateId.ofMap(masterContainerWavelet.getId(), WaveCommons.ROOT_SUBSTRATE_ID));
   }
 
   /**
@@ -226,15 +329,15 @@ public class SWaveNodeManager {
     ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());
     DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
 
-    E mapElement = DocHelper.getElementWithTagName(document, SWaveCommons.MAP_TAG);
+    E mapElement = DocHelper.getElementWithTagName(document, WaveCommons.MAP_TAG);
     if (mapElement == null) {
-      mapElement = document.createChildElement(document.getDocumentElement(), SWaveCommons.MAP_TAG,
+      mapElement = document.createChildElement(document.getDocumentElement(), WaveCommons.MAP_TAG,
           Collections.<String, String> emptyMap());
     }
 
     ObservableBasicMap<String, SWaveNode> map = DocumentBasedBasicRMap.create(router, mapElement,
-        Serializer.STRING, mapSerializer, SWaveCommons.MAP_ENTRY_TAG,
-        SWaveCommons.MAP_ENTRY_KEY_ATTR, SWaveCommons.MAP_ENTRY_VALUE_ATTR);
+        Serializer.STRING, mapSerializer, WaveCommons.MAP_ENTRY_TAG,
+        WaveCommons.MAP_ENTRY_KEY_ATTR, WaveCommons.MAP_ENTRY_VALUE_ATTR);
 
     SWaveMap n = SWaveMap.create(this, substrateId, map);
     nodeStore.put(substrateId, n);
@@ -263,15 +366,15 @@ public class SWaveNodeManager {
     ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());
     DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
 
-    E listElement = DocHelper.getElementWithTagName(document, SWaveCommons.LIST_TAG);
+    E listElement = DocHelper.getElementWithTagName(document, WaveCommons.LIST_TAG);
     if (listElement == null) {
       listElement = document.createChildElement(document.getDocumentElement(),
-          SWaveCommons.LIST_TAG,
+          WaveCommons.LIST_TAG,
           Collections.<String, String> emptyMap());
     }
 
     ObservableElementList<SWaveNode, SWaveNode> list = DocumentBasedElementList.create(router,
-        listElement, SWaveCommons.LIST_ENTRY_TAG, new SubstrateListSerializer(d));
+        listElement, WaveCommons.LIST_ENTRY_TAG, new SWaveNodeManager.SubstrateListSerializer(d));
 
     SWaveList n = SWaveList.create(this, substrateId, list);
     nodeStore.put(substrateId, n);
@@ -545,7 +648,7 @@ public class SWaveNodeManager {
       userWavelet = wave.createUserData();
 
     SWaveMap root = loadMap(
-          SubstrateId.ofMap(userWavelet.getId(), SWaveCommons.USER_ROOT_SUBSTRATED_ID));
+          SubstrateId.ofMap(userWavelet.getId(), WaveCommons.USER_ROOT_SUBSTRATED_ID));
     root.attach(SWaveNodeContainer.Void);
 
     return root;
@@ -569,6 +672,30 @@ public class SWaveNodeManager {
       }
     }
 
+    return null;
+  }
+
+  /**
+   * Serialize a SNode to be stored in a Swell blip.
+   *
+   * @param x
+   * @return
+   */
+  public static String serialize(SNode x) {
+  
+    // Order matters check SPrimitive first
+    if (x instanceof SPrimitive) {
+      SPrimitive p = (SPrimitive) x;
+      return p.serialize();
+    }
+  
+    if (x instanceof SWaveNode) {
+      SWaveNode r = (SWaveNode) x;
+      SubstrateId id = r.getSubstrateId();
+      if (id != null)
+        return id.serialize();
+    }
+  
     return null;
   }
 

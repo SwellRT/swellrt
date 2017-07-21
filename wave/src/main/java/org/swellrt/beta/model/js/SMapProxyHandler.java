@@ -5,9 +5,9 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
-import org.swellrt.beta.model.wave.SWaveMap;
-import org.swellrt.beta.model.wave.SWaveNodeContainer;
-import org.swellrt.beta.model.wave.SWaveObject;
+import org.swellrt.beta.model.wave.mutable.SWaveMap;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeContainer;
+import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
 import com.google.gwt.core.client.JavaScriptObject;

@@ -9,7 +9,7 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.wave.SWaveObject;
+import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;

@@ -6,6 +6,6 @@
 	<source path="" />
 	<source path="js/**" />
 	<source path="local/**" />
-	<source path="remote/**" />
-	
+	<source path="wave" excludes="unmutable/**" />
+		
 </module>

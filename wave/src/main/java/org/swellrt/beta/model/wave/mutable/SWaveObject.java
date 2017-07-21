@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.common.SException;

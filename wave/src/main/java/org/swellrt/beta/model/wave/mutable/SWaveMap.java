@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -13,6 +13,7 @@ import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.HasJsProxy;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 
 import jsinterop.annotations.JsIgnore;

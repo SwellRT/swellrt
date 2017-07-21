@@ -1,6 +1,7 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.wave.SubstrateId;
 
 /**
  * Wave-based nodes are supported by a wavelet blip substrate and they belong to
@@ -33,7 +34,7 @@ public abstract class SWaveNode implements SNode {
     this.substrateId = substrateId;
   }
 
-  protected SubstrateId getSubstrateId() {
+  public SubstrateId getSubstrateId() {
     return substrateId;
   }
 

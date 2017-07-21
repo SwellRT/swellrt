@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.wave;
+package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.model.SStatusEvent;
 import org.waveprotocol.wave.model.version.HashedVersion;

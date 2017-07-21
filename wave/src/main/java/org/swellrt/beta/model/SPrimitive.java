@@ -1,7 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.wave.SWaveNode;
+import org.swellrt.beta.model.wave.mutable.SWaveNode;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -17,12 +17,12 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell", name = "Primitive")
 public class SPrimitive extends SWaveNode {
 
-  private static final String SEPARATOR = ":";
-  private static final String STRING_TYPE_PREFIX  = "s";
-  private static final String BOOLEAN_TYPE_PREFIX  = "b";
-  private static final String INTEGER_TYPE_PREFIX  = "i";
-  private static final String DOUBLE_TYPE_PREFIX  = "d";
-  private static final String JSO_TYPE_PREFIX  = "js";
+  private static final String PRIMITIVE_SEPARATOR = ":";
+  private static final String PRIMITIVE_STRING_TYPE_PREFIX  = "s";
+  private static final String PRIMITIVE_BOOLEAN_TYPE_PREFIX  = "b";
+  private static final String PRIMITIVE_INTEGER_TYPE_PREFIX  = "i";
+  private static final String PRIMITIVE_DOUBLE_TYPE_PREFIX  = "d";
+  private static final String PRIMITIVE_JSO_TYPE_PREFIX  = "js";
 
   public static final int TYPE_INT = 1;
   public static final int TYPE_DOUBLE = 2;
@@ -117,7 +117,7 @@ public class SPrimitive extends SWaveNode {
 
     SNodeAccessControl acToken = null;
     if (SNodeAccessControl.isToken(s)) {
-      int firstSepIndex = s.indexOf(SEPARATOR);
+      int firstSepIndex = s.indexOf(PRIMITIVE_SEPARATOR);
       acToken = SNodeAccessControl.deserialize(s.substring(0, firstSepIndex));
       s = s.substring(firstSepIndex+1);
     } else {
@@ -125,11 +125,11 @@ public class SPrimitive extends SWaveNode {
     }
 
 
-    if (s.startsWith(STRING_TYPE_PREFIX+SEPARATOR)) {
+    if (s.startsWith(PRIMITIVE_STRING_TYPE_PREFIX+PRIMITIVE_SEPARATOR)) {
       return new SPrimitive(s.substring(2), acToken);
     }
 
-    if (s.startsWith(INTEGER_TYPE_PREFIX+SEPARATOR)) {
+    if (s.startsWith(PRIMITIVE_INTEGER_TYPE_PREFIX+PRIMITIVE_SEPARATOR)) {
       try {
        return new SPrimitive(Integer.parseInt(s.substring(2)), acToken);
       } catch (NumberFormatException e) {
@@ -138,7 +138,7 @@ public class SPrimitive extends SWaveNode {
       }
     }
 
-    if (s.startsWith(DOUBLE_TYPE_PREFIX+SEPARATOR)) {
+    if (s.startsWith(PRIMITIVE_DOUBLE_TYPE_PREFIX+PRIMITIVE_SEPARATOR)) {
       try {
        return new SPrimitive(Double.parseDouble(s.substring(2)), acToken);
       } catch (NumberFormatException e) {
@@ -147,11 +147,11 @@ public class SPrimitive extends SWaveNode {
       }
     }
 
-    if (s.startsWith(BOOLEAN_TYPE_PREFIX+SEPARATOR)) {
+    if (s.startsWith(PRIMITIVE_BOOLEAN_TYPE_PREFIX+PRIMITIVE_SEPARATOR)) {
        return new SPrimitive(Boolean.parseBoolean(s.substring(2)), acToken);
     }
 
-    if (s.startsWith(JSO_TYPE_PREFIX+SEPARATOR)) {
+    if (s.startsWith(PRIMITIVE_JSO_TYPE_PREFIX+PRIMITIVE_SEPARATOR)) {
       return new SPrimitive(JsonUtils.<JavaScriptObject>safeEval(s.substring(3)), acToken);
     }
 
@@ -163,23 +163,23 @@ public class SPrimitive extends SWaveNode {
 
     String token = accessControl.serialize();
     if (!token.isEmpty())
-      token += SEPARATOR;
+      token += PRIMITIVE_SEPARATOR;
 
 
     if (type == TYPE_STRING)
-      return token + STRING_TYPE_PREFIX+SEPARATOR+stringValue;
+      return token + PRIMITIVE_STRING_TYPE_PREFIX+PRIMITIVE_SEPARATOR+stringValue;
 
     if (type == TYPE_BOOL)
-      return token + BOOLEAN_TYPE_PREFIX+SEPARATOR+Boolean.toString(boolValue);
+      return token + PRIMITIVE_BOOLEAN_TYPE_PREFIX+PRIMITIVE_SEPARATOR+Boolean.toString(boolValue);
 
     if (type == TYPE_INT)
-      return token + INTEGER_TYPE_PREFIX+SEPARATOR+Integer.toString(intValue);
+      return token + PRIMITIVE_INTEGER_TYPE_PREFIX+PRIMITIVE_SEPARATOR+Integer.toString(intValue);
 
     if (type == TYPE_DOUBLE)
-      return token + DOUBLE_TYPE_PREFIX+SEPARATOR+Double.toString(doubleValue);
+      return token + PRIMITIVE_DOUBLE_TYPE_PREFIX+PRIMITIVE_SEPARATOR+Double.toString(doubleValue);
 
     if (type == TYPE_JSO)
-      return token + JSO_TYPE_PREFIX+SEPARATOR+JsonUtils.stringify(jsoValue);
+      return token + PRIMITIVE_JSO_TYPE_PREFIX+PRIMITIVE_SEPARATOR+JsonUtils.stringify(jsoValue);
 
     return null;
   }

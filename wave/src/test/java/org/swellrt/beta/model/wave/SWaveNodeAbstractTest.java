@@ -1,6 +1,8 @@
 package org.swellrt.beta.model.wave;
 
 import org.swellrt.beta.client.PlatformBasedFactory;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
+import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.testing.FakePlatformBasedFactory;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.testing.BasicFactories;
