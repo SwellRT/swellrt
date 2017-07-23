@@ -259,12 +259,10 @@ public class AnnotationController {
   }
 
   public static JavaScriptObject getAnnotationsWithFilters(Editor editor, JavaScriptObject keys,
-      Range range, Boolean onlyWithinRange, Function<Object, Boolean> valueMatcher)
+      Range range, Function<Object, Boolean> valueMatcher)
       throws SEditorException {
 
     JsoView result = JsoView.as(JavaScriptObject.createObject());
-    boolean withinRange = onlyWithinRange != null ? onlyWithinRange : true;
-
     ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
     StringSet paragraphKeySet = CollectionUtils.createStringSet();
     StringSet textKeySet = CollectionUtils.createStringSet();
@@ -295,9 +293,6 @@ public class AnnotationController {
 
           Range anotRange = new Range(ra.start(), ra.end());
           int rangeMatch = AnnotationValueBuilder.getRangeMatch(searchRange, anotRange);
-
-          if (withinRange && rangeMatch == AnnotationValue.MATCH_OUT)
-            return; // skip
 
           if (valueMatcher != null && !valueMatcher.apply(ra.value()))
             return; // skip

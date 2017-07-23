@@ -533,11 +533,11 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional Range range,
-      @JsOptional Boolean onlyWithinRange) throws SEditorException {
+  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional Range range)
+      throws SEditorException {
 
     return AnnotationController.getAnnotationsWithFilters(editor, keys, rangeSafeCheck(range),
-        onlyWithinRange, null);
+        null);
 
   }
 
@@ -556,11 +556,11 @@ public class SEditor implements EditorUpdateListener {
    * @throws SEditorException
    */
   public JavaScriptObject getAnnotationsWithValue(JavaScriptObject keys, final String value,
-      @JsOptional Range range, @JsOptional Boolean onlyWithinRange)
+      @JsOptional Range range)
       throws SEditorException {
 
     return AnnotationController.getAnnotationsWithFilters(editor, keys, rangeSafeCheck(range),
-        false, (Object o) -> {
+        (Object o) -> {
 
       if (o instanceof String) {
         return ((String) o).equals(value);
@@ -672,9 +672,10 @@ public class SEditor implements EditorUpdateListener {
     return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
   }
 
-  public void replaceText(Range range, String text) {
+  public Range replaceText(Range range, String text) {
     editor.getDocument().deleteRange(range.getStart(), range.getEnd());
     editor.getDocument().insertText(range.getStart(), text);
+    return Range.create(range.getStart(), range.getStart() + text.length());
   }
 
   public void insertText(int position, String text) {
