@@ -11,12 +11,14 @@ import org.swellrt.beta.client.js.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
+import org.waveprotocol.wave.client.editor.content.ContentNode;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph;
 import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.LineStyle;
 import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Annotations;
+import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
@@ -223,8 +225,41 @@ public class AnnotationController {
 
   }
 
+  /**
+   * Adjust a given range in order to be used to get annotations. If range is
+   * collapsed, range must be expanded by 1 char in the current paragraph
+   *
+   * @param editor
+   * @param range
+   * @return
+   */
+  private static Range selectionRangeForGetAnnotation(Editor editor, Range range) {
+
+    if (!range.isCollapsed()) {
+      return range;
+    } else {
+
+      Point<ContentNode> startPoint = editor.getDocument().locate(range.getStart());
+      Point<ContentNode> endPoint = editor.getDocument().locate(range.getStart() + 1);
+
+      if (startPoint.getContainer().equals(endPoint.getContainer())) {
+        return Range.create(range.getStart(), range.getStart() + 1);
+      }
+
+      startPoint = editor.getDocument().locate(range.getStart() - 1);
+      endPoint = editor.getDocument().locate(range.getStart());
+
+      if (startPoint.getContainer().equals(endPoint.getContainer())) {
+        return Range.create(range.getStart() - 1, range.getStart());
+      }
+
+      return range;
+    }
+
+  }
+
   public static JavaScriptObject getAnnotationsWithFilters(Editor editor, JavaScriptObject keys,
-      Range searchRange, Boolean onlyWithinRange, Function<Object, Boolean> valueMatcher)
+      Range range, Boolean onlyWithinRange, Function<Object, Boolean> valueMatcher)
       throws SEditorException {
 
     JsoView result = JsoView.as(JavaScriptObject.createObject());
@@ -234,6 +269,8 @@ public class AnnotationController {
     StringSet paragraphKeySet = CollectionUtils.createStringSet();
     StringSet textKeySet = CollectionUtils.createStringSet();
     filterOutKeys(keySet, paragraphKeySet, textKeySet, AnnotationRegistry::isParagraphAnnotation);
+
+    Range searchRange = selectionRangeForGetAnnotation(editor, range);
 
     // Note: scan local annotations cause them include remote ones
 
@@ -255,18 +292,19 @@ public class AnnotationController {
           if (a == null)
             return; // skip not registered annotations
 
-          if (!result.containsKey(ra.key())) {
-            result.setJso(ra.key(), JavaScriptObject.createArray());
-          }
 
           Range anotRange = new Range(ra.start(), ra.end());
           int rangeMatch = AnnotationValueBuilder.getRangeMatch(searchRange, anotRange);
 
-          if (withinRange && !searchRange.contains(anotRange))
+          if (withinRange && rangeMatch == AnnotationValue.MATCH_OUT)
             return; // skip
 
           if (valueMatcher != null && !valueMatcher.apply(ra.value()))
             return; // skip
+
+          if (!result.containsKey(ra.key())) {
+            result.setJso(ra.key(), JavaScriptObject.createArray());
+          }
 
           AnnotationValue anotationValue = AnnotationValueBuilder.buildWithRange(
               editor.getContent().getMutableDoc(), ra.key(), ra.value(), anotRange, rangeMatch);
@@ -283,7 +321,7 @@ public class AnnotationController {
     boolean allParagraphAnnotations = false;
 
     // all annotations case and paragraph prefix selector
-    if (keySet.isEmpty() || paragraphKeySet.contains(AnnotationRegistry.PARAGRAPH_PREFIX)) {
+    if (keySet.isEmpty() || keySet.contains(AnnotationRegistry.PARAGRAPH_PREFIX)) {
       allParagraphAnnotations = true;
     }
 
