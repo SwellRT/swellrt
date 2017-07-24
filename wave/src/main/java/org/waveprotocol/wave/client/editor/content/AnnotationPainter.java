@@ -19,6 +19,10 @@
 
 package org.waveprotocol.wave.client.editor.content;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.TimerService;
@@ -35,13 +39,11 @@ import org.waveprotocol.wave.model.document.util.PersistentContent;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Property;
 import org.waveprotocol.wave.model.document.util.ReadableDocumentView;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ConcurrentSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import org.waveprotocol.wave.model.util.StringSet;
 
 /**
  * A class for painting annotations that need simple stylistic renderings.
@@ -441,7 +443,26 @@ public class AnnotationPainter {
     }
 
     private ReadableStringSet getKeys() {
-      return paintRegistry.getKeys();
+      StringSet keys = CollectionUtils.copyStringSet(paintRegistry.getKeys());
+
+      //
+      // Paint annotations by prefix
+      //
+      localAnnotations.knownKeys().each(new Proc() {
+
+        @Override
+        public void apply(String key) {
+
+          String prefix = key.contains("/") ? key.substring(0, key.indexOf("/")) : key;
+          if (!keys.contains(key) && keys.contains(prefix)) {
+            keys.add(key);
+          }
+
+        }
+
+      });
+
+      return keys;
     }
   }
 

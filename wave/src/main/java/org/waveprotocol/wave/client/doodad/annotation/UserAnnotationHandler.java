@@ -68,7 +68,7 @@ public class UserAnnotationHandler implements AnnotationMutationHandler {
       Map<String, String> ret = new HashMap<String, String>();
 
       for (String key : from.keySet()) {
-        if (this.key.equals(key)) {
+        if (key != null && (key.equals(this.key) || key.startsWith(this.key + "/"))) {
 
           String safeKey = getSafeKey(key);
           String safeValue = from.get(key).toString();
@@ -153,12 +153,31 @@ public class UserAnnotationHandler implements AnnotationMutationHandler {
     this.painter = painter;
   }
 
+  /**
+   * Get a mutation handler for the key or its prefix
+   *
+   * @param key
+   * @return
+   */
+  private ContentMutationHandler getMutationHandler(String key) {
+
+    ContentMutationHandler handler = contentMutationHandlers.get(key);
+
+    if (handler == null && key.contains("/")) {
+      String prefix = key.substring(0, key.indexOf("/"));
+      handler = contentMutationHandlers.get(prefix);
+    }
+
+    return handler;
+
+  }
+
 
   @Override
   public <N, E extends N, T extends N> void handleAnnotationChange(DocumentContext<N, E, T> bundle,
       int start, int end, String key, Object newValue) {
     painter.scheduleRepaint(bundle, start, end);
-    ContentMutationHandler handler = contentMutationHandlers.get(key);
+    ContentMutationHandler handler = getMutationHandler(key);
     if (handler != null)
       handler.handleMutation(bundle, start, end, key, newValue);
   }
