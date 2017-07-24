@@ -89,13 +89,13 @@ Remove all annotations within array *keys* that are partially o totally containe
 
 If no range is provided, current selection is assumed.
 
-*editor.getAnnotations(keys, [range], [onlyWithinRange])*
+*editor.getAnnotations(keys, [range])*
 
-Get all annotation values for the given keys. If *onlyWithinRange* is true, return those fully contained in the search range only.
+Get all annotation values for the given keys. 
 
 If *range* is not provided, current selection range is used.
 
-*editor.getAnnotationsWithValue(keys, value, [range], [onlyWithinRange])*
+*editor.getAnnotationsWithValue(keys, value, [range])*
 
 Similar to previous function but filters out annotations with the given value.
 
