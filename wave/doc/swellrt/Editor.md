@@ -200,7 +200,7 @@ swell.Editor.AnnotationRegistry
  swell.Editor.AnnotationRegistry
  	.setHandler("mark", (event) => {
 
-      console.log("Mark Event ("+event.type+") "+event.annotation.value+", "+event.annotation.start+":"+event.annotation.end);
+      console.log("annotation event ["+event.type+"] "+event.annotation.key+"="+event.annotation.value+", "+event.annotation.range.start+":"+event.annotation.range.end);
 
     });	
 ```
@@ -218,14 +218,14 @@ event = {
 
 There are two type of events, for DOM and for document. DOM events are thrown when editor needs to repaint annotations:
 
-*swell.Annotation.EVENT_DOM_MUTATED* 
-*swell.Annotation.EVENT_DOM_CREATED*
-*swell.Annotation.EVENT_DOM_REMOVED*
+- *swell.Annotation.EVENT_DOM_MUTATED* 
+- *swell.Annotation.EVENT_DOM_CREATED*
+- *swell.Annotation.EVENT_DOM_REMOVED*
 
 Document events are only thrown when an annotation value change in the document:
 
-*swell.Annotation.EVENT_CREATED*
-*swell.Annotation.EVENT_REMOVED*
+- *swell.Annotation.EVENT_CREATED*
+- *swell.Annotation.EVENT_REMOVED*
 
 ## Development
 
