@@ -11,6 +11,15 @@ import com.google.gwt.user.client.Event;
 
 public class ParagraphEventHandler implements EventHandler, MutationHandler {
 
+
+  protected static void register(String key,
+      ParagraphEventHandler handler) {
+
+    Paragraph.registerEventHandler(handler.behaviour, handler);
+    Paragraph.registerMutationHandler(handler.behaviour, handler);
+
+  }
+
   private final String key;
   private final ParagraphBehaviour behaviour;
 
@@ -20,11 +29,6 @@ public class ParagraphEventHandler implements EventHandler, MutationHandler {
     super();
     this.key = key;
     this.behaviour = behaviour;
-  }
-
-  public void register() {
-    Paragraph.registerEventHandler(behaviour, this);
-    Paragraph.registerMutationHandler(behaviour, this);
   }
 
   protected void setHandler(AnnotationEvent.Handler handler) {
@@ -49,8 +53,12 @@ public class ParagraphEventHandler implements EventHandler, MutationHandler {
   public void onAdded(ContentElement node) {
     if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = getParagraphAnnotationValue(node, behaviour);
+
+      AnnotationValue anotationValue = AnnotationValueBuilder
+          .buildForParagraphNode(node.getMutableDoc(), key, value, node, AnnotationValue.MATCH_IN);
+
       handler.exec(AnnotationEvent.build(AnnotationEvent.EVENT_DOM_ADDED,
-          AnnotationValueBuilder.buildWithNode(key, value, node), null));
+          anotationValue, null));
     }
   }
 
@@ -58,8 +66,12 @@ public class ParagraphEventHandler implements EventHandler, MutationHandler {
   public void onMutation(ContentElement node) {
     if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = getParagraphAnnotationValue(node, behaviour);
+
+      AnnotationValue anotationValue = AnnotationValueBuilder
+          .buildForParagraphNode(node.getMutableDoc(), key, value, node, AnnotationValue.MATCH_IN);
+
       handler.exec(AnnotationEvent.build(AnnotationEvent.EVENT_DOM_MUTATED,
-          AnnotationValueBuilder.buildWithNode(key, value, node), null));
+          anotationValue, null));
     }
   }
 
@@ -67,8 +79,12 @@ public class ParagraphEventHandler implements EventHandler, MutationHandler {
   public void onRemoved(ContentElement node) {
     if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = getParagraphAnnotationValue(node, behaviour);
+
+      AnnotationValue anotationValue = AnnotationValueBuilder
+          .buildForParagraphNode(node.getMutableDoc(), key, value, node, AnnotationValue.MATCH_IN);
+
       handler.exec(AnnotationEvent.build(AnnotationEvent.EVENT_DOM_REMOVED,
-          AnnotationValueBuilder.buildWithNode(key, value, node), null));
+          anotationValue, null));
     }
   }
 
@@ -76,9 +92,14 @@ public class ParagraphEventHandler implements EventHandler, MutationHandler {
   public void onEvent(ContentElement node, Event event) {
     if (handler != null && !AnnotationRegistry.muteHandlers) {
       String value = getParagraphAnnotationValue(node, behaviour);
+
+      AnnotationValue anotationValue = AnnotationValueBuilder
+          .buildForParagraphNode(node.getMutableDoc(), key, value, node, AnnotationValue.MATCH_IN);
+
       handler.exec(AnnotationEvent.build(AnnotationEvent.EVENT_DOM_EVENT,
-          AnnotationValueBuilder.buildWithNode(key, value, node), event));
+          anotationValue, event));
     }
   }
+
 
 }

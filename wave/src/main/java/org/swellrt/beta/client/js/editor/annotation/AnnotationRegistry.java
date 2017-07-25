@@ -81,7 +81,7 @@ public class AnnotationRegistry {
 
   private final static Map<String, AnnotationController> store = new HashMap<String, AnnotationController>();
 
-  protected static boolean muteHandlers;
+  protected static boolean muteHandlers = true;
 
   /**
    * Define friendly names for annotation referencing in SEditor

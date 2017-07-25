@@ -429,7 +429,7 @@ public class AnnotationController {
     this.attributeGenerator = attributeGenerator;
     this.textEventHandler = null;
     this.paragraphEventHandler = new ParagraphEventHandler(key, paragraphBehaviour);
-    this.paragraphEventHandler.register();
+    ParagraphEventHandler.register(key, this.paragraphEventHandler);
   }
 
   /**

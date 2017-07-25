@@ -19,13 +19,6 @@
 
 package org.waveprotocol.wave.client.editor.content.paragraph;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.EventListener;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,12 +34,19 @@ import org.waveprotocol.wave.client.editor.content.paragraph.Paragraph.MutationH
 import org.waveprotocol.wave.client.scheduler.FinalTaskRunner;
 import org.waveprotocol.wave.client.scheduler.FinalTaskRunnerImpl;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
-import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Priority;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IdentitySet;
 import org.waveprotocol.wave.model.util.Preconditions;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.EventListener;
 
 /**
  * Logic for rendering paragraphs. Exact HTML style decisions are deferred to a
@@ -55,13 +55,13 @@ import org.waveprotocol.wave.model.util.Preconditions;
  * @author danilatos@google.com (Daniel Danilatos)
  */
 public class ParagraphRenderer extends RenderingMutationHandler {
-  
+
   // ---- Mutation Notification stuff begin ----
-  
+
   private static final int NOTIFY_SCHEDULE_DELAY_MS = 200;
 
   private static final int LISTENER_EVENTS = Event.MOUSEEVENTS | Event.ONCLICK;
-  
+
   private final Set<ContentElement> mutatedElements = new HashSet<ContentElement>();
 
   private final Task mutationNotificationTask = new Task() {
@@ -72,7 +72,7 @@ public class ParagraphRenderer extends RenderingMutationHandler {
         if (!context.editing().hasEditor()) {
           continue;
         }
-        
+
         MutationHandler h = getMutationHandler(element);
         if (h != null)
           h.onMutation(element);
@@ -81,16 +81,16 @@ public class ParagraphRenderer extends RenderingMutationHandler {
       mutatedElements.clear();
     }
   };
-  
+
   protected static MutationHandler getMutationHandler(ContentElement element) {
     ParagraphBehaviour b = ParagraphBehaviour.of(element.getAttribute(Paragraph.SUBTYPE_ATTR));
     return getMutationHandler(b);
   }
-  
+
   protected static MutationHandler getMutationHandler(ParagraphBehaviour paragraphBehaviour) {
     return paragraphBehaviour == null ? null : Paragraph.mutationHandlerRegistry.get(paragraphBehaviour);
   }
-  
+
   // ---- Mutation Notification stuff end ----
 
   public static ParagraphRenderer create(String nodeletTagname) {
@@ -164,8 +164,8 @@ public class ParagraphRenderer extends RenderingMutationHandler {
 
     ParagraphBehaviour b = ParagraphBehaviour.of(newValue);
     ParagraphBehaviour oldb = ParagraphBehaviour.of(oldValue);
-    
-    if (Paragraph.SUBTYPE_ATTR.equals(name) || Paragraph.LIST_STYLE_ATTR.equals(name)) {      
+
+    if (Paragraph.SUBTYPE_ATTR.equals(name) || Paragraph.LIST_STYLE_ATTR.equals(name)) {
       scheduleRenderUpdate(p);
       scheduleRenumber(p, p.getAttribute(Paragraph.INDENT_ATTR), false);
     } else if (Paragraph.INDENT_ATTR.equals(name)) {
@@ -176,42 +176,46 @@ public class ParagraphRenderer extends RenderingMutationHandler {
     } else if (Paragraph.DIRECTION_ATTR.equals(name)) {
       scheduleRenderUpdate(p);
     }
-    
+
     updateEventHandler(p, b);
 
-    if (!b.equals(oldb)) {     
-      MutationHandler h = getMutationHandler(ParagraphBehaviour.HEADING);
+    MutationHandler h = getMutationHandler(ParagraphBehaviour.HEADING);
+
+    if (!b.equals(oldb)) {
       if (h != null) {
-        if (b.equals(ParagraphBehaviour.HEADING)) {        
+        if (b.equals(ParagraphBehaviour.HEADING)) {
           // header is activated
-          h.onAdded(p);        
-        } else if (oldb.equals(ParagraphBehaviour.HEADING)) {        
+          h.onAdded(p);
+        } else if (oldb.equals(ParagraphBehaviour.HEADING)) {
           // header is deactivated
-          h.onRemoved(p);          
+          h.onRemoved(p);
         }
       }
+    } else if (b.equals(ParagraphBehaviour.HEADING)) {
+      if (h != null)
+        h.onMutation(p);
     }
-      
-    
+
+
   }
-  
-  
+
+
   /**
-   * 
+   *
    * Set/unset an event handler in the paragraph's DOM element
-   * 
+   *
    * @param element
    * @param paragraphType
    */
   private void updateEventHandler(final ContentElement element, ParagraphBehaviour paragraphType) {
-    
+
     if (!GWT.isClient()) return;
-    
+
     Element implNodelet = element.getImplNodelet();
-    
+
     final EventHandler handler = paragraphType == null ? null
         : Paragraph.eventHandlerRegistry.get(paragraphType);
-        
+
     if (handler != null) {
       DOM.sinkEvents(DomHelper.castToOld(implNodelet), LISTENER_EVENTS);
       DOM.setEventListener(DomHelper.castToOld(implNodelet), new EventListener() {
@@ -220,13 +224,13 @@ public class ParagraphRenderer extends RenderingMutationHandler {
           handler.onEvent(element, event);
         }
       });
-    } else {      
+    } else {
       DOM.setEventListener(implNodelet, null);
-      DOM.sinkEvents(implNodelet, DOM.getEventsSunk(implNodelet) & ~LISTENER_EVENTS);      
+      DOM.sinkEvents(implNodelet, DOM.getEventsSunk(implNodelet) & ~LISTENER_EVENTS);
     }
-	
+
 	}
-  
+
   /**
    * {@inheritDoc}
    */
@@ -300,26 +304,26 @@ public class ParagraphRenderer extends RenderingMutationHandler {
 
   /**
    * Notify mutation handlers
-   *  
+   *
    * @param element
    */
   private void scheduleMutationNotification(ContentElement element) {
-    
-    MutationHandler h = getMutationHandler(element);    
+
+    MutationHandler h = getMutationHandler(element);
     if (h != null)
       mutatedElements.add(element);
-    
+
     Scheduler scheduler = SchedulerInstance.get();
     if (!scheduler.isScheduled(mutationNotificationTask)) {
       scheduler.scheduleDelayed(Priority.MEDIUM, mutationNotificationTask,
           NOTIFY_SCHEDULE_DELAY_MS);
     }
   }
-  
-  
+
+
   @Override
   public void onDescendantsMutated(ContentElement element) {
     scheduleMutationNotification(element);
   }
-  
+
 }
