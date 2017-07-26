@@ -172,7 +172,13 @@
     swell.Editor.AnnotationRegistry.define("mark","mark");
     swell.Editor.AnnotationRegistry.setHandler("mark", (event) => {
 
-      console.log("mark event("+event.type+") "+event.annotation.value+", "+event.annotation.start+":"+event.annotation.end);
+      console.log("annotation event ["+event.type+"] "+event.annotation.key+"="+event.annotation.value+", "+event.annotation.range.start+":"+event.annotation.range.end);
+
+    });
+
+    swell.Editor.AnnotationRegistry.setHandler("paragraph/header", (event) => {
+
+      console.log("annotation event ["+event.type+"] "+event.annotation.key+"="+event.annotation.value+", "+event.annotation.range.start+":"+event.annotation.range.end);
 
     });
 

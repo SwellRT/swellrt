@@ -144,7 +144,8 @@ public class AnnotationValueBuilder {
     Iterable<RangedAnnotation<String>> it = node.getMutableDoc().rangedAnnotations(location,
         location + 1, CollectionUtils.newStringSet(key));
     for (RangedAnnotation<String> ra : it) {
-      if (ra.key().equals(key) && ra.value().equals(value))
+      if (ra.key() != null && ra.key().equals(key) && ra.value() != null
+          && ra.value().equals(value))
         return ra;
     }
 
@@ -195,10 +196,14 @@ public class AnnotationValueBuilder {
     av.range = range != null ? range : Range.ALL;
     av.searchMatch = -1;
 
-    Point<ContentNode> point = Point.before(node.getContext().document(), node);
+    if (node.isImplAttached()) {
+      Point<ContentNode> point = Point.before(node.getContext().document(), node);
+      av.line = getContainerLineElement(point);
+      av.node = node.getImplNodeletRightwards();
+    } else {
+      av.node = node.getImplNodelet();
+    }
 
-    av.line = getContainerLineElement(point);
-    av.node = node.getImplNodeletRightwards();
 
     av.data = node;
 
