@@ -70,8 +70,17 @@ public class TextEventHandler
       int start, int end, String key, Object newValue) {
     if (handler != null && !AnnotationRegistry.muteHandlers) {
       try {
+        int event = -1;
+        if (newValue != null && bundle.localAnnotations().knownKeys().contains(key)) {
+          event = AnnotationEvent.EVENT_CREATED;
+        } else if (newValue == null && !bundle.localAnnotations().knownKeys().contains(key)) {
+          event = AnnotationEvent.EVENT_REMOVED;
+        } else {
+          return;
+        }
+
         handler.exec(AnnotationEvent.build(
-            newValue == null ? AnnotationEvent.EVENT_REMOVED : AnnotationEvent.EVENT_CREATED,
+            event,
             AnnotationValueBuilder.buildWithRange((CMutableDocument) bundle.document(), key,
                 newValue, new Range(start, end), AnnotationValue.MATCH_IN),
             null));
