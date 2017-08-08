@@ -64,7 +64,12 @@ public class SEvent {
   }
 
   @JsProperty
-  public SNode getValue() {
+  public Object getValue() {
+    if (node instanceof SPrimitive) {
+      SPrimitive primitive = (SPrimitive) node;
+      return primitive.getValue();
+    }
+
     return node;
   }
 
