@@ -68,6 +68,8 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell", name = "Editor")
 public class SEditor implements EditorUpdateListener {
 
+  public final static JavaScriptObject RANGE_ALL = JsUtils.rangeToNative(Range.ALL);
+  public final static JavaScriptObject RANGE_EMPTY = JsUtils.rangeToNative(Range.NONE);
 
   public final static String COMPAT_MODE_NONE = "none";
   public final static String COMPAT_MODE_READONLY = "readonly";
@@ -479,7 +481,8 @@ public class SEditor implements EditorUpdateListener {
    * @param range
    *          a range or null
    */
-  public AnnotationValue setAnnotation(String key, String value, @JsOptional Range range)
+  public AnnotationValue setAnnotation(String key, String value,
+      @JsOptional JavaScriptObject _range)
       throws SEditorException {
 
     key = AnnotationRegistry.normalizeKey(key);
@@ -487,7 +490,7 @@ public class SEditor implements EditorUpdateListener {
     if (!editor.isEditing())
       return null;
 
-    final Range effectiveRange = rangeSafeCheck(range);
+    final Range effectiveRange = rangeSafeCheck(JsUtils.nativeToRange(_range));
     final Editor editor = getEditor();
 
     return AnnotationController.set(editor, key, value, effectiveRange);
@@ -504,13 +507,13 @@ public class SEditor implements EditorUpdateListener {
    * @param range
    * @throws SEditorException
    */
-  public void clearAnnotation(JavaScriptObject keys, @JsOptional Range range)
+  public void clearAnnotation(JavaScriptObject keys, @JsOptional JavaScriptObject _range)
       throws SEditorException {
 
     if (!editor.isEditing())
       return;
 
-    Range effectiveRange = rangeSafeCheck(range);
+    Range effectiveRange = rangeSafeCheck(JsUtils.nativeToRange(_range));
 
     ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
 
@@ -533,10 +536,11 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional Range range)
+  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional JavaScriptObject _range)
       throws SEditorException {
 
-    return AnnotationController.getAnnotationsWithFilters(editor, keys, rangeSafeCheck(range),
+    return AnnotationController.getAnnotationsWithFilters(editor, keys,
+        rangeSafeCheck(JsUtils.nativeToRange(_range)),
         null);
 
   }
@@ -556,10 +560,11 @@ public class SEditor implements EditorUpdateListener {
    * @throws SEditorException
    */
   public JavaScriptObject getAnnotationsWithValue(JavaScriptObject keys, final String value,
-      @JsOptional Range range)
+      @JsOptional JavaScriptObject _range)
       throws SEditorException {
 
-    return AnnotationController.getAnnotationsWithFilters(editor, keys, rangeSafeCheck(range),
+    return AnnotationController.getAnnotationsWithFilters(editor, keys,
+        rangeSafeCheck(JsUtils.nativeToRange(_range)),
         (Object o) -> {
 
       if (o instanceof String) {
@@ -581,10 +586,11 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public void setAnnotationOverlap(String key, String value, @JsOptional Range range) throws SEditorException {
+  public void setAnnotationOverlap(String key, String value, @JsOptional JavaScriptObject _range)
+      throws SEditorException {
 
 
-    final Range actualRange = rangeSafeCheck(range);
+    final Range actualRange = rangeSafeCheck(JsUtils.nativeToRange(_range));
     final CMutableDocument doc = editor.getDocument();
 
     if (value == null)
@@ -613,10 +619,10 @@ public class SEditor implements EditorUpdateListener {
    * @param range
    * @throws SEditorException
    */
-  public void clearAnnotationOverlap(String key, String value, @JsOptional Range range)
+  public void clearAnnotationOverlap(String key, String value, @JsOptional JavaScriptObject _range)
       throws SEditorException {
 
-    final Range actualRange = rangeSafeCheck(range);
+    final Range actualRange = rangeSafeCheck(JsUtils.nativeToRange(_range));
     final CMutableDocument doc = editor.getDocument();
 
     final String nkey = AnnotationRegistry.normalizeKey(key);
@@ -663,16 +669,18 @@ public class SEditor implements EditorUpdateListener {
   }
 
 
-  public String getText(@JsOptional Range range) {
+  public String getText(@JsOptional JavaScriptObject _range) {
+    Range range;
     try {
-      range = rangeSafeCheck(range);
+      range = rangeSafeCheck(JsUtils.nativeToRange(_range));
     } catch (Exception e) {
       return null;
     }
     return DocHelper.getText(editor.getDocument(), range.getStart(), range.getEnd());
   }
 
-  public Range replaceText(Range range, String text) {
+  public Range replaceText(JavaScriptObject _range, String text) {
+    Range range = JsUtils.nativeToRange(_range);
     editor.getDocument().deleteRange(range.getStart(), range.getEnd());
     editor.getDocument().insertText(range.getStart(), text);
     return Range.create(range.getStart(), range.getStart() + text.length());
@@ -682,7 +690,8 @@ public class SEditor implements EditorUpdateListener {
     editor.getDocument().insertText(position, text);
   }
 
-  public void deleteText(Range range) {
+  public void deleteText(JavaScriptObject _range) {
+    Range range = JsUtils.nativeToRange(_range);
     editor.getDocument().deleteRange(range.getStart(), range.getEnd());
   }
 

@@ -210,9 +210,9 @@
 
       _lastSelectionAnnotation = undefined;
 
-      editor.setSelectionHandler((range, editor, point) => {
+      editor.setSelectionHandler((range, editor, selection) => {
           console.log('selection changed');
-          /*
+          
           // This annotation shows the contextual menu
           if (_lastSelectionAnnotation) {
             var r = swell.Range.create(_lastSelectionAnnotation.start, _lastSelectionAnnotation.end);
@@ -220,17 +220,14 @@
              _lastSelectionAnnotation = undefined;
           }
 
-          if (!range.isCollapsed()) {
+          if (!selection.isCollapsed) {
             
               currentSelectionId = "selection-"+(new Date()).getTime();
               _lastSelectionAnnotation = editor.setAnnotation("@selection", currentSelectionId , range);
 
-              currentSelection = point;
+              currentSelection = selection;
               currentSelectionRange = range;
           }
-          */
-
-
 
       });
 

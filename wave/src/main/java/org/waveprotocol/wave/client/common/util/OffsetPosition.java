@@ -24,9 +24,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 
-import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsType;
-
 /**
  * Represents an x, y position relative to an offsetParent.
  *
@@ -34,13 +31,11 @@ import jsinterop.annotations.JsType;
  * the browser.
  *
  */
-@JsType(namespace="swellrt", name="OffsetPosition")
 public final class OffsetPosition {
   public final int left;
   public final int top;
   public final Element offsetParent;
 
-  @JsIgnore
   public OffsetPosition(int left, int top, Element offsetParent) {
     this.left = left;
     this.top = top;
@@ -53,7 +48,6 @@ public final class OffsetPosition {
    *
    * @param event
    */
-  @JsIgnore
   public OffsetPosition(Event event) {
     // convert the event's client coordinate system, which is client area base, to the
     // body position coordinate system.

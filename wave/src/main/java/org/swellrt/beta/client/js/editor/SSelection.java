@@ -1,40 +1,48 @@
 package org.swellrt.beta.client.js.editor;
 
 import org.swellrt.beta.client.js.Console;
+import org.swellrt.beta.client.js.JsUtils;
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
 import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
 import org.waveprotocol.wave.model.document.util.FocusedPointRange;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.util.IntRange;
+import org.waveprotocol.wave.model.util.Preconditions;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
 import jsinterop.annotations.JsType;
 
+/**
+ * A text selection object wrapping and extending browser native selection
+ * object. All types are provided as native Javascript objects.
+ * <p>
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Selection }
+ *
+ * @author pablojan@gmail.com
+ *
+ */
 @JsType(namespace = "swell.Editor", name = "Selection")
 public class SSelection {
 
   protected static SSelection get(Range textRange) {
 
-    FocusedPointRange<Node> range = NativeSelectionUtil.get();
+    FocusedPointRange<Node> nativeSelectionPoint = NativeSelectionUtil.get();
 
     try {
 
       SSelection s = new SSelection();
 
-      s.anchorNode = range.getAnchor().getCanonicalNode();
-      s.anchorOffset = range.getAnchor().getContainer().getNodeType() == Node.TEXT_NODE ? range.getAnchor().getTextOffset() : 0;
+      s.anchorNode = nativeSelectionPoint.getAnchor().getCanonicalNode();
+      s.anchorOffset = nativeSelectionPoint.getAnchor().getContainer().getNodeType() == Node.TEXT_NODE ? nativeSelectionPoint.getAnchor().getTextOffset() : 0;
 
-      s.focusNode = range.getFocus().getCanonicalNode();
-      s.focusOffset = range.getFocus().getContainer().getNodeType() == Node.TEXT_NODE ? range.getFocus().getTextOffset() : 0;
+      s.focusNode = nativeSelectionPoint.getFocus().getCanonicalNode();
+      s.focusOffset = nativeSelectionPoint.getFocus().getContainer().getNodeType() == Node.TEXT_NODE ? nativeSelectionPoint.getFocus().getTextOffset() : 0;
 
-      s.isCollapsed = range.isCollapsed();
+      s.isCollapsed = nativeSelectionPoint.isCollapsed();
 
-      s.focusBound = NativeSelectionUtil.getFocusBounds();
-      s.position = NativeSelectionUtil.slowGetPosition();
-      s.anchorPosition = NativeSelectionUtil.slowGetAnchorPosition();
-
-      s.range = textRange;
+      s.range = JsUtils.rangeToNative(textRange);
 
     return s;
 
@@ -44,6 +52,14 @@ public class SSelection {
     }
 
 
+  }
+
+  public static JavaScriptObject getRelativePosition(JavaScriptObject offsetPosition,
+      Element relative) {
+    Preconditions.checkNotNull(offsetPosition, "Offset position can't be null");
+    Preconditions.checkNotNull(relative, "Relative element can't be null");
+    OffsetPosition target = JsUtils.nativeToOffsetPosition(offsetPosition);
+    return JsUtils.offsetPositionToNative(OffsetPosition.getRelativePosition(target, relative));
   }
 
   protected SSelection() {
@@ -61,11 +77,23 @@ public class SSelection {
 
   public int focusOffset;
 
-  public IntRange focusBound;
+  /** Range in the text document matching this selection */
+  public JavaScriptObject range;
 
-  public OffsetPosition position;
+  public Element getElement() {
+    return NativeSelectionUtil.getActiveElement();
+  }
 
-  public OffsetPosition anchorPosition;
+  public JavaScriptObject getFocusBound() {
+    return JsUtils.intRangeToNative(NativeSelectionUtil.getFocusBounds());
+  }
 
-  public Range range;
+  public JavaScriptObject getSelectionPosition() {
+    return JsUtils.offsetPositionToNative(NativeSelectionUtil.slowGetPosition());
+  }
+
+  public JavaScriptObject getAnchorPosition() {
+    return JsUtils.offsetPositionToNative(NativeSelectionUtil.slowGetAnchorPosition());
+  }
+
 }

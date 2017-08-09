@@ -23,12 +23,10 @@ import org.waveprotocol.wave.model.util.Preconditions;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
 /**
  * An immutable range of two locations integers
  */
-@JsType(namespace = "swell", name = "Range")
 public final class Range {
 
   public static final Range ALL = new Range(0,0);

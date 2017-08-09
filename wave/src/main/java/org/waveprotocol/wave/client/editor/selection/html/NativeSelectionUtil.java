@@ -33,13 +33,11 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsType;
 
 /**
  * Document selection methods.
  *
  */
-@JsType(namespace = "swell.Editor", name = "Selection")
 public class NativeSelectionUtil {
   /**
    * For notification before/after transient DOM mutations, which can be
