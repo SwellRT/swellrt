@@ -1,7 +1,131 @@
 
 
-Swell Web API includes a rich-text editor highly customizable.
+Swell Web API includes a customizable rich-text editor.
 
+## Editor component
+
+The swell's text editor component allows to embed a full-featured text editor in a Web page that already uses the swell API.
+
+An editor is attached to a particular DIV of a page:
+
+```html
+<div id="editor">
+	<!-- swell's text fields cab be displayed here -->
+</div>
+```
+
+```js
+var editor = swell.Editor.createWithId("editor");
+```
+
+An editor manages swell's text objects. A text can be just local...
+
+```js
+var text = swell.Text.create("Some initial text");
+```
+
+... or can be shared in a collaborative object if it is assigned to one:
+
+```js
+var text = swell.Text.create("Some initial text");
+
+service.open({ id : "shared-text-object" })
+    .then(object => {
+		
+		if (!object.node('text')) {
+			object.set('text', text);
+		}
+
+		text = object.get('text'); // remind to get this reference!
+	});
+```
+
+Common editor operations are:
+
+*editor.set(text)*
+
+Attach the text to the editor, the content is rendered
+
+*editor.edit(boolean)*
+
+Enable user editing
+
+*editor.isEditing()* 
+
+Checks whether the editor is in user editing mode
+
+*editor.hasDocument()* 
+
+Checks whether the editor has an attached text object
+
+*editor.clean()*
+
+Deattach the text from the editor an clean editor content
+
+
+
+## Text selections
+
+The editor component allow apps to assign logic when editor's caret position changes or the user selects text.
+
+
+```js
+editor.setSelectionHandler((range, editor, selection) => {
+    
+
+
+      });
+```
+
+The selection handler receives following arguments:
+
+*editor*, a reference to the editor's object.
+
+*range*, see *selection.range*. 
+
+*selection*, the object having information of the current selection. It can be also obtained programatically:
+
+
+```js
+var selection = editor.getSelection();
+```
+
+A selection object has following properties and methods:
+
+*selection.anchorNode*, DOM node in which the selection begins.
+
+*selection.anchorOffset*, number representing the offset of the selection's anchor within the anchorNode. If anchorNode is a text node, this is the number of characters within anchorNode preceding the anchor. Zero otherwise.
+
+*selection.focusNode*, DOM node in which the selection ends.
+
+*selection.focusOffset*, number representing the offset of the selection's anchor within the focusNode. If focusNode is a text node, this is the number of characters within focusNode preceding the focus. Zero otherwise.
+
+
+*selection.range*, start and end indexes of the selection refering to the document content chars, not the DOM rendering. For example:
+
+```js
+ { 
+	 start: 11,
+	 end: 25
+ }
+```
+
+*selection.isCollpased*, boolean value, true iff range has same start and end positions.
+
+*selection.getFocusBound()*, gets the y-bounds of the cursor position.
+
+
+*selection.getSelectionPosition()*, coordinates of the current selection start relative to a provided element, for example:
+
+```js
+{
+	left: 798,
+	top: 274,
+	offsetParent: <DOM element>
+}
+```
+
+*selection.getAnchorPosition()*, coordinates of the current selection end relative to a provided element.
 
 
 ## Annotations
@@ -132,13 +256,21 @@ Annotations obtained from *getAnnotationsXXX()* methods returns an object with a
 
 *Ranges*
 
-Usually you won't need to provide a hand written range (because you will get one from another part of the API) but if that is the case, create a new range object with:
+Usually you won't need to provide a hand written range (because you will get one from another part of the API) but if that is the case, create a new object with following properties:
 
-*var range = swell.Range.create(start, end);*
+```js
+var range = {
+	start: 11,
+	end: 23
+};
+```
 
-In situations when you need to indicate a range spaning the whole document use this constant:
+In situations when you need to indicate a range spaning the whole document use the constant:
 
-*var rangeAllText = swell.Range.ALL;*
+```js
+var fullDocumentRange = swell.Editor.RANGE_ALL;
+```
+
 
 
 
@@ -216,13 +348,13 @@ event = {
 }
 ```
 
-There are two type of events, for DOM and for document. DOM events are thrown when editor needs to repaint annotations:
+There are two type of events, for DOM and for document changes. DOM events are thrown anytime the editor needs to repaint annotations:
 
 - *swell.Annotation.EVENT_DOM_MUTATED* 
 - *swell.Annotation.EVENT_DOM_CREATED*
 - *swell.Annotation.EVENT_DOM_REMOVED*
 
-Document events are only thrown when an annotation value change in the document:
+Document events are only thrown when annotations are created or removed in the document:
 
 - *swell.Annotation.EVENT_CREATED*
 - *swell.Annotation.EVENT_REMOVED*
