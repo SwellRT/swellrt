@@ -9,6 +9,7 @@ import java.util.Set;
 import org.waveprotocol.box.server.swell.WaveletContributions.BlipContributions;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.Doc;
+import org.waveprotocol.wave.model.document.Doc.N;
 import org.waveprotocol.wave.model.document.indexed.SimpleAnnotationSet;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
@@ -159,8 +160,8 @@ public class WaveletBlipContributionsTest extends TestCase {
     currentOpContextFactory = opContextFactoryAlice;
     Doc.E body = DocHelper.getFirstChildElement(document, document.getDocumentElement());
     Doc.N e = document.getFirstChild(body);
-    Point p = Point.inText(e, 6);
-    document.createElement(p, "line", Collections.EMPTY_MAP);
+    Point<N> p = Point.inText(e, 6);
+    document.createElement(p, "line", Collections.emptyMap());
 
     BlipContributions blipContribs = contributionsManager.blipContribsMap.get(BLIP_ID);
     assertNotNull(blipContribs);

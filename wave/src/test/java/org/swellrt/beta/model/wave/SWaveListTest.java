@@ -192,15 +192,15 @@ public class SWaveListTest extends SWaveNodeAbstractTest {
 
     assertEquals(SEvent.REMOVED_VALUE, recvEvents.get(1).getType());
     assertTrue(recvEvents.get(1).getTarget() instanceof SList);
-    assertEquals(12345, (int) SPrimitive.asInt(recvEvents.get(1).getValue()));
+    assertEquals(12345, (int) recvEvents.get(1).getValue());
 
     assertEquals(SEvent.REMOVED_VALUE, recvEvents.get(2).getType());
     assertTrue(recvEvents.get(2).getTarget() instanceof SList);
-    assertEquals(false, (boolean) SPrimitive.asBoolean(recvEvents.get(2).getValue()));
+    assertEquals(false, (boolean) recvEvents.get(2).getValue());
 
     assertEquals(SEvent.ADDED_VALUE, recvEvents.get(3).getType());
     assertTrue(recvEvents.get(3).getTarget() instanceof SList);
-    assertEquals("some words", SPrimitive.asString(recvEvents.get(3).getValue()));
+    assertEquals("some words", (String) recvEvents.get(3).getValue());
 
   }
 

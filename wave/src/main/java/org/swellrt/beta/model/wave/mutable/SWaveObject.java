@@ -83,7 +83,7 @@ public class SWaveObject extends SWaveNodeContainer
    * TODO fix visibility
    */
   @Override
-  protected void clearCache() {
+  public void clearCache() {
     root.clearCache();
   }
 

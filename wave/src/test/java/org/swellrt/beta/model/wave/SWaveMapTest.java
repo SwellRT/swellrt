@@ -174,15 +174,15 @@ public class SWaveMapTest extends SWaveNodeAbstractTest {
 
     assertEquals(SEvent.REMOVED_VALUE, recvEvents.get(0).getType());
     assertEquals("k1", recvEvents.get(0).getKey());
-    assertEquals("A value for k1", (String) ((SPrimitive) recvEvents.get(0).getValue()).getValue());
+    assertEquals("A value for k1", (String) recvEvents.get(0).getValue());
 
     assertEquals(SEvent.ADDED_VALUE, recvEvents.get(1).getType());
     assertEquals("k2", recvEvents.get(1).getKey());
-    assertEquals("This is new value", (String) ((SPrimitive) recvEvents.get(1).getValue()).getValue());
+    assertEquals("This is new value", (String) recvEvents.get(1).getValue());
 
     assertEquals(SEvent.UPDATED_VALUE, recvEvents.get(2).getType());
     assertEquals("k0", recvEvents.get(2).getKey());
-    assertEquals("This is updated value", (String) ((SPrimitive) recvEvents.get(2).getValue()).getValue());
+    assertEquals("This is updated value", (String) recvEvents.get(2).getValue());
   }
 
 
@@ -208,27 +208,27 @@ public class SWaveMapTest extends SWaveNodeAbstractTest {
         SEvent e = capturedEventsMapB.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForC", (String) ((SPrimitive) e.getValue()).getValue());
+        assertEquals("valueForC", (String) e.getValue());
 
         // Case 2) Generate event in B
         // captured by handlerB but not in handlerA and handlerRoot
         e = capturedEventsMapB.get(1);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForB", (String) ((SPrimitive) e.getValue()).getValue());
+        assertEquals("valueForB", (String) e.getValue());
 
         // Case 3) Generate event in A
         // captured by handlerA and rootHandler
         e = capturedEventsMapA.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).getValue());
+        assertEquals("valueForA", (String) e.getValue());
         assertEquals(1, capturedEventsMapA.size()); // Assert case 1 and case 2, "but" parts
 
         e = capturedEventsRoot.get(0);
         assertNotNull(e);
         assertEquals(SEvent.ADDED_VALUE, e.getType());
-        assertEquals("valueForA", (String) ((SPrimitive) e.getValue()).getValue());
+        assertEquals("valueForA", (String) e.getValue());
         assertEquals(1, capturedEventsRoot.size()); // Assert case 1 and case 2, "but" parts
 
       }
