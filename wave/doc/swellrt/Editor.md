@@ -42,23 +42,23 @@ service.open({ id : "shared-text-object" })
 
 Common editor operations are:
 
-*editor.set(text)*
+**editor.set(text)**
 
 Attach the text to the editor, the content is rendered
 
-*editor.edit(boolean)*
+**editor.edit(boolean)**
 
 Enable user editing
 
-*editor.isEditing()* 
+**editor.isEditing()**
 
 Checks whether the editor is in user editing mode
 
-*editor.hasDocument()* 
+**editor.hasDocument()** 
 
 Checks whether the editor has an attached text object
 
-*editor.clean()*
+**editor.clean()**
 
 Deattach the text from the editor an clean editor content
 
@@ -200,26 +200,26 @@ In this example, when a *comment* annotation is rendered the editor will render 
 ### Working with annotations
 
 
-*editor.setAnnotation(key, value, [range])* 
+**editor.setAnnotation(key, value, [range])**
 
 Sets a new *name* annotation in the provided range with a given *value*.
 Setting a *null* value removes the annotation only in given range, spliting the rest of the annotation.
 
 If no range is provided, current selection is assumed.
 
-*editor.clearAnnotation(keys, [range])*
+**editor.clearAnnotation(keys, [range])**
 
 Remove all annotations within array *keys* that are partially o totally contained in the range.
 
 If no range is provided, current selection is assumed.
 
-*editor.getAnnotations(keys, [range])*
+**editor.getAnnotations(keys, [range])**
 
 Get all annotation values for the given keys. 
 
 If *range* is not provided, current selection range is used.
 
-*editor.getAnnotationsWithValue(keys, value, [range])*
+**editor.getAnnotationsWithValue(keys, value, [range])**
 
 Similar to previous function but filters out annotations with the given value.
 
@@ -300,7 +300,7 @@ In this case, we have lost the reference of comment A in the word "March".
 
 To avoid this situation you can use specific methods for text annotations:
 
-*editor.setAnnotationOverlap(name, value, [range])*
+**editor.setAnnotationOverlap(name, value, [range])**
 
 For the previous example, this method will generate following annotations:
 
@@ -316,7 +316,7 @@ Now, the word "March" will be annotated with annotation "comment" with combined 
 
 In order to revert this annotation properly use the method:
 
-*editor.clearAnnotationOverlap(name, value, [range])*
+**editor.clearAnnotationOverlap(name, value, [range])**
 
 
 ### Events
@@ -391,26 +391,3 @@ Look for the `gwt-dev.jar` in local maven repo `find ~/.gradle/caches/ | grep gw
 
 `java -cp gwt-dev.jar com.google.gwt.dev.Compiler`
 
-*Issue with GWT 2.8 and source path selectors*
-
-Doesn't work as expected...
-
-```  
-  	<source path="" excludes="gson/** proto/**"/>
-  	<source path="" excludes="gson/**/*.* proto/**/*.*"/>
-  	<source path="" includes="*.*"/>  	
-```   	
-
-Get's everything from the starting path...  	
-
-```   	
-    <source path=""></source>
-```      
-
-Only gets the include file    
-
-```      
-    <source path="">
-  		<include name="ProfilesProto.java" />
-  	</source>
-```     

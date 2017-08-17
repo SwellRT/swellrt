@@ -92,7 +92,7 @@ In federated installations of Swell, is recommended to use full id syntax to avo
 
 
 
-#### createUser()
+**createUser()**
 
 Creates a new user with the provided profile's information.
 
@@ -112,8 +112,7 @@ service.createUser({
 ```
 
 
-
-#### editUser()
+**editUser()**
 
 Edits the profile of the user currently logged in.
 To delete the value of an attribute, add it to the request with an empty value.
@@ -126,7 +125,7 @@ service.editUser({
 .catch( error => {  });
 ```
 
-#### getUser()
+**getUser()**
 
 Retrieves profile information of one single user.
 
@@ -141,7 +140,7 @@ service.getUser({
 ```
 
 
-#### getUserBatch()
+**getUserBatch()**
 
 Retrieves profile information of a set of users. The return value is
 an array of profiles.
@@ -157,7 +156,7 @@ service.getUserBatch({
 .catch( error => {  });
 ```
 
-#### password()
+**password()**
 
 Changes user's password having an old password or a temporary recovery token:
 
@@ -186,7 +185,7 @@ service.password({
 
 The recovery password is obteined calling to *recoverPassword()* 
 
-#### recoverPassword()
+**recoverPassword()**
 
 Sends an email to the given user with a link containing password recovery token.
 
@@ -229,7 +228,7 @@ Majority of API methods require to start an user session with the Swell server.
 Swell supports multiple sessions per browser session, it means you can have different open sessions in different tabs of the Web browser and to remember them after browser is closed.
 
 
-#### login()
+**login()**
 
 Log a user in the Swell server.
 
@@ -251,7 +250,7 @@ To log in as anonymous user use an empty password:
     .then( profile => {   });
 ```
 
-#### listLogin()
+**listLogin()**
 
 Lists all sessions opened in the browser. These can be resumed without providing a password again.
 
@@ -272,7 +271,7 @@ The response is an array of user ids:
   ]
 ```
 
-#### resume()
+**resume()**
 
 Resume an opened session that is still active in the server.
 On success, returns the user's profile data. 
@@ -292,7 +291,7 @@ If no id parameter is passed, resume the last opened session.
 ```
 
 
-#### logout()
+**logout()**
 
 Closes the current session with the server and dispose all connections and session data.
 Optionally accept the user id of the session to be closed.
@@ -343,7 +342,7 @@ Changes in a collaborative object are persisted in the server and transmitted to
 
 
 
-#### open()
+**open()**
 
 Load or create a collaborative object openning a live connection with the server.
 
@@ -376,7 +375,7 @@ Open or create (if it doesn't exist);
 Multiples calls to the *open()* method for the same object id will return the same reference to the object, keeping same connection and resources.
 
 
-#### close()
+**close()**
 
 Closes a collaborative object releasing connection with server and its local resources.
 Any change or mutation to the object after this call will throw an exception.
@@ -678,3 +677,8 @@ An error value means that an unrecoverable error has been detected and your app 
 ### Search
 
 (Not available yet)
+
+
+### Text documents and Editor
+
+See [editor documentation](https://github.com/P2Pvalue/swellrt/blob/master/wave/doc/swellrt/Editor.md)
