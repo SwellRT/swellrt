@@ -96,6 +96,9 @@ public class JsUtils {
   }
 
   public static Range nativeToRange(JavaScriptObject jso) {
+    if (jso == null)
+      return null;
+
     JsoView jsv = JsoView.as(jso);
     return Range.create(new Double(jsv.getNumber("start")).intValue(),
         new Double(jsv.getNumber("end")).intValue());
