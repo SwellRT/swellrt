@@ -145,6 +145,11 @@ public class SMapJs implements SMap {
 		throw new IllegalStateException("Wrapped Javascript SNode's can't be mutated");
 	}
 
+  @Override
+  public void removeSafe(String key) {
+    throw new IllegalStateException("Wrapped Javascript SNode's can't be mutated");
+  }
+
 	@Override
 	public boolean has(String key) {
 		return jsv.containsKey(key);

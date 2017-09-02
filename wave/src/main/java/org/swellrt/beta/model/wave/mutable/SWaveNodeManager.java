@@ -17,13 +17,9 @@ import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.WaveCommons;
 import org.swellrt.beta.model.wave.adt.DocumentBasedBasicRMap;
-import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.Deserializer;
-import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.SubstrateListSerializer;
-import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.SubstrateMapSerializer;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
-import org.waveprotocol.wave.model.adt.docbased.Factory;
 import org.waveprotocol.wave.model.adt.docbased.Initializer;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Doc.E;
@@ -102,39 +98,39 @@ import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 public class SWaveNodeManager {
 
   public static abstract class Deserializer {
-  
+
     SWaveNode deserialize(String s) {
-  
+
       Preconditions.checkNotNull(s, "Unable to deserialize a null value");
-  
+
       SubstrateId substrateId = SubstrateId.deserialize(s);
       if (substrateId != null) {
-  
+
         if (substrateId.isList())
           return materializeList(substrateId);
-  
+
         if (substrateId.isMap())
           return materializeMap(substrateId);
-  
+
         if (substrateId.isText())
           return materializeText(substrateId, null);
-  
+
         return null;
-  
+
       } else {
         return SPrimitive.deserialize(s);
       }
-  
+
     }
-  
+
     protected abstract SWaveNode materializeList(SubstrateId substrateId);
-  
+
     protected abstract SWaveNode materializeMap(SubstrateId substrateId);
-  
+
     protected abstract SWaveNode materializeText(SubstrateId substrateId, DocInitialization docInit);
-  
-  
-  
+
+
+
   }
 
   /**
@@ -142,32 +138,32 @@ public class SWaveNodeManager {
    */
   public static class SubstrateListSerializer
       implements org.waveprotocol.wave.model.adt.docbased.Factory<Doc.E, SWaveNode, SWaveNode> {
-  
+
     Deserializer d;
-  
+
     public SubstrateListSerializer(Deserializer d) {
       this.d = d;
     }
-  
+
     @Override
     public SWaveNode adapt(DocumentEventRouter<? super E, E, ?> router, E element) {
       Map<String, String> attributes = router.getDocument().getAttributes(element);
       return d.deserialize(attributes.get(WaveCommons.LIST_ENTRY_VALUE_ATTR));
     }
-  
+
     @Override
     public Initializer createInitializer(SWaveNode node) {
       return new org.waveprotocol.wave.model.adt.docbased.Initializer() {
-  
+
         @Override
         public void initialize(Map<String, String> target) {
           target.put(WaveCommons.LIST_ENTRY_KEY_ATTR, String.valueOf(System.currentTimeMillis())); // temp
           target.put(WaveCommons.LIST_ENTRY_VALUE_ATTR, serialize(node));
         }
-  
+
       };
     }
-  
+
   }
 
   /**
@@ -175,28 +171,28 @@ public class SWaveNodeManager {
    */
   public static class SubstrateMapSerializer
       implements org.waveprotocol.wave.model.util.Serializer<SWaveNode> {
-  
+
     Deserializer d;
-  
+
     public SubstrateMapSerializer(Deserializer d) {
       this.d = d;
     }
-  
+
     @Override
     public String toString(SWaveNode x) {
       return serialize(x);
     }
-  
+
     @Override
     public SWaveNode fromString(String s) {
       return d.deserialize(s);
     }
-  
+
     @Override
     public SWaveNode fromString(String s, SWaveNode defaultValue) {
       return fromString(s);
     }
-  
+
   }
 
   private SWaveNodeManager.Deserializer d = new SWaveNodeManager.Deserializer() {
@@ -450,16 +446,16 @@ public class SWaveNodeManager {
   }
 
   /**
-   * Delete reference of this node in the cache and delete substrate
+   * Delete reference of this node in the cache
    *
    * @param node
    */
-  public void deleteNode(SWaveNode node) {
+  public void deleteFromStore(SWaveNode node) {
     if (node.getSubstrateId() != null) {
-      emptySubstrate(node.getSubstrateId());
       nodeStore.remove(node.getSubstrateId());
     }
   }
+
 
   /**
    * Empty the substrate to mark it as deleted.
@@ -470,7 +466,7 @@ public class SWaveNodeManager {
    * @param substrateId
    *          subtrate id
    */
-  private void emptySubstrate(SubstrateId substrateId) {
+  public void emptySubstrate(SubstrateId substrateId) {
     ObservableWavelet w = wave.getWavelet(substrateId.getContainerId());
     Document d = null;
     if (SubstrateId.isText(substrateId.getDocumentId())) {
@@ -682,20 +678,20 @@ public class SWaveNodeManager {
    * @return
    */
   public static String serialize(SNode x) {
-  
+
     // Order matters check SPrimitive first
     if (x instanceof SPrimitive) {
       SPrimitive p = (SPrimitive) x;
       return p.serialize();
     }
-  
+
     if (x instanceof SWaveNode) {
       SWaveNode r = (SWaveNode) x;
       SubstrateId id = r.getSubstrateId();
       if (id != null)
         return id.serialize();
     }
-  
+
     return null;
   }
 

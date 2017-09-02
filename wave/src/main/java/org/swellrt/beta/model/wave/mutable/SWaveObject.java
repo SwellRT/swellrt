@@ -169,6 +169,11 @@ public class SWaveObject extends SWaveNodeContainer
   }
 
   @Override
+  public void removeSafe(String key) throws SException {
+    root.removeSafe(key);
+  }
+
+  @Override
   public boolean has(String key) throws SException {
     return root.has(key);
   }

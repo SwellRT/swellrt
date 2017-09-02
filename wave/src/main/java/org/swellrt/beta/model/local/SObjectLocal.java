@@ -52,6 +52,10 @@ public class SObjectLocal implements SObject {
     delegateMap.remove(key);
   }
 
+  @Override
+  public void removeSafe(String key) throws SException {
+    delegateMap.removeSafe(key);
+  }
 
   @Override
   public boolean has(String key) throws SException {

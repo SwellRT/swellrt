@@ -45,6 +45,11 @@ public class SMapLocal implements SMap, HasJsProxy {
   }
 
   @Override
+  public void removeSafe(String key) {
+    map.remove(key);
+  }
+
+  @Override
   public boolean has(String key) {
     return map.containsKey(key);
   }

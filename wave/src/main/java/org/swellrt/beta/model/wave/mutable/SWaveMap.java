@@ -136,7 +136,12 @@ public class SWaveMap extends SWaveNodeContainer implements SMap, HasJsProxy, Ob
     getNodeManager().checkWritable(pick(key));
     SWaveNode remoteValue = getNodeManager().transformToWaveNode(value, this);
     map.put(key, remoteValue);
-    cache.put(key, remoteValue);
+    if (cache.containsKey(key)) {
+      cache.remove(key); // use this to clear cache when value is an existen
+                         // SNode
+    } else {
+      cache.put(key, remoteValue);
+    }
     return this;
   }
 
@@ -164,7 +169,29 @@ public class SWaveMap extends SWaveNodeContainer implements SMap, HasJsProxy, Ob
     map.remove(key);
     cache.remove(key);
 
-    getNodeManager().deleteNode(nr);
+    getNodeManager().deleteFromStore(nr);
+    getNodeManager().emptySubstrate(nr.getSubstrateId());
+  }
+
+  @Override
+  public void removeSafe(String key) throws SException {
+    check();
+    getNodeManager().checkWritable(pick(key));
+
+    if (!map.keySet().contains(key))
+      return;
+
+    SWaveNode nr = map.get(key);
+    if (nr instanceof SWaveNodeContainer) {
+      SWaveNodeContainer nrc = (SWaveNodeContainer) nr;
+      nrc.deattach();
+    }
+
+    map.remove(key);
+    cache.remove(key);
+
+    getNodeManager().deleteFromStore(nr);
+    // don't call getNodeManager().emptySubstrate();
   }
 
   @Override

@@ -4,6 +4,7 @@ package org.swellrt.beta.model;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.js.SMapJs;
 import org.swellrt.beta.model.local.SMapLocal;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeContainer;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -25,8 +26,8 @@ public interface SMap extends SNode {
   @JsIgnore
   public static SMap create() {
     return new SMapLocal();
-  } 
-  
+  }
+
   /**
    * Returns a container or a primitive value container.
    * @param key
@@ -39,7 +40,25 @@ public interface SMap extends SNode {
 
   public SMap put(String key, Object object) throws SException;
 
+  /**
+   * Remove the value referenced by the key, if value is a
+   * {@link SWaveNodeContainer} empty its substrate node.
+   *
+   * @param key
+   * @throws SException
+   */
   public void remove(String key) throws SException;
+
+  /**
+   * Remove the value referenced by the key, if value is a
+   * {@link SWaveNodeContainer} keep the substrate node.
+   * <p>
+   * Use this method to delete nodes which are referenced by other nodes.
+   *
+   * @param key
+   * @throws SException
+   */
+  public void removeSafe(String key) throws SException;
 
   public boolean has(String key) throws SException;
 

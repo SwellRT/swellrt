@@ -98,7 +98,7 @@ public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, H
     }
 
     this.list.remove(node);
-    getNodeManager().deleteNode(node);
+    getNodeManager().deleteFromStore(node);
 
     return this;
   }
