@@ -43,7 +43,7 @@ import com.google.gwt.user.client.Random;
 public class ServiceContext implements WaveWebSocketClient.StatusListener, ServiceStatus {
 
   public static final String SWELL_DATAMODEL_VERSION = "1.0";
-  public static final String WAVEID_NAMESPACE_PREFIX = "s";
+  public static final String DEFAULT_WAVEID_PREFIX = "s";
 
   // TODO move to utility class
   static final char[] WEB64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
@@ -217,9 +217,13 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     return sessionManager.isSession();
   }
 
-  public WaveId generateWaveId() {
+  public WaveId generateWaveId(String prefix) {
+
+    if (prefix == null)
+      prefix = DEFAULT_WAVEID_PREFIX;
+
     return WaveId.of(sessionManager.getWaveDomain(),
-        legacyIdGenerator.newId(WAVEID_NAMESPACE_PREFIX));
+        legacyIdGenerator.newId(prefix));
   }
 
   /**

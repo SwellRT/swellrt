@@ -20,8 +20,19 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
   @JsType(isNative = true)
   public interface Options extends Operation.Options {
 
+    /**
+     * An alphanumeric ID for the object. If it doesn't exist an object is
+     * create with this ID, otherwise the object is opened. If no ID is
+     * provided, a new object is created with an auto generated ID.
+     */
     @JsProperty
     public String getId();
+
+    /**
+     * A prefix for a new auto generated ID.
+     */
+    @JsProperty
+    public String getPrefix();
   }
 
   @JsType
@@ -56,7 +67,7 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
         }
         waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(id);
       } else {
-        waveId = context.generateWaveId();
+        waveId = context.generateWaveId(options.getPrefix());
       }
 
       context.getObject(waveId, new FutureCallback<SWaveObject>() {
