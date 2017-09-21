@@ -169,8 +169,10 @@ public class SWaveMap extends SWaveNodeContainer implements SMap, HasJsProxy, Ob
     map.remove(key);
     cache.remove(key);
 
-    getNodeManager().deleteFromStore(nr);
-    getNodeManager().emptySubstrate(nr.getSubstrateId());
+    if (nr.getSubstrateId() != null) {
+      getNodeManager().deleteFromStore(nr);
+      getNodeManager().emptySubstrate(nr.getSubstrateId());
+    }
   }
 
   @Override
