@@ -19,12 +19,6 @@
 
 package org.waveprotocol.box.server.persistence;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.typesafe.config.Config;
-
 import org.waveprotocol.box.server.persistence.file.FileAccountAttachmentStore;
 import org.waveprotocol.box.server.persistence.file.FileAccountStore;
 import org.waveprotocol.box.server.persistence.file.FileAttachmentStore;
@@ -35,6 +29,13 @@ import org.waveprotocol.box.server.persistence.memory.MemoryStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.wave.crypto.CertPathStore;
+import org.waveprotocol.wave.model.id.WaveId;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.typesafe.config.Config;
 
 /**
  * Module for setting up the different persistence stores.
@@ -97,6 +98,7 @@ public class PersistenceModule extends AbstractModule {
     bindAttachmentStore();
     bindAccountStore();
     bindDeltaStore();
+    bindOtherStores();
   }
 
   /**
@@ -157,4 +159,37 @@ public class PersistenceModule extends AbstractModule {
       throw new RuntimeException("Invalid delta store type: '" + deltaStoreType + "'");
     }
   }
+
+  private void bindOtherStores() {
+    if (deltaStoreType.equalsIgnoreCase("mongodb")) {
+      MongoDbProvider mongoDbProvider = getMongoDbProvider();
+      bind(NamingStore.class).toInstance(mongoDbProvider.provideMongoDbNamingStore());
+    } else {
+      bind(NamingStore.class).toInstance(new NamingStore() {
+
+        @Override
+        public WaveNaming getWaveNamingById(WaveId waveId) {
+          return null;
+        }
+
+        @Override
+        public WaveNaming getWaveNamingsByName(String name) throws PersistenceException {
+          return null;
+        }
+
+        @Override
+        public WaveNaming addWaveName(WaveId waveId, String name) throws PersistenceException {
+          return null;
+        }
+
+        @Override
+        public WaveNaming removeWaveName(WaveId waveId, String name) {
+          return null;
+        }
+
+      });
+    }
+
+  }
+
 }

@@ -44,7 +44,6 @@ import org.waveprotocol.wave.util.escapers.jvm.JavaWaverefEncoder;
 import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
@@ -68,8 +67,7 @@ import com.google.inject.Inject;
 public class VersionServlet extends HttpServlet {
   private static final Log LOG = Log.get(VersionServlet.class);
 
-  private static boolean NO_CACHE_RESPONSE = true;
-  private static boolean CACHE_RESPONSE = false;
+  public static final String SERVLET_URL_PATTERN = "/version/*";
 
   private static class BlipRevisionMatcher implements WaveletOperationVisitor {
 
@@ -325,7 +323,7 @@ public class VersionServlet extends HttpServlet {
       throws IOException {
 
 
-    JsonWriter writer = getResponseJsonWriter(response, NO_CACHE_RESPONSE);
+    JsonWriter writer = ServletUtils.responseJsonWriter(response, ServletUtils.NO_CACHE);
     writer.beginObject();
 
     writer.name("waveId").value(ModernIdSerialiser.INSTANCE.serialiseWaveId(waveRef.getWaveId()));
@@ -393,8 +391,7 @@ public class VersionServlet extends HttpServlet {
 
     data.add("blips", blips);
 
-    sendResponseJson(response, data, NO_CACHE_RESPONSE);
-
+    ServletUtils.responseJsonObject(response, data, ServletUtils.NO_CACHE);
   }
 
   protected void doGetContent(WaveRef waveRef, HashedVersion version, HttpServletResponse response)
@@ -429,54 +426,11 @@ public class VersionServlet extends HttpServlet {
       return;
     }
 
-    sendResponseXml(response, blip.getContent().getMutableDocument().toXmlString(), CACHE_RESPONSE);
-
+    ServletUtils.responseXml(response, blip.getContent().getMutableDocument().toXmlString(),
+        ServletUtils.CACHE_24H);
   }
 
-  protected void sendResponseJson(HttpServletResponse response, JsonObject data, boolean noCache)
-      throws IOException {
 
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    if (noCache)
-      response.setHeader("Cache-Control", "no-store");
-    else
-      response.setHeader("Cache-control", "public, max-age=86400"); // 24h
 
-    Gson gson = new Gson();
-    String stringResponse = gson.toJson(data);
-    response.getWriter().append(stringResponse);
-
-  }
-
-  protected void sendResponseXml(HttpServletResponse response, String xml, boolean noCache)
-      throws IOException {
-
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.setContentType("application/xml");
-    response.setCharacterEncoding("UTF-8");
-    if (noCache)
-      response.setHeader("Cache-Control", "no-store");
-    else
-      response.setHeader("Cache-control", "public, max-age=86400"); // 24h
-
-    response.getWriter().append(xml);
-
-  }
-
-  protected JsonWriter getResponseJsonWriter(HttpServletResponse response, boolean noCache)
-      throws IOException {
-
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    if (noCache)
-      response.setHeader("Cache-Control", "no-store");
-    else
-      response.setHeader("Cache-control", "public, max-age=86400"); // 24h
-
-    return new JsonWriter(response.getWriter());
-  }
 
 }

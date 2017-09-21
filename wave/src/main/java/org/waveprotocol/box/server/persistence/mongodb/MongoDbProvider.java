@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
+import org.waveprotocol.box.server.persistence.NamingStore;
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -63,6 +64,11 @@ public class MongoDbProvider {
    * Separated store for Deltas {@link MongoDbDeltaStore}
    */
   private MongoDbDeltaStore mongoDbDeltaStore;
+
+  /**
+   * Store for {@link NamingStore}
+   */
+  private MongoDbNamingStore mongoDbNamingStore;
 
   /** Stores whether we have successfully setup a live {@link Mongo} instance. */
   private boolean isRunning;
@@ -154,6 +160,19 @@ public class MongoDbProvider {
     }
 
     return mongoDbDeltaStore;
+
+  }
+
+  /**
+   * Returns a {@link MongoDbDeltaStore} instance created from the settings in
+   * this provider.
+   */
+  public MongoDbNamingStore provideMongoDbNamingStore() {
+    if (mongoDbNamingStore == null) {
+      mongoDbNamingStore = MongoDbNamingStore.create(getDatabase());
+    }
+
+    return mongoDbNamingStore;
 
   }
 

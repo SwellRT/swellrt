@@ -67,6 +67,8 @@ public final class ContributionsServlet extends HttpServlet {
 
   private static final Log LOG = Log.get(ContributionsServlet.class);
 
+  public static final String SERVLET_URL_PATTERN = "/contrib/*";
+
   private final WaveletProvider waveletProvider;
   private final SessionManager sessionManager;
 
