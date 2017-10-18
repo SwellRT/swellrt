@@ -23,6 +23,12 @@ public class ServletUtils {
 
     try {
       String pathInfo = req.getPathInfo().substring(1);
+
+      int separatorIndex = pathInfo.indexOf(";");
+      if (separatorIndex >= 0) {
+        pathInfo = pathInfo.substring(0, separatorIndex);
+      }
+
       String[] tokens = pathInfo.split("/");
 
       for (int i = 0; i < tokens.length; i++) {
@@ -92,6 +98,11 @@ public class ServletUtils {
   public static void responseBadRequest(HttpServletResponse response, String message)
       throws IOException {
     response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+  }
+
+  public static void responseForbidden(HttpServletResponse response, String message)
+      throws IOException {
+    response.sendError(HttpServletResponse.SC_FORBIDDEN, message);
   }
 
 }

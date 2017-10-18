@@ -18,6 +18,9 @@ import org.swellrt.beta.client.operation.impl.PasswordOperation;
 import org.swellrt.beta.client.operation.impl.PasswordRecoverOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
+import org.swellrt.beta.client.operation.impl.naming.DeleteNameOperation;
+import org.swellrt.beta.client.operation.impl.naming.GetNamesOperation;
+import org.swellrt.beta.client.operation.impl.naming.SetNameOperation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ProfileManager;
 
@@ -316,6 +319,87 @@ public class PromisableServiceFrontend implements ServiceBasis {
      });
    }
 
+  public Promise<GetNamesOperation.Response, SException> getObjectNames(
+      GetNamesOperation.Options options) {
+
+    return new Promise<GetNamesOperation.Response, SException>(
+        new ConstructorParam<GetNamesOperation.Response, SException>() {
+
+          @Override
+          public void exec(FunctionParam<GetNamesOperation.Response> resolve,
+              FunctionParam<SException> reject) {
+
+            service.getObjectNames(options, new Callback<GetNamesOperation.Response>() {
+              @Override
+              public void onError(SException exception) {
+                reject.exec(exception);
+              }
+
+              @Override
+              public void onSuccess(GetNamesOperation.Response response) {
+                resolve.exec(response);
+              }
+            });
+
+          }
+        });
+
+  }
+
+  public Promise<SetNameOperation.Response, SException> setObjectName(
+      SetNameOperation.Options options) {
+
+    return new Promise<SetNameOperation.Response, SException>(
+        new ConstructorParam<SetNameOperation.Response, SException>() {
+
+          @Override
+          public void exec(FunctionParam<SetNameOperation.Response> resolve,
+              FunctionParam<SException> reject) {
+
+            service.setObjectName(options, new Callback<SetNameOperation.Response>() {
+              @Override
+              public void onError(SException exception) {
+                reject.exec(exception);
+              }
+
+              @Override
+              public void onSuccess(SetNameOperation.Response response) {
+                resolve.exec(response);
+              }
+            });
+
+          }
+        });
+
+  }
+
+  public Promise<DeleteNameOperation.Response, SException> deleteObjectName(
+      DeleteNameOperation.Options options) {
+
+    return new Promise<DeleteNameOperation.Response, SException>(
+        new ConstructorParam<DeleteNameOperation.Response, SException>() {
+
+          @Override
+          public void exec(FunctionParam<DeleteNameOperation.Response> resolve,
+              FunctionParam<SException> reject) {
+
+            service.deleteObjectName(options, new Callback<DeleteNameOperation.Response>() {
+              @Override
+              public void onError(SException exception) {
+                reject.exec(exception);
+              }
+
+              @Override
+              public void onSuccess(DeleteNameOperation.Response response) {
+                resolve.exec(response);
+              }
+            });
+
+          }
+        });
+
+  }
+
 	@Override
   public void addConnectionHandler(ConnectionHandler h) {
     service.addConnectionHandler(h);
@@ -333,4 +417,7 @@ public class PromisableServiceFrontend implements ServiceBasis {
     return service.getProfilesManager();
   }
 
+  public String getAppDomain() {
+    return service.getAppDomain();
+  }
 }

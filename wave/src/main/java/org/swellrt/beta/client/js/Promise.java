@@ -7,7 +7,14 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
 
-
+/**
+ * Overlay type of JS native Promise object
+ *
+ * @param <S>
+ *          Type of result for a successful invocation
+ * @param <R>
+ *          Type of result for an failed invocation
+ */
 @JsType(isNative = true, namespace = JsPackage.GLOBAL)
 public class Promise<S, R> {
 

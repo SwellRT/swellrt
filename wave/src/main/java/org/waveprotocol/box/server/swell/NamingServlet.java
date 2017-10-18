@@ -8,12 +8,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.swellrt.beta.model.wave.WaveCommons;
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.persistence.NamingStore;
 import org.waveprotocol.box.server.persistence.NamingStore.WaveNaming;
 import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.waveserver.WaveServerException;
+import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -35,7 +41,8 @@ import com.google.inject.Inject;
  * GET /naming/wave/{waveDomain}/{waveId}
  * <p>
  * <br>
- * Get the names synonymous mapped with this wave id, error otherwise
+ * Get the names synonymous mapped with this wave id. Throw error if wave
+ * doesn't exist.
  * <p>
  * <br>
  * POST /naming/wave/{waveDomain}/{waveId}/{name}
@@ -85,12 +92,15 @@ public class NamingServlet extends HttpServlet {
 
   private final NamingStore store;
   private final SessionManager sessionManager;
+  private final WaveletProvider waveletProvider;
   private final Gson gson;
 
   @Inject
-  public NamingServlet(NamingStore store, SessionManager sessionManager) {
+  public NamingServlet(NamingStore store, SessionManager sessionManager,
+      WaveletProvider waveletProvider) {
     this.store = store;
     this.sessionManager = sessionManager;
+    this.waveletProvider = waveletProvider;
     this.gson = new Gson();
   }
 
@@ -98,6 +108,12 @@ public class NamingServlet extends HttpServlet {
   @Override
   @VisibleForTesting
   protected void doGet(HttpServletRequest req, HttpServletResponse response) throws IOException {
+
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
+    if (participantId == null) {
+      ServletUtils.responseForbidden(response, "Not logged in user");
+      return;
+    }
 
     Map<String, String> params = ServletUtils.getUrlParams(req,
         Lists.newArrayList("entityToken", "token1", "token2"));
@@ -118,10 +134,19 @@ public class NamingServlet extends HttpServlet {
             return;
           }
 
+          waveletProvider.checkAccessPermission(
+              WaveletName.of(naming.waveId,
+                  WaveletId.of(naming.waveId.getDomain(), WaveCommons.MASTER_DATA_WAVELET_NAME)),
+              participantId);
+
           ServletUtils.responseJson(response, gson.toJson(naming), ServletUtils.NO_CACHE);
 
         } catch (PersistenceException e) {
           ServletUtils.responseInternalError(response, e.getMessage());
+
+        } catch (WaveServerException e) {
+          ServletUtils.responseForbidden(response, e.getMessage());
+
         }
       } else {
         ServletUtils.responseJsonEmpty(response);
@@ -136,11 +161,19 @@ public class NamingServlet extends HttpServlet {
 
       try {
         WaveId waveId = WaveId.ofChecked(waveDomain, waveIdStr);
+
+        waveletProvider.checkAccessPermission(
+            WaveletName.of(waveId,
+                WaveletId.of(waveId.getDomain(), WaveCommons.MASTER_DATA_WAVELET_NAME)),
+            participantId);
+
         WaveNaming naming = store.getWaveNamingById(waveId);
         ServletUtils.responseJson(response, gson.toJson(naming), ServletUtils.NO_CACHE);
 
       } catch (InvalidIdException e) {
         ServletUtils.responseBadRequest(response, "Invalid Wave id");
+      } catch (WaveServerException e) {
+        ServletUtils.responseForbidden(response, e.getMessage());
       }
 
       return;
@@ -154,6 +187,12 @@ public class NamingServlet extends HttpServlet {
   @VisibleForTesting
   protected void doPost(HttpServletRequest req, HttpServletResponse response) throws IOException {
 
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
+    if (participantId == null) {
+      ServletUtils.responseForbidden(response, "Not logged in user");
+      return;
+    }
+
     Map<String, String> params = ServletUtils.getUrlParams(req,
         Lists.newArrayList("waveToken", "waveDomain", "waveId", "name"));
 
@@ -165,12 +204,19 @@ public class NamingServlet extends HttpServlet {
     String waveDomain = params.get("waveDomain");
     String waveIdStr = params.get("waveId");
     String name = params.get("name");
+
+    if (name == null) {
+      ServletUtils.responseBadRequest(response, "Invalid name");
+      return;
+    }
+
     try {
       WaveId waveId = WaveId.ofChecked(waveDomain, waveIdStr);
-      if (name == null) {
-        ServletUtils.responseBadRequest(response, "Invalid name");
-        return;
-      }
+
+      waveletProvider.checkAccessPermission(
+          WaveletName.of(waveId,
+              WaveletId.of(waveId.getDomain(), WaveCommons.MASTER_DATA_WAVELET_NAME)),
+          participantId);
 
       WaveNaming naming = store.addWaveName(waveId, name);
       ServletUtils.responseJson(response, gson.toJson(naming), ServletUtils.NO_CACHE);
@@ -179,12 +225,21 @@ public class NamingServlet extends HttpServlet {
       ServletUtils.responseBadRequest(response, "Invalid Wave id");
     } catch (PersistenceException e) {
       ServletUtils.responseInternalError(response, e.getMessage());
+    } catch (WaveServerException e) {
+      ServletUtils.responseForbidden(response, e.getMessage());
     }
   }
 
   @Override
   @VisibleForTesting
   protected void doDelete(HttpServletRequest req, HttpServletResponse response) throws IOException {
+
+    ParticipantId participantId = sessionManager.getLoggedInUser(req);
+    if (participantId == null) {
+      ServletUtils.responseForbidden(response, "Not logged in user");
+      return;
+    }
+
     Map<String, String> params = ServletUtils.getUrlParams(req,
         Lists.newArrayList("waveToken", "waveDomain", "waveId", "name"));
 
@@ -196,18 +251,27 @@ public class NamingServlet extends HttpServlet {
     String waveDomain = params.get("waveDomain");
     String waveIdStr = params.get("waveId");
     String name = params.get("name");
+
+    if (name == null) {
+      ServletUtils.responseBadRequest(response, "Invalid name");
+      return;
+    }
+
     try {
       WaveId waveId = WaveId.ofChecked(waveDomain, waveIdStr);
-      if (name == null) {
-        ServletUtils.responseBadRequest(response, "Invalid name");
-        return;
-      }
+
+      waveletProvider.checkAccessPermission(
+          WaveletName.of(waveId,
+              WaveletId.of(waveId.getDomain(), WaveCommons.MASTER_DATA_WAVELET_NAME)),
+          participantId);
 
       WaveNaming naming = store.removeWaveName(waveId, name);
       ServletUtils.responseJson(response, gson.toJson(naming), ServletUtils.NO_CACHE);
 
     } catch (InvalidIdException e) {
       ServletUtils.responseBadRequest(response, "Invalid Wave id");
+    } catch (WaveServerException e) {
+      ServletUtils.responseForbidden(response, e.getMessage());
     }
   }
 

@@ -13,10 +13,13 @@ import org.swellrt.beta.client.operation.impl.ListLoginOperation;
 import org.swellrt.beta.client.operation.impl.LoginOperation;
 import org.swellrt.beta.client.operation.impl.LogoutOperation;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
-import org.swellrt.beta.client.operation.impl.PasswordRecoverOperation;
 import org.swellrt.beta.client.operation.impl.PasswordOperation;
+import org.swellrt.beta.client.operation.impl.PasswordRecoverOperation;
 import org.swellrt.beta.client.operation.impl.QueryOperation;
 import org.swellrt.beta.client.operation.impl.ResumeOperation;
+import org.swellrt.beta.client.operation.impl.naming.DeleteNameOperation;
+import org.swellrt.beta.client.operation.impl.naming.GetNamesOperation;
+import org.swellrt.beta.client.operation.impl.naming.SetNameOperation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -188,6 +191,24 @@ public class ServiceFrontend implements ServiceBasis {
     op.execute(options, callback);
   }
 
+  public void getObjectNames(GetNamesOperation.Options options,
+      Callback<GetNamesOperation.Response> callback) {
+    GetNamesOperation op = new GetNamesOperation(context);
+    op.execute(options, callback);
+  }
+
+  public void setObjectName(SetNameOperation.Options options,
+      Callback<SetNameOperation.Response> callback) {
+    SetNameOperation op = new SetNameOperation(context);
+    op.execute(options, callback);
+  }
+
+  public void deleteObjectName(DeleteNameOperation.Options options,
+      Callback<DeleteNameOperation.Response> callback) {
+    DeleteNameOperation op = new DeleteNameOperation(context);
+    op.execute(options, callback);
+  }
+
   @Override
   @JsProperty
   public ProfileManager getProfilesManager() {
@@ -202,5 +223,9 @@ public class ServiceFrontend implements ServiceBasis {
   @Override
   public void removeConnectionHandler(ConnectionHandler h) {
     context.removeConnectionHandler(h);
+  }
+
+  public String getAppDomain() {
+    return context.getWaveDomain();
   }
 }
