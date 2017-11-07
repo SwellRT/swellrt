@@ -31,7 +31,7 @@ apply plugin: 'jetty'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "0.X.0-beta"
+version = "1.0.0-beta"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -571,6 +571,45 @@ task debugEditor {
 
 debugEditor.dependsOn compileJava
 
+//
+// Launch a stand alone version of the editor to experiment
+// some features:
+//
+// http://127.0.1.1:9876/org.swellrt.snippets.editor.Editor/editor.html
+//
+// Set right user agent in module file:
+//
+// src/main/resources/org/swellrt/snippets/editor/Editor.gwt.xml
+//
+task editor {
+    description = 'Run stand alone editor with version manager'
+
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.codeserver.CodeServer"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt,
+                ]
+            }
+            args = [
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",
+                    "-bindAddress", "0.0.0.0",
+                    "-logLevel", "TRACE",
+                    "org.swellrt.snippets.editor.Editor",
+            ]
+        }
+    }
+}
+
+editor.dependsOn compileJava
+
 
 task runWebServer(type: JettyRun) {
 	webAppSourceDirectory=file("war/")
@@ -668,7 +707,7 @@ jar {
                 "Implementation-Vendor": vendor,
                 "Implementation-Title": title,
                 "Implementation-Version": version,
-                "Built-By": "No one in particular",
+                "Built-By": vendor,
                 "Main-Class": mainClassName
     }
     from "$buildDir/api"

@@ -192,13 +192,16 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocContributionsLog contribLog, WaveletId waveletId, String documentId) {
     this.inner = contentDocument;
     this.contribLog = contribLog;
-    this.waveletIdStr = ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId);
+    this.waveletIdStr = waveletId != null
+        ? ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId) : null;
     this.documentId = documentId;
   }
 
   /**
-   * Get document contributions at current version of the wavelet
-   * and show them as diff annotations.
+   * Get document contributions at current version of the wavelet and show them
+   * as diff annotations.
+   *
+   * TODO don't call service here, just inject data
    */
   public void initDiffs() {
 
@@ -248,6 +251,8 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     operation = op;
 
+    author = UKNOWN_PARTICIPANT;
+
     if (contribLog != null) {
       WaveletOperationContext opContext =  contribLog.peekOpContext(waveletIdStr, documentId, op);
       if (opContext != null) {
@@ -261,13 +266,21 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
     // Set annotations here, at once after processing the doc op,
     // instead of using annotation interleaves (startLocalAnnotation, endLocalAnnotation).
-    // This avoid bad rendering of diff annotations when a participant A inserts text inside
+    // This avoids wrong rendering of diff annotations when a participant A
+    // inserts text inside
     // a range of text written by participant B. In the former annotation setting way, the
     // inserted text shown diff color of the participant author of the surrounding text, instead of the color
     // of the new author.
-    insertAnnotationsRanges.forEach( r -> {
+    /*
+     * insertAnnotationsRanges.forEach((Range r) -> {
+     * inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, author);
+     * });
+     */
+
+    for (int i = 0; i < insertAnnotationsRanges.size(); i++) {
+      Range r = insertAnnotationsRanges.get(i);
       inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, author);
-    });
+    }
 
     final int size = inner.size();
 

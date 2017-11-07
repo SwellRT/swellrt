@@ -382,6 +382,7 @@ The Wave project included in Swell has a particular GWT module to try and debug 
 
 Configure extension of the editor in `DefaultTestHarness.java`
 
+http://127.0.1.1:9876/org.swellrt.snippets.editor.Editor/editor.html
 
 ### Developer's recipes
 
