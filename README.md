@@ -1,24 +1,25 @@
 # SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
 
-SwellRT is an open source **backend as a service**, providing a set of handy features for Web apps:
+SwellRT is an open source **backend-as-a-service**. It provides helpful features to 
+develop Web applications: 
 
 * Real-time storage (NoSQL)
 * User management
 * Authentication
 * Event based integration
 
-SwellRT allow to develop all kind of real time collaborative applications as...
+SwellRT main goal is to ease development of collaborative applications,
+with real-time interactions, for example...
 
-* Collaborative text editor
-* Instant messaging
+* Collaborative text editors
+* Instant messaging apps
 * Reactive user interface
-* Push notifications
 
 
-The Web API enables a easy way of sharing objects. This is a summary
-of the syntax:
+The API allows to handle objects that can be shared and mutated in real-time.
+All changes are persisted and propagated transparently. Object state is eventually consistent.
 
-Open or create objects:
+Check out API basics:
 
 ```js
 
