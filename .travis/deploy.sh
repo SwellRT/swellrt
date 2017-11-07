@@ -12,23 +12,26 @@ set -e
 #
 
 VERSION=`basename wave/build/libs/swellrt-*.jar | sed 's/^swellrt-//' | sed 's/.jar//'` 
-cp wave/build/libs/swellrt-$VERSION.jar wave/build/libs/swellrt.jar
+mv wave/build/libs/swellrt-$VERSION.jar wave/build/libs/swellrt.jar
 
 if [ "$TRAVIS_BRANCH" == "master" ]; then
+   
    echo "Creating docker image..."
    docker build -t p2pvalue/swellrt .
    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
    echo "Deploying docker image :latest"
    docker push p2pvalue/swellrt
+
+elif [ -n $TRAVIS_TAG  ]; then
+
+  if [ "$TRAVIS_TAG" == "$VERSION" ]; then
+
+	echo "Ready to tag docker image $VERSION"
+
+  else
+	echo "Version in build.gradle doesn't match Git Tag version"
+  fi
+  	  	
+	
 fi
 
-#
-# Reload services
-#
-#if [ "$TRAVIS_BRANCH" == "master" ]; then
-#   echo "Preparing to update services..."
-#   openssl aes-256-cbc -K $encrypted_dd5995a51c0a_key -iv $encrypted_dd5995a51c0a_iv -in .travis/secrets.tar.enc -out .travis/secrets.tar -d
-#   tar xvf .travis/secrets.tar --directory .travis 
-#   chmod ugo+x .travis/update_services.sh
-#   .travis/update_services.sh	
-#fi

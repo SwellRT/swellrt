@@ -12,7 +12,7 @@ services:
   - docker
 
 script:
-  - ./gradlew clean jar prodWeb test createDistBin
+  - ./gradlew clean jar prodWeb test
 
 after_success:
   - .travis/deploy.sh
