@@ -19,14 +19,14 @@ mv wave/build/libs/swellrt-$VERSION.jar wave/build/libs/swellrt.jar
 
 if [ -n $TRAVIS_TAG ]; then
 
-  if [ "$TRAVIS_TAG" == "$VERSION"]; then
+  if [ "$TRAVIS_TAG" == "$VERSION" ]; then
 	echo "A Git tag has been pushed. Ready to tag docker image as "$VERSION
 	DOCKER_TAG="-t "$DOCKER_IMAGE":"$VERSION
   else
 	echo "A Git tag has been pushed, but it doesn't match generated Jar version"
 	echo "Did you tag the right commit? Did you forget to update build.gradle?"
 	echo ""
-	echo "Build aborted!!!" 
+	echo "Docker image generation aborted!!!" 
 	
 	exit -1
   fi	
