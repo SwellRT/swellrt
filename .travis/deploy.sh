@@ -34,7 +34,7 @@ fi
 
 
 
-if [ "$TRAVIS_BRANCH" == "master" || -n $TRAVIS_TAG ]; then
+if [[ "$TRAVIS_BRANCH" == "master" || -n $TRAVIS_TAG ]]; then
    
    echo "Creating Docker image..."
    docker build -t $DOCKER_IMAGE":latest" $DOCKER_TAG .
