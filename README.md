@@ -79,7 +79,7 @@ You can build the server yourself or use our pre-built Docker image.
 Prerequisites
 
 - [Java JDK 8](http://openjdk.java.net/install/)
-- [MongoDB 2.4](https://docs.mongodb.com/manual/administration/install-community/)
+- [MongoDB 3.2](https://docs.mongodb.com/manual/administration/install-community/)
 
 Clone the project
 
@@ -115,18 +115,18 @@ A docker image of the latest release of SwellRT is provided at [Docker Hub](http
 $ docker pull p2pvalue/swellrt
 ```
 
-This image doesn't include a MongoDB server. Setup mongo instance by pulling the latest release of mongo image:
+This image doesn't include a MongoDB server. You can get the latest MongoDB docker image:
 ```sh
 $ docker pull mongo
 ```
 
-To pass connection data for a MongoDB instance to the container pass following environment variables to the container:
+To pass connection data of a MongoDB instance to the container use following environment variables running the Swell container:
 
 ```sh
 $ docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db name> -p 9898:9898 -h swellrt -d p2pvalue/swellrt
 ```
 
-Sample Setup: 
+An example of boths images working together follows:
 
 ```sh
 $ docker run -p 27017:27017 --name mongo -d mongo
@@ -134,13 +134,14 @@ $ docker run -p 27017:27017 --name mongo -d mongo
 $ docker run -e MONGODB_HOST=mongo -e MONGODB_PORT=27017 -e MONGODB_DB=swellrt  -p 9898:9898 -h swellrt --name swellrt --link mongo:mongo -d p2pvalue/swellrt
 ```
 
-Some SwellRT's configuration and data files must be stored out of the Docker container to avoid losing data when the image is updated. Map these folders in your host machine use following parameters:
+Some SwellRT's configuration and data files should be stored outside the Docker container to be kept when Docker image is updated. 
+To map these folders to your host machine use following parameters:
 
 ```sh
 $ docker run -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt
 ```
 
-List of docker's image folders that should be placed outside the container (in your host machine):
+This is a list of Swell folders that should be mapped outside the container in the host machine:
 
 - `/usr/local/swellrt/config` Folder storing all config files. See documentation for details.
 - `/usr/local/swellrt/log` Folder storing server log.
@@ -148,8 +149,10 @@ List of docker's image folders that should be placed outside the container (in y
 - `/usr/local/swellrt/avatars` Folder storing user's avatar.
 - `/usr/local/swellrt/attachments` Folder storing attachment files (when MongoDB is not used as attachment storage).
 
-Remember to copy default configuration files from project's `wave/config` folder to the config folder outside the container. 
-Visit "http://localhost:9898" to check server installation and try some demos.
+After mapping the **config/** folder you will need to place default configuration files on it.
+Get default configuration files from [here](https://github.com/P2Pvalue/swellrt/tree/master/wave/config) 
+
+After server is started, visit "http://localhost:9898" to check server installation and try some demos.
 
 ## Federation
 
