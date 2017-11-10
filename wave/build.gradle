@@ -462,7 +462,6 @@ task prodWeb {
                     "-logLevel", "INFO",
                     "-saveSource",
                     "-strict",
-                    "-Xnamespace", "PACKAGE",
                     "-generateJsInteropExports",                    
                     "org.swellrt.beta.client.ServiceFrontendProd"
             ]
@@ -496,7 +495,6 @@ task devWeb {
                     "-saveSource",
                     "-draftCompile",
                     "-strict",
-                    "-Xnamespace", "PACKAGE",
                     "-generateJsInteropExports",                    
                     "org.swellrt.beta.client.ServiceFrontendDev"
             ]
