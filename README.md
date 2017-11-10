@@ -109,54 +109,93 @@ Visit "http://localhost:9898" to check server installation and try some demos.
 
 ### Docker
 
-A docker image of the latest release of SwellRT is provided at [Docker Hub](https://hub.docker.com/r/p2pvalue/swellrt/):
+Get docker image of SwellRT (latest version by default). Check out all available SwellRT versions at [Docker Hub](https://hub.docker.com/r/p2pvalue/swellrt/):
 
 ```sh
 $ docker pull p2pvalue/swellrt
 ```
 
-This image doesn't include a MongoDB server. You can get the latest MongoDB docker image:
+Run docker container in deattached mode (-d). 
+
+```sh
+$ docker run \ 
+-e MONGODB_HOST=<host> \
+-e MONGODB_PORT=<port> \
+-e MONGODB_DB=<db name> \
+-p 9898:9898 \
+-h swellrt \
+--name swellrt \
+-d p2pvalue/swellrt
+```
+This commands also binds default SwellRT server port 9898, to port 9898 in the host machine (-p 9898:9898). Sets hostname to "swellrt" (-h). And configures SwellRT to use a MongoDB server instance with the provided parameters.
+
+*See following section to configure a MongoDB instance.*
+
+**Persistent folders**
+
+For productive installations of SwellRT, config and data folders should be outside the container. For example, to put all log files in host's folder **/var/log/swellrt**, run docker with *-v* parameter:
+
+```sh
+$ docker run -v /usr/local/swellrt/log:/var/log/swellrt  -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+```
+
+These are all the folders you can map outside the container:
+
+| Folder (Docker cointainer) | Description |
+| -------------------------- | ----------- |
+| /usr/local/swellrt/config | Server config files |
+| /usr/local/swellrt/log | Server log files |
+| /usr/local/swellrt/sessions | Persistent HTTP Sessions |
+| /usr/local/swellrt/avatars | Users avatar images |
+| /usr/local/swellrt/attachments | User files |
+
+**Server config**
+
+Server configuration can be adjusted by editing files in the **config/** folder. Default settings
+can be found in the [repo](https://github.com/P2Pvalue/swellrt/tree/master/wave/config).
+
+If you map the **config/** folder in your host machine, you must copy those files to it.
+
+**Post installation**
+
+Visit "http://localhost:9898" to check server installation and try some demos.
+
+
+### MongoDB
+
+This section explains how to install and configure a MongoDB server with SwellRT.
+
+Get latest MongoDB Docker image
+
 ```sh
 $ docker pull mongo
 ```
 
-To pass connection data of a MongoDB instance to the container use following environment variables running the Swell container:
-
-```sh
-$ docker run -e MONGODB_HOST=<host> -e MONGODB_PORT=<port> -e MONGODB_DB=<db name> -p 9898:9898 -h swellrt -d p2pvalue/swellrt
-```
-
-An example of boths images working together follows:
+Run mongo container
 
 ```sh
 $ docker run -p 27017:27017 --name mongo -d mongo
-
-$ docker run -e MONGODB_HOST=mongo -e MONGODB_PORT=27017 -e MONGODB_DB=swellrt  -p 9898:9898 -h swellrt --name swellrt --link mongo:mongo -d p2pvalue/swellrt
 ```
 
-Some SwellRT's configuration and data files should be stored outside the Docker container to be kept when Docker image is updated. 
-To map these folders to your host machine use following parameters:
+Run SwellRT (it assumes Docker containers are using [default bridge network](https://docs.docker.com/engine/userguide/networking/#the-default-bridge-network))
 
 ```sh
-$ docker run -v <host machine folder>:<docker image folder>  -p 9898:9898 -h swellrt -d p2pvalue/swellrt
+$ docker run \
+-e MONGODB_HOST=172.17.0.1 \
+-e MONGODB_PORT=27017 \
+-e MONGODB_DB=swellrt \
+-p 9898:9898 \
+-h swellrt \
+--name swellrt \
+-d p2pvalue/swellrt
 ```
 
-This is a list of Swell folders that should be mapped outside the container in the host machine:
+The database **swellrt** is created automatically if it doesn't exist.
 
-- `/usr/local/swellrt/config` Folder storing all config files. See documentation for details.
-- `/usr/local/swellrt/log` Folder storing server log.
-- `/usr/local/swellrt/sessions` Folder storing Web sessions.
-- `/usr/local/swellrt/avatars` Folder storing user's avatar.
-- `/usr/local/swellrt/attachments` Folder storing attachment files (when MongoDB is not used as attachment storage).
-
-After mapping the **config/** folder you will need to place default configuration files on it.
-Get default configuration files from [here](https://github.com/P2Pvalue/swellrt/tree/master/wave/config) 
-
-After server is started, visit "http://localhost:9898" to check server installation and try some demos.
 
 ## Federation
 
-SwellRT servers can be federated using Matrix.org open protocol.
+SwellRT servers can be federated using XMPP and Matrix.org protocol. Sorry, we are still writting the configuration guide. Please contact us for furhter information. 
 
 ## Contact and Support
 
