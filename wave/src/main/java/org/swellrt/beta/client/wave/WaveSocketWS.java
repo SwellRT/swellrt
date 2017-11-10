@@ -27,10 +27,10 @@ import org.waveprotocol.wave.model.util.CollectionUtils;
  * <li>We assume web socket messages preserve order
  * <li>Queue each message to be sent in sentMessages
  * <li>Increment recvCount for each incoming message.
- * <li>On send heart beat message with the value of recvCount (the other side
- * will remove oldest recvCount messages from its queue)
- * <li>On Receive heart beat response: reset recvCount and remove oldest values
- * from sentMessages according to received value. <br>
+ * <li>Client sends heart beats message with the value of recvCount (the server
+ * side will remove oldest recvCount messages from its queue)
+ * <li>Receiving heart beat response, then reset recvCount and remove oldest
+ * values from sentMessages according to received value. <br>
  * On reconnection:
  * <li>Send reconnection message with recvCount, and reset recvCount
  * <li>On received reconnection message: discard the specified n oldest messages
