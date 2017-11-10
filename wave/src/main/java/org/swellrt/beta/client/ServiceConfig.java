@@ -1,7 +1,6 @@
 package org.swellrt.beta.client;
 
 import org.swellrt.beta.client.js.Config;
-import org.swellrt.beta.client.js.Console;
 
 public class ServiceConfig {
 
@@ -22,7 +21,6 @@ public class ServiceConfig {
     int DEFAULT = 60000; // ms
     try {
       Integer value = Config.getWebsocketHeartbeatInterval();
-      Console.log("websocketHeartbeatInterval is " + value);
       return checkPositiveInteger(value) ? value : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
@@ -33,7 +31,6 @@ public class ServiceConfig {
     int DEFAULT = 2000; // ms
     try {
       Integer value = Config.getWebsocketHeartbeatTimeout();
-      Console.log("websocketHeartbeatTimeout is " + value);
       return checkPositiveInteger(value) ? value : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
