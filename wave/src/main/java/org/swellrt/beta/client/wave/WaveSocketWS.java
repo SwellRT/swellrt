@@ -2,7 +2,7 @@ package org.swellrt.beta.client.wave;
 
 import java.util.Queue;
 
-import org.swellrt.beta.client.js.Config;
+import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.js.WebSocket;
 import org.swellrt.beta.client.js.WebSocket.Function;
@@ -51,11 +51,11 @@ public class WaveSocketWS implements WaveSocket {
 
   private static final String RECONNECTION_DATA_PREFIX = "rc:";
 
-  private static final int HEARTBEAT_INTERVAL = Config.websocketHeartbeatInterval();
+  private static final int HEARTBEAT_INTERVAL = ServiceConfig.websocketHeartbeatInterval();
 
-  private static final int HEARTBEAT_TIMEOUT = Config.websocketHeartbeatTimeout();
+  private static final int HEARTBEAT_TIMEOUT = ServiceConfig.websocketHeartbeatTimeout();
 
-  private static final boolean DEBUG_LOG = Config.websocketDebugLog();
+  private static final boolean DEBUG_LOG = ServiceConfig.websocketDebugLog();
 
   private static void log(String message) {
     if (DEBUG_LOG) {

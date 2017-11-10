@@ -1,6 +1,5 @@
 package org.swellrt.beta.client.js;
 
-import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -9,59 +8,15 @@ import jsinterop.annotations.JsType;
 public class Config {
 
   @JsProperty
-  private static native Boolean getCaptureExceptions();
+  public static native Boolean getCaptureExceptions();
 
   @JsProperty
-  private static native Integer getWebsocketHeartbeatInterval();
+  public static native Integer getWebsocketHeartbeatInterval();
 
   @JsProperty
-  private static native Integer getWebsocketHeartbeatTimeout();
+  public static native Integer getWebsocketHeartbeatTimeout();
 
   @JsProperty
-  private static native Boolean getWebsocketDebugLog();
-
-  @JsOverlay
-  public final static int websocketHeartbeatInterval() {
-    int DEFAULT = 60000; // ms
-    try {
-      Integer value = getWebsocketHeartbeatInterval();
-      return value != null ? value : DEFAULT;
-    } catch (RuntimeException e) {
-      return DEFAULT;
-    }
-  }
-
-  @JsOverlay
-  public final static int websocketHeartbeatTimeout() {
-    int DEFAULT = 2000; // ms
-    try {
-      Integer value = getWebsocketHeartbeatTimeout();
-      return value != null ? value : DEFAULT;
-    } catch (RuntimeException e) {
-      return DEFAULT;
-    }
-  }
-
-  @JsOverlay
-  public final static boolean websocketDebugLog() {
-    boolean DEFAULT = false;
-    try {
-      Boolean value = getWebsocketDebugLog();
-      return value != null ? value : DEFAULT;
-    } catch (RuntimeException e) {
-      return DEFAULT;
-    }
-  }
-
-  @JsOverlay
-  public final static boolean captureExceptions() {
-    boolean DEFAULT = true;
-    try {
-      Boolean value = getCaptureExceptions();
-      return value != null ? value : DEFAULT;
-    } catch (RuntimeException e) {
-      return DEFAULT;
-    }
-  }
+  public static native Boolean getWebsocketDebugLog();
 
 }

@@ -109,7 +109,7 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
 
     initNativeObjects();
 
-    if (Config.captureExceptions()) {
+    if (ServiceConfig.captureExceptions()) {
 
       GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
 
