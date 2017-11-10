@@ -75,7 +75,10 @@
 
       <div class="col-md-offset-1 col-xs-4 col-md-3 document-list">
         <h4>Documents</h4>
-
+        <p>
+        <input id="newBtn" class="btn btn-default" type="submit" value="New" onclick="newDocument()">
+        <input id="saveBtn" class="btn btn-default" type="submit" value="Save" onclick="saveDocument()">
+        </p>
         <ul id="documentList" class="list-group">
           <!--
           <li class="list-group-item">Cras justo odio
@@ -87,10 +90,8 @@
       </div>
 
       <div class="col-md-7 col-xs-8">
-        <h4>Editor (<span id="title">New document</span>)
-         <input id="saveBtn" class="btn btn-default pull-right" type="submit" value="Save..." onclick="saveDocument()">
-         <input id="newBtn" class="btn btn-default pull-right" type="submit" value="New" onclick="newDocument()">
-         <input id="editBtn" class="btn btn-default pull-right" type="submit" value="Edit" onclick="editDocument()">
+        <h4>Editor (<span id="title">New document</span>)        
+         <input id="editBtn" class="btn btn-default" type="submit" value="Edit On/Off" onclick="editDocument()">
        </h4>
         <div id="editor" class="editor-canvas">
         </div>
@@ -266,7 +267,7 @@
     // Show title for new document
     configTitle(name);
     // Show Edit button
-    configButton("editBtn", "Edit");
+    configButton("editBtn", "Edit On");
   }
 
 
@@ -275,10 +276,10 @@
 
     if (editor.isEditing()) {
       editor.edit(false);
-      configButton("editBtn", "Edit");
+      configButton("editBtn", "Edit On");
     } else {
       editor.edit(true);
-      configButton("editBtn", "Done");
+      configButton("editBtn", "Edit Off");
     }
   }
 
