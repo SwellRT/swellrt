@@ -102,7 +102,7 @@
     })
     .then(r=>{
       return service.open({
-        id : "demo-form-3"
+        id : getURLSearchParam('form','form-demo-default')
       });
     })
     .then(_object => {
@@ -113,11 +113,10 @@
 
       // Initialize data
       if (!object.node('form')) {
-        // This syntax create a single object
-        // associated with property 'form'.
-        // Changes in form.* are not captured,
-        // instead you should replace whole form's
-        // value.
+        // This syntax puts an object
+        // in property 'form'.
+        // Changes in properties of form.* cannot be listened.
+        // You must assign a new object to form instead.
         form = {
           name: "",
           address : "",
@@ -130,7 +129,7 @@
         object.set('form', form);
 
         // Make public after initialization
-        swellObject.setPublic(true);
+        object.setPublic(true);
         lastVersion = 0;
 
       } else {
@@ -228,7 +227,7 @@
   }
 
 
-  function connectionHandler(s, e) {
+function connectionHandler(s, e) {
     console.log(s);
     var netStatus = document.getElementById("netStatus");
 
@@ -243,6 +242,29 @@
 
     if (s == "ERROR")
       netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
+  }
+
+
+  function getURLSearchParam(name, defaultValue) {
+    var search = window.location.search;
+
+    if (search.indexOf('?') == 0) 
+      search = search.substring(1, search.length);
+
+    var searchMap = {};
+    var searchArray = search.split('&');
+    for(var i in searchArray) {
+      if (searchArray.hasOwnProperty(i)) {
+        var item = searchArray[i].split('=');
+        searchMap[item[0]] = item[1];
+      }
+    }
+
+    if (searchMap.hasOwnProperty(name)) 
+      return searchMap[name];
+    
+    return defaultValue;
+
   }
 
   </script>
