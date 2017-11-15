@@ -21,9 +21,6 @@ package org.waveprotocol.wave.model.document.util;
 
 import org.waveprotocol.wave.model.util.Preconditions;
 
-import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsProperty;
-
 /**
  * An immutable range of two locations integers
  */
@@ -40,7 +37,6 @@ public final class Range {
   private final int start;
   private final int end;
 
-  @JsIgnore
   private Range() {
     start = -1;
     end = -1;
@@ -52,7 +48,6 @@ public final class Range {
    * @param start
    * @param end
    */
-  @JsIgnore
   public Range(int start, int end) {
     if (start < 0 || start > end) {
       Preconditions.illegalArgument("Bad range: (" + start + ", " + end + ")");
@@ -66,7 +61,6 @@ public final class Range {
    *
    * @param collapsedAt
    */
-  @JsIgnore
   public Range(int collapsedAt) {
     this(collapsedAt, collapsedAt);
   }
@@ -74,7 +68,6 @@ public final class Range {
   /**
    * @return start point
    */
-  @JsProperty
   public int getStart() {
     return start;
   }
@@ -82,7 +75,6 @@ public final class Range {
   /**
    * @return end point
    */
-  @JsProperty
   public int getEnd() {
     return end;
   }
@@ -97,7 +89,6 @@ public final class Range {
   /**
    * {@inheritDoc}
    */
-  @JsIgnore
   @Override
   public int hashCode() {
     return start + 37 * end;
@@ -106,7 +97,6 @@ public final class Range {
   /**
    * {@inheritDoc}
    */
-  @JsIgnore
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
