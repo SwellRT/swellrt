@@ -540,7 +540,7 @@ debugWeb.dependsOn compileJava
 //
 
 
-task debugEditor {
+task editorHarness {
     description = 'Run editor test console on debug mode'
 
     doLast {
@@ -567,11 +567,10 @@ task debugEditor {
     }
 }
 
-debugEditor.dependsOn compileJava
+editorHarness.dependsOn compileJava
 
 //
-// Launch a stand alone version of the editor to experiment
-// some features:
+// Launches editor sandbox
 //
 // http://127.0.1.1:9876/org.swellrt.snippets.editor.Editor/editor.html
 //
@@ -579,7 +578,7 @@ debugEditor.dependsOn compileJava
 //
 // src/main/resources/org/swellrt/snippets/editor/Editor.gwt.xml
 //
-task editor {
+task editorSandbox {
     description = 'Run stand alone editor with version manager'
 
     doLast {
@@ -600,13 +599,13 @@ task editor {
                     "-noincremental",
                     "-bindAddress", "0.0.0.0",
                     "-logLevel", "TRACE",
-                    "org.swellrt.snippets.editor.Editor",
+                    "org.swellrt.sandbox.editor.Editor",
             ]
         }
     }
 }
 
-editor.dependsOn compileJava
+editorSandbox.dependsOn compileJava
 
 
 task runWebServer(type: JettyRun) {

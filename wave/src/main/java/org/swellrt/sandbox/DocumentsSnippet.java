@@ -1,4 +1,4 @@
-package org.swellrt.snippets;
+package org.swellrt.sandbox;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class DocumentsSnippet {
   public static void main(String[] args) throws IOException, XmlParseException {
 
     DocumentsSnippet snippet = new DocumentsSnippet();
-    snippet.getAsDocInitialization("org/swellrt/snippets/document-1.xml");
+    snippet.getAsDocInitialization("org/swellrt/sandbox/document-1.xml");
   }
 
 }

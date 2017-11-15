@@ -43,7 +43,7 @@ value="true" />
 <set-configuration-property name="compiler.emulatedStack.recordLineNumbers"
 value="true" />
 
-<entry-point class="org.swellrt.snippets.editor.EditorEntryPoint" />
+<entry-point class="org.swellrt.sandbox.editor.EditorEntryPoint" />
 
 
 </module>

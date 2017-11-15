@@ -1,8 +1,7 @@
-package org.swellrt.snippets.editor;
+package org.swellrt.sandbox.editor;
 
 import java.util.Map;
 
-import org.swellrt.beta.client.js.editor.SEditorConfig;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
@@ -125,7 +124,7 @@ public class EditorComponent extends Composite {
     return new EditorSettings()
         .setHasDebugDialog(true)
         .setUndoEnabled(false)
-        .setUseFancyCursorBias(true)
+        .setUseFancyCursorBias(false)
         .setUseSemanticCopyPaste(false)
         .setUseWhitelistInEditor(false)
         .setUseWebkitCompositionEvents(false);
