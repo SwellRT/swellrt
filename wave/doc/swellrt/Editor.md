@@ -371,18 +371,36 @@ Set the following configuration property before Swell script is loaded:
     };
 ```
 
-### Wave Editor 
+### Wave Harness Editor 
 
-The Wave project included in Swell has a particular GWT module to try and debug the editor component:
+The Wave project (where Swell is on top) has a GWT module to play with an standalone editor instance.
 
+```sh
+./gradlew editorHarness
+```
 
-- Run `./gradlew gwtEditorDev`
-- Navigate to `http://localhost:9876/org.waveprotocol.wave.client.editor.harness.EditorTest/EditorTest.html`
+```
+http://localhost:9876/org.waveprotocol.wave.client.editor.harness.EditorTest/EditorTest.html
+```
+
 - Activate GWT SuperDev mode if necessary with the provided links
 
 Configure extension of the editor in `DefaultTestHarness.java`
 
-http://127.0.1.1:9876/org.swellrt.snippets.editor.Editor/editor.html
+Harness editor runs solely in client side, hence no running server is required. 
+
+
+### Swell Editor Sandbox
+
+```sh
+./gradlew editorSandbox
+```
+
+```
+http://127.0.1.1:9876/org.swellrt.sandbox.editor.Editor/editor.html
+```
+
+Sandbox editor runs solely in client side, hence no running server is required. 
 
 ### Developer's recipes
 
