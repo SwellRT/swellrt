@@ -53,6 +53,7 @@
  <source path="sugg"/>
  <source path="util"/>
  <source path="webdriver"/>
+ <source path="playback"/>
 
   <!-- This linker is required for superdev mode -->
   <add-linker name="xsiframe" />

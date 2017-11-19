@@ -10,7 +10,9 @@ public class EditorEntryPoint implements EntryPoint {
   public void onModuleLoad() {
 
     VerticalPanel basePanel = new VerticalPanel();
-    HTML titleHtml = new HTML("<div> Wave Editor Version Manager </div>");
+    basePanel.setWidth("100%");
+
+    HTML titleHtml = new HTML("<div> Editor Sandox </div>");
     basePanel.add(titleHtml);
 
     EditorComponent editorComponent = new EditorComponent();

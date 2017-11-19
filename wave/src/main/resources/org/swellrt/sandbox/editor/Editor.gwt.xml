@@ -25,6 +25,7 @@
 <source path=""/>
 
 <inherits name="com.google.gwt.user.User" />
+<inherits name="org.waveprotocol.wave.client.wave.Wave" />
 <inherits name="org.waveprotocol.wave.client.editor.Editor" />
 
 <!-- TODO(danilatos) Move this into EditorTest.gwt.xml -->
