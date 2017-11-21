@@ -1,8 +1,10 @@
 package org.swellrt.sandbox.editor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
@@ -15,13 +17,14 @@ import org.waveprotocol.wave.client.editor.EditorSettings;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.Editors;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
-import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
+import org.waveprotocol.wave.client.editor.playback.DocOpContext;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.client.editor.playback.FakeDocHistory;
+import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
@@ -86,6 +89,8 @@ public class EditorComponent extends Composite {
   // Logger
   LoggerBundle logger = new DomLogger("test");
 
+  final ParticipantId DUMMY_PARTICIPANT = ParticipantId.ofUnsafe("dummy@dummy.org");
+
   // Editor 1
 
   ContentDocument doc1;
@@ -95,14 +100,33 @@ public class EditorComponent extends Composite {
 
   // Editor 2
 
-  // The ops history of doc 1 to be replayed in doc2
+  /** The ops history of doc 1 to be replayed in doc2 */
   FakeDocHistory docHistory = new FakeDocHistory();
-  PlaybackDocument doc2 = new PlaybackDocument(getRegistries(), DOC_SCHEMA, docHistory);
+
+  /** A doc op cache to query op metadata from ops consumers */
+  DocOpContextCache docOpCache = new DocOpContextCache() {
+
+    Map<DocOp, DocOpContext> cacheData = new HashMap<DocOp, DocOpContext>();
+
+    @Override
+    public Optional<DocOpContext> fetch(DocOp op) {
+      return Optional.ofNullable(cacheData.get(op));
+    }
+
+    @Override
+    public void add(DocOp op, DocOpContext opCtx) {
+      cacheData.put(op, opCtx);
+    }
+  };
 
   Editor editor2;
-  DiffHighlightingFilter diffDoc2;
+  /** a document that can play back and forth its ops */
+  PlaybackDocument doc2;
 
+  final static String REPLAY_FLOW = "flow"; // default
+  final static String REPLAY_BATCH = "batch";
 
+  String replayMode = REPLAY_FLOW;
 
   // Panel to render the document with no editor
   LogicalPanel.Impl displayDoc2 = new LogicalPanel.Impl() {
@@ -195,10 +219,9 @@ public class EditorComponent extends Composite {
       boolean showDiffs = true;
       editor2 = createEditor("editor2");
       editor2.init(getRegistries(), new KeyBindingRegistry(), getSettings());
-
-      // A default content document for the editor2
-      // diffDoc2 = new DiffHighlightingFilter(doc2.getDiffTarget());
-      editor2.setContent(createContentDocument(false));
+      doc2 =  new PlaybackDocument(getRegistries(), DOC_SCHEMA, docHistory, docOpCache);
+      editor2.setContent(doc2.getDocument());
+      doc2.renderDiffs(true);
       editor2.setEditing(false);
 
       // Render a content document in a panel
@@ -211,23 +234,7 @@ public class EditorComponent extends Composite {
        */
 
       // Mirror changes in editor1 to doc2
-      editor1.setOutputSink(new SilentOperationSink<DocOp>() {
-        @Override
-        public void consume(DocOp op) {
-
-          // store generated ops
-          doc1ops.add(op);
-          updateInfo1();
-          /*
-           *
-           * if (showDiffs) { try { diffDoc2.consume(op); } catch
-           * (OperationException e) { GWT.log("Error consuming op", e); } } else
-           * { doc2.consume(op); }
-           *
-           */
-        }
-
-      });
+      setSinks();
 
       //
       // Attach to HTML
@@ -249,6 +256,33 @@ public class EditorComponent extends Composite {
     } catch (RuntimeException ex) {
       GWT.log("Fatal Exception", ex);
     }
+  }
+
+  private long opCounter = 0;
+
+  private void setSinks() {
+
+    editor1.setOutputSink(new SilentOperationSink<DocOp>() {
+      @Override
+      public void consume(DocOp op) {
+
+        opCounter++;
+
+        if (replayMode.equals(REPLAY_BATCH)) {
+
+          doc1ops.add(op);
+
+        } else if (replayMode.equals(REPLAY_FLOW)) {
+
+          docHistory.addSingleDelta(DUMMY_PARTICIPANT, op);
+
+        }
+
+        updateInfo1();
+
+      }
+
+    });
   }
 
   private ContentDocument createContentDocument(boolean validateSchema) {
@@ -307,13 +341,9 @@ public class EditorComponent extends Composite {
   public void replay() {
 
     // take ops from doc1 to play them in doc2/editor2
-    docHistory.addAsDelta(ParticipantId.ofUnsafe("dummy@swellrt.org"), doc1ops);
+    // docHistory.addSingleDelta(ParticipantId.ofUnsafe("dummy@swellrt.org"), doc1ops);
+    docHistory.addAllDeltas(DUMMY_PARTICIPANT, doc1ops);
     doc1ops.clear();
-
-    if (editor2.getContent() != doc2.getDocument())
-      editor2.setContent(doc2.getDocument());
-
-    editor2.setEditing(false);
   }
 
 
@@ -429,7 +459,7 @@ public class EditorComponent extends Composite {
   }
 
   public void updateInfo1() {
-    txtOpsCounter.setValue("" + doc1ops.size());
+    txtOpsCounter.setValue("" + opCounter);
   }
 
 }

@@ -23,8 +23,8 @@ package org.waveprotocol.wave.client.wave;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.concurrencycontrol.wave.CcDocument;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
@@ -33,7 +33,6 @@ import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.util.MutableDocumentProxy;
-import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.operation.SilentOperationSink;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -67,35 +66,23 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
   private boolean isCompleteDiff;
 
   /**
-   * Tracks operations with contributors
+   * Provides metadata of DocOp's
    */
-  private final DocContributionsLog operationLog;
+  private final DocOpContextCache opContexts;
 
-  /** Wavelet Id where this document belongs to */
-  private final WaveletId waveletId;
-
-  /** This document id */
-  private final String documentId;
 
   @VisibleForTesting
   LazyContentDocument(Registries base, SimpleDiffDoc initial, boolean isCompleteDiff,
-      DocContributionsLog docOpLog) {
-    this(base, initial, isCompleteDiff, docOpLog, null, null);
-  }
-
-  LazyContentDocument(Registries base, SimpleDiffDoc initial, boolean isCompleteDiff,
-      DocContributionsLog operationLog, WaveletId waveletId, String documentId) {
+      DocOpContextCache opContexts) {
     this.base = base;
     this.spec = initial;
     this.isCompleteDiff = isCompleteDiff;
-    this.operationLog = operationLog;
-    this.waveletId = waveletId;
-    this.documentId = documentId;
+    this.opContexts = opContexts;
   }
 
   public static LazyContentDocument create(Registries base, SimpleDiffDoc initial,
-      DocContributionsLog docOpLog, WaveletId waveletId, String documentId) {
-    return new LazyContentDocument(base, initial, initial.isCompleteDiff(), docOpLog, waveletId, documentId);
+      DocOpContextCache opContexts) {
+    return new LazyContentDocument(base, initial, initial.isCompleteDiff(), opContexts);
   }
 
   /**
@@ -106,7 +93,7 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
   private void loadWith(Registries registries) {
     assert !isLoaded() : "already loaded";
     ContentDocument core = new ContentDocument(DocumentSchema.NO_SCHEMA_CONSTRAINTS);
-    document = DiffContentDocument.create(core, operationLog, waveletId, documentId);
+    document = DiffContentDocument.create(core, opContexts);
     if (outputSink != null) {
       core.setOutgoingSink(outputSink);
     }

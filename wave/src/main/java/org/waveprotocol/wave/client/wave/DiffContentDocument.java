@@ -22,10 +22,9 @@ package org.waveprotocol.wave.client.wave;
 
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
-import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.operation.OperationRuntimeException;
 
@@ -54,9 +53,8 @@ public final class DiffContentDocument implements DiffSink {
   /**
    * Creates a diff-handling wrapper for a content document.
    */
-  public static DiffContentDocument create(ContentDocument doc, DocContributionsLog operationLog,
-      WaveletId waveletId, String documentId) {
-    DiffHighlightingFilter differ = new DiffHighlightingFilter(doc.getDiffTarget(), operationLog, waveletId, documentId);
+  public static DiffContentDocument create(ContentDocument doc, DocOpContextCache docOpCache) {
+    DiffHighlightingFilter differ = new DiffHighlightingFilter(doc.getDiffTarget(), docOpCache);
     return new DiffContentDocument(doc, differ);
   }
 
@@ -64,7 +62,8 @@ public final class DiffContentDocument implements DiffSink {
    * Set diff annotations for the current state of the document at once.
    */
   public void initDiffs() {
-    differ.initDiffs();
+    // TODO pablo
+    // differ.initDiffs();
   }
 
   @Override

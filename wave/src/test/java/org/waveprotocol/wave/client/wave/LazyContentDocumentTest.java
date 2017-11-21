@@ -19,10 +19,13 @@
 
 package org.waveprotocol.wave.client.wave;
 
+import java.util.Optional;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.playback.DocOpContext;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.algorithm.Composer;
@@ -45,7 +48,18 @@ public class LazyContentDocumentTest extends TestCase {
   private Registries registries;
   private LazyContentDocument document;
   private SimpleDiffDoc state;
-  private DocContributionsLog operationLog;
+  private DocOpContextCache docOpCache = new DocOpContextCache() {
+
+    @Override
+    public Optional<DocOpContext> fetch(DocOp op) {
+      return Optional.empty();
+    }
+
+    @Override
+    public void add(DocOp op, DocOpContext opCtx) {
+      // Nothing to do
+    }
+  };
 
   //
   //
@@ -78,13 +92,13 @@ public class LazyContentDocumentTest extends TestCase {
   private void startWithCompleteState() {
     state = SimpleDiffDoc.create(X, null);
     assert state.isCompleteState() : "invalid test assumptions";
-    document = LazyContentDocument.create(registries, state, operationLog, null, null);
+    document = LazyContentDocument.create(registries, state, docOpCache);
   }
 
   private void startWithStateAndDiff() {
     state = SimpleDiffDoc.create(X, D_X);
     assert !state.isCompleteDiff() && !state.isCompleteState() : "invalid test assumptions";
-    document = LazyContentDocument.create(registries, state, operationLog, null, null);
+    document = LazyContentDocument.create(registries, state, docOpCache);
   }
 
   public void testOpOnCompleteStateIsADiff() {

@@ -22,7 +22,7 @@ package org.swellrt.beta.client.wave.concurrencycontrol;
 import java.util.Collection;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
+import org.waveprotocol.wave.client.wave.DocOpCache;
 import org.waveprotocol.wave.concurrencycontrol.channel.Accessibility;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiplexer;
@@ -58,7 +58,7 @@ public final class LiveChannelBinder
   private final WaveViewImpl<OpBasedWavelet> wave;
   private final OperationChannelMultiplexer mux;
   private final Command whenOpened;
-  private final DocContributionsLog docOpLog;
+  private final DocOpCache docOpCache;
 
   /**
    * Operation channels waiting to be bound. This map is populated from {@link
@@ -89,13 +89,14 @@ public final class LiveChannelBinder
   //
 
   private LiveChannelBinder(StaticChannelBinder binder, WaveletOperationalizer operationalizer,
-      WaveViewImpl<OpBasedWavelet> wave, OperationChannelMultiplexer mux, Command whenOpened, DocContributionsLog docOpLog) {
+      WaveViewImpl<OpBasedWavelet> wave, OperationChannelMultiplexer mux, Command whenOpened,
+      DocOpCache docOpCache) {
     this.binder = binder;
     this.operationalizer = operationalizer;
     this.wave = wave;
     this.mux = mux;
     this.whenOpened = whenOpened;
-    this.docOpLog = docOpLog;
+    this.docOpCache = docOpCache;
   }
 
   /**
@@ -108,10 +109,11 @@ public final class LiveChannelBinder
       OperationChannelMultiplexer mux,
       IdFilter filter,
       Command whenOpened,
-      DocContributionsLog operationLog) {
-    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry, operationLog);
+      DocOpCache docOpCache) {
+    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry,
+        docOpCache);
     LiveChannelBinder liveBinder =
-        new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened, operationLog);
+        new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened, docOpCache);
 
     final Collection<KnownWavelet> remoteWavelets = CollectionUtils.createQueue();
     final Collection<ObservableWaveletData> localWavelets = CollectionUtils.createQueue();
@@ -177,7 +179,7 @@ public final class LiveChannelBinder
     Preconditions.checkState(!channels.containsKey(id));
     channels.put(id, channel);
 
-    docOpLog.registerSnapshot(snapshot);
+    docOpCache.add(snapshot);
 
     if (wave.getWavelet(wid) != null) {
       connect(id);

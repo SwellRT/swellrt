@@ -23,6 +23,7 @@ package org.swellrt.beta.client.wave;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.swellrt.beta.client.wave.concurrencycontrol.LiveChannelBinder;
 import org.swellrt.beta.client.wave.concurrencycontrol.MuxConnector;
@@ -35,11 +36,13 @@ import org.waveprotocol.wave.client.common.util.CountdownLatch;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
+import org.waveprotocol.wave.client.editor.playback.DocOpContext;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.util.ClientFlags;
+import org.waveprotocol.wave.client.wave.DocOpCache;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
@@ -60,11 +63,13 @@ import org.waveprotocol.wave.model.conversation.ObservableConversationView;
 import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
+import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
@@ -159,7 +164,7 @@ public interface StageTwo {
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
 
-    private DocContributionsLog operationLog; // tracks ops and contributors
+    private DocOpCache opsCache; // tracks ops and contributors
 
 
     private final UnsavedDataListener unsavedDataListener;
@@ -321,7 +326,7 @@ public interface StageTwo {
 
       // Populate the initial state.
       for (ObservableWaveletData waveletData : snapshot.getWavelets()) {
-        getDocOperationLog().registerSnapshot(waveletData);
+        getDocOpCache().add(waveletData);
         wave.addWavelet(operationalizer.operationalize(waveletData));
       }
       return wave;
@@ -343,13 +348,30 @@ public interface StageTwo {
       DocumentFactory<LazyContentDocument> textDocFactory =
           new DocumentFactory<LazyContentDocument>() {
             private final Registries registries = Editor.ROOT_REGISTRIES;
-            private final DocContributionsLog opLog = DefaultProvider.this.getDocOperationLog();
+            private final DocOpCache docOpCache = DefaultProvider.this.getDocOpCache();
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
+
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff, opLog, waveletId, docId);
+              String waveletIdStr = ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId);
+
+              return LazyContentDocument.create(registries, noDiff, new DocOpContextCache() {
+
+                @Override
+                public Optional<DocOpContext> fetch(DocOp op) {
+
+                  // Adapt the global DocOp cache to this particular blip
+                  return docOpCache.fetch(waveletIdStr, docId, op);
+                }
+
+                @Override
+                public void add(DocOp op, DocOpContext opCtx) {
+                  // Nothing to do
+                }
+
+              });
             }
           };
 
@@ -419,7 +441,7 @@ public interface StageTwo {
               getDocumentRegistry(),
               mux,
               filter,
-              onOpened, getDocOperationLog());
+              onOpened, getDocOpCache());
         }
 
         @Override
@@ -505,8 +527,8 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocContributionsLog getDocOperationLog() {
-      return operationLog == null ? operationLog = createOperationLog() : operationLog;
+    protected DocOpCache getDocOpCache() {
+      return opsCache == null ? opsCache = createDocOpCache() : opsCache;
     }
 
     /**
@@ -514,8 +536,8 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocContributionsLog createOperationLog() {
-      return new DocContributionsLog(CollectionUtils.newStringSet(SwellConstants.TEXT_BLIP_ID_PREFIX), getContributionsFetcher());
+    protected DocOpCache createDocOpCache() {
+      return new DocOpCache(CollectionUtils.newStringSet(SwellConstants.TEXT_BLIP_ID_PREFIX));
     }
 
   }

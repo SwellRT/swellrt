@@ -1,6 +1,5 @@
 package org.waveprotocol.wave.client.editor.playback;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,9 +7,12 @@ import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.Delta;
-import org.waveprotocol.wave.model.document.operation.DocOp;
-import org.waveprotocol.wave.model.document.operation.algorithm.DocOpInverter;
+import org.waveprotocol.wave.client.editor.playback.DocHistory.RevCriteria;
+import org.waveprotocol.wave.client.editor.playback.DocHistory.Revision;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
+import org.waveprotocol.wave.model.document.util.Annotations;
+import org.waveprotocol.wave.model.operation.OperationException;
+import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
 /**
  *
@@ -36,30 +38,31 @@ import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
  */
 public class PlaybackDocument {
 
-  public static Delta invert(Delta delta) {
 
-    List<DocOp> invertedOps = new ArrayList<DocOp>(delta.ops.size());
+  private final DocHistory history;
 
-    for (int i = delta.ops.size() - 1; i >= 0; i--) {
-      invertedOps.add(DocOpInverter.invert(delta.ops.get(i)));
-    }
+  /** Let's put in this cache any doc op sent to the content document */
+  private final DocOpContextCache docOpCache;
 
-    return new Delta(invertedOps, delta.context);
-  }
-
+  /** The actual content document */
   private ContentDocument doc;
 
+  /** A filtered sink for the content document, to add diff marks as annotations */
   private DiffHighlightingFilter diffFilter;
 
-  private DocHistory deltas;
+  /** the version the content document is at. */
+  private long currentVersion = 0;
 
+  /** Enable or disable the diff filter */
   private boolean useDiffFilter = false;
 
-  public PlaybackDocument(Registries registries, DocumentSchema schema, DocHistory deltas) {
+  public PlaybackDocument(Registries registries, DocumentSchema schema, DocHistory history,
+      DocOpContextCache docOpCache) {
     this.doc = new ContentDocument(schema);
     this.doc.setRegistries(registries);
-    this.deltas = deltas;
-    this.diffFilter = new DiffHighlightingFilter(this.doc.getDiffTarget());
+    this.history = history;
+    this.diffFilter = new DiffHighlightingFilter(this.doc.getDiffTarget(), docOpCache);
+    this.docOpCache = docOpCache;
   }
 
   public ContentDocument getDocument() {
@@ -72,31 +75,94 @@ public class PlaybackDocument {
 
   private void consume(Delta delta) {
     delta.ops.forEach(op -> {
-      doc.consume(op);
+
+      docOpCache.add(op, delta.context);
+
+      if (useDiffFilter) {
+        try {
+          diffFilter.consume(op);
+        } catch (OperationException e) {
+          throw new IllegalStateException(e);
+        }
+      } else
+        doc.consume(op);
     });
+  }
+
+
+  public List<Revision> queryRevisions(RevCriteria criteria, long startVersion,
+      int numOfRevisions) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  private void resetContent() {
+    doc.getMutableDoc().deleteRange(0, doc.getMutableDoc().size());
+  }
+
+  private void resetAnnotations() {
+
+    doc.getLocalAnnotations().knownKeys().each(new Proc() {
+
+      @Override
+      public void apply(String annotationKey) {
+        Annotations.guardedResetAnnotation(doc.getLocalAnnotations(), 0, doc.getMutableDoc().size(),
+            annotationKey, null);
+      }
+
+    });
+
+  }
+
+  public void reset() {
+    history.reset();
+    resetAnnotations();
+    resetContent();
   }
 
   public void nextDelta() {
 
-    Optional<Delta> opDeltas = deltas.nextOpDelta();
+    Optional<Delta> opDeltas = history.nextDelta();
 
     if (!opDeltas.isPresent())
       return;
 
+    currentVersion++;
     consume(opDeltas.get());
-
   }
 
   public void prevDelta() {
 
-    Optional<Delta> opDeltas = deltas.prevOpDelta();
+    Optional<Delta> opDeltas = history.prevDelta();
 
     if (!opDeltas.isPresent())
       return;
 
-    consume(invert(opDeltas.get()));
+    currentVersion--;
+    consume(opDeltas.get().invert());
+  }
+
+  public void toDelta(long version) {
+
+    boolean backwards = version < currentVersion;
+
+    history.toDelta(version).forEach(delta -> {
+
+      if (backwards) {
+        currentVersion--;
+        consume(delta.invert());
+      } else {
+        currentVersion++;
+        consume(delta);
+      }
+
+    });
 
   }
 
+
+  public long getLastVersion() {
+    return history.getLastVersion();
+  }
 
 }

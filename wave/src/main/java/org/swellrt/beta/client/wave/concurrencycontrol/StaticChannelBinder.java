@@ -20,8 +20,7 @@
 package org.swellrt.beta.client.wave.concurrencycontrol;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
-import org.waveprotocol.wave.client.wave.WaveDocuments;
+import org.waveprotocol.wave.client.wave.DocOpCache;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.wave.CcDocument;
@@ -41,7 +40,7 @@ public final class StaticChannelBinder {
 
   private final WaveletOperationalizer operationalizer;
   private final SWaveDocuments<? extends CcDocument> docRegistry;
-  private final DocContributionsLog opRegistry;
+  private final DocOpCache docOpCache;
 
   /**
    * Creates a binder for a wave.
@@ -53,22 +52,21 @@ public final class StaticChannelBinder {
       WaveletOperationalizer operationalizer, SWaveDocuments<? extends CcDocument> docRegistry) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
-    this.opRegistry = null;
+    this.docOpCache = null;
   }
 
   /**
    * Creates a binder for a wave with an associated OpRegistry
-   * 
+   *
    * @param operationalizer operationalizer of the wave
    * @param docRegistry document registry of the wave
-   * @param opRegistry a registry of all incoming ops to track participants and
-   *        ops
+   * @param docOpCache a cache where to put all incoming ops, so we can get op's metadata later on.
    */
   public StaticChannelBinder(WaveletOperationalizer operationalizer,
-      SWaveDocuments<? extends CcDocument> docRegistry, DocContributionsLog opRegistry) {
+      SWaveDocuments<? extends CcDocument> docRegistry, DocOpCache docOpCache) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
-    this.opRegistry = opRegistry;
+    this.docOpCache = docOpCache;
   }
 
   /**
@@ -95,10 +93,10 @@ public final class StaticChannelBinder {
       @Override
       public void consume(WaveletOperation op) {
 
-        // Register the op first, to be consumed by following sinks.
-        if (opRegistry != null) {
-          opRegistry.register(waveletId, op);
-        }
+        // Cache the op before be consumed by the target sink.
+        if (docOpCache != null)
+          docOpCache.add(waveletId, op);
+
         target.consume(op);
       }
 

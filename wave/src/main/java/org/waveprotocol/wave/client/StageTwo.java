@@ -22,6 +22,7 @@ package org.waveprotocol.wave.client;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
@@ -44,6 +45,8 @@ import org.waveprotocol.wave.client.doodad.title.TitleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
+import org.waveprotocol.wave.client.editor.playback.DocOpContext;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.client.gadget.Gadget;
 import org.waveprotocol.wave.client.render.ReductionBasedRenderer;
 import org.waveprotocol.wave.client.render.RenderingRules;
@@ -101,6 +104,7 @@ import org.waveprotocol.wave.model.conversation.ObservableConversationView;
 import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
@@ -515,7 +519,20 @@ public interface StageTwo {
                 WaveletId waveletId, String docId, DocInitialization content) {
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff, opLog, waveletId, docId);
+              return LazyContentDocument.create(registries, noDiff, new DocOpContextCache() {
+
+                @Override
+                public Optional<DocOpContext> fetch(DocOp op) {
+                  // Don't wire DocOpCache in Wave version
+                  return Optional.empty();
+                }
+
+                @Override
+                public void add(DocOp op, DocOpContext opCtx) {
+                  // Nothing to do
+                }
+
+              });
             }
           };
 

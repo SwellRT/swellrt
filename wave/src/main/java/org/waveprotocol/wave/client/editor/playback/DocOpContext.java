@@ -59,19 +59,19 @@ public final class DocOpContext {
     this.hashedVersion = waveletOpContext.getHashedVersion();
   }
 
-  protected long getTimestamp() {
+  public long getTimestamp() {
     return timestamp;
   }
 
-  protected ParticipantId getCreator() {
+  public ParticipantId getCreator() {
     return creator;
   }
 
-  protected long getVersionIncrement() {
+  public long getVersionIncrement() {
     return versionIncrement;
   }
 
-  protected HashedVersion getHashedVersion() {
+  public HashedVersion getHashedVersion() {
     return hashedVersion;
   }
 

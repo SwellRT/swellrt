@@ -22,15 +22,15 @@ package org.waveprotocol.wave.client.editor.content;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher.DocContribution;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher.DocContributionValue;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher.WaveletContributions;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
+import org.waveprotocol.wave.client.editor.playback.DocOpContext;
+import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
@@ -42,10 +42,7 @@ import org.waveprotocol.wave.model.document.operation.DocOpCursor;
 import org.waveprotocol.wave.model.document.operation.ModifiableDocument;
 import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.id.ModernIdSerialiser;
-import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.operation.OperationException;
-import org.waveprotocol.wave.model.operation.wave.WaveletOperationContext;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -53,8 +50,6 @@ import org.waveprotocol.wave.model.util.ReadableIntMap;
 import org.waveprotocol.wave.model.util.ReadableStringMap;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.StringMap;
-import org.waveprotocol.wave.model.version.HashedVersion;
-import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.dom.client.Document;
@@ -69,6 +64,7 @@ import com.google.gwt.dom.client.Style;
  *
  * @author danilatos@google.com (Daniel Danilatos)
  * @author dyukon@gmail.com (Denis Konovalchik)
+ * @author pablojan@gmail.com (Pablo Ojanguren)
  */
 public class DiffHighlightingFilter implements ModifiableDocument {
 
@@ -94,8 +90,11 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    */
   public static String wrapAnonymousAuthor(String author) {
     String wrappedAuthor = author;
-    if (wrappedAuthor.startsWith("_anonymous_"))
-      wrappedAuthor = wrappedAuthor.substring(11, wrappedAuthor.length());
+
+    if (ParticipantId.isAnonymousName(wrappedAuthor))
+      wrappedAuthor = wrappedAuthor.substring(ParticipantId.ANONYMOUS_NAME.length(),
+          wrappedAuthor.length());
+
     return wrappedAuthor;
   }
 
@@ -154,8 +153,6 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   private final DiffHighlightTarget inner;
 
-  private final DocContributionsLog contribLog; // To track op's owners
-
   // Munging to wrap the op
 
   private DocOpCursor target;
@@ -182,19 +179,29 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
   int currentLocation = 0;
 
-  private final String waveletIdStr;
-  private final String documentId;
+  /** to query author of doc ops */
+  private final DocOpContextCache opCtxProvider;
 
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument) {
-    this(contentDocument, null, null, null);
+    this(contentDocument, new DocOpContextCache() {
+
+      @Override
+      public Optional<DocOpContext> fetch(DocOp op) {
+        return Optional.empty();
+      }
+
+      @Override
+      public void add(DocOp op, DocOpContext opCtx) {
+        // Nothing to do
+      }
+
+    });
   }
 
-  public DiffHighlightingFilter(DiffHighlightTarget contentDocument, DocContributionsLog contribLog, WaveletId waveletId, String documentId) {
+  public DiffHighlightingFilter(DiffHighlightTarget contentDocument,
+      DocOpContextCache opCtxProvider) {
     this.inner = contentDocument;
-    this.contribLog = contribLog;
-    this.waveletIdStr = waveletId != null
-        ? ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId) : null;
-    this.documentId = documentId;
+    this.opCtxProvider = opCtxProvider;
   }
 
   /**
@@ -203,80 +210,70 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    *
    * TODO don't call service here, just inject data
    */
-  public void initDiffs() {
-
-    HashedVersion waveletVersion = contribLog.getWaveletLastVersion(this.waveletIdStr);
-    assert waveletVersion != null;
-
-
-    contribLog.fetchContributions(waveletIdStr, waveletVersion, new DocContributionsFetcher.Callback() {
-
-      @Override
-      public void onSuccess(WaveletContributions waveletContributions) {
-
-        // Clear annotations, we are going to render again all of them.
-        clearDiffs();
-
-        DocContribution[] allContributions = waveletContributions.getDocContributions(documentId);
-        if (allContributions == null) return;
-        for (DocContribution dc: allContributions) {
-          if (dc.getValues() != null) {
-
-            for (DocContributionValue value: dc.getValues()) {
-              if (value.getKey().equals("author")) {
-
-                try {
-                  inner.setAnnotation(dc.getStart(), dc.getEnd(), DIFF_INSERT_KEY, ParticipantId.of(value.getValue()));
-                } catch (InvalidParticipantAddress e) {
-
-                }
-              }
-            }
-          }
-        }
-
-      }
-
-      @Override
-      public void onException(Exception e) {
-        // Opps!
-      }
-    });
-
-  }
+  /*
+   * public void initDiffs() {
+   *
+   * HashedVersion waveletVersion =
+   * contribLog.getWaveletLastVersion(this.waveletIdStr); assert waveletVersion
+   * != null;
+   *
+   *
+   * contribLog.fetchContributions(waveletIdStr, waveletVersion, new
+   * DocContributionsFetcher.Callback() {
+   *
+   * @Override public void onSuccess(WaveletContributions waveletContributions)
+   * {
+   *
+   * // Clear annotations, we are going to render again all of them.
+   * clearDiffs();
+   *
+   * DocContribution[] allContributions =
+   * waveletContributions.getDocContributions(documentId); if (allContributions
+   * == null) return; for (DocContribution dc: allContributions) { if
+   * (dc.getValues() != null) {
+   *
+   * for (DocContributionValue value: dc.getValues()) { if
+   * (value.getKey().equals("author")) {
+   *
+   * try { inner.setAnnotation(dc.getStart(), dc.getEnd(), DIFF_INSERT_KEY,
+   * ParticipantId.of(value.getValue())); } catch (InvalidParticipantAddress e)
+   * {
+   *
+   * } } } } }
+   *
+   * }
+   *
+   * @Override public void onException(Exception e) { // Opps! } });
+   *
+   * }
+   */
 
   @Override
   public void consume(DocOp op) throws OperationException {
     Preconditions.checkState(target == null, "Diff inner target not initialised");
 
     operation = op;
-
     author = UKNOWN_PARTICIPANT;
 
-    if (contribLog != null) {
-      WaveletOperationContext opContext =  contribLog.peekOpContext(waveletIdStr, documentId, op);
-      if (opContext != null) {
-        author = opContext.getCreator();
-      } else {
-        author = UKNOWN_PARTICIPANT;
-      }
-    }
+    Optional<DocOpContext> opCtx = opCtxProvider.fetch(operation);
+    opCtx.ifPresent(ctx -> {
+      author = ctx.getCreator();
+    });
 
     inner.consume(opWrapper);
 
-    // Set annotations here, at once after processing the doc op,
-    // instead of using annotation interleaves (startLocalAnnotation, endLocalAnnotation).
-    // This avoids wrong rendering of diff annotations when a participant A
-    // inserts text inside
-    // a range of text written by participant B. In the former annotation setting way, the
-    // inserted text shown diff color of the participant author of the surrounding text, instead of the color
-    // of the new author.
-    /*
-     * insertAnnotationsRanges.forEach((Range r) -> {
-     * inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, author);
-     * });
-     */
-
+    //
+    // Let's set diff annotations after processing the doc op,
+    // instead of during doc op cursor execution (startLocalAnnotation,
+    // endLocalAnnotation).
+    //
+    // This avoids erroneous rendering of diff annotations when a participant A
+    // inserts text within a range of text written by participant B.
+    //
+    // The error makes that inserted text shows diff color of the participant
+    // author of the surrounding text,
+    // instead of the color of the new author.
+    //
     for (int i = 0; i < insertAnnotationsRanges.size(); i++) {
       Range r = insertAnnotationsRanges.get(i);
       inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, author);
