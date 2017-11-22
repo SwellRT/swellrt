@@ -541,6 +541,7 @@ task serverlessRun {
                     "-noincremental",
                     "-bindAddress", "0.0.0.0",
                     "-logLevel", "TRACE",
+                    "-generateJsInteropExports",
                     "org.swellrt.beta.client.Serverless",
             ]
         }

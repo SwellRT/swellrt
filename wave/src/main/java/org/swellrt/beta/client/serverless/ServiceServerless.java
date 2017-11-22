@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.js.editor.STextRemoteWeb;
-import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
@@ -24,19 +23,28 @@ import org.waveprotocol.wave.model.testing.FakeWaveView;
 import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "Service")
 public class ServiceServerless {
 
-  private Map<String, SWaveObject> objects = new HashMap<String, SWaveObject>();
 
+
+  private Map<WaveId, SWaveObject> objects = new HashMap<WaveId, SWaveObject>();
+
+  //
+  // Fake stuff for the serverless version of swell client.
+  //
+
+  private static ParticipantId participant = ParticipantId.ofUnsafe("fake@local.net");
 
   private static IdGenerator idGenerator = new IdGeneratorImpl("local.net",
       new IdGeneratorImpl.Seed() {
         @Override
         public String get() {
-  return"ABCDEFGHIK"; // the seed :D
+          return "ABCDEFGHIK"; // the seed :D
         }
       });
 
@@ -60,39 +68,47 @@ public class ServiceServerless {
 
   };
 
-  public static ServiceServerless create() {
-
+  @JsIgnore
+  protected static ServiceServerless create() {
     return new ServiceServerless();
-
   }
 
 
-  public void open(OpenOperation.Options options, Callback<OpenOperation.Response> callback) {
+  /**
+   * Open or create a Swell object. <br>
+   * <p>
+   * TODO implement this method with same syntax as {@link OpenOperation}
+   *
+   * @param id (optional) object id.
+   * @return a {@code SWaveObject} instance.
+   */
+  public SWaveObject open(@JsOptional String id) {
 
-    String id = "";
 
-    if (options.getPrefix() != null)
-      id += options.getPrefix();
-
-    if (options.getId() != null)
-      id += "+" + options.getId();
+    WaveId waveId = null;
 
     FakeWaveView wave;
 
     try {
-      WaveId waveId = WaveId.of("local.net", id);
-      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(waveId).build();
+      waveId = WaveId.of("local.net", id);
     } catch (IllegalArgumentException e) {
-      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
     }
 
-    SWaveNodeManager nodeManager = SWaveNodeManager.of(ParticipantId.ofUnsafe("none@local.net"),
+    if (waveId == null)
+      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).build();
+    else if (!objects.containsKey(waveId))
+      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).with(waveId)
+          .build();
+    else
+      return objects.get(waveId);
+
+    SWaveNodeManager nodeManager = SWaveNodeManager.of(participant,
         idGenerator, "local.net", wave, null, nodeFactory);
     SWaveObject object = SWaveObject.materialize(nodeManager);
 
-    objects.put(object.getId(), object);
+    objects.put(waveId, object);
 
-    callback.onSuccess(object);
+    return object;
 
   }
 
