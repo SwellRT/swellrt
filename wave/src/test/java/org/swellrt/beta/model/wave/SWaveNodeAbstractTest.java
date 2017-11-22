@@ -1,13 +1,14 @@
 package org.swellrt.beta.model.wave;
 
-import org.swellrt.beta.client.PlatformBasedFactory;
+import org.swellrt.beta.common.Platform;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
-import org.swellrt.beta.testing.FakePlatformBasedFactory;
+import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.testing.BasicFactories;
 import org.waveprotocol.wave.model.testing.FakeIdGenerator;
 import org.waveprotocol.wave.model.testing.FakeWaveView;
+import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import junit.framework.TestCase;
@@ -20,19 +21,30 @@ import junit.framework.TestCase;
  */
 public abstract class SWaveNodeAbstractTest extends TestCase {
 
+  private static Platform platform = new Platform();
+
+  private static SWaveNodeManager.NodeFactory nodeFactory = new SWaveNodeManager.NodeFactory() {
+
+    @Override
+    public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
+        Blip blip) {
+
+      return platform.createWaveText(nodeManager, substrateId, blip, null);
+    }
+
+  };
+
   protected IdGenerator idGenerator;
   protected FakeWaveView wave;
   protected SWaveObject object;
-  protected PlatformBasedFactory factory;
 
   protected void setUp() throws Exception {
 
-    factory = new FakePlatformBasedFactory();
     idGenerator = FakeIdGenerator.create();
     wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
 
     SWaveNodeManager nodeManager = SWaveNodeManager.of(ParticipantId.ofUnsafe("tom@acme.com"),
-        idGenerator, "example.com", wave, null, factory);
+        idGenerator, "example.com", wave, null, nodeFactory);
     object = SWaveObject.materialize(nodeManager);
 
     // A different way to create a fake wave

@@ -1,6 +1,5 @@
 package org.swellrt.beta.model.wave.mutable;
 
-import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SHandlerFunc;
@@ -131,7 +130,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
   protected SWaveNodeContainer lookUpListenableNode(String path) throws SException {
     SNode node = null;
     if (path != null)
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, this);
+      node = SNode.NODE_UTILS.getNode(path, this);
     else
       node = this;
 

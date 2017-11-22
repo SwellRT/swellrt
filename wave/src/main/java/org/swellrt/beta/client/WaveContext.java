@@ -6,10 +6,14 @@ import java.util.concurrent.ExecutionException;
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
+import org.swellrt.beta.common.Platform;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SStatusEvent;
+import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
+import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.NodeFactory;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
+import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -19,11 +23,13 @@ import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Command;
 
 /**
@@ -34,6 +40,8 @@ import com.google.gwt.user.client.Command;
  *
  */
 public class WaveContext implements UnsavedDataListener, TurbulenceListener, WaveStatus {
+
+  private static final Platform PLATFORM = GWT.create(Platform.class);
 
   private static final int INACTIVE = 0;
   private static final int ACTIVE = 1;
@@ -52,6 +60,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
 
   private final DocContributionsFetcher contributionsFetcher;
 
+
   public WaveContext(WaveId waveId, String waveDomain, ParticipantId participant,
       ServiceStatus serviceStatus, DocContributionsFetcher.Factory contributionsFetcherFactory) {
     super();
@@ -62,6 +71,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
     this.sobjectFuture = SettableFuture.<SWaveObject> create();
     this.contributionsFetcher = contributionsFetcherFactory.create(waveId);
   }
+
 
   public void init(RemoteViewServiceMultiplexer viewServiceMultiplexer, IdGenerator idGenerator) {
 
@@ -96,7 +106,17 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Wav
             check();
             SWaveNodeManager nodeManager = SWaveNodeManager.of(participant, loader.getIdGenerator(),
                 loader.getLocalDomain(), loader.getWave(), WaveContext.this,
-                PlatformBasedFactory.getFactory(loader));
+                new NodeFactory() {
+
+                  @Override
+                  public SWaveText createWaveText(SWaveNodeManager nodeManager,
+                      SubstrateId substrateId, Blip blip) {
+
+                    return PLATFORM.createWaveText(nodeManager, substrateId, blip,
+                        loader.getDocumentRegistry().getTextDocument(substrateId));
+
+                  }
+                });
 
             SWaveObject sobject = SWaveObject.materialize(nodeManager);
 

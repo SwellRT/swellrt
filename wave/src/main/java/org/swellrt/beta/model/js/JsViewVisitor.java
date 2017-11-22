@@ -24,6 +24,11 @@ public class JsViewVisitor<T extends SNode> implements SViewBuilder, SVisitor<T>
 
   Object currentObject;
   SException ex;
+  final T root;
+
+  public JsViewVisitor(T root) {
+    this.root = root;
+  }
 
   @Override
   public void visit(SPrimitive primitive) {
@@ -104,12 +109,12 @@ public class JsViewVisitor<T extends SNode> implements SViewBuilder, SVisitor<T>
     currentObject = text;
   }
 
-  public Object getView(SNode o) throws SException {
+  public Object build() throws SException {
 
     currentObject = null;
     ex = null;
 
-    visit(o);
+    visit(root);
 
     if (ex != null)
       throw ex;

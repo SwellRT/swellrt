@@ -5,8 +5,7 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.wave.Blip;
 
 /**
- * Abstract base class for remote text types which are platform
- * dependent, so instance creation must be delegated to {@see PlatformBasedFactory}
+ * Abstract base class for remote text types which are platform dependent.
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *

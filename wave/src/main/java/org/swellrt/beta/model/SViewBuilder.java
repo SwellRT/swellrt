@@ -11,12 +11,11 @@ import org.swellrt.beta.common.SException;
 public interface SViewBuilder {
 
   /**
-   * Build a view of a SNode.
+   * Build a view of a SNode tree.
    *
-   * @param node
    * @return a view of the SObject
    * @throws SException
    */
-  public Object getView(SNode node) throws SException;
+  public Object build() throws SException;
 
 }

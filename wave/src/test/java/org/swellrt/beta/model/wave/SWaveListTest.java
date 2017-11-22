@@ -204,5 +204,33 @@ public class SWaveListTest extends SWaveNodeAbstractTest {
 
   }
 
+  @SuppressWarnings("rawtypes")
+  public void testListWithNestedMap() throws SException {
+
+    SList localList = SList.create();
+    localList.add("hello world");
+    localList.add(12345);
+    localList.add(false);
+
+    SMap localMap = SMap.create();
+    localMap.put("key0", "value0");
+    localMap.put("key1", "value1");
+
+    localList.add(localMap);
+
+    object.put("list", localList);
+    SWaveList remoteList = (SWaveList) object.pick("list");
+
+    SWaveMap remoteMap = (SWaveMap) remoteList.pick(3);
+
+    remoteMap.put("key0", 1000);
+
+    assertEquals(new Integer(1000), SPrimitive.asInt(remoteMap.pick("key0")));
+
+    SPrimitive intNode = (SPrimitive) remoteList.pick(1);
+    assertEquals(1, remoteList.indexOf(intNode));
+
+  }
+
 
 }

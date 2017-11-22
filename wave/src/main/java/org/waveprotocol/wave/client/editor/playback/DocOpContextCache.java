@@ -16,6 +16,20 @@ import org.waveprotocol.wave.model.document.operation.DocOp;
  */
 public interface DocOpContextCache {
 
+  public static final DocOpContextCache VOID = new DocOpContextCache() {
+
+    @Override
+    public Optional<DocOpContext> fetch(DocOp op) {
+      return Optional.empty();
+    }
+
+    @Override
+    public void add(DocOp op, DocOpContext opCtx) {
+      // Nothing to do
+    }
+
+  };
+
   /**
    * Add to the cache a context for a DocOp.
    *

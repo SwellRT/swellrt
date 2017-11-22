@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.client.WaveStatus;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
@@ -96,6 +95,15 @@ import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
  *
  */
 public class SWaveNodeManager {
+
+  /** Factory to create nodes in special conditions. */
+  public interface NodeFactory {
+
+    public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
+        Blip blip);
+
+  }
+
 
   public static abstract class Deserializer {
 
@@ -222,15 +230,14 @@ public class SWaveNodeManager {
   private final String domain;
   private final ObservableWaveView wave;
   private final WaveStatus waveStatus;
-  private final PlatformBasedFactory platformBasedFactory;
 
   private final ObservableWavelet masterContainerWavelet;
-
-
   private ObservableWavelet currentContainerWavelet;
 
+  private final NodeFactory nodeFactory;
+
   public static SWaveNodeManager of(ParticipantId participantId, IdGenerator idGenerator,
-      String domain, ObservableWaveView wave, WaveStatus waveStatus, PlatformBasedFactory platformBasedFactory) {
+      String domain, ObservableWaveView wave, WaveStatus waveStatus, NodeFactory nodeFactory) {
 
     ObservableWavelet masterWavelet = wave
         .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
@@ -240,12 +247,11 @@ public class SWaveNodeManager {
           .createWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
     }
 
-    return new SWaveNodeManager(participantId, idGenerator, domain, wave, waveStatus,
-        platformBasedFactory);
+    return new SWaveNodeManager(participantId, idGenerator, domain, wave, waveStatus, nodeFactory);
   }
 
   private SWaveNodeManager(ParticipantId participantId, IdGenerator idGenerator, String domain,
-      ObservableWaveView wave, WaveStatus waveStatus, PlatformBasedFactory platformBasedFactory) {
+      ObservableWaveView wave, WaveStatus waveStatus, NodeFactory nodeFactory) {
     this.participantId = participantId;
     this.idGenerator = idGenerator;
     this.domain = domain;
@@ -254,7 +260,7 @@ public class SWaveNodeManager {
         .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
     this.currentContainerWavelet = null;
     this.waveStatus = waveStatus;
-    this.platformBasedFactory = platformBasedFactory;
+    this.nodeFactory = nodeFactory;
   }
 
   public void setListener(SWaveletListener listener) {
@@ -397,7 +403,8 @@ public class SWaveNodeManager {
       // docInit);
     }
 
-    SWaveText textRemote = platformBasedFactory.getSTextRemote(this, substrateId, blip);
+
+    SWaveText textRemote = nodeFactory.createWaveText(this, substrateId, blip);
     if (docInit != null) {
       textRemote.setInitContent(docInit);
     }

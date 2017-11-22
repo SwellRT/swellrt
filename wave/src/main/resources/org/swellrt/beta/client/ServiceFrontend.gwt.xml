@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
 
+
+	<!-- 
+		Allow code to check in which runtime platform is.
+		TODO adapt Swell client for for more platforms 
+	 -->
+	<replace-with class="org.swellrt.beta.client.js.PlatformWeb">
+   		<when-type-is class="org.swellrt.beta.common.Platform"/>
+  	</replace-with>
+
+
+
 	<!--  TODO filter out modules -->
-	
-	
+		
 	<inherits name="com.google.common.base.Base" />
 	<inherits name="com.google.common.util.concurrent.Concurrent" />
 	
@@ -59,6 +69,8 @@
 	 
 	<inherits name='org.swellrt.beta.common.Common' />
 	<inherits name='org.swellrt.beta.model.Model' />
+	
+
 
 	<set-configuration-property name="CssResource.obfuscationPrefix"
 		value="SWC" />

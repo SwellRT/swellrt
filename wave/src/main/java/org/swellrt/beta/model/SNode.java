@@ -1,7 +1,7 @@
 package org.swellrt.beta.model;
 
-import org.swellrt.beta.client.PlatformBasedFactory;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.js.JsNodeUtils;
 import org.waveprotocol.wave.client.common.util.JsoView;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -13,6 +13,15 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell", name = "Node")
 public interface SNode {
 
+
+  /**
+   * Set this globally according to the runtime platform (js, java...). By
+   * default use native JavaScript extractor.
+   */
+  @JsIgnore
+  static SNodeUtils NODE_UTILS = new JsNodeUtils();
+
+  @JsIgnore
   static String[] splitPath(String path) {
     int pathSepPos = path.lastIndexOf('.');
     String key = path.substring(pathSepPos + 1, path.length());
@@ -38,7 +47,7 @@ public interface SNode {
     }
 
     try {
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+      node = NODE_UTILS.getNode(path, root);
 
       if (node == null)
         throw new RuntimeException("Node not found at " + path);
@@ -60,7 +69,7 @@ public interface SNode {
 
         Object actualValue = null;
         if (value instanceof SNode) {
-          actualValue = PlatformBasedFactory.getViewBuilderForNode().getView((SNode) value);
+          actualValue = NODE_UTILS.jsonBuilder((SNode) value).build();
         } else if (value instanceof JavaScriptObject) {
           actualValue = value;
         } else {
@@ -114,9 +123,9 @@ public interface SNode {
         pathParts = splitPath(path);
         path = pathParts[0];
         key = pathParts[1];
-        node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+        node = NODE_UTILS.getNode(path, root);
       } else {
-        return PlatformBasedFactory.getViewBuilderForNode().getView(root);
+        return NODE_UTILS.jsonBuilder(root).build();
       }
 
 
@@ -125,19 +134,19 @@ public interface SNode {
 
       if (node instanceof SMap) {
         SMap map = (SMap) node;
-        return PlatformBasedFactory.getViewBuilderForNode().getView(map.pick(key));
+        return NODE_UTILS.jsonBuilder(map.pick(key)).build();
 
       } else if (node instanceof SList) {
         @SuppressWarnings("rawtypes")
         SList list = (SList) node;
         int index = Integer.valueOf(key);
-        return PlatformBasedFactory.getViewBuilderForNode().getView(list.pick(index));
+        return NODE_UTILS.jsonBuilder(list.pick(index)).build();
 
       } else if (node instanceof SPrimitive) {
 
         SPrimitive primitive = (SPrimitive) node;
         if (primitive.getType() == SPrimitive.TYPE_JSO) {
-          return PlatformBasedFactory.extractNode((JavaScriptObject) primitive.getValue(), key);
+          return NODE_UTILS.getNode(key, primitive.getValue());
         } else {
           return primitive.getValue();
         }
@@ -157,7 +166,7 @@ public interface SNode {
 
     SNode node;
     try {
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+      node = NODE_UTILS.getNode(path, root);
 
       if (node == null)
         throw new RuntimeException("Node not found at " + path);
@@ -181,7 +190,7 @@ public interface SNode {
 
     SNode node;
     try {
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+      node = NODE_UTILS.getNode(path, root);
 
       if (node == null)
         throw new RuntimeException("Node not found at " + path);
@@ -189,8 +198,7 @@ public interface SNode {
       if (node instanceof SList) {
         @SuppressWarnings("rawtypes")
         SList list = (SList) node;
-        Object object = PlatformBasedFactory.getViewBuilderForNode()
-            .getView(list.pick(list.size() - 1));
+        Object object = NODE_UTILS.jsonBuilder(list.pick(list.size() - 1)).build();
         list.remove(list.size() - 1);
         return object;
       } else {
@@ -210,7 +218,7 @@ public interface SNode {
     String key = pathParts[1];
 
     try {
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+      node = NODE_UTILS.getNode(path, root);
 
       if (node == null)
         throw new RuntimeException("Node not found at " + path);
@@ -242,7 +250,7 @@ public interface SNode {
     SNode node;
 
     try {
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+      node = NODE_UTILS.getNode(path, root);
 
       if (node == null)
         return 0;
@@ -272,7 +280,7 @@ public interface SNode {
     SNode node;
 
     try {
-      node = PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+      node = NODE_UTILS.getNode(path, root);
 
       if (node == null)
         return false;
@@ -301,7 +309,7 @@ public interface SNode {
 
 
   public static SNode node(SNode root, String path) throws SException {
-    return PlatformBasedFactory.getPathNodeExtractor().getNode(path, root);
+    return NODE_UTILS.getNode(path, root);
   }
 
   //
@@ -310,7 +318,7 @@ public interface SNode {
 
   /**
    * Return a property in the object as node type
-   * 
+   *
    * @throws SException
    */
   SNode node(String path) throws SException;

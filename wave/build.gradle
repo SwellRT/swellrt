@@ -338,68 +338,6 @@ compileJava.dependsOn = [generateMessages, generateGXP]
 //
 
 // Deprecated (alpha)
-task compileJsWeb {
-    description = 'Compiles the SwellRT Javascript Web Client (Production)'
-    doLast {
-        javaexec {
-            main = "com.google.gwt.dev.Compiler"
-            classpath {
-                [
-                        sourceSets.main.java.srcDirs,
-                        sourceSets.main.compileClasspath,
-                        sourceSets.main.resources.srcDirs,
-                        configurations.gwt
-                ]
-            }
-            jvmArgs = [
-                    "-Xmx1024M"
-            ]
-            args = [
-                    "-style", "OBFUSCATED",
-                    "-XnoclassMetadata",
-                    "-XnocheckCasts",
-                    "-noincremental",
-                    "-optimize", "9",
-                    "-localWorkers", "4",
-                    "org.swellrt.api.SwellRTProd"
-            ]
-        }
-    }
-}
-
-// Deprecated (alpha)
-task compileJsWebDev {
-    description = 'Compiles the SwellRT Javascript Web Client (Development)'
-    doLast {
-        javaexec {
-            main = "com.google.gwt.dev.Compiler"
-            classpath {
-                [
-                        sourceSets.main.java.srcDirs,
-                        sourceSets.main.compileClasspath,
-                        sourceSets.main.resources.srcDirs,
-                        configurations.gwt
-                ]
-            }
-            jvmArgs = [
-                    "-Xmx1024M"
-            ]
-            args = [
-                    "-style", "PRETTY",
-                    "-noincremental",
-                    "-logLevel", "INFO",
-                    "-saveSource",
-                    "-draftCompile",
-                    "org.swellrt.api.SwellRTDev"
-            ]
-        }
-    }
-}
-
-//compileJsWeb.mustRunAfter compileJava
-//compileJsWebDev.mustRunAfter compileJava
-
-// Deprecated (alpha)
 task gwtDev {
     description = 'Runs the hosted mode server, for debugging the Gwt client ' +
             'in a JVM.'
@@ -606,6 +544,37 @@ task editorSandbox {
 }
 
 editorSandbox.dependsOn compileJava
+
+
+task serverlessRun {
+    description = 'Run a serverless version of the SwellRT client'
+
+    doLast {
+        javaexec {
+            main = "com.google.gwt.dev.codeserver.CodeServer"
+            classpath {
+                [
+                        sourceSets.main.java.srcDirs,
+                        sourceSets.main.compileClasspath,
+                        sourceSets.main.resources.srcDirs,
+                        configurations.gwt,
+                ]
+            }
+            args = [
+            		"-style", "PRETTY",
+            		"-XmethodNameDisplayMode", "FULL",
+                    "-noprecompile",
+                    "-noincremental",
+                    "-bindAddress", "0.0.0.0",
+                    "-logLevel", "TRACE",
+                    "org.swellrt.beta.client.Serverless",
+            ]
+        }
+    }
+}
+
+serverlessRun.dependsOn compileJava
+
 
 
 task runWebServer(type: JettyRun) {
