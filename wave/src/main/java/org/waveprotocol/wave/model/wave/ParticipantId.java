@@ -19,13 +19,13 @@
 
 package org.waveprotocol.wave.model.wave;
 
+import java.io.Serializable;
+
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
-
-import java.io.Serializable;
 
 /**
  * A ParticipantId uniquely identifies a participant. It looks like an email
@@ -96,7 +96,6 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   /**
    * @return the participant's address
    */
-  @JsProperty
   public String getAddress() {
     return address;
   }
@@ -106,7 +105,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    *         whole string, if more than one occurs, it will be the part before
    *         the last "@".
    */
-  @JsProperty  
+  @JsProperty
   public String getName() {
     String[] parts = address.split(DOMAIN_PREFIX);
     return parts[0];
@@ -145,7 +144,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   public String toString() {
     return getAddress();
   }
-  
+
   public boolean isAnonymous() {
     return getName().startsWith(ANONYMOUS_NAME);
   }
