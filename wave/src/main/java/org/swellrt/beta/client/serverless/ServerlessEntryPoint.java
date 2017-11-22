@@ -1,4 +1,4 @@
-package org.swellrt.beta.serverless;
+package org.swellrt.beta.client.serverless;
 
 import org.swellrt.beta.client.js.Console;
 

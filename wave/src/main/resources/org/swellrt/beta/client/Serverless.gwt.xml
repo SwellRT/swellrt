@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module rename-to="serverless">
+<module>
+
+	<!-- 
+		Allow code to check in which runtime platform is.
+		TODO adapt Swell client for for more platforms.
+		
+		Use Web by default, even for serverless client.
+	 -->
+	<replace-with class="org.swellrt.beta.client.js.PlatformWeb">
+   		<when-type-is class="org.swellrt.beta.common.Platform"/>
+  	</replace-with>
+
 
 	<!--  TODO filter out modules regarding server/remote stuff -->
 	
@@ -61,10 +72,8 @@
 	
     <collapse-all-properties />
 	
-	<source path="platform/**" />
 	<source path="serverless/**" />
 	<source path="js/**" />
-	<source path="wave/**" />
 	
 	<entry-point class='org.swellrt.beta.client.serverless.ServerlessEntryPoint' />
 		

@@ -337,41 +337,6 @@ compileJava.dependsOn = [generateMessages, generateGXP]
 // Remove "-strict"
 //
 
-// Deprecated (alpha)
-task gwtDev {
-    description = 'Runs the hosted mode server, for debugging the Gwt client ' +
-            'in a JVM.'
-    doLast {
-        javaexec {
-            main = "com.google.gwt.dev.codeserver.CodeServer"
-            classpath {
-                [
-                        sourceSets.main.java.srcDirs,
-                        sourceSets.main.compileClasspath,
-                        sourceSets.main.resources.srcDirs,
-                        configurations.gwt,
-                ]
-            }
-            args = [
-            		"-style", "PRETTY",
-            		"-XmethodNameDisplayMode", "FULL",
-                    "-noprecompile",
-                    "-noincremental",
-                    "-bindAddress", "0.0.0.0",
-                    "-logLevel", "DEBUG",
-                    "org.swellrt.api.SwellRTDev",
-            ]
-        }
-    }
-}
-
-gwtDev.dependsOn compileJava
-
-
-//
-// New beta tasks
-//
-
 task prodWeb {
 
     description = 'Builds SwellRT Web Client (Production version)'
@@ -443,7 +408,7 @@ task devWeb {
 devWeb.dependsOn compileJava
 
 task debugWeb {
-    description = 'Builds SwellRT Web Client (Debug mode)'
+    description = 'Run code server for SwellRT Web Client (Debug)'
     doLast {
         javaexec {
             main = "com.google.gwt.dev.codeserver.CodeServer"
@@ -508,16 +473,18 @@ task editorHarness {
 editorHarness.dependsOn compileJava
 
 //
-// Launches editor sandbox
+// Editor sandbox
 //
-// http://127.0.1.1:9876/org.swellrt.snippets.editor.Editor/editor.html
+// http://127.0.1.1:9876/org.swellrt.sandbox.editor.Editor/editor.html
 //
-// Set right user agent in module file:
+// To set a different user agent, edit module file:
 //
-// src/main/resources/org/swellrt/snippets/editor/Editor.gwt.xml
+// src/main/resources/org/swellrt/sandbox/editor/Editor.gwt.xml
 //
+
+
 task editorSandbox {
-    description = 'Run stand alone editor with version manager'
+    description = 'Run code server for editor sandbox'
 
     doLast {
         javaexec {
@@ -545,6 +512,13 @@ task editorSandbox {
 
 editorSandbox.dependsOn compileJava
 
+//
+// A SwellRT client that doesn't require a server to work.
+// It maybe doesn't provide all service operations (login, logout...)
+// but it allows to work with collaborative objects in a JavaScript/Web runtime.
+//
+// http://localhost:9876/org.swellrt.beta.client.Serverless/index.html
+//
 
 task serverlessRun {
     description = 'Run a serverless version of the SwellRT client'
