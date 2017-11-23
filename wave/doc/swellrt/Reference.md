@@ -560,13 +560,17 @@ object.get('pending_tasks')[0]; // returns '20170501-01'
 
 Other list methods are:
 
-**push(path, value, [index])**
+**push(path, value)**  /  **add(value)**  / **addAt(value, index)**   
 
 Adds a new value at the end of the list or in the specific index.
 
 
 ```js
 object.push('pending_tasks','20170610-02');
+
+object.node('pending_tasks').add('20170610-02');
+
+object.node('pending_tasks').addAt('20170610-02', 2);
 ```
 
 **pop(path)**
@@ -577,27 +581,41 @@ Returns and delete the last element of the list.
 object.pop('pending_tasks');
 ```
 
-**delete(path)**
+ **pick(index)**
+ 
+Returns the element at the *index* position.
+
+```js
+object.node('pending_tasks').pick(2);
+```
+
+
+
+**delete(path)**  / **remove(index)**
 
 Deletes a element in the list:
 
 ```js
 object.delete('pending_tasks.1');
+
+object.node('pending_tasks').remove(1);
 ```
 
-**length(path)**
+**length(path)** / **size()**
 
 Returns the length of a list:
 
 
 ```js
 object.length('pending_tasks'); // returns 1;
+
+object.node('pending_tasks').size();
 ```
 
 
 #### Object nodes and events
 
-Internally, each object's property can be also managed accesing to its "node" object. Use method *node()* to retrieve it:
+Internally, each object's property can be also managed accessing to its "node" object. Use method *node()* to retrieve it:
 
 **node(path)**
 

@@ -11,7 +11,6 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "ListenableNode")
@@ -44,7 +43,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
     }
 
     @Override
-    public void push(String path, Object value, @JsOptional Object index) {
+    public void push(String path, Object value) {
       // TODO Auto-generated method stub
 
     }

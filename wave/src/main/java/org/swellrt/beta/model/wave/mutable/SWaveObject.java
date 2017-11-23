@@ -15,7 +15,6 @@ import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 
 /**
@@ -234,8 +233,8 @@ public class SWaveObject extends SWaveNodeContainer
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
-    SNode.push(this, path, value, index);
+  public void push(String path, Object value) {
+    SNode.push(this, path, value);
   }
 
   @Override

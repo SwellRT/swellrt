@@ -17,7 +17,6 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 
 
@@ -288,8 +287,8 @@ public class SWaveMap extends SWaveNodeContainer implements SMap, HasJsProxy, Ob
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
-    SNode.push(this, path, value, index);
+  public void push(String path, Object value) {
+    SNode.push(this, path, value);
   }
 
   @Override

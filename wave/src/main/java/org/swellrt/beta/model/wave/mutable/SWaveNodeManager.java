@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.swellrt.beta.common.SException;
 import org.swellrt.beta.common.ContextStatus;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;

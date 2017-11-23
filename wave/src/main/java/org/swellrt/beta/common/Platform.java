@@ -11,8 +11,6 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
-import jsinterop.annotations.JsOptional;
-
 /**
  * A class to check runtime platform type. Used with GWT deferred binding.
  *
@@ -73,7 +71,7 @@ public class Platform {
       }
 
       @Override
-      public void push(String path, Object value, @JsOptional Object index) {
+      public void push(String path, Object value) {
       }
 
       @Override

@@ -14,7 +14,6 @@ import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 
 public class SMapLocal implements SMap, HasJsProxy {
@@ -113,8 +112,8 @@ public class SMapLocal implements SMap, HasJsProxy {
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
-    SNode.push(this, path, value, index);
+  public void push(String path, Object value) {
+    SNode.push(this, path, value);
   }
 
   @Override

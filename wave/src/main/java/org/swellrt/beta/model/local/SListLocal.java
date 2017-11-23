@@ -13,7 +13,6 @@ import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SListProxyHandler;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 public class SListLocal implements SList<SNode>, HasJsProxy {
 
@@ -25,32 +24,19 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
     return list.get(index);
   }
 
-  @Override
-  public SList<SNode> add(SNode value) throws SException {
-    list.add(value);
-    return this;
-  }
-
-  @Override
-  public SList<SNode> add(SNode value, int index) throws SException {
-    list.add(index, value);
-    return this;
-  }
 
   @Override
   public SList<SNode> add(Object object) throws SException {
     SNode node = SUtils.castToSNode(object);
-    return add(node);
+    list.add(node);
+    return this;
   }
 
   @Override
-  public SList<SNode> add(Object object, @JsOptional Object index) throws SException {
+  public SList<SNode> addAt(Object object, int index) throws SException {
     SNode node = SUtils.castToSNode(object);
-    if (index != null) {
-      return add(node, (int) index);
-    } else {
-      return add(node);
-    }
+    list.add(index, node);
+    return this;
   }
 
   @Override
@@ -122,8 +108,8 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
-    SNode.push(this, path, value, index);
+  public void push(String path, Object value) {
+    SNode.push(this, path, value);
   }
 
   @Override

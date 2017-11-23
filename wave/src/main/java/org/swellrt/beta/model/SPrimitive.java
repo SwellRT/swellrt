@@ -354,7 +354,7 @@ public class SPrimitive extends SWaveNode {
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
+  public void push(String path, Object value) {
   }
 
   @Override
@@ -378,6 +378,9 @@ public class SPrimitive extends SWaveNode {
 
   @Override
   public Object get(String path) {
+    if (path == null)
+      return getValue();
+
     return null;
   }
 

@@ -13,7 +13,6 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, HasJsProxy, ObservableElementList.Listener<SWaveNode> {
 
@@ -49,11 +48,19 @@ public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, H
     }
   }
 
+
   @Override
-  public SList<SWaveNode> add(SNode value) throws SException {
+  public SList<SWaveNode> addAt(Object value, int index) throws SException {
     check();
-    SWaveNode remoteValue = getNodeManager().transformToWaveNode(value, this);
-    this.list.add(remoteValue);
+
+    if (index >= 0 && index <= this.list.size()) {
+      SNode node = SUtils.castToSNode(value);
+      SWaveNode remoteValue = getNodeManager().transformToWaveNode(node, this);
+      this.list.add(index, remoteValue);
+    } else {
+      throw new SException(SException.OUT_OF_BOUNDS_INDEX);
+    }
+
     return this;
   }
 
@@ -61,29 +68,9 @@ public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, H
   @Override
   public SList<SWaveNode> add(Object value) throws SException {
     SNode node = SUtils.castToSNode(value);
-    return add(node);
-  }
-
-  @Override
-  public SList<SWaveNode> add(SNode value, int index) throws SException {
-    check();
-    if (index >= 0 && index <= this.list.size()) {
-      SWaveNode remoteValue = getNodeManager().transformToWaveNode(value, this);
-      this.list.add(index, remoteValue);
-    } else {
-      throw new SException(SException.OUT_OF_BOUNDS_INDEX);
-    }
+    SWaveNode remoteValue = getNodeManager().transformToWaveNode(node, this);
+    this.list.add(remoteValue);
     return this;
-  }
-
-  @Override
-  public SList<SWaveNode> add(Object value, @JsOptional Object index) throws SException {
-    SNode node = SUtils.castToSNode(value);
-    if (index != null) {
-      return add(node, (int) index);
-    } else {
-      return add(node);
-    }
   }
 
   @Override
@@ -221,8 +208,8 @@ public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, H
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
-    SNode.push(this, path, value, index);
+  public void push(String path, Object value) {
+    SNode.push(this, path, value);
   }
 
   @Override

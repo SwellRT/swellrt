@@ -13,7 +13,6 @@ import org.waveprotocol.wave.client.common.util.JsoView;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 public class SMapJs implements SMap {
 
@@ -203,8 +202,8 @@ public class SMapJs implements SMap {
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
-    SNode.push(this, path, value, index);
+  public void push(String path, Object value) {
+    SNode.push(this, path, value);
   }
 
   @Override

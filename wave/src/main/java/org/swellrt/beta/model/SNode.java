@@ -7,7 +7,6 @@ import org.waveprotocol.wave.client.common.util.JsoView;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "Node")
@@ -19,7 +18,7 @@ public interface SNode {
    * default use native JavaScript extractor.
    */
   @JsIgnore
-  static SNodeUtils NODE_UTILS = new JsNodeUtils();
+  static final SNodeUtils NODE_UTILS = new JsNodeUtils();
 
   @JsIgnore
   static String[] splitPath(String path) {
@@ -94,7 +93,7 @@ public interface SNode {
           m.put(containerParentKey, container);
         } else if (containerParent instanceof SList) {
           SList l = (SList) containerParent;
-          l.add(container, Integer.valueOf(containerParentKey));
+          l.addAt(container, Integer.valueOf(containerParentKey));
         } else {
           // this shouldn't happen
           throw new RuntimeException("Value can't be set in " + path + "." + key);
@@ -162,7 +161,7 @@ public interface SNode {
     }
   }
 
-  public static void push(SNode root, String path, Object value, Object index) {
+  public static void push(SNode root, String path, Object value) {
 
     SNode node;
     try {
@@ -174,7 +173,7 @@ public interface SNode {
       if (node instanceof SList) {
         @SuppressWarnings("rawtypes")
         SList list = (SList) node;
-        list.add(value, index);
+        list.add(value);
 
       } else {
         throw new RuntimeException("Value can't be pushed in " + path);
@@ -345,9 +344,8 @@ public interface SNode {
    *
    * @param path
    * @param value
-   * @param index
    */
-  void push(String path, Object value, @JsOptional Object index);
+  void push(String path, Object value);
 
   /**
    * Returns and delete the last value of an array;

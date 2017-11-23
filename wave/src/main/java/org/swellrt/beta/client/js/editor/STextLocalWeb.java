@@ -131,7 +131,7 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
+  public void push(String path, Object value) {
   }
 
   @Override

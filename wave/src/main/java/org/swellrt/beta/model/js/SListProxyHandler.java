@@ -211,7 +211,7 @@ public class SListProxyHandler extends ProxyHandler {
 
         if (value != null) {
           // add
-          target.add(value, new Integer(index));
+          target.addAt(value, index);
           return getProxy(target.pick(index));
         } else {
           // remove

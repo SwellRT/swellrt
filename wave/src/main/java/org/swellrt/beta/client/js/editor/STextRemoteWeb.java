@@ -5,7 +5,6 @@ import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
-import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
@@ -140,7 +139,7 @@ public class STextRemoteWeb extends SWaveText implements STextWeb {
   }
 
   @Override
-  public void push(String path, Object value, @JsOptional Object index) {
+  public void push(String path, Object value) {
   }
 
   @Override

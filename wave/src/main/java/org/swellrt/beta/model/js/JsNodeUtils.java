@@ -21,7 +21,6 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
 
   SNode node;
   PathWalker path;
-
   SException ex;
 
   @Override
@@ -30,6 +29,7 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
     if (path == null || path.isEmpty())
       return root;
 
+    this.ex = null;
     this.node = root;
     this.path = new PathWalker(path);
 
@@ -163,6 +163,24 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
       return new JsViewVisitor<SWaveNode>((SWaveNode) node);
     } else {
       return new JsViewVisitor<SNode>(node);
+    }
+
+  }
+
+  private native boolean isUndefinedOrNull(Object value) /*-{
+    return value === undefined || value === null;
+  }-*/;
+
+  @Override
+  public Integer castToInteger(Object value) {
+
+    if (isUndefinedOrNull(value))
+      return null;
+
+    try {
+      return (int) value;
+    } catch (RuntimeException e) {
+      return null;
     }
 
   }

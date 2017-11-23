@@ -23,5 +23,10 @@ public interface SNodeUtils {
   /** Returns a JSON builder */
   public SViewBuilder jsonBuilder(SNode node);
 
+  /**
+   * Safely cast object to int, it might be a JavaScript object, undefined...
+   * Return null if can't be casted.
+   */
+  public Integer castToInteger(Object value);
 
 }
