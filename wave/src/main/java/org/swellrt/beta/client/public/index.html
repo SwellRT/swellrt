@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -23,6 +23,53 @@
     <title>SwellRT Serverless Web client</title>
   </head>
   <body class="" spellcheck="false">
+  
+  
+  	<pre>
+  		var service = swell.runtime.get();
+  		var obj = service.open("o1");
+  		
+  		obj.set("l1", swell.List.create());
+  		  		
+		obj.set("n", 1001);	
+		obj.set("s", "hello world");
+  	
+  		obj.set("m1", swell.Map.create());
+  		
+  		obj.set("m1.n", 1002);
+  		
+  		obj.node("m1").set("s", "this is a string");
+  		obj.node("m1").get();
+  		
+  		obj.node("m1").set("s", "a different  string");
+  		
+  		obj.set("m1", 9991);
+  		
+  		// a map in a list
+
+  		// lists can't set properties
+  		// obj.node("l1").set("mm", swell.Map.create());  		 	
+
+		obj.node("l1").add(swell.Map.create());
+
+		// accessing list items
+		obj.node("l1").pick(0);
+		obj.node("l1.0");	
+		
+		obj.node("l1.0").set("p1", "value 1");	
+		obj.node("l1.0").set("p2", 2);
+		obj.node("l1.0").set("p3", true);		
+		obj.node("l1").get("0");
+		
+		obj.node("l1").add("trash");
+		obj.node("l1").add("element");
+				
+		obj.node("l1").add("replacing list at #0", 0);
+		
+  		
+	</pre>
+  
+  
     <script language='javascript' src='swell.js'>
     </script>
     <iframe id="__gwt_historyFrame" style="width: 0; height: 0; border: 0"></iframe>
