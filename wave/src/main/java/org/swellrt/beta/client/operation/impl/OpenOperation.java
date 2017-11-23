@@ -1,8 +1,9 @@
 package org.swellrt.beta.client.operation.impl;
 
 import org.swellrt.beta.client.ServiceContext;
-import org.swellrt.beta.client.operation.Operation;
+import org.swellrt.beta.common.Operation;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.id.InvalidIdException;
@@ -14,7 +15,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-public final class OpenOperation implements Operation<OpenOperation.Options, OpenOperation.Response> {
+public final class OpenOperation implements Operation<OpenOperation.Options, SObject> {
 
 
   @JsType(isNative = true)
@@ -35,10 +36,9 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
     public String getPrefix();
   }
 
+  /** Not used. Replaced by SObject. */
   @JsType
   public interface Response extends Operation.Response {
-
-
   }
 
   private final ServiceContext context;
@@ -49,7 +49,7 @@ public final class OpenOperation implements Operation<OpenOperation.Options, Ope
 
 
   @Override
-  public void execute(Options options, Callback<Response> callback) {
+  public void execute(Options options, Callback<SObject> callback) {
 
     try {
 

@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.js.editor.STextRemoteWeb;
-import org.swellrt.beta.client.operation.impl.OpenOperation;
+import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
@@ -77,12 +77,13 @@ public class ServiceServerless {
   /**
    * Open or create a Swell object. <br>
    * <p>
-   * TODO implement this method with same syntax as {@link OpenOperation}
+   * TODO implement this method with same syntax as {@code OpenOperation}
    *
-   * @param id (optional) object id.
+   * @param id
+   *          (optional) object id.
    * @return a {@code SWaveObject} instance.
    */
-  public SWaveObject open(@JsOptional String id) {
+  public SObject open(@JsOptional String id) {
 
 
     WaveId waveId = null;

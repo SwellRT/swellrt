@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.swellrt.beta.client.WaveStatus;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -229,7 +229,7 @@ public class SWaveNodeManager {
   private final IdGenerator idGenerator;
   private final String domain;
   private final ObservableWaveView wave;
-  private final WaveStatus waveStatus;
+  private final ContextStatus waveStatus;
 
   private final ObservableWavelet masterContainerWavelet;
   private ObservableWavelet currentContainerWavelet;
@@ -237,7 +237,7 @@ public class SWaveNodeManager {
   private final NodeFactory nodeFactory;
 
   public static SWaveNodeManager of(ParticipantId participantId, IdGenerator idGenerator,
-      String domain, ObservableWaveView wave, WaveStatus waveStatus, NodeFactory nodeFactory) {
+      String domain, ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
 
     ObservableWavelet masterWavelet = wave
         .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
@@ -251,7 +251,7 @@ public class SWaveNodeManager {
   }
 
   private SWaveNodeManager(ParticipantId participantId, IdGenerator idGenerator, String domain,
-      ObservableWaveView wave, WaveStatus waveStatus, NodeFactory nodeFactory) {
+      ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
     this.participantId = participantId;
     this.idGenerator = idGenerator;
     this.domain = domain;

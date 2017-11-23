@@ -1,8 +1,6 @@
 package org.swellrt.beta.client;
 
 import org.swellrt.beta.client.js.Console;
-import org.swellrt.beta.client.operation.Operation;
-import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
 import org.swellrt.beta.client.operation.impl.EditUserOperation;
@@ -20,7 +18,10 @@ import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.operation.impl.naming.DeleteNameOperation;
 import org.swellrt.beta.client.operation.impl.naming.GetNamesOperation;
 import org.swellrt.beta.client.operation.impl.naming.SetNameOperation;
+import org.swellrt.beta.common.Operation;
+import org.swellrt.beta.common.Operation.Callback;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
@@ -145,7 +146,7 @@ public class ServiceFrontend implements ServiceBasis {
     op.execute(options, callback);
   }
 
-  public void open(OpenOperation.Options options, Callback<OpenOperation.Response> callback) {
+  public void open(OpenOperation.Options options, Callback<SObject> callback) {
     OpenOperation op = new OpenOperation(context);
     op.execute(options, callback);
   }

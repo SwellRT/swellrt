@@ -1,7 +1,7 @@
 package org.swellrt.beta.client.operation.impl;
 
 import org.swellrt.beta.client.ServiceContext;
-import org.swellrt.beta.client.operation.Operation;
+import org.swellrt.beta.common.Operation;
 
 import jsinterop.annotations.JsType;
 

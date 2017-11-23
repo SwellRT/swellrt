@@ -8,6 +8,7 @@ import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.Platform;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
@@ -39,7 +40,7 @@ import com.google.gwt.user.client.Command;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class WaveContext implements UnsavedDataListener, TurbulenceListener, WaveStatus {
+public class WaveContext implements UnsavedDataListener, TurbulenceListener, ContextStatus {
 
   private static final Platform PLATFORM = GWT.create(Platform.class);
 

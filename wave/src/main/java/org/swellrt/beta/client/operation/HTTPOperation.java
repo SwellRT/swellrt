@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.operation;
 
 import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.common.Operation;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
@@ -22,27 +23,6 @@ import jsinterop.annotations.JsType;
  * @param <R> operation callback
  */
 public abstract class HTTPOperation<O  extends Operation.Options, R extends Operation.Response> implements Operation<O, R> {
-
-  @SuppressWarnings("serial")
-  public static class HTTPOperationException extends Exception {
-
-    private final int statusCode;
-    private final String statusMessage;
-
-    public int getStatusCode() {
-      return statusCode;
-    }
-
-    public String getStatusMessage() {
-      return statusMessage;
-    }
-
-    public HTTPOperationException(int statusCode, String statusMessage) {
-      this.statusCode = statusCode;
-      this.statusMessage = statusMessage;
-    }
-
-  }
 
   @JsType(isNative = true)
   private interface ResponseError {
@@ -195,7 +175,7 @@ public abstract class HTTPOperation<O  extends Operation.Options, R extends Oper
             } catch (IllegalArgumentException ex) {
 
             }
-            HTTPOperation.this.onError(new HTTPOperationException(response.getStatusCode(), statusMessage), callback);
+            HTTPOperation.this.onError(new Operation.OperationException(response.getStatusCode(), statusMessage), callback);
           } else {
             HTTPOperation.this.onSuccess(response.getStatusCode(), response.getText(), callback);
           }

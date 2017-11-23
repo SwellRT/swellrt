@@ -75,7 +75,7 @@
 	<set-configuration-property name="CssResource.obfuscationPrefix"
 		value="SWC" />
 	
-	<source path="" />
+	<source path="" excludes="serverless/**" />
 	<source path="operation/**" />
 	<source path="js/**" />
 	<source path="wave/**" />

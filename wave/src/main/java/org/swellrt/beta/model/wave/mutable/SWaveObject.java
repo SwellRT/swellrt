@@ -1,6 +1,5 @@
 package org.swellrt.beta.model.wave.mutable;
 
-import org.swellrt.beta.client.operation.impl.OpenOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
@@ -39,7 +38,7 @@ import jsinterop.annotations.JsOptional;
  *
  */
 public class SWaveObject extends SWaveNodeContainer
-    implements SObject, SObservableNode, OpenOperation.Response {
+    implements SObject, SObservableNode {
 
 
   private SWaveMap root;

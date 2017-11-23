@@ -1,8 +1,8 @@
 package org.swellrt.beta.client;
 
-import org.swellrt.beta.client.operation.Operation;
 import org.swellrt.beta.client.operation.impl.FetchContributionsOperation;
 import org.swellrt.beta.client.operation.impl.FetchContributionsOperation.Response;
+import org.swellrt.beta.common.Operation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;

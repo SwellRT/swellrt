@@ -1,6 +1,4 @@
-package org.swellrt.beta.client.operation;
-
-import org.swellrt.beta.common.SException;
+package org.swellrt.beta.common;
 
 import jsinterop.annotations.JsType;
 
@@ -15,6 +13,27 @@ import jsinterop.annotations.JsType;
  * @param <R> operation callback
  */
 public interface Operation<O extends Operation.Options, R extends Operation.Response> {
+
+  @SuppressWarnings("serial")
+  class OperationException extends Exception {
+
+    private final int statusCode;
+    private final String statusMessage;
+
+    public int getStatusCode() {
+      return statusCode;
+    }
+
+    public String getStatusMessage() {
+      return statusMessage;
+    }
+
+    public OperationException(int statusCode, String statusMessage) {
+      this.statusCode = statusCode;
+      this.statusMessage = statusMessage;
+    }
+
+  }
 
   @JsType(isNative = true)
   public interface Options {
@@ -34,6 +53,7 @@ public interface Operation<O extends Operation.Options, R extends Operation.Resp
     public void onSuccess(T response);
 
   }
+
 
   public void execute(O options, Callback<R> callback);
 

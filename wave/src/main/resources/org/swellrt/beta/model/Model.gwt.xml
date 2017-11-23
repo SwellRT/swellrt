@@ -4,8 +4,8 @@
 	<inherits name='org.swellrt.beta.common.Common' />
 
 	<source path="" />
-	<source path="js/**" />
-	<source path="local/**" />
+	<source path="js" />
+	<source path="local" />
 	<source path="wave" excludes="unmutable/**" />
 		
 </module>

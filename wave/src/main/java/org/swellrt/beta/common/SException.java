@@ -1,6 +1,5 @@
 package org.swellrt.beta.common;
 
-import org.swellrt.beta.client.operation.HTTPOperation.HTTPOperationException;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 
@@ -20,7 +19,7 @@ import jsinterop.annotations.JsType;
  * a SException:
  * <li>Wave client components: websocket, operation channels... in particular {@link RemoteWaveViewService} and {@link LiveChannelBinder}</li>
  * <li>SwellRT data model logic, in particular {@ServiceContext}</li>
- * <li>SwellRT HTTP API, in particular instances of {@link org.swellrt.beta.client.operation.Operation}</li>
+ * <li>SwellRT HTTP API, in particular instances of {@link org.swellrt.beta.common.Operation}</li>
  * <p><p>
  * Code values for Wave-related errors are defined in {@link ResponseCode} class, with values between 1 and 99.<p>
  * Code values for SwellRT errors are defined here, starting at 100.
@@ -133,8 +132,8 @@ public class SException extends Exception {
   @JsProperty
   public int getStatusCode() {
     if (super.getCause() != null && 
-        super.getCause() instanceof HTTPOperationException) {
-      HTTPOperationException opEx = (HTTPOperationException) super.getCause();
+        super.getCause() instanceof Operation.OperationException) {
+      Operation.OperationException opEx = (Operation.OperationException) super.getCause();
       return opEx.getStatusCode();
     }
     return -1;
@@ -146,8 +145,8 @@ public class SException extends Exception {
   @JsProperty
   public String getStatusMessage() {
     if (super.getCause() != null && 
-        super.getCause() instanceof HTTPOperationException) {
-      HTTPOperationException opEx = (HTTPOperationException) super.getCause();
+        super.getCause() instanceof Operation.OperationException) {
+      Operation.OperationException opEx = (Operation.OperationException) super.getCause();
       return opEx.getStatusMessage();
     }
     return null;

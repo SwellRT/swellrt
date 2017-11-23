@@ -513,6 +513,8 @@ task editorSandbox {
 editorSandbox.dependsOn compileJava
 
 //
+// Serverless client
+//
 // A SwellRT client that doesn't require a server to work.
 // It maybe doesn't provide all service operations (login, logout...)
 // but it allows to work with collaborative objects in a JavaScript/Web runtime.

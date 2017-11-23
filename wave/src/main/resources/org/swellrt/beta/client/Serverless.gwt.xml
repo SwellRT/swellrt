@@ -42,7 +42,7 @@
 		TODO make serverless depend only on 
 	
 	 -->
-	<inherits name='org.swellrt.beta.client.ServiceFrontend' />
+	
 
 	<!--
 	<set-configuration-property name="CssResource.obfuscationPrefix"
@@ -72,8 +72,8 @@
 	
     <collapse-all-properties />
 	
-	<source path="serverless/**" />
-	<source path="js/**" />
+	<source path="js" />
+	<source path="serverless" />
 	
 	<entry-point class='org.swellrt.beta.client.serverless.ServerlessEntryPoint' />
 		

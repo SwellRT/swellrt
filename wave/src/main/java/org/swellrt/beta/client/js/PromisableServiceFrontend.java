@@ -4,7 +4,6 @@ import org.swellrt.beta.client.ServiceBasis;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.js.Promise.ConstructorParam;
 import org.swellrt.beta.client.js.Promise.FunctionParam;
-import org.swellrt.beta.client.operation.Operation.Callback;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
 import org.swellrt.beta.client.operation.impl.EditUserOperation;
@@ -21,7 +20,9 @@ import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.operation.impl.naming.DeleteNameOperation;
 import org.swellrt.beta.client.operation.impl.naming.GetNamesOperation;
 import org.swellrt.beta.client.operation.impl.naming.SetNameOperation;
+import org.swellrt.beta.common.Operation.Callback;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.ProfileManager;
 
 import jsinterop.annotations.JsProperty;
@@ -128,19 +129,19 @@ public class PromisableServiceFrontend implements ServiceBasis {
 		});
 	}
 
-	public Promise<OpenOperation.Response, SException> open(OpenOperation.Options options) {
-		return new Promise<OpenOperation.Response, SException>(new ConstructorParam<OpenOperation.Response, SException>() {
+  public Promise<SObject, SException> open(OpenOperation.Options options) {
+    return new Promise<SObject, SException>(new ConstructorParam<SObject, SException>() {
 
 			@Override
-			public void exec(FunctionParam<OpenOperation.Response> resolve, FunctionParam<SException> reject) {
+          public void exec(FunctionParam<SObject> resolve, FunctionParam<SException> reject) {
 
-				service.open(options, new Callback<OpenOperation.Response>() {
+            service.open(options, new Callback<SObject>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-					public void onSuccess(OpenOperation.Response response) {
+              public void onSuccess(SObject response) {
 						resolve.exec(response);
 					}
 				});

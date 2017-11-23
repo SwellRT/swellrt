@@ -2,7 +2,7 @@ package org.swellrt.beta.client.operation.impl;
 
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.operation.HTTPOperation;
-import org.swellrt.beta.client.operation.Operation;
+import org.swellrt.beta.common.Operation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.JsoView;
