@@ -105,4 +105,9 @@ public class ServletUtils {
     response.sendError(HttpServletResponse.SC_FORBIDDEN, message);
   }
 
+  public static void responseNotFound(HttpServletResponse response, String message)
+      throws IOException {
+    response.sendError(HttpServletResponse.SC_NOT_FOUND, message);
+  }
+
 }

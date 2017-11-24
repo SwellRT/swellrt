@@ -162,13 +162,19 @@ public class NamingServlet extends HttpServlet {
       try {
         WaveId waveId = WaveId.ofChecked(waveDomain, waveIdStr);
 
-        waveletProvider.checkAccessPermission(
+        if (waveletProvider.checkAccessPermission(
             WaveletName.of(waveId,
                 WaveletId.of(waveId.getDomain(), WaveCommons.MASTER_DATA_WAVELET_NAME)),
-            participantId);
+            participantId)) {
 
-        WaveNaming naming = store.getWaveNamingById(waveId);
-        ServletUtils.responseJson(response, gson.toJson(naming), ServletUtils.NO_CACHE);
+          WaveNaming naming = store.getWaveNamingById(waveId);
+          ServletUtils.responseJson(response, gson.toJson(naming), ServletUtils.NO_CACHE);
+
+        } else {
+
+          ServletUtils.responseNotFound(response, "wave doesn't exist");
+        }
+
 
       } catch (InvalidIdException e) {
         ServletUtils.responseBadRequest(response, "Invalid Wave id");
