@@ -20,15 +20,16 @@
 
 package org.waveprotocol.wave.client.wave;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.algorithm.Composer;
 import org.waveprotocol.wave.model.document.operation.algorithm.DocOpCollector;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.operation.OperationRuntimeException;
+import org.waveprotocol.wave.model.wave.ParticipantId;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Represents a diff document as a pair of an initialization (containing all the
@@ -121,5 +122,10 @@ public final class SimpleDiffDoc implements DiffSink {
     } catch (OperationException e) {
       throw new OperationRuntimeException("error occurred during diff compaction", e);
     }
+  }
+
+  @Override
+  public void setDiff(int start, int end, ParticipantId author) {
+    // ignore direct diff setting
   }
 }

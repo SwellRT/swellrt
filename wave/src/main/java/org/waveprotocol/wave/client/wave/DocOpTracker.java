@@ -1,7 +1,8 @@
-package org.waveprotocol.wave.client.editor.playback;
+package org.waveprotocol.wave.client.wave;
 
 import java.util.Optional;
 
+import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 
 /**
@@ -14,9 +15,9 @@ import org.waveprotocol.wave.model.document.operation.DocOp;
  * {@link DiffHighlightFilter} is a consumer of this caché.
  * </p>
  */
-public interface DocOpContextCache {
+public interface DocOpTracker {
 
-  public static final DocOpContextCache VOID = new DocOpContextCache() {
+  public static final DocOpTracker VOID = new DocOpTracker() {
 
     @Override
     public Optional<DocOpContext> fetch(DocOp op) {

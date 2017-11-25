@@ -24,7 +24,7 @@ import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
+import org.waveprotocol.wave.client.wave.DiffProvider.DocDiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.wave.CcDocument;
 import org.waveprotocol.wave.model.document.Doc;
 import org.waveprotocol.wave.model.document.Document;
@@ -34,9 +34,12 @@ import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.util.MutableDocumentProxy;
 import org.waveprotocol.wave.model.operation.SilentOperationSink;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.Callback;
 
 /**
  * A document implementation that materializes a {@link ContentDocument} on
@@ -68,21 +71,25 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
   /**
    * Provides metadata of DocOp's
    */
-  private final DocOpContextCache opContexts;
+  private final DocOpTracker docOpTracker;
 
+  /** To query diff data of the document */
+  private final DocDiffProvider diffProvider;
 
   @VisibleForTesting
   LazyContentDocument(Registries base, SimpleDiffDoc initial, boolean isCompleteDiff,
-      DocOpContextCache opContexts) {
+      DocOpTracker docOpTracker, DocDiffProvider diffProvider) {
     this.base = base;
     this.spec = initial;
     this.isCompleteDiff = isCompleteDiff;
-    this.opContexts = opContexts;
+    this.docOpTracker = docOpTracker;
+    this.diffProvider = diffProvider;
   }
 
   public static LazyContentDocument create(Registries base, SimpleDiffDoc initial,
-      DocOpContextCache opContexts) {
-    return new LazyContentDocument(base, initial, initial.isCompleteDiff(), opContexts);
+      DocOpTracker opContexts, DiffProvider.DocDiffProvider diffProvider) {
+    return new LazyContentDocument(base, initial, initial.isCompleteDiff(), opContexts,
+        diffProvider);
   }
 
   /**
@@ -93,7 +100,7 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
   private void loadWith(Registries registries) {
     assert !isLoaded() : "already loaded";
     ContentDocument core = new ContentDocument(DocumentSchema.NO_SCHEMA_CONSTRAINTS);
-    document = DiffContentDocument.create(core, opContexts);
+    document = DiffContentDocument.create(core, docOpTracker);
     if (outputSink != null) {
       core.setOutgoingSink(outputSink);
     }
@@ -244,15 +251,45 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
     }
   }
 
+
   @Override
   public void startShowDiffs() {
-    document.initDiffs();
+
     diffsSuppressed = false;
+
+    diffProvider.getDiffs(new Callback<DiffData[], Exception>() {
+
+      @Override
+      public void onSuccess(DiffData[] result) {
+        // remove old diffs
+        getTarget().clearDiffs();
+
+        for (int i = 0; i < result.length; i++) {
+          // show all diffs
+          DiffData diff = result[i];
+          ParticipantId author = null;
+          try {
+            author = ParticipantId.of(diff.values.author);
+          } catch (InvalidParticipantAddress e) {
+            author = ParticipantId.VOID;
+          }
+          getTarget().setDiff(diff.start, diff.end, author);
+
+        }
+      }
+
+      @Override
+      public void onFailure(Exception reason) {
+        // Mute exception
+      }
+    });
+
+
   }
 
   @Override
   public void stopShowDiffs() {
     diffsSuppressed = true;
-    document.clearDiffs();
+    getTarget().clearDiffs();
   }
 }

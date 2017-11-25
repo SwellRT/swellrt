@@ -6,16 +6,16 @@ import java.util.concurrent.ExecutionException;
 import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
+import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.common.Platform;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.NodeFactory;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
+import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -59,18 +59,18 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
   private SettableFuture<SWaveObject> sobjectFuture;
   private ChannelException lastException;
 
-  private final DocContributionsFetcher contributionsFetcher;
+  private final DiffProvider diffProvider;
 
 
   public WaveContext(WaveId waveId, String waveDomain, ParticipantId participant,
-      ServiceStatus serviceStatus, DocContributionsFetcher.Factory contributionsFetcherFactory) {
+      ServiceStatus serviceStatus, DiffProvider diffProvider) {
     super();
     this.waveId = waveId;
     this.waveDomain = waveDomain;
     this.participant = participant;
     this.serviceStatus = serviceStatus;
     this.sobjectFuture = SettableFuture.<SWaveObject> create();
-    this.contributionsFetcher = contributionsFetcherFactory.create(waveId);
+    this.diffProvider = diffProvider;
   }
 
 
@@ -93,7 +93,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
     state = ACTIVE;
 
     loader = new WaveLoader(waveId, viewServiceMultiplexer, idGenerator, waveDomain,
-        Collections.<ParticipantId> emptySet(), participant, this, this, this.contributionsFetcher);
+        Collections.<ParticipantId> emptySet(), participant, this, this, this.diffProvider);
 
     try {
 

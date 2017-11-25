@@ -9,6 +9,7 @@ import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.Delta;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.RevCriteria;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.Revision;
+import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.operation.OperationException;
@@ -42,7 +43,7 @@ public class PlaybackDocument {
   private final DocHistory history;
 
   /** Let's put in this cache any doc op sent to the content document */
-  private final DocOpContextCache docOpCache;
+  private final DocOpTracker docOpCache;
 
   /** The actual content document */
   private ContentDocument doc;
@@ -57,7 +58,7 @@ public class PlaybackDocument {
   private boolean useDiffFilter = false;
 
   public PlaybackDocument(Registries registries, DocumentSchema schema, DocHistory history,
-      DocOpContextCache docOpCache) {
+      DocOpTracker docOpCache) {
     this.doc = new ContentDocument(schema);
     this.doc.setRegistries(registries);
     this.history = history;

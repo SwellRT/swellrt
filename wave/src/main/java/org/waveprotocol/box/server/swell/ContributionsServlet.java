@@ -232,17 +232,14 @@ public final class ContributionsServlet extends HttpServlet {
         JsonObject jsonInterval = new JsonObject();
         jsonInterval.addProperty("start", interval.start());
         jsonInterval.addProperty("end", interval.end());
-        JsonArray jsonValues = new JsonArray();
+        JsonObject jsonValues = new JsonObject();
 
         interval.annotations().each(new ProcV<Object>() {
           @Override
           public void apply(String key, Object value) {
 
             if (value != null) {
-              JsonObject pair = new JsonObject();
-              pair.addProperty("key", key);
-              pair.addProperty("value", value.toString());
-              jsonValues.add(pair);
+               jsonValues.addProperty(key, value.toString());
             }
           }
         });

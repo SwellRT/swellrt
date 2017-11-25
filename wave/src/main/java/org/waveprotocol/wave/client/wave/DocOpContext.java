@@ -1,4 +1,4 @@
-package org.waveprotocol.wave.client.editor.playback;
+package org.waveprotocol.wave.client.wave;
 
 
 import org.waveprotocol.wave.model.operation.wave.WaveletOperationContext;

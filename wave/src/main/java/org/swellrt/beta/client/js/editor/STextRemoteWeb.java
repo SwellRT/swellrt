@@ -17,7 +17,6 @@ import org.waveprotocol.wave.model.wave.Blip;
 import com.google.gwt.dom.client.Element;
 
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 
 /**
  * A text document supported by a remote wave document.

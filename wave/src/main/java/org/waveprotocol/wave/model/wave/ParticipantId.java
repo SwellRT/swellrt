@@ -37,6 +37,9 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   private static final long serialVersionUID = -1465142562958113670L;
 
   @JsIgnore
+  public static final ParticipantId VOID = ParticipantId.ofUnsafe("void@void.com");
+
+  @JsIgnore
   public static final String ANONYMOUS_NAME = "_anonymous_";
 
   /** The prefix of a domain in the ParticpantId */

@@ -11,7 +11,6 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.account.ServerAccountData;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -113,17 +112,11 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private ConnectState connectState = null;
   private SException exception = null;
 
-  /**
-   * A contributions fetcher instance that calls to REST service
-   */
-  private final DocContributionsFetcher.Factory contributionsFetcherFactory;
-
 
   public ServiceContext(SessionManager sessionManager, String httpAddress) {
     this.sessionManager = sessionManager;
     this.httpAddress = httpAddress;
     this.websocketAddress = getWebsocketAddress(httpAddress);
-    this.contributionsFetcherFactory = new RemoteContributionsFetcher.RemoteFactory(this);
   }
 
   public void addConnectionHandler(ConnectionHandler h) {
@@ -241,7 +234,8 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
     if (!waveRegistry.containsKey(waveId)) {
       waveRegistry.put(waveId, new WaveContext(waveId, sessionManager.getWaveDomain(),
-          ParticipantId.ofUnsafe(sessionManager.getUserId()), this, contributionsFetcherFactory));
+          ParticipantId.ofUnsafe(sessionManager.getUserId()), this,
+          new RemoteDiffProvider(waveId, this)));
     }
 
     WaveContext waveContext = waveRegistry.get(waveId);

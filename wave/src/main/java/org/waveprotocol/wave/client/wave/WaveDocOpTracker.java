@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.waveprotocol.wave.client.editor.playback.DocOpContext;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.id.IdUtil;
@@ -19,28 +18,31 @@ import org.waveprotocol.wave.model.wave.data.ReadableBlipData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 
 /**
- * Cache of {@link DocOp} instances together with its context info.
+ * Tracks {@link DocOp}s together with its metadata (aka context). <br>
+ * <p>
+ * Use also to query op's metadata and blip/doc latest version.
+ * </p>
  *
  * @author pablojan@gmail.com
  *
  */
-public class DocOpCache {
+public class WaveDocOpTracker {
 
 
-  static class OpCache {
-
+  static class PerBlipOps {
     public Map<DocOp, DocOpContext> data = new HashMap<DocOp, DocOpContext>();
-    public long version = 0;
-
   }
 
   /** Only cache ops from allowed blip types */
   final private ReadableStringSet allowedBlipPrefixes;
 
   /** Map of caches with key = "waveletId/blipId" */
-  final private Map<String, OpCache> cachesPerDoc = new HashMap<String, OpCache>();
+  final private Map<String, PerBlipOps> blipOps = new HashMap<String, PerBlipOps>();
 
-  private boolean cacheSnapshotOn = false;
+  /** Map of latest versions of wavelets */
+  final private Map<String, HashedVersion> waveletVersions = new HashMap<String, HashedVersion>();
+
+  private boolean storeSnapshotOn = false;
 
   /** build a key for map of caches */
   private static String buildDocKey(String waveletId, String blipId) {
@@ -48,26 +50,36 @@ public class DocOpCache {
   }
 
 
-  public DocOpCache(ReadableStringSet allowedBlipPrefixes) {
+  public WaveDocOpTracker(ReadableStringSet allowedBlipPrefixes) {
     this.allowedBlipPrefixes = allowedBlipPrefixes;
   }
 
   /** get a cache for a particular document (blip) */
-  private OpCache getCache(String waveletId, String blipId) {
+  private PerBlipOps geBlipOps(String waveletId, String blipId) {
 
     String docKey = buildDocKey(waveletId, blipId);
-    if (!cachesPerDoc.containsKey(docKey))
-      cachesPerDoc.put(docKey, new OpCache());
+    if (!blipOps.containsKey(docKey))
+      blipOps.put(docKey, new PerBlipOps());
 
-    return cachesPerDoc.get(docKey);
+    return blipOps.get(docKey);
   }
 
   private boolean isValidBlip(String blipId) {
     return allowedBlipPrefixes.contains(IdUtil.getInitialToken(blipId));
   }
 
-  /** add a DocOp to the cache wrapped in a WaveletOperation */
-  public void add(String waveletId, WaveletOperation waveletOperation) {
+  private void updateWaveletVersion(String waveletId, HashedVersion version) {
+    if (version == null)
+      return;
+
+    if (!waveletVersions.containsKey(waveletId)
+        || version.getVersion() > waveletVersions.get(waveletId).getVersion()) {
+      waveletVersions.put(waveletId, version);
+    }
+  }
+
+  /** Track a WaveletOperation, maybe a DocOp or VersionUpdateOp */
+  public void track(String waveletId, WaveletOperation waveletOperation) {
 
     if (waveletOperation instanceof WaveletBlipOperation) {
 
@@ -83,55 +95,69 @@ public class DocOpCache {
       if (!(blipOp instanceof BlipContentOperation))
         return;
 
-      OpCache cache = getCache(waveletId, blipId);
+      PerBlipOps cache = geBlipOps(waveletId, blipId);
       cache.data.put(((BlipContentOperation) blipOp).getContentOp(),
           new DocOpContext(blipOp.getContext()));
+
     }
+
+    updateWaveletVersion(waveletId, waveletOperation.getContext().getHashedVersion());
 
   }
 
   /**
-   * Add blips in this snapshot into the cache as {@link DocInitialization} ops.
+   * Add a snapshot into the cache as {@link DocInitialization} op.
+   * <p>
+   * Call this method just right after loading a wavelet in order to track the
+   * current version
+   * </p>
    *
    * @param snapshot
    */
-  public void add(ReadableWaveletData snapshot) {
-
-    if (!cacheSnapshotOn)
-      return;
+  public void track(ReadableWaveletData snapshot) {
 
     String waveletId = ModernIdSerialiser.INSTANCE.serialiseWaveletId(snapshot.getWaveletId());
 
-    snapshot.getDocumentIds().forEach( docId -> {
+    if (storeSnapshotOn) {
 
-      // Don't cache ops from no relevant blips
-      if (isValidBlip(docId)) {
+      snapshot.getDocumentIds().forEach(docId -> {
 
-        ReadableBlipData doc = snapshot.getDocument(docId);
+        // Don't cache ops from no relevant blips
+        if (isValidBlip(docId)) {
 
-        DocInitialization op = doc.getContent().asOperation();
-        long ver = doc.getLastModifiedVersion();
+          ReadableBlipData doc = snapshot.getDocument(docId);
 
-        OpCache cache = getCache(waveletId, docId);
-        cache.data.put(op, new DocOpContext(doc.getLastModifiedTime(), doc.getAuthor(), ver,
-            HashedVersion.unsigned(ver)));
-        cache.version = ver;
+          DocInitialization op = doc.getContent().asOperation();
+          HashedVersion ver = snapshot.getHashedVersion();
 
-      }
+          PerBlipOps cache = geBlipOps(waveletId, docId);
 
-    });
+          cache.data.put(op,
+              new DocOpContext(doc.getLastModifiedTime(), doc.getAuthor(), ver.getVersion(), ver));
+        }
+
+      });
+
+    }
+
+    updateWaveletVersion(waveletId, snapshot.getHashedVersion());
 
   }
 
   /** Get a DocOp removing it from cache */
   public Optional<DocOpContext> fetch(String waveletId, String blipId, DocOp op) {
-    OpCache cache = getCache(waveletId, blipId);
+    PerBlipOps cache = geBlipOps(waveletId, blipId);
     return Optional.ofNullable(cache.data.get(op));
   }
 
+  /** Get the last wavelet version tracked for a blip */
+  public Optional<HashedVersion> getVersion(String waveletId, String blipId) {
+    return Optional.ofNullable(waveletVersions.get(waveletId));
+  }
+
   /** should we cache blips in snapshots? */
-  public void enableSnapshotCache(boolean on) {
-    this.cacheSnapshotOn = on;
+  public void enableStoreSnapshot(boolean on) {
+    this.storeSnapshotOn = on;
   }
 
 }

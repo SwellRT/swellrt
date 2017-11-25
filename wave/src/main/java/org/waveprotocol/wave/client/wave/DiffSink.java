@@ -23,6 +23,7 @@ package org.waveprotocol.wave.client.wave;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.DocOp.IsDocOp;
 import org.waveprotocol.wave.model.operation.SilentOperationSink;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * An operation consumer that can consume operations in an additional mode (diff mode).
@@ -67,6 +68,15 @@ public interface DiffSink extends SilentOperationSink<DocOp>, IsDocOp {
    * @param op
    */
   void consumeAsDiff(DocOp op);
+
+  /**
+   * Sets a diff manually
+   *
+   * @param start
+   * @param end
+   * @param author
+   */
+  void setDiff(int start, int end, ParticipantId author);
 
   /**
    * Removes the effect of any diffs, as if they had been {@link #consume(DocOp)

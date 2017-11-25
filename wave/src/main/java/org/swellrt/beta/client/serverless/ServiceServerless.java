@@ -10,7 +10,8 @@ import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.editor.Editor;
-import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
+import org.waveprotocol.wave.client.wave.DiffProvider;
+import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
 import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
@@ -58,7 +59,7 @@ public class ServiceServerless {
         return new STextRemoteWeb(nodeManager, substrateId, blip,
             LazyContentDocument.create(Editor.ROOT_REGISTRIES,
                 SimpleDiffDoc.create(DocOpUtil.docInitializationFromXml(""), null),
-                DocOpContextCache.VOID));
+                DocOpTracker.VOID, DiffProvider.VOID_DOC_DIFF_PROVIDER));
 
       } catch (XmlParseException e) {
         throw new RuntimeException(e);

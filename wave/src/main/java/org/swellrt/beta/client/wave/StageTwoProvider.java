@@ -22,7 +22,7 @@ package org.swellrt.beta.client.wave;
 import java.util.Set;
 
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
+import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.channel.WaveViewService;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -50,7 +50,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   private final boolean isNewWave;
   private final IdGenerator idGenerator;
   private final ParticipantId participant;
-  private final DocContributionsFetcher contributionsFetcher;
+  private final DiffProvider diffProvider;
 
   /**
    * Continuation to progress to the next stage. This will disappear with the
@@ -70,7 +70,9 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
    */
   public StageTwoProvider(StageOne stageOne, WaveRef waveRef, RemoteViewServiceMultiplexer channel,
       boolean isNewWave, IdGenerator idGenerator,
-      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants, ParticipantId participant, TurbulenceListener turbulenceListener, DocContributionsFetcher contributionsFetcher) {
+      UnsavedDataListener unsavedDataListener, Set<ParticipantId> otherParticipants,
+      ParticipantId participant, TurbulenceListener turbulenceListener,
+      DiffProvider diffProvider) {
     super(stageOne, unsavedDataListener, turbulenceListener);
     Preconditions.checkArgument(stageOne != null);
     Preconditions.checkArgument(waveRef != null);
@@ -81,7 +83,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
     this.idGenerator = idGenerator;
     this.otherParticipants = otherParticipants;
     this.participant = participant;
-    this.contributionsFetcher = contributionsFetcher;
+    this.diffProvider = diffProvider;
   }
 
   @Override
@@ -168,7 +170,7 @@ public class StageTwoProvider extends StageTwo.DefaultProvider {
   }
 
   @Override
-  public DocContributionsFetcher getContributionsFetcher() {
-    return contributionsFetcher;
+  public DiffProvider getDiffProvider() {
+    return this.diffProvider;
   }
 }

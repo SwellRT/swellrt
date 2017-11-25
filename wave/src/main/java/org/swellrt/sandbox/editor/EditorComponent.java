@@ -21,10 +21,10 @@ import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
-import org.waveprotocol.wave.client.editor.playback.DocOpContext;
-import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.client.editor.playback.FakeDocHistory;
 import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
+import org.waveprotocol.wave.client.wave.DocOpContext;
+import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
@@ -104,7 +104,7 @@ public class EditorComponent extends Composite {
   FakeDocHistory docHistory = new FakeDocHistory();
 
   /** A doc op cache to query op metadata from ops consumers */
-  DocOpContextCache docOpCache = new DocOpContextCache() {
+  DocOpTracker docOpCache = new DocOpTracker() {
 
     Map<DocOp, DocOpContext> cacheData = new HashMap<DocOp, DocOpContext>();
 

@@ -19,7 +19,7 @@
 
 package org.waveprotocol.wave.client.concurrencycontrol;
 
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
@@ -40,7 +40,7 @@ public final class StaticChannelBinder {
 
   private final WaveletOperationalizer operationalizer;
   private final WaveDocuments<? extends CcDocument> docRegistry;
-  private final DocContributionsLog docOpLog;
+  private final WaveDocOpTracker docOpTracker;
 
   /**
    * Creates a binder for a wave.
@@ -52,7 +52,7 @@ public final class StaticChannelBinder {
       WaveletOperationalizer operationalizer, WaveDocuments<? extends CcDocument> docRegistry) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
-    this.docOpLog = null;
+    this.docOpTracker = null;
   }
 
   /**
@@ -64,10 +64,10 @@ public final class StaticChannelBinder {
    *        ops
    */
   public StaticChannelBinder(WaveletOperationalizer operationalizer,
-      WaveDocuments<? extends CcDocument> docRegistry, DocContributionsLog docOpLog) {
+      WaveDocuments<? extends CcDocument> docRegistry, WaveDocOpTracker docOpTracker) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
-    this.docOpLog = docOpLog;
+    this.docOpTracker = docOpTracker;
   }
 
   /**
@@ -95,8 +95,8 @@ public final class StaticChannelBinder {
       public void consume(WaveletOperation op) {
 
         // Register the op first, to be consumed by following sinks.
-        if (docOpLog != null) {
-          docOpLog.register(waveletId, op);
+        if (docOpTracker != null) {
+          docOpTracker.track(waveletId, op);
         }
         target.consume(op);
       }

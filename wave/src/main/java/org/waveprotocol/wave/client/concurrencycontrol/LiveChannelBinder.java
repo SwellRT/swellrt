@@ -19,10 +19,9 @@
 
 package org.waveprotocol.wave.client.concurrencycontrol;
 
-import com.google.common.base.Preconditions;
-import com.google.gwt.user.client.Command;
+import java.util.Collection;
 
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.client.wave.WaveDocuments;
 import org.waveprotocol.wave.concurrencycontrol.channel.Accessibility;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
@@ -41,7 +40,8 @@ import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.opbased.OpBasedWavelet;
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl;
 
-import java.util.Collection;
+import com.google.common.base.Preconditions;
+import com.google.gwt.user.client.Command;
 
 /**
  * Binds operation channels from a {@link OperationChannelMultiplexer mux} with
@@ -106,8 +106,8 @@ public final class LiveChannelBinder
       OperationChannelMultiplexer mux,
       IdFilter filter,
       Command whenOpened,
-      DocContributionsLog operationLog) {
-    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry, operationLog);
+      WaveDocOpTracker docOpTracker) {
+    StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry, docOpTracker);
     LiveChannelBinder liveBinder =
         new LiveChannelBinder(staticBinder, operationalizer, wave, mux, whenOpened);
 
@@ -140,7 +140,7 @@ public final class LiveChannelBinder
   @Override
   public void onFailed(CorruptionDetail detail) {
 	 // Avoid throwing unchecked exceptions,
-	 // use the TurbulenceListener instead	  
+	 // use the TurbulenceListener instead
 	 // throw new RuntimeException(detail);
   }
 

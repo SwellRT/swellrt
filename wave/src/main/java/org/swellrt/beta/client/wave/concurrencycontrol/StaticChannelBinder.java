@@ -20,7 +20,7 @@
 package org.swellrt.beta.client.wave.concurrencycontrol;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
-import org.waveprotocol.wave.client.wave.DocOpCache;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.wave.CcDocument;
@@ -40,7 +40,7 @@ public final class StaticChannelBinder {
 
   private final WaveletOperationalizer operationalizer;
   private final SWaveDocuments<? extends CcDocument> docRegistry;
-  private final DocOpCache docOpCache;
+  private final WaveDocOpTracker docOpCache;
 
   /**
    * Creates a binder for a wave.
@@ -63,7 +63,7 @@ public final class StaticChannelBinder {
    * @param docOpCache a cache where to put all incoming ops, so we can get op's metadata later on.
    */
   public StaticChannelBinder(WaveletOperationalizer operationalizer,
-      SWaveDocuments<? extends CcDocument> docRegistry, DocOpCache docOpCache) {
+      SWaveDocuments<? extends CcDocument> docRegistry, WaveDocOpTracker docOpCache) {
     this.operationalizer = operationalizer;
     this.docRegistry = docRegistry;
     this.docOpCache = docOpCache;
@@ -93,9 +93,12 @@ public final class StaticChannelBinder {
       @Override
       public void consume(WaveletOperation op) {
 
+        // On local mutations, receive VersionUpdateOp operations
+        // On remote mutations, receive BlipOp operations
+
         // Cache the op before be consumed by the target sink.
         if (docOpCache != null)
-          docOpCache.add(waveletId, op);
+          docOpCache.track(waveletId, op);
 
         target.consume(op);
       }

@@ -22,7 +22,6 @@ package org.waveprotocol.wave.client;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.ProfileManagerImpl;
@@ -42,11 +41,8 @@ import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.doodad.title.TitleAnnotationHandler;
-import org.waveprotocol.wave.client.editor.content.DocContributionsLog;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
-import org.waveprotocol.wave.client.editor.playback.DocOpContext;
-import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.client.gadget.Gadget;
 import org.waveprotocol.wave.client.render.ReductionBasedRenderer;
 import org.waveprotocol.wave.client.render.RenderingRules;
@@ -58,6 +54,9 @@ import org.waveprotocol.wave.client.state.ThreadReadStateMonitor;
 import org.waveprotocol.wave.client.state.ThreadReadStateMonitorImpl;
 import org.waveprotocol.wave.client.uibuilder.UiBuilder;
 import org.waveprotocol.wave.client.util.ClientFlags;
+import org.waveprotocol.wave.client.wave.DiffProvider;
+import org.waveprotocol.wave.client.wave.DocOpTracker;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.LocalSupplementedWave;
@@ -104,14 +103,12 @@ import org.waveprotocol.wave.model.conversation.ObservableConversationView;
 import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
-import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
 import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
-import org.waveprotocol.wave.model.id.IdUtil;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
@@ -233,7 +230,7 @@ public interface StageTwo {
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
 
-    private DocContributionsLog operationLog; // tracks ops and contributors
+    private WaveDocOpTracker docOpTracker; // tracks ops and contributors
 
     // Model objects
 
@@ -513,26 +510,13 @@ public interface StageTwo {
       DocumentFactory<LazyContentDocument> blipDocFactory =
           new DocumentFactory<LazyContentDocument>() {
             private final Registries registries = RegistriesHolder.get();
-            private final DocContributionsLog opLog = DefaultProvider.this.getDocOperationLog();
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
               // TODO(piotrkaleta,hearnden): hook up real diff state.
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
-              return LazyContentDocument.create(registries, noDiff, new DocOpContextCache() {
-
-                @Override
-                public Optional<DocOpContext> fetch(DocOp op) {
-                  // Don't wire DocOpCache in Wave version
-                  return Optional.empty();
-                }
-
-                @Override
-                public void add(DocOp op, DocOpContext opCtx) {
-                  // Nothing to do
-                }
-
-              });
+              return LazyContentDocument.create(registries, noDiff, DocOpTracker.VOID,
+                  DiffProvider.VOID_DOC_DIFF_PROVIDER);
             }
           };
 
@@ -599,7 +583,7 @@ public interface StageTwo {
               mux,
               filter,
               onOpened,
-              getDocOperationLog());
+              new WaveDocOpTracker(CollectionUtils.newStringSet()));
         }
 
         @Override
@@ -777,24 +761,6 @@ public interface StageTwo {
       // Eagerly install some features.
       reader = Reader.install(getSupplement(), stageOne.getFocusFrame(), getModelAsViewProvider(),
           getDocumentRegistry());
-    }
-
-    /**
-     * Get the shared wavelet operation logger
-     *
-     * @return
-     */
-    protected DocContributionsLog getDocOperationLog() {
-      return operationLog == null ? operationLog = createOperationLog() : operationLog;
-    }
-
-    /**
-     * Create the shared wavelet operation logger
-     *
-     * @return
-     */
-    protected DocContributionsLog createOperationLog() {
-      return new DocContributionsLog(CollectionUtils.newStringSet(IdUtil.BLIP_PREFIX), null);
     }
 
   }

@@ -29,8 +29,8 @@ import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.impl.DiffManager;
 import org.waveprotocol.wave.client.editor.impl.DiffManager.DiffType;
-import org.waveprotocol.wave.client.editor.playback.DocOpContext;
-import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
+import org.waveprotocol.wave.client.wave.DocOpContext;
+import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.model.conversation.AnnotationConstants;
 import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
@@ -180,10 +180,10 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   int currentLocation = 0;
 
   /** to query author of doc ops */
-  private final DocOpContextCache opCtxProvider;
+  private final DocOpTracker opCtxProvider;
 
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument) {
-    this(contentDocument, new DocOpContextCache() {
+    this(contentDocument, new DocOpTracker() {
 
       @Override
       public Optional<DocOpContext> fetch(DocOp op) {
@@ -199,54 +199,16 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   }
 
   public DiffHighlightingFilter(DiffHighlightTarget contentDocument,
-      DocOpContextCache opCtxProvider) {
+      DocOpTracker opCtxProvider) {
     this.inner = contentDocument;
     this.opCtxProvider = opCtxProvider;
   }
 
-  /**
-   * Get document contributions at current version of the wavelet and show them
-   * as diff annotations.
-   *
-   * TODO don't call service here, just inject data
-   */
-  /*
-   * public void initDiffs() {
-   *
-   * HashedVersion waveletVersion =
-   * contribLog.getWaveletLastVersion(this.waveletIdStr); assert waveletVersion
-   * != null;
-   *
-   *
-   * contribLog.fetchContributions(waveletIdStr, waveletVersion, new
-   * DocContributionsFetcher.Callback() {
-   *
-   * @Override public void onSuccess(WaveletContributions waveletContributions)
-   * {
-   *
-   * // Clear annotations, we are going to render again all of them.
-   * clearDiffs();
-   *
-   * DocContribution[] allContributions =
-   * waveletContributions.getDocContributions(documentId); if (allContributions
-   * == null) return; for (DocContribution dc: allContributions) { if
-   * (dc.getValues() != null) {
-   *
-   * for (DocContributionValue value: dc.getValues()) { if
-   * (value.getKey().equals("author")) {
-   *
-   * try { inner.setAnnotation(dc.getStart(), dc.getEnd(), DIFF_INSERT_KEY,
-   * ParticipantId.of(value.getValue())); } catch (InvalidParticipantAddress e)
-   * {
-   *
-   * } } } } }
-   *
-   * }
-   *
-   * @Override public void onException(Exception e) { // Opps! } });
-   *
-   * }
-   */
+
+  public void setDiff(int start, int end, ParticipantId author) {
+    inner.setAnnotation(start, end, DIFF_INSERT_KEY, author);
+  }
+
 
   @Override
   public void consume(DocOp op) throws OperationException {

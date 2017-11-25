@@ -35,14 +35,17 @@ import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.client.common.util.CountdownLatch;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.Editor;
-import org.waveprotocol.wave.client.editor.content.DocContributionsFetcher;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.playback.DocOpContext;
-import org.waveprotocol.wave.client.editor.playback.DocOpContextCache;
 import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.util.ClientFlags;
-import org.waveprotocol.wave.client.wave.DocOpCache;
+import org.waveprotocol.wave.client.wave.DiffData;
+import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
+import org.waveprotocol.wave.client.wave.DiffProvider;
+import org.waveprotocol.wave.client.wave.DocOpContext;
+import org.waveprotocol.wave.client.wave.DocOpTracker;
+import org.waveprotocol.wave.client.wave.DiffProvider.DocDiffProvider;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
@@ -93,6 +96,7 @@ import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletConfigurator
 import org.waveprotocol.wave.model.wave.opbased.WaveViewImpl.WaveletFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.client.Command;
 
 /**
@@ -130,7 +134,7 @@ public interface StageTwo {
   StageOne getStageOne();
 
   /** @return a contributions fetcher instance */
-  DocContributionsFetcher getContributionsFetcher();
+  DiffProvider getDiffProvider();
 
 
 
@@ -164,7 +168,7 @@ public interface StageTwo {
     private WaveViewImpl<OpBasedWavelet> wave;
     private MuxConnector connector;
 
-    private DocOpCache opsCache; // tracks ops and contributors
+    private WaveDocOpTracker opsCache; // tracks ops and contributors
 
 
     private final UnsavedDataListener unsavedDataListener;
@@ -326,7 +330,7 @@ public interface StageTwo {
 
       // Populate the initial state.
       for (ObservableWaveletData waveletData : snapshot.getWavelets()) {
-        getDocOpCache().add(waveletData);
+        getDocOpTracker().track(waveletData);
         wave.addWavelet(operationalizer.operationalize(waveletData));
       }
       return wave;
@@ -347,8 +351,12 @@ public interface StageTwo {
 
       DocumentFactory<LazyContentDocument> textDocFactory =
           new DocumentFactory<LazyContentDocument>() {
+
             private final Registries registries = Editor.ROOT_REGISTRIES;
-            private final DocOpCache docOpCache = DefaultProvider.this.getDocOpCache();
+
+            private final WaveDocOpTracker docOpTracker = DefaultProvider.this.getDocOpTracker();
+            private final DiffProvider diffProvider = DefaultProvider.this.getDiffProvider();
+
             @Override
             public LazyContentDocument create(
                 WaveletId waveletId, String docId, DocInitialization content) {
@@ -357,20 +365,52 @@ public interface StageTwo {
               SimpleDiffDoc noDiff = SimpleDiffDoc.create(content, null);
               String waveletIdStr = ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId);
 
-              return LazyContentDocument.create(registries, noDiff, new DocOpContextCache() {
 
-                @Override
-                public Optional<DocOpContext> fetch(DocOp op) {
+              return LazyContentDocument.create(registries, noDiff,
 
                   // Adapt the global DocOp cache to this particular blip
-                  return docOpCache.fetch(waveletIdStr, docId, op);
-                }
+                  new DocOpTracker() {
 
-                @Override
-                public void add(DocOp op, DocOpContext opCtx) {
-                  // Nothing to do
-                }
+                    @Override
+                    public Optional<DocOpContext> fetch(DocOp op) {
+                      return docOpTracker.fetch(waveletIdStr, docId, op);
+                    }
 
+                    @Override
+                    public void add(DocOp op, DocOpContext opCtx) {
+                      // Nothing to do
+                    }
+
+                  },
+
+                  // Adapt the global diff provider to this doc
+                  new DocDiffProvider() {
+
+                    @Override
+                    public void getDiffs(Callback<DiffData[], Exception> callback) {
+
+                      Optional<HashedVersion> optVersion = docOpTracker.getVersion(waveletIdStr,
+                          docId);
+
+                      if (!optVersion.isPresent())
+                        callback.onFailure(new IllegalStateException("No version found for blip "
+                            + waveletIdStr + "/" + docId + " in DocOpTracker"));
+
+                      diffProvider.getDiffs(waveletId, docId, optVersion.get(),
+                          new Callback<WaveletDiffData, Exception>() {
+
+                            @Override
+                            public void onFailure(Exception reason) {
+                              callback.onFailure(new IllegalStateException(reason));
+                            }
+
+                            @Override
+                            public void onSuccess(WaveletDiffData result) {
+                              callback.onSuccess(result.get(docId));
+                            }
+
+                          });
+                    }
               });
             }
           };
@@ -441,7 +481,7 @@ public interface StageTwo {
               getDocumentRegistry(),
               mux,
               filter,
-              onOpened, getDocOpCache());
+              onOpened, getDocOpTracker());
         }
 
         @Override
@@ -527,7 +567,7 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocOpCache getDocOpCache() {
+    protected WaveDocOpTracker getDocOpTracker() {
       return opsCache == null ? opsCache = createDocOpCache() : opsCache;
     }
 
@@ -536,8 +576,8 @@ public interface StageTwo {
      *
      * @return
      */
-    protected DocOpCache createDocOpCache() {
-      return new DocOpCache(CollectionUtils.newStringSet(SwellConstants.TEXT_BLIP_ID_PREFIX));
+    protected WaveDocOpTracker createDocOpCache() {
+      return new WaveDocOpTracker(CollectionUtils.newStringSet(SwellConstants.TEXT_BLIP_ID_PREFIX));
     }
 
   }

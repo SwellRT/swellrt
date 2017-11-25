@@ -22,7 +22,7 @@ package org.swellrt.beta.client.wave.concurrencycontrol;
 import java.util.Collection;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
-import org.waveprotocol.wave.client.wave.DocOpCache;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.concurrencycontrol.channel.Accessibility;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannel;
 import org.waveprotocol.wave.concurrencycontrol.channel.OperationChannelMultiplexer;
@@ -58,7 +58,7 @@ public final class LiveChannelBinder
   private final WaveViewImpl<OpBasedWavelet> wave;
   private final OperationChannelMultiplexer mux;
   private final Command whenOpened;
-  private final DocOpCache docOpCache;
+  private final WaveDocOpTracker docOpCache;
 
   /**
    * Operation channels waiting to be bound. This map is populated from {@link
@@ -90,7 +90,7 @@ public final class LiveChannelBinder
 
   private LiveChannelBinder(StaticChannelBinder binder, WaveletOperationalizer operationalizer,
       WaveViewImpl<OpBasedWavelet> wave, OperationChannelMultiplexer mux, Command whenOpened,
-      DocOpCache docOpCache) {
+      WaveDocOpTracker docOpCache) {
     this.binder = binder;
     this.operationalizer = operationalizer;
     this.wave = wave;
@@ -109,7 +109,7 @@ public final class LiveChannelBinder
       OperationChannelMultiplexer mux,
       IdFilter filter,
       Command whenOpened,
-      DocOpCache docOpCache) {
+      WaveDocOpTracker docOpCache) {
     StaticChannelBinder staticBinder = new StaticChannelBinder(operationalizer, docRegistry,
         docOpCache);
     LiveChannelBinder liveBinder =
@@ -179,7 +179,7 @@ public final class LiveChannelBinder
     Preconditions.checkState(!channels.containsKey(id));
     channels.put(id, channel);
 
-    docOpCache.add(snapshot);
+    docOpCache.track(snapshot);
 
     if (wave.getWavelet(wid) != null) {
       connect(id);
