@@ -73,7 +73,6 @@ public final class GetDiffDataOperation extends HTTPOperation<GetDiffDataOperati
     setPathContext("contrib");
     addPathElement(options.waveId);
     addPathElement(options.waveletId);
-    addPathElement(options.blipId);
     addPathElement(options.base64HashVersion);
     addPathElement(String.valueOf(options.version));
     executeGet(callback);

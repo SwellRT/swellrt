@@ -38,11 +38,15 @@ import com.google.inject.Singleton;
 
 /**
  * Provides participant's contribution info for wavelet blips.
- * <p><br><br>
+ * <p>
+ * <br>
+ * <br>
  *
- * GET /contrib/{waveletid}/{blipdid}/{version-hash}/{version-long}
+ * GET /contrib/{waveletid}/{version-hash}/{version-long}/[blipId]
  *
- * <p><br><br>
+ * <p>
+ * <br>
+ * <br>
  * <code>
  * { contributions: [
  *    {
@@ -58,6 +62,7 @@ import com.google.inject.Singleton;
  *  ]
  *}
  *</code>
+ * 
  * @author pablojan@apache.org
  *
  */
