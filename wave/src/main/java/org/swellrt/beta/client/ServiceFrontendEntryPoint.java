@@ -1,10 +1,10 @@
 package org.swellrt.beta.client;
 
-import org.swellrt.beta.client.js.Config;
-import org.swellrt.beta.client.js.Console;
-import org.swellrt.beta.client.js.PromisableServiceFrontend;
-import org.swellrt.beta.client.js.SessionManagerJs;
-import org.swellrt.beta.client.js.editor.SEditorConfig;
+import org.swellrt.beta.client.platform.js.Config;
+import org.swellrt.beta.client.platform.web.PromisableServiceFrontend;
+import org.swellrt.beta.client.platform.web.WebSessionManager;
+import org.swellrt.beta.client.platform.web.browser.Console;
+import org.swellrt.beta.client.platform.web.editor.SEditorConfig;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -130,7 +130,7 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
       GWT.setUncaughtExceptionHandler(null);
     }
 
-    ServiceFrontendEntryPoint.context = new ServiceContext(SessionManagerJs.create(),
+    ServiceFrontendEntryPoint.context = new ServiceContext(WebSessionManager.create(),
         getServerURL());
     // Notify the host page that client is already loaded
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {

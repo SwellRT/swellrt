@@ -1,5 +1,7 @@
 package org.swellrt.beta.common;
 
+import org.swellrt.beta.client.rest.ServerOperation;
+import org.swellrt.beta.client.rest.ServerOperationExecutor;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
@@ -106,5 +108,8 @@ public class Platform {
     throw new IllegalStateException("Not implemented yet");
   }
 
+  public ServerOperationExecutor<ServerOperation.Options, ServerOperation.Response> getOperationExecutor() {
+    throw new IllegalStateException("Not implemented yet");
+  }
 
 }

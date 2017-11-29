@@ -3,7 +3,7 @@ package org.swellrt.beta.client.serverless;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.swellrt.beta.client.js.editor.STextRemoteWeb;
+import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;

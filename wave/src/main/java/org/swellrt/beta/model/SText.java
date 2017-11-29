@@ -1,6 +1,7 @@
 package org.swellrt.beta.model;
 
-import org.swellrt.beta.client.js.editor.STextLocalWeb;
+
+import org.swellrt.beta.client.platform.web.editor.STextLocalWeb;
 import org.swellrt.beta.common.Platform;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;

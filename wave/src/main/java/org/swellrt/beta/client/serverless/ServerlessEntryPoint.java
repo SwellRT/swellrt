@@ -1,6 +1,6 @@
 package org.swellrt.beta.client.serverless;
 
-import org.swellrt.beta.client.js.Console;
+import org.swellrt.beta.client.platform.web.browser.Console;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;

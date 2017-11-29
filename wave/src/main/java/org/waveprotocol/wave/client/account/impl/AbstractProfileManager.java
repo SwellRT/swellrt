@@ -19,7 +19,7 @@
 
 package org.waveprotocol.wave.client.account.impl;
 
-import org.swellrt.beta.client.js.Console;
+import org.swellrt.beta.client.platform.web.browser.Console;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;

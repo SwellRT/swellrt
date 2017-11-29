@@ -28,7 +28,7 @@ import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsSt
 
 import java.util.Queue;
 
-import org.swellrt.beta.client.js.Console;
+import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.wave.WaveWebSocketCallback.RpcFinished;
 import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
 import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;

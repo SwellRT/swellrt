@@ -3,12 +3,12 @@ package org.swellrt.beta.client.wave;
 import java.util.Queue;
 
 import org.swellrt.beta.client.ServiceConfig;
-import org.swellrt.beta.client.js.Console;
-import org.swellrt.beta.client.js.WebSocket;
-import org.swellrt.beta.client.js.WebSocket.Function;
-import org.swellrt.beta.client.js.event.CloseEvent;
-import org.swellrt.beta.client.js.event.Event;
-import org.swellrt.beta.client.js.event.MessageEvent;
+import org.swellrt.beta.client.platform.web.browser.CloseEvent;
+import org.swellrt.beta.client.platform.web.browser.Console;
+import org.swellrt.beta.client.platform.web.browser.Event;
+import org.swellrt.beta.client.platform.web.browser.MessageEvent;
+import org.swellrt.beta.client.platform.web.browser.WebSocket;
+import org.swellrt.beta.client.platform.web.browser.WebSocket.Function;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;

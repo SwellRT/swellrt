@@ -1,0 +1,158 @@
+package org.swellrt.beta.client.rest;
+
+import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.rest.ServerOperation.Method;
+import org.swellrt.beta.client.rest.ServiceOperation.OperationError;
+import org.swellrt.beta.common.SException;
+import org.waveprotocol.wave.model.util.Preconditions;
+
+/**
+ * An abstract executor of Swell HTTP REST operations, agnostic from the HTTP
+ * client and JSON parsing libraries.
+ *
+ * @author pablojan@gmail.com
+ *
+ * @param <O>
+ * @param <R>
+ */
+public abstract class ServerOperationExecutor<O extends ServiceOperation.Options, R extends ServiceOperation.Response>
+    extends OperationExecutor<O, R> {
+
+  private final static String HEADER_WINDOW_ID = "X-window-id";
+  private final static String PARAM_URL_SESSION_ID = "sid";
+  private final static String PARAM_URL_TRANSIENT_SESSION_ID = "tid";
+
+  private final static String pathSeparator = "/";
+
+  protected static class Header {
+    public String name;
+    public String value;
+
+    public Header(String name, String value) {
+      super();
+      this.name = name;
+      this.value = value;
+    }
+  }
+
+  protected interface HTTPCallback {
+
+    void onResponse(int statusCode, String statusText, String response);
+
+    void onFailure(Throwable exception);
+
+  }
+
+  private final ServiceContext context;
+
+  private Header[] headers =
+    { new Header("Content-Type", "text/plain; charset=utf-8"),
+      new Header(HEADER_WINDOW_ID, null) };
+
+  protected ServerOperationExecutor(ServiceContext context) {
+    this.context = context;
+  }
+
+  private String buildUrl(String restContext, String restParams, boolean sessionInUrl) {
+
+    if (restContext.startsWith(pathSeparator))
+      restContext = restContext.substring(1);
+
+    String path = restContext;
+
+    String url = context.getHTTPAddress();
+    if (!url.endsWith(pathSeparator))
+      url += pathSeparator;
+
+    url += path;
+
+    if (sessionInUrl && !context.isSessionCookieAvailable()) {
+
+      if (context.getTransientSessionId() != null)
+        url += ";" + PARAM_URL_TRANSIENT_SESSION_ID + "="
+            + context.getTransientSessionId();
+
+      if (context.getSessionId() != null)
+        url += ";" + PARAM_URL_SESSION_ID + "=" + context.getSessionId();
+    }
+
+    url += restParams;
+
+    return url;
+
+  }
+
+  private Header[] buildHeaders() {
+
+    if (context.getWindowId() != null)
+      headers[1].value = context.getWindowId();
+
+    return null;
+  }
+
+  public void execute(ServerOperation<O, R> operation) {
+
+    Preconditions.checkNotNull(operation, "Can't execute null service operation");
+
+    try {
+
+      String body = null;
+      if (operation.sendOptionsAsBody()) {
+        body = toJson(operation.getOptions());
+      }
+
+      executeHTTP(operation.getMethod(),
+          buildUrl(operation.getRestContext(), operation.getRestParams(),
+              operation.sendSessionInUrl()),
+          buildHeaders(),
+          body, new HTTPCallback() {
+
+            @Override
+            public void onResponse(int statusCode, String statusText, String response) {
+
+              if (statusCode == 200) {
+
+                operation.doSuccess(parseResponse(response));
+
+              } else {
+
+                OperationError serviceError = parseServiceError(response);
+                String errorMessage = serviceError != null ? serviceError.getError() : statusText;
+                operation.doFailure(new SException(statusCode, errorMessage));
+
+              }
+
+            }
+
+            @Override
+            public void onFailure(Throwable exception) {
+              operation.doFailure(exception);
+            }
+
+          });
+
+    } catch (SException e) {
+      operation.doFailure(e);
+      return;
+    } catch (Exception e) {
+      operation.doFailure(new SException(SException.OPERATION_EXCEPTION, e));
+    }
+
+  }
+
+  @Override
+  public void execute(ServiceOperation<O, R> operation) {
+    throw new IllegalStateException("ServerOperationExecutor only can execute ServerOperation");
+  }
+
+  protected abstract void executeHTTP(Method method, String url, Header[] headers, String body,
+      HTTPCallback httpCallback) throws Exception;
+
+  @SuppressWarnings("unchecked")
+  protected abstract R parseResponse(String json);
+
+  protected abstract OperationError parseServiceError(String json);
+
+  protected abstract String toJson(O options);
+
+}

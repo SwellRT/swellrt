@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
+import org.swellrt.beta.client.platform.web.RemoteDiffProvider;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;

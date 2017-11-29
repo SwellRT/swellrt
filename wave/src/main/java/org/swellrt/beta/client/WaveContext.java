@@ -3,7 +3,7 @@ package org.swellrt.beta.client;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
-import org.swellrt.beta.client.js.Console;
+import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ContextStatus;

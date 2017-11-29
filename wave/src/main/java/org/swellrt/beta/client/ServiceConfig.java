@@ -1,6 +1,6 @@
 package org.swellrt.beta.client;
 
-import org.swellrt.beta.client.js.Config;
+import org.swellrt.beta.client.platform.js.Config;
 
 public class ServiceConfig {
 

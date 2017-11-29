@@ -1,6 +1,5 @@
 package org.swellrt.beta.client;
 
-import org.swellrt.beta.client.js.Console;
 import org.swellrt.beta.client.operation.impl.CloseOperation;
 import org.swellrt.beta.client.operation.impl.CreateUserOperation;
 import org.swellrt.beta.client.operation.impl.EditUserOperation;
@@ -18,6 +17,7 @@ import org.swellrt.beta.client.operation.impl.ResumeOperation;
 import org.swellrt.beta.client.operation.impl.naming.DeleteNameOperation;
 import org.swellrt.beta.client.operation.impl.naming.GetNamesOperation;
 import org.swellrt.beta.client.operation.impl.naming.SetNameOperation;
+import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.common.Operation;
 import org.swellrt.beta.common.Operation.Callback;
 import org.swellrt.beta.common.SException;
