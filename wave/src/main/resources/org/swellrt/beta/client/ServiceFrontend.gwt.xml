@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
 
-
-	<!-- 
-		Allow code to check in which runtime platform is.
-		TODO adapt Swell client for for more platforms 
-	 -->
-	<replace-with class="org.swellrt.beta.client.js.PlatformWeb">
-   		<when-type-is class="org.swellrt.beta.common.Platform"/>
-  	</replace-with>
-
-
-
 	<!--  TODO filter out modules -->
 		
 	<inherits name="com.google.common.base.Base" />
@@ -75,9 +64,9 @@
 	<set-configuration-property name="CssResource.obfuscationPrefix"
 		value="SWC" />
 	
-	<source path="" excludes="serverless/**" />
-	<source path="operation/**" />
-	<source path="js/**" />
+	<source path="" excludes="platform/java/**, platform/js/**, platform/serverless/**" />
+	<source path="rest/**" />
+	<source path="platform/web/**" />
 	<source path="wave/**" />
 	
 		

@@ -5,7 +5,7 @@
 
 	<!-- Specify the app entry point class. -->
 	
-	<entry-point class='org.swellrt.beta.client.ServiceFrontendEntryPoint' />
+	<entry-point class='org.swellrt.beta.client.platform.web.ServiceEntryPoint' />
 	
 	<!-- 
 		For remote debug, set only one user agent target

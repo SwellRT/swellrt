@@ -5,7 +5,7 @@
 
 	<!-- Specify the app entry point class. -->
 	
-	<entry-point class='org.swellrt.beta.client.ServiceFrontendEntryPoint' />
+	<entry-point class='org.swellrt.beta.client.platform.web.ServiceEntryPoint' />
 	
 	<!-- 
 		Warning: not setting all possible user agents causes

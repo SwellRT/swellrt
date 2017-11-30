@@ -1,9 +1,9 @@
 package org.swellrt.beta.client.platform.web;
 
+import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceLogger;
 import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.common.ModelFactory;
@@ -28,7 +28,7 @@ import jsinterop.annotations.JsType;
 public class ServiceEntryPoint implements EntryPoint {
 
   private static ServiceContext context;
-  private static DefaultFrontend service;
+  private static ServiceFrontend service;
   private static PromisableFrontend promisableService;
 
   @JsMethod(name = "getCallbackable")
