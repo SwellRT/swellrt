@@ -7,6 +7,7 @@ import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
 import org.swellrt.beta.client.rest.operations.CloseOperation;
 import org.swellrt.beta.client.rest.operations.CreateUserOperation;
+import org.swellrt.beta.client.rest.operations.EchoOperation;
 import org.swellrt.beta.client.rest.operations.EditUserOperation;
 import org.swellrt.beta.client.rest.operations.GetUserBatchOperation;
 import org.swellrt.beta.client.rest.operations.GetUserOperation;
@@ -155,13 +156,45 @@ public class DefaultFrontend implements ServiceFrontend {
     serverOpExecutor.execute(op);
   }
 
-  /* (non-Javadoc)
-   * @see org.swellrt.beta.client.ServiceFrontend#login(org.swellrt.beta.client.rest.operations.LoginOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
-   */
+
   @Override
   public void login(LoginOperation.Options options, Callback<LoginOperation.Response> callback) {
-    LoginOperation op = new LoginOperation(context, options, callback);
-    serverOpExecutor.execute(op);
+
+    // Execute an echo after a successful login.
+
+    EchoOperation echoOp = new EchoOperation(context, new EchoOperation.Options() {
+    }, new Callback<EchoOperation.Response>() {
+
+      @Override
+      public void onError(SException exception) {
+        logger.log("Echo operation failed: " + exception.getMessage());
+      }
+
+      @Override
+      public void onSuccess(
+          EchoOperation.Response response) {
+      }
+
+    });
+
+    LoginOperation loginOp = new LoginOperation(context, options,
+        new Callback<LoginOperation.Response>() {
+
+          @Override
+          public void onError(SException exception) {
+            callback.onError(exception);
+          }
+
+          @Override
+          public void onSuccess(LoginOperation.Response response) {
+            serverOpExecutor.execute(echoOp);
+            callback.onSuccess(response);
+          }
+
+        });
+
+    serverOpExecutor.execute(loginOp);
+
   }
 
   /* (non-Javadoc)
