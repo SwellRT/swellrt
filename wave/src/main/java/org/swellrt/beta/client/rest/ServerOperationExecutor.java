@@ -67,6 +67,8 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
     url += path;
 
+    url += restParams;
+
     if (sessionInUrl && !context.isSessionCookieAvailable()) {
 
       if (context.getTransientSessionId() != null)
@@ -77,7 +79,7 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
         url += ";" + PARAM_URL_SESSION_ID + "=" + context.getSessionId();
     }
 
-    url += restParams;
+
 
     return url;
 
