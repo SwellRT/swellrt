@@ -8,6 +8,7 @@ import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
 import org.swellrt.beta.client.rest.operations.CreateUserOperation.Options;
 import org.swellrt.beta.client.rest.operations.CreateUserOperation.Response;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
@@ -109,34 +110,14 @@ public class ServerlessFrontend implements ServiceFrontend {
   public void open(org.swellrt.beta.client.rest.operations.OpenOperation.Options options,
       Callback<SObject> callback) {
 
-    WaveId waveId = null;
-
-    FakeWaveView wave;
-
     try {
-      waveId = WaveId.of("local.net", options.getId());
-    } catch (IllegalArgumentException e) {
+
+      SObject o = openSync(options.getId());
+      callback.onSuccess(o);
+
     } catch (Exception e) {
-
+      callback.onError(new SException(SException.OPERATION_EXCEPTION, e));
     }
-
-    if (waveId == null)
-      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).build();
-    else if (!objects.containsKey(waveId))
-      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).with(waveId)
-          .build();
-    else {
-      callback.onSuccess(objects.get(waveId));
-      return;
-    }
-
-    SWaveNodeManager nodeManager = SWaveNodeManager.of(participant, idGenerator, "local.net", wave,
-        null, nodeFactory);
-    SWaveObject object = SWaveObject.materialize(nodeManager);
-
-    objects.put(waveId, object);
-
-    callback.onSuccess(objects.get(waveId));
 
   }
 
@@ -214,6 +195,37 @@ public class ServerlessFrontend implements ServiceFrontend {
   @Override
   public String getAppDomain() {
     return WAVE_DOMAIN;
+  }
+
+  //
+  //
+  //
+
+  public SObject openSync(String id) {
+
+    WaveId waveId = null;
+
+    FakeWaveView wave;
+
+    waveId = WaveId.of("local.net", id);
+
+    if (waveId == null)
+      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).build();
+    else if (!objects.containsKey(waveId))
+      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).with(waveId)
+          .build();
+    else {
+      return objects.get(waveId);
+    }
+
+    SWaveNodeManager nodeManager = SWaveNodeManager.of(participant, idGenerator, "local.net", wave,
+        null, nodeFactory);
+    SWaveObject object = SWaveObject.materialize(nodeManager);
+
+    objects.put(waveId, object);
+
+    return objects.get(waveId);
+
   }
 
 }

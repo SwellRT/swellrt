@@ -11,7 +11,7 @@ describe("Object basic operations suite", function() {
 	
 	beforeAll(function() {
 		var service = swell.runtime.get();
-		obj = service.open("object-suite-1");
+		obj = service.openSync("object-suite-1");
 	});	
 
 

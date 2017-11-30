@@ -26,9 +26,11 @@
   
   
   	<pre>
-  		var service = swell.runtime.get();
-  		var obj = service.open("o1");
-  		
+  	
+  	var main = function(obj) {
+  	
+		window.obj = obj; 		
+ 		
   		obj.set("l1", swell.List.create());
   		  		
 		obj.set("n", 1001);	
@@ -66,6 +68,16 @@
 				
 		obj.node("l1").add("replacing list at #0", 0);
 		
+  	};
+  	
+		var service = swell.runtime.get();
+		service.open({
+			id: "o1"
+		}, {
+			onError: function(e) { console.log("Exception: "+e); },
+			onSuccess: main			  			
+		});
+  		
   		
 	</pre>
   
