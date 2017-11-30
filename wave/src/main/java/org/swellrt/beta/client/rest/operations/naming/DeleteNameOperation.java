@@ -49,13 +49,11 @@ public class DeleteNameOperation
   protected void buildRestParams() throws SException {
 
     if (!getContext().isSession()) {
-      doFailure(new SException(ResponseCode.NOT_LOGGED_IN));
-      return;
+      throw new SException(ResponseCode.NOT_LOGGED_IN);
     }
 
     if (getOptions().getId() == null) {
-      doFailure(new SException(ResponseCode.BAD_REQUEST));
-      return;
+      throw new SException(ResponseCode.BAD_REQUEST);
     }
 
     String id = getOptions().getId();

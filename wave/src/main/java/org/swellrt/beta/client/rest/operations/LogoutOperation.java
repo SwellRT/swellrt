@@ -65,7 +65,7 @@ public final class LogoutOperation
     } else if (getOptions().getId() != null) {
       addPathElement(getOptions().getId());
     } else {
-      doFailure(new SException(SException.MISSING_PARAMETERS, null, "Missing user parameter"));
+      throw new SException(SException.MISSING_PARAMETERS, null, "Missing user parameter");
     }
 
   }

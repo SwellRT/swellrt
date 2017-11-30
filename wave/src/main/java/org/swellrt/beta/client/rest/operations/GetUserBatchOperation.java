@@ -42,8 +42,7 @@ public final class GetUserBatchOperation
   protected void buildRestParams() throws SException {
 
     if (getOptions() == null || getOptions().getId() == null) {
-      doFailure(new SException(SException.MISSING_PARAMETERS));
-      return;
+      throw new SException(SException.MISSING_PARAMETERS);
     }
 
     String userIdQuery = "";

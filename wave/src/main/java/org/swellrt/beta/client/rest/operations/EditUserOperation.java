@@ -114,8 +114,7 @@ public final class EditUserOperation
   protected void buildRestParams() throws SException {
 
     if (!getContext().isSession()) {
-      doFailure(new SException(SException.NOT_LOGGED_IN));
-      return;
+      throw new SException(SException.NOT_LOGGED_IN);
     }
 
     addPathElement("account");

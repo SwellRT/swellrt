@@ -64,8 +64,7 @@ public final class CreateUserOperation
     if (getOptions() == null || getOptions().getId() == null
         || getOptions().getPassword() == null) {
 
-      doFailure(new SException(SException.MISSING_PARAMETERS));
-      return;
+      throw new SException(SException.MISSING_PARAMETERS);
     }
 
 
