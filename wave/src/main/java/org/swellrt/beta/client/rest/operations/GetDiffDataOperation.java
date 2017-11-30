@@ -4,12 +4,11 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.wave.DiffData;
 import org.waveprotocol.wave.model.util.CharBase64;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import jsinterop.annotations.JsType;
 
 public final class GetDiffDataOperation
     extends ServerOperation<GetDiffDataOperation.Options, GetDiffDataOperation.Response> {
@@ -33,23 +32,18 @@ public final class GetDiffDataOperation
 
   }
 
-  public static final class Response extends JavaScriptObject
-      implements ServerOperation.Response, DiffData.WaveletDiffData {
-
-    protected Response() {
-
-    }
+  @JsType(isNative = true)
+  public static interface Response
+      extends ServerOperation.Response, DiffData.WaveletDiffData {
 
     @Override
-    public DiffData[] get(String blipId) {
-      return (DiffData[]) JsoView.as(this).getObjectUnsafe(blipId);
-    }
+    public DiffData[] get(String blipId);
 
   }
 
 
-  public GetDiffDataOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public GetDiffDataOperation(ServiceContext context, GetDiffDataOperation.Options options,
+      ServiceOperation.Callback<GetDiffDataOperation.Response> callback) {
     super(context, options, callback);
   }
 
