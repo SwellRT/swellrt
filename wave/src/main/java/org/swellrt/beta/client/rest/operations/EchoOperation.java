@@ -50,7 +50,7 @@ public final class EchoOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
     addPathElement("echo");
   }
 

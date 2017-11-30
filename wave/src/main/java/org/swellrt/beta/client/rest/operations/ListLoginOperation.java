@@ -37,7 +37,7 @@ public final class ListLoginOperation
 
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
     addPathElement("auth");
   }
 

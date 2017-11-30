@@ -38,7 +38,7 @@ public final class ResumeOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
     addPathElement("auth");
     addPathElement(getOptions().getId());
   }

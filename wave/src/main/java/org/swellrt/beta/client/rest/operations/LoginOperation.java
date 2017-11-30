@@ -44,36 +44,7 @@ public final class LoginOperation
 
   public void doSuccess(LoginOperation.Response response) {
     getContext().init(response);
-
-    // Chain Login with the Echo operation to check if session cookie is
-    // received by the server. The Echo operation will configure the context
-    // properly. No further actions are required.
-    //
-
-    // TODO call echo service!!!
-
-    // EchoOperation echo = new EchoOperation(getServiceContext());
-    // echo.execute(null, new Callback<EchoOperation.Response>() {
-    //
-    // @Override
-    // public void onError(SException exception) {
-    // // Ignore error of echo, login was successful anyway
-    // if (callback != null) {
-    // callback.onSuccess(response);
-    // }
-    // }
-    //
-    // @Override
-    // public void
-    // onSuccess(org.swellrt.beta.client.operation.impl.EchoOperation.Response
-    // echoResponse) {
-    // if (callback != null) {
-    // callback.onSuccess(response);
-    // }
-    // }
-    //
-    // });
-
+    super.doSuccess(response);
   }
 
 
@@ -84,7 +55,7 @@ public final class LoginOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
     addPathElement("auth");
   }
 

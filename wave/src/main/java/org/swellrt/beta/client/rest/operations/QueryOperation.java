@@ -36,7 +36,7 @@ public final class QueryOperation
   }
 
   @Override
-  public void buildRestParams() {
+  protected void buildRestParams() {
 
   }
 

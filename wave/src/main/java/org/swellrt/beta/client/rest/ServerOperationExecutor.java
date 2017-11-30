@@ -88,11 +88,12 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
     if (context.getWindowId() != null)
       headers[1].value = context.getWindowId();
 
-    return null;
+    return headers;
   }
 
   @Override
   public void execute(ServiceOperation<? extends Options, ? extends Response> operation) {
+
     Preconditions.checkNotNull(operation, "Can't execute null service operation");
     if (operation instanceof ServerOperation)
       execute((ServerOperation<?, ?>) operation);
@@ -150,7 +151,6 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
     }
 
   }
-
 
   protected abstract void executeHTTP(Method method, String url, Header[] headers, String body,
       HTTPCallback httpCallback) throws Exception;

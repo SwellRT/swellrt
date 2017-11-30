@@ -39,7 +39,7 @@ public final class GetUserBatchOperation
 
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     if (getOptions() == null || getOptions().getId() == null) {
       doFailure(new SException(SException.MISSING_PARAMETERS));

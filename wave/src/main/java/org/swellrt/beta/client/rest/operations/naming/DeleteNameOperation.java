@@ -46,7 +46,7 @@ public class DeleteNameOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     if (!getContext().isSession()) {
       doFailure(new SException(ResponseCode.NOT_LOGGED_IN));

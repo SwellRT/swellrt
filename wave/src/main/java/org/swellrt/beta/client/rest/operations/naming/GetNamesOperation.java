@@ -49,7 +49,7 @@ public class GetNamesOperation
 
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     if (getOptions().getId() != null) {
       addPathElement("wave");

@@ -111,7 +111,7 @@ public final class EditUserOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     if (!getContext().isSession()) {
       doFailure(new SException(SException.NOT_LOGGED_IN));

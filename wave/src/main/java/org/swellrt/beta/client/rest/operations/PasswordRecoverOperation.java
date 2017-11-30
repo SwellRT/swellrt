@@ -46,7 +46,7 @@ public final class PasswordRecoverOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     PasswordRecoverOperation.Options options = getOptions();
 

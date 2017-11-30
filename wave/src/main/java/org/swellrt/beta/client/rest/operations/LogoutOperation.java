@@ -51,7 +51,7 @@ public final class LogoutOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     addPathElement("auth");
 

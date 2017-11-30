@@ -59,7 +59,7 @@ public final class CreateUserOperation
   }
 
   @Override
-  public void buildRestParams() throws SException {
+  protected void buildRestParams() throws SException {
 
     if (getOptions() == null || getOptions().getId() == null
         || getOptions().getPassword() == null) {

@@ -50,13 +50,17 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
     return DEFAULT_REQUEST_CONTEXT;
   }
 
-  public final String getRestParams() {
+  public final String getRestParams() throws SException {
+    path = "";
+    query = "";
+    buildRestParams();
+
     return path + query;
   }
 
   public abstract Method getMethod();
 
-  public abstract void buildRestParams() throws SException;
+  protected abstract void buildRestParams() throws SException;
 
   public boolean sendSessionInUrl() {
     return true;
