@@ -1,6 +1,10 @@
 package org.swellrt.beta.client.platform.serverless;
 
+import org.swellrt.beta.client.ServiceConfig;
+import org.swellrt.beta.client.ServiceConfigProvider;
+import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.platform.web.browser.Console;
+import org.swellrt.beta.common.ModelFactory;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -25,14 +29,10 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell", name = "runtime")
 public class ServerlessEntryPoint implements EntryPoint {
 
-  private static ServiceServerless service = null;
+  private static ServiceFrontend service;
 
   @JsMethod(name = "get")
-  public static ServiceServerless getInstance() {
-
-    if (service == null)
-      service = ServiceServerless.create();
-
+  public static ServiceFrontend getServiceInstance() {
     return service;
   }
 
@@ -42,27 +42,47 @@ public class ServerlessEntryPoint implements EntryPoint {
    * <p>
    * See "swellrt.js" file for details.
    */
-  private static native void procOnReadyHandlers(
-      ServiceServerless serviceInstance) /*-{
+  private static native void notifyOnLoadHandlers(
+    ServiceFrontend sf) /*-{
 
     if (!$wnd.swell) {
-      console.log("Swell object not ready yet! wtf?");
+      console.log("Swell object not ready yet! wtf?")
     }
 
     for(var i in $wnd._lh) {
-      $wnd._lh[i](serviceInstance);
+      $wnd._lh[i](sf);
     }
 
     delete $wnd._lh;
 
   }-*/;
 
+  private static native ServiceConfigProvider getConfigProvider() /*-{
 
+    if (!$wnd.__swell_config) {
+      $wnd.__swell_config = {};
+    }
+
+    return $wnd.__swell_config = {};
+
+  }-*/;
+
+  private static native void getEditorConfigProvider() /*-{
+
+    if (!$wnd.__swell_editor_config) {
+      $wnd.__swell_editor_config = {};
+    }
+
+  }-*/;
 
   @JsIgnore
   @Override
   public void onModuleLoad() {
 
+    // Model factory is used in remote Waves
+    ModelFactory.instance = null;
+    ServiceConfig.configProvider = getConfigProvider();
+    getEditorConfigProvider();
 
     GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
 
@@ -83,7 +103,8 @@ public class ServerlessEntryPoint implements EntryPoint {
       @Override
       public void execute() {
 
-        procOnReadyHandlers(getInstance());
+        service = new ServerlessFrontend();
+        notifyOnLoadHandlers(service);
 
       }
     });

@@ -33,7 +33,6 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
@@ -331,7 +330,6 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#getProfilesManager()
    */
   @Override
-  @JsProperty
   public ProfileManager getProfilesManager() {
     return profileManager;
   }

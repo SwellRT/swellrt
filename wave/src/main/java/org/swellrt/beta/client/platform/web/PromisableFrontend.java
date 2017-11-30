@@ -26,7 +26,6 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.ProfileManager;
 
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -413,7 +412,6 @@ public class PromisableFrontend implements ServiceConnection {
   }
 
 
-  @JsProperty
   @Override
   public ProfileManager getProfilesManager() {
     return service.getProfilesManager();

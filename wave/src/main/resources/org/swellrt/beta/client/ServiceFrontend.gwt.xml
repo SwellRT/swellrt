@@ -59,8 +59,6 @@
 	<inherits name='org.swellrt.beta.common.Common' />
 	<inherits name='org.swellrt.beta.model.Model' />
 	
-
-
 	<set-configuration-property name="CssResource.obfuscationPrefix"
 		value="SWC" />
 	

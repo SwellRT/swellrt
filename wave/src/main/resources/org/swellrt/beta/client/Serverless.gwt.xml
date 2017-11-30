@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
 
-	<!-- 
-		Allow code to check in which runtime platform is.
-		TODO adapt Swell client for for more platforms.
-		
-		Use Web by default, even for serverless client.
-	 -->
-	<replace-with class="org.swellrt.beta.client.js.PlatformWeb">
-   		<when-type-is class="org.swellrt.beta.common.Platform"/>
-  	</replace-with>
-
-
 	<!--  TODO filter out modules regarding server/remote stuff -->
 	
 	<inherits name="com.google.common.base.Base" />
@@ -38,18 +27,10 @@
 	<inherits name='org.swellrt.beta.common.Common' />
 	<inherits name='org.swellrt.beta.model.Model' />
 	
-	<!-- 
-		TODO make serverless depend only on 
-	
-	 -->
-	
-
 	<!--
 	<set-configuration-property name="CssResource.obfuscationPrefix"
 		value="SWC" />
 	 -->
-	
-
 
 	<!-- 
 		For remote debug, set only one user agent target
@@ -72,9 +53,13 @@
 	
     <collapse-all-properties />
 	
-	<source path="js" />
-	<source path="serverless" />
+	<source path="" excludes="platform/java/**, platform/js/**, platform/web/ServiceEntryPoint.*" />
+	<source path="wave/**" />
+	<source path="rest/**" />
+	<source path="platform/web/**"  />
+	<source path="platform/serverless**" />
+
 	
-	<entry-point class='org.swellrt.beta.client.serverless.ServerlessEntryPoint' />
+	<entry-point class='org.swellrt.beta.client.platform.serverless.ServerlessEntryPoint' />
 		
 </module>
