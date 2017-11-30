@@ -1,4 +1,4 @@
-package org.swellrt.beta.client.platform.js;
+package org.swellrt.beta.client.platform.web.editor;
 
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
@@ -13,7 +13,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 
-public class JsUtils {
+public class JsEditorUtils {
 
   @Deprecated
   public static native boolean isArray(JavaScriptObject o) /*-{

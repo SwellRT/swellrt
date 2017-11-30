@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.swellrt.beta.client.platform.js.JsUtils;
+import org.swellrt.beta.client.platform.web.editor.JsEditorUtils;
 import org.swellrt.beta.client.platform.web.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.doodad.annotation.UserAnnotationHandler;
@@ -321,7 +321,7 @@ public class AnnotationRegistry {
     }
 
     JsoView cssStyles = null;
-    if (JsUtils.isString(cssStyleObj)) {
+    if (JsEditorUtils.isString(cssStyleObj)) {
       JavaScriptObject o = JsonUtils.unsafeEval(cssStyleObj.toString());
       if (o != null) {
         cssStyles = JsoView.as(o);

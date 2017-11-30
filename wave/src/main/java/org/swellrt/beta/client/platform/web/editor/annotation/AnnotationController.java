@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-import org.swellrt.beta.client.platform.js.JsUtils;
+import org.swellrt.beta.client.platform.web.editor.JsEditorUtils;
 import org.swellrt.beta.client.platform.web.editor.SEditorException;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.editor.Editor;
@@ -263,7 +263,7 @@ public class AnnotationController {
       throws SEditorException {
 
     JsoView result = JsoView.as(JavaScriptObject.createObject());
-    ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsUtils.toStringSet(keys));
+    ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsEditorUtils.toStringSet(keys));
     StringSet paragraphKeySet = CollectionUtils.createStringSet();
     StringSet textKeySet = CollectionUtils.createStringSet();
     filterOutKeys(keySet, paragraphKeySet, textKeySet, AnnotationRegistry::isParagraphAnnotation);
@@ -304,7 +304,7 @@ public class AnnotationController {
           AnnotationValue anotationValue = AnnotationValueBuilder.buildWithRange(
               editor.getContent().getMutableDoc(), ra.key(), ra.value(), anotRange, rangeMatch);
 
-          JsUtils.addToArray(result.getJso(ra.key()), anotationValue);
+          JsEditorUtils.addToArray(result.getJso(ra.key()), anotationValue);
         });
 
     //
@@ -359,7 +359,7 @@ public class AnnotationController {
                   result.setJso(c.key, JavaScriptObject.createArray());
                 }
 
-                JsUtils.addToArray(result.getJso(c.key), anotationValue);
+                JsEditorUtils.addToArray(result.getJso(c.key), anotationValue);
 
               }
             }

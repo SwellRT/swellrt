@@ -1,6 +1,5 @@
 package org.swellrt.beta.client.platform.web.editor;
 
-import org.swellrt.beta.client.platform.js.JsUtils;
 import org.swellrt.beta.client.platform.web.browser.Console;
 import org.waveprotocol.wave.client.common.util.OffsetPosition;
 import org.waveprotocol.wave.client.editor.selection.html.NativeSelectionUtil;
@@ -42,7 +41,7 @@ public class SSelection {
 
       s.isCollapsed = nativeSelectionPoint.isCollapsed();
 
-      s.range = JsUtils.rangeToNative(textRange);
+      s.range = JsEditorUtils.rangeToNative(textRange);
 
     return s;
 
@@ -58,8 +57,8 @@ public class SSelection {
       Element relative) {
     Preconditions.checkNotNull(offsetPosition, "Offset position can't be null");
     Preconditions.checkNotNull(relative, "Relative element can't be null");
-    OffsetPosition target = JsUtils.nativeToOffsetPosition(offsetPosition);
-    return JsUtils.offsetPositionToNative(OffsetPosition.getRelativePosition(target, relative));
+    OffsetPosition target = JsEditorUtils.nativeToOffsetPosition(offsetPosition);
+    return JsEditorUtils.offsetPositionToNative(OffsetPosition.getRelativePosition(target, relative));
   }
 
   protected SSelection() {
@@ -85,15 +84,15 @@ public class SSelection {
   }
 
   public JavaScriptObject getFocusBound() {
-    return JsUtils.intRangeToNative(NativeSelectionUtil.getFocusBounds());
+    return JsEditorUtils.intRangeToNative(NativeSelectionUtil.getFocusBounds());
   }
 
   public JavaScriptObject getSelectionPosition() {
-    return JsUtils.offsetPositionToNative(NativeSelectionUtil.slowGetPosition());
+    return JsEditorUtils.offsetPositionToNative(NativeSelectionUtil.slowGetPosition());
   }
 
   public JavaScriptObject getAnchorPosition() {
-    return JsUtils.offsetPositionToNative(NativeSelectionUtil.slowGetAnchorPosition());
+    return JsEditorUtils.offsetPositionToNative(NativeSelectionUtil.slowGetAnchorPosition());
   }
 
 }
