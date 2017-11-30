@@ -34,8 +34,12 @@ public class RemoteDiffProvider implements DiffProvider {
   public static class JsoWaveletDiffData extends JavaScriptObject
       implements GetDiffDataOperation.Response {
 
+    protected JsoWaveletDiffData() {
+
+    }
+
     @Override
-    public DiffData[] get(String blipId) {
+    public final DiffData[] get(String blipId) {
       return (DiffData[]) JsoView.as(this).getObjectUnsafe(blipId);
     }
 

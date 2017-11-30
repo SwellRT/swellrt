@@ -12,6 +12,7 @@ public class DiffData {
 
   }
 
+  @JsType(isNative = true)
   public interface WaveletDiffData {
 
     DiffData[] get(String blipId);
