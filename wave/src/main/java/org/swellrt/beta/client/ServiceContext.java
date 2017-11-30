@@ -3,8 +3,7 @@ package org.swellrt.beta.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
-import org.swellrt.beta.client.platform.web.RemoteDiffProvider;
+import org.swellrt.beta.client.ServiceConnection.ConnectionHandler;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
@@ -12,6 +11,7 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.account.ServerAccountData;
+import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -107,17 +107,20 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private SettableFuture<RemoteViewServiceMultiplexer> serviceMultiplexerFuture = SettableFuture
       .<RemoteViewServiceMultiplexer> create();
 
-  private final CopyOnWriteSet<ServiceFrontend.ConnectionHandler> connectionHandlers = CopyOnWriteSet
+  private final CopyOnWriteSet<DefaultFrontend.ConnectionHandler> connectionHandlers = CopyOnWriteSet
       .createListSet();
 
   private ConnectState connectState = null;
   private SException exception = null;
 
+  private final DiffProvider.Factory diffProviderFactory;
 
-  public ServiceContext(SessionManager sessionManager, String httpAddress) {
+  public ServiceContext(SessionManager sessionManager, String httpAddress,
+      DiffProvider.Factory diffProviderFactory) {
     this.sessionManager = sessionManager;
     this.httpAddress = httpAddress;
     this.websocketAddress = getWebsocketAddress(httpAddress);
+    this.diffProviderFactory = diffProviderFactory;
   }
 
   public void addConnectionHandler(ConnectionHandler h) {
@@ -236,7 +239,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     if (!waveRegistry.containsKey(waveId)) {
       waveRegistry.put(waveId, new WaveContext(waveId, sessionManager.getWaveDomain(),
           ParticipantId.ofUnsafe(sessionManager.getUserId()), this,
-          new RemoteDiffProvider(waveId, this)));
+          diffProviderFactory.get(waveId)));
     }
 
     WaveContext waveContext = waveRegistry.get(waveId);
@@ -333,7 +336,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     connectState = state;
     exception = sexception;
 
-    for (ServiceFrontend.ConnectionHandler ch : connectionHandlers)
+    for (DefaultFrontend.ConnectionHandler ch : connectionHandlers)
       ch.exec(state.toString(), sexception);
   }
 
@@ -358,7 +361,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
     connectState = ConnectState.ERROR;
 
-    for (ServiceFrontend.ConnectionHandler ch : connectionHandlers)
+    for (DefaultFrontend.ConnectionHandler ch : connectionHandlers)
       ch.exec(connectState.toString(), ex);
   }
 

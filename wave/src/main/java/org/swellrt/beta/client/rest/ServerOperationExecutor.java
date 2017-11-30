@@ -3,6 +3,8 @@ package org.swellrt.beta.client.rest;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation.Method;
 import org.swellrt.beta.client.rest.ServiceOperation.OperationError;
+import org.swellrt.beta.client.rest.ServiceOperation.Options;
+import org.swellrt.beta.client.rest.ServiceOperation.Response;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.model.util.Preconditions;
 
@@ -15,8 +17,7 @@ import org.waveprotocol.wave.model.util.Preconditions;
  * @param <O>
  * @param <R>
  */
-public abstract class ServerOperationExecutor<O extends ServiceOperation.Options, R extends ServiceOperation.Response>
-    extends OperationExecutor<O, R> {
+public abstract class ServerOperationExecutor extends OperationExecutor {
 
   private final static String HEADER_WINDOW_ID = "X-window-id";
   private final static String PARAM_URL_SESSION_ID = "sid";
@@ -90,7 +91,17 @@ public abstract class ServerOperationExecutor<O extends ServiceOperation.Options
     return null;
   }
 
-  public void execute(ServerOperation<O, R> operation) {
+  @Override
+  public void execute(ServiceOperation<? extends Options, ? extends Response> operation) {
+    Preconditions.checkNotNull(operation, "Can't execute null service operation");
+    if (operation instanceof ServerOperation)
+      execute((ServerOperation<?, ?>) operation);
+
+    throw new IllegalStateException("This executor only can execute Server Operations");
+  }
+
+  public void execute(
+      ServerOperation<? extends ServiceOperation.Options, ? extends ServiceOperation.Response> operation) {
 
     Preconditions.checkNotNull(operation, "Can't execute null service operation");
 
@@ -140,19 +151,15 @@ public abstract class ServerOperationExecutor<O extends ServiceOperation.Options
 
   }
 
-  @Override
-  public void execute(ServiceOperation<O, R> operation) {
-    throw new IllegalStateException("ServerOperationExecutor only can execute ServerOperation");
-  }
 
   protected abstract void executeHTTP(Method method, String url, Header[] headers, String body,
       HTTPCallback httpCallback) throws Exception;
 
   @SuppressWarnings("unchecked")
-  protected abstract R parseResponse(String json);
+  protected abstract <R extends ServiceOperation.Response> R parseResponse(String json);
 
   protected abstract OperationError parseServiceError(String json);
 
-  protected abstract String toJson(O options);
+  protected abstract <O extends ServiceOperation.Options> String toJson(O options);
 
 }

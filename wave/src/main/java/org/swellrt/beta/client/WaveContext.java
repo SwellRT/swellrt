@@ -3,11 +3,10 @@ package org.swellrt.beta.client;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
-import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ContextStatus;
-import org.swellrt.beta.common.Platform;
+import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.wave.SubstrateId;
@@ -30,7 +29,6 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Command;
 
 /**
@@ -41,8 +39,6 @@ import com.google.gwt.user.client.Command;
  *
  */
 public class WaveContext implements UnsavedDataListener, TurbulenceListener, ContextStatus {
-
-  private static final Platform PLATFORM = GWT.create(Platform.class);
 
   private static final int INACTIVE = 0;
   private static final int ACTIVE = 1;
@@ -113,7 +109,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
                   public SWaveText createWaveText(SWaveNodeManager nodeManager,
                       SubstrateId substrateId, Blip blip) {
 
-                    return PLATFORM.createWaveText(nodeManager, substrateId, blip,
+                    return ModelFactory.instance.createWaveText(nodeManager, substrateId, blip,
                         loader.getDocumentRegistry().getTextDocument(substrateId));
 
                   }
@@ -153,7 +149,6 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
   public void onFailure(ChannelException e) {
     this.lastException = e;
     this.state = ERROR;
-    Console.log("ChannelException: " + e.toString());
     // If an exception occurs during stage loader (WaveLoader)
     // it will reach here. Check the future so.
     if (!this.sobjectFuture.isDone()) {

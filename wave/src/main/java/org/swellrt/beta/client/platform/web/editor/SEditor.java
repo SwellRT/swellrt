@@ -4,10 +4,10 @@ package org.swellrt.beta.client.platform.web.editor;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.swellrt.beta.client.ServiceBasis;
-import org.swellrt.beta.client.ServiceBasis.ConnectionHandler;
+import org.swellrt.beta.client.DefaultFrontend;
+import org.swellrt.beta.client.ServiceConnection;
+import org.swellrt.beta.client.ServiceConnection.ConnectionHandler;
 import org.swellrt.beta.client.ServiceConstants;
-import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.platform.js.JsUtils;
 import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.platform.web.editor.annotation.AnnotationController;
@@ -240,7 +240,7 @@ public class SEditor implements EditorUpdateListener {
   }
 
 
-  public static SEditor createWithId(String containerId, @JsOptional ServiceFrontend sf) throws SException {
+  public static SEditor createWithId(String containerId, @JsOptional DefaultFrontend sf) throws SException {
     Element containerElement = DOM.getElementById(containerId);
     if (containerElement == null || !containerElement.getNodeName().equalsIgnoreCase("div"))
       throw new SException(SException.INTERNAL_ERROR, null, "Container element must be a div");
@@ -250,7 +250,7 @@ public class SEditor implements EditorUpdateListener {
     return se;
   }
 
-  public static SEditor createWithElement(Element containerElement, @JsOptional ServiceFrontend sf) throws SException {
+  public static SEditor createWithElement(Element containerElement, @JsOptional DefaultFrontend sf) throws SException {
     if (containerElement == null || !containerElement.getNodeName().equalsIgnoreCase("div"))
       throw new SException(SException.INTERNAL_ERROR, null, "Container element must be a div");
 
@@ -273,7 +273,7 @@ public class SEditor implements EditorUpdateListener {
   private KeyBindingRegistry keyBindingRegistry;
 
   /** A service to listen to connection events */
-  ServiceBasis service;
+  ServiceConnection service;
 
   private SelectionExtractor selectionExtractor;
 
@@ -717,7 +717,7 @@ public class SEditor implements EditorUpdateListener {
    *
    * @param serviceFrontend
    */
-  public void registerService(ServiceBasis service) {
+  public void registerService(ServiceConnection service) {
 
     if (this.service != null)
       unregisterService();

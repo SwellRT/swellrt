@@ -1,27 +1,27 @@
 package org.swellrt.beta.client.platform.web;
 
-import org.swellrt.beta.client.ServiceBasis;
+import org.swellrt.beta.client.ServiceConnection;
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.operation.impl.CloseOperation;
-import org.swellrt.beta.client.operation.impl.CreateUserOperation;
-import org.swellrt.beta.client.operation.impl.EditUserOperation;
-import org.swellrt.beta.client.operation.impl.GetUserBatchOperation;
-import org.swellrt.beta.client.operation.impl.GetUserOperation;
-import org.swellrt.beta.client.operation.impl.ListLoginOperation;
-import org.swellrt.beta.client.operation.impl.LoginOperation;
-import org.swellrt.beta.client.operation.impl.LogoutOperation;
-import org.swellrt.beta.client.operation.impl.OpenOperation;
-import org.swellrt.beta.client.operation.impl.PasswordOperation;
-import org.swellrt.beta.client.operation.impl.PasswordRecoverOperation;
-import org.swellrt.beta.client.operation.impl.QueryOperation;
-import org.swellrt.beta.client.operation.impl.ResumeOperation;
-import org.swellrt.beta.client.operation.impl.naming.DeleteNameOperation;
-import org.swellrt.beta.client.operation.impl.naming.GetNamesOperation;
-import org.swellrt.beta.client.operation.impl.naming.SetNameOperation;
 import org.swellrt.beta.client.platform.web.browser.Promise;
 import org.swellrt.beta.client.platform.web.browser.Promise.ConstructorParam;
 import org.swellrt.beta.client.platform.web.browser.Promise.FunctionParam;
-import org.swellrt.beta.common.Operation.Callback;
+import org.swellrt.beta.client.rest.ServiceOperation.Callback;
+import org.swellrt.beta.client.rest.operations.CloseOperation;
+import org.swellrt.beta.client.rest.operations.CreateUserOperation;
+import org.swellrt.beta.client.rest.operations.EditUserOperation;
+import org.swellrt.beta.client.rest.operations.GetUserBatchOperation;
+import org.swellrt.beta.client.rest.operations.GetUserOperation;
+import org.swellrt.beta.client.rest.operations.ListLoginOperation;
+import org.swellrt.beta.client.rest.operations.LoginOperation;
+import org.swellrt.beta.client.rest.operations.LogoutOperation;
+import org.swellrt.beta.client.rest.operations.OpenOperation;
+import org.swellrt.beta.client.rest.operations.PasswordOperation;
+import org.swellrt.beta.client.rest.operations.PasswordRecoverOperation;
+import org.swellrt.beta.client.rest.operations.QueryOperation;
+import org.swellrt.beta.client.rest.operations.ResumeOperation;
+import org.swellrt.beta.client.rest.operations.naming.DeleteNameOperation;
+import org.swellrt.beta.client.rest.operations.naming.GetNamesOperation;
+import org.swellrt.beta.client.rest.operations.naming.SetNameOperation;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -36,11 +36,11 @@ import jsinterop.annotations.JsType;
  *
  */
 @JsType(namespace = "swell", name = "PromisableService")
-public class PromisableServiceFrontend implements ServiceBasis {
+public class PromisableFrontend implements ServiceConnection {
 
-	private final ServiceFrontend service;
+  private final ServiceFrontend service;
 
-	public PromisableServiceFrontend(ServiceFrontend service) {
+  public PromisableFrontend(ServiceFrontend service) {
 		this.service = service;
 	}
 

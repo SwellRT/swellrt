@@ -1,7 +1,7 @@
-package org.swellrt.beta.common;
+package org.swellrt.beta.client.platform.java;
 
-import org.swellrt.beta.client.rest.ServerOperation;
-import org.swellrt.beta.client.rest.ServerOperationExecutor;
+import org.swellrt.beta.common.ModelFactory;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
@@ -13,28 +13,11 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
-/**
- * A class to check runtime platform type. Used with GWT deferred binding.
- *
- * @author pablojan@gmail.com
- *
- */
-public class Platform {
+public class JavaModelFactory extends ModelFactory {
 
-  public boolean isWeb() {
-    return false;
-  }
-
-  public boolean isJavaScript() {
-    return false;
-  }
-
-  public boolean isJava() {
-    return true;
-  }
-
-  public SWaveText createWaveText(SWaveNodeManager
-  nodeManager, SubstrateId substrateId, Blip blip, InteractiveDocument doc) {
+  @Override
+  public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
+      InteractiveDocument doc) {
 
     return new SWaveText(nodeManager, substrateId, blip) {
 
@@ -104,12 +87,8 @@ public class Platform {
 
   }
 
+  @Override
   public STextLocal createLocalText(String text) throws SException {
     throw new IllegalStateException("Not implemented yet");
   }
-
-  public ServerOperationExecutor<ServerOperation.Options, ServerOperation.Response> getOperationExecutor() {
-    throw new IllegalStateException("Not implemented yet");
-  }
-
 }

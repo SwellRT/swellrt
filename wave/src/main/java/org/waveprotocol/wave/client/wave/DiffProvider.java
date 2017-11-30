@@ -1,6 +1,7 @@
 package org.waveprotocol.wave.client.wave;
 
 import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
+import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
@@ -11,6 +12,12 @@ import com.google.gwt.core.client.Callback;
  *
  */
 public interface DiffProvider {
+
+  public static interface Factory {
+
+    DiffProvider get(WaveId waveId);
+
+  }
 
   public static DiffProvider VOID_DIFF_PROVIDER = new DiffProvider() {
 

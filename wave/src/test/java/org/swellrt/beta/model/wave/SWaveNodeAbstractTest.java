@@ -1,6 +1,7 @@
 package org.swellrt.beta.model.wave;
 
-import org.swellrt.beta.common.Platform;
+import org.swellrt.beta.client.platform.java.JavaModelFactory;
+import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
@@ -21,7 +22,7 @@ import junit.framework.TestCase;
  */
 public abstract class SWaveNodeAbstractTest extends TestCase {
 
-  private static Platform platform = new Platform();
+  private static ModelFactory modelFactory = new JavaModelFactory();
 
   private static SWaveNodeManager.NodeFactory nodeFactory = new SWaveNodeManager.NodeFactory() {
 
@@ -29,7 +30,7 @@ public abstract class SWaveNodeAbstractTest extends TestCase {
     public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
         Blip blip) {
 
-      return platform.createWaveText(nodeManager, substrateId, blip, null);
+      return modelFactory.createWaveText(nodeManager, substrateId, blip, null);
     }
 
   };

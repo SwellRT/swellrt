@@ -1,10 +1,14 @@
-package org.swellrt.beta.client;
+package org.swellrt.beta.client.platform.web;
 
-import org.swellrt.beta.client.platform.js.Config;
-import org.swellrt.beta.client.platform.web.PromisableServiceFrontend;
-import org.swellrt.beta.client.platform.web.WebSessionManager;
+import org.swellrt.beta.client.ServiceConfig;
+import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.ServiceFrontend;
+import org.swellrt.beta.client.DefaultFrontend;
+import org.swellrt.beta.client.ServiceLogger;
 import org.swellrt.beta.client.platform.web.browser.Console;
-import org.swellrt.beta.client.platform.web.editor.SEditorConfig;
+import org.swellrt.beta.common.ModelFactory;
+import org.waveprotocol.wave.client.wave.DiffProvider;
+import org.waveprotocol.wave.model.id.WaveId;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -21,28 +25,20 @@ import jsinterop.annotations.JsType;
  *
  */
 @JsType(namespace = "swell", name = "runtime")
-public class ServiceFrontendEntryPoint implements EntryPoint {
+public class ServiceEntryPoint implements EntryPoint {
 
   private static ServiceContext context;
-  private static ServiceFrontend callbackableFrontend;
-  private static PromisableServiceFrontend promisableFrontend;
+  private static DefaultFrontend service;
+  private static PromisableFrontend promisableService;
 
   @JsMethod(name = "getCallbackable")
   public static ServiceFrontend getCallbackableInstance() {
-
-    if (callbackableFrontend == null)
-      callbackableFrontend = ServiceFrontend.create(context);
-
-    return callbackableFrontend;
+    return service;
   }
 
   @JsMethod(name = "get")
-  public static PromisableServiceFrontend getPromisableInstance() {
-
-    if (promisableFrontend == null)
-      promisableFrontend = new PromisableServiceFrontend(getCallbackableInstance());
-
-    return promisableFrontend;
+  public static PromisableFrontend getPromisableInstance() {
+    return promisableService;
   }
 
   private static String getServerURL() {
@@ -70,8 +66,8 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
    * <p>
    * See "swellrt.js" file for details.
    */
-  private static native void procOnReadyHandlers(
-    PromisableServiceFrontend sf) /*-{
+  private static native void notifyOnLoadHandlers(
+    PromisableFrontend sf) /*-{
 
     if (!$wnd.swell) {
       console.log("Swell object not ready yet! wtf?")
@@ -85,16 +81,8 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
 
   }-*/;
 
-  /**
-   * Initialize some native JavaScript objects.
-   * See {@link Config} and {@link SEditorConfig}
-   *
-   */
-  private static native void initNativeObjects() /*-{
+  private static native void getEditorConfigProvider() /*-{
 
-    if (!$wnd.__swell_config) {
-      $wnd.__swell_config = {};
-    }
 
     if (!$wnd.__swell_editor_config) {
       $wnd.__swell_editor_config = {};
@@ -103,11 +91,25 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
   }-*/;
 
 
+  private static native WebConfigProvider getConfigProvider() /*-{
+
+      if (!$wnd.__swell_config) {
+        $wnd.__swell_config = {};
+      }
+
+      return $wnd.__swell_config = {};
+
+  }-*/;
+
+
+
   @JsIgnore
   @Override
   public void onModuleLoad() {
 
-    initNativeObjects();
+    ModelFactory.instance = new WebModelFactory();
+    ServiceConfig.configProvider = getConfigProvider();
+    getEditorConfigProvider();
 
     if (ServiceConfig.captureExceptions()) {
 
@@ -130,14 +132,36 @@ public class ServiceFrontendEntryPoint implements EntryPoint {
       GWT.setUncaughtExceptionHandler(null);
     }
 
-    ServiceFrontendEntryPoint.context = new ServiceContext(WebSessionManager.create(),
-        getServerURL());
+
     // Notify the host page that client is already loaded
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
 
-        procOnReadyHandlers(getPromisableInstance());
+
+        context = new ServiceContext(WebSessionManager.create(), getServerURL(),
+            new DiffProvider.Factory() {
+
+              @Override
+              public DiffProvider get(WaveId waveId) {
+                return new RemoteDiffProvider(waveId, context);
+              }
+            });
+
+        service = DefaultFrontend.create(context,
+            new WebServerOperationExecutor(context),
+            new ServiceLogger() {
+
+              @Override
+              public void log(String message) {
+                Console.log(message);
+              }
+
+            });
+
+        promisableService = new PromisableFrontend(service);
+
+        notifyOnLoadHandlers(promisableService);
 
       }
     });

@@ -5,9 +5,6 @@ import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.account.ServerAccountData;
-import org.waveprotocol.wave.client.common.util.JsoView;
-
-import com.google.gwt.core.client.JavaScriptObject;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -39,44 +36,58 @@ public final class EditUserOperation
 
   }
 
-  // TODO avoid JavaScriptObject type here!!! use JsNative = true
-  public static final class JsoOptions extends JavaScriptObject implements Options  {
+  public static class DefaultOptions implements Options {
 
-    protected JsoOptions() {
+    private String id;
+    private String password;
+    private String email;
+    private String locale;
+    private String name;
+    private String avatarData;
 
+    public DefaultOptions(String id, String name) {
+      super();
+      this.id = id;
+      this.name = name;
     }
 
-    @Override
+    public DefaultOptions(String id, String password, String email, String locale, String name,
+        String avatarData) {
+      super();
+      this.id = id;
+      this.password = password;
+      this.email = email;
+      this.locale = locale;
+      this.name = name;
+      this.avatarData = avatarData;
+    }
+
     public String getId() {
-      return JsoView.as(this).getString("id");
+      return id;
     }
 
-    @Override
     public String getPassword() {
-      return JsoView.as(this).getString("password");
+      return password;
     }
 
-    @Override
     public String getEmail() {
-      return JsoView.as(this).getString("email");
+      return email;
     }
 
-    @Override
     public String getLocale() {
-      return JsoView.as(this).getString("locale");
+      return locale;
     }
 
-    @Override
     public String getName() {
-      return JsoView.as(this).getString("name");
+      return name;
     }
 
-    @Override
     public String getAvatarData() {
-      return JsoView.as(this).getString("avatarData");
+      return avatarData;
     }
 
   }
+
 
   @JsType(isNative = true)
   public interface Response extends ServerOperation.Response, ServerAccountData {

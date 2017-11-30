@@ -14,7 +14,7 @@ public final class GetUserOperation
 
 
   @JsType(isNative = true)
-  public interface Options extends ServerOperation.Options {
+  public interface Options extends ServiceOperation.Options {
 
     @JsProperty
     public String getId();
@@ -22,12 +22,12 @@ public final class GetUserOperation
   }
 
   @JsType(isNative = true)
-  public interface Response extends ServerOperation.Response, ServerAccountData {
+  public interface Response extends ServiceOperation.Response, ServerAccountData {
 
   }
 
-  public GetUserOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public GetUserOperation(ServiceContext context, GetUserOperation.Options options,
+      ServiceOperation.Callback<GetUserOperation.Response> callback) {
     super(context, options, callback);
   }
 

@@ -1,7 +1,8 @@
 package org.swellrt.beta.client.rest;
 
-public abstract class OperationExecutor<O extends ServiceOperation.Options, R extends ServiceOperation.Response> {
+public abstract class OperationExecutor {
 
-  public abstract void execute(ServiceOperation<O, R> operation);
+  public abstract void execute(
+      ServiceOperation<? extends ServiceOperation.Options, ? extends ServiceOperation.Response> operation);
 
 }

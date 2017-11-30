@@ -4,6 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServerOperation.Method;
 import org.swellrt.beta.client.rest.ServerOperationExecutor;
+import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.ServiceOperation.OperationError;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -13,11 +14,10 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 
-public class WebServerOperationExecutor<O extends ServerOperation.Options, R extends ServerOperation.Response>
-    extends ServerOperationExecutor<O, R>
+public class WebServerOperationExecutor extends ServerOperationExecutor
 {
 
-  protected WebServerOperationExecutor(ServiceContext context) {
+  public WebServerOperationExecutor(ServiceContext context) {
     super(context);
   }
 
@@ -76,7 +76,7 @@ public class WebServerOperationExecutor<O extends ServerOperation.Options, R ext
 
   @SuppressWarnings("unchecked")
   @Override
-  protected R parseResponse(String json) {
+  protected <R extends ServiceOperation.Response> R parseResponse(String json) {
     return (R) JsonUtils.safeEval(json);
   }
 
@@ -86,7 +86,7 @@ public class WebServerOperationExecutor<O extends ServerOperation.Options, R ext
   }
 
   @Override
-  protected String toJson(O options) {
+  protected <O extends ServiceOperation.Options> String toJson(O options) {
     if (options != null) {
       if (options instanceof JavaScriptObject) {
         return JsonUtils.stringify((JavaScriptObject) options);

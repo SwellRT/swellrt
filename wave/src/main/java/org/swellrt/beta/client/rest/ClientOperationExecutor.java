@@ -11,11 +11,11 @@ import org.waveprotocol.wave.model.id.WaveId;
 
 import com.google.common.util.concurrent.FutureCallback;
 
-public class ClientOperationExecutor<O extends ServiceOperation.Options, R extends ServiceOperation.Response>
-    extends OperationExecutor<O, R> {
+public class ClientOperationExecutor extends OperationExecutor {
 
   @Override
-  public void execute(ServiceOperation<O, R> operation) {
+  public void execute(
+      ServiceOperation<? extends ServiceOperation.Options, ? extends ServiceOperation.Response> operation) {
     throw new IllegalStateException("Can't execute generic ServiceOperation instance");
   }
 
@@ -74,5 +74,6 @@ public class ClientOperationExecutor<O extends ServiceOperation.Options, R exten
 
     });
   }
+
 
 }
