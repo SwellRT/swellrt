@@ -1,17 +1,22 @@
 package org.swellrt.beta.client;
 
 import jsinterop.annotations.JsPackage;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true, name = "__swell_config", namespace = JsPackage.GLOBAL)
 public interface ServiceConfigProvider {
 
-  public Boolean getCaptureExceptions();
+  @JsProperty
+  public boolean getCaptureExceptions();
 
-  public Integer getWebsocketHeartbeatInterval();
+  @JsProperty
+  public int getWebsocketHeartbeatInterval();
 
-  public Integer getWebsocketHeartbeatTimeout();
+  @JsProperty
+  public int getWebsocketHeartbeatTimeout();
 
-  public Boolean getWebsocketDebugLog();
+  @JsProperty
+  public boolean getWebsocketDebugLog();
 
 }

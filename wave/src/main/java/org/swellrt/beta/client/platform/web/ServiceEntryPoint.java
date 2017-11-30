@@ -2,6 +2,7 @@ package org.swellrt.beta.client.platform.web;
 
 import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceConfig;
+import org.swellrt.beta.client.ServiceConfigProvider;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceLogger;
@@ -91,7 +92,7 @@ public class ServiceEntryPoint implements EntryPoint {
   }-*/;
 
 
-  private static native WebConfigProvider getConfigProvider() /*-{
+  private static native ServiceConfigProvider getConfigProvider() /*-{
 
       if (!$wnd.__swell_config) {
         $wnd.__swell_config = {};
