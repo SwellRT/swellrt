@@ -1,7 +1,6 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.client.rest.ServiceOperation;
-import org.swellrt.beta.common.Operation;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
 import jsinterop.annotations.JsFunction;
@@ -9,7 +8,7 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "Object")
-public interface SObject extends SMap, Operation.Response, ServiceOperation.Response {
+public interface SObject extends SMap, ServiceOperation.Response {
 
   @JsFunction
   public interface StatusHandler {
