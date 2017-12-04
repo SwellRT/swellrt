@@ -114,7 +114,7 @@ public class SWaveObject extends SWaveNodeContainer
 
   @Override
   public String[] getParticipants() {
-    return getParticipants();
+    return waveManager.getParticipants();
   }
 
 

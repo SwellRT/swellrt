@@ -11,7 +11,7 @@ describe("Object basic operations suite", function() {
 	
 	beforeAll(function() {
 		var service = swell.runtime.get();
-		obj = service.openSync("object-suite-1");
+		obj = service.openSync("object-1");
 	});	
 
 
@@ -86,3 +86,28 @@ describe("Object basic operations suite", function() {
 });
 
 
+describe("Participants", function() {
+
+	var obj; // shared by all tests
+	
+	
+	beforeAll(function() {
+		var service = swell.runtime.get();
+		obj = service.openSync("object-2");
+	});	
+
+	it("get/add/remove participants", function() {
+		
+		expect(obj.getParticipants()[0]).toEqual("fake@local.net");
+		
+		obj.addParticipant('tom@local.net');
+		expect(obj.getParticipants()[0]).toEqual("fake@local.net");
+		expect(obj.getParticipants()[1]).toEqual("tom@local.net");
+		
+		obj.removeParticipant('tom@local.net');
+		expect(obj.getParticipants()[0]).toEqual("fake@local.net");
+		expect(obj.getParticipants().length).toEqual(1);
+		
+	});
+
+});
