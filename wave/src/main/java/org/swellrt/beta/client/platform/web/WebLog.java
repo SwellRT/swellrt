@@ -11,23 +11,27 @@ public class WebLog extends Log {
 
   @Override
   public void info(String message) {
-    Console.log("INFO [" + clazz.getSimpleName() + "] " + message);
+    if (Level.INFO.equals(level) || Level.DEBUG.equals(level))
+      Console.log("INFO [" + clazz.getSimpleName() + "] " + message);
   }
 
   @Override
   public void severe(String message) {
-    Console.log("ERROR [" + clazz.getSimpleName() + "] " + message);
+    if (Level.SEVERE.equals(level) || Level.INFO.equals(level) || Level.DEBUG.equals(level))
+      Console.log("ERROR [" + clazz.getSimpleName() + "] " + message);
   }
 
   @Override
   public void severe(String message, Throwable t) {
-    Console
+    if (Level.SEVERE.equals(level) || Level.INFO.equals(level) || Level.DEBUG.equals(level))
+      Console
         .log("ERROR [" + clazz.getSimpleName() + "] " + message + ", Exception: " + t.getMessage());
   }
 
   @Override
   public void debug(String message) {
-    Console.log("DEBUG [" + clazz.getSimpleName() + "] " + message);
+    if (Level.DEBUG.equals(level))
+      Console.log("DEBUG [" + clazz.getSimpleName() + "] " + message);
   }
 
 }

@@ -2,6 +2,10 @@ package org.swellrt.beta.client.wave;
 
 public abstract class Log {
 
+  public enum Level {
+    SEVERE, INFO, DEBUG, NONE
+  }
+
   public static interface Factory {
     Log create(Class<? extends Object> clazz);
   }
@@ -12,10 +16,15 @@ public abstract class Log {
 
   protected final Class<? extends Object> clazz;
 
+  protected Level level = Level.SEVERE;
+
   public Log(Class<? extends Object> clazz) {
     this.clazz = clazz;
   }
 
+  public void setLevel(Level level) {
+    this.level = level;
+  }
 
   public abstract void info(String message);
 

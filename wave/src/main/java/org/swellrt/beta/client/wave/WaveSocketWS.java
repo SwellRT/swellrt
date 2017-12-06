@@ -4,11 +4,11 @@ import java.util.Queue;
 
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.platform.web.browser.CloseEvent;
-import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.platform.web.browser.Event;
 import org.swellrt.beta.client.platform.web.browser.MessageEvent;
 import org.swellrt.beta.client.platform.web.browser.WebSocket;
 import org.swellrt.beta.client.platform.web.browser.WebSocket.Function;
+import org.swellrt.beta.client.wave.Log.Level;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -55,12 +55,11 @@ public class WaveSocketWS implements WaveSocket {
 
   private static final int HEARTBEAT_TIMEOUT = ServiceConfig.websocketHeartbeatTimeout();
 
-  private static final boolean DEBUG_LOG = ServiceConfig.websocketDebugLog();
+  private static final Log LOG;
 
-  private static void log(String message) {
-    if (DEBUG_LOG) {
-      Console.log("[Websocket] " + message);
-    }
+  static {
+    LOG = Log.get(WaveSocketWS.class);
+    LOG.setLevel(ServiceConfig.websocketDebugLog() ? Level.DEBUG : Level.INFO);
   }
 
   private final Scheduler.IncrementalTask heartbeatTask = new Scheduler.IncrementalTask() {
@@ -85,7 +84,7 @@ public class WaveSocketWS implements WaveSocket {
     public void execute() {
       if (!heartbeatAck) {
         heartbeatTurbulence = true;
-        log("turbulence detected");
+        LOG.info("turbulence detected");
         callback.onTurbulence(false);
       }
     }
@@ -141,9 +140,9 @@ public class WaveSocketWS implements WaveSocket {
 
     try {
       ws = new WebSocket(serverUrl);
-      log("created");
+      LOG.debug("created");
     } catch (Exception e) {
-      log("create exception: " + e.getMessage());
+      LOG.severe("create exception", e);
       callback.onError("WebSockets not available ");
       return;
     }
@@ -155,13 +154,13 @@ public class WaveSocketWS implements WaveSocket {
         // This is a reconnection
         if (connectedAtLeastOnce) {
           ws.send(RECONNECTION_DATA_PREFIX + recvCount);
-          log("reconnection: sent ACK for " + recvCount + " messages");
+          LOG.debug("reconnection: sent ACK for " + recvCount + " messages");
           recvCount = 0;
         }
 
         connectedAtLeastOnce = true;
         startHeartbeat();
-        log("open");
+        LOG.debug("open");
         callback.onConnect();
       }
     };
@@ -170,7 +169,7 @@ public class WaveSocketWS implements WaveSocket {
       @Override
       public void exec(CloseEvent e) {
         stopHeartbeat();
-        log("close (" + e.code + "," + e.reason + ")");
+        LOG.debug("close (" + e.code + "," + e.reason + ")");
         callback.onDisconnect();
 
         if (e.code == 1002 || e.code == 1011)
@@ -182,7 +181,7 @@ public class WaveSocketWS implements WaveSocket {
       @Override
       public void exec(Event e) {
         stopHeartbeat();
-        log("error");
+        LOG.debug("error");
         // Only notify fatal errors, e.g. when we can't connect first time
         if (!connectedAtLeastOnce)
           callback.onError("Error opening WebSocket");
@@ -247,10 +246,11 @@ public class WaveSocketWS implements WaveSocket {
         rs++;
       }
 
-      log("reconnection: received ACK for " + n + " messages / resent " + rs + " pending messages");
+      LOG.debug(
+          "reconnection: received ACK for " + n + " messages / resent " + rs + " pending messages");
 
     } catch (Exception ex) {
-      log("Error processing reconnection message: " + ex.getMessage());
+      LOG.severe("Error processing reconnection message ", ex);
     }
   }
 
@@ -276,7 +276,7 @@ public class WaveSocketWS implements WaveSocket {
         sentMessages.poll();
 
     } catch (Exception ex) {
-      log("Error processing heart beat message: " + ex.getMessage());
+      LOG.severe("Error processing heart beat message ", ex);
     }
 
     recvCount = 0;
@@ -285,7 +285,7 @@ public class WaveSocketWS implements WaveSocket {
     stopHeartbeatCheck();
 
     if (heartbeatTurbulence) {
-      log("turbulence finished");
+      LOG.info("turbulence finished");
       heartbeatTurbulence = false;
       callback.onTurbulence(true);
     }
