@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
+import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.common.ModelFactory;
@@ -88,7 +89,8 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
     // Load the wave and bind to the object
     state = ACTIVE;
 
-    loader = new WaveLoader(waveId, viewServiceMultiplexer, idGenerator, waveDomain,
+    loader = WaveFactories.loaderFactory.create(waveId, viewServiceMultiplexer, idGenerator,
+        waveDomain,
         Collections.<ParticipantId> emptySet(), participant, this, this, this.diffProvider);
 
     try {

@@ -53,9 +53,10 @@
 	
     <collapse-all-properties />
 	
-	<source path="" excludes="platform/java/**, platform/js/**, platform/web/ServiceEntryPoint.*" />
+	<source path="" excludes="platform/java/**, platform/web/ServiceEntryPoint.*" />
 	<source path="wave/**" />
 	<source path="rest/**" />
+	<source path="platform/js/**"  />
 	<source path="platform/web/**"  />
 	<source path="platform/serverless**" />
 

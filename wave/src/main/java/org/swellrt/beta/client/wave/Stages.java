@@ -20,18 +20,18 @@
 
 package org.swellrt.beta.client.wave;
 
+import org.waveprotocol.wave.client.common.util.AsyncHolder;
+import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.Command;
-
-import org.waveprotocol.wave.client.common.util.AsyncHolder;
-import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 
 /**
  * Loads Undercurrent's stages in order.
  *
  */
-public abstract class Stages {
+public abstract class Stages implements WaveStages {
 
   /** Continuation for when the last stage is loaded. */
   private Command whenFinished;

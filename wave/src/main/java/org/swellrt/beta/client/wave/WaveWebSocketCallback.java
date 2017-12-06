@@ -20,9 +20,6 @@
 package org.swellrt.beta.client.wave;
 
 import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
-import org.waveprotocol.wave.communication.gwt.JsonHelper;
-import org.waveprotocol.wave.communication.gwt.JsonMessage;
-import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 
 /**
  * Callback for a wave websocket.
@@ -32,42 +29,7 @@ import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
  */
 public interface WaveWebSocketCallback {
   
-  /**
-   * Hand made wrapper class for messages of type RpcFinished.
-   * This is a workaround, because real implementation of this protobuf wrapper 
-   * is not visible for client. 
-   */
-  public static final class RpcFinished  extends JsonMessage {
-    
-    protected RpcFinished() {
-      super();
-    }
-    
-    public boolean hasFailed() {
-      return JsonHelper.getPropertyAsBoolean(this, "1");
-    }
-    
-    public boolean hasErrorText() {
-      return JsonHelper.hasProperty(this, "2");
-    }
-    
-    public String getErrorText() {
-      return JsonHelper.getPropertyAsString(this, "2");
-    }
-
-    public ChannelException getChannelException() {
-      ChannelException e = null;
-      if (hasErrorText()) {       
-        e = ChannelException.deserialize(getErrorText());        
-      }      
-      return e;
-    }
-    
-  }
-  
-  
-
   void onWaveletUpdate(ProtocolWaveletUpdate message);
   
-  void onFinished(RpcFinished message);
+  void onFinished(ProtocolMessageUtils.RpcFinished message);
 }

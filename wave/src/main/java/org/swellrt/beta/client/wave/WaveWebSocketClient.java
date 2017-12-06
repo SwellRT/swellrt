@@ -19,29 +19,18 @@
 
 package org.swellrt.beta.client.wave;
 
-import static org.waveprotocol.wave.communication.gwt.JsonHelper.getPropertyAsInteger;
-import static org.waveprotocol.wave.communication.gwt.JsonHelper.getPropertyAsObject;
-import static org.waveprotocol.wave.communication.gwt.JsonHelper.getPropertyAsString;
-import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsInteger;
-import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsObject;
-import static org.waveprotocol.wave.communication.gwt.JsonHelper.setPropertyAsString;
-
 import java.util.Queue;
 
-import org.swellrt.beta.client.platform.web.browser.Console;
-import org.swellrt.beta.client.wave.WaveWebSocketCallback.RpcFinished;
-import org.waveprotocol.box.common.comms.jso.ProtocolAuthenticateJsoImpl;
-import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
-import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
-import org.waveprotocol.box.common.comms.jso.ProtocolSubmitResponseJsoImpl;
-import org.waveprotocol.box.common.comms.jso.ProtocolWaveletUpdateJsoImpl;
+import org.swellrt.beta.client.wave.ProtocolMessageUtils.MessageWrapper;
+import org.swellrt.beta.client.wave.ProtocolMessageUtils.ParseException;
+import org.waveprotocol.box.common.comms.ProtocolAuthenticate;
+import org.waveprotocol.box.common.comms.ProtocolOpenRequest;
+import org.waveprotocol.box.common.comms.ProtocolSubmitRequest;
+import org.waveprotocol.box.common.comms.impl.ProtocolAuthenticateImpl;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
-import org.waveprotocol.wave.client.events.Log;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
-import org.waveprotocol.wave.communication.gwt.JsonMessage;
-import org.waveprotocol.wave.communication.json.JsonException;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
@@ -74,40 +63,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   }
 
-  /**
-   * Envelope for delivering arbitrary messages. Each envelope has a sequence
-   * number and a message. The format must match the format used in the server's
-   * WebSocketChannel.
-   * <p>
-   * Note that this message can not be described by a protobuf, because it
-   * contains an arbitrary protobuf, which breaks the protobuf typing rules.
-   */
-  private static final class MessageWrapper extends JsonMessage {
-    static MessageWrapper create(int seqno, String type, JsonMessage message) {
-      MessageWrapper wrapper = JsonMessage.createJsonMessage().cast();
-      setPropertyAsInteger(wrapper, "sequenceNumber", seqno);
-      setPropertyAsString(wrapper, "messageType", type);
-      setPropertyAsObject(wrapper, "message", message);
-      return wrapper;
-    }
 
-    @SuppressWarnings("unused") // GWT requires an explicit protected ctor
-    protected MessageWrapper() {
-      super();
-    }
-
-    int getSequenceNumber() {
-      return getPropertyAsInteger(this, "sequenceNumber");
-    }
-
-    String getType() {
-      return getPropertyAsString(this, "messageType");
-    }
-
-    <T extends JsonMessage> T getPayload() {
-      return getPropertyAsObject(this, "message").<T>cast();
-    }
-  }
 
   private final Scheduler.Task reconnectTask = new Scheduler.Task() {
     @Override
@@ -158,7 +114,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private StatusListener statusListener;
   private int sequenceNo = 0;
 
-  private final Queue<JsonMessage> messages = CollectionUtils.createQueue();
+  private final Queue<MessageWrapper> messages = CollectionUtils.createQueue();
 
   private boolean connectedAtLeastOnce = false;
   /** Workaround, I can't make scheduler.cancel() work! */
@@ -168,6 +124,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private final String serverUrl;
 
   private StartCallback startCallback;
+
+  private final ProtocolMessageUtils messageUtils = WaveFactories.protocolMessageUtils;
 
   /**
    * Create a new connection handler.
@@ -211,7 +169,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       socket.connect();
     } catch (Exception e) {
       // Report exception if it's first attempt to connect the websocket
-      Console.log("WaveWebSocketClient.start() error: "+e.getMessage());
+      LOG.severe("start() exception ", e);
       startCallback.onFailure(e.getMessage());
       startCallback = null;
       setState(ConnectState.ERROR, e.getMessage());
@@ -227,7 +185,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       socket.connect();
     } catch (Exception e) {
       // On reconnection attempts allow errors
-      Console.log("WaveWebSocketClient.connect() error: "+e.getMessage());
+      LOG.severe("onConnect() exception: ", e);
       onDisconnect();
     }
   }
@@ -259,9 +217,9 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       if (!connectedAtLeastOnce) {
         String token = sessionToken;
         if (token != null) {
-          ProtocolAuthenticateJsoImpl auth = ProtocolAuthenticateJsoImpl.create();
+          ProtocolAuthenticate auth = new ProtocolAuthenticateImpl();
           auth.setToken(token);
-          send(MessageWrapper.create(sequenceNo++, "ProtocolAuthenticate", auth));
+          send(messageUtils.wrap(sequenceNo++, auth));
         }
       }
 
@@ -271,7 +229,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         send(messages.poll());
       }
     } catch (Exception e) {
-      Console.log("WaveWebSocketClient.onConnect() error: "+e.getMessage());
+      LOG.severe("onConnect() exception: ", e);
       setState(ConnectState.ERROR);
       return;
     }
@@ -288,32 +246,31 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   public void onMessage(final String message) {
 
 
-    LOG.info("received JSON message " + message);
+    LOG.debug("received JSON message " + message);
     Timer timer = Timing.start("deserialize message");
     MessageWrapper wrapper;
     try {
-      wrapper = MessageWrapper.parse(message);
-    } catch (JsonException e) {
+      wrapper = messageUtils.parseWrapper(message);
+    } catch (ParseException e) {
       LOG.severe("invalid JSON message " + message, e);
-      Console.log("WaveWebSocketClient.onMessage() error: "+e.getMessage());
       return;
     } finally {
       Timing.stop(timer);
     }
-    String messageType = wrapper.getType();
-    if ("ProtocolWaveletUpdate".equals(messageType)) {
+
+    if (wrapper.isProtocolWaveletUpdate()) {
       if (callback != null) {
 
         try {
-          callback.onWaveletUpdate(wrapper.<ProtocolWaveletUpdateJsoImpl> getPayload());
+          callback.onWaveletUpdate(messageUtils.unwrapWaveletUpdate(wrapper));
         } catch (Exception e) {
           // TODO consider if we should drop the connection or just invalidate the broken wave
-          Console.log("WaveWebSocketClient.onMessage() error: "+e.getMessage());
+          LOG.severe("onMessage() exception: ", e);
           setState(ConnectState.ERROR, e.getMessage());
         }
 
       }
-    } else if ("ProtocolSubmitResponse".equals(messageType)) {
+    } else if (wrapper.isProtocolSubmitResponse()) {
       int seqno = wrapper.getSequenceNumber();
       SubmitResponseCallback callback = submitRequestCallbacks.get(seqno);
 
@@ -321,20 +278,20 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
         try {
           submitRequestCallbacks.remove(seqno);
-          callback.run(wrapper.<ProtocolSubmitResponseJsoImpl> getPayload());
+          callback.run(messageUtils.unwrapSubmitResponse(wrapper));
         } catch (Exception e) {
           // TODO consider if we should drop the connection or just invalidate the broken wave
-          Console.log("WaveWebSocketClient.onMessage() error: "+e.getMessage());
+          LOG.severe("onMessage() exception ", e);
           setState(ConnectState.ERROR, e.getMessage());
         }
 
 
       } else {
-        Console.log("Submit response received (" + seqno + ") but not callback found of "
+        LOG.debug("Submit response received (" + seqno + ") but not callback found of "
             + submitRequestCallbacks.countEntries() + " entries");
       }
-    } else if ("RpcFinished".equals(messageType)) {
-      RpcFinished m = wrapper.<RpcFinished> getPayload();
+    } else if (wrapper.isRpcFinished()) {
+      ProtocolMessageUtils.RpcFinished m = messageUtils.unwrapRpcFinished(wrapper);
         if (callback != null) {
         callback.onFinished(m);
         }
@@ -343,7 +300,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
             "A server error has closed the RPC connection: "
                 + (m.hasErrorText() ? m.getErrorText() : ""));
       }
-    } else if ("ProtocolAuthenticationResult".equals(messageType)) {
+    } else if (wrapper.isProtocolAuthenticationResult()) {
       if (startCallback != null) {
         startCallback.onStart();
         startCallback = null;
@@ -351,27 +308,27 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     }
   }
 
-  public void submit(ProtocolSubmitRequestJsoImpl message, SubmitResponseCallback callback) {
+  public void submit(ProtocolSubmitRequest message, SubmitResponseCallback callback) {
     int submitId = sequenceNo++;
     submitRequestCallbacks.put(submitId, callback);
-    send(MessageWrapper.create(submitId, "ProtocolSubmitRequest", message));
+    send(messageUtils.wrap(submitId, message));
   }
 
-  public void open(ProtocolOpenRequestJsoImpl message) {
-    send(MessageWrapper.create(sequenceNo++, "ProtocolOpenRequest", message));
+  public void open(ProtocolOpenRequest message) {
+    send(messageUtils.wrap(sequenceNo++, message));
   }
 
-  private void send(JsonMessage message) {
+  private void send(MessageWrapper message) {
     switch (connectState) {
       case CONNECTED:
         Timer timing = Timing.start("serialize message");
         String json;
         try {
-          json = message.toJson();
+          json = messageUtils.toJson(message);
         } finally {
           Timing.stop(timing);
         }
-        LOG.info("Sending JSON data " + json);
+      LOG.debug("Sending JSON data " + json);
         socket.sendMessage(json);
         break;
       default:

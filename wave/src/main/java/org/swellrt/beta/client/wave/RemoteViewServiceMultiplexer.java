@@ -21,9 +21,10 @@ package org.swellrt.beta.client.wave;
 
 import java.util.Map;
 
+import org.waveprotocol.box.common.comms.ProtocolOpenRequest;
+import org.waveprotocol.box.common.comms.ProtocolSubmitRequest;
 import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
-import org.waveprotocol.box.common.comms.jso.ProtocolOpenRequestJsoImpl;
-import org.waveprotocol.box.common.comms.jso.ProtocolSubmitRequestJsoImpl;
+import org.waveprotocol.box.common.comms.impl.ProtocolOpenRequestImpl;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.InvalidIdException;
@@ -109,10 +110,10 @@ public final class RemoteViewServiceMultiplexer implements WaveWebSocketCallback
       // updates).
     }
   }
-  
+
   /** Dispatches a error to the appropriate wave stream */
   @Override
-  public void onFinished(RpcFinished message) {
+  public void onFinished(ProtocolMessageUtils.RpcFinished message) {
 
     ChannelException ex = message.getChannelException();
 
@@ -145,7 +146,7 @@ public final class RemoteViewServiceMultiplexer implements WaveWebSocketCallback
     streams.put(id, stream);
 
     // Request those updates.
-    ProtocolOpenRequestJsoImpl request = ProtocolOpenRequestJsoImpl.create();
+    ProtocolOpenRequest request = new ProtocolOpenRequestImpl();
     request.setWaveId(ModernIdSerialiser.INSTANCE.serialiseWaveId(id));
     request.setParticipantId(userId);
     for (String prefix : filter.getPrefixes()) {
@@ -181,7 +182,7 @@ public final class RemoteViewServiceMultiplexer implements WaveWebSocketCallback
    * @param request delta to submit
    * @param callback callback for submit response
    */
-  public void submit(ProtocolSubmitRequestJsoImpl request, SubmitResponseCallback callback) {
+  public void submit(ProtocolSubmitRequest request, SubmitResponseCallback callback) {
     request.getDelta().setAuthor(userId);
     socket.submit(request, callback);
   }

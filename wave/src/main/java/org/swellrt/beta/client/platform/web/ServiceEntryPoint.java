@@ -1,19 +1,32 @@
 package org.swellrt.beta.client.platform.web;
 
+import java.util.Set;
+
 import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceConfigProvider;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceLogger;
+import org.swellrt.beta.client.platform.js.JsProtocolMessageUtils;
 import org.swellrt.beta.client.platform.web.browser.Console;
+import org.swellrt.beta.client.wave.Log;
+import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
+import org.swellrt.beta.client.wave.StagedWaveLoader;
+import org.swellrt.beta.client.wave.WaveFactories;
+import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ModelFactory;
 import org.waveprotocol.wave.client.wave.DiffProvider;
+import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
+import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
+import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Random;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsMethod;
@@ -109,6 +122,38 @@ public class ServiceEntryPoint implements EntryPoint {
   public void onModuleLoad() {
 
     ModelFactory.instance = new WebModelFactory();
+
+    WaveFactories.logFactory = new Log.Factory() {
+
+      @Override
+      public Log create(Class<? extends Object> clazz) {
+        return new WebLog(clazz);
+      }
+    };
+
+    WaveFactories.loaderFactory = new WaveLoader.Factory() {
+
+      @Override
+      public WaveLoader create(WaveId waveId, RemoteViewServiceMultiplexer channel,
+          IdGenerator idGenerator, String localDomain, Set<ParticipantId> participants,
+          ParticipantId loggedInUser, UnsavedDataListener dataListener,
+          TurbulenceListener turbulenceListener, DiffProvider diffProvider) {
+
+        return new StagedWaveLoader(waveId, channel, idGenerator, localDomain, participants,
+            loggedInUser, dataListener, turbulenceListener, diffProvider);
+      }
+    };
+
+    WaveFactories.randomGenerator = new WaveFactories.Random() {
+
+      @Override
+      public int nextInt() {
+        return Random.nextInt();
+      }
+    };
+
+    WaveFactories.protocolMessageUtils = new JsProtocolMessageUtils();
+
     ServiceConfig.configProvider = getConfigProvider();
     getEditorConfigProvider();
 

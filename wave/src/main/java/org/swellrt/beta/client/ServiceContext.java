@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.swellrt.beta.client.ServiceConnection.ConnectionHandler;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
+import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
@@ -24,7 +25,6 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.gwt.user.client.Random;
 
 /**
  * This class is the stateful part of a SwellRT client. It supports the
@@ -58,7 +58,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     int bitCount = 0;
     while (result.length() < length) {
       if (bitCount < 6) {
-        bits = Random.nextInt();
+        bits = WaveFactories.randomGenerator.nextInt();
         bitCount = 32;
       }
       result.append(WEB64_ALPHABET[bits & 0x3F]);
