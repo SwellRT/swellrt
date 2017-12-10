@@ -22,7 +22,6 @@ package org.waveprotocol.wave.client.account.impl;
 import java.util.List;
 
 import org.waveprotocol.wave.client.account.Profile;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -89,15 +88,15 @@ public final class ProfileImpl implements Profile {
   }
 
   @Override
-  public void update(ServerAccountData data) {
+  public void update(Profile profile) {
 
-    Preconditions.checkArgument(id.getAddress().equals(data.getId()));
+    Preconditions.checkArgument(id.equals(profile.getParticipantId()));
 
-    imageUrl = data.getAvatarUrl() != null ? data.getAvatarUrl() : null;
-    email = data.getEmail();
-    name = data.getName();
-    shortName = id.getName();
-    locale = data.getLocale();
+    imageUrl = profile.getImageUrl() != null ? profile.getImageUrl() : null;
+    email = profile.getEmail();
+    name = profile.getName();
+    shortName = profile.getParticipantId().getName();
+    locale = profile.getLocale();
 
   }
 
@@ -164,6 +163,16 @@ public final class ProfileImpl implements Profile {
   @Override
   public void trackActivity(String sessionId) {
     // TODO implement, move track activity logic from session to profile
+  }
+
+  @Override
+  public String getEmail() {
+    return email;
+  }
+
+  @Override
+  public String getLocale() {
+    return locale;
   }
 
 }

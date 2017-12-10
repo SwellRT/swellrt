@@ -26,6 +26,7 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.ProfileManager;
 
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -72,13 +73,13 @@ public class PromisableFrontend implements ServiceConnection {
 			@Override
 			public void exec(FunctionParam<LoginOperation.Response> resolve, FunctionParam<SException> reject) {
 
-				service.login(options, new Callback<LoginOperation.Response>() {
+            service.login(options, new Callback<LoginOperation.Response>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-					public void onSuccess(LoginOperation.Response response) {
+              public void onSuccess(LoginOperation.Response response) {
 						resolve.exec(response);
 					}
 				});
@@ -234,19 +235,21 @@ public class PromisableFrontend implements ServiceConnection {
    });
  }
 
-	public Promise<EditUserOperation.Response, SException> editUser(EditUserOperation.Options options) {
-	  return new Promise<EditUserOperation.Response, SException>(new ConstructorParam<EditUserOperation.Response, SException>() {
+  public Promise<EditUserOperation.Response, SException> editUser(EditUserOperation.Options options) {
+    return new Promise<EditUserOperation.Response, SException>(
+        new ConstructorParam<EditUserOperation.Response, SException>() {
 
 	    @Override
-	    public void exec(FunctionParam<EditUserOperation.Response> resolve, FunctionParam<SException> reject) {
+          public void exec(FunctionParam<EditUserOperation.Response> resolve,
+              FunctionParam<SException> reject) {
 
-	      service.editUser(options, new Callback<EditUserOperation.Response>() {
+            service.editUser(options, new Callback<EditUserOperation.Response>() {
 	        @Override
 	        public void onError(SException exception) {
 	          reject.exec(exception);
 	        }
 	        @Override
-	        public void onSuccess(EditUserOperation.Response response) {
+              public void onSuccess(EditUserOperation.Response response) {
 	          resolve.exec(response);
 	        }
 	      });
@@ -411,7 +414,7 @@ public class PromisableFrontend implements ServiceConnection {
     service.removeConnectionHandler(h);
   }
 
-
+  @JsProperty
   @Override
   public ProfileManager getProfilesManager() {
     return service.getProfilesManager();

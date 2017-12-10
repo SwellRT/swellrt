@@ -30,7 +30,6 @@ import org.waveprotocol.box.common.comms.impl.ProtocolAuthenticateImpl;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
-import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
@@ -238,7 +237,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onDisconnect() {
     setState(ConnectState.DISCONNECTED);
-    SchedulerInstance.getLowPriorityTimer().scheduleDelayed(reconnectTask, 5000);
+    WaveFactories.lowPriorityTimer.scheduleDelayed(reconnectTask, 5000);
   }
 
 
@@ -347,7 +346,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onError(String reason) {
     if (connectedAtLeastOnce)
-      SchedulerInstance.getLowPriorityTimer().cancel(reconnectTask);
+      WaveFactories.lowPriorityTimer.cancel(reconnectTask);
 
     if (startCallback != null) {
       startCallback.onFailure(reason);

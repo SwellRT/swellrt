@@ -24,7 +24,6 @@ import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.ProfileSession;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.common.util.RgbColorPalette;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
@@ -51,7 +50,7 @@ import jsinterop.annotations.JsOptional;
 public abstract class AbstractProfileManager implements ProfileManager {
 
   public interface RequestProfileCallback {
-    void onCompleted(ServerAccountData rawData);
+    void onCompleted(Profile profile);
   }
 
 
@@ -131,6 +130,7 @@ public abstract class AbstractProfileManager implements ProfileManager {
     if (!profiles.containsKey(participantId.getAddress())) {
 
       final Profile profile = createBareProfile(participantId);
+      profiles.put(participantId.getAddress(), profile);
 
       // Request profile info for non anonymous users
       // or the current user, even if it is anonymous
@@ -140,15 +140,15 @@ public abstract class AbstractProfileManager implements ProfileManager {
         requestProfile(participantId, new RequestProfileCallback() {
 
           @Override
-          public void onCompleted(ServerAccountData rawData) {
-            profile.update(rawData);
+          public void onCompleted(Profile profile) {
+            profiles.get(participantId.getAddress()).update(profile);
             fireOnUpdated(profile);
           }
         });
 
       }
 
-      profiles.put(participantId.getAddress(), profile);
+
     }
 
     return profiles.get(participantId.getAddress());

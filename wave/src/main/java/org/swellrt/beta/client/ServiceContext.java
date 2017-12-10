@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.ServiceConnection.ConnectionHandler;
+import org.swellrt.beta.client.rest.operations.AccountDataResponse;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
@@ -11,7 +12,6 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
@@ -166,7 +166,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    *
    * @param accountData
    */
-  public void init(ServerAccountData accountData) {
+  public void init(AccountDataResponse accountData) {
     reset();
     sessionManager.setSession(accountData);
     setupIdGenerator();

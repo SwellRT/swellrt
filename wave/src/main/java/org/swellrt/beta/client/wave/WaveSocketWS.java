@@ -3,14 +3,13 @@ package org.swellrt.beta.client.wave;
 import java.util.Queue;
 
 import org.swellrt.beta.client.ServiceConfig;
-import org.swellrt.beta.client.platform.web.browser.CloseEvent;
-import org.swellrt.beta.client.platform.web.browser.Event;
-import org.swellrt.beta.client.platform.web.browser.MessageEvent;
-import org.swellrt.beta.client.platform.web.browser.WebSocket;
-import org.swellrt.beta.client.platform.web.browser.WebSocket.Function;
 import org.swellrt.beta.client.wave.Log.Level;
+import org.swellrt.beta.client.wave.ws.CloseEvent;
+import org.swellrt.beta.client.wave.ws.Event;
+import org.swellrt.beta.client.wave.ws.MessageEvent;
+import org.swellrt.beta.client.wave.ws.WebSocket;
+import org.swellrt.beta.client.wave.ws.WebSocket.Function;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
-import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 
 /**
@@ -66,10 +65,10 @@ public class WaveSocketWS implements WaveSocket {
 
     @Override
     public boolean execute() {
-      if (ws.readyState == WebSocket.OPEN) {
+      if (ws.getReadyState() == WebSocket.OPEN) {
         ws.send(HEARTBEAT_DATA_PREFIX + recvCount);
         heartbeatAck = false;
-        SchedulerInstance.getLowPriorityTimer().scheduleDelayed(hearbeatCheckTask,
+        WaveFactories.lowPriorityTimer.scheduleDelayed(hearbeatCheckTask,
             HEARTBEAT_TIMEOUT);
       } else {
         return false;
@@ -120,34 +119,27 @@ public class WaveSocketWS implements WaveSocket {
 
   protected void startHeartbeat() {
     if (heartbeatOn)
-      SchedulerInstance.getLowPriorityTimer().scheduleRepeating(heartbeatTask, HEARTBEAT_INTERVAL,
+      WaveFactories.lowPriorityTimer.scheduleRepeating(heartbeatTask, HEARTBEAT_INTERVAL,
           HEARTBEAT_INTERVAL);
   }
 
   protected void stopHeartbeat() {
     if (heartbeatOn) {
-      SchedulerInstance.getLowPriorityTimer().cancel(heartbeatTask);
+      WaveFactories.lowPriorityTimer.cancel(heartbeatTask);
       stopHeartbeatCheck();
     }
   }
 
   protected void stopHeartbeatCheck() {
-    SchedulerInstance.getLowPriorityTimer().cancel(hearbeatCheckTask);
+    WaveFactories.lowPriorityTimer.cancel(hearbeatCheckTask);
   }
 
   @Override
   public void connect() {
 
-    try {
-      ws = new WebSocket(serverUrl);
-      LOG.debug("created");
-    } catch (Exception e) {
-      LOG.severe("create exception", e);
-      callback.onError("WebSockets not available ");
-      return;
-    }
+    ws = WaveFactories.websocketFactory.create();
 
-    ws.onopen = new WebSocket.Function<Event>() {
+    ws.onOpen(new WebSocket.Function<Event>() {
       @Override
       public void exec(Event e) {
 
@@ -163,9 +155,9 @@ public class WaveSocketWS implements WaveSocket {
         LOG.debug("open");
         callback.onConnect();
       }
-    };
+    });
 
-    ws.onclose = new WebSocket.Function<CloseEvent>() {
+    ws.onClose(new WebSocket.Function<CloseEvent>() {
       @Override
       public void exec(CloseEvent e) {
         stopHeartbeat();
@@ -175,9 +167,9 @@ public class WaveSocketWS implements WaveSocket {
         if (e.code == 1002 || e.code == 1011)
           callback.onError(e.reason);
       }
-    };
+    });
 
-    ws.onerror = new Function<Event>() {
+    ws.onError(new Function<Event>() {
       @Override
       public void exec(Event e) {
         stopHeartbeat();
@@ -187,9 +179,9 @@ public class WaveSocketWS implements WaveSocket {
           callback.onError("Error opening WebSocket");
 
       }
-    };
+    });
 
-    ws.onmessage = new Function<MessageEvent>() {
+    ws.onMessage(new Function<MessageEvent>() {
       @Override
       public void exec(MessageEvent e) {
         String data = (String) e.data;
@@ -212,7 +204,16 @@ public class WaveSocketWS implements WaveSocket {
         }
 
       }
-    };
+    });
+
+    try {
+      ws.connect(serverUrl);
+      LOG.debug("created");
+    } catch (Exception e) {
+      LOG.severe("create exception", e);
+      callback.onError("WebSockets not available ");
+      return;
+    }
 
   }
 

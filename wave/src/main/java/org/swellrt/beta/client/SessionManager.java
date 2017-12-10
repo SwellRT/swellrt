@@ -1,6 +1,6 @@
 package org.swellrt.beta.client;
 
-import org.waveprotocol.wave.client.account.ServerAccountData;
+import org.swellrt.beta.client.rest.operations.AccountDataResponse;
 
 /**
  * Manage session data. Implementations are platform dependent: Web, Android...
@@ -14,7 +14,7 @@ public interface SessionManager {
 
   }
 
-  public void setSession(ServerAccountData profile);
+  public void setSession(AccountDataResponse profile);
 
   public String getSessionId();
 

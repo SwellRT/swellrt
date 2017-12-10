@@ -23,23 +23,23 @@ public class ClientOperationExecutor extends OperationExecutor {
 
     try {
 
-      if (!operation.getContext().isSession()) {
+      if (!operation.context.isSession()) {
         operation.doFailure(new SException(ResponseCode.NOT_LOGGED_IN));
       }
 
       WaveId waveId = null;
-      String id = operation.getOptions().getId();
+      String id = operation.options.getId();
       // Wave domain part is optional
       if (id != null) {
         if (!id.contains("/")) {
-          id = operation.getContext().getWaveDomain() + "/" + id;
+          id = operation.context.getWaveDomain() + "/" + id;
         }
         waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(id);
       } else {
-        waveId = operation.getContext().generateWaveId(operation.getOptions().getPrefix());
+        waveId = operation.context.generateWaveId(operation.options.getPrefix());
       }
 
-      operation.getContext().getObject(waveId, new FutureCallback<SWaveObject>() {
+      operation.context.getObject(waveId, new FutureCallback<SWaveObject>() {
 
         @Override
         public void onSuccess(SWaveObject object) {
@@ -62,8 +62,8 @@ public class ClientOperationExecutor extends OperationExecutor {
   public void execute(CloseOperation operation) {
 
     try {
-      WaveId waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(operation.getOptions().getId());
-      operation.getContext().closeObject(waveId);
+      WaveId waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(operation.options.getId());
+      operation.context.closeObject(waveId);
     } catch (InvalidIdException e) {
       operation.doFailure(new SException(SException.BAD_REQUEST, e, "Object id is not valid"));
     } catch (SException e) {

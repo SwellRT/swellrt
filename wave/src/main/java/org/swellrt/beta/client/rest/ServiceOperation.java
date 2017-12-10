@@ -6,27 +6,29 @@ import org.swellrt.beta.common.SException;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
+@JsType()
 public abstract class ServiceOperation<O extends ServiceOperation.Options, R extends ServiceOperation.Response> {
 
   @JsType(isNative = true)
-  public interface Options {
+  public static interface Options {
 
   }
 
   @JsType(isNative = true)
-  public interface Response {
+  public static interface Response {
 
   }
 
   @JsType(isNative = true)
-  public interface OperationError {
+  public static interface OperationError {
 
     @JsProperty
     public String getError();
   }
 
   @JsType(isNative = true)
-  public interface Callback<T extends Response> {
+  public static interface Callback<T extends ServiceOperation.Response>
+  {
 
     public void onError(SException exception);
 
@@ -34,10 +36,9 @@ public abstract class ServiceOperation<O extends ServiceOperation.Options, R ext
 
   }
 
-  private final ServiceContext context;
-  private final O options;
-  private final Callback<R> callback;
-
+  protected final ServiceContext context;
+  protected final O options;
+  protected final Callback<R> callback;
 
   public ServiceOperation(ServiceContext context, O options, Callback<R> callback) {
     this.context = context;
@@ -45,23 +46,15 @@ public abstract class ServiceOperation<O extends ServiceOperation.Options, R ext
     this.callback = callback;
   }
 
-
-  public O getOptions() {
-    return options;
-  }
-
-  public void doSuccess(R response) {
+  protected void doSuccess(R response) {
     if (callback != null)
       callback.onSuccess(response);
   }
 
-  public void doFailure(Throwable exception) {
+  protected void doFailure(Throwable exception) {
     if (callback != null)
       callback.onError(new SException(SException.OPERATION_EXCEPTION, exception,
           "Error executing service operation."));
   }
 
-  protected ServiceContext getContext() {
-    return context;
-  }
 }

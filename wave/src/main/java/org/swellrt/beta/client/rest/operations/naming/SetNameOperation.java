@@ -52,22 +52,22 @@ public class SetNameOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (!getContext().isSession()) {
+    if (!context.isSession()) {
       throw new SException(ResponseCode.NOT_LOGGED_IN);
     }
 
-    if (getOptions().getId() == null || getOptions().getName() == null) {
+    if (options.getId() == null || options.getName() == null) {
       throw new SException(ResponseCode.BAD_REQUEST);
     }
 
-    String id = getOptions().getId();
+    String id = options.getId();
     if (!id.contains("/")) {
-      id = getContext().getWaveDomain() + "/" + id;
+      id = context.getWaveDomain() + "/" + id;
     }
 
     addPathElement("wave");
     addPathElement(id);
-    addPathElement(getOptions().getName());
+    addPathElement(options.getName());
 
   }
 

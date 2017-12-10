@@ -48,8 +48,6 @@ public final class PasswordOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    PasswordOperation.Options options = getOptions();
-
     addPathElement("password");
     addQueryParam("id", options.getId());
 

@@ -51,19 +51,19 @@ public class GetNamesOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (getOptions().getId() != null) {
+    if (options.getId() != null) {
       addPathElement("wave");
 
-      String id = getOptions().getId();
+      String id = options.getId();
       if (!id.contains("/")) {
-        id = getContext().getWaveDomain() + "/" + id;
+        id = context.getWaveDomain() + "/" + id;
       }
 
       addPathElement(id);
 
-    } else if (getOptions().getName() != null) {
+    } else if (options.getName() != null) {
       addPathElement("name");
-      addPathElement(getOptions().getName());
+      addPathElement(options.getName());
 
     }
   }

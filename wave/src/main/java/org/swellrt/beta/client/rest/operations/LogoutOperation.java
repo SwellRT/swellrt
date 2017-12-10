@@ -34,11 +34,11 @@ public final class LogoutOperation
 
 
   @Override
-  public void doSuccess(LogoutOperation.Response response) {
+  public void doSuccess(Response response) {
 
     // reset the context after http call to send cookies
     if (resetContext)
-      getContext().reset();
+      context.reset();
 
     super.doSuccess(response);
   }
@@ -55,15 +55,15 @@ public final class LogoutOperation
 
     addPathElement("auth");
 
-    if (getContext().isSession()) {
+    if (context.isSession()) {
 
-      if (getOptions() == null || getOptions().getId() == null || (getOptions().getId() != null
-          && getOptions().getId().equals(getContext().getParticipantId()))) {
-        addPathElement(getContext().getParticipantId());
+      if (options == null || options.getId() == null || (options.getId() != null
+          && options.getId().equals(context.getParticipantId()))) {
+        addPathElement(context.getParticipantId());
         resetContext = true;
         }
-    } else if (getOptions().getId() != null) {
-      addPathElement(getOptions().getId());
+    } else if (options.getId() != null) {
+      addPathElement(options.getId());
     } else {
       throw new SException(SException.MISSING_PARAMETERS, null, "Missing user parameter");
     }

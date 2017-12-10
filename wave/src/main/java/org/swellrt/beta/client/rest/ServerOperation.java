@@ -3,6 +3,11 @@ package org.swellrt.beta.client.rest;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.common.SException;
 
+import com.google.gwt.core.client.JsonUtils;
+
+import jsinterop.annotations.JsType;
+
+@JsType()
 public abstract class ServerOperation<O extends ServiceOperation.Options, R extends ServiceOperation.Response>
     extends ServiceOperation<O, R>
 {
@@ -61,6 +66,11 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
   public abstract Method getMethod();
 
   protected abstract void buildRestParams() throws SException;
+
+  protected void doSuccessJson(String json) {
+    R response = (R) JsonUtils.safeEval(json);
+    doSuccess(response);
+  }
 
   public boolean sendSessionInUrl() {
     return true;

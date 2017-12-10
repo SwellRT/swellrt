@@ -6,13 +6,15 @@ import java.util.Set;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.SessionManager;
+import org.swellrt.beta.client.rest.operations.AccountDataResponse;
+import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
 import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveLoader;
+import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -42,21 +44,21 @@ public class Client {
     ServiceConfig.configProvider = null; // TODO to be completed
     SessionManager sessionMgr = new SessionManager() {
 
-      private ServerAccountData account;
+      private AccountDataResponse account;
 
       @Override
-      public void setSession(ServerAccountData profile) {
+      public void setSession(AccountDataResponse profile) {
         account = profile;
       }
 
       @Override
       public String getSessionId() {
-        return account.getSessionId();
+        return account.sessionId;
       }
 
       @Override
       public String getTransientSessionId() {
-        return account.getTransientSessionId();
+        return account.transientSessionId;
       }
 
       @Override
@@ -71,12 +73,12 @@ public class Client {
 
       @Override
       public String getWaveDomain() {
-        return account.getDomain();
+        return account.domain;
       }
 
       @Override
       public String getUserId() {
-        return account.getId();
+        return account.id;
       }
 
     };
@@ -101,6 +103,28 @@ public class Client {
 
     WaveFactories.protocolMessageUtils = new JavaProtocolMessageUtils();
 
+    WaveFactories.logFactory = new Log.Factory() {
+
+      @Override
+      public Log create(Class<? extends Object> clazz) {
+        return new ConsoleJavaLog(clazz);
+      }
+    };
+
+    WaveFactories.websocketFactory = new WebSocket.Factory() {
+
+      @Override
+      public WebSocket create() {
+        return new JavaWebSocket();
+      }
+    };
+
+    JavaTimerService timerService = new JavaTimerService();
+
+    WaveFactories.lowPriorityTimer = timerService;
+    WaveFactories.mediumPriorityTimer = timerService;
+    WaveFactories.highPriorityTimer = timerService;
+
     context = new ServiceContext(sessionMgr, serverAddress, new DiffProvider.Factory() {
 
       @Override
@@ -117,49 +141,10 @@ public class Client {
       }
     });
 
-    context.init(new ServerAccountData() {
+    AccountDataResponse accountData = new AccountDataResponse();
+    accountData.id = "fake@local.net";
 
-      @Override
-      public String getTransientSessionId() {
-        return "xxx";
-      }
-
-      @Override
-      public String getSessionId() {
-        // TODO Auto-generated method stub
-        return "yyy";
-      }
-
-      @Override
-      public String getName() {
-        return "Fake";
-      }
-
-      @Override
-      public String getLocale() {
-        return "en";
-      }
-
-      @Override
-      public String getId() {
-        return "fake@local.net";
-      }
-
-      @Override
-      public String getEmail() {
-        return null;
-      }
-
-      @Override
-      public String getDomain() {
-        return "local.net";
-      }
-
-      @Override
-      public String getAvatarUrl() {
-        return null;
-      }
-    });
+    context.init(accountData);
 
     context.getObject(WaveId.of("local.net", "object"), new FutureCallback<SWaveObject>() {
 
@@ -183,7 +168,7 @@ public class Client {
 
   public static void main(String[] args) {
 
-    Client client = new Client("localhost:9898");
+    Client client = new Client("http://localhost:9898");
     client.connect();
 
   }

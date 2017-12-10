@@ -48,8 +48,6 @@ public final class PasswordRecoverOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    PasswordRecoverOperation.Options options = getOptions();
-
     addPathElement("email");
 
     if (options.getId() != null)

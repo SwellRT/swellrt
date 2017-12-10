@@ -112,7 +112,7 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
       String body = null;
       if (operation.sendOptionsAsBody()) {
-        body = toJson(operation.getOptions());
+        body = toJson(operation.options);
       }
 
       executeHTTP(operation.getMethod(),
@@ -126,7 +126,7 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
               if (statusCode == 200) {
 
-                operation.doSuccess(parseResponse(response));
+                operation.doSuccessJson(response);
 
               } else {
 

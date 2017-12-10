@@ -15,7 +15,9 @@ import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
 import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveLoader;
+import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.swellrt.beta.common.ModelFactory;
+import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -153,6 +155,17 @@ public class ServiceEntryPoint implements EntryPoint {
     };
 
     WaveFactories.protocolMessageUtils = new JsProtocolMessageUtils();
+
+    WaveFactories.websocketFactory = new WebSocket.Factory() {
+      @Override
+      public WebSocket create() {
+        return new WebWebSocket();
+      }
+    };
+
+    WaveFactories.lowPriorityTimer = SchedulerInstance.getLowPriorityTimer();
+    WaveFactories.mediumPriorityTimer = SchedulerInstance.getMediumPriorityTimer();
+    WaveFactories.highPriorityTimer = SchedulerInstance.getHighPriorityTimer();
 
     ServiceConfig.configProvider = getConfigProvider();
     getEditorConfigProvider();

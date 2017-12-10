@@ -42,13 +42,13 @@ import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.wave.DiffData;
 import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
+import org.waveprotocol.wave.client.wave.DiffProvider.DocDiffProvider;
 import org.waveprotocol.wave.client.wave.DocOpContext;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
-import org.waveprotocol.wave.client.wave.DiffProvider.DocDiffProvider;
-import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
 import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
+import org.waveprotocol.wave.client.wave.WaveDocOpTracker;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactories;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.ViewFactory;
 import org.waveprotocol.wave.client.wavepanel.view.dom.full.WavePanelResourceLoader;
@@ -296,7 +296,7 @@ public interface StageTwo {
     /** @return the scheduler to use for RPCs. Subclasses may override. */
     protected CollectiveScheduler createRpcScheduler() {
       // Use a scheduler that runs closely-timed tasks at the same time.
-      return new OptimalGroupingScheduler(SchedulerInstance.getLowPriorityTimer());
+      return new OptimalGroupingScheduler(WaveFactories.lowPriorityTimer);
     }
 
     protected WaveletOperationalizer createWavelets() {

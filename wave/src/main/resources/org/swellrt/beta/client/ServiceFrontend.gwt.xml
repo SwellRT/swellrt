@@ -63,7 +63,9 @@
 		value="SWC" />
 	
 	<source path="" excludes="platform/java/**, platform/serverless/**" />
-	<source path="rest/**" />
+	<source path="rest" />
+	<source path="rest/operations" />
+	<source path="rest/operations/naming" />
 	<source path="platform/js/**" />
 	<source path="platform/web/**" />
 	<source path="wave/**" />

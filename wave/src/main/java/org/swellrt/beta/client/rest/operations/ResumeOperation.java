@@ -4,9 +4,8 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 
-import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
 public final class ResumeOperation
@@ -14,16 +13,19 @@ public final class ResumeOperation
 
 
   @JsType(isNative = true)
-  public interface Options extends ServerOperation.Options {
+  public static class Options implements ServiceOperation.Options {
 
-    @JsProperty
-    public String getId();
+    public String id;
+
+    @JsOverlay
+    public final String getId() {
+      return id;
+    }
 
   }
 
   @JsType(isNative = true)
-  public interface Response extends ServerOperation.Response, ServerAccountData {
-
+  public static class Response extends AccountDataResponse implements ServerOperation.Response {
   }
 
 
@@ -40,7 +42,7 @@ public final class ResumeOperation
   @Override
   protected void buildRestParams() throws SException {
     addPathElement("auth");
-    addPathElement(getOptions().getId());
+    addPathElement(options.getId());
   }
 
 }

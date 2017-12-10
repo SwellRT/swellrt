@@ -1,7 +1,7 @@
 package org.swellrt.beta.client.platform.web;
 
 import org.swellrt.beta.client.SessionManager;
-import org.waveprotocol.wave.client.account.ServerAccountData;
+import org.swellrt.beta.client.rest.operations.AccountDataResponse;
 
 import com.google.gwt.user.client.Cookies;
 
@@ -10,53 +10,7 @@ public class WebSessionManager implements SessionManager {
   private static final String SESSION_COOKIE_NAME = "WSESSIONID";
   private static final String TRANSIENT_SESSION_COOKIE_NAME = "TSESSIONID";
 
-  private final ServerAccountData emptyAccountData = new ServerAccountData() {
-
-    @Override
-    public String getId() {
-      return null;
-    }
-
-    @Override
-    public String getEmail() {
-      return null;
-    }
-
-    @Override
-    public String getLocale() {
-      return "en";
-    }
-
-    @Override
-    public String getAvatarUrl() {
-      return null;
-    }
-
-    @Override
-    public String getName() {
-      return null;
-    }
-
-    @Override
-    public String getSessionId() {
-      return null;
-    }
-
-    @Override
-    public String getDomain() {
-      return null;
-    }
-
-    @Override
-    public String getTransientSessionId() {
-      return null;
-    }
-
-  };
-
-
-  private ServerAccountData accountData = emptyAccountData;
-
+  private AccountDataResponse accountData = null;
 
   public static WebSessionManager create() {
     WebSessionManager sm = new WebSessionManager();
@@ -76,18 +30,18 @@ public class WebSessionManager implements SessionManager {
 
   @Override
   public String getSessionId() {
-    return accountData.getSessionId();
+    return accountData.sessionId;
   }
 
 
   @Override
   public String getTransientSessionId() {
-    return accountData.getTransientSessionId();
+    return accountData.transientSessionId;
   }
 
 
   @Override
-  public void setSession(ServerAccountData profile) {
+  public void setSession(AccountDataResponse profile) {
     this.accountData = profile;
   }
 
@@ -96,23 +50,23 @@ public class WebSessionManager implements SessionManager {
   public void removeSession() {
     Cookies.removeCookie(SESSION_COOKIE_NAME);
     Cookies.removeCookie(TRANSIENT_SESSION_COOKIE_NAME);
-    this.accountData = emptyAccountData;
+    this.accountData = null;
   }
 
   @Override
   public boolean isSession() {
-    return (this.accountData != emptyAccountData);
+    return (this.accountData != null);
   }
 
 
   @Override
   public String getWaveDomain() {
-    return this.accountData.getDomain();
+    return this.accountData.domain;
   }
 
   @Override
   public String getUserId() {
-    return this.accountData.getId();
+    return this.accountData.id;
   }
 
 }

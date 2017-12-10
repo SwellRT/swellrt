@@ -46,9 +46,9 @@ public interface Profile {
    */
   @JsProperty
   ParticipantId getParticipantId();
-  
+
   @JsIgnore
-  void update(ServerAccountData rawData);
+  void update(Profile profile);
 
   /**
    * @return the address for this profile, same as {@link #getParticipantId()}
@@ -73,13 +73,13 @@ public interface Profile {
    */
   @JsProperty
   String getImageUrl();
-  
+
   /**
    * Set a name for the profile, the change it is not persisted
    * @param name
    */
   void setName(String name);
-  
+
   /**
    * @return true iff it is the logged in user
    */
@@ -87,14 +87,20 @@ public interface Profile {
 
   @JsProperty
   boolean getAnonymous();
-  
+
   @JsProperty
   RgbColor getColor();
-  
+
   @JsIgnore
   void trackActivity(String sessionId, double timestamp);
-  
+
   @JsIgnore
   void trackActivity(String sessionId);
-  
+
+  @JsProperty
+  String getEmail();
+
+  @JsProperty
+  String getLocale();
+
 }

@@ -4,9 +4,8 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 
-import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
 public final class GetUserOperation
@@ -14,16 +13,19 @@ public final class GetUserOperation
 
 
   @JsType(isNative = true)
-  public interface Options extends ServiceOperation.Options {
+  public static class Options implements ServiceOperation.Options {
 
-    @JsProperty
-    public String getId();
+    public String id;
+
+    @JsOverlay
+    public final String getId() {
+      return id;
+    }
 
   }
 
   @JsType(isNative = true)
-  public interface Response extends ServiceOperation.Response, ServerAccountData {
-
+  public static class Response extends AccountDataResponse implements ServerOperation.Response {
   }
 
   public GetUserOperation(ServiceContext context, GetUserOperation.Options options,
@@ -42,12 +44,12 @@ public final class GetUserOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (!getContext().isSession()) {
+    if (!context.isSession()) {
       throw new SException(SException.NOT_LOGGED_IN);
     }
 
     addPathElement("account");
-    addPathElement(getContext().getParticipantId());
+    addPathElement(context.getParticipantId());
   }
 
 

@@ -34,8 +34,8 @@ public final class EchoOperation
 
 
   @Override
-  public void doSuccess(EchoOperation.Response response) {
-    getContext().setSessionCookieAvailability(response.isSessionCookie());
+  public void doSuccess(Response response) {
+    context.setSessionCookieAvailability(response.isSessionCookie());
     super.doSuccess(response);
   }
 

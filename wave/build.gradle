@@ -206,7 +206,8 @@ dependencies {
             [group: "commons-validator", name: "commons-validator", version: "1.5.0"],				     		// [?, ?]
 			[group: "javax.mail", name: "mail", version: "1.4.7"],	                                       		// [?, ?]
 			[group: "org.apache.velocity", name: "velocity", version: "1.7"],                                  	// [?, ?]
-			[group: "org.apache.velocity", name: "velocity-tools", version: "2.0"]                         		// [?, ?]
+			[group: "org.apache.velocity", name: "velocity-tools", version: "2.0"],
+			[group: "org.java-websocket", name: "Java-WebSocket", version: "1.3.6"]                             		// [?, ?]
     )
     compile fileTree(dir: 'dependencies/compile', include: "**/*.jar")                                          // [?, ?]
     generateGXP (

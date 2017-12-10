@@ -41,16 +41,16 @@ public final class GetUserBatchOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (getOptions() == null || getOptions().getId() == null) {
+    if (options == null || options.getId() == null) {
       throw new SException(SException.MISSING_PARAMETERS);
     }
 
     String userIdQuery = "";
-    if (getOptions().getId() != null) {
-      for (int i = 0; i < getOptions().getId().length; i++) {
+    if (options.getId() != null) {
+      for (int i = 0; i < options.getId().length; i++) {
         if (!userIdQuery.isEmpty())
           userIdQuery += ";";
-        userIdQuery += getOptions().getId()[i];
+        userIdQuery += options.getId()[i];
       }
     }
     addQueryParam("p", userIdQuery);

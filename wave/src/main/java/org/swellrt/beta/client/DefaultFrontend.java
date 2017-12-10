@@ -28,11 +28,13 @@ import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOptional;
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
@@ -82,14 +84,8 @@ public class DefaultFrontend implements ServiceFrontend {
     @Override
     protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
 
-      GetUserOperation.Options options = new GetUserOperation.Options() {
-
-        @Override
-        public String getId() {
-          return participantId.getAddress();
-        }
-
-      };
+      GetUserOperation.Options options = new GetUserOperation.Options();
+      options.id = participantId.getAddress();
 
       GetUserOperation op = new GetUserOperation(context, options,
           new ServiceOperation.Callback<GetUserOperation.Response>() {
@@ -101,7 +97,76 @@ public class DefaultFrontend implements ServiceFrontend {
 
             @Override
             public void onSuccess(Response response) {
-              callback.onCompleted(response);
+              Profile profile = new Profile() {
+
+                @Override
+                public ParticipantId getParticipantId() {
+                  return ParticipantId.ofUnsafe(response.id);
+                }
+
+                @Override
+                public void update(Profile profile) {
+                }
+
+                @Override
+                public String getAddress() {
+                  return response.id;
+                }
+
+                @Override
+                public String getName() {
+                  return response.name;
+                }
+
+                @Override
+                public String getShortName() {
+                  return getParticipantId().getName();
+                }
+
+                @Override
+                public String getImageUrl() {
+                  return response.avatarUrl;
+                }
+
+                @Override
+                public void setName(String name) {
+                }
+
+                @Override
+                public boolean isCurrentSessionProfile() {
+                  return false;
+                }
+
+                @Override
+                public boolean getAnonymous() {
+                  return ParticipantId.isAnonymousName(response.id);
+                }
+
+                @Override
+                public RgbColor getColor() {
+                  return null;
+                }
+
+                @Override
+                public void trackActivity(String sessionId, double timestamp) {
+                }
+
+                @Override
+                public void trackActivity(String sessionId) {
+                }
+
+                @Override
+                public String getEmail() {
+                  return response.email;
+                }
+
+                @Override
+                public String getLocale() {
+                  return response.locale;
+                }
+
+              };
+              callback.onCompleted(profile);
             }
 
           });
@@ -113,8 +178,9 @@ public class DefaultFrontend implements ServiceFrontend {
     @Override
     protected void storeProfile(Profile profile) {
 
-      EditUserOperation.Options options = new EditUserOperation.DefaultOptions(profile.getAddress(),
-          profile.getName());
+      EditUserOperation.Options options = new EditUserOperation.Options();
+      options.id = profile.getAddress();
+      options.name = profile.getName();
 
       EditUserOperation op = new EditUserOperation(context, options,
           new Callback<EditUserOperation.Response>() {
@@ -264,7 +330,8 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#editUser(org.swellrt.beta.client.rest.operations.EditUserOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void editUser(EditUserOperation.Options options, Callback<EditUserOperation.Response> callback) {
+  public void editUser(EditUserOperation.Options options,
+      Callback<EditUserOperation.Response> callback) {
     EditUserOperation op = new EditUserOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -329,6 +396,7 @@ public class DefaultFrontend implements ServiceFrontend {
   /* (non-Javadoc)
    * @see org.swellrt.beta.client.ServiceFrontend#getProfilesManager()
    */
+  @JsProperty
   @Override
   public ProfileManager getProfilesManager() {
     return profileManager;

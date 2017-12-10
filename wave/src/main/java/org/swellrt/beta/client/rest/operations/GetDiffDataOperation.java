@@ -60,10 +60,10 @@ public final class GetDiffDataOperation
 
   @Override
   protected void buildRestParams() throws SException {
-    addPathElement(getOptions().waveId);
-    addPathElement(getOptions().waveletId);
-    addPathElement(getOptions().base64HashVersion);
-    addPathElement(String.valueOf(getOptions().version));
+    addPathElement(options.waveId);
+    addPathElement(options.waveletId);
+    addPathElement(options.base64HashVersion);
+    addPathElement(String.valueOf(options.version));
   }
 
 }

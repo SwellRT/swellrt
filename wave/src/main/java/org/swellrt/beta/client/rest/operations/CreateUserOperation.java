@@ -4,9 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.account.ServerAccountData;
 
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 public final class CreateUserOperation
@@ -14,31 +12,14 @@ public final class CreateUserOperation
 
 
   @JsType(isNative = true)
-  public interface Options extends ServerOperation.Options {
+  public static class Options extends AccountDataResponse implements ServerOperation.Options {
 
-    @JsProperty
-    public String getId();
-
-    @JsProperty
-    public String getPassword();
-
-    @JsProperty
-    public String getEmail();
-
-    @JsProperty
-    public String getLocale();
-
-    @JsProperty
-    public String getName();
-
-    @JsProperty
-    public String getAvatarData();
-
+    public String password;
 
   }
 
   @JsType(isNative = true)
-  public interface Response extends ServerOperation.Response, ServerAccountData {
+  public static class Response extends AccountDataResponse {
 
   }
 
@@ -61,9 +42,7 @@ public final class CreateUserOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (getOptions() == null || getOptions().getId() == null
-        || getOptions().getPassword() == null) {
-
+    if (options == null || options.id == null || options.password == null) {
       throw new SException(SException.MISSING_PARAMETERS);
     }
 

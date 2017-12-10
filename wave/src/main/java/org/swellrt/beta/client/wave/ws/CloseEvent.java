@@ -1,4 +1,4 @@
-package org.swellrt.beta.client.platform.web.browser;
+package org.swellrt.beta.client.wave.ws;
 
 import jsinterop.annotations.JsConstructor;
 import jsinterop.annotations.JsPackage;
