@@ -139,6 +139,15 @@ public class WaveSocketWS implements WaveSocket {
 
     ws = WaveFactories.websocketFactory.create();
 
+    try {
+      ws.connect(serverUrl);
+      LOG.debug("created");
+    } catch (Exception e) {
+      LOG.severe("create exception", e);
+      callback.onError("WebSockets not available ");
+      return;
+    }
+
     ws.onOpen(new WebSocket.Function<Event>() {
       @Override
       public void exec(Event e) {
@@ -206,14 +215,7 @@ public class WaveSocketWS implements WaveSocket {
       }
     });
 
-    try {
-      ws.connect(serverUrl);
-      LOG.debug("created");
-    } catch (Exception e) {
-      LOG.severe("create exception", e);
-      callback.onError("WebSockets not available ");
-      return;
-    }
+
 
   }
 
