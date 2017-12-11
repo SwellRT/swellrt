@@ -4,6 +4,7 @@ import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.operations.params.Account;
+import org.swellrt.beta.client.rest.operations.params.AccountImpl;
 import org.swellrt.beta.client.rest.operations.params.Credential;
 import org.swellrt.beta.common.SException;
 
@@ -21,7 +22,7 @@ public final class GetUserOperation
 
   public GetUserOperation(ServiceContext context, Credential options,
       ServiceOperation.Callback<Account> callback) {
-    super(context, options, callback);
+    super(context, options, callback, AccountImpl.class);
   }
 
 

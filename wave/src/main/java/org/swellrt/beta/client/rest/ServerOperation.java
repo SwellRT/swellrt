@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.rest;
 
 import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.common.SException;
 
 public abstract class ServerOperation<O extends ServiceOperation.Options, R extends ServiceOperation.Response>
@@ -22,11 +23,14 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
   private final static String queryAmp = "&";
   private final static String queryEquals = "=";
 
+  private final Class<? extends R> responseImplClass;
+
   private String path = "";
   private String query = "";
 
-  public ServerOperation(ServiceContext context, O options, Callback<R> callback) {
+  public ServerOperation(ServiceContext context, O options, Callback<R> callback,  Class<? extends R> responseImplClass) {
     super(context, options, callback);
+    this.responseImplClass = responseImplClass;
   }
 
   protected ServerOperation<O, R> addPathElement(String element) {
@@ -62,8 +66,8 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
 
   protected abstract void buildRestParams() throws SException;
 
-  protected void doSuccessJson(String json) {
-
+  protected final void doSuccessJson(String json) {
+    doSuccess(WaveFactories.json.parse(json, responseImplClass));
   }
 
   public boolean sendSessionInUrl() {

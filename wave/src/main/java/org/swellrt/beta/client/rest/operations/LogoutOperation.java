@@ -5,6 +5,7 @@ import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.operations.params.Credential;
 import org.swellrt.beta.client.rest.operations.params.Void;
+import org.swellrt.beta.client.rest.operations.params.VoidImpl;
 import org.swellrt.beta.common.SException;
 
 public final class LogoutOperation
@@ -12,7 +13,7 @@ public final class LogoutOperation
 
   public LogoutOperation(ServiceContext context, Credential options,
       ServiceOperation.Callback<Void> callback) {
-    super(context, options, callback);
+    super(context, options, callback, VoidImpl.class);
   }
 
 

@@ -5,7 +5,6 @@ import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.client.rest.operations.params.AccountImpl;
 import org.swellrt.beta.client.rest.operations.params.Credential;
-import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.common.SException;
 
 /**
@@ -19,7 +18,7 @@ public final class LoginOperation
 
   public LoginOperation(ServiceContext context, Credential options,
       Callback<Account> callback) {
-    super(context, options, callback);
+    super(context, options, callback, AccountImpl.class);
   }
 
 
@@ -37,12 +36,6 @@ public final class LoginOperation
   @Override
   protected void buildRestParams() throws SException {
     addPathElement("auth");
-  }
-
-  @Override
-  protected void doSuccessJson(String json) {
-    doSuccess(
-        WaveFactories.json.<Account, AccountImpl> parse(json, Account.class, AccountImpl.class));
   }
 
   @Override

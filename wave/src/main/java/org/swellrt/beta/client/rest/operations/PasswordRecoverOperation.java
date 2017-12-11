@@ -5,6 +5,7 @@ import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.operations.params.CredentialData;
 import org.swellrt.beta.client.rest.operations.params.Void;
+import org.swellrt.beta.client.rest.operations.params.VoidImpl;
 import org.swellrt.beta.common.SException;
 
 import com.google.gwt.safehtml.shared.UriUtils;
@@ -15,7 +16,7 @@ public final class PasswordRecoverOperation
 
   public PasswordRecoverOperation(ServiceContext context, CredentialData options,
       ServiceOperation.Callback<Void> callback) {
-    super(context, options, callback);
+    super(context, options, callback, VoidImpl.class);
   }
 
 

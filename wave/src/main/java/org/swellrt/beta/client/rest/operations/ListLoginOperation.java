@@ -18,7 +18,9 @@ public final class ListLoginOperation
 
   public ListLoginOperation(ServiceContext context, Options options,
       ServiceOperation.Callback<Response> callback) {
-    super(context, options, callback);
+    super(context, options, callback, new Response() {
+
+    }.getClass());
   }
 
   @JsType(isNative = true)

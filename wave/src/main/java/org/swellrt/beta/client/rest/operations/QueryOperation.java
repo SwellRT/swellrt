@@ -27,7 +27,8 @@ public final class QueryOperation
 
   public QueryOperation(ServiceContext context, Options options,
       ServiceOperation.Callback<Response> callback) {
-    super(context, options, callback);
+    super(context, options, callback, new Response() {
+    }.getClass());
   }
 
   @Override

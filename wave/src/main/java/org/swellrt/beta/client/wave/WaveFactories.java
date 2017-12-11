@@ -32,7 +32,7 @@ public class WaveFactories {
   public static JsonParser json = new JsonParser() {
 
     @Override
-    public <T, R extends T> T parse(String json, Class<T> interfaceType, Class<R> dataType) {
+    public <T, R extends T> T parse(String json, Class<R> dataType) {
       return JSON.<T> parse(json);
     }
 

@@ -2,6 +2,6 @@ package org.swellrt.beta.client.rest;
 
 public interface JsonParser {
 
-  <T, R extends T> T parse(String json, Class<T> interfaceType, Class<R> dataType);
+  <R, S extends R> R parse(String json, Class<S> implType);
 
 }

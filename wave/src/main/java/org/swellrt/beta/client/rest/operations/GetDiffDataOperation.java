@@ -44,7 +44,14 @@ public final class GetDiffDataOperation
 
   public GetDiffDataOperation(ServiceContext context, GetDiffDataOperation.Options options,
       ServiceOperation.Callback<GetDiffDataOperation.Response> callback) {
-    super(context, options, callback);
+    super(context, options, callback, new Response() {
+
+      @Override
+      public DiffData[] get(String blipId) {
+        return null;
+      }
+
+    }.getClass());
   }
 
 

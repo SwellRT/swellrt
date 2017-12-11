@@ -20,11 +20,11 @@ public final class EchoOperation
 
   }
 
-  public static class ResponseData implements Response {
+  public static class ResponseImpl implements Response {
 
     protected boolean sessionCookie;
 
-    public ResponseData(boolean sessionCookie) {
+    public ResponseImpl(boolean sessionCookie) {
       super();
       this.sessionCookie = sessionCookie;
     }
@@ -37,10 +37,9 @@ public final class EchoOperation
   }
 
 
-
   public EchoOperation(ServiceContext context, Void options,
       ServiceOperation.Callback<Response> callback) {
-    super(context, options, callback);
+    super(context, options, callback, ResponseImpl.class);
   }
 
 

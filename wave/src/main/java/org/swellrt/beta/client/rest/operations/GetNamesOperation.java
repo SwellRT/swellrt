@@ -5,6 +5,7 @@ import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
+import org.swellrt.beta.client.rest.operations.params.VoidImpl;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.box.server.swell.NamingServlet;
 
@@ -20,7 +21,7 @@ public class GetNamesOperation
 
   public GetNamesOperation(ServiceContext context, ObjectName options,
       ServiceOperation.Callback<Void> callback) {
-    super(context, options, callback);
+    super(context, options, callback, VoidImpl.class);
   }
 
   @Override
