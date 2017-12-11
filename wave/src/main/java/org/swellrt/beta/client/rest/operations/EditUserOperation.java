@@ -3,41 +3,15 @@ package org.swellrt.beta.client.rest.operations;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.common.SException;
 
-import jsinterop.annotations.JsOverlay;
-import jsinterop.annotations.JsType;
-
 public final class EditUserOperation
-    extends ServerOperation<EditUserOperation.Options, EditUserOperation.Response> {
+    extends ServerOperation<Account, Account> {
 
 
-  @JsType(isNative = true)
-  public static class Options extends AccountDataResponse implements ServerOperation.Options {
-
-    public String avatarData;
-    public String password;
-
-    @JsOverlay
-    public final String getPassword() {
-      return password;
-    }
-
-    @JsOverlay
-    public final String getAvatarData() {
-      return avatarData;
-    }
-
-  }
-
-
-  @JsType(isNative = true)
-  public static class Response extends AccountDataResponse implements ServerOperation.Response {
-  }
-
-
-  public EditUserOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public EditUserOperation(ServiceContext context, Account options,
+      ServiceOperation.Callback<Account> callback) {
     super(context, options, callback);
   }
 

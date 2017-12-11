@@ -2,6 +2,7 @@ package org.swellrt.beta.client.rest;
 
 import org.swellrt.beta.client.rest.operations.CloseOperation;
 import org.swellrt.beta.client.rest.operations.OpenOperation;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -70,8 +71,7 @@ public class ClientOperationExecutor extends OperationExecutor {
       operation.doFailure(e);
     }
 
-    operation.doSuccess(new CloseOperation.Response() {
-
+    operation.doSuccess(new Void() {
     });
   }
 

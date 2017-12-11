@@ -1,41 +1,23 @@
-package org.swellrt.beta.client.rest.operations.naming;
+package org.swellrt.beta.client.rest.operations;
 
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.client.rest.operations.params.ObjectName;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.box.server.swell.NamingServlet;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
-
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
 /**
  * See {@link NamingServlet}, POST operations
  *
  */
 public class DeleteNameOperation
-    extends ServerOperation<DeleteNameOperation.Options, DeleteNameOperation.Response> {
+    extends ServerOperation<ObjectName, Void> {
 
-
-  @JsType(isNative = true)
-  public interface Options extends ServerOperation.Options {
-
-    /** a Wave id (required) */
-    @JsProperty
-    public String getId();
-
-    /** a Wave name (optional) */
-    @JsProperty
-    public String getName();
-  }
-
-  @JsType(isNative = true)
-  public interface Response extends ServerOperation.Response {
-  }
-
-  public DeleteNameOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public DeleteNameOperation(ServiceContext context, ObjectName options,
+      ServiceOperation.Callback<Void> callback) {
     super(context, options, callback);
 
   }

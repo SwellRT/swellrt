@@ -6,22 +6,15 @@ import org.swellrt.beta.client.platform.web.browser.Promise;
 import org.swellrt.beta.client.platform.web.browser.Promise.ConstructorParam;
 import org.swellrt.beta.client.platform.web.browser.Promise.FunctionParam;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
-import org.swellrt.beta.client.rest.operations.CloseOperation;
-import org.swellrt.beta.client.rest.operations.CreateUserOperation;
-import org.swellrt.beta.client.rest.operations.EditUserOperation;
 import org.swellrt.beta.client.rest.operations.GetUserBatchOperation;
-import org.swellrt.beta.client.rest.operations.GetUserOperation;
 import org.swellrt.beta.client.rest.operations.ListLoginOperation;
-import org.swellrt.beta.client.rest.operations.LoginOperation;
-import org.swellrt.beta.client.rest.operations.LogoutOperation;
-import org.swellrt.beta.client.rest.operations.OpenOperation;
-import org.swellrt.beta.client.rest.operations.PasswordOperation;
-import org.swellrt.beta.client.rest.operations.PasswordRecoverOperation;
 import org.swellrt.beta.client.rest.operations.QueryOperation;
-import org.swellrt.beta.client.rest.operations.ResumeOperation;
-import org.swellrt.beta.client.rest.operations.naming.DeleteNameOperation;
-import org.swellrt.beta.client.rest.operations.naming.GetNamesOperation;
-import org.swellrt.beta.client.rest.operations.naming.SetNameOperation;
+import org.swellrt.beta.client.rest.operations.params.Account;
+import org.swellrt.beta.client.rest.operations.params.Credential;
+import org.swellrt.beta.client.rest.operations.params.CredentialData;
+import org.swellrt.beta.client.rest.operations.params.ObjectId;
+import org.swellrt.beta.client.rest.operations.params.ObjectName;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -44,20 +37,20 @@ public class PromisableFrontend implements ServiceConnection {
 		this.service = service;
 	}
 
-	public Promise<CreateUserOperation.Response, SException> createUser(CreateUserOperation.Options options) {
+  public Promise<Account, SException> createUser(Account options) {
 
-		return new Promise<CreateUserOperation.Response, SException>(new ConstructorParam<CreateUserOperation.Response, SException>() {
+    return new Promise<Account, SException>(new ConstructorParam<Account, SException>() {
 
 			@Override
-			public void exec(FunctionParam<CreateUserOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Account> resolve, FunctionParam<SException> reject) {
 
-				service.createUser(options, new Callback<CreateUserOperation.Response>() {
+        service.createUser(options, new Callback<Account>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-					public void onSuccess(CreateUserOperation.Response response) {
+          public void onSuccess(Account response) {
 						resolve.exec(response);
 					}
 				});
@@ -67,19 +60,19 @@ public class PromisableFrontend implements ServiceConnection {
 	}
 
 
-	public Promise<LoginOperation.Response, SException> login(LoginOperation.Options options) {
-		return new Promise<LoginOperation.Response, SException>(new ConstructorParam<LoginOperation.Response, SException>() {
+  public Promise<Account, SException> login(Credential options) {
+    return new Promise<Account, SException>(new ConstructorParam<Account, SException>() {
 
 			@Override
-			public void exec(FunctionParam<LoginOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Account> resolve, FunctionParam<SException> reject) {
 
-            service.login(options, new Callback<LoginOperation.Response>() {
+        service.login(options, new Callback<Account>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-              public void onSuccess(LoginOperation.Response response) {
+          public void onSuccess(Account response) {
 						resolve.exec(response);
 					}
 				});
@@ -88,19 +81,19 @@ public class PromisableFrontend implements ServiceConnection {
 		});
 	}
 
-	public Promise<LogoutOperation.Response, SException> logout(LogoutOperation.Options options) {
-		return new Promise<LogoutOperation.Response, SException>(new ConstructorParam<LogoutOperation.Response, SException>() {
+  public Promise<Void, SException> logout(Credential options) {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
 			@Override
-			public void exec(FunctionParam<LogoutOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Void> resolve, FunctionParam<SException> reject) {
 
-				service.logout(options, new Callback<LogoutOperation.Response>() {
+        service.logout(options, new Callback<Void>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-					public void onSuccess(LogoutOperation.Response response) {
+          public void onSuccess(Void response) {
 						resolve.exec(response);
 					}
 				});
@@ -109,19 +102,19 @@ public class PromisableFrontend implements ServiceConnection {
 		});
 	}
 
-	public Promise<ResumeOperation.Response, SException> resume(ResumeOperation.Options options) {
-		return new Promise<ResumeOperation.Response, SException>(new ConstructorParam<ResumeOperation.Response, SException>() {
+  public Promise<Account, SException> resume(Credential options) {
+    return new Promise<Account, SException>(new ConstructorParam<Account, SException>() {
 
 			@Override
-			public void exec(FunctionParam<ResumeOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Account> resolve, FunctionParam<SException> reject) {
 
-				service.resume(options, new Callback<ResumeOperation.Response>() {
+        service.resume(options, new Callback<Account>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-					public void onSuccess(ResumeOperation.Response response) {
+          public void onSuccess(Account response) {
 						resolve.exec(response);
 					}
 				});
@@ -130,7 +123,7 @@ public class PromisableFrontend implements ServiceConnection {
 		});
 	}
 
-  public Promise<SObject, SException> open(OpenOperation.Options options) {
+  public Promise<SObject, SException> open(ObjectId options) {
     return new Promise<SObject, SException>(new ConstructorParam<SObject, SException>() {
 
 			@Override
@@ -151,19 +144,19 @@ public class PromisableFrontend implements ServiceConnection {
 		});
 	}
 
-	public Promise<CloseOperation.Response, SException> close(CloseOperation.Options options) {
-		return new Promise<CloseOperation.Response, SException>(new ConstructorParam<CloseOperation.Response, SException>() {
+  public Promise<Void, SException> close(ObjectId options) {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
 			@Override
-			public void exec(FunctionParam<CloseOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Void> resolve, FunctionParam<SException> reject) {
 
-				service.close(options, new Callback<CloseOperation.Response>() {
+        service.close(options, new Callback<Void>() {
 					@Override
 					public void onError(SException exception) {
 						reject.exec(exception);
 					}
 					@Override
-					public void onSuccess(CloseOperation.Response response) {
+          public void onSuccess(Void response) {
 						resolve.exec(response);
 					}
 				});
@@ -193,19 +186,19 @@ public class PromisableFrontend implements ServiceConnection {
 		});
 	}
 
- public Promise<GetUserOperation.Response, SException> getUser(GetUserOperation.Options options) {
-    return new Promise<GetUserOperation.Response, SException>(new ConstructorParam<GetUserOperation.Response, SException>() {
+  public Promise<Account, SException> getUser(Credential options) {
+    return new Promise<Account, SException>(new ConstructorParam<Account, SException>() {
 
       @Override
-      public void exec(FunctionParam<GetUserOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Account> resolve, FunctionParam<SException> reject) {
 
-        service.getUser(options, new Callback<GetUserOperation.Response>() {
+        service.getUser(options, new Callback<Account>() {
           @Override
           public void onError(SException exception) {
             reject.exec(exception);
           }
           @Override
-          public void onSuccess(GetUserOperation.Response response) {
+          public void onSuccess(Account response) {
             resolve.exec(response);
           }
         });
@@ -235,21 +228,20 @@ public class PromisableFrontend implements ServiceConnection {
    });
  }
 
-  public Promise<EditUserOperation.Response, SException> editUser(EditUserOperation.Options options) {
-    return new Promise<EditUserOperation.Response, SException>(
-        new ConstructorParam<EditUserOperation.Response, SException>() {
+  public Promise<Account, SException> editUser(Account options) {
+    return new Promise<Account, SException>(new ConstructorParam<Account, SException>() {
 
 	    @Override
-          public void exec(FunctionParam<EditUserOperation.Response> resolve,
+      public void exec(FunctionParam<Account> resolve,
               FunctionParam<SException> reject) {
 
-            service.editUser(options, new Callback<EditUserOperation.Response>() {
+        service.editUser(options, new Callback<Account>() {
 	        @Override
 	        public void onError(SException exception) {
 	          reject.exec(exception);
 	        }
 	        @Override
-              public void onSuccess(EditUserOperation.Response response) {
+          public void onSuccess(Account response) {
 	          resolve.exec(response);
 	        }
 	      });
@@ -279,20 +271,19 @@ public class PromisableFrontend implements ServiceConnection {
 	  });
 	}
 
-  public Promise<PasswordRecoverOperation.Response, SException> recoverPassword(
-      PasswordRecoverOperation.Options options) {
-	    return new Promise<PasswordRecoverOperation.Response, SException>(new ConstructorParam<PasswordRecoverOperation.Response, SException>() {
+  public Promise<Void, SException> recoverPassword(CredentialData options) {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
 	      @Override
-	      public void exec(FunctionParam<PasswordRecoverOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Void> resolve, FunctionParam<SException> reject) {
 
-            service.recoverPassword(options, new Callback<PasswordRecoverOperation.Response>() {
+        service.recoverPassword(options, new Callback<Void>() {
 	          @Override
 	          public void onError(SException exception) {
 	            reject.exec(exception);
 	          }
 	          @Override
-              public void onSuccess(PasswordRecoverOperation.Response response) {
+          public void onSuccess(Void response) {
 	            resolve.exec(response);
 	          }
 	        });
@@ -301,20 +292,19 @@ public class PromisableFrontend implements ServiceConnection {
 	    });
 	  }
 
-  public Promise<PasswordOperation.Response, SException> password(
-      PasswordOperation.Options options) {
-     return new Promise<PasswordOperation.Response, SException>(new ConstructorParam<PasswordOperation.Response, SException>() {
+  public Promise<Void, SException> password(CredentialData options) {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
        @Override
-       public void exec(FunctionParam<PasswordOperation.Response> resolve, FunctionParam<SException> reject) {
+      public void exec(FunctionParam<Void> resolve, FunctionParam<SException> reject) {
 
-            service.password(options, new Callback<PasswordOperation.Response>() {
+        service.password(options, new Callback<Void>() {
            @Override
            public void onError(SException exception) {
              reject.exec(exception);
            }
            @Override
-             public void onSuccess(PasswordOperation.Response response) {
+          public void onSuccess(Void response) {
              resolve.exec(response);
            }
          });
@@ -323,24 +313,22 @@ public class PromisableFrontend implements ServiceConnection {
      });
    }
 
-  public Promise<GetNamesOperation.Response, SException> getObjectNames(
-      GetNamesOperation.Options options) {
+  public Promise<Void, SException> getObjectNames(ObjectName options) {
 
-    return new Promise<GetNamesOperation.Response, SException>(
-        new ConstructorParam<GetNamesOperation.Response, SException>() {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
           @Override
-          public void exec(FunctionParam<GetNamesOperation.Response> resolve,
+      public void exec(FunctionParam<Void> resolve,
               FunctionParam<SException> reject) {
 
-            service.getObjectNames(options, new Callback<GetNamesOperation.Response>() {
+        service.getObjectNames(options, new Callback<Void>() {
               @Override
               public void onError(SException exception) {
                 reject.exec(exception);
               }
 
               @Override
-              public void onSuccess(GetNamesOperation.Response response) {
+          public void onSuccess(Void response) {
                 resolve.exec(response);
               }
             });
@@ -350,24 +338,22 @@ public class PromisableFrontend implements ServiceConnection {
 
   }
 
-  public Promise<SetNameOperation.Response, SException> setObjectName(
-      SetNameOperation.Options options) {
+  public Promise<Void, SException> setObjectName(ObjectName options) {
 
-    return new Promise<SetNameOperation.Response, SException>(
-        new ConstructorParam<SetNameOperation.Response, SException>() {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
           @Override
-          public void exec(FunctionParam<SetNameOperation.Response> resolve,
+      public void exec(FunctionParam<Void> resolve,
               FunctionParam<SException> reject) {
 
-            service.setObjectName(options, new Callback<SetNameOperation.Response>() {
+        service.setObjectName(options, new Callback<Void>() {
               @Override
               public void onError(SException exception) {
                 reject.exec(exception);
               }
 
               @Override
-              public void onSuccess(SetNameOperation.Response response) {
+          public void onSuccess(Void response) {
                 resolve.exec(response);
               }
             });
@@ -377,24 +363,22 @@ public class PromisableFrontend implements ServiceConnection {
 
   }
 
-  public Promise<DeleteNameOperation.Response, SException> deleteObjectName(
-      DeleteNameOperation.Options options) {
+  public Promise<Void, SException> deleteObjectName(ObjectName options) {
 
-    return new Promise<DeleteNameOperation.Response, SException>(
-        new ConstructorParam<DeleteNameOperation.Response, SException>() {
+    return new Promise<Void, SException>(new ConstructorParam<Void, SException>() {
 
           @Override
-          public void exec(FunctionParam<DeleteNameOperation.Response> resolve,
+      public void exec(FunctionParam<Void> resolve,
               FunctionParam<SException> reject) {
 
-            service.deleteObjectName(options, new Callback<DeleteNameOperation.Response>() {
+        service.deleteObjectName(options, new Callback<Void>() {
               @Override
               public void onError(SException exception) {
                 reject.exec(exception);
               }
 
               @Override
-              public void onSuccess(DeleteNameOperation.Response response) {
+          public void onSuccess(Void response) {
                 resolve.exec(response);
               }
             });

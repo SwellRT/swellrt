@@ -1,6 +1,6 @@
 package org.swellrt.beta.client;
 
-import org.swellrt.beta.client.rest.operations.AccountDataResponse;
+import org.swellrt.beta.client.rest.operations.params.Account;
 
 /**
  * Manage session data. Implementations are platform dependent: Web, Android...
@@ -14,7 +14,7 @@ public interface SessionManager {
 
   }
 
-  public void setSession(AccountDataResponse profile);
+  public void setSession(Account profile);
 
   public String getSessionId();
 

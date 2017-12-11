@@ -2,30 +2,17 @@ package org.swellrt.beta.client.rest.operations;
 
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServiceOperation;
-
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
+import org.swellrt.beta.client.rest.operations.params.ObjectId;
+import org.swellrt.beta.client.rest.operations.params.Void;
 
 public final class CloseOperation
-    extends ServiceOperation<CloseOperation.Options, CloseOperation.Response> {
+    extends ServiceOperation<ObjectId, Void> {
 
-  public CloseOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public CloseOperation(ServiceContext context, ObjectId options,
+      ServiceOperation.Callback<Void> callback) {
     super(context, options, callback);
-    // TODO Auto-generated constructor stub
   }
 
-  @JsType(isNative = true)
-  public interface Options extends ServiceOperation.Options {
-
-    @JsProperty
-    public String getId();
-  }
-
-  @JsType
-  public interface Response extends ServiceOperation.Response {
-
-  }
 
 
 }

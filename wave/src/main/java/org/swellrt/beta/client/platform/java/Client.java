@@ -6,7 +6,8 @@ import java.util.Set;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.SessionManager;
-import org.swellrt.beta.client.rest.operations.AccountDataResponse;
+import org.swellrt.beta.client.rest.operations.params.Account;
+import org.swellrt.beta.client.rest.operations.params.AccountImpl;
 import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
@@ -44,21 +45,21 @@ public class Client {
     ServiceConfig.configProvider = null; // TODO to be completed
     SessionManager sessionMgr = new SessionManager() {
 
-      private AccountDataResponse account;
+      private Account account;
 
       @Override
-      public void setSession(AccountDataResponse profile) {
+      public void setSession(Account profile) {
         account = profile;
       }
 
       @Override
       public String getSessionId() {
-        return account.sessionId;
+        return account.getSessionId();
       }
 
       @Override
       public String getTransientSessionId() {
-        return account.transientSessionId;
+        return account.getTransientSessionId();
       }
 
       @Override
@@ -73,12 +74,12 @@ public class Client {
 
       @Override
       public String getWaveDomain() {
-        return account.domain;
+        return account.getDomain();
       }
 
       @Override
       public String getUserId() {
-        return account.id;
+        return account.getId();
       }
 
     };
@@ -141,8 +142,7 @@ public class Client {
       }
     });
 
-    AccountDataResponse accountData = new AccountDataResponse();
-    accountData.id = "fake@local.net";
+    Account accountData = new AccountImpl("fake@local.net");
 
     context.init(accountData);
 

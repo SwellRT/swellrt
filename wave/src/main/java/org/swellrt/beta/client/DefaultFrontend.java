@@ -7,11 +7,12 @@ import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
 import org.swellrt.beta.client.rest.operations.CloseOperation;
 import org.swellrt.beta.client.rest.operations.CreateUserOperation;
+import org.swellrt.beta.client.rest.operations.DeleteNameOperation;
 import org.swellrt.beta.client.rest.operations.EchoOperation;
 import org.swellrt.beta.client.rest.operations.EditUserOperation;
+import org.swellrt.beta.client.rest.operations.GetNamesOperation;
 import org.swellrt.beta.client.rest.operations.GetUserBatchOperation;
 import org.swellrt.beta.client.rest.operations.GetUserOperation;
-import org.swellrt.beta.client.rest.operations.GetUserOperation.Response;
 import org.swellrt.beta.client.rest.operations.ListLoginOperation;
 import org.swellrt.beta.client.rest.operations.LoginOperation;
 import org.swellrt.beta.client.rest.operations.LogoutOperation;
@@ -20,9 +21,15 @@ import org.swellrt.beta.client.rest.operations.PasswordOperation;
 import org.swellrt.beta.client.rest.operations.PasswordRecoverOperation;
 import org.swellrt.beta.client.rest.operations.QueryOperation;
 import org.swellrt.beta.client.rest.operations.ResumeOperation;
-import org.swellrt.beta.client.rest.operations.naming.DeleteNameOperation;
-import org.swellrt.beta.client.rest.operations.naming.GetNamesOperation;
-import org.swellrt.beta.client.rest.operations.naming.SetNameOperation;
+import org.swellrt.beta.client.rest.operations.SetNameOperation;
+import org.swellrt.beta.client.rest.operations.params.Account;
+import org.swellrt.beta.client.rest.operations.params.AccountImpl;
+import org.swellrt.beta.client.rest.operations.params.Credential;
+import org.swellrt.beta.client.rest.operations.params.CredentialData;
+import org.swellrt.beta.client.rest.operations.params.CredentialImpl;
+import org.swellrt.beta.client.rest.operations.params.ObjectId;
+import org.swellrt.beta.client.rest.operations.params.ObjectName;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.Profile;
@@ -84,11 +91,10 @@ public class DefaultFrontend implements ServiceFrontend {
     @Override
     protected void requestProfile(ParticipantId participantId, RequestProfileCallback callback) {
 
-      GetUserOperation.Options options = new GetUserOperation.Options();
-      options.id = participantId.getAddress();
+      Credential options = new CredentialImpl(participantId.getAddress());
 
       GetUserOperation op = new GetUserOperation(context, options,
-          new ServiceOperation.Callback<GetUserOperation.Response>() {
+          new ServiceOperation.Callback<Account>() {
 
             @Override
             public void onError(SException exception) {
@@ -96,12 +102,12 @@ public class DefaultFrontend implements ServiceFrontend {
             }
 
             @Override
-            public void onSuccess(Response response) {
+            public void onSuccess(Account response) {
               Profile profile = new Profile() {
 
                 @Override
                 public ParticipantId getParticipantId() {
-                  return ParticipantId.ofUnsafe(response.id);
+                  return ParticipantId.ofUnsafe(response.getId());
                 }
 
                 @Override
@@ -110,12 +116,12 @@ public class DefaultFrontend implements ServiceFrontend {
 
                 @Override
                 public String getAddress() {
-                  return response.id;
+                  return response.getId();
                 }
 
                 @Override
                 public String getName() {
-                  return response.name;
+                  return response.getName();
                 }
 
                 @Override
@@ -125,7 +131,7 @@ public class DefaultFrontend implements ServiceFrontend {
 
                 @Override
                 public String getImageUrl() {
-                  return response.avatarUrl;
+                  return response.getAvatarUrl();
                 }
 
                 @Override
@@ -139,7 +145,7 @@ public class DefaultFrontend implements ServiceFrontend {
 
                 @Override
                 public boolean getAnonymous() {
-                  return ParticipantId.isAnonymousName(response.id);
+                  return ParticipantId.isAnonymousName(response.getId());
                 }
 
                 @Override
@@ -157,12 +163,12 @@ public class DefaultFrontend implements ServiceFrontend {
 
                 @Override
                 public String getEmail() {
-                  return response.email;
+                  return response.getEmail();
                 }
 
                 @Override
                 public String getLocale() {
-                  return response.locale;
+                  return response.getLocale();
                 }
 
               };
@@ -178,12 +184,10 @@ public class DefaultFrontend implements ServiceFrontend {
     @Override
     protected void storeProfile(Profile profile) {
 
-      EditUserOperation.Options options = new EditUserOperation.Options();
-      options.id = profile.getAddress();
-      options.name = profile.getName();
+      Account options = new AccountImpl();
 
       EditUserOperation op = new EditUserOperation(context, options,
-          new Callback<EditUserOperation.Response>() {
+          new Callback<Account>() {
 
             @Override
             public void onError(SException exception) {
@@ -191,8 +195,7 @@ public class DefaultFrontend implements ServiceFrontend {
             }
 
             @Override
-            public void onSuccess(
-                EditUserOperation.Response response) {
+            public void onSuccess(Account response) {
             }
 
           });
@@ -216,18 +219,18 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#createUser(org.swellrt.beta.client.rest.operations.CreateUserOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void createUser(CreateUserOperation.Options options, Callback<CreateUserOperation.Response> callback) {
+  public void createUser(Account options, Callback<Account> callback) {
     CreateUserOperation op = new CreateUserOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
 
 
   @Override
-  public void login(LoginOperation.Options options, Callback<LoginOperation.Response> callback) {
+  public void login(Credential options, Callback<Account> callback) {
 
     // Execute an echo after a successful login.
 
-    EchoOperation echoOp = new EchoOperation(context, new EchoOperation.Options() {
+    EchoOperation echoOp = new EchoOperation(context, new Void() {
     }, new Callback<EchoOperation.Response>() {
 
       @Override
@@ -243,7 +246,7 @@ public class DefaultFrontend implements ServiceFrontend {
     });
 
     LoginOperation loginOp = new LoginOperation(context, options,
-        new Callback<LoginOperation.Response>() {
+        new Callback<Account>() {
 
           @Override
           public void onError(SException exception) {
@@ -251,7 +254,7 @@ public class DefaultFrontend implements ServiceFrontend {
           }
 
           @Override
-          public void onSuccess(LoginOperation.Response response) {
+          public void onSuccess(Account response) {
             serverOpExecutor.execute(echoOp);
             callback.onSuccess(response);
           }
@@ -266,7 +269,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#logout(org.swellrt.beta.client.rest.operations.LogoutOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void logout(LogoutOperation.Options options, @JsOptional Callback<LogoutOperation.Response> callback) {
+  public void logout(Credential options, @JsOptional Callback<Void> callback) {
     LogoutOperation op = new LogoutOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -275,7 +278,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#resume(org.swellrt.beta.client.rest.operations.ResumeOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void resume(ResumeOperation.Options options, @JsOptional Callback<ResumeOperation.Response> callback) {
+  public void resume(Credential options, @JsOptional Callback<Account> callback) {
     ResumeOperation op = new ResumeOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -284,7 +287,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#open(org.swellrt.beta.client.rest.operations.OpenOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void open(OpenOperation.Options options, Callback<SObject> callback) {
+  public void open(ObjectId options, Callback<SObject> callback) {
     OpenOperation op = new OpenOperation(context, options, callback);
     clientOpExecutor.execute(op);
   }
@@ -293,7 +296,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#close(org.swellrt.beta.client.rest.operations.CloseOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void close(CloseOperation.Options options, @JsOptional Callback<CloseOperation.Response> callback) {
+  public void close(ObjectId options, @JsOptional Callback<Void> callback) {
     CloseOperation op = new CloseOperation(context, options, callback);
     clientOpExecutor.execute(op);
   }
@@ -311,7 +314,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#getUser(org.swellrt.beta.client.rest.operations.GetUserOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void getUser(GetUserOperation.Options options, Callback<GetUserOperation.Response> callback) {
+  public void getUser(Credential options, Callback<Account> callback) {
     GetUserOperation op = new GetUserOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -330,8 +333,8 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#editUser(org.swellrt.beta.client.rest.operations.EditUserOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void editUser(EditUserOperation.Options options,
-      Callback<EditUserOperation.Response> callback) {
+  public void editUser(Account options,
+      Callback<Account> callback) {
     EditUserOperation op = new EditUserOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -349,7 +352,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#recoverPassword(org.swellrt.beta.client.rest.operations.PasswordRecoverOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void recoverPassword(PasswordRecoverOperation.Options options, Callback<PasswordRecoverOperation.Response> callback) {
+  public void recoverPassword(CredentialData options, Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     PasswordRecoverOperation op = new PasswordRecoverOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -358,7 +361,7 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#password(org.swellrt.beta.client.rest.operations.PasswordOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void password(PasswordOperation.Options options, Callback<PasswordOperation.Response> callback) {
+  public void password(CredentialData options, Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     PasswordOperation op = new PasswordOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -367,8 +370,8 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#getObjectNames(org.swellrt.beta.client.rest.operations.naming.GetNamesOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void getObjectNames(GetNamesOperation.Options options,
-      Callback<GetNamesOperation.Response> callback) {
+  public void getObjectNames(ObjectName options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     GetNamesOperation op = new GetNamesOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -377,8 +380,8 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#setObjectName(org.swellrt.beta.client.rest.operations.naming.SetNameOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void setObjectName(SetNameOperation.Options options,
-      Callback<SetNameOperation.Response> callback) {
+  public void setObjectName(ObjectName options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     SetNameOperation op = new SetNameOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }
@@ -387,8 +390,8 @@ public class DefaultFrontend implements ServiceFrontend {
    * @see org.swellrt.beta.client.ServiceFrontend#deleteObjectName(org.swellrt.beta.client.rest.operations.naming.DeleteNameOperation.Options, org.swellrt.beta.client.rest.ServiceOperation.Callback)
    */
   @Override
-  public void deleteObjectName(DeleteNameOperation.Options options,
-      Callback<DeleteNameOperation.Response> callback) {
+  public void deleteObjectName(ObjectName options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     DeleteNameOperation op = new DeleteNameOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }

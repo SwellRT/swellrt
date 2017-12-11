@@ -3,39 +3,18 @@ package org.swellrt.beta.client.rest.operations;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.client.rest.operations.params.CredentialData;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 
 import com.google.gwt.safehtml.shared.UriUtils;
 
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
-
 public final class PasswordRecoverOperation
-    extends ServerOperation<PasswordRecoverOperation.Options, PasswordRecoverOperation.Response> {
+    extends ServerOperation<CredentialData, Void> {
 
 
-
-  @JsType(isNative = true)
-  public interface Options extends ServerOperation.Options {
-
-    @JsProperty
-    public String getId();
-
-    @JsProperty
-    public String getEmail();
-
-    @JsProperty
-    public String getUrl();
-
-  }
-
-  @JsType(isNative = true)
-  public static final class Response implements ServerOperation.Response {
-
-  }
-
-  public PasswordRecoverOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public PasswordRecoverOperation(ServiceContext context, CredentialData options,
+      ServiceOperation.Callback<Void> callback) {
     super(context, options, callback);
   }
 

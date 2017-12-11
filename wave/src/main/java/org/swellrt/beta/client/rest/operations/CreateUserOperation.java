@@ -3,28 +3,15 @@ package org.swellrt.beta.client.rest.operations;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.common.SException;
 
-import jsinterop.annotations.JsType;
-
 public final class CreateUserOperation
-    extends ServerOperation<CreateUserOperation.Options, CreateUserOperation.Response> {
+    extends ServerOperation<Account, Account> {
 
 
-  @JsType(isNative = true)
-  public static class Options extends AccountDataResponse implements ServerOperation.Options {
-
-    public String password;
-
-  }
-
-  @JsType(isNative = true)
-  public static class Response extends AccountDataResponse {
-
-  }
-
-  public CreateUserOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public CreateUserOperation(ServiceContext context, Account options,
+      ServiceOperation.Callback<Account> callback) {
     super(context, options, callback);
   }
 
@@ -42,7 +29,7 @@ public final class CreateUserOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (options == null || options.id == null || options.password == null) {
+    if (options == null || options.getId() == null || options.getPassword() == null) {
       throw new SException(SException.MISSING_PARAMETERS);
     }
 

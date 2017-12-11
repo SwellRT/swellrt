@@ -6,28 +6,27 @@ import org.swellrt.beta.common.SException;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-@JsType()
 public abstract class ServiceOperation<O extends ServiceOperation.Options, R extends ServiceOperation.Response> {
 
   @JsType(isNative = true)
-  public static interface Options {
+  public interface Options {
 
   }
 
   @JsType(isNative = true)
-  public static interface Response {
+  public interface Response {
 
   }
 
   @JsType(isNative = true)
-  public static interface OperationError {
+  public interface OperationError {
 
     @JsProperty
     public String getError();
   }
 
   @JsType(isNative = true)
-  public static interface Callback<T extends ServiceOperation.Response>
+  public interface Callback<T extends ServiceOperation.Response>
   {
 
     public void onError(SException exception);

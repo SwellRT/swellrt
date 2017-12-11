@@ -6,8 +6,12 @@ import java.util.Map;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
-import org.swellrt.beta.client.rest.operations.CreateUserOperation.Options;
-import org.swellrt.beta.client.rest.operations.CreateUserOperation.Response;
+import org.swellrt.beta.client.rest.operations.params.Account;
+import org.swellrt.beta.client.rest.operations.params.Credential;
+import org.swellrt.beta.client.rest.operations.params.CredentialData;
+import org.swellrt.beta.client.rest.operations.params.ObjectId;
+import org.swellrt.beta.client.rest.operations.params.ObjectName;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.wave.SubstrateId;
@@ -84,30 +88,30 @@ public class ServerlessFrontend implements ServiceFrontend {
   }
 
   @Override
-  public void createUser(Options options, Callback<Response> callback) {
+  public void createUser(Account options, Callback<Account> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public void login(org.swellrt.beta.client.rest.operations.LoginOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.LoginOperation.Response> callback) {
+  public void login(Credential options,
+      Callback<Account> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public void logout(org.swellrt.beta.client.rest.operations.LogoutOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.LogoutOperation.Response> callback) {
+  public void logout(Credential options,
+      Callback<Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public void resume(org.swellrt.beta.client.rest.operations.ResumeOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.ResumeOperation.Response> callback) {
+  public void resume(Credential options,
+      Callback<Account> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public void open(org.swellrt.beta.client.rest.operations.OpenOperation.Options options,
+  public void open(ObjectId options,
       Callback<SObject> callback) {
 
     try {
@@ -122,8 +126,8 @@ public class ServerlessFrontend implements ServiceFrontend {
   }
 
   @Override
-  public void close(org.swellrt.beta.client.rest.operations.CloseOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.CloseOperation.Response> callback) {
+  public void close(ObjectId options,
+      Callback<Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -134,8 +138,8 @@ public class ServerlessFrontend implements ServiceFrontend {
   }
 
   @Override
-  public void getUser(org.swellrt.beta.client.rest.operations.GetUserOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.GetUserOperation.Response> callback) {
+  public void getUser(Credential options,
+      Callback<Account> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -147,8 +151,8 @@ public class ServerlessFrontend implements ServiceFrontend {
   }
 
   @Override
-  public void editUser(org.swellrt.beta.client.rest.operations.EditUserOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.EditUserOperation.Response> callback) {
+  public void editUser(Account options,
+      Callback<Account> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
@@ -160,35 +164,35 @@ public class ServerlessFrontend implements ServiceFrontend {
 
   @Override
   public void recoverPassword(
-      org.swellrt.beta.client.rest.operations.PasswordRecoverOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.PasswordRecoverOperation.Response> callback) {
+      CredentialData options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public void password(org.swellrt.beta.client.rest.operations.PasswordOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.PasswordOperation.Response> callback) {
+  public void password(CredentialData options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
   public void getObjectNames(
-      org.swellrt.beta.client.rest.operations.naming.GetNamesOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.naming.GetNamesOperation.Response> callback) {
+      ObjectName options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
   public void setObjectName(
-      org.swellrt.beta.client.rest.operations.naming.SetNameOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.naming.SetNameOperation.Response> callback) {
+      ObjectName options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
   public void deleteObjectName(
-      org.swellrt.beta.client.rest.operations.naming.DeleteNameOperation.Options options,
-      Callback<org.swellrt.beta.client.rest.operations.naming.DeleteNameOperation.Response> callback) {
+      ObjectName options,
+      Callback<org.swellrt.beta.client.rest.operations.params.Void> callback) {
     throw new IllegalStateException("Not implemented");
   }
 

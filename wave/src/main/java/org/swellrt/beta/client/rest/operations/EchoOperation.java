@@ -3,19 +3,14 @@ package org.swellrt.beta.client.rest.operations;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 public final class EchoOperation
-    extends ServerOperation<EchoOperation.Options, EchoOperation.Response> {
-
-
-  @JsType(isNative = true)
-  public interface Options extends ServerOperation.Options {
-
-  }
+    extends ServerOperation<Void, EchoOperation.Response> {
 
   @JsType(isNative = true)
   public interface Response extends ServerOperation.Response {
@@ -25,9 +20,25 @@ public final class EchoOperation
 
   }
 
+  public static class ResponseData implements Response {
+
+    protected boolean sessionCookie;
+
+    public ResponseData(boolean sessionCookie) {
+      super();
+      this.sessionCookie = sessionCookie;
+    }
+
+    @Override
+    public boolean isSessionCookie() {
+      return sessionCookie;
+    }
+
+  }
 
 
-  public EchoOperation(ServiceContext context, Options options,
+
+  public EchoOperation(ServiceContext context, Void options,
       ServiceOperation.Callback<Response> callback) {
     super(context, options, callback);
   }

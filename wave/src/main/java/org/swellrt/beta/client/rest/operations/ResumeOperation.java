@@ -3,34 +3,16 @@ package org.swellrt.beta.client.rest.operations;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.client.rest.operations.params.Account;
+import org.swellrt.beta.client.rest.operations.params.Credential;
 import org.swellrt.beta.common.SException;
 
-import jsinterop.annotations.JsOverlay;
-import jsinterop.annotations.JsType;
-
 public final class ResumeOperation
-    extends ServerOperation<ResumeOperation.Options, ResumeOperation.Response> {
+    extends ServerOperation<Credential, Account> {
 
 
-  @JsType(isNative = true)
-  public static class Options implements ServiceOperation.Options {
-
-    public String id;
-
-    @JsOverlay
-    public final String getId() {
-      return id;
-    }
-
-  }
-
-  @JsType(isNative = true)
-  public static class Response extends AccountDataResponse implements ServerOperation.Response {
-  }
-
-
-  public ResumeOperation(ServiceContext context, Options options,
-      ServiceOperation.Callback<Response> callback) {
+  public ResumeOperation(ServiceContext context, Credential options,
+      ServiceOperation.Callback<Account> callback) {
     super(context, options, callback);
   }
 

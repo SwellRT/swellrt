@@ -1,7 +1,7 @@
 package org.swellrt.beta.client.platform.web;
 
 import org.swellrt.beta.client.SessionManager;
-import org.swellrt.beta.client.rest.operations.AccountDataResponse;
+import org.swellrt.beta.client.rest.operations.params.Account;
 
 import com.google.gwt.user.client.Cookies;
 
@@ -10,7 +10,7 @@ public class WebSessionManager implements SessionManager {
   private static final String SESSION_COOKIE_NAME = "WSESSIONID";
   private static final String TRANSIENT_SESSION_COOKIE_NAME = "TSESSIONID";
 
-  private AccountDataResponse accountData = null;
+  private Account accountData = null;
 
   public static WebSessionManager create() {
     WebSessionManager sm = new WebSessionManager();
@@ -30,18 +30,18 @@ public class WebSessionManager implements SessionManager {
 
   @Override
   public String getSessionId() {
-    return accountData.sessionId;
+    return accountData.getSessionId();
   }
 
 
   @Override
   public String getTransientSessionId() {
-    return accountData.transientSessionId;
+    return accountData.getTransientSessionId();
   }
 
 
   @Override
-  public void setSession(AccountDataResponse profile) {
+  public void setSession(Account profile) {
     this.accountData = profile;
   }
 
@@ -61,12 +61,12 @@ public class WebSessionManager implements SessionManager {
 
   @Override
   public String getWaveDomain() {
-    return this.accountData.domain;
+    return this.accountData.getDomain();
   }
 
   @Override
   public String getUserId() {
-    return this.accountData.id;
+    return this.accountData.getId();
   }
 
 }
