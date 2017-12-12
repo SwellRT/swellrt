@@ -157,9 +157,6 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
   protected abstract void executeHTTP(Method method, String url, Header[] headers, String body,
       HTTPCallback httpCallback) throws Exception;
 
-  @SuppressWarnings("unchecked")
-  protected abstract <R extends ServiceOperation.Response> R parseResponse(String json);
-
   protected abstract OperationError parseServiceError(String json);
 
   protected abstract <O extends ServiceOperation.Options> String toJson(O options);
