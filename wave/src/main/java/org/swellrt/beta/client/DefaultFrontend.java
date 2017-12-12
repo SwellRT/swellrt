@@ -206,7 +206,7 @@ public class DefaultFrontend implements ServiceFrontend {
   };
 
   @JsIgnore
-  protected DefaultFrontend(ServiceContext context,
+  public DefaultFrontend(ServiceContext context,
       ServerOperationExecutor serverOpExecutor,
       ServiceLogger logger) {
     this.context = context;
