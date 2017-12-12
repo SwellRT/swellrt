@@ -1,6 +1,5 @@
 package org.swellrt.beta.client.wave;
 
-import org.swellrt.beta.client.platform.web.browser.JSON;
 import org.swellrt.beta.client.rest.JsonParser;
 import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.waveprotocol.wave.client.scheduler.TimerService;
@@ -29,12 +28,5 @@ public class WaveFactories {
 
   public static TimerService highPriorityTimer = null;
 
-  public static JsonParser json = new JsonParser() {
-
-    @Override
-    public <T, R extends T> T parse(String json, Class<R> dataType) {
-      return JSON.<T> parse(json);
-    }
-
-  };
+  public static JsonParser json = null;
 }

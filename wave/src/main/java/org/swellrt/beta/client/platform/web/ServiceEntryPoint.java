@@ -10,6 +10,8 @@ import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceLogger;
 import org.swellrt.beta.client.platform.js.JsProtocolMessageUtils;
 import org.swellrt.beta.client.platform.web.browser.Console;
+import org.swellrt.beta.client.platform.web.browser.JSON;
+import org.swellrt.beta.client.rest.JsonParser;
 import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
@@ -27,6 +29,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Random;
 
@@ -161,6 +165,25 @@ public class ServiceEntryPoint implements EntryPoint {
       public WebSocket create() {
         return new WebWebSocket();
       }
+    };
+
+    WaveFactories.json = new JsonParser() {
+
+      @Override
+      public <T, R extends T> T parse(String json, Class<R> dataType) {
+        return JSON.<T> parse(json);
+      }
+
+      @Override
+      public <O> String serialize(O data) {
+        if (data != null) {
+          if (data instanceof JavaScriptObject) {
+            return JsonUtils.stringify((JavaScriptObject) data);
+          }
+        }
+        return null;
+      }
+
     };
 
     WaveFactories.lowPriorityTimer = SchedulerInstance.getLowPriorityTimer();
