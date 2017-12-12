@@ -74,11 +74,6 @@ public class WebServerOperationExecutor extends ServerOperationExecutor
 
   }
 
-  @SuppressWarnings("unchecked")
-  @Override
-  protected <R extends ServiceOperation.Response> R parseResponse(String json) {
-    return (R) JsonUtils.safeEval(json);
-  }
 
   @Override
   protected OperationError parseServiceError(String json) {
