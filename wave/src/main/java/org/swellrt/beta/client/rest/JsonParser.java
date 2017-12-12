@@ -4,4 +4,6 @@ public interface JsonParser {
 
   <R, S extends R> R parse(String json, Class<S> implType);
 
+  <O> String serialize(O data);
+
 }
