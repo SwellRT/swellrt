@@ -20,11 +20,13 @@ import org.swellrt.beta.client.rest.ServerOperation.Method;
 import org.swellrt.beta.client.rest.ServerOperationExecutor;
 import org.swellrt.beta.client.rest.ServiceOperation.OperationError;
 import org.swellrt.beta.client.rest.ServiceOperation.Options;
-import org.swellrt.beta.client.rest.ServiceOperation.Response;
+
+import com.google.gson.Gson;
 
 public class JavaServerOperationExecutor extends ServerOperationExecutor {
 
   CloseableHttpClient hc = HttpClients.createDefault();
+  Gson gson = new Gson();
 
   protected JavaServerOperationExecutor(ServiceContext context) {
     super(context);
@@ -97,19 +99,15 @@ public class JavaServerOperationExecutor extends ServerOperationExecutor {
 
   @Override
   protected OperationError parseServiceError(String json) {
-    // TODO Auto-generated method stub
-    return null;
+    return gson.fromJson(json, OperationError.class);
   }
 
-  @Override
-  protected <R extends Response> R parseResponse(String json) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
   @Override
   protected <O extends Options> String toJson(O options) {
-    // TODO Auto-generated method stub
+    if (options != null)
+      return gson.toJson(options);
+
     return null;
   }
 
