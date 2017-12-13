@@ -3,9 +3,12 @@ package org.swellrt.beta.model.wave.mutable;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SList;
+import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObservableNode;
 import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
@@ -32,60 +35,93 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
 
     @Override
     public void set(String path, Object value) {
-      // TODO Auto-generated method stub
-
     }
 
     @Override
     public Object get(String path) {
-      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
     public void push(String path, Object value) {
-      // TODO Auto-generated method stub
-
     }
 
     @Override
     public Object pop(String path) {
-      // TODO Auto-generated method stub
       return null;
     }
 
     @Override
     public void delete(String path) {
-      // TODO Auto-generated method stub
-
     }
 
     @Override
     public int length(String path) {
-      // TODO Auto-generated method stub
       return 0;
     }
 
     @Override
     public boolean contains(String path, String property) {
-      // TODO Auto-generated method stub
       return false;
     }
 
     @Override
     public void addListener(SHandlerFunc h, String path) throws SException {
-      // TODO Auto-generated method stub
 
     }
 
     @Override
     public void removeListener(SHandlerFunc h, String path) {
-      // TODO Auto-generated method stub
+
 
     }
 
     @Override
     public SNode node(String path) {
+
+      return null;
+    }
+
+    @Override
+    public SMap asMap() {
+      return null;
+    }
+
+    @Override
+    public SList<SNode> asList() {
+      return null;
+    }
+
+    @Override
+    public String asString() {
+      return null;
+    }
+
+    @Override
+    public double asDouble() {
+      return 0;
+    }
+
+    @Override
+    public int asInt() {
+      return 0;
+    }
+
+    @Override
+    public boolean asBoolean() {
+      return false;
+    }
+
+    @Override
+    public void listen(SHandlerFunc h) {
+    }
+
+    @Override
+    public void unlisten(SHandlerFunc h) {
+    }
+
+    @Override
+    public SText asText() {
       // TODO Auto-generated method stub
       return null;
     }
@@ -154,6 +190,9 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
   @Override
   public void addListener(SHandlerFunc h, String path) throws SException {
 
+    if (h == null)
+      throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
+
     SWaveNodeContainer targetNode = lookUpListenableNode(path);
     if (targetNode != null)
       targetNode.eventHandlerSet.add(h);
@@ -162,9 +201,19 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
 
   }
 
+  @Override
+  public void listen(SHandlerFunc h) throws SException {
+    if (h == null)
+      throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
+
+    this.eventHandlerSet.add(h);
+  }
 
   @Override
   public void removeListener(SHandlerFunc h, String path) throws SException {
+
+    if (h == null)
+      throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
 
     SWaveNodeContainer targetNode = lookUpListenableNode(path);
     if (targetNode != null)
@@ -174,6 +223,14 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
 
   }
 
+  @Override
+  public void unlisten(SHandlerFunc h) throws SException {
+
+    if (h == null)
+      throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
+
+    eventHandlerSet.remove(h);
+  }
 
 
   protected void triggerEvent(SEvent e) {

@@ -9,6 +9,7 @@ import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SObservableNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SStatusEvent;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
@@ -36,8 +37,7 @@ import jsinterop.annotations.JsIgnore;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class SWaveObject extends SWaveNodeContainer
-    implements SObject, SObservableNode {
+public class SWaveObject implements SObject, SObservableNode {
 
 
   private SWaveMap root;
@@ -80,7 +80,6 @@ public class SWaveObject extends SWaveNodeContainer
    * Unit test only.
    * TODO fix visibility
    */
-  @Override
   public void clearCache() {
     root.clearCache();
   }
@@ -96,6 +95,15 @@ public class SWaveObject extends SWaveNodeContainer
     root.removeListener(h, path);
   }
 
+  @Override
+  public void listen(SHandlerFunc h) throws SException {
+    this.root.listen(h);
+  }
+
+  @Override
+  public void unlisten(SHandlerFunc h) throws SException {
+    this.root.unlisten(h);
+  }
 
   @Override
   public String getId() {
@@ -266,5 +274,41 @@ public class SWaveObject extends SWaveNodeContainer
   public SNode node(String path) throws SException {
     return SNode.node(this, path);
   }
+
+  @Override
+  public SMap asMap() {
+    return this.root;
+  }
+
+  @Override
+  public SList<? extends SNode> asList() {
+    throw new IllegalStateException("Node is not a list");
+  }
+
+  @Override
+  public String asString() {
+    throw new IllegalStateException("Node is not a string");
+  }
+
+  @Override
+  public double asDouble() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public int asInt() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public boolean asBoolean() {
+    throw new IllegalStateException("Node is not a boolean");
+  }
+
+  @Override
+  public SText asText() {
+    throw new IllegalStateException("Node is not a text");
+  }
+
 
 }

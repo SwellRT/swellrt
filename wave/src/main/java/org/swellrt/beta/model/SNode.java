@@ -389,5 +389,38 @@ public interface SNode {
   @JsIgnore
   void accept(SVisitor visitor);
 
+  /**
+   * @return this node as a Map. Throws exception otherwise.
+   */
+  SMap asMap();
 
+  /**
+   * @return this node as a Map. Throws exception otherwise.
+   */
+  SList<? extends SNode> asList();
+
+  /**
+   * @return this node as a Map. Throws exception otherwise.
+   */
+  String asString();
+
+  /**
+   * @return this node as a Map. Throws exception otherwise.
+   */
+  double asDouble();
+
+  /**
+   * @return this node as a Map. Throws exception otherwise.
+   */
+  int asInt();
+
+  /**
+   * @return this node as a Map. Throws exception otherwise.
+   */
+  boolean asBoolean();
+
+  /**
+   * @return this node as Text. Throws exception otherwise.
+   */
+  SText asText();
 }

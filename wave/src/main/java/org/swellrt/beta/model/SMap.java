@@ -13,7 +13,7 @@ import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "Map")
-public interface SMap extends SNode {
+public interface SMap extends SNode, SObservableNode {
 
   public static SMap create(@JsOptional Object data) throws IllegalCastException {
 

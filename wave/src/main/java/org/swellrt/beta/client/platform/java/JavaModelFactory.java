@@ -2,7 +2,10 @@ package org.swellrt.beta.client.platform.java;
 
 import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SList;
+import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.STextLocal;
@@ -87,6 +90,41 @@ public class JavaModelFactory extends ModelFactory {
 
       @Override
       public SNode node(String path) {
+        return null;
+      }
+
+      @Override
+      public SMap asMap() {
+        return null;
+      }
+
+      @Override
+      public SList<? extends SNode> asList() {
+        return null;
+      }
+
+      @Override
+      public String asString() {
+        return null;
+      }
+
+      @Override
+      public double asDouble() {
+        return 0;
+      }
+
+      @Override
+      public int asInt() {
+        return 0;
+      }
+
+      @Override
+      public boolean asBoolean() {
+        return false;
+      }
+
+      @Override
+      public SText asText() {
         return null;
       }
 

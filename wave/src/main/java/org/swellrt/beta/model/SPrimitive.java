@@ -386,4 +386,51 @@ public class SPrimitive extends SWaveNode {
   public SNode node(String path) throws SException {
     return null;
   }
+
+  @Override
+  public SMap asMap() {
+    throw new IllegalStateException("Node is not a map");
+  }
+
+  @Override
+  public SList<? extends SNode> asList() {
+    throw new IllegalStateException("Node is not a list");
+  }
+
+  @Override
+  public String asString() {
+    if (type == TYPE_STRING)
+      return stringValue;
+
+    throw new IllegalStateException("Node is not a string");
+  }
+
+  @Override
+  public double asDouble() {
+    if (type == TYPE_DOUBLE)
+      return doubleValue;
+
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public int asInt() {
+    if (type == TYPE_DOUBLE)
+      return new Double(doubleValue).intValue();
+
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public boolean asBoolean() {
+    if (type == TYPE_BOOL)
+      return boolValue;
+
+    throw new IllegalStateException("Node is not a boolean");
+  }
+
+  @Override
+  public SText asText() {
+    throw new IllegalStateException("Node is not a text");
+  }
 }

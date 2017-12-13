@@ -3,7 +3,9 @@ package org.swellrt.beta.model.wave.mutable;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SList;
+import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.HasJsProxy;
@@ -242,4 +244,38 @@ public class SWaveList extends SWaveNodeContainer implements SList<SWaveNode>, H
     return SNode.node(this, path);
   }
 
+  @Override
+  public SMap asMap() {
+    throw new IllegalStateException("Node is not a map");
+  }
+
+  @Override
+  public SList<? extends SNode> asList() {
+    return this;
+  }
+
+  @Override
+  public String asString() {
+    throw new IllegalStateException("Node is not a string");
+  }
+
+  @Override
+  public double asDouble() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public int asInt() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public boolean asBoolean() {
+    throw new IllegalStateException("Node is not a boolean");
+  }
+
+  @Override
+  public SText asText() {
+    throw new IllegalStateException("Node is not a text");
+  }
 }

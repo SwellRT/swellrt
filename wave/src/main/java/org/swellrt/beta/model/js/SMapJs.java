@@ -4,8 +4,11 @@ import java.util.ArrayList;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
+import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SUtils;
 import org.swellrt.beta.model.SVisitor;
 import org.waveprotocol.wave.client.common.util.JsoView;
@@ -234,5 +237,60 @@ public class SMapJs implements SMap {
   @Override
   public SNode node(String path) throws SException {
     return SNode.node(this, path);
+  }
+
+  @Override
+  public SMap asMap() {
+    return this;
+  }
+
+  @Override
+  public SList<? extends SNode> asList() {
+    throw new IllegalStateException("Node is not a list");
+  }
+
+  @Override
+  public String asString() {
+    throw new IllegalStateException("Node is not a string");
+  }
+
+  @Override
+  public double asDouble() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public int asInt() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public boolean asBoolean() {
+    throw new IllegalStateException("Node is not a boolean");
+  }
+
+  @Override
+  public SText asText() {
+    throw new IllegalStateException("Node is not a text");
+  }
+
+  @Override
+  public void addListener(SHandlerFunc h, String path) throws SException {
+    throw new IllegalStateException("Local nodes don't support event listeners");
+  }
+
+  @Override
+  public void listen(SHandlerFunc h) throws SException {
+    throw new IllegalStateException("Local nodes don't support event listeners");
+  }
+
+  @Override
+  public void removeListener(SHandlerFunc h, String path) throws SException {
+    throw new IllegalStateException("Local nodes don't support event listeners");
+  }
+
+  @Override
+  public void unlisten(SHandlerFunc h) throws SException {
+    throw new IllegalStateException("Local nodes don't support event listeners");
   }
 }

@@ -9,7 +9,7 @@ import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "List")
-public interface SList<T extends SNode> extends SNode {
+public interface SList<T extends SNode> extends SNode, SObservableNode {
 
   @SuppressWarnings("rawtypes")
   public static SList create(@JsOptional Object data) throws IllegalCastException {

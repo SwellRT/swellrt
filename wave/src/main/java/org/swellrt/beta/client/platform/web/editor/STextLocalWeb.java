@@ -1,7 +1,10 @@
 package org.swellrt.beta.client.platform.web.editor;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SList;
+import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.WaveSchemas;
@@ -15,8 +18,6 @@ import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.document.util.Range;
 
 import com.google.gwt.dom.client.Element;
-
-import jsinterop.annotations.JsOptional;
 
 public class STextLocalWeb implements STextWeb, STextLocal {
 
@@ -161,5 +162,40 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   @Override
   public SNode node(String path) throws SException {
     return null;
+  }
+
+  @Override
+  public SMap asMap() {
+    throw new IllegalStateException("Node is not a map");
+  }
+
+  @Override
+  public SList<? extends SNode> asList() {
+    throw new IllegalStateException("Node is not a list");
+  }
+
+  @Override
+  public String asString() {
+    throw new IllegalStateException("Node is not a string");
+  }
+
+  @Override
+  public double asDouble() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public int asInt() {
+    throw new IllegalStateException("Node is not a number");
+  }
+
+  @Override
+  public boolean asBoolean() {
+    throw new IllegalStateException("Node is not a boolean");
+  }
+
+  @Override
+  public SText asText() {
+    return this;
   }
 }
