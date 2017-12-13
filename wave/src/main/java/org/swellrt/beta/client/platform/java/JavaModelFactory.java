@@ -13,6 +13,13 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+
 public class JavaModelFactory extends ModelFactory {
 
   @Override
@@ -90,5 +97,76 @@ public class JavaModelFactory extends ModelFactory {
   @Override
   public STextLocal createLocalText(String text) throws SException {
     throw new IllegalStateException("Not implemented yet");
+  }
+
+  Gson gson = new Gson();
+  JsonParser jsonParser = new JsonParser();
+
+  @Override
+  public boolean isJsonObject(Object o) {
+    return o != null && o instanceof JsonElement;
+  }
+
+  @Override
+  public Object parseJsonObject(String json) {
+    return jsonParser.parse(json);
+  }
+
+  @Override
+  public String serializeJsonObject(Object o) {
+    return gson.toJson((JsonElement) o);
+  }
+
+  @Override
+  public Object traverseJsonObject(Object o, String path) {
+
+    if (o == null)
+      return null;
+
+    JsonElement e = (JsonElement) o;
+
+    if (path == null || path.isEmpty()) {
+
+      if (e.isJsonPrimitive()) {
+        JsonPrimitive p = (JsonPrimitive) e;
+
+        if (p.isBoolean())
+          return new Boolean(p.getAsBoolean());
+        else if (p.isNumber())
+          return new Double(p.getAsDouble());
+        else if (p.isString())
+          return new String(p.getAsString());
+        else
+          return null;
+
+      } else
+        return e;
+    }
+
+    String propName = path.indexOf(".") != -1 ? path.substring(0, path.indexOf(".")) : path;
+    String restPath = path.indexOf(".") != -1 ? path.substring(path.indexOf(".") + 1) : null;
+
+    JsonElement propValue = null;
+    if (e.isJsonObject()) {
+
+      JsonObject object = (JsonObject) e;
+      propValue = object.get(propName);
+      return traverseJsonObject(propValue, restPath);
+
+    } else if (e.isJsonArray()) {
+      try {
+        int index = Integer.parseInt(propName);
+        JsonArray array = (JsonArray) e;
+        return traverseJsonObject(array.get(index), restPath);
+      } catch (NumberFormatException ex) {
+        return null;
+      }
+
+    } else if (e.isJsonPrimitive()) {
+      return null;
+    }
+
+
+    return null;
   }
 }

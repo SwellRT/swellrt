@@ -35,6 +35,7 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gwt.core.client.Callback;
 
 public class Client {
@@ -62,8 +63,8 @@ public class Client {
 
   private void start() {
 
-    ModelFactory.instance = new JavaModelFactory(); // TODO to be completed
-    ServiceConfig.configProvider = null; // TODO to be completed
+    ModelFactory.instance = new JavaModelFactory();
+    ServiceConfig.configProvider = new JavaServiceConfig();
     SessionManager sessionMgr = new SessionManager() {
 
       private Account account;
@@ -221,8 +222,10 @@ public class Client {
 
           @Override
           public void onError(SException exception) {
-            System.err.println(exception.getMessage());
-
+            if (exception.getCause() != null)
+              System.err.println(exception.getCause().getMessage());
+            else
+              System.err.println(exception.getMessage());
           }
 
           @Override
@@ -238,10 +241,13 @@ public class Client {
                   }
 
                   @Override
-                  public void onSuccess(SObject response) {
+                  public void onSuccess(SObject object) {
                     try {
+
+                      String name = SPrimitive.asString(object.node("form.name"));
+                      JsonObject jso = (JsonObject) ((SPrimitive) object.node("form")).getValue();
                       System.out.println(
-                          "Object loaded -> " + SPrimitive.asString(response.node("form.address")));
+                          "Object loaded -> " + name + " / " + jso.get("name").getAsString());
                     } catch (SException e) {
                       e.printStackTrace();
                     }

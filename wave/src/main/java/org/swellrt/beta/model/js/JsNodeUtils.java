@@ -1,5 +1,6 @@
 package org.swellrt.beta.model.js;
 
+import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.PathWalker;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
@@ -68,13 +69,18 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
   public void visit(SPrimitive primitive) {
 
 
-    if (primitive.getType() == SPrimitive.TYPE_JSO) {
+    if (primitive.getType() == SPrimitive.TYPE_JSO && !path.get().isEmpty()) {
 
-      /* Traverse the JavaScriptObject if there is still path elements */
-      JavaScriptObject jso = (JavaScriptObject) getNode(path.get(),
-          primitive.getValue());
-      node = new SPrimitive(jso, new SNodeAccessControl(), primitive, path.getConsumed(),
-          path.get());
+      // Traverse the Json object if there is still path elements
+      // return value could be a primitive type or a Json object
+      Object value = ModelFactory.instance.traverseJsonObject(primitive.getValue(), path.get());
+
+      if (value != null) {
+        node = new SPrimitive(value, new SNodeAccessControl(), primitive, path.getConsumed(),
+            path.get());
+      } else {
+        node = null;
+      }
 
     } else {
       node = primitive;

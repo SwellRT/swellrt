@@ -1,15 +1,12 @@
 package org.swellrt.beta.model;
 
+import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveNode;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsonUtils;
-
 import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsOptional;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -35,7 +32,7 @@ public class SPrimitive extends SWaveNode {
   private final double doubleValue;
   private final String stringValue;
   private final Boolean boolValue;
-  private final JavaScriptObject jsoValue;
+  private final Object jsoValue;
 
   private final SNodeAccessControl accessControl;
 
@@ -152,7 +149,7 @@ public class SPrimitive extends SWaveNode {
     }
 
     if (s.startsWith(PRIMITIVE_JSO_TYPE_PREFIX+PRIMITIVE_SEPARATOR)) {
-      return new SPrimitive(JsonUtils.<JavaScriptObject>safeEval(s.substring(3)), acToken);
+      return new SPrimitive(ModelFactory.instance.parseJsonObject(s.substring(3)), acToken);
     }
 
     return null;
@@ -179,7 +176,8 @@ public class SPrimitive extends SWaveNode {
       return token + PRIMITIVE_DOUBLE_TYPE_PREFIX+PRIMITIVE_SEPARATOR+Double.toString(doubleValue);
 
     if (type == TYPE_JSO)
-      return token + PRIMITIVE_JSO_TYPE_PREFIX+PRIMITIVE_SEPARATOR+JsonUtils.stringify(jsoValue);
+      return token + PRIMITIVE_JSO_TYPE_PREFIX + PRIMITIVE_SEPARATOR
+          + ModelFactory.instance.serializeJsonObject(jsoValue);
 
     return null;
   }
@@ -230,7 +228,7 @@ public class SPrimitive extends SWaveNode {
   }
 
   @JsIgnore
-  public SPrimitive(JavaScriptObject value, SNodeAccessControl token) {
+  public SPrimitive(Object value, SNodeAccessControl token) {
     type = TYPE_JSO;
     intValue = Integer.MAX_VALUE;
     doubleValue = Double.NaN;
@@ -241,7 +239,7 @@ public class SPrimitive extends SWaveNode {
   }
 
   @JsIgnore
-  public SPrimitive(JavaScriptObject value, SNodeAccessControl token, SPrimitive container,
+  public SPrimitive(Object value, SNodeAccessControl token, SPrimitive container,
       String containerPath, String valuePath) {
     type = TYPE_JSO;
     intValue = Integer.MAX_VALUE;

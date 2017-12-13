@@ -18,4 +18,19 @@ public abstract class ModelFactory {
 
   public abstract STextLocal createLocalText(String text) throws SException;
 
+  /** Check if an object's type is a valid Json representation:
+   *  <li>JavaScriptObject for GWT</li>
+   *  <li>JsonObject (Gson) for Java</li>
+   */
+  public abstract boolean isJsonObject(Object o);
+
+  /** Parse/Deserialize a Json object */
+  public abstract Object parseJsonObject(String json);
+
+  /** Serialize a Json object */
+  public abstract String serializeJsonObject(Object o);
+
+  /** Return a property value in the Json object, as primitive or Json object */
+  public abstract Object traverseJsonObject(Object o, String path);
+
 }
