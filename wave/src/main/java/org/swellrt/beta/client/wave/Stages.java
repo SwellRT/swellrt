@@ -23,7 +23,6 @@ package org.swellrt.beta.client.wave;
 import org.waveprotocol.wave.client.common.util.AsyncHolder;
 import org.waveprotocol.wave.client.common.util.AsyncHolder.Accessor;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.user.client.Command;
 
@@ -94,31 +93,47 @@ public abstract class Stages implements WaveStages {
 
 
   private void loadStageTwo(final StageOne one) {
-    GWT.runAsync(new SimpleAsyncCallback() {
+    // GWT.runAsync(new SimpleAsyncCallback() {
+    // @Override
+    // public void onSuccess() {
+    // createStageTwoLoader(one).call(new Accessor<StageTwo>() {
+    // @Override
+    // public void use(StageTwo x) {
+    // loadStageThree(x);
+    // }
+    // });
+    // }
+    // });
+
+    createStageTwoLoader(one).call(new Accessor<StageTwo>() {
       @Override
-      public void onSuccess() {
-        createStageTwoLoader(one).call(new Accessor<StageTwo>() {
-          @Override
-          public void use(StageTwo x) {
-            loadStageThree(x);
-          }
-        });
+      public void use(StageTwo x) {
+        loadStageThree(x);
       }
     });
+
   }
 
   private void loadStageThree(final StageTwo two) {
-    GWT.runAsync(new SimpleAsyncCallback() {
+    // GWT.runAsync(new SimpleAsyncCallback() {
+    // @Override
+    // public void onSuccess() {
+    // createStageThreeLoader(two).call(new Accessor<StageThree>() {
+    // @Override
+    // public void use(StageThree x) {
+    // finish();
+    // }
+    // });
+    // }
+    // });
+
+    createStageThreeLoader(two).call(new Accessor<StageThree>() {
       @Override
-      public void onSuccess() {
-        createStageThreeLoader(two).call(new Accessor<StageThree>() {
-          @Override
-          public void use(StageThree x) {
-            finish();
-          }
-        });
+      public void use(StageThree x) {
+        finish();
       }
     });
+
   }
 
   private void finish() {

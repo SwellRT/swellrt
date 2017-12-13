@@ -5,6 +5,20 @@ public class ServiceConfig {
   /** TODO eventually avoid this global static dependency */
   public static ServiceConfigProvider configProvider;
 
+  public static final int WS_HEARBEAT_INTERVAL = 60000; // ms
+  public static final int WS_HEARBEAT_TIMEOUT = 2000; // ms
+  public static final boolean WS_ENABLE_LOG = false;
+
+  public static final boolean CAPTURE_EXCEPTIONS = false;
+
+  public static final int RPC_INITIAL_BACKOFF = 1000; // ms
+  public static final int RPC_MAX_BACKOFF = 60000; // ms
+
+  public static final int RPC_MAX_BURST_RATE = 10;
+  public static final double RPC_MAX_STEADY_RATE = 1.0;
+  public static final double RPC_MIN_RETRY_TIME = 5000; // ms
+
+
   /**
    * Yes, this method looks stupid. But when passing a javascript value as
    * parameter it captures undefined values. <br>
@@ -17,44 +31,51 @@ public class ServiceConfig {
     return value > 0;
   }
 
+
   public final static int websocketHeartbeatInterval() {
-    int DEFAULT = 60000; // ms
     try {
       Integer value = configProvider.getWebsocketHeartbeatInterval();
-      return checkPositiveInteger(value) ? value : DEFAULT;
+      return value != null && checkPositiveInteger(value) ? value : WS_HEARBEAT_INTERVAL;
     } catch (RuntimeException e) {
-      return DEFAULT;
+      return WS_HEARBEAT_INTERVAL;
     }
   }
 
   public final static int websocketHeartbeatTimeout() {
-    int DEFAULT = 2000; // ms
     try {
       Integer value = configProvider.getWebsocketHeartbeatTimeout();
-      return checkPositiveInteger(value) ? value : DEFAULT;
+      return value != null && checkPositiveInteger(value) ? value : WS_HEARBEAT_TIMEOUT;
     } catch (RuntimeException e) {
-      return DEFAULT;
+      return WS_HEARBEAT_TIMEOUT;
     }
   }
 
   public final static boolean websocketDebugLog() {
-    boolean DEFAULT = false;
     try {
       Boolean value = configProvider.getWebsocketDebugLog();
-      return value != null ? value : DEFAULT;
+      return value != null ? value : WS_ENABLE_LOG;
     } catch (RuntimeException e) {
-      return DEFAULT;
+      return WS_ENABLE_LOG;
     }
   }
 
   public final static boolean captureExceptions() {
-    boolean DEFAULT = true;
+
     try {
       Boolean value = configProvider.getCaptureExceptions();
-      return value != null ? value : DEFAULT;
+      return value != null ? value : CAPTURE_EXCEPTIONS;
     } catch (RuntimeException e) {
-      return DEFAULT;
+      return CAPTURE_EXCEPTIONS;
     }
+
+  }
+
+  public final static int rpcInitialBackoff() {
+    return RPC_INITIAL_BACKOFF;
+  }
+
+  public final static int rpcMaxBackoff() {
+    return RPC_MAX_BACKOFF;
   }
 
 }

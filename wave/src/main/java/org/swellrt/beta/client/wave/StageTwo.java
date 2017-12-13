@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.wave.concurrencycontrol.LiveChannelBinder;
 import org.swellrt.beta.client.wave.concurrencycontrol.MuxConnector;
 import org.swellrt.beta.client.wave.concurrencycontrol.WaveletOperationalizer;
@@ -36,9 +37,6 @@ import org.waveprotocol.wave.client.common.util.CountdownLatch;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.scheduler.Scheduler.Task;
-import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
-import org.waveprotocol.wave.client.util.ClientFlags;
 import org.waveprotocol.wave.client.wave.DiffData;
 import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
@@ -187,7 +185,7 @@ public interface StageTwo {
     protected void create(final Accessor<StageTwo> whenReady) {
       onStageInit();
 
-      final CountdownLatch synchronizer = CountdownLatch.create(2, new Command() {
+      final CountdownLatch synchronizer = CountdownLatch.create(1, new Command() {
         @Override
         public void execute() {
           install();
@@ -205,13 +203,13 @@ public interface StageTwo {
       });
 
       // Defer everything else, to let the RPC go out.
-      SchedulerInstance.getMediumPriorityTimer().scheduleDelayed(new Task() {
-        @Override
-        public void execute() {
-          installStatics();
-          synchronizer.tick();
-        }
-      }, 20);
+      // SchedulerInstance.getMediumPriorityTimer().scheduleDelayed(new Task() {
+      // @Override
+      // public void execute() {
+      // installStatics();
+      // synchronizer.tick();
+      // }
+      // }, 20);
     }
 
     /** Notifies this provider that the stage is about to be loaded. */
@@ -432,8 +430,8 @@ public interface StageTwo {
       HashedVersionFactory hashFactory = new HashedVersionZeroFactoryImpl(uriCodec);
 
       Scheduler scheduler = new FuzzingBackOffScheduler.Builder(getRpcScheduler())
-          .setInitialBackOffMs(ClientFlags.get().initialRpcBackoffMs())
-          .setMaxBackOffMs(ClientFlags.get().maxRpcBackoffMs())
+          .setInitialBackOffMs(ServiceConfig.rpcInitialBackoff())
+          .setMaxBackOffMs(ServiceConfig.rpcMaxBackoff())
           .setRandomisationFactor(0.5)
           .build();
 
@@ -510,6 +508,7 @@ public interface StageTwo {
      * <p>
      * Subclasses may override this to change the set of installed features.
      */
+    @Deprecated
     protected void installStatics() {
       WavePanelResourceLoader.loadCss();
     }
