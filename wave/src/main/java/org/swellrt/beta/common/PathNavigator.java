@@ -68,7 +68,7 @@ public class PathNavigator {
   }
 
   /** @return rest path to be processed */
-  public String path() {
+  public String currentPath() {
     return path;
   }
 
