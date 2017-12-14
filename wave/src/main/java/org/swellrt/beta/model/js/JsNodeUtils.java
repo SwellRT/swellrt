@@ -1,7 +1,7 @@
 package org.swellrt.beta.model.js;
 
 import org.swellrt.beta.common.ModelFactory;
-import org.swellrt.beta.common.PathWalker;
+import org.swellrt.beta.common.PathNavigator;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
@@ -21,7 +21,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
 
   SNode node;
-  PathWalker path;
+  PathNavigator path;
   SException ex;
 
   @Override
@@ -32,7 +32,7 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
 
     this.ex = null;
     this.node = root;
-    this.path = new PathWalker(path);
+    this.path = new PathNavigator(path);
 
     visit(root);
 
@@ -69,15 +69,15 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
   public void visit(SPrimitive primitive) {
 
 
-    if (primitive.getType() == SPrimitive.TYPE_JSO && !path.get().isEmpty()) {
+    if (primitive.getType() == SPrimitive.TYPE_JSO && !path.path().isEmpty()) {
 
       // Traverse the Json object if there is still path elements
       // return value could be a primitive type or a Json object
-      Object value = ModelFactory.instance.traverseJsonObject(primitive.getValue(), path.get());
+      Object value = ModelFactory.instance.traverseJsonObject(primitive.getValue(), path.path());
 
       if (value != null) {
-        node = new SPrimitive(value, new SNodeAccessControl(), primitive, path.getConsumed(),
-            path.get());
+        node = new SPrimitive(value, new SNodeAccessControl(), primitive, path.consumedPath(),
+            path.path());
       } else {
         node = null;
       }
@@ -90,7 +90,7 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
   @Override
   public void visit(SMap map) {
 
-    String pathElement = path.nextPathElement();
+    String pathElement = path.next();
     if (pathElement != null) {
 
       try {
@@ -109,7 +109,7 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
   @Override
   public void visit(SList<SNode> list) {
 
-    String pathElement = path.nextPathElement();
+    String pathElement = path.next();
     if (pathElement != null) {
 
       try {
@@ -149,12 +149,12 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
     if (path == null || path.isEmpty())
       return jso;
 
-    PathWalker pathw = new PathWalker(path);
+    PathNavigator pathw = new PathNavigator(path);
 
-    String pathElement = pathw.nextPathElement();
+    String pathElement = pathw.next();
     while (pathElement != null && !pathElement.isEmpty() && jso != null) {
       jso = JsoView.as(jso).getJso(pathElement);
-      pathElement = pathw.nextPathElement();
+      pathElement = pathw.next();
     }
 
     return jso;
