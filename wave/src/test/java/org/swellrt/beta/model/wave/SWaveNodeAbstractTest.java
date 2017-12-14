@@ -1,7 +1,7 @@
 package org.swellrt.beta.model.wave;
 
-import org.swellrt.beta.client.platform.java.JavaModelFactory;
 import org.swellrt.beta.common.ModelFactory;
+import org.swellrt.beta.model.java.JavaModelFactory;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;

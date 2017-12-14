@@ -1,5 +1,7 @@
 package org.swellrt.beta.common;
 
+import org.swellrt.beta.model.JsonToSNode;
+import org.swellrt.beta.model.java.JavaModelFactory;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
@@ -9,8 +11,10 @@ import org.waveprotocol.wave.model.wave.Blip;
 
 public abstract class ModelFactory {
 
-  /** Avoid this global dependency. */
-  public static ModelFactory instance = null;
+  /**
+   * Default is Java Implementation. TODO Avoid this global dependency
+   */
+  public static ModelFactory instance = new JavaModelFactory();
 
   public abstract SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
       Blip blip,
@@ -33,4 +37,5 @@ public abstract class ModelFactory {
   /** Return a property value in the Json object, as primitive or Json object */
   public abstract Object traverseJsonObject(Object o, String path);
 
+  public abstract JsonToSNode getJsonToSNode();
 }

@@ -42,6 +42,11 @@ public class PathNavigator {
     return element;
   }
 
+  public int nextInt() {
+    String element = next();
+    return Integer.valueOf(element);
+  }
+
   public boolean nextIsInt() {
 
     if (path.isEmpty())

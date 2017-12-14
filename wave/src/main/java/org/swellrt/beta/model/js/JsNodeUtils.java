@@ -69,15 +69,15 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
   public void visit(SPrimitive primitive) {
 
 
-    if (primitive.getType() == SPrimitive.TYPE_JSO && !path.path().isEmpty()) {
+    if (primitive.isJso() && !path.currentPath().isEmpty()) {
 
       // Traverse the Json object if there is still path elements
       // return value could be a primitive type or a Json object
-      Object value = ModelFactory.instance.traverseJsonObject(primitive.getValue(), path.path());
+      Object value = ModelFactory.instance.traverseJsonObject(primitive.getValue(), path.currentPath());
 
       if (value != null) {
         node = new SPrimitive(value, new SNodeAccessControl(), primitive, path.consumedPath(),
-            path.path());
+            path.currentPath());
       } else {
         node = null;
       }
@@ -166,9 +166,9 @@ public class JsNodeUtils implements SNodeUtils, SVisitor<SNode> {
 
     // Check more specific type first
     if (node instanceof SWaveNode) {
-      return new JsViewVisitor<SWaveNode>((SWaveNode) node);
+      return new SViewBuilderJs<SWaveNode>((SWaveNode) node);
     } else {
-      return new JsViewVisitor<SNode>(node);
+      return new SViewBuilderJs<SNode>(node);
     }
 
   }

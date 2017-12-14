@@ -21,11 +21,11 @@ public class SPrimitive extends SWaveNode {
   private static final String PRIMITIVE_DOUBLE_TYPE_PREFIX  = "d";
   private static final String PRIMITIVE_JSO_TYPE_PREFIX  = "js";
 
-  public static final int TYPE_INT = 1;
-  public static final int TYPE_DOUBLE = 2;
-  public static final int TYPE_STRING = 3;
-  public static final int TYPE_BOOL = 4;
-  public static final int TYPE_JSO = 5;
+  private static final int TYPE_INT = 1;
+  private static final int TYPE_DOUBLE = 2;
+  private static final int TYPE_STRING = 3;
+  private static final int TYPE_BOOL = 4;
+  private static final int TYPE_JSO = 5;
 
   private final int type;
   private final int intValue;
@@ -432,5 +432,21 @@ public class SPrimitive extends SWaveNode {
   @Override
   public SText asText() {
     throw new IllegalStateException("Node is not a text");
+  }
+
+  public boolean isString() {
+    return type == TYPE_STRING;
+  }
+
+  public boolean isNumber() {
+    return type == TYPE_DOUBLE;
+  }
+
+  public boolean isBoolean() {
+    return type == TYPE_BOOL;
+  }
+
+  public boolean isJso() {
+    return type == TYPE_JSO;
   }
 }

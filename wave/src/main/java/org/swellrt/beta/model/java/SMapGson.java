@@ -1,6 +1,7 @@
-package org.swellrt.beta.model.js;
+package org.swellrt.beta.model.java;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
@@ -10,30 +11,24 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
-import org.swellrt.beta.model.js.SNodeJs.Func;
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.model.util.Preconditions;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gson.JsonObject;
 
 import jsinterop.annotations.JsIgnore;
 
-public class SMapJs implements SMap {
+public class SMapGson implements SMap {
 
 
-
-  public static SMapJs create(JavaScriptObject jso) {
-    Preconditions.checkArgument(jso != null, "Null argument");
-    Preconditions.checkArgument(SNodeJs.isObject(jso), "Not a JavaScriptObject");
-		return new SMapJs(jso);
+  public static SMapGson create(JsonObject jso) {
+    Preconditions.checkArgument(jso != null, "Null JsonObject argument");
+		return new SMapGson(jso);
 	}
 
-	private final JavaScriptObject jso;
-	private final JsoView jsv;
+  private final JsonObject jso;
 
-  private SMapJs(JavaScriptObject jso) {
+  private SMapGson(JsonObject jso) {
 		this.jso = jso;
-		this.jsv = JsoView.as(jso);
 	}
 
 	@Override
@@ -42,7 +37,7 @@ public class SMapJs implements SMap {
 		if (key == null)
 			return null;
 
-    return SNodeJs.castToSNode(jsv.getJso(key));
+    return SNodeGson.castToSNode(jso.get(key));
 	}
 
 	@Override
@@ -67,22 +62,18 @@ public class SMapJs implements SMap {
 
 	@Override
 	public boolean has(String key) {
-		return jsv.containsKey(key);
+    return jso.has(key);
 	}
 
 	@Override
 	public String[] keys() {
+    Set<String> keyList = new HashSet<String>();
 
-		ArrayList<String> keyList = new ArrayList<String>();
+    jso.entrySet().forEach(e -> {
+      keyList.add(e.getKey());
+    });
 
-    SNodeJs.iterateObject(this.jso, new Func() {
-			@Override
-			public void apply(String key, Object value) {
-				keyList.add(key);
-			}
-		});
-
-		return keyList.toArray(new String[keyList.size()]);
+    return keyList.toArray(new String[0]);
 	}
 
 	@Override
@@ -92,12 +83,12 @@ public class SMapJs implements SMap {
 
 	@Override
 	public boolean isEmpty() {
-		return keys().length == 0;
+    return size() == 0;
 	}
 
 	@Override
 	public int size() {
-		return keys().length;
+    return jso.entrySet().size();
 	}
 
 

@@ -50,6 +50,8 @@ public class SException extends Exception {
 
   public static final int OUT_OF_BOUNDS_INDEX = 115;
 
+  public static final int PATH_NOT_FOUND = 116;
+
   // Codes above 200 are reserved for editors
 
   // Codes from ResponseCode

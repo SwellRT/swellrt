@@ -1,9 +1,9 @@
 package org.swellrt.beta.model.js;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
@@ -11,110 +11,38 @@ import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.SNodeJs.Func;
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-import jsinterop.annotations.JsIgnore;
+public class SListJs implements SList<SNode> {
 
-public class SMapJs implements SMap {
-
-
-
-  public static SMapJs create(JavaScriptObject jso) {
+  public static SListJs create(JavaScriptObject jso) {
     Preconditions.checkArgument(jso != null, "Null argument");
     Preconditions.checkArgument(SNodeJs.isObject(jso), "Not a JavaScriptObject");
-		return new SMapJs(jso);
-	}
-
-	private final JavaScriptObject jso;
-	private final JsoView jsv;
-
-  private SMapJs(JavaScriptObject jso) {
-		this.jso = jso;
-		this.jsv = JsoView.as(jso);
-	}
-
-	@Override
-	public SNode pick(String key) {
-
-		if (key == null)
-			return null;
-
-    return SNodeJs.castToSNode(jsv.getJso(key));
-	}
-
-	@Override
-	public SMap put(String key, SNode value) {
-    throw new IllegalStateException("This node can't be mutated");
-	}
-
-	@Override
-	public SMap put(String key, Object object) throws IllegalCastException {
-    throw new IllegalStateException("This node can't be mutated");
-	}
-
-	@Override
-	public void remove(String key) {
-    throw new IllegalStateException("This node can't be mutated");
-	}
-
-  @Override
-  public void removeSafe(String key) {
-    throw new IllegalStateException("This node can't be mutated");
+    return new SListJs(jso);
   }
 
-	@Override
-	public boolean has(String key) {
-		return jsv.containsKey(key);
-	}
+  private final JavaScriptObject jso;
 
-	@Override
-	public String[] keys() {
-
-		ArrayList<String> keyList = new ArrayList<String>();
-
-    SNodeJs.iterateObject(this.jso, new Func() {
-			@Override
-			public void apply(String key, Object value) {
-				keyList.add(key);
-			}
-		});
-
-		return keyList.toArray(new String[keyList.size()]);
-	}
-
-	@Override
-	public void clear() {
-    throw new IllegalStateException("This node can't be mutated");
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return keys().length == 0;
-	}
-
-	@Override
-	public int size() {
-		return keys().length;
-	}
-
-
-  @SuppressWarnings("rawtypes")
-  @JsIgnore
-  @Override
-  public void accept(SVisitor visitor) {
-    visitor.visit(this);
+  protected SListJs(JavaScriptObject jso) {
+    super();
+    this.jso = jso;
   }
 
-  //
-  // -----------------------------------------------------
-  //
+  @Override
+  public SNode node(String path) throws SException {
+    return SNode.node(this, path);
+  }
 
   @Override
   public void set(String path, Object value) {
     throw new IllegalStateException("This node can't be mutated");
+  }
+
+  @Override
+  public Object get(String path) {
+    return SNode.get(this, path);
   }
 
   @Override
@@ -124,7 +52,12 @@ public class SMapJs implements SMap {
 
   @Override
   public Object pop(String path) {
-    return SNode.pop(this, path);
+    throw new IllegalStateException("This node can't be mutated");
+  }
+
+  @Override
+  public void delete(String path) {
+    throw new IllegalStateException("This node can't be mutated");
   }
 
   @Override
@@ -138,28 +71,80 @@ public class SMapJs implements SMap {
   }
 
   @Override
-  public void delete(String path) {
+  public void accept(SVisitor visitor) {
+    visitor.visit(this);
+  }
+
+  @Override
+  public SNode pick(int index) throws SException {
+    return SNodeJs.castToSNode((JavaScriptObject) SNodeJs.getArrayElement(jso, index));
+  }
+
+  @Override
+  public SList<SNode> addAt(Object object, int index) throws SException {
     throw new IllegalStateException("This node can't be mutated");
   }
 
   @Override
-  public Object get(String path) {
-    return SNode.get(this, path);
+  public SList<SNode> add(Object object) throws SException {
+    throw new IllegalStateException("This node can't be mutated");
   }
 
   @Override
-  public SNode node(String path) throws SException {
-    return SNode.node(this, path);
+  public SList<SNode> remove(int index) throws SException {
+    throw new IllegalStateException("This node can't be mutated");
   }
+
+  @Override
+  public int indexOf(SNode node) throws SException {
+    return getList().indexOf(node);
+  }
+
+  @Override
+  public void clear() throws SException {
+    throw new IllegalStateException("This node can't be mutated");
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return size() == 0;
+  }
+
+  @Override
+  public int size() {
+    return SNodeJs.arrayLength(jso);
+  }
+
+  protected List<SNode> getList() {
+    List<SNode> values = new ArrayList<SNode>();
+    SNodeJs.iterateArray(jso, new Func() {
+
+      @Override
+      public void apply(String key, Object value) {
+        values.add(SNodeJs.castToSNode((JavaScriptObject) value));
+      }
+
+    });
+    return values;
+  }
+
+  @Override
+  public Iterable<SNode> values() {
+    return getList();
+  }
+
+  //
+  //
+  //
 
   @Override
   public SMap asMap() {
-    return this;
+    throw new IllegalStateException("Node is not a map");
   }
 
   @Override
   public SList<? extends SNode> asList() {
-    throw new IllegalStateException("Node is not a list");
+    return this;
   }
 
   @Override
@@ -206,4 +191,6 @@ public class SMapJs implements SMap {
   public void unlisten(SHandlerFunc h) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
   }
+
+
 }

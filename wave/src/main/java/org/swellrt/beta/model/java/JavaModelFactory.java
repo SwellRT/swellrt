@@ -1,7 +1,8 @@
-package org.swellrt.beta.client.platform.java;
+package org.swellrt.beta.model.java;
 
 import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.JsonToSNode;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -205,6 +206,12 @@ public class JavaModelFactory extends ModelFactory {
     }
 
 
+    return null;
+  }
+
+  @Override
+  public JsonToSNode getJsonToSNode() {
+    // TODO Auto-generated method stub
     return null;
   }
 }

@@ -4,6 +4,8 @@ import org.swellrt.beta.client.platform.web.editor.STextLocalWeb;
 import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
 import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.JsonToSNode;
+import org.swellrt.beta.model.js.JsonToSNodeJs;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
@@ -16,6 +18,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 
 public class WebModelFactory extends ModelFactory {
+
+  private final JsonToSNode jsonToSNode = new JsonToSNodeJs();
 
   @Override
   public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
@@ -117,6 +121,11 @@ public class WebModelFactory extends ModelFactory {
     }
 
     return null;
+  }
+
+  @Override
+  public JsonToSNode getJsonToSNode() {
+    return jsonToSNode;
   }
 
 }

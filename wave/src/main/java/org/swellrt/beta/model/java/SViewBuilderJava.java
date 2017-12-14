@@ -1,4 +1,4 @@
-package org.swellrt.beta.model.js;
+package org.swellrt.beta.model.java;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
@@ -20,13 +20,13 @@ import com.google.gwt.core.client.JavaScriptObject;
  *
  * @param <T>
  */
-public class JsViewVisitor<T extends SNode> implements SViewBuilder, SVisitor<T> {
+public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor<T> {
 
   Object currentObject;
   SException ex;
   final T root;
 
-  public JsViewVisitor(T root) {
+  public SViewBuilderJava(T root) {
     this.root = root;
   }
 

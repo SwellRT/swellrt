@@ -1,5 +1,7 @@
 package org.swellrt.beta.model;
 
+import org.swellrt.beta.common.ModelFactory;
+import org.swellrt.beta.common.PathNavigator;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.js.JsNodeUtils;
 import org.waveprotocol.wave.client.common.util.JsoView;
@@ -19,6 +21,7 @@ public interface SNode {
    */
   @JsIgnore
   static final SNodeUtils NODE_UTILS = new JsNodeUtils();
+
 
   @JsIgnore
   static String[] splitPath(String path) {
@@ -109,6 +112,20 @@ public interface SNode {
 
   }
 
+  /**
+   * Build a view of the SNode tree in runtime's native data format. This method
+   * is meant to generate a Javascript view of the SNode tree for Javascript
+   * runtimes.
+   * <p>
+   * <br>
+   * For non Javascript runtime we discourage to implement this method and to
+   * use SNode types instead.
+   *
+   * @param root
+   * @param path
+   * @return a representation of the SNode tree in native data format (e.g.
+   *         Javascript)
+   */
   public static Object get(SNode root, String path) {
 
     SNode node;
@@ -144,7 +161,7 @@ public interface SNode {
       } else if (node instanceof SPrimitive) {
 
         SPrimitive primitive = (SPrimitive) node;
-        if (primitive.getType() == SPrimitive.TYPE_JSO) {
+        if (primitive.isJso()) {
           return NODE_UTILS.getNode(key, primitive.getValue());
         } else {
           return primitive.getValue();
@@ -307,9 +324,38 @@ public interface SNode {
   }
 
 
+  /**
+   * Look up a node referenced by a path starting in a root node.
+   *
+   * @param root
+   * @param path
+   * @return
+   * @throws SException
+   */
   public static SNode node(SNode root, String path) throws SException {
-    return NODE_UTILS.getNode(path, root);
+
+    SNodeLocator.Location location = SNodeLocator.locate(root, new PathNavigator(path));
+
+    if (location.isJsonObject()) {
+
+      // Transform Json Object in a tree of local nodes
+      return ModelFactory.instance.getJsonToSNode().build(((SPrimitive) location.node).getValue());
+
+    } else if (location.isJsonProperty()) {
+
+      // Dive into Json node as SNode tree
+      SNode jsonRoot = ModelFactory.instance.getJsonToSNode()
+          .build(((SPrimitive) location.node).getValue());
+      return node(jsonRoot, location.subPath);
+
+    } else {
+
+      return location.node;
+
+    }
+
   }
+
 
   //
   // --------------------------------------------------------------
