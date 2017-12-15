@@ -63,6 +63,18 @@ public class SEvent {
     return node;
   }
 
+  public boolean isAddEvent() {
+    return type == ADDED_VALUE;
+  }
+
+  public boolean isRemoveEvent() {
+    return type == REMOVED_VALUE;
+  }
+
+  public boolean isUpdateEvent() {
+    return type == UPDATED_VALUE;
+  }
+
   @JsProperty
   public Object getValue() {
     if (node instanceof SPrimitive) {
