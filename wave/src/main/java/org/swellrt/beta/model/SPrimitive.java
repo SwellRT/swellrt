@@ -1,6 +1,5 @@
 package org.swellrt.beta.model;
 
-import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveNode;
 import org.waveprotocol.wave.model.util.Preconditions;

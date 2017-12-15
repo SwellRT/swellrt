@@ -1,12 +1,8 @@
 package org.swellrt.beta.model;
 
-import org.swellrt.beta.common.ModelFactory;
-import org.swellrt.beta.common.PathNavigator;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.js.JsNodeUtils;
-import org.waveprotocol.wave.client.common.util.JsoView;
-
-import com.google.gwt.core.client.JavaScriptObject;
+import org.waveprotocol.wave.model.util.Preconditions;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsType;
@@ -35,87 +31,56 @@ public interface SNode {
     return new String[] { path, key };
   }
 
+  /** Set a property value in an object */
   public static void set(SNode root, String path, Object value) {
 
-    SNode node;
+    Preconditions.checkArgument(path != null && !path.isEmpty(), "Path is empty or null");
 
-    String[] pathParts = null;
-    String key = null;
-
-    if (path != null) {
-      pathParts = splitPath(path);
-      path = pathParts[0];
-      key = pathParts[1];
+    String property = null;
+    int separatorPos = path.lastIndexOf(".");
+    if (separatorPos != -1) {
+      property = path.substring(separatorPos + 1);
+      path = path.substring(0, separatorPos);
+    } else {
+      property = path;
+      path = "";
     }
 
     try {
-      node = NODE_UTILS.getNode(path, root);
+      SNodeLocator.Location location = SNodeLocator.locate(root, new PathNavigator(path));
 
-      if (node == null)
-        throw new RuntimeException("Node not found at " + path);
-
-      if (node instanceof SMap) {
-        SMap map = (SMap) node;
-        map.put(key, value);
-
-      } else if (node instanceof SPrimitive) {
-
-        // Move this logic to a platform dependent class
-
-        SPrimitive primitive = (SPrimitive) node;
-
-        // We only can put objects inside JSO primitives with container.
-        SPrimitive container = primitive.getContainer();
-        if (container == null)
-          throw new RuntimeException("Property " + key + " can't be set in " + path);
-
-        Object actualValue = null;
-        if (value instanceof SNode) {
-          actualValue = NODE_UTILS.jsonBuilder((SNode) value).build();
-        } else if (value instanceof JavaScriptObject) {
-          actualValue = value;
-        } else {
-          actualValue = value;
-        }
-
-        // Update or set value inside JSO
-        JavaScriptObject jso = (JavaScriptObject) primitive.getValue();
-        JsoView jsv = JsoView.as(jso);
-        jsv.setObject(key, actualValue);
-
-        // Get the parent node of the JSO node and update
-        String p = primitive.getContainerPath();
-        String containerParentKey = p.lastIndexOf(".") >= 0
-            ? p.substring(p.lastIndexOf(".") + 1, p.length()) : p;
-        if (containerParentKey == null || containerParentKey.isEmpty())
-          throw new RuntimeException("Value can't be set in " + path + "." + key);
-
-        SNode containerParent = container.getParent();
-        if (containerParent instanceof SMap) {
-          SMap m = (SMap) containerParent;
-          m.put(containerParentKey, container);
-        } else if (containerParent instanceof SList) {
-          SList l = (SList) containerParent;
-          l.addAt(container, Integer.valueOf(containerParentKey));
-        } else {
-          // this shouldn't happen
-          throw new RuntimeException("Value can't be set in " + path + "." + key);
-        }
-
-      } else {
-        throw new RuntimeException("Property " + key + " can't be set in " + path);
+      if (location.isJsonObject() || location.isJsonProperty()) {
+        throw new IllegalStateException("Node can't be mutated");
       }
 
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
+      if (location.node instanceof SMap) {
+
+        location.node.asMap().put(property, value);
+
+      } else if (location.node instanceof SList) {
+
+        try {
+
+          int index = Integer.valueOf(property);
+          location.node.asList().addAt(value, index);
+
+        } catch (NumberFormatException e) {
+          throw new IllegalStateException("Not a valid list index");
+        }
+
+      }
+
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
+
 
   }
 
   /**
    * Build a view of the SNode tree in runtime's native data format. This method
    * is meant to generate a Javascript view of the SNode tree for Javascript
-   * runtimes.
+   * runtime.
    * <p>
    * <br>
    * For non Javascript runtime we discourage to implement this method and to
@@ -128,54 +93,19 @@ public interface SNode {
    */
   public static Object get(SNode root, String path) {
 
+    Preconditions.checkArgument(root != null, "SNode argument is null");
+
     SNode node;
-
-    String[] pathParts = null;
-    String key = null;
-
+    Object result = null;
     try {
-
-      if (path != null) {
-        pathParts = splitPath(path);
-        path = pathParts[0];
-        key = pathParts[1];
-        node = NODE_UTILS.getNode(path, root);
-      } else {
-        return NODE_UTILS.jsonBuilder(root).build();
-      }
-
-
-      if (node == null)
-        throw new RuntimeException("Node not found at " + path);
-
-      if (node instanceof SMap) {
-        SMap map = (SMap) node;
-        return NODE_UTILS.jsonBuilder(map.pick(key)).build();
-
-      } else if (node instanceof SList) {
-        @SuppressWarnings("rawtypes")
-        SList list = (SList) node;
-        int index = Integer.valueOf(key);
-        return NODE_UTILS.jsonBuilder(list.pick(index)).build();
-
-      } else if (node instanceof SPrimitive) {
-
-        SPrimitive primitive = (SPrimitive) node;
-        if (primitive.isJso()) {
-          return NODE_UTILS.getNode(key, primitive.getValue());
-        } else {
-          return primitive.getValue();
-        }
-
-      } else {
-        throw new RuntimeException("Property " + key + " can't be retrieved");
-      }
-
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
-    } catch (NumberFormatException e2) {
-      throw new RuntimeException(key + " is not a valid array index");
+      node = node(root, path);
+      result = ModelFactory.instance.getJsonBuilder(node).build();
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
+
+    return result;
+
   }
 
   public static void push(SNode root, String path, Object value) {
@@ -339,12 +269,12 @@ public interface SNode {
     if (location.isJsonObject()) {
 
       // Transform Json Object in a tree of local nodes
-      return ModelFactory.instance.getJsonToSNode().build(((SPrimitive) location.node).getValue());
+      return ModelFactory.instance.getSNodeBuilder().build(((SPrimitive) location.node).getValue());
 
     } else if (location.isJsonProperty()) {
 
       // Dive into Json node as SNode tree
-      SNode jsonRoot = ModelFactory.instance.getJsonToSNode()
+      SNode jsonRoot = ModelFactory.instance.getSNodeBuilder()
           .build(((SPrimitive) location.node).getValue());
       return node(jsonRoot, location.subPath);
 

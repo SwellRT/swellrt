@@ -9,9 +9,11 @@ import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SViewBuilder;
 import org.swellrt.beta.model.SVisitor;
-import org.waveprotocol.wave.client.common.util.JsoView;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 /**
  * A visitor to build a JSON view from a SwellRT {@SNode}
@@ -22,7 +24,7 @@ import com.google.gwt.core.client.JavaScriptObject;
  */
 public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor<T> {
 
-  Object currentObject;
+  JsonElement currentObject;
   SException ex;
   final T root;
 
@@ -32,19 +34,19 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
 
   @Override
   public void visit(SPrimitive primitive) {
-    currentObject = primitive.getValue();
+    currentObject = new JsonPrimitive(primitive.asString());
   }
 
   @Override
   public void visit(SMap map) {
 
-    JsoView jso = JsoView.as(JsoView.createObject());
+    JsonObject jsonObject = new JsonObject();
 
     try {
 
       for (String key : map.keys()) {
         map.pick(key).accept(this);
-        jso.setObject(key, currentObject);
+        jsonObject.add(key, currentObject);
       }
 
     } catch (SException e) {
@@ -52,29 +54,25 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
       return;
     }
 
-    currentObject = jso;
+    currentObject = jsonObject;
   }
-
-  protected native void jsArrayPush(JavaScriptObject array, Object value) /*-{
-    array.push(value);
-  }-*/;
 
   @Override
   public void visit(SList<T> list) {
 
-    JavaScriptObject jsarray = JsoView.createArray();
+    JsonArray jsonArray = new JsonArray();
 
     for (int i = 0; i < list.size(); i++) {
       try {
         list.pick(i).accept(this);
-        jsArrayPush(jsarray, currentObject);
+        jsonArray.add(currentObject);
       } catch (SException e) {
         ex = e;
         return;
       }
     }
 
-    currentObject = jsarray;
+    currentObject = jsonArray;
 
   }
 
@@ -87,7 +85,7 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
     }
 
     if (node instanceof SList) {
-      visit((SList) node);
+      visit(node);
       return;
     }
 
@@ -106,7 +104,7 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
 
   @Override
   public void visit(SText text) {
-    currentObject = text;
+    currentObject = new JsonPrimitive(text.getRawContent());
   }
 
   public Object build() throws SException {

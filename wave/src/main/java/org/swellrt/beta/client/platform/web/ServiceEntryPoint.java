@@ -18,7 +18,7 @@ import org.swellrt.beta.client.wave.StagedWaveLoader;
 import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.client.wave.ws.WebSocket;
-import org.swellrt.beta.common.ModelFactory;
+import org.swellrt.beta.model.ModelFactory;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;

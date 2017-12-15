@@ -4,7 +4,7 @@ import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceConfigProvider;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.platform.web.browser.Console;
-import org.swellrt.beta.common.ModelFactory;
+import org.swellrt.beta.model.ModelFactory;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;

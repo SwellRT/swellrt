@@ -1,8 +1,8 @@
 package org.swellrt.beta.model.js;
 
-import org.swellrt.beta.common.ModelFactory;
-import org.swellrt.beta.common.PathNavigator;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.ModelFactory;
+import org.swellrt.beta.model.PathNavigator;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;

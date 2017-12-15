@@ -2,10 +2,13 @@ package org.swellrt.beta.client.platform.web;
 
 import org.swellrt.beta.client.platform.web.editor.STextLocalWeb;
 import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
-import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.JsonToSNode;
-import org.swellrt.beta.model.js.JsonToSNodeJs;
+import org.swellrt.beta.model.ModelFactory;
+import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SNodeBuilder;
+import org.swellrt.beta.model.SViewBuilder;
+import org.swellrt.beta.model.js.SNodeBuilderJs;
+import org.swellrt.beta.model.js.SViewBuilderJs;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
@@ -19,7 +22,11 @@ import com.google.gwt.core.client.JsonUtils;
 
 public class WebModelFactory extends ModelFactory {
 
-  private final JsonToSNode jsonToSNode = new JsonToSNodeJs();
+  static {
+    ModelFactory.instance = new WebModelFactory();
+  }
+
+  private final SNodeBuilder jsonToSNode = new SNodeBuilderJs();
 
   @Override
   public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
@@ -48,7 +55,15 @@ public class WebModelFactory extends ModelFactory {
 
   @Override
   public String serializeJsonObject(Object o) {
-    return JsonUtils.stringify((JavaScriptObject) o);
+
+    if (isJsPrimitive(o)) {
+      return o.toString();      
+    } else if (o instanceof JavaScriptObject) {
+      return JsonUtils.stringify((JavaScriptObject) o);
+    }
+
+    throw new IllegalStateException("Object can't be serialized to JSON");
+
   }
 
 
@@ -60,25 +75,25 @@ public class WebModelFactory extends ModelFactory {
     return typeof o === "object" && !Array.isArray(o);
   }-*/;
 
-  private native Boolean isJsPrimitive(JavaScriptObject o) /*-{
+  private native Boolean isJsPrimitive(Object o) /*-{
      return typeof o == "number" || typeof o == "string" || typeof o == "boolean";
    }-*/;
 
-   private native Double asNumber(JavaScriptObject o) /*-{
+   private native Double asNumber(Object o) /*-{
      if (typeof o == "number")
        return o;
 
      return null;
    }-*/;
 
-   private native String asString(JavaScriptObject o) /*-{
+   private native String asString(Object o) /*-{
      if (typeof o == "string")
        return o;
 
      return null;
    }-*/;
 
-   private native Boolean asBoolean(JavaScriptObject o) /*-{
+   private native Boolean asBoolean(Object o) /*-{
      if (typeof o == "boolean")
        return o;
 
@@ -124,8 +139,13 @@ public class WebModelFactory extends ModelFactory {
   }
 
   @Override
-  public JsonToSNode getJsonToSNode() {
+  public SNodeBuilder getSNodeBuilder() {
     return jsonToSNode;
+  }
+
+  @Override
+  public SViewBuilder getJsonBuilder(SNode node) {
+    return new SViewBuilderJs<SNode>(node);
   }
 
 }

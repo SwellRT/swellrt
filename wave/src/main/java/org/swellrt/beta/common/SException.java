@@ -102,6 +102,12 @@ public class SException extends Exception {
   }
 
   @JsIgnore
+  public SException(String message, int code) {
+    super(message);
+    this.code = code;
+  }
+
+  @JsIgnore
   public SException(int code, Throwable parent) {
     super(parent);
     this.code = code;

@@ -1,7 +1,6 @@
 package org.swellrt.beta.model;
 
 
-import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 

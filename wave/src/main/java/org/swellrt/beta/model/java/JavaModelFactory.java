@@ -1,13 +1,14 @@
 package org.swellrt.beta.model.java;
 
-import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.JsonToSNode;
+import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SNodeBuilder;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.SViewBuilder;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
@@ -24,7 +25,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+
 public class JavaModelFactory extends ModelFactory {
+
+  static {
+    ModelFactory.instance = new JavaModelFactory();
+  }
 
   @Override
   public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
@@ -133,6 +139,8 @@ public class JavaModelFactory extends ModelFactory {
 
   }
 
+  private final SNodeBuilder snodeBuilder = new SNodeBuilderJava();
+
   @Override
   public STextLocal createLocalText(String text) throws SException {
     throw new IllegalStateException("Not implemented yet");
@@ -210,8 +218,12 @@ public class JavaModelFactory extends ModelFactory {
   }
 
   @Override
-  public JsonToSNode getJsonToSNode() {
-    // TODO Auto-generated method stub
-    return null;
+  public SNodeBuilder getSNodeBuilder() {
+    return snodeBuilder;
+  }
+
+  @Override
+  public SViewBuilder getJsonBuilder(SNode node) {
+    return new SViewBuilderJava<SNode>(node);
   }
 }

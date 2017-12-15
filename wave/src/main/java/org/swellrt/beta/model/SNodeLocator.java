@@ -1,6 +1,5 @@
 package org.swellrt.beta.model;
 
-import org.swellrt.beta.common.PathNavigator;
 import org.swellrt.beta.common.SException;
 
 public class SNodeLocator {
@@ -48,7 +47,7 @@ public class SNodeLocator {
       if (pnode.isJso()) {
         return new Location(node, path.currentPath());
       } else {
-        throw new SException(SException.PATH_NOT_FOUND);
+        throw new SException("Node not found", SException.PATH_NOT_FOUND);
       }
 
     } else {
@@ -64,7 +63,7 @@ public class SNodeLocator {
       } else if (node instanceof SList) {
 
         if (!path.nextIsInt()) {
-          throw new SException(SException.PATH_NOT_FOUND);
+          throw new SException("Node not found", SException.PATH_NOT_FOUND);
         }
 
         @SuppressWarnings("unchecked")
@@ -74,7 +73,7 @@ public class SNodeLocator {
 
       } else {
 
-        throw new SException(SException.PATH_NOT_FOUND);
+        throw new SException("Node not found", SException.PATH_NOT_FOUND);
       }
 
       return locate(nextNode, path);

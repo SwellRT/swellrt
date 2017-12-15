@@ -1,6 +1,6 @@
 package org.swellrt.beta.model;
 
-public interface JsonToSNode {
+public interface SNodeBuilder {
 
   /**
    * Translates a JSON tree in a SNode tree. JSON object's type is platform

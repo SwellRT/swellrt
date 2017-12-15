@@ -1,4 +1,4 @@
-package org.swellrt.beta.common;
+package org.swellrt.beta.model;
 
 /**
  * Utility class to go through a path expression.
@@ -13,8 +13,8 @@ public class PathNavigator {
   protected String consumedPath;
 
   public PathNavigator(String path) {
-    this.originalPath = path;
-    this.path = path;
+    this.originalPath = path == null ? "" : path;
+    this.path = originalPath;
     this.consumedPath = "";
   }
 

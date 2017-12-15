@@ -1,6 +1,5 @@
 package org.swellrt.beta.model;
 
-import org.swellrt.beta.common.ModelFactory;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeContainer;
 import org.waveprotocol.wave.client.common.util.JsoView;
@@ -19,11 +18,11 @@ public class SUtils {
     if (object instanceof String) {
       return new SPrimitive((String) object, token);
     } else if (object instanceof Integer) {
-      return new SPrimitive(object, token);
+      return new SPrimitive((int) object, token);
     } else if (object instanceof Double) {
-      return new SPrimitive(object, token);
+      return new SPrimitive((double) object, token);
     } else if (object instanceof Boolean) {
-      return new SPrimitive(object, token);
+      return new SPrimitive((boolean) object, token);
     } else if (object instanceof SNode) {
       return (SNode) object;
     } else if (ModelFactory.instance.isJsonObject(object)) {
