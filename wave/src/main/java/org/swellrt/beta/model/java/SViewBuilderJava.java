@@ -25,6 +25,7 @@ import com.google.gson.JsonPrimitive;
 public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor<T> {
 
   JsonElement currentObject;
+  Object primitiveObject = null;;
   SException ex;
   final T root;
 
@@ -35,6 +36,7 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
   @Override
   public void visit(SPrimitive primitive) {
     currentObject = new JsonPrimitive(primitive.asString());
+    primitiveObject = primitive.getValue();
   }
 
   @Override
@@ -116,6 +118,10 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
 
     if (ex != null)
       throw ex;
+
+    // Return the primitive value as sugar syntax in java
+    if (currentObject.isJsonPrimitive())
+      return primitiveObject;
 
     return currentObject;
 

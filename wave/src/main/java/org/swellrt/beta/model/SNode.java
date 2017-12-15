@@ -63,8 +63,8 @@ public interface SNode {
    * runtime.
    * <p>
    * <br>
-   * For non Javascript runtime we discourage to implement this method and to
-   * use SNode types instead.
+   * For non Javascript runtime we discourage to use this method and to use
+   * SNode types instead.
    *
    * @param root
    * @param path

@@ -36,8 +36,10 @@ public abstract class ModelFactory {
   /** Return a property value in the Json object, as primitive or Json object */
   public abstract Object traverseJsonObject(Object o, String path);
 
+  /** Translate JSON tree to SNode tree */
   public abstract SNodeBuilder getSNodeBuilder();
 
+  /** Translate SNode tree to JSON tree */
   public abstract SViewBuilder getJsonBuilder(SNode node);
 
 }
