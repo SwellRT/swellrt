@@ -3,6 +3,10 @@
 
 // A fake SwellRT object to register on ready handlers
 // before the GWT module is loaded
+
+var SWELL_CONTEXT = "swellrt_beta";
+var SWELL_JS_MODULE = "swellrt_beta.nocache.js";
+
 window.swell = {
 
   ready: function(handler) {
@@ -10,7 +14,7 @@ window.swell = {
          return;
 
        if (window.swellrt.runtime) {
-          handler(window.swellrt.runtime.get());
+          handler(window.swell.runtime.get());
        } else {
           if (!window._lh)
             window._lh = [];
@@ -23,27 +27,27 @@ window.swell = {
 window.swellrt = window.swell;
 window.swell.onReady = window.swell.ready;
 
+// Load Swell code
+
 var scripts = document.getElementsByTagName('script');
 var thisScript = scripts[scripts.length -1];
 
 
 if (thisScript) {
-  var p = document.createElement('a');
-  p.href = thisScript.src;
+	
+  var fakeAnchor = document.createElement('a');
+  fakeAnchor.href = thisScript.src;
+  var scriptSrc = fakeAnchor.protocol + "//" + fakeAnchor.host + "/" + SWELL_CONTEXT + "/" + SWELL_JS_MODULE;
+  
+  var scriptTag = document.createElement('script');
+  scriptTag.setAttribute("type","text/javascript");
+  scriptTag.setAttribute("src", scriptSrc);
+  scriptTag.setAttribute("async", true);
 
-  // Polyfill for ES6 proxy/reflect
-  if (!window.Proxy || !window.Reflect) {
-    try {
-      var reflectSrc = p.protocol + "//" +p.host  + "/reflect.js";
-      document.write("<script src='"+reflectSrc+"'></script>");
-    } catch (e) {
-      console.log("No proxies supported: "+e);
-    }
-  }
-
-
-  var scriptSrc = p.protocol + "//" +p.host  + "/swellrt_beta/swellrt_beta.nocache.js";
-  document.write("<script src='"+scriptSrc+"'></script>");
+  thisScript.parentNode.appendChild(scriptTag);
+  
+  //document.getElementsByTagName("head")[0].appendChild(scriptTag);
+  
 } else {
-  console.log("Unable to inject swellrt script!");
+  console.log("Error injecting Swell Javascript!");
 }
