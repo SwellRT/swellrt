@@ -42,7 +42,7 @@ public class SMapJs implements SMap {
 		if (key == null)
 			return null;
 
-    return SNodeJs.castToSNode(jsv.getJso(key));
+    return SNodeJs.castToSNode(jsv.getObject(key));
 	}
 
 	@Override

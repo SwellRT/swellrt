@@ -77,7 +77,7 @@ public class SListJs implements SList<SNode> {
 
   @Override
   public SNode pick(int index) throws SException {
-    return SNodeJs.castToSNode((JavaScriptObject) SNodeJs.getArrayElement(jso, index));
+    return SNodeJs.castToSNode(SNodeJs.getArrayElement(jso, index));
   }
 
   @Override
@@ -121,7 +121,7 @@ public class SListJs implements SList<SNode> {
 
       @Override
       public void apply(String key, Object value) {
-        values.add(SNodeJs.castToSNode((JavaScriptObject) value));
+        values.add(SNodeJs.castToSNode(value));
       }
 
     });
