@@ -1,11 +1,13 @@
 package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.PathNavigator;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
+import org.swellrt.beta.model.SNodeLocator;
 import org.swellrt.beta.model.SObservableNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SText;
@@ -164,9 +166,9 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
 
   protected SWaveNodeContainer lookUpListenableNode(String path) throws SException {
     SNode node = null;
-    if (path != null)
-      node = SNode.NODE_UTILS.getNode(path, this);
-    else
+    if (path != null) {
+      node = SNodeLocator.locate(this, new PathNavigator(path)).node;
+    } else
       node = this;
 
     SWaveNodeContainer targetNode = null;

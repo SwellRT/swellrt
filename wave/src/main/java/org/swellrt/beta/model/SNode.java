@@ -1,7 +1,6 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.js.JsNodeUtils;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import jsinterop.annotations.JsIgnore;
@@ -11,30 +10,11 @@ import jsinterop.annotations.JsType;
 public interface SNode {
 
 
-  /**
-   * Set this globally according to the runtime platform (js, java...). By
-   * default use native JavaScript extractor.
-   */
-  @JsIgnore
-  static final SNodeUtils NODE_UTILS = new JsNodeUtils();
-
-
-  @JsIgnore
-  static String[] splitPath(String path) {
-    int pathSepPos = path.lastIndexOf('.');
-    String key = path.substring(pathSepPos + 1, path.length());
-    if (pathSepPos >= 0)
-      path = path.substring(0, path.lastIndexOf('.'));
-    else
-      path = "";
-
-    return new String[] { path, key };
-  }
-
   /** Set a property value in an object */
   public static void set(SNode root, String path, Object value) {
 
     Preconditions.checkArgument(path != null && !path.isEmpty(), "Path is empty or null");
+    Preconditions.checkArgument(value != null, "Can't set a null value");
 
     String property = null;
     int separatorPos = path.lastIndexOf(".");
@@ -108,149 +88,160 @@ public interface SNode {
 
   }
 
+  /**
+   * Add a property a list.
+   *
+   * @param root
+   * @param path
+   * @param value
+   */
   public static void push(SNode root, String path, Object value) {
 
-    SNode node;
+    Preconditions.checkArgument(path != null && !path.isEmpty(), "Path is empty or null");
+    Preconditions.checkArgument(value != null, "Can't set a null value");
+
     try {
-      node = NODE_UTILS.getNode(path, root);
+      SNodeLocator.Location location = SNodeLocator.locate(root, new PathNavigator(path));
 
-      if (node == null)
-        throw new RuntimeException("Node not found at " + path);
-
-      if (node instanceof SList) {
-        @SuppressWarnings("rawtypes")
-        SList list = (SList) node;
-        list.add(value);
-
-      } else {
-        throw new RuntimeException("Value can't be pushed in " + path);
+      if (location.isJsonObject() || location.isJsonProperty()) {
+        throw new IllegalStateException("Node can't be mutated");
       }
 
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
+      if (location.node instanceof SList) {
+        location.node.asList().add(value);
+
+      } else {
+        throw new IllegalStateException("Node is not a list");
+      }
+
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
 
   }
 
+  /** Returns and delete last element of a list */
   public static Object pop(SNode root, String path) {
 
-    SNode node;
+    Preconditions.checkArgument(path != null && !path.isEmpty(), "Path is empty or null");
+
     try {
-      node = NODE_UTILS.getNode(path, root);
+      SNodeLocator.Location location = SNodeLocator.locate(root, new PathNavigator(path));
 
-      if (node == null)
-        throw new RuntimeException("Node not found at " + path);
-
-      if (node instanceof SList) {
-        @SuppressWarnings("rawtypes")
-        SList list = (SList) node;
-        Object object = NODE_UTILS.jsonBuilder(list.pick(list.size() - 1)).build();
-        list.remove(list.size() - 1);
-        return object;
-      } else {
-        throw new RuntimeException("Value can't be pop from " + path);
+      if (location.isJsonObject() || location.isJsonProperty()) {
+        throw new IllegalStateException("Node can't be mutated");
       }
 
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
+      if (location.node instanceof SList) {
+        int lastIndex = location.node.asList().size() - 1;
+        Object result = location.node.asList().pick(lastIndex);
+        location.node.asList().remove(lastIndex);
+        return result;
+      }
+
+      throw new IllegalStateException("Node is not a list");
+
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
+
   }
 
   public static void delete(SNode root, String path) {
 
-    SNode node;
-    String[] pathParts = splitPath(path);
-    path = pathParts[0];
-    String key = pathParts[1];
+    Preconditions.checkArgument(path != null && !path.isEmpty(), "Path is empty or null");
+
+    String property = null;
+    int separatorPos = path.lastIndexOf(".");
+    if (separatorPos != -1) {
+      property = path.substring(separatorPos + 1);
+      path = path.substring(0, separatorPos);
+    } else {
+      property = path;
+      path = "";
+    }
 
     try {
-      node = NODE_UTILS.getNode(path, root);
+      SNodeLocator.Location location = SNodeLocator.locate(root, new PathNavigator(path));
 
-      if (node == null)
-        throw new RuntimeException("Node not found at " + path);
-
-      if (node instanceof SMap) {
-        SMap map = (SMap) node;
-        map.remove(key);
-
-      } else if (node instanceof SList) {
-
-        @SuppressWarnings("rawtypes")
-        SList list = (SList) node;
-        int index = Integer.valueOf(key);
-        list.remove(index);
-
-      } else {
-        throw new RuntimeException("Property " + key + " can't be delete");
+      if (location.isJsonObject() || location.isJsonProperty()) {
+        throw new IllegalStateException("Node can't be mutated");
       }
 
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
-    } catch (NumberFormatException e2) {
-      throw new RuntimeException(key + " is not a valid array index");
+      if (location.node instanceof SMap) {
+
+        location.node.asMap().remove(property);
+
+      } else if (location.node instanceof SList) {
+
+        try {
+
+          int index = Integer.valueOf(property);
+          location.node.asList().remove(index);
+
+        } catch (NumberFormatException e) {
+          throw new IllegalStateException("Not a valid list index");
+        }
+
+      }
+
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
+
   }
 
   public static int length(SNode root, String path) {
 
-    SNode node;
-
     try {
-      node = NODE_UTILS.getNode(path, root);
+      SNode node = node(root, path);
 
-      if (node == null)
-        return 0;
+      if (node instanceof SMap)
+        return node.asMap().size();
 
-      if (node instanceof SMap) {
-        SMap map = (SMap) node;
-        return map.size();
+      if (node instanceof SList)
+        return node.asList().size();
 
-      }
+      throw new IllegalStateException("Node is not a container");
 
-      if (node instanceof SList) {
-        @SuppressWarnings("rawtypes")
-        SList list = (SList) node;
-        return list.size();
-      }
-
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
-
-    return 0;
 
   }
 
   public static boolean contains(SNode root, String path, String property) {
 
-    SNode node;
+
+    Preconditions.checkArgument(path != null && !path.isEmpty(), "Path is empty or null");
+    Preconditions.checkArgument(property != null && !property.isEmpty(),
+        "Property is empty or null");
 
     try {
-      node = NODE_UTILS.getNode(path, root);
+      SNodeLocator.Location location = SNodeLocator.locate(root, new PathNavigator(path));
 
-      if (node == null)
-        return false;
+      if (location.node instanceof SMap) {
 
-      if (node instanceof SMap) {
-        SMap map = (SMap) node;
-        return map.has(property);
+        return location.node.asMap().has(property);
+
+      } else if (location.node instanceof SList) {
+
+        try {
+
+          int index = Integer.valueOf(property);
+          return index >= 0 && index < location.node.asList().size();
+
+        } catch (NumberFormatException e) {
+          throw new IllegalStateException("Not a valid list index");
+        }
 
       }
 
-      if (node instanceof SList) {
-        @SuppressWarnings("rawtypes")
-        SList list = (SList) node;
-        int index = Integer.valueOf(property);
-        return 0 <= index && index < list.size();
-      }
-
-    } catch (SException e1) {
-      throw new RuntimeException(e1);
-    } catch (NumberFormatException e2) {
-      throw new RuntimeException(property + " is not a valid array index");
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
 
-    return false;
+    throw new IllegalStateException("Node is not a container");
   }
 
 
