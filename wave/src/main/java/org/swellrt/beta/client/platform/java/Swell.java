@@ -10,20 +10,15 @@ import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceLogger;
 import org.swellrt.beta.client.SessionManager;
 import org.swellrt.beta.client.rest.JsonParser;
-import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.operations.params.Account;
-import org.swellrt.beta.client.rest.operations.params.CredentialImpl;
-import org.swellrt.beta.client.rest.operations.params.ObjectIdImpl;
 import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
 import org.swellrt.beta.client.wave.WaveFactories;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.client.wave.ws.WebSocket;
-import org.swellrt.beta.common.ModelFactory;
-import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SObject;
-import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.ModelFactory;
+import org.swellrt.beta.model.java.JavaModelFactory;
 import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -35,14 +30,13 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gwt.core.client.Callback;
 
-public class Client {
+public class Swell {
 
-  public static ServiceFrontend get(String serverAddress) {
+  public static ServiceFrontend getService(String serverAddress) {
 
-    Client c = new Client(serverAddress);
+    Swell c = new Swell(serverAddress);
     c.start();
     return c.getService();
 
@@ -57,7 +51,7 @@ public class Client {
     return service;
   }
 
-  private Client(String serverAddress) {
+  private Swell(String serverAddress) {
     this.serverAddress = serverAddress;
   }
 
@@ -192,73 +186,8 @@ public class Client {
           }
 
         });
-
-    /*
-     * context.getObject(WaveId.of("local.net", "object"), new
-     * FutureCallback<SWaveObject>() {
-     *
-     * @Override public void onSuccess(SWaveObject result) {
-     * System.out.println("Object loaded"); }
-     *
-     * @Override public void onFailure(Throwable t) {
-     * System.err.println("Error " + t.getMessage()); }
-     *
-     * });
-     *
-     */
-
   }
 
-  public void clear() {
 
-  }
-
-  public static void main(String[] args) {
-
-    ServiceFrontend service = Client.get("http://localhost:9898");
-
-    service.login(new CredentialImpl("tam@local.net", "tam", true),
-        new ServiceOperation.Callback<Account>() {
-
-          @Override
-          public void onError(SException exception) {
-            if (exception.getCause() != null)
-              System.err.println(exception.getCause().getMessage());
-            else
-              System.err.println(exception.getMessage());
-          }
-
-          @Override
-          public void onSuccess(Account response) {
-            System.out.println("Login success " + response.getId());
-
-            service.open(new ObjectIdImpl("local.net/form-demo-default"),
-                new ServiceOperation.Callback<SObject>() {
-
-                  @Override
-                  public void onError(SException exception) {
-                    System.err.println("Error open " + exception.getMessage());
-                  }
-
-                  @Override
-                  public void onSuccess(SObject object) {
-                    try {
-
-                      String name = SPrimitive.asString(object.node("form.name"));
-                      JsonObject jso = (JsonObject) ((SPrimitive) object.node("form")).getValue();
-                      System.out.println(
-                          "Object loaded -> " + name + " / " + jso.get("name").getAsString());
-                    } catch (SException e) {
-                      e.printStackTrace();
-                    }
-
-                  }
-
-                });
-
-          }
-        });
-
-  }
 
 }

@@ -12,7 +12,6 @@ import org.waveprotocol.box.common.comms.gson.ProtocolOpenRequestGsonImpl;
 import org.waveprotocol.box.common.comms.gson.ProtocolSubmitRequestGsonImpl;
 import org.waveprotocol.box.common.comms.gson.ProtocolSubmitResponseGsonImpl;
 import org.waveprotocol.box.common.comms.gson.ProtocolWaveletUpdateGsonImpl;
-import org.waveprotocol.box.webclient.common.WaveletOperationSerializer;
 import org.waveprotocol.wave.communication.gson.GsonException;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
@@ -186,7 +185,7 @@ public class JavaProtocolMessageUtils extends ProtocolMessageUtils {
 
     ProtocolWaveletDeltaGsonImpl protocolDelta = new ProtocolWaveletDeltaGsonImpl();
     for (WaveletOperation op : delta) {
-      protocolDelta.addOperation(WaveletOperationSerializer.serialize(op));
+      protocolDelta.addOperation(JavaWaveletOperationSerializer.serialize(op));
     }
     protocolDelta.setAuthor(delta.getAuthor().getAddress());
     protocolDelta.setHashedVersion(versions.getServerVersion(wavelet, delta));
