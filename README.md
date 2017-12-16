@@ -1,23 +1,18 @@
 # SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
 
-SwellRT is an open source **backend-as-a-service**. It provides helpful features to 
-develop Web applications: 
+SwellRT is an open source **backend-as-a-service**. It provides out-of-the-box features for
+apps:
 
 * Real-time storage (NoSQL)
 * User management
 * Authentication
 * Event based integration
 
-SwellRT main goal is to ease development of collaborative applications,
-with real-time interactions, for example...
+SwellRT's goal is to ease development of real-time collaborative applications,
+specially those requiring collaborative text editing. 
 
-* Collaborative text editors
-* Instant messaging apps
-* Reactive user interface
-
-
-The API allows to handle objects that can be shared and mutated in real-time.
-All changes are persisted and propagated transparently. Object state is eventually consistent.
+SwellRT objects can be shared and mutated in real-time. All changes are persisted and propagated transparently. 
+Object state is eventually consistent.
 
 Check out API basics:
 
@@ -25,12 +20,11 @@ Check out API basics:
 
 service.open({
 
-	id: 'shared-object-id'
+	id: '<object-id>'
 
 }).then(object => {
 
  	// Anyone can open the object
- 	
 	object.setPublic(true);
 
 });
@@ -61,6 +55,8 @@ object.node('person').addListener( event => {
 
 });	
 ```
+
+Client libraries for Web and Java/Android (experimental) are provided.
 
 ## Documentation and examples
 
@@ -158,7 +154,7 @@ If you map the **config/** folder in your host machine, you must copy those file
 
 **Post installation**
 
-Visit "http://localhost:9898" to check server installation and try some demos.
+Visit "http://localhost:9898" and "http://localhost:9898/chat" to check server installation and try some demos.
 
 
 ### MongoDB
@@ -192,7 +188,11 @@ $ docker run \
 
 The database **swellrt** is created automatically if it doesn't exist.
 
+## Java/Android client
 
+An experimental Java library is in package *org.swellrt.beta.client.platform.java*
+Check out chat demo app in *org.swellrt.beta.client.platform.java.ChatDemo". 
+ 
 ## Federation
 
 SwellRT servers can be federated using XMPP and Matrix.org protocol. Sorry, we are still writting the configuration guide. Please contact us for furhter information. 
