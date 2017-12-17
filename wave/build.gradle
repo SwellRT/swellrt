@@ -658,7 +658,6 @@ jar {
     include "META-INF/services/*"
     include "com/mongodb/**/*"
     include "org/slf4j/**/*"
-    include "org/atmosphere/**/*"
     include "com/google/common/**/*"
     include "com/google/gson/**/*"
     include "com/google/gxp/**/*"
@@ -709,6 +708,7 @@ jar {
     include "org/xmlpull/**/*"
     include "org/xmpp/**/*"
 
+	include "org/swellrt/common/**/*"
     include "org/swellrt/model/**/*"
     include "org/swellrt/server/**/*"
     include "velocity-tools-config.xml"
