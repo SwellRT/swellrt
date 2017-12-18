@@ -19,25 +19,25 @@
 
 package org.waveprotocol.box.server.persistence.memory;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.FileNotFoundPersistenceException;
 import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.box.server.waveserver.DeltaStore;
+import org.waveprotocol.box.server.waveserver.DeltaStoreTransient;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 
-import java.util.Map;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A simple in-memory implementation of DeltaStore.
  *
  * @author josephg@google.com (Joseph Gentle)
  */
-public class MemoryDeltaStore implements DeltaStore {
+public class MemoryDeltaStore implements DeltaStoreTransient {
   /**
    * The actual data.
    * Note: We don't remove map entries in the top-level map when all wavelets in a wave are deleted.

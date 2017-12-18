@@ -22,14 +22,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.MoreExecutors;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import junit.framework.TestCase;
+import java.util.concurrent.Executor;
 
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -58,7 +51,14 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 
-import java.util.concurrent.Executor;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import junit.framework.TestCase;
 
 /**
  * @author josephg@gmail.com (Joseph Gentle)
@@ -105,6 +105,7 @@ public class WaveServerTest extends TestCase {
     when(config.getBoolean("federation.waveserver_disable_verification")).thenReturn(true);
     certificateManager = new CertificateManagerImpl(config, localSigner, null, null);
     final DeltaStore deltaStore = new MemoryDeltaStore();
+    final DeltaStoreTransient deltaStoreTransient = new MemoryDeltaStore();
     final Executor waveletLoadExecutor = MoreExecutors.sameThreadExecutor();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
@@ -113,7 +114,8 @@ public class WaveServerTest extends TestCase {
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee,
-            WaveServerModule.loadWaveletState(waveletLoadExecutor, deltaStore, waveletName, persistExecutor, 100),
+            WaveServerModule.loadWaveletState(waveletLoadExecutor, deltaStore, deltaStoreTransient,
+                waveletName, persistExecutor, 100),
             waveDomain, storageContinuationExecutor);
       }
     };

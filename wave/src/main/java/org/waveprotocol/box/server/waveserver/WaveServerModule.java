@@ -19,6 +19,30 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
+
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
+import org.waveprotocol.box.server.persistence.PersistenceException;
+import org.waveprotocol.box.server.waveserver.DeltaStore.DeltasAccess;
+import org.waveprotocol.wave.crypto.CachedCertPathValidator;
+import org.waveprotocol.wave.crypto.CertPathStore;
+import org.waveprotocol.wave.crypto.DefaultCacheImpl;
+import org.waveprotocol.wave.crypto.DefaultTimeSource;
+import org.waveprotocol.wave.crypto.DefaultTrustRootsProvider;
+import org.waveprotocol.wave.crypto.DisabledCertPathValidator;
+import org.waveprotocol.wave.crypto.TimeSource;
+import org.waveprotocol.wave.crypto.TrustRootsProvider;
+import org.waveprotocol.wave.crypto.VerifiedCertChainCache;
+import org.waveprotocol.wave.crypto.WaveCertPathValidator;
+import org.waveprotocol.wave.crypto.WaveSignatureVerifier;
+import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
+import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.model.version.HashedVersionFactory;
+import org.waveprotocol.wave.model.version.HashedVersionFactoryImpl;
+import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
@@ -28,19 +52,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
-
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.StorageContinuationExecutor;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.WaveletLoadExecutor;
-import org.waveprotocol.box.server.persistence.PersistenceException;
-import org.waveprotocol.wave.crypto.*;
-import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
-import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.version.HashedVersionFactory;
-import org.waveprotocol.wave.model.version.HashedVersionFactoryImpl;
-import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 
 /**
  * Guice Module for the prototype Server.
@@ -63,7 +74,7 @@ public class WaveServerModule extends AbstractModule {
       @StorageContinuationExecutor Executor storageContinuationExecutor) {
     this.enableFederation = config.getBoolean("federation.enable_federation");
     int deltaCountForPersistSnapshots = 250;
-    try { 
+    try {
       deltaCountForPersistSnapshots = config.getInt("core.persist_snapshots_on_deltas_count");
     } catch (ConfigException.Missing e) {
       e.printStackTrace();
@@ -110,13 +121,14 @@ public class WaveServerModule extends AbstractModule {
   @Provides
   @SuppressWarnings("unused")
   private LocalWaveletContainer.Factory provideLocalWaveletContainerFactory(
-      final DeltaStore deltaStore) {
+      final DeltaStore deltaStore, final DeltaStoreTransient transientDeltaStore) {
     return new LocalWaveletContainer.Factory() {
       @Override
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new LocalWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor, persistSnapshotOnDeltasCount), waveDomain,
+            waveletLoadExecutor, deltaStore, transientDeltaStore, waveletName, waveletLoadExecutor,
+            persistSnapshotOnDeltasCount), waveDomain,
             storageContinuationExecutor);
       }
     };
@@ -125,13 +137,14 @@ public class WaveServerModule extends AbstractModule {
   @Provides
   @SuppressWarnings("unused")
   private RemoteWaveletContainer.Factory provideRemoteWaveletContainerFactory(
-      final DeltaStore deltaStore) {
+      final DeltaStore deltaStore, final DeltaStoreTransient transientDeltaStore) {
     return new RemoteWaveletContainer.Factory() {
       @Override
       public RemoteWaveletContainer create(WaveletNotificationSubscriber notifiee,
           WaveletName waveletName, String waveDomain) {
         return new RemoteWaveletContainerImpl(waveletName, notifiee, loadWaveletState(
-            waveletLoadExecutor, deltaStore, waveletName, waveletLoadExecutor, persistSnapshotOnDeltasCount),
+            waveletLoadExecutor, deltaStore, transientDeltaStore, waveletName, waveletLoadExecutor,
+            persistSnapshotOnDeltasCount),
             storageContinuationExecutor);
       }
     };
@@ -157,13 +170,21 @@ public class WaveServerModule extends AbstractModule {
    */
   @VisibleForTesting
   static ListenableFuture<DeltaStoreBasedWaveletState> loadWaveletState(Executor executor,
-      final DeltaStore deltaStore, final WaveletName waveletName, final Executor persistExecutor,
+      final DeltaStore deltaStore, final DeltaStoreTransient transientDeltaStore,
+      final WaveletName waveletName, final Executor persistExecutor,
       final int persistSnapshotOnDeltasCount) {
     ListenableFutureTask<DeltaStoreBasedWaveletState> task = ListenableFutureTask
         .create(new Callable<DeltaStoreBasedWaveletState>() {
           @Override
           public DeltaStoreBasedWaveletState call() throws PersistenceException {
-            return DeltaStoreBasedWaveletState.create(deltaStore.open(waveletName), persistExecutor,
+
+            DeltasAccess deltasAccess = null;
+            if (waveletName.waveletId.isTransientWavelet())
+              deltasAccess = transientDeltaStore.open(waveletName);
+            else
+              deltasAccess = deltaStore.open(waveletName);
+
+            return DeltaStoreBasedWaveletState.create(deltasAccess, persistExecutor,
                 persistSnapshotOnDeltasCount);
           }
         });

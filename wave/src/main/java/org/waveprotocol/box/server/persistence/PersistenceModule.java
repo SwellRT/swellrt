@@ -28,6 +28,7 @@ import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
 import org.waveprotocol.box.server.persistence.memory.MemoryStore;
 import org.waveprotocol.box.server.persistence.mongodb.MongoDbProvider;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
+import org.waveprotocol.box.server.waveserver.DeltaStoreTransient;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.model.id.WaveId;
 
@@ -148,6 +149,9 @@ public class PersistenceModule extends AbstractModule {
   }
 
   private void bindDeltaStore() {
+
+    bind(DeltaStoreTransient.class).to(MemoryDeltaStore.class).in(Singleton.class);
+
     if (deltaStoreType.equalsIgnoreCase("memory")) {
       bind(DeltaStore.class).to(MemoryDeltaStore.class).in(Singleton.class);
     } else if (deltaStoreType.equalsIgnoreCase("file")) {
