@@ -39,6 +39,7 @@ public interface IdConstants {
   /** Prefix for profile wave ids. */
   public static final String PROFILE_WAVE_PREFIX = "prof";
 
+
   // Wavelets.
 
   /** Prefix for conversational wavelet ids. */
@@ -50,6 +51,7 @@ public interface IdConstants {
 
   /** Prefix for user-data wavelet ids. */
   public static final String USER_DATA_WAVELET_PREFIX = "user";
+
 
   // Documents.
 
@@ -70,13 +72,43 @@ public interface IdConstants {
 
   /** Old metadata document id. TODO: remove. */
   public static final String OLD_METADATA_DOC_ID = "m/metadata";
-  
+
   /** Prefix for robot data document ids. */
   public static final String ROBOT_PREFIX = "r";
-  
+
   /** Document id for wavelet level role assignments. */
   public static final String ROLES_DATA_DOC_ID = "roles";
-  
+
   /** Document id for wavelet-level indexability assignments. */
   public static final String INDEXABILITY_DATA_DOC_ID = "listing";
+
+  //
+  // Swell
+  //
+
+  // Wavelets
+
+  /** Prefix for data wavelets of swell */
+  public static final String DATA_WAVELET_PREFIX = "data";
+
+  /** Prefix for transient wavelets */
+  public static final String TRANSIENT_WAVELET_PREFIX = "trans";
+
+  /** Prefix for user storage wavelets */
+  public static final String USER_WAVELET_PREFIX = "user";
+
+  /** Id for the master data wavelet */
+  public static final String DATA_MASTER_WAVELET = DATA_WAVELET_PREFIX + TOKEN_SEPARATOR + "master";
+
+  // Documents
+
+  /** Id prefix for documents storing maps */
+  public static final String MAP_DATA_DOC_PREFIX = "m";
+
+  /** Id prefix for documents storing lists */
+  public static final String LIST_DATA_DOC_PREFIX = "l";
+
+  /** Id prefix for documents storing plain xml for texts */
+  public static final String TEST_DATA_DOC_PREFIX = "t";
+
 }

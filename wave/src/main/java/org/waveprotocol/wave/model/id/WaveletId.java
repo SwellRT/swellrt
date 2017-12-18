@@ -19,9 +19,9 @@
 
 package org.waveprotocol.wave.model.id;
 
-import org.waveprotocol.wave.model.util.Preconditions;
-
 import java.io.Serializable;
+
+import org.waveprotocol.wave.model.util.Preconditions;
 
 /**
  * In the context of a single wave, a wavelet is identified by a tuple of a
@@ -198,4 +198,21 @@ public final class WaveletId implements Comparable<WaveletId>, Serializable {
       return domainCompare;
     }
   }
+
+  public boolean isDataWavelet() {
+    return id.startsWith(IdConstants.DATA_WAVELET_PREFIX + IdConstants.TOKEN_SEPARATOR);
+  }
+
+  public boolean isDataMasterWavelet() {
+    return id.equals(IdConstants.DATA_MASTER_WAVELET);
+  }
+
+  public boolean isTransientWavelet() {
+    return id.startsWith(IdConstants.TRANSIENT_WAVELET_PREFIX + IdConstants.TOKEN_SEPARATOR);
+  }
+
+  public boolean isUserWavelet() {
+    return id.startsWith(IdConstants.USER_WAVELET_PREFIX + IdConstants.TOKEN_SEPARATOR);
+  }
+
 }
