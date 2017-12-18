@@ -1,5 +1,8 @@
 package org.swellrt.beta.model.wave;
 
+/**
+ * TODO move constants to Wave model classes like {@Code IdConstants}
+ */
 public class WaveCommons {
 
   public static final String MASTER_DATA_WAVELET_NAME = "data+master";
