@@ -283,8 +283,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
 
           LOG.info("Snapshot built for " + waveletName + " in " + (t2 - t1) + "ms");
 
-          // Persist the snapshot if it is not user wavelet
-          if (!IdUtil.isUserDataWavelet(snapshot.getWaveletId()))
+          // Persist the snapshot only for data wavelets
+          if (snapshot.getWaveletId().isDataWavelet())
             deltasAccess.storeSnapshot(snapshot);
 
         } catch (IOException e) {
@@ -504,7 +504,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
    * the number of deltas to be processed before to
    * persist the snapshot.
    */
-  private final int persistSnapshotOnDeltasCount;
+  private final int persistSnapshotDeltasCountThreshold;
 
   /**
    * Counter of processed deltas in order to persist the snapshot
@@ -546,10 +546,12 @@ class DeltaStoreBasedWaveletState implements WaveletState {
         Preconditions.checkState(v.equals(version));
         deltasAccess.append(deltas.build());
 
-        if (deltasCountBeforeSnapshotStore >= persistSnapshotOnDeltasCount) {
+        if (deltasCountBeforeSnapshotStore >= persistSnapshotDeltasCountThreshold) {
           synchronized (persistLock) {
-            deltasAccess.storeSnapshot(snapshot);
-            deltasAccess.storeContributions(contributions);
+            if (snapshot.getWaveletId().isDataWavelet()) {
+              deltasAccess.storeSnapshot(snapshot);
+              deltasAccess.storeContributions(contributions);
+            }
             deltasCountBeforeSnapshotStore = 0;
           }
         }
@@ -615,7 +617,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     this.deltasAccess = deltasAccess;
     this.snapshot = snapshot;
     this.lastPersistedVersion = new AtomicReference<HashedVersion>(deltasAccess.getEndVersion());
-    this.persistSnapshotOnDeltasCount = persistSnapshotOnDeltasCount;
+    this.persistSnapshotDeltasCountThreshold = persistSnapshotOnDeltasCount;
     this.contributions = contributions;
   }
 
