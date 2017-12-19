@@ -116,15 +116,6 @@ public class SObjectLocal implements SObject {
     return delegateMap.size();
   }
 
-  @Override
-  public String[] _getBlips() {
-    return null;
-  }
-
-  @Override
-  public String _getBlipXML(String blipId) {
-   return null;
-  }
 
   @Override
   public void setStatusHandler(StatusHandler h) {
@@ -136,10 +127,6 @@ public class SObjectLocal implements SObject {
     // Ignore for local objects
   }
 
-  @Override
-  public SMap getUserObject() {
-    return null;
-  }
 
   @SuppressWarnings("rawtypes")
   @JsIgnore
@@ -245,5 +232,30 @@ public class SObjectLocal implements SObject {
   @Override
   public void unlisten(SHandlerFunc h) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
+  }
+
+  @Override
+  public SMap getUserStore() {
+    return null;
+  }
+
+  @Override
+  public SMap getTransientStore() {
+    return null;
+  }
+
+  @Override
+  public String[] _getWavelets() {
+    return null;
+  }
+
+  @Override
+  public String[] _getDocuments(String waveletId) {
+    return null;
+  }
+
+  @Override
+  public String _getContent(String waveletId, String docId) {
+    return null;
   }
 }

@@ -72,8 +72,7 @@ public class SWaveObject implements SObject, SObservableNode {
    * Initialization tasks not suitable for constructors.
    */
   private void init() {
-    root = waveManager.loadRoot();
-    root.attach(SWaveNodeContainer.Void);
+    root = waveManager.getDataRoot();
   }
 
   /**
@@ -205,21 +204,6 @@ public class SWaveObject implements SObject, SObservableNode {
   }
 
 
-	@Override
-	public String[] _getBlips() {
-    return waveManager.getBlips();
-	}
-
-	@Override
-  public String _getBlipXML(String blipId) {
-    return waveManager.getBlipXML(blipId);
-	}
-
-  @Override
-  public SMap getUserObject() {
-    return waveManager.getUserObject();
-  }
-
   public boolean isNew() {
     return false;
   }
@@ -310,5 +294,29 @@ public class SWaveObject implements SObject, SObservableNode {
     throw new IllegalStateException("Node is not a text");
   }
 
+  @Override
+  public SMap getUserStore() {
+    return waveManager.getUserRoot();
+  }
+
+  @Override
+  public SMap getTransientStore() {
+    return waveManager.getTransientRoot();
+  }
+
+  @Override
+  public String[] _getWavelets() {
+    return waveManager.getWavelets();
+  }
+
+  @Override
+  public String[] _getDocuments(String waveletId) {
+    return waveManager.getDocuments(waveletId);
+  }
+
+  @Override
+  public String _getContent(String waveletId, String documentId) {
+    return waveManager.getContent(waveletId, documentId);
+  }
 
 }

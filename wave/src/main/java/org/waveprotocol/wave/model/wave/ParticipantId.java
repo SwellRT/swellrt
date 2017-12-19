@@ -214,6 +214,10 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
     return name != null && name.startsWith(ANONYMOUS_NAME);
   }
 
+  @JsIgnore
+  public static ParticipantId ofPublic(String domain) {
+    return ParticipantId.ofUnsafe(DOMAIN_PREFIX + domain);
+  }
 
   /**
    * Compare two {@link ParticipantId}s, name first, then domain.

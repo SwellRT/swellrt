@@ -25,13 +25,17 @@ import org.waveprotocol.wave.model.document.Doc.E;
 import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
+import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
+import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdGenerator;
-import org.waveprotocol.wave.model.id.InvalidIdException;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.schema.SchemaProvider;
+import org.waveprotocol.wave.model.testing.OpBasedWaveletFactory;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
 import org.waveprotocol.wave.model.wave.Blip;
@@ -231,24 +235,76 @@ public class SWaveNodeManager {
   private final ObservableWaveView wave;
   private final ContextStatus waveStatus;
 
-  private final ObservableWavelet masterContainerWavelet;
-  private ObservableWavelet currentContainerWavelet;
+  private final ObservableWavelet dataWavelet;
+  private final ObservableWavelet userWavelet;
+  private final ObservableWavelet transientWavelet;
 
   private final NodeFactory nodeFactory;
 
   public static SWaveNodeManager of(ParticipantId participantId, IdGenerator idGenerator,
       String domain, ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
-
-    ObservableWavelet masterWavelet = wave
-        .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
-
-    if (masterWavelet == null) {
-      masterWavelet = wave
-          .createWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
-    }
-
     return new SWaveNodeManager(participantId, idGenerator, domain, wave, waveStatus, nodeFactory);
   }
+
+  private static ObservableWavelet retrieveDataWavelet(String domain, ObservableWaveView wave) {
+
+    ObservableWavelet dataWavelet = wave
+        .getWavelet(WaveletId.of(domain, IdConstants.DATA_MASTER_WAVELET));
+
+    if (dataWavelet == null) {
+      dataWavelet = wave.createWavelet(WaveletId.of(domain, IdConstants.DATA_MASTER_WAVELET));
+    }
+
+    return dataWavelet;
+  }
+
+  private static ObservableWavelet retrieveUserWavelet(String domain, ObservableWaveView wave,
+      ParticipantId participantId) {
+
+    String userWaveletid = IdConstants.USER_DATA_WAVELET_PREFIX + IdConstants.TOKEN_SEPARATOR
+        + participantId.getAddress();
+
+    if (!participantId.isAnonymous()) {
+
+      ObservableWavelet userWavelet = wave
+          .getWavelet(WaveletId.of(domain, userWaveletid));
+
+      if (userWavelet == null) {
+        userWavelet = wave.createWavelet(WaveletId.of(domain, IdConstants.DATA_MASTER_WAVELET));
+      }
+
+      return userWavelet;
+
+    } else {
+
+
+      ObservableWavelet userWavelet = OpBasedWaveletFactory.builder(new SchemaProvider() {
+
+        @Override
+        public DocumentSchema getSchemaForId(WaveletId waveletId, String documentId) {
+          return DocumentSchema.NO_SCHEMA_CONSTRAINTS;
+        }
+      }).with(participantId).build().create(wave.getWaveId(), WaveletId.of(domain, userWaveletid),
+          participantId);
+
+      return userWavelet;
+    }
+  }
+
+  private static ObservableWavelet retrieveTransientWavelet(String domain,
+      ObservableWaveView wave) {
+
+    ObservableWavelet transientWavelet = wave
+        .getWavelet(WaveletId.of(domain, IdConstants.TRANSIENT_MASTER_WAVELET));
+
+    if (transientWavelet == null) {
+      transientWavelet = wave
+          .createWavelet(WaveletId.of(domain, IdConstants.TRANSIENT_MASTER_WAVELET));
+    }
+
+    return transientWavelet;
+  }
+
 
   private SWaveNodeManager(ParticipantId participantId, IdGenerator idGenerator, String domain,
       ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
@@ -256,9 +312,9 @@ public class SWaveNodeManager {
     this.idGenerator = idGenerator;
     this.domain = domain;
     this.wave = wave;
-    this.masterContainerWavelet = wave
-        .getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME));
-    this.currentContainerWavelet = null;
+    this.dataWavelet = retrieveDataWavelet(domain, wave);
+    this.userWavelet = retrieveUserWavelet(domain, wave, participantId);
+    this.transientWavelet = retrieveTransientWavelet(domain, wave);
     this.waveStatus = waveStatus;
     this.nodeFactory = nodeFactory;
   }
@@ -276,36 +332,61 @@ public class SWaveNodeManager {
     return ModernIdSerialiser.INSTANCE.serialiseWaveId(wave.getWaveId());
   }
 
-  /**
-   * Create a new data container (Wavelet) for this Object (Wave)
-   *
-   * @return
-   */
-  public String createContainer() {
-    ObservableWavelet wavelet = wave.createWavelet(WaveletId.of(domain,
-        WaveCommons.CONTAINER_DATA_WAVELET_PREFIX + idGenerator.newUniqueToken()));
-    return ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId());
+
+  protected SWaveMap getDataRoot() {
+    SWaveMap map = loadMap(
+        SubstrateId.ofMap(dataWavelet.getId(), IdConstants.MAP_ROOT_DOC));
+    map.attach(SWaveNodeContainer.Void);
+    return map;
   }
 
-  /**
-   * @return a list of all container's ids for this object
-   */
-  public String[] getContainers() {
-
-    List<String> containerIds = new ArrayList<String>();
-
-    wave.getWavelets().forEach((wavelet) -> {
-      if (wavelet.getId().getId().startsWith(WaveCommons.CONTAINER_DATA_WAVELET_PREFIX)) {
-        containerIds.add(ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId()));
-      }
-    });
-
-    return containerIds.toArray(new String[containerIds.size()]);
+  protected SWaveMap getTransientRoot() {
+    SWaveMap map = loadMap(SubstrateId.ofMap(transientWavelet.getId(), IdConstants.MAP_ROOT_DOC));
+    map.attach(SWaveNodeContainer.Void);
+    return map;
   }
 
-  public SWaveMap loadRoot() {
-    return loadMap(
-        SubstrateId.ofMap(masterContainerWavelet.getId(), WaveCommons.ROOT_SUBSTRATE_ID));
+  protected SWaveMap getUserRoot() {
+    SWaveMap map = loadMap(SubstrateId.ofMap(userWavelet.getId(), IdConstants.MAP_ROOT_DOC));
+    map.attach(SWaveNodeContainer.Void);
+    return map;
+  }
+
+  private DocEventRouter getWaveletDocument(SubstrateId substrateId) {
+
+    if (substrateId.getContainerId().isUserWavelet() && participantId.isAnonymous()) {
+
+      // Anonymous user data wavelet are not supported by the actual wave
+      ObservableDocument document = userWavelet.getDocument(substrateId.getDocumentId());
+      DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
+      return router;
+
+    } else {
+
+      // Normal documents are supported by wave's wavelets
+      ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());
+      ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());
+      DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
+      return router;
+
+    }
+
+  }
+
+  private ObservableWavelet getWavelet(SubstrateId substrateId) {
+
+    if (substrateId.getContainerId().isUserWavelet() && participantId.isAnonymous()) {
+
+      // Anonymous user data wavelet are not supported by the actual wave
+      return userWavelet;
+
+    } else {
+
+      // Normal documents are supported by wave's wavelets
+      return wave.getWavelet(substrateId.getContainerId());
+
+    }
+
   }
 
   /**
@@ -327,9 +408,8 @@ public class SWaveNodeManager {
     }
 
     // Create new instance
-    ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());
-    ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());
-    DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
+    DocEventRouter router = getWaveletDocument(substrateId);
+    ObservableDocument document = router.getDocument();
 
     E mapElement = DocHelper.getElementWithTagName(document, WaveCommons.MAP_TAG);
     if (mapElement == null) {
@@ -364,9 +444,8 @@ public class SWaveNodeManager {
     }
 
     // Create new instance
-    ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());
-    ObservableDocument document = substrateContainer.getDocument(substrateId.getDocumentId());
-    DefaultDocEventRouter router = DefaultDocEventRouter.create(document);
+    DocEventRouter router = getWaveletDocument(substrateId);
+    ObservableDocument document = router.getDocument();
 
     E listElement = DocHelper.getElementWithTagName(document, WaveCommons.LIST_TAG);
     if (listElement == null) {
@@ -393,7 +472,8 @@ public class SWaveNodeManager {
       return (SWaveText) nodeStore.get(substrateId);
     }
 
-    ObservableWavelet substrateContainer = wave.getWavelet(substrateId.getContainerId());
+
+    ObservableWavelet substrateContainer = getWavelet(substrateId);
     Blip blip = substrateContainer.getBlip(substrateId.getDocumentId());
     if (blip == null) {
       blip = substrateContainer.createBlip(substrateId.getDocumentId());
@@ -412,43 +492,16 @@ public class SWaveNodeManager {
     return textRemote;
   }
 
-  public void setContainer(String containerId) throws SException {
-    WaveletId waveletId = null;
-    try {
-      waveletId = ModernIdSerialiser.INSTANCE.deserialiseWaveletId(containerId);
-    } catch (InvalidIdException e) {
-      throw new SException(SException.INVALID_ID);
-    }
-    ObservableWavelet wavelet = wave.getWavelet(waveletId);
-    Preconditions.checkArgument(wavelet != null, "Container doesn't exist");
-    currentContainerWavelet = wavelet;
+  public SWaveList createList(SubstrateId containerSubstrateId) {
+    return loadList(SubstrateId.createForList(containerSubstrateId.getContainerId(), idGenerator));
   }
 
-  public void resetContainer() {
-    currentContainerWavelet = null;
+  public SWaveMap createMap(SubstrateId containerSubstrateId) {
+    return loadMap(SubstrateId.createForMap(containerSubstrateId.getContainerId(), idGenerator));
   }
 
-  private WaveletId getEffectiveContainerId(WaveletId containerId) {
-
-    if (currentContainerWavelet != null)
-      return currentContainerWavelet.getId();
-    else if (containerId != null)
-      return containerId;
-    else
-      return masterContainerWavelet.getId();
-
-  }
-
-  public SWaveList createList(WaveletId containerId) {
-    return loadList(SubstrateId.createForList(getEffectiveContainerId(containerId), idGenerator));
-  }
-
-  public SWaveMap createMap(WaveletId containerId) {
-    return loadMap(SubstrateId.createForMap(getEffectiveContainerId(containerId), idGenerator));
-  }
-
-  public SWaveText createText(DocInitialization initText, WaveletId containerId) {
-    return loadText(SubstrateId.createForText(getEffectiveContainerId(containerId), idGenerator),
+  public SWaveText createText(DocInitialization initText, SubstrateId containerSubstrateId) {
+    return loadText(SubstrateId.createForText(containerSubstrateId.getContainerId(), idGenerator),
         initText);
   }
 
@@ -457,7 +510,7 @@ public class SWaveNodeManager {
    *
    * @param node
    */
-  public void deleteFromStore(SWaveNode node) {
+  public void flushCache(SWaveNode node) {
     if (node.getSubstrateId() != null) {
       nodeStore.remove(node.getSubstrateId());
     }
@@ -493,8 +546,9 @@ public class SWaveNodeManager {
   /**
    * Transform a local SNode object to SWaveNode recursively.
    * <p>
-   * Use parent node's container for the new nodes except if a particular
-   * container has been set in the manager.
+   * Create new SNodes in the same wavelet containing the parent SNode.
+   * <p>
+   * SNode trees supported by multipled wavelets is not implemented yet.
    *
    * @param node
    * @param parentNode
@@ -510,7 +564,7 @@ public class SWaveNodeManager {
     if (node instanceof SList) {
       @SuppressWarnings("unchecked")
       SList<SNode> list = (SList<SNode>) node;
-      SWaveList remoteList = createList(parentNode.getSubstrateId().getContainerId());
+      SWaveList remoteList = createList(parentNode.getSubstrateId());
       remoteList.attach(parentNode);
       remoteList.enableEvents(false);
       for (SNode n : list.values()) {
@@ -521,7 +575,7 @@ public class SWaveNodeManager {
 
     } else if (node instanceof SMap) {
       SMap map = (SMap) node;
-      SWaveMap remoteMap = createMap(parentNode.getSubstrateId().getContainerId());
+      SWaveMap remoteMap = createMap(parentNode.getSubstrateId());
       remoteMap.attach(parentNode);
       remoteMap.enableEvents(false);
       for (String k : map.keys()) {
@@ -534,7 +588,7 @@ public class SWaveNodeManager {
     } else if (node instanceof SText) {
       SText text = (SText) node;
       SWaveText remoteText = createText(text.getInitContent(),
-          parentNode.getSubstrateId().getContainerId());
+          parentNode.getSubstrateId());
       remoteText.attach(parentNode);
 
       return remoteText;
@@ -606,76 +660,81 @@ public class SWaveNodeManager {
   //
 
   public void setPublic(boolean isPublic) {
+    ParticipantId publicParticipanId = ParticipantId.ofPublic(domain);
 
-    try {
-
-      if (isPublic)
-        masterContainerWavelet.addParticipant(ParticipantId.of("", domain));
-      else
-        masterContainerWavelet.removeParticipant(ParticipantId.of("", domain));
-
-    } catch (InvalidParticipantAddress e) {
-
+    if (isPublic) {
+      dataWavelet.addParticipant(publicParticipanId);
+      transientWavelet.addParticipant(publicParticipanId);
+    } else {
+      dataWavelet.removeParticipant(publicParticipanId);
+      transientWavelet.removeParticipant(publicParticipanId);
     }
   }
 
   public boolean isPublic() {
-    try {
-      return masterContainerWavelet.getParticipantIds().contains(ParticipantId.of("", domain));
-    } catch (InvalidParticipantAddress e) {
-      return false;
-    }
+    ParticipantId publicParticipanId = ParticipantId.ofPublic(domain);
+    return dataWavelet.getParticipantIds().contains(publicParticipanId);
   }
 
   public void addParticipant(String participantId) throws InvalidParticipantAddress {
-    masterContainerWavelet.addParticipant(ParticipantId.of(participantId));
+    ParticipantId p = ParticipantId.of(participantId);
+    dataWavelet.addParticipant(p);
+    transientWavelet.addParticipant(p);
   }
 
   public void removeParticipant(String participantId) throws InvalidParticipantAddress {
-    masterContainerWavelet.removeParticipant(ParticipantId.of(participantId));
+    ParticipantId p = ParticipantId.of(participantId);
+    dataWavelet.removeParticipant(p);
+    transientWavelet.removeParticipant(p);
   }
 
   public String[] getParticipants() {
-    String[] array = new String[masterContainerWavelet.getParticipantIds().size()];
+    String[] array = new String[dataWavelet.getParticipantIds().size()];
     int i = 0;
-    for (ParticipantId p : masterContainerWavelet.getParticipantIds()) {
+    for (ParticipantId p : dataWavelet.getParticipantIds()) {
       array[i++] = p.getAddress();
     }
     return array;
   }
 
-  public SMap getUserObject() {
-
-    ObservableWavelet userWavelet = wave.getUserData();
-    if (userWavelet == null)
-      userWavelet = wave.createUserData();
-
-    SWaveMap root = loadMap(
-          SubstrateId.ofMap(userWavelet.getId(), WaveCommons.USER_ROOT_SUBSTRATED_ID));
-    root.attach(SWaveNodeContainer.Void);
-
-    return root;
-  }
 
   //
   // For debug
   //
 
-  public String[] getBlips() {
-    return masterContainerWavelet.getDocumentIds()
-        .toArray(new String[masterContainerWavelet.getDocumentIds().size()]);
+  /**
+   * @return a list of all container's ids for this object
+   */
+  public String[] getWavelets() {
+
+    List<String> containerIds = new ArrayList<String>();
+
+    wave.getWavelets().forEach((wavelet) -> {
+      containerIds.add(ModernIdSerialiser.INSTANCE.serialiseWaveletId(wavelet.getId()));
+    });
+
+    return containerIds.toArray(new String[containerIds.size()]);
   }
 
-  public String getBlipXML(String blipId) {
-    if (masterContainerWavelet.getDocumentIds().contains(blipId)) {
-      if (SubstrateId.isText(blipId)) {
-        return masterContainerWavelet.getBlip(blipId).getContent().toXmlString();
-      } else {
-        return masterContainerWavelet.getDocument(blipId).toXmlString();
-      }
+  public String[] getDocuments(String strWaveletId) {
+    WaveletId waveletId;
+    try {
+      waveletId = ModernIdSerialiser.INSTANCE.deserialiseWaveletId(strWaveletId);
+      return wave.getWavelet(waveletId).getDocumentIds().toArray(new String[0]);
+    } catch (Exception e) {
+      return null;
     }
+  }
 
-    return null;
+  public String getContent(String strWaveletId, String strDocumentId) {
+
+    WaveletId waveletId;
+    try {
+      waveletId = ModernIdSerialiser.INSTANCE.deserialiseWaveletId(strWaveletId);
+      return wave.getWavelet(waveletId).getDocument(strDocumentId).toXmlString();
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   /**

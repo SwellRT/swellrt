@@ -59,7 +59,7 @@ public class SMapProxyHandler extends ProxyHandler {
 
     if (isRoot && (property.equals(PROP_PRIVATE) ||
         property.equals(PROP_USER))) {
-      node = object.getUserObject();
+      node = object.getUserStore();
     } else {
       node = target.get(property);
     }

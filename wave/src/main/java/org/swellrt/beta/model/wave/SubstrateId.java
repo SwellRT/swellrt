@@ -54,8 +54,6 @@ public class SubstrateId {
     return documdentId.startsWith(TEXT_TYPE_PREFIX+TOKEN_SEPARATOR);
   }
 
-
-
   private static SubstrateId of(String type, WaveletId containerId, String substrateId) {
     Preconditions.checkArgument(containerId != null, "Null container id");
     Preconditions.checkArgument(substrateId != null, "Null substrate id");

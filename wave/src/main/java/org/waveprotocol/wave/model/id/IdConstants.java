@@ -100,6 +100,10 @@ public interface IdConstants {
   /** Id for the master data wavelet */
   public static final String DATA_MASTER_WAVELET = DATA_WAVELET_PREFIX + TOKEN_SEPARATOR + "master";
 
+  /** Id for the master transient wavelet */
+  public static final String TRANSIENT_MASTER_WAVELET = TRANSIENT_WAVELET_PREFIX + TOKEN_SEPARATOR
+      + "master";
+
   // Documents
 
   /** Id prefix for documents storing maps */
@@ -109,6 +113,9 @@ public interface IdConstants {
   public static final String LIST_DATA_DOC_PREFIX = "l";
 
   /** Id prefix for documents storing plain xml for texts */
-  public static final String TEST_DATA_DOC_PREFIX = "t";
+  public static final String TEXT_DATA_DOC_PREFIX = "t";
+
+  /** Id of root document map in transient and data wavelets */
+  public static final String MAP_ROOT_DOC = MAP_DATA_DOC_PREFIX + TOKEN_SEPARATOR + "root";
 
 }

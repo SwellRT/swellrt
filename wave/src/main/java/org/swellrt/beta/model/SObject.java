@@ -45,9 +45,11 @@ public interface SObject extends SMap, ServiceOperation.Response {
   /** Make this object to be public to any user */
   public void setPublic(boolean isPublic);
 
-  /** @return root map of the user's private area */
-  public SMap getUserObject();
+  /** @return root map of the user's private area in this object */
+  public SMap getUserStore();
 
+  /** @return root map of the transient object's store */
+  public SMap getTransientStore();
 
   /**
    * Register a status handler for this object.
@@ -56,18 +58,16 @@ public interface SObject extends SMap, ServiceOperation.Response {
    */
   public void setStatusHandler(StatusHandler h);
 
-  /**
-   * Debug only. Return list of blips.
-   *
-   * @return
-   */
-  public String[] _getBlips();
+  /** @return wave wavelets supporting this object */
+  public String[] _getWavelets();
 
   /**
-   * Debug only. Return blip content.
-   *
-   * @return
+   * @return wave document ids of this object
    */
-  public String _getBlipXML(String blipId);
+  public String[] _getDocuments(String waveletId);
+
+
+  /** @return document raw content */
+  public String _getContent(String waveletId, String docId);
 
 }

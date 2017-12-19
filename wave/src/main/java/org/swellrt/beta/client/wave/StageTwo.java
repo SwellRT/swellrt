@@ -65,6 +65,7 @@ import org.waveprotocol.wave.model.conversation.WaveBasedConversationView;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocumentImpl;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
+import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdFilter;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
@@ -453,8 +454,8 @@ public interface StageTwo {
 
       WaveletId udwId = getIdGenerator().newUserDataWaveletId(getSignedInUser().getAddress());
       ArrayList<String> prefixes = new ArrayList<String>();
-      //prefixes.add(IdConstants.CONVERSATION_WAVELET_PREFIX);
-      prefixes.add("data"); // SwellRT data wavelets
+      prefixes.add(IdConstants.DATA_WAVELET_PREFIX);
+      prefixes.add(IdConstants.TRANSIENT_WAVELET_PREFIX);
       final IdFilter filter = IdFilter.of(Collections.singleton(udwId), prefixes);
 
       WaveletDataImpl.Factory snapshotFactory =
