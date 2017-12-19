@@ -94,7 +94,7 @@ public class SException extends Exception {
 
   private int httpStatusCode;
 
-  private String httpStatusMessage;
+  private String httpStatusMessage = "";
 
   @JsIgnore
   public SException(int code) {
@@ -161,4 +161,19 @@ public class SException extends Exception {
     return this.httpStatusMessage;
   }
 
+  @Override
+  public String getMessage() {
+    String msg = "error=" + code;
+    if (super.getMessage() != null && !super.getMessage().isEmpty())
+      msg += ", " + super.getMessage();
+    else if (getStatusMessage() != null && !getStatusMessage().isEmpty())
+      msg += ", " + getStatusMessage();
+
+      return msg;
+  }
+
+  @Override
+  public String toString() {
+    return getMessage();
+  }
 }
