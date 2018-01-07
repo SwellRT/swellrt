@@ -19,8 +19,15 @@
 
 package org.waveprotocol.wave.client.doodad.selection;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.waveprotocol.wave.client.account.Profile;
 import org.waveprotocol.wave.client.account.ProfileListener;
@@ -47,15 +54,8 @@ import org.waveprotocol.wave.model.util.StringMap;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 /**
  * Deals with rendering of selections.
@@ -104,7 +104,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
    * are working on the document
    */
   public interface CaretListener {
-    
+
     /**
      * Called when a participant is writing or moving the caret
      * in a document.
@@ -112,16 +112,16 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
      * @param color the caret's color
      */
     public void onActive(String address, RgbColor color);
-    
+
     /**
      * Called after certain time of inactivity of the participant
-     * in the document. 
+     * in the document.
      * @param address the participant id
      */
     public void onExpire(String address);
-    
+
   }
-  
+
   /**
    * Installs this doodad.
    */
@@ -130,7 +130,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     CaretMarkerRenderer carets = CaretMarkerRenderer.getInstance();
     registries.getElementHandlerRegistry().registerRenderer(
         CaretMarkerRenderer.FULL_TAGNAME, carets);
-    
+
     // Ensure a not null listener
     if (caretListener == null)
       caretListener = new CaretListener() {
@@ -143,7 +143,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
           // no op
         }
     };
-    
+
     register(registries, SchedulerInstance.getLowPriorityTimer(), carets, sessionId, profiles, caretListener);
   }
 
@@ -311,7 +311,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   private final StringMap<String> highlightCache = CollectionUtils.createStringMap();
 
   private final CaretViewFactory markerFactory;
-  
+
   private final CaretListener caretListener;
 
   private String getUsersHighlight(String sessions) {
@@ -413,7 +413,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   public SelectionAnnotationHandler(PainterRegistry registry,
       String ignoreSessionId,
       ProfileManager profileManager,
-      TimerService timer, 
+      TimerService timer,
       CaretViewFactory markerFactory,
       CaretListener caretListener) {
     this.painterRegistry = registry;
@@ -443,8 +443,8 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     // Access directly from the map because the high level getter filters stale carets,
     // and this could result in memory leaks.
     SessionData data = sessions.get(sessionId);
-    if (data == null) { 
-      data = new SessionData(markerFactory.createMarker(), address, sessionId, getNextColour());
+    if (data == null) {
+      data = new SessionData(markerFactory.create(), address, sessionId, getNextColour());
     }
     double expiry = Math.min(timeStamp, scheduler.currentTimeMillis()) + STALE_CARET_TIMEOUT_MS;
     activate(data, expiry, doc);
@@ -525,7 +525,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
     if (hotSpot >= 0) {
       AnnotationPainter.maybeScheduleRepaint((DocumentContext) bundle, rangeStart, rangeEnd);
     }
-    
+
      caretListener.onExpire(data.address);
   }
 
@@ -544,8 +544,8 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
         data.setProfile(profile);
       }
       expiries.add(data);
-      
-      
+
+
       caretListener.onActive(data.address, data.color);
     }
 
@@ -581,7 +581,7 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
 
     if (key.startsWith(AnnotationConstants.USER_DATA) && newValue != null) {
       // User activity
-      updateCaretData(dataSuffix(key), (String) newValue, bundle);       
+      updateCaretData(dataSuffix(key), (String) newValue, bundle);
     } else if (key.startsWith(AnnotationConstants.USER_RANGE)) {
       // The selection
       painterRegistry.registerPaintFunction(
@@ -623,12 +623,12 @@ public class SelectionAnnotationHandler implements AnnotationMutationHandler, Pr
   }
 
   @Override
-  public void onOnline(ProfileSession profile) {  
+  public void onOnline(ProfileSession profile) {
   }
 
   @Override
   public void onLoaded(ProfileSession profile) {
     // TODO Auto-generated method stub
-    
+
   }
 }

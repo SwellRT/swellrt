@@ -118,4 +118,7 @@ public interface IdConstants {
   /** Id of root document map in transient and data wavelets */
   public static final String MAP_ROOT_DOC = MAP_DATA_DOC_PREFIX + TOKEN_SEPARATOR + "root";
 
+  /** Id of root map for storing doc carets */
+  public static final String MAP_CARETS = "carets";
+
 }

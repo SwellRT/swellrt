@@ -300,6 +300,14 @@ public class SWaveNodeManager {
     if (transientWavelet == null) {
       transientWavelet = wave
           .createWavelet(WaveletId.of(domain, IdConstants.TRANSIENT_MASTER_WAVELET));
+
+      ObservableWavelet dataWavelet = retrieveDataWavelet(domain, wave);
+      ObservableWavelet tw = transientWavelet;
+      dataWavelet.getParticipantIds().forEach(p -> {
+        if (!tw.getParticipantIds().contains(p))
+          tw.addParticipant(p);
+      });
+
     }
 
     return transientWavelet;
@@ -333,20 +341,20 @@ public class SWaveNodeManager {
   }
 
 
-  protected SWaveMap getDataRoot() {
+  public SWaveMap getDataRoot() {
     SWaveMap map = loadMap(
         SubstrateId.ofMap(dataWavelet.getId(), IdConstants.MAP_ROOT_DOC));
     map.attach(SWaveNodeContainer.Void);
     return map;
   }
 
-  protected SWaveMap getTransientRoot() {
+  public SWaveMap getTransientRoot() {
     SWaveMap map = loadMap(SubstrateId.ofMap(transientWavelet.getId(), IdConstants.MAP_ROOT_DOC));
     map.attach(SWaveNodeContainer.Void);
     return map;
   }
 
-  protected SWaveMap getUserRoot() {
+  public SWaveMap getUserRoot() {
     SWaveMap map = loadMap(SubstrateId.ofMap(userWavelet.getId(), IdConstants.MAP_ROOT_DOC));
     map.attach(SWaveNodeContainer.Void);
     return map;
@@ -398,7 +406,7 @@ public class SWaveNodeManager {
    * @param substrateId
    * @return
    */
-  public SWaveMap loadMap(SubstrateId substrateId) {
+  protected SWaveMap loadMap(SubstrateId substrateId) {
 
     Preconditions.checkArgument(substrateId.isMap(), "Expected a map susbtrate id");
 
@@ -436,7 +444,7 @@ public class SWaveNodeManager {
    * @param substrateId
    * @return
    */
-  public SWaveList loadList(SubstrateId substrateId) {
+  protected SWaveList loadList(SubstrateId substrateId) {
 
     // Cache instances
     if (nodeStore.containsKey(substrateId)) {
@@ -463,7 +471,7 @@ public class SWaveNodeManager {
     return n;
   }
 
-  public SWaveText loadText(SubstrateId substrateId, DocInitialization docInit) {
+  protected SWaveText loadText(SubstrateId substrateId, DocInitialization docInit) {
 
     Preconditions.checkArgument(substrateId.isText(), "Expected a text susbtrate id");
 
@@ -526,7 +534,7 @@ public class SWaveNodeManager {
    * @param substrateId
    *          subtrate id
    */
-  public void emptySubstrate(SubstrateId substrateId) {
+  protected void emptySubstrate(SubstrateId substrateId) {
     ObservableWavelet w = wave.getWavelet(substrateId.getContainerId());
     Document d = null;
     if (SubstrateId.isText(substrateId.getDocumentId())) {
@@ -731,9 +739,10 @@ public class SWaveNodeManager {
     WaveletId waveletId;
     try {
       waveletId = ModernIdSerialiser.INSTANCE.deserialiseWaveletId(strWaveletId);
-      return wave.getWavelet(waveletId).getDocument(strDocumentId).toXmlString();
+      return wave.getWavelet(waveletId).getWaveletData().getDocument(strDocumentId).getContent()
+          .getMutableDocument().toXmlString();
     } catch (Exception e) {
-      return null;
+      throw new IllegalStateException(e);
     }
   }
 

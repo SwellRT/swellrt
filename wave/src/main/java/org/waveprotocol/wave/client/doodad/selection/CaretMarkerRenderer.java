@@ -19,15 +19,15 @@
 
 package org.waveprotocol.wave.client.doodad.selection;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.doodad.selection.CaretView.CaretViewFactory;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.Renderer;
 import org.waveprotocol.wave.client.editor.impl.NodeManager;
 import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
+
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 
 /**
  * Renderer for the caret marker place holder, and responsible for attachment of
@@ -60,12 +60,12 @@ public class CaretMarkerRenderer implements Renderer, CaretViewFactory {
   }
 
   @Override
-  public CaretView createMarker() {
+  public CaretView create() {
     return new CaretWidget();
   }
 
   public void setMarker(Object element, CaretView marker) {
-    // Hack for bug 2868754 
+    // Hack for bug 2868754
     Element impl = ((ContentElement) element).getImplNodelet();
     marker.attachToParent(impl);
   }

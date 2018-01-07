@@ -1,7 +1,9 @@
 package org.swellrt.beta.client.platform.web.editor;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SUtils;
+import org.swellrt.beta.model.local.SMapLocal;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
@@ -17,6 +19,8 @@ public class STextWebImpl implements STextWeb {
   private final InteractiveDocument idoc;
   private final ContentDocument doc;
   private LogicalPanel.Impl docDisplay;
+
+  private final SMap carets = new SMapLocal();
 
   protected STextWebImpl(ContentDocument doc) {
     this.doc = doc;
@@ -143,6 +147,10 @@ public class STextWebImpl implements STextWeb {
     }
   }
 
+  @Override
+  public SMap getLiveCarets() {
+    return carets;
+  }
 
 
 }

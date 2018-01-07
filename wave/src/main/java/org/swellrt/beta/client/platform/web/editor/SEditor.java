@@ -20,7 +20,6 @@ import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttributeAugmenter;
-import org.waveprotocol.wave.client.doodad.selection.CaretAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.selection.SelectionExtractor;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorImpl;
@@ -274,7 +273,10 @@ public class SEditor implements EditorUpdateListener {
   /** A service to listen to connection events */
   ServiceConnection service;
 
+  @Deprecated
   private SelectionExtractor selectionExtractor;
+
+  private CaretManager caretManager;
 
   private ProfileManager profileManager;
 
@@ -365,10 +367,41 @@ public class SEditor implements EditorUpdateListener {
     e.setContent(doc);
 
     // start live carets
-    if (selectionExtractor != null)
-      selectionExtractor.start(e);
+    startCaretManager(text);
 
     AnnotationRegistry.muteHandlers(false);
+  }
+
+  private void startCaretManager(STextWeb text) {
+
+    try {
+
+      if (caretManager != null) {
+        caretManager.stop();
+      }
+
+      caretManager = new CaretManager(profileManager.getCurrentParticipantId(),
+          profileManager.getCurrentSessionId(), text.getLiveCarets(), editor);
+      caretManager.start();
+
+    } catch (SException e) {
+      new IllegalStateException(e);
+    }
+
+  }
+
+  private void stopCaretManager() {
+
+    if (caretManager != null) {
+      try {
+        caretManager.stop();
+      } catch (SException e) {
+        new IllegalStateException(e);
+      }
+    }
+
+    caretManager = null;
+
   }
 
   /**
@@ -396,11 +429,7 @@ public class SEditor implements EditorUpdateListener {
   public void clean() {
     if (editor != null && editor.hasDocument()) {
 
-      if (selectionExtractor != null) {
-        selectionExtractor.stop(editor);
-        // ensures selection extractor is create for each new doc.
-        selectionExtractor = null;
-      }
+      stopCaretManager();
 
       editor.removeContentAndUnrender();
       editor.reset();

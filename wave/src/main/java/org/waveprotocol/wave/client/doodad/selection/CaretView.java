@@ -27,8 +27,8 @@ import com.google.gwt.dom.client.Element;
  * UI interface for the caret marker
  */
 public interface CaretView {
-  
-   
+
+
   /**
    * Interface for dealing with marker doodads
    */
@@ -37,7 +37,7 @@ public interface CaretView {
     /**
      * @return a new marker view
      */
-    CaretView createMarker();
+    CaretView create();
 
     /**
      * Associate a marker with the given element
@@ -60,7 +60,7 @@ public interface CaretView {
    * Set the current displayed IME composition state for the user's marker
    */
   void setCompositionState(String state);
-  
-  
+
+
   void attachToParent(Element parent);
 }

@@ -6,6 +6,7 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
+import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.WaveSchemas;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
@@ -37,6 +38,7 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   }
 
   private final STextWebImpl textWeb;
+  private final SMap caretsFakeMap = new SMapLocal();
 
   protected STextLocalWeb(ContentDocument doc) {
     this.textWeb = new STextWebImpl(doc);
@@ -197,5 +199,10 @@ public class STextLocalWeb implements STextWeb, STextLocal {
   @Override
   public SText asText() {
     return this;
+  }
+
+  @Override
+  public SMap getLiveCarets() {
+    return caretsFakeMap;
   }
 }

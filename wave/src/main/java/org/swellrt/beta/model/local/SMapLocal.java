@@ -186,21 +186,17 @@ public class SMapLocal implements SMap, HasJsProxy {
 
   @Override
   public void addListener(SHandlerFunc h, String path) throws SException {
-    throw new IllegalStateException("Local nodes don't support event listeners");
   }
 
   @Override
   public void listen(SHandlerFunc h) throws SException {
-    throw new IllegalStateException("Local nodes don't support event listeners");
   }
 
   @Override
   public void removeListener(SHandlerFunc h, String path) throws SException {
-    throw new IllegalStateException("Local nodes don't support event listeners");
   }
 
   @Override
   public void unlisten(SHandlerFunc h) throws SException {
-    throw new IllegalStateException("Local nodes don't support event listeners");
   }
 }

@@ -72,7 +72,7 @@ public class SelectionAnnotationHandlerTest extends TestCase {
     private final Object dummy = new Object();
 
     @Override
-    public CaretView createMarker() {
+    public CaretView create() {
       CaretView marker = mock(CaretView.class);
       markers.put(marker, dummy);
       return marker;
