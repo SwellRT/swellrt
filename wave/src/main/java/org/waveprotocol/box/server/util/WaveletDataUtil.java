@@ -19,7 +19,13 @@
 
 package org.waveprotocol.box.server.util;
 
-import com.google.common.base.Preconditions;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
@@ -43,13 +49,7 @@ import org.waveprotocol.wave.model.wave.data.impl.EmptyWaveletSnapshot;
 import org.waveprotocol.wave.model.wave.data.impl.ObservablePluggableMutableDocument;
 import org.waveprotocol.wave.model.wave.data.impl.WaveletDataImpl;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.annotation.Nullable;
+import com.google.common.base.Preconditions;
 
 /**
  * Utility methods for {@link WaveletData}.
@@ -244,7 +244,7 @@ public final class WaveletDataUtil {
     return wavelet.createDocument(blipId, author, Collections.<ParticipantId>singleton(author),
         EmptyDocument.EMPTY_DOCUMENT, time, time);
   }
-  
+
   /**
    * @return true if the wave has conversational root wavelet.
    */
@@ -260,15 +260,21 @@ public final class WaveletDataUtil {
     }
     return false;
   }
-  
+
   /**
    * Checks if the user has access to the wavelet.
-   * 
-   * @param snapshot the wavelet data.
-   * @param user the user that wants to access the wavelet.
-   * @param sharedDomainParticipantId the shared domain participant id.
+   *
+   * @deprecated replaced by {@link WaveletAccessCheccker}
+   *
+   * @param snapshot
+   *          the wavelet data.
+   * @param user
+   *          the user that wants to access the wavelet.
+   * @param sharedDomainParticipantId
+   *          the shared domain participant id.
    * @return true if the user has access to the wavelet.
    */
+  @Deprecated
   public static boolean checkAccessPermission(ReadableWaveletData snapshot, ParticipantId user,
       ParticipantId sharedDomainParticipantId) {
     return user != null

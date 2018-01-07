@@ -28,12 +28,13 @@ For shake of clarity, let's take jetpad text editor's use cases:
 
 ### Types of participants
 
-* Regular `alice@swell-service.net`
-* Group `#devops@swell-service.net`
-* Pseudo participant for anyone `@swell-service.net`
-* Pseudo anonymous `~@swell-service.net` stands for any anonymous users. This pseudo participant includes the *anyone* participant.
+* Regular `alice@swell-provider.net`
+* Group `$devops@swell-provider.net`
+* Meta participant wildcard for any regular participant or group: `~@swell-provider.net`
+* Meta participant wildcard for any anonymous participant: `%@swell-provider.net`
+* Meta participant wildcard for any participant (regular or anonymous): `@swell-provider.net`. 
 
-### Operations
+### Supported Operations
 
 
 * Read only as particular role (e.g. only read text, but not comments)
@@ -46,7 +47,7 @@ Each operation, includes previous one.
 
 ### Access Control list
 
-Wavelet/Collaborative objects has a list of participants for who access is granted.
+Waves/Collaborative objects has a list of participants for whom access is granted.
 
 
 In addition to original list of participants for an object
@@ -91,6 +92,15 @@ Any registerd user can read with role *text*.
 object.participants = [ 
     'alice@swell-service.net',  
     'bob[w:suggest:comment]@swell-service.net',
-    '~[r:text]@swell-service.net']
+    '%[r:text]@swell-service.net']
 ```
 Anonymous users can also read with role *text*.
+
+
+```js
+object.participants = [ 
+    'alice@swell-service.net',  
+    'bob[w:suggest:comment]@swell-service.net',
+    '%[r,w:suggest:comment]@swell-service.net']
+```
+bob[w:a:suggest]

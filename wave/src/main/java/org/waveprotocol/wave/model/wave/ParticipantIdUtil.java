@@ -88,10 +88,10 @@ public final class ParticipantIdUtil {
         domain);
     return ParticipantId.DOMAIN_PREFIX + domain;
   }
-  
+
   /**
    * Makes the shared domain participant id.
-   * 
+   *
    * @param domain the wave domain. The wave domain should be validated by
    *        {@link #isDomainAddress(String)} before calling this method. Failure
    *        to pass a validated wave domain may result in a run time exception.
@@ -99,6 +99,18 @@ public final class ParticipantIdUtil {
    */
   public static ParticipantId makeUnsafeSharedDomainParticipantId(String domain) {
     return ParticipantId.ofUnsafe(makeDomainAddress(domain));
+  }
+
+  /**
+   * Build a super participant id, for example "~asd232@domain.com".
+   *
+   * @param baseId
+   * @param domain
+   * @return
+   */
+  public static ParticipantId makeSuperPartincipantId(String baseId, String domain) {
+    return ParticipantId
+        .ofUnsafe(ParticipantId.SUPER_ID_MARKER + baseId + ParticipantId.DOMAIN_PREFIX + domain);
   }
 
 }

@@ -46,6 +46,9 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   @JsIgnore
   public static final String DOMAIN_PREFIX = "@";
 
+  @JsIgnore
+  public static final String SUPER_ID_MARKER = "~";
+
   /** The participant's address */
   private final String address;
 

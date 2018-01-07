@@ -141,7 +141,7 @@ public class ServerMain {
     initializeFederation(injector);
     // initializeSearch(injector, waveBus);
     initializeShutdownHandler(server);
-	initializeSwellRt(injector, waveBus);
+    initializeSwellRt(injector, waveBus);
 
     LOG.info("Starting server");
     server.startWebSocketServer(injector);

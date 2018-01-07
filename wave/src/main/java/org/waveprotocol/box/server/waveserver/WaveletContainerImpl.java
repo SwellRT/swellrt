@@ -46,7 +46,6 @@ import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
-import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.model.wave.data.ObservableWaveletData;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
@@ -95,7 +94,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
   private final ReentrantReadWriteLock.WriteLock writeLock;
   private final WaveletName waveletName;
   private final WaveletNotificationSubscriber notifiee;
-  private final ParticipantId sharedDomainParticipantId;
+  private final WaveletAccessChecker accessChecker;
   /** Is counted down when initial loading from storage completes. */
   private final CountDownLatch loadLatch = new CountDownLatch(1);
   /** Is set at most once, before loadLatch is counted down. */
@@ -113,12 +112,10 @@ abstract class WaveletContainerImpl implements WaveletContainer {
    */
   public WaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
       final ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain,
-      Executor storageContinuationExecutor) {
+      Executor storageContinuationExecutor, WaveletAccessChecker accessChecker) {
     this.waveletName = waveletName;
     this.notifiee = notifiee;
-    this.sharedDomainParticipantId =
-        waveDomain != null ? ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(waveDomain)
-            : null;
+    this.accessChecker = accessChecker;
     this.storageContinuationExecutor = storageContinuationExecutor;
     ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     this.readLock = readWriteLock.readLock();
@@ -276,7 +273,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
       // If the wavelet is empty, everyone has access (to write the first delta).
       // TODO(soren): determine if off-domain participants should be denied access if empty
       ReadableWaveletData snapshot = waveletState.getSnapshot();
-      return WaveletDataUtil.checkAccessPermission(snapshot, participantId, sharedDomainParticipantId);
+      return accessChecker.checkAccessPermission(snapshot, participantId);
     } finally {
       releaseReadLock();
     }
@@ -529,7 +526,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
 
   @Override
   public ParticipantId getSharedDomainParticipant() {
-    return sharedDomainParticipantId;
+    return accessChecker.getSharedParticipantId();
   }
 
   @Override

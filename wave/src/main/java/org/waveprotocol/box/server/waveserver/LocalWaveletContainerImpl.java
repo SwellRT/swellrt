@@ -19,14 +19,7 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.concurrent.Executor;
 
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.persistence.PersistenceException;
@@ -44,7 +37,14 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.concurrent.Executor;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * A local wavelet may be updated by submits. The local wavelet will perform
@@ -82,8 +82,9 @@ class LocalWaveletContainerImpl extends WaveletContainerImpl implements LocalWav
 
   public LocalWaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
       ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain,
-      Executor storageContinuationExecutor) {
-    super(waveletName, notifiee, waveletStateFuture, waveDomain, storageContinuationExecutor);
+      Executor storageContinuationExecutor, WaveletAccessChecker accessChecker) {
+    super(waveletName, notifiee, waveletStateFuture, waveDomain, storageContinuationExecutor,
+        accessChecker);
   }
 
   @Override

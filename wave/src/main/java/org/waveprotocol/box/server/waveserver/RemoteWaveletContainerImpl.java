@@ -19,18 +19,13 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Base64;
-
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.waveserver.CertificateManager.SignerInfoPrefetchResultListener;
 import org.waveprotocol.wave.crypto.SignatureException;
@@ -52,13 +47,15 @@ import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * Remote wavelets differ from local ones in that deltas are not submitted for OT,
@@ -88,10 +85,11 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
    */
   public RemoteWaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
       ListenableFuture<? extends WaveletState> waveletStateFuture,
-      Executor storageContinuationExecutor) {
+      Executor storageContinuationExecutor, WaveletAccessChecker accessChecker) {
     // We pass here null for waveDomain because you have to be explicit
     // participant on remote wavelet to have access permission.
-    super(waveletName, notifiee, waveletStateFuture, null, storageContinuationExecutor);
+    super(waveletName, notifiee, waveletStateFuture, null, storageContinuationExecutor,
+        accessChecker);
   }
 
   @Override
