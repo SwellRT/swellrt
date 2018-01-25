@@ -13,7 +13,7 @@ public interface CaretInfo {
   String getParticipant();
 
   @JsProperty
-  long getTimestamp();
+  int getTimestamp();
 
   @JsProperty
   int getPosition();

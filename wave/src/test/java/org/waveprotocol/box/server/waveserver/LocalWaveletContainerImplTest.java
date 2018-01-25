@@ -21,11 +21,7 @@ package org.waveprotocol.box.server.waveserver;
 
 import static org.mockito.Mockito.mock;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.protobuf.ByteString;
-
-import junit.framework.TestCase;
+import java.util.concurrent.Executor;
 
 import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
 import org.waveprotocol.box.server.persistence.memory.MemoryDeltaStore;
@@ -43,7 +39,11 @@ import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.version.HashedVersionFactoryImpl;
 import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 
-import java.util.concurrent.Executor;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.protobuf.ByteString;
+
+import junit.framework.TestCase;
 
 
 /**
@@ -66,6 +66,7 @@ public class LocalWaveletContainerImplTest extends TestCase {
       .setSignerId(ByteString.EMPTY)
       .build();
   private static final String AUTHOR = "kermit@muppetshow.com";
+  private static final String DOMAIN = "muppetshow.com";
 
   private static final HashedVersion HASHED_VERSION_ZERO =
       HASH_FACTORY.createVersionZero(WAVELET_NAME);
@@ -90,8 +91,10 @@ public class LocalWaveletContainerImplTest extends TestCase {
     DeltaStore deltaStore = new MemoryDeltaStore();
     WaveletState waveletState = DeltaStoreBasedWaveletState.create(deltaStore.open(WAVELET_NAME),
         PERSIST_EXECUTOR);
+    WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+
     wavelet = new LocalWaveletContainerImpl(WAVELET_NAME, notifiee,
-        Futures.immediateFuture(waveletState), null, STORAGE_CONTINUATION_EXECUTOR);
+        Futures.immediateFuture(waveletState), null, STORAGE_CONTINUATION_EXECUTOR, accessController);
     wavelet.awaitLoad();
   }
 

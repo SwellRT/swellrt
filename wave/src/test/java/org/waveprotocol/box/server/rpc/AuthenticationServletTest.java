@@ -173,7 +173,7 @@ public class AuthenticationServletTest extends TestCase {
   }
 
   public void testAnonymousLogin() throws IOException {
-    attemptLogin(ParticipantId.ANONYMOUS_NAME, "", true);
+    attemptLogin(ParticipantId.ANONYMOUS_PREFIX, "", true);
   }
 
   // *** Utility methods

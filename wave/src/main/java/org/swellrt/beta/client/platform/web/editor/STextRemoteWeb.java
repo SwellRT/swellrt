@@ -6,7 +6,6 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
-import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
@@ -16,7 +15,6 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.Nindo;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.dom.client.Element;
@@ -212,28 +210,7 @@ public class STextRemoteWeb extends SWaveText implements STextWeb {
 
   @Override
   public SMap getLiveCarets() {
-
-    try {
-
-      if (!getNodeManager().getTransientRoot().has(IdConstants.MAP_CARETS)) {
-        getNodeManager().getTransientRoot().put(IdConstants.MAP_CARETS, new SMapLocal());
-      }
-
-      // A map referencing text documents
-      SMap caretDocIndexMap = getNodeManager().getTransientRoot().pick(IdConstants.MAP_CARETS).asMap();
-
-      if (!caretDocIndexMap.has(getSubstrateId().getDocumentId())) {
-        caretDocIndexMap.put(getSubstrateId().getDocumentId(), new SMapLocal());
-      }
-
-      // The particular map of carets for this text
-      SMap caretMap = caretDocIndexMap.pick(getSubstrateId().getDocumentId()).asMap();
-
-      return caretMap;
-
-    } catch (SException e) {
-      throw new IllegalStateException(e);
-    }
-
+    return getNodeManager().getTransient().getCaretsForDocument(getSubstrateId().getDocumentId());
   }
+
 }

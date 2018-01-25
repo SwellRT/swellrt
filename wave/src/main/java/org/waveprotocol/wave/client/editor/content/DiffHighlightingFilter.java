@@ -92,7 +92,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     String wrappedAuthor = author;
 
     if (ParticipantId.isAnonymousName(wrappedAuthor))
-      wrappedAuthor = wrappedAuthor.substring(ParticipantId.ANONYMOUS_NAME.length(),
+      wrappedAuthor = wrappedAuthor.substring(ParticipantId.ANONYMOUS_PREFIX.length(),
           wrappedAuthor.length());
 
     return wrappedAuthor;

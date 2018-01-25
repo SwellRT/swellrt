@@ -72,9 +72,8 @@ public class DefaultFrontend implements ServiceFrontend {
 
     @Override
     public String getCurrentSessionId() {
-      if (context.getSessionId() != null) {
-        String sessionToken = context.getSessionId()+":"+context.getTransientSessionId()+":"+context.getWindowId();
-        return sessionToken;
+      if (context.hasSession()) {
+        return context.getServiceSession().getSessionToken();
       }
       return "";
     }
@@ -82,7 +81,7 @@ public class DefaultFrontend implements ServiceFrontend {
     @Override
     public ParticipantId getCurrentParticipantId() {
       try {
-        return ParticipantId.ofUnsafe(context.getParticipantId());
+        return context.getServiceSession().getParticipantId();
       } catch (Exception e) {
         return null;
       }
@@ -420,6 +419,6 @@ public class DefaultFrontend implements ServiceFrontend {
    */
   @Override
   public String getAppDomain() {
-    return context.getWaveDomain();
+    return context.getServiceSession().getWaveDomain();
   }
 }

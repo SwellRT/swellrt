@@ -1,9 +1,9 @@
 package org.swellrt.beta.model.wave.mutable;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SObservableNode;
@@ -13,6 +13,7 @@ import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
+import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
 import jsinterop.annotations.JsIgnore;
@@ -43,19 +44,10 @@ public class SWaveObject implements SObject, SObservableNode {
   private SWaveMap root;
 
   private SObject.StatusHandler statusHandler = null;
+
+  private final SWavePresence presence;
   private final SWaveNodeManager waveManager;
 
-  /**
-   * Get a MutableCObject instance with a substrate Wave.
-   * Initialize the Wave accordingly.
-   *
-   */
-  public static SWaveObject materialize(SWaveNodeManager waveManager) {
-    SWaveObject object = new SWaveObject(waveManager);
-    object.init();
-    waveManager.setListener(new SWaveletListener(object));
-    return object;
-  }
 
   /**
    * Private constructor.
@@ -66,13 +58,10 @@ public class SWaveObject implements SObject, SObservableNode {
    */
   protected SWaveObject(SWaveNodeManager waveManager) {
     this.waveManager = waveManager;
-  }
-
-  /**
-   * Initialization tasks not suitable for constructors.
-   */
-  private void init() {
     root = waveManager.getDataRoot();
+    this.presence = new SWavePresence(waveManager.getTransient().getPresenceStatusMap(),
+        waveManager.getSession());
+    this.presence.start();
   }
 
   /**
@@ -84,23 +73,23 @@ public class SWaveObject implements SObject, SObservableNode {
   }
 
   @Override
-  public void addListener(SHandlerFunc h, String path) throws SException {
+  public void addListener(SMutationHandler h, String path) throws SException {
     root.addListener(h, path);
   }
 
 
   @Override
-  public void removeListener(SHandlerFunc h, String path) throws SException {
+  public void removeListener(SMutationHandler h, String path) throws SException {
     root.removeListener(h, path);
   }
 
   @Override
-  public void listen(SHandlerFunc h) throws SException {
+  public void listen(SMutationHandler h) throws SException {
     this.root.listen(h);
   }
 
   @Override
-  public void unlisten(SHandlerFunc h) throws SException {
+  public void unlisten(SMutationHandler h) throws SException {
     this.root.unlisten(h);
   }
 
@@ -143,9 +132,15 @@ public class SWaveObject implements SObject, SObservableNode {
     this.statusHandler = h;
   }
 
+  @JsIgnore
   public void onStatusEvent(SStatusEvent e) {
     if (statusHandler != null)
       statusHandler.exec(e);
+  }
+
+  @Override
+  public void setPresenceHandler(SPresenceEvent.Handler handler) {
+    presence.registerHandler(handler);
   }
 
   //

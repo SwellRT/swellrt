@@ -4,12 +4,13 @@ import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
-import org.swellrt.beta.client.wave.WaveFactories;
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.SStatusEvent;
+import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.NodeFactory;
@@ -49,7 +50,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
 
   private final WaveId waveId;
   private final String waveDomain;
-  private final ParticipantId participant;
+  private final SSessionProvider session;
   private final ServiceStatus serviceStatus;
 
   private WaveLoader loader;
@@ -59,12 +60,12 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
   private final DiffProvider diffProvider;
 
 
-  public WaveContext(WaveId waveId, String waveDomain, ParticipantId participant,
+  public WaveContext(WaveId waveId, String waveDomain, SSessionProvider session,
       ServiceStatus serviceStatus, DiffProvider diffProvider) {
     super();
     this.waveId = waveId;
     this.waveDomain = waveDomain;
-    this.participant = participant;
+    this.session = session;
     this.serviceStatus = serviceStatus;
     this.sobjectFuture = SettableFuture.<SWaveObject> create();
     this.diffProvider = diffProvider;
@@ -89,9 +90,10 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
     // Load the wave and bind to the object
     state = ACTIVE;
 
-    loader = WaveFactories.loaderFactory.create(waveId, viewServiceMultiplexer, idGenerator,
+    loader = WaveDeps.loaderFactory.create(waveId, viewServiceMultiplexer, idGenerator,
         waveDomain,
-        Collections.<ParticipantId> emptySet(), participant, this, this, this.diffProvider);
+        Collections.<ParticipantId> emptySet(), session.get().getParticipantId(), this, this,
+        this.diffProvider);
 
     try {
 
@@ -103,7 +105,8 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
           try {
             // there was exception during loading process?
             check();
-            SWaveNodeManager nodeManager = SWaveNodeManager.of(participant, loader.getIdGenerator(),
+            SWaveNodeManager nodeManager = SWaveNodeManager.create(session,
+                loader.getIdGenerator(),
                 loader.getLocalDomain(), loader.getWave(), WaveContext.this,
                 new NodeFactory() {
 
@@ -117,7 +120,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
                   }
                 });
 
-            SWaveObject sobject = SWaveObject.materialize(nodeManager);
+            SWaveObject sobject = nodeManager.getSWaveObject();
 
             sobjectFuture.set(sobject);
 

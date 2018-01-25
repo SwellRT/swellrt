@@ -1,6 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.json.SJsonObject;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeContainer;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.model.document.ReadableDocument;
@@ -25,6 +26,8 @@ public class SUtils {
       return new SPrimitive((boolean) object, token);
     } else if (object instanceof SNode) {
       return (SNode) object;
+    } else if (object instanceof SJsonObject) {
+      return new SPrimitive(((SJsonObject) object).getNative(), token);
     } else if (ModelFactory.instance.isJsonObject(object)) {
       return new SPrimitive(object, token);
     }

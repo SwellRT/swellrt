@@ -1,7 +1,7 @@
 package org.swellrt.beta.client.rest;
 
 import org.swellrt.beta.client.ServiceContext;
-import org.swellrt.beta.client.wave.WaveFactories;
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.common.SException;
 
 public abstract class ServerOperation<O extends ServiceOperation.Options, R extends ServiceOperation.Response>
@@ -67,7 +67,7 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
   protected abstract void buildRestParams() throws SException;
 
   protected final void doSuccessJson(String json) {
-    doSuccess(WaveFactories.json.parse(json, responseImplClass));
+    doSuccess(WaveDeps.json.parse(json, responseImplClass));
   }
 
   public boolean sendSessionInUrl() {

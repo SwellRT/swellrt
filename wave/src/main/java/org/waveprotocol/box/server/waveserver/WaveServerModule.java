@@ -116,14 +116,14 @@ public class WaveServerModule extends AbstractModule {
     bind(WaveletProvider.class).to(WaveServerImpl.class).asEagerSingleton();
     bind(ReadableWaveletDataProvider.class).to(WaveServerImpl.class).in(Singleton.class);
     bind(HashedVersionFactory.class).toInstance(HASH_FACTORY);
-    bind(WaveletAccessChecker.class).in(Singleton.class);
+    bind(WaveletAccessController.class).in(Singleton.class);
   }
 
   @Provides
   @SuppressWarnings("unused")
   private LocalWaveletContainer.Factory provideLocalWaveletContainerFactory(
       final DeltaStore deltaStore, final DeltaStoreTransient transientDeltaStore,
-      final WaveletAccessChecker accessChecker) {
+      final WaveletAccessController accessChecker) {
     return new LocalWaveletContainer.Factory() {
       @Override
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
@@ -140,7 +140,7 @@ public class WaveServerModule extends AbstractModule {
   @SuppressWarnings("unused")
   private RemoteWaveletContainer.Factory provideRemoteWaveletContainerFactory(
       final DeltaStore deltaStore, final DeltaStoreTransient transientDeltaStore,
-      final WaveletAccessChecker accessChecker) {
+      final WaveletAccessController accessChecker) {
     return new RemoteWaveletContainer.Factory() {
       @Override
       public RemoteWaveletContainer create(WaveletNotificationSubscriber notifiee,

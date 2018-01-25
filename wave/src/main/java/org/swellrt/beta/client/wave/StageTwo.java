@@ -295,7 +295,7 @@ public interface StageTwo {
     /** @return the scheduler to use for RPCs. Subclasses may override. */
     protected CollectiveScheduler createRpcScheduler() {
       // Use a scheduler that runs closely-timed tasks at the same time.
-      return new OptimalGroupingScheduler(WaveFactories.lowPriorityTimer);
+      return new OptimalGroupingScheduler(WaveDeps.lowPriorityTimer);
     }
 
     protected WaveletOperationalizer createWavelets() {

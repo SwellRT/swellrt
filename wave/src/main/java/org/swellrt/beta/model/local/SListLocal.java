@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -181,22 +181,22 @@ public class SListLocal implements SList<SNode>, HasJsProxy {
   }
 
   @Override
-  public void addListener(SHandlerFunc h, String path) throws SException {
+  public void addListener(SMutationHandler h, String path) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
   }
 
   @Override
-  public void listen(SHandlerFunc h) throws SException {
+  public void listen(SMutationHandler h) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
   }
 
   @Override
-  public void removeListener(SHandlerFunc h, String path) throws SException {
+  public void removeListener(SMutationHandler h, String path) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
   }
 
   @Override
-  public void unlisten(SHandlerFunc h) throws SException {
+  public void unlisten(SMutationHandler h) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
   }
 

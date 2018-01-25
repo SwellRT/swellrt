@@ -17,11 +17,13 @@ import org.waveprotocol.wave.communication.gwt.JsonHelper;
 import org.waveprotocol.wave.communication.gwt.JsonMessage;
 import org.waveprotocol.wave.communication.json.JsonException;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.federation.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
 import org.waveprotocol.wave.federation.jso.ProtocolWaveletDeltaJsoImpl;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
+import org.waveprotocol.wave.model.version.HashedVersion;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -206,6 +208,11 @@ public class JsProtocolMessageUtils extends ProtocolMessageUtils {
   public String toJson(MessageWrapper messageWrapper) {
     JsonMessageWrapper jsoWrapper = (JsonMessageWrapper) messageWrapper;
     return jsoWrapper.toJson();
+  }
+
+  @Override
+  public ProtocolHashedVersion serialize(HashedVersion version) {
+    return WaveletOperationSerializer.serialize(version);
   }
 
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
@@ -134,7 +134,7 @@ public class SWaveMapTest extends SWaveNodeAbstractTest {
 
     List<SEvent> recvEvents = new ArrayList<SEvent>();
 
-    SHandlerFunc eventHandler = new SHandlerFunc() {
+    SMutationHandler eventHandler = new SMutationHandler() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -236,7 +236,7 @@ public class SWaveMapTest extends SWaveNodeAbstractTest {
 
 
 
-    SHandlerFunc handlerRoot = new SHandlerFunc() {
+    SMutationHandler handlerRoot = new SMutationHandler() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -249,7 +249,7 @@ public class SWaveMapTest extends SWaveNodeAbstractTest {
 
     };
 
-    SHandlerFunc handlerMapA = new SHandlerFunc() {
+    SMutationHandler handlerMapA = new SMutationHandler() {
 
       @Override
       public boolean exec(SEvent e) {
@@ -263,7 +263,7 @@ public class SWaveMapTest extends SWaveNodeAbstractTest {
 
     };
 
-    SHandlerFunc handlerMapB = new SHandlerFunc() {
+    SMutationHandler handlerMapB = new SMutationHandler() {
 
       @Override
       public boolean exec(SEvent e) {

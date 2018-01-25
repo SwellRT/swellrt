@@ -109,6 +109,7 @@ public class WaveServerTest extends TestCase {
     final Executor waveletLoadExecutor = MoreExecutors.sameThreadExecutor();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
+    final WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
     Factory localWaveletContainerFactory = new LocalWaveletContainer.Factory() {
       @Override
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,
@@ -116,7 +117,7 @@ public class WaveServerTest extends TestCase {
         return new LocalWaveletContainerImpl(waveletName, notifiee,
             WaveServerModule.loadWaveletState(waveletLoadExecutor, deltaStore, deltaStoreTransient,
                 waveletName, persistExecutor, 100),
-            waveDomain, storageContinuationExecutor);
+            waveDomain, storageContinuationExecutor, accessController);
       }
     };
 

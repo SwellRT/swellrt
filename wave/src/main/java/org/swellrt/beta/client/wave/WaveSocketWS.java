@@ -68,7 +68,7 @@ public class WaveSocketWS implements WaveSocket {
       if (ws.getReadyState() == WebSocket.OPEN) {
         ws.send(HEARTBEAT_DATA_PREFIX + recvCount);
         heartbeatAck = false;
-        WaveFactories.lowPriorityTimer.scheduleDelayed(hearbeatCheckTask,
+        WaveDeps.lowPriorityTimer.scheduleDelayed(hearbeatCheckTask,
             HEARTBEAT_TIMEOUT);
       } else {
         return false;
@@ -119,25 +119,25 @@ public class WaveSocketWS implements WaveSocket {
 
   protected void startHeartbeat() {
     if (heartbeatOn)
-      WaveFactories.lowPriorityTimer.scheduleRepeating(heartbeatTask, HEARTBEAT_INTERVAL,
+      WaveDeps.lowPriorityTimer.scheduleRepeating(heartbeatTask, HEARTBEAT_INTERVAL,
           HEARTBEAT_INTERVAL);
   }
 
   protected void stopHeartbeat() {
     if (heartbeatOn) {
-      WaveFactories.lowPriorityTimer.cancel(heartbeatTask);
+      WaveDeps.lowPriorityTimer.cancel(heartbeatTask);
       stopHeartbeatCheck();
     }
   }
 
   protected void stopHeartbeatCheck() {
-    WaveFactories.lowPriorityTimer.cancel(hearbeatCheckTask);
+    WaveDeps.lowPriorityTimer.cancel(hearbeatCheckTask);
   }
 
   @Override
   public void connect() {
 
-    ws = WaveFactories.websocketFactory.create();
+    ws = WaveDeps.websocketFactory.create();
 
     try {
       ws.connect(serverUrl);

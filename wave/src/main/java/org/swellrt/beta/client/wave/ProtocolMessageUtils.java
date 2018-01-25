@@ -6,7 +6,6 @@ import org.waveprotocol.box.common.comms.ProtocolOpenRequest;
 import org.waveprotocol.box.common.comms.ProtocolSubmitRequest;
 import org.waveprotocol.box.common.comms.ProtocolSubmitResponse;
 import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
-import org.waveprotocol.box.webclient.common.WaveletOperationSerializer;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.federation.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
@@ -68,7 +67,7 @@ public abstract class ProtocolMessageUtils {
 
   }
 
-  protected final VersionSignatureManager versions = WaveFactories.versionSignatureManager;
+  protected final VersionSignatureManager versions = WaveDeps.versionSignatureManager;
 
   public abstract MessageWrapper parseWrapper(String json) throws ParseException;
 
@@ -98,9 +97,6 @@ public abstract class ProtocolMessageUtils {
     return RemoteViewServiceMultiplexer.serialize(waveletName);
   }
 
-  public ProtocolHashedVersion serialize(HashedVersion version) {
-    return WaveletOperationSerializer.serialize(version);
-  }
-
+  public abstract ProtocolHashedVersion serialize(HashedVersion version);
 
 }

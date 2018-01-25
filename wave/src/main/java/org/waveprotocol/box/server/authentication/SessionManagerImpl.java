@@ -359,21 +359,28 @@ public final class SessionManagerImpl implements SessionManager {
 
 
   @Override
-  public void login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe) {
+  public ParticipantId login(HttpServletRequest request, ParticipantId participantId,
+      boolean rememberMe) {
     Preconditions.checkNotNull(request, "Request is null");
     Preconditions.checkNotNull(participantId, "Participant id is null");
 
     HttpSession session = request.getSession(true);
 
+    if (participantId.isNewAnonymous()) {
+      // For first time anonymous login we must complete the participant id
+      participantId = ParticipantId.anonymousOfUnsafe(session.getId(), participantId.getDomain());
+    }
+
     // Remember always session data
     SessionUser su = readSessionUser(session, participantId);
     if (su != null) {
-        updateSessionUser(request, su);
-      return;
+      updateSessionUser(request, su);
     } else {
       SessionUser userRecord =  new SessionUser(participantId, System.currentTimeMillis(), getTransientSessionId(request), getBrowserWindowId(request), rememberMe);
       writeSessionUser(session, userRecord);
     }
+
+    return participantId;
   }
 
 
@@ -478,7 +485,12 @@ public final class SessionManagerImpl implements SessionManager {
 
   @Override
   public String getSessionId(HttpServletRequest request) {
-    return request.getSession().getId();
+    // Don't create HTTP session if doesn't exists
+    HttpSession httpSession = request.getSession(false);
+    if (httpSession != null)
+      return httpSession.getId();
+    else
+      return null;
   }
 
   @Override

@@ -35,7 +35,7 @@ public class SetNameOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (!context.isSession()) {
+    if (!context.hasSession()) {
       throw new SException(ResponseCode.NOT_LOGGED_IN);
     }
 
@@ -45,7 +45,7 @@ public class SetNameOperation
 
     String id = options.getId();
     if (!id.contains("/")) {
-      id = context.getWaveDomain() + "/" + id;
+      id = context.getServiceSession().getWaveDomain() + "/" + id;
     }
 
     addPathElement("wave");

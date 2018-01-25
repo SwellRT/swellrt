@@ -121,4 +121,7 @@ public interface IdConstants {
   /** Id of root map for storing doc carets */
   public static final String MAP_CARETS = "carets";
 
+  /** Id of root map for storing participants presence status */
+  public static final String MAP_PRESENCE = "presence";
+
 }

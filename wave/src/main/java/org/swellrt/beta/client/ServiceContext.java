@@ -6,12 +6,15 @@ import java.util.Map;
 import org.swellrt.beta.client.ServiceConnection.ConnectionHandler;
 import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
-import org.swellrt.beta.client.wave.WaveFactories;
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.presence.SSession;
+import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
@@ -20,6 +23,7 @@ import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -46,27 +50,9 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   public static final String DEFAULT_WAVEID_PREFIX = "s";
 
   // TODO move to utility class
-  static final char[] WEB64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-      .toCharArray();
+
 
   static final int WAVE_ID_SEED_LENGTH = 10;
-
-
-  private static String getRandomBase64(int length) {
-    StringBuilder result = new StringBuilder(length);
-    int bits = 0;
-    int bitCount = 0;
-    while (result.length() < length) {
-      if (bitCount < 6) {
-        bits = WaveFactories.randomGenerator.nextInt();
-        bitCount = 32;
-      }
-      result.append(WEB64_ALPHABET[bits & 0x3F]);
-      bits >>= 6;
-      bitCount -= 6;
-    }
-    return result.toString();
-  }
 
   /**
    * @return Websocket server address, e.g. ws://swellrt.acme.com:8080
@@ -86,20 +72,27 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     return websocketAddress;
   }
 
-  private static String WINDOW_ID = getRandomBase64(4);
+  /**
+   * Adapts an {@link Account} object to {@link SSession}
+   *
+   * @param sessionId
+   * @param account
+   * @return
+   */
+  private static SSession toSSession(String sessionId, Account account) {
 
-  static {
-    String now = String.valueOf(System.currentTimeMillis());
-    WINDOW_ID += now.substring(now.length()-4, now.length());
+    ParticipantId participantId = ParticipantId.ofUnsafe(account.getId());
+    RgbColor color = WaveDeps.colorGeneratorInstance.getColor(sessionId);
+
+
+    return new SSession(sessionId, participantId, color, account.getName(),
+        participantId.getName());
   }
-
-
 
   private Map<WaveId, WaveContext> waveRegistry = new HashMap<WaveId, WaveContext>();
 
   private IdGenerator legacyIdGenerator;
-  private SessionManager sessionManager;
-  private boolean sessionCookieAvailable = false;
+  private ServiceSession session;
 
   private final String httpAddress;
   private final String websocketAddress;
@@ -115,12 +108,14 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
   private final DiffProvider.Factory diffProviderFactory;
 
-  public ServiceContext(SessionManager sessionManager, String httpAddress,
+  private final SSessionProvider ssessionProvider;
+
+  public ServiceContext(String httpAddress,
       DiffProvider.Factory diffProviderFactory) {
-    this.sessionManager = sessionManager;
     this.httpAddress = httpAddress;
     this.websocketAddress = getWebsocketAddress(httpAddress);
     this.diffProviderFactory = diffProviderFactory;
+    this.ssessionProvider = new SSessionProvider();
   }
 
   public void addConnectionHandler(ConnectionHandler h) {
@@ -132,8 +127,8 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   }
 
   protected void setupIdGenerator() {
-    final String seed = getRandomBase64(WAVE_ID_SEED_LENGTH);
-    this.legacyIdGenerator = new IdGeneratorImpl(sessionManager.getWaveDomain(),
+    final String seed = WaveDeps.getRandomBase64(WAVE_ID_SEED_LENGTH);
+    this.legacyIdGenerator = new IdGeneratorImpl(session.getWaveDomain(),
         new IdGeneratorImpl.Seed() {
           @Override
           public String get() {
@@ -150,42 +145,35 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   }
 
   /**
-   * @return true iff the HTTP client sends the session cookie to the server.
-   */
-  public boolean isSessionCookieAvailable() {
-    return sessionCookieAvailable;
-  }
-
-  public void setSessionCookieAvailability(boolean isEnabled) {
-    sessionCookieAvailable = isEnabled;
-  }
-
-  /**
    * Initializes the service context, resetting first if it is necessary and
    * setting a new session.
    *
    * @param accountData
    */
-  public void init(Account accountData) {
+  public void init(Account account) {
     reset();
-    sessionManager.setSession(accountData);
+    session = ServiceSession.create(account);
+    ssessionProvider.update(toSSession(session.getSessionToken(), account));
     setupIdGenerator();
   }
 
-  public String getSessionId() {
-    return sessionManager.getSessionId();
+  /**
+   * Updates the account information. This can't change session id or
+   * participant id.
+   *
+   * @param account
+   */
+  public void update(Account account) {
+    Preconditions.checkNotNull(account, "Can't update null account object");
+    Preconditions.checkArgument(account.getId().equals(session.getParticipantId().getAddress()) , "Account update can't change participant id");
+    Preconditions.checkArgument(account.getSessionId().equals(session.getHttpSessionId()), "Account update can't change participant id");
+
+    ssessionProvider.update(toSSession(session.getSessionToken(), account));
   }
 
-  public String getTransientSessionId() {
-    return sessionManager.getTransientSessionId();
-  }
-
-  public String getWindowId() {
-    return WINDOW_ID;
-  }
-
-  public String getParticipantId() {
-    return sessionManager.getUserId();
+  /** Gets the session regarding to http */
+  public ServiceSession getServiceSession() {
+    return session;
   }
 
   /**
@@ -206,12 +194,16 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     }
 
     serviceMultiplexerFuture = SettableFuture.<RemoteViewServiceMultiplexer> create();
-    sessionManager.removeSession();
+
+    if (session != null) {
+      session.destroy();
+      session = null;
+    }
 
   }
 
-  public boolean isSession() {
-    return sessionManager.isSession();
+  public boolean hasSession() {
+    return session != null;
   }
 
   public WaveId generateWaveId(String prefix) {
@@ -219,7 +211,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     if (prefix == null)
       prefix = DEFAULT_WAVEID_PREFIX;
 
-    return WaveId.of(sessionManager.getWaveDomain(),
+    return WaveId.of(session.getWaveDomain(),
         legacyIdGenerator.newId(prefix));
   }
 
@@ -231,15 +223,18 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    */
   public void getObject(WaveId waveId, FutureCallback<SWaveObject> callback) {
 
-    if (sessionManager == null || !sessionManager.isSession()) {
+    if (!hasSession()) {
       callback.onFailure(new SException(ResponseCode.NOT_LOGGED_IN));
       return;
     }
 
     if (!waveRegistry.containsKey(waveId)) {
-      waveRegistry.put(waveId, new WaveContext(waveId, sessionManager.getWaveDomain(),
-          ParticipantId.ofUnsafe(sessionManager.getUserId()), this,
-          diffProviderFactory.get(waveId)));
+      waveRegistry.put(waveId,
+          new WaveContext(waveId,
+              session.getWaveDomain(),
+              ssessionProvider,
+              this,
+              diffProviderFactory.get(waveId)));
     }
 
     WaveContext waveContext = waveRegistry.get(waveId);
@@ -277,12 +272,11 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
     if (websocketClient == null) {
 
-      String sessionToken = sessionManager.getSessionId()+":"+getTransientSessionId()+":"+getWindowId();
-      websocketClient = new WaveWebSocketClient(sessionToken, websocketAddress);
+      websocketClient = new WaveWebSocketClient(session.getSessionToken(), websocketAddress);
       websocketClient.attachStatusListener(ServiceContext.this);
 
       RemoteViewServiceMultiplexer serviceMultiplexer = new RemoteViewServiceMultiplexer(
-          websocketClient, sessionManager.getUserId());
+          websocketClient, session.getParticipantId().getAddress());
 
       websocketClient.start(new StartCallback() {
 
@@ -363,10 +357,6 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
     for (DefaultFrontend.ConnectionHandler ch : connectionHandlers)
       ch.exec(connectState.toString(), ex);
-  }
-
-  public String getWaveDomain() {
-    return sessionManager.getWaveDomain();
   }
 
   public void closeObject(WaveId waveId) throws SException {

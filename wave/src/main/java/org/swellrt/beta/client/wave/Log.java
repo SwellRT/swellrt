@@ -11,7 +11,7 @@ public abstract class Log {
   }
 
   public static Log get(Class<? extends Object> clazz) {
-    return WaveFactories.logFactory.create(clazz);
+    return WaveDeps.logFactory.create(clazz);
   }
 
   protected final Class<? extends Object> clazz;

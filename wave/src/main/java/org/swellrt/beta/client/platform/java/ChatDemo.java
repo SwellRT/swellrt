@@ -13,7 +13,7 @@ import org.swellrt.beta.client.rest.operations.params.CredentialImpl;
 import org.swellrt.beta.client.rest.operations.params.ObjectIdImpl;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SObject;
 
@@ -33,7 +33,7 @@ public class ChatDemo {
   private final String user;
   private final String password;
 
-  private SHandlerFunc onMessage = new SHandlerFunc() {
+  private SMutationHandler onMessage = new SMutationHandler() {
 
     @Override
     public boolean exec(SEvent e) {

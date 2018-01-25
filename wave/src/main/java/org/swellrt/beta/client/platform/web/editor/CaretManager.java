@@ -2,8 +2,8 @@ package org.swellrt.beta.client.platform.web.editor;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandlerFunc;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SMutationHandler;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
@@ -35,21 +35,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  */
 public class CaretManager implements EditorUpdateListener {
 
-  protected static CaretInfo buildCaretInfo(String participantId, String sessionId, int caretPos,
-      long lastUpdateTime) {
 
-    JsoView caretInfo = JsoView.create();
-    caretInfo.setNumber("timestamp", lastUpdateTime);
-    caretInfo.setString("participant", participantId);
-    caretInfo.setString("session", sessionId);
-    caretInfo.setNumber("position", caretPos);
-
-
-    return caretInfo.cast();
-
-  }
-
-  private final SHandlerFunc caretsListener = new SHandlerFunc() {
+  private final SMutationHandler caretsListener = new SMutationHandler() {
 
     @Override
     public boolean exec(SEvent e) {
@@ -80,13 +67,21 @@ public class CaretManager implements EditorUpdateListener {
 
   }
 
-  public void start() throws SException {
+  public void start() {
     editor.addUpdateListener(this);
-    carets.listen(caretsListener);
+    try {
+      carets.listen(caretsListener);
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
   }
 
-  public void stop() throws SException {
-    carets.unlisten(caretsListener);
+  public void stop() {
+    try {
+      carets.unlisten(caretsListener);
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
     editor.removeUpdateListener(this);
   }
 
@@ -190,5 +185,17 @@ public class CaretManager implements EditorUpdateListener {
 
   }
 
+  private static CaretInfo buildCaretInfo(String participantId, String sessionId, int caretPos,
+      long lastUpdateTime) {
+
+    JsoView caretInfo = JsoView.create();
+    caretInfo.setNumber("timestamp", lastUpdateTime);
+    caretInfo.setString("participant", participantId);
+    caretInfo.setString("session", sessionId);
+    caretInfo.setNumber("position", caretPos);
+
+    return caretInfo.cast();
+
+  }
 
 }

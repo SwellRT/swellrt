@@ -13,6 +13,7 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SText;
+import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.WaveCommons;
 import org.swellrt.beta.model.wave.adt.DocumentBasedBasicRMap;
@@ -229,7 +230,7 @@ public class SWaveNodeManager {
   private SWaveNodeManager.SubstrateMapSerializer mapSerializer = new SWaveNodeManager.SubstrateMapSerializer(d);
 
   private final Map<SubstrateId, SWaveNode> nodeStore = new HashMap<SubstrateId, SWaveNode>();
-  private final ParticipantId participantId;
+  private final SSessionProvider session;
   private final IdGenerator idGenerator;
   private final String domain;
   private final ObservableWaveView wave;
@@ -241,9 +242,13 @@ public class SWaveNodeManager {
 
   private final NodeFactory nodeFactory;
 
-  public static SWaveNodeManager of(ParticipantId participantId, IdGenerator idGenerator,
+  private SWaveTransient transientData;
+
+  private SWaveObject waveObject;
+
+  public static SWaveNodeManager create(SSessionProvider session, IdGenerator idGenerator,
       String domain, ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
-    return new SWaveNodeManager(participantId, idGenerator, domain, wave, waveStatus, nodeFactory);
+    return new SWaveNodeManager(session, idGenerator, domain, wave, waveStatus, nodeFactory);
   }
 
   private static ObservableWavelet retrieveDataWavelet(String domain, ObservableWaveView wave) {
@@ -314,14 +319,14 @@ public class SWaveNodeManager {
   }
 
 
-  private SWaveNodeManager(ParticipantId participantId, IdGenerator idGenerator, String domain,
+  private SWaveNodeManager(SSessionProvider session, IdGenerator idGenerator, String domain,
       ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
-    this.participantId = participantId;
+    this.session = session;
     this.idGenerator = idGenerator;
     this.domain = domain;
     this.wave = wave;
     this.dataWavelet = retrieveDataWavelet(domain, wave);
-    this.userWavelet = retrieveUserWavelet(domain, wave, participantId);
+    this.userWavelet = retrieveUserWavelet(domain, wave, session.get().getParticipantId());
     this.transientWavelet = retrieveTransientWavelet(domain, wave);
     this.waveStatus = waveStatus;
     this.nodeFactory = nodeFactory;
@@ -333,7 +338,11 @@ public class SWaveNodeManager {
   }
 
   public ParticipantId getParticipant() {
-    return participantId;
+    return session.get().getParticipantId();
+  }
+
+  public SSessionProvider getSession() {
+    return session;
   }
 
   public String getId() {
@@ -354,6 +363,13 @@ public class SWaveNodeManager {
     return map;
   }
 
+  public SWaveTransient getTransient() {
+    if (transientData == null) {
+      transientData = new SWaveTransient(getTransientRoot());
+    }
+    return transientData;
+  }
+
   public SWaveMap getUserRoot() {
     SWaveMap map = loadMap(SubstrateId.ofMap(userWavelet.getId(), IdConstants.MAP_ROOT_DOC));
     map.attach(SWaveNodeContainer.Void);
@@ -362,7 +378,8 @@ public class SWaveNodeManager {
 
   private DocEventRouter getWaveletDocument(SubstrateId substrateId) {
 
-    if (substrateId.getContainerId().isUserWavelet() && participantId.isAnonymous()) {
+    if (substrateId.getContainerId().isUserWavelet()
+        && session.get().getParticipantId().isAnonymous()) {
 
       // Anonymous user data wavelet are not supported by the actual wave
       ObservableDocument document = userWavelet.getDocument(substrateId.getDocumentId());
@@ -383,7 +400,8 @@ public class SWaveNodeManager {
 
   private ObservableWavelet getWavelet(SubstrateId substrateId) {
 
-    if (substrateId.getContainerId().isUserWavelet() && participantId.isAnonymous()) {
+    if (substrateId.getContainerId().isUserWavelet()
+        && session.get().getParticipantId().isAnonymous()) {
 
       // Anonymous user data wavelet are not supported by the actual wave
       return userWavelet;
@@ -770,4 +788,17 @@ public class SWaveNodeManager {
     return null;
   }
 
+  /**
+   * @return the {@link SWaveObject} managed by this node manager.
+   */
+  public SWaveObject getSWaveObject() {
+
+    if (waveObject == null) {
+      waveObject = new SWaveObject(this);
+      this.setListener(new SWaveletListener(waveObject));
+    }
+
+    return waveObject;
+
+  }
 }

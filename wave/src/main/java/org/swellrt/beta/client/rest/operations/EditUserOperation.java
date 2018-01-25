@@ -29,14 +29,18 @@ public final class EditUserOperation
   @Override
   protected void buildRestParams() throws SException {
 
-    if (!context.isSession()) {
+    if (!context.hasSession()) {
       throw new SException(SException.NOT_LOGGED_IN);
     }
 
     addPathElement("account");
-    addPathElement(context.getParticipantId());
+    addPathElement(context.getServiceSession().getParticipantId().getAddress());
   }
 
-
+  @Override
+  protected void doSuccess(Account response) {
+    context.update(response);
+    super.doSuccess(response);
+  }
 
 }

@@ -43,7 +43,7 @@ public class GetNamesOperation
 
       String id = options.getId();
       if (!id.contains("/")) {
-        id = context.getWaveDomain() + "/" + id;
+        id = context.getServiceSession().getWaveDomain() + "/" + id;
       }
 
       addPathElement(id);

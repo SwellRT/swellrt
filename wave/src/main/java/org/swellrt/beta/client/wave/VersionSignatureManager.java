@@ -41,7 +41,7 @@ public class VersionSignatureManager {
    */
   public ProtocolHashedVersion getServerVersion(WaveletName wavelet, WaveletDelta delta) {
     if (delta.getTargetVersion().getVersion() == 0) {
-      return WaveFactories.protocolMessageUtils.serialize(HASHER.createVersionZero(wavelet));
+      return WaveDeps.protocolMessageUtils.serialize(HASHER.createVersionZero(wavelet));
     } else {
       ProtocolHashedVersion current = versions.get(wavelet);
       Preconditions.checkNotNull(current);

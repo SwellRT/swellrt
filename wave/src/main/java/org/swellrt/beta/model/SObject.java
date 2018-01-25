@@ -1,6 +1,7 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.client.rest.ServiceOperation;
+import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
 import jsinterop.annotations.JsFunction;
@@ -70,4 +71,8 @@ public interface SObject extends SMap, ServiceOperation.Response {
   /** @return document raw content */
   public String _getContent(String waveletId, String docId);
 
+  /**
+   * Register a handler for presence events. Pass null value to unset.
+   */
+  public void setPresenceHandler(SPresenceEvent.Handler h);
 }

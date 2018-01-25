@@ -168,15 +168,16 @@ public interface SessionManager {
   //
 
   /**
-   * Associate a participant with the current session/transient session/window id.
-   *
+   * Associates a participant with the current session.
+   * A session is identified by the tuple (http session, transient session, window session).
    *
    * @param request the request
    * @param participantId the participant id
    * @param rememberMe Allow resume of the participant session even after browser is closed
-   * @return
+   * @return the actual ParticipantId logged in, relevant for anonymous logins.
    */
-  public void login(HttpServletRequest request, ParticipantId participantId, boolean rememberMe);
+  public ParticipantId login(HttpServletRequest request, ParticipantId participantId,
+      boolean rememberMe);
 
   /**
    * Resume an user session, provided as argument or the last active session
@@ -192,7 +193,8 @@ public interface SessionManager {
   public ParticipantId resume(HttpServletRequest request, String participantId);
 
   /**
-   * Remove association of the participant with the current session/transient session/window id.
+   * Remove association of a participant with the current session.
+   * A session is identified by the tuple (http session, transient session, window session).
    *
    * @param request
    * @param participantId

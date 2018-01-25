@@ -32,7 +32,7 @@ import jsinterop.annotations.JsType;
  */
 @JsType(namespace = "swell", name = "Color")
 public final class RgbColor {
-  
+
   @JsIgnore
   public static final RgbColor BLACK = new RgbColor(0, 0, 0);
   @JsIgnore
@@ -48,12 +48,14 @@ public final class RgbColor {
     this.green = green;
     this.blue = blue;
   }
-  
+
   @JsIgnore
   public RgbColor(String hex) {
-     this.red =  Integer.valueOf( hex.substring( 0, 2 ), 16 );
-     this.green = Integer.valueOf( hex.substring( 2, 4 ), 16 );
-     this.blue = Integer.valueOf( hex.substring( 4, 6 ), 16 );
+    if (hex.startsWith("#"))
+      hex = hex.substring(1); // remove leading #
+    this.red = Integer.valueOf(hex.substring(0, 2), 16);
+    this.green = Integer.valueOf(hex.substring(2, 4), 16);
+    this.blue = Integer.valueOf(hex.substring(4, 6), 16);
   }
 
   /** @return the CSS color expression for this color. */
@@ -65,9 +67,9 @@ public final class RgbColor {
   /** @return the Hex RGB value for this color */
   @JsProperty
   public String getHexColor() {
-    return Joiner.on("").join("#", Integer.toHexString(red), Integer.toHexString(green), Integer.toHexString(blue));   
+    return Joiner.on("").join("#", Integer.toHexString(red), Integer.toHexString(green), Integer.toHexString(blue));
   }
-  
+
   @Override
   @JsIgnore
   public int hashCode() {

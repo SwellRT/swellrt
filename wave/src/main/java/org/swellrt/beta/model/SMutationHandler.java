@@ -3,7 +3,7 @@ package org.swellrt.beta.model;
 import jsinterop.annotations.JsFunction;
 
 @JsFunction
-public interface SHandlerFunc {
+public interface SMutationHandler {
 
   /** 
    * Return false to prevent recursive upwards propagation to parent node.

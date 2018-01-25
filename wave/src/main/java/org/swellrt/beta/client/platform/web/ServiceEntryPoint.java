@@ -6,19 +6,24 @@ import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceConfigProvider;
 import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceLogger;
+import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.platform.js.JsProtocolMessageUtils;
 import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.platform.web.browser.JSON;
 import org.swellrt.beta.client.rest.JsonParser;
+import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
-import org.swellrt.beta.client.wave.WaveFactories;
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.swellrt.beta.model.ModelFactory;
+import org.waveprotocol.wave.client.common.util.RgbColor;
+import org.waveprotocol.wave.client.common.util.RgbColorPalette;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -129,7 +134,7 @@ public class ServiceEntryPoint implements EntryPoint {
 
     ModelFactory.instance = new WebModelFactory();
 
-    WaveFactories.logFactory = new Log.Factory() {
+    WaveDeps.logFactory = new Log.Factory() {
 
       @Override
       public Log create(Class<? extends Object> clazz) {
@@ -137,7 +142,7 @@ public class ServiceEntryPoint implements EntryPoint {
       }
     };
 
-    WaveFactories.loaderFactory = new WaveLoader.Factory() {
+    WaveDeps.loaderFactory = new WaveLoader.Factory() {
 
       @Override
       public WaveLoader create(WaveId waveId, RemoteViewServiceMultiplexer channel,
@@ -150,7 +155,7 @@ public class ServiceEntryPoint implements EntryPoint {
       }
     };
 
-    WaveFactories.randomGenerator = new WaveFactories.Random() {
+    WaveDeps.intRandomGeneratorInstance = new WaveDeps.IntRandomGenerator() {
 
       @Override
       public int nextInt() {
@@ -158,16 +163,16 @@ public class ServiceEntryPoint implements EntryPoint {
       }
     };
 
-    WaveFactories.protocolMessageUtils = new JsProtocolMessageUtils();
+    WaveDeps.protocolMessageUtils = new JsProtocolMessageUtils();
 
-    WaveFactories.websocketFactory = new WebSocket.Factory() {
+    WaveDeps.websocketFactory = new WebSocket.Factory() {
       @Override
       public WebSocket create() {
         return new WebWebSocket();
       }
     };
 
-    WaveFactories.json = new JsonParser() {
+    WaveDeps.json = new JsonParser() {
 
       @Override
       public <T, R extends T> T parse(String json, Class<R> dataType) {
@@ -186,9 +191,35 @@ public class ServiceEntryPoint implements EntryPoint {
 
     };
 
-    WaveFactories.lowPriorityTimer = SchedulerInstance.getLowPriorityTimer();
-    WaveFactories.mediumPriorityTimer = SchedulerInstance.getMediumPriorityTimer();
-    WaveFactories.highPriorityTimer = SchedulerInstance.getHighPriorityTimer();
+    WaveDeps.sJsonFactory = new SJsonFactoryWeb();
+
+    WaveDeps.lowPriorityTimer = SchedulerInstance.getLowPriorityTimer();
+    WaveDeps.mediumPriorityTimer = SchedulerInstance.getMediumPriorityTimer();
+    WaveDeps.highPriorityTimer = SchedulerInstance.getHighPriorityTimer();
+
+    WaveDeps.colorGeneratorInstance = new WaveDeps.ColorGenerator() {
+
+      @Override
+      public RgbColor getColor(String id) {
+        int colorIndex = id.hashCode() % RgbColorPalette.PALETTE.length;
+        colorIndex = colorIndex < 0 ? -colorIndex : colorIndex;
+        RgbColor colour = RgbColorPalette.PALETTE[colorIndex].get("400");
+        return colour;
+      }
+    };
+
+    ServiceDeps.serviceSessionFactory = new ServiceSession.Factory() {
+
+      @Override
+      public ServiceSession create(Account account) {
+        return new WebServiceSession(account);
+      }
+
+      @Override
+      public String getWindowId() {
+        return WebServiceSession.WINDOW_ID;
+      }
+    };
 
     ServiceConfig.configProvider = getConfigProvider();
     getEditorConfigProvider();
@@ -221,7 +252,7 @@ public class ServiceEntryPoint implements EntryPoint {
       public void execute() {
 
 
-        context = new ServiceContext(WebSessionManager.create(), getServerURL(),
+        context = new ServiceContext(getServerURL(),
             new DiffProvider.Factory() {
 
               @Override

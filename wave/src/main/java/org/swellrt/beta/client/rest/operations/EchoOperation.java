@@ -45,7 +45,7 @@ public final class EchoOperation
 
   @Override
   public void doSuccess(Response response) {
-    context.setSessionCookieAvailability(response.isSessionCookie());
+    context.getServiceSession().setSessionCookie(response.isSessionCookie());
     super.doSuccess(response);
   }
 
@@ -62,6 +62,7 @@ public final class EchoOperation
   @Override
   protected void buildRestParams() throws SException {
     addPathElement("echo");
+    addQueryParam("tid", context.getServiceSession().getTransientSessionId());
   }
 
 }

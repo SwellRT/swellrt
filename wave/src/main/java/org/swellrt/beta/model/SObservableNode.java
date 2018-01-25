@@ -12,12 +12,12 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell", name = "ObservableObject")
 public interface SObservableNode {
 
-  public void addListener(SHandlerFunc h, String path) throws SException;
+  public void addListener(SMutationHandler h, String path) throws SException;
 
-  public void listen(SHandlerFunc h) throws SException;
+  public void listen(SMutationHandler h) throws SException;
 
-  public void removeListener(SHandlerFunc h, String path) throws SException;
+  public void removeListener(SMutationHandler h, String path) throws SException;
 
-  public void unlisten(SHandlerFunc h) throws SException;
+  public void unlisten(SMutationHandler h) throws SException;
 
 }

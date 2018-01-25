@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SPrimitive;
@@ -156,7 +156,7 @@ public class SWaveListTest extends SWaveNodeAbstractTest {
 
 
     final ArrayList<SEvent> recvEvents = new ArrayList<SEvent>();
-    SHandlerFunc eventHandler = new SHandlerFunc() {
+    SMutationHandler eventHandler = new SMutationHandler() {
 
       @Override
       public boolean exec(SEvent e) {

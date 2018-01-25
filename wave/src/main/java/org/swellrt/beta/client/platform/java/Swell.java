@@ -6,19 +6,21 @@ import java.util.Set;
 import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.ServiceLogger;
-import org.swellrt.beta.client.SessionManager;
+import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.rest.JsonParser;
 import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.StagedWaveLoader;
-import org.swellrt.beta.client.wave.WaveFactories;
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.java.JavaModelFactory;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -59,47 +61,8 @@ public class Swell {
 
     ModelFactory.instance = new JavaModelFactory();
     ServiceConfig.configProvider = new JavaServiceConfig();
-    SessionManager sessionMgr = new SessionManager() {
 
-      private Account account;
-
-      @Override
-      public void setSession(Account profile) {
-        account = profile;
-      }
-
-      @Override
-      public String getSessionId() {
-        return account.getSessionId();
-      }
-
-      @Override
-      public String getTransientSessionId() {
-        return account.getTransientSessionId();
-      }
-
-      @Override
-      public void removeSession() {
-
-      }
-
-      @Override
-      public boolean isSession() {
-        return true;
-      }
-
-      @Override
-      public String getWaveDomain() {
-        return account.getDomain();
-      }
-
-      @Override
-      public String getUserId() {
-        return account.getId();
-      }
-
-    };
-    WaveFactories.loaderFactory = new WaveLoader.Factory() {
+    WaveDeps.loaderFactory = new WaveLoader.Factory() {
 
       @Override
       public WaveLoader create(WaveId waveId, RemoteViewServiceMultiplexer channel,
@@ -110,7 +73,7 @@ public class Swell {
             loggedInUser, dataListener, turbulenceListener, diffProvider);
       }
     };
-    WaveFactories.randomGenerator = new WaveFactories.Random() {
+    WaveDeps.intRandomGeneratorInstance = new WaveDeps.IntRandomGenerator() {
 
       @Override
       public int nextInt() {
@@ -118,9 +81,9 @@ public class Swell {
       }
     };
 
-    WaveFactories.protocolMessageUtils = new JavaProtocolMessageUtils();
+    WaveDeps.protocolMessageUtils = new JavaProtocolMessageUtils();
 
-    WaveFactories.logFactory = new Log.Factory() {
+    WaveDeps.logFactory = new Log.Factory() {
 
       @Override
       public Log create(Class<? extends Object> clazz) {
@@ -128,7 +91,7 @@ public class Swell {
       }
     };
 
-    WaveFactories.websocketFactory = new WebSocket.Factory() {
+    WaveDeps.websocketFactory = new WebSocket.Factory() {
 
       @Override
       public WebSocket create() {
@@ -138,11 +101,11 @@ public class Swell {
 
     JavaTimerService timerService = new JavaTimerService();
 
-    WaveFactories.lowPriorityTimer = timerService;
-    WaveFactories.mediumPriorityTimer = timerService;
-    WaveFactories.highPriorityTimer = timerService;
+    WaveDeps.lowPriorityTimer = timerService;
+    WaveDeps.mediumPriorityTimer = timerService;
+    WaveDeps.highPriorityTimer = timerService;
 
-    WaveFactories.json = new JsonParser() {
+    WaveDeps.json = new JsonParser() {
 
       Gson gson = new Gson();
 
@@ -161,7 +124,31 @@ public class Swell {
 
     };
 
-    context = new ServiceContext(sessionMgr, serverAddress, new DiffProvider.Factory() {
+    WaveDeps.sJsonFactory = new SJsonFactoryJava();
+
+    WaveDeps.colorGeneratorInstance = new WaveDeps.ColorGenerator() {
+
+      @Override
+      public RgbColor getColor(String id) {
+        return RgbColor.WHITE;
+      }
+
+    };
+
+    ServiceDeps.serviceSessionFactory = new ServiceSession.Factory() {
+
+      @Override
+      public ServiceSession create(Account account) {
+        return new JavaServiceSession(account);
+      }
+
+      @Override
+      public String getWindowId() {
+        return JavaServiceSession.WINDOW_ID;
+      }
+    };
+
+    context = new ServiceContext(serverAddress, new DiffProvider.Factory() {
 
       @Override
       public DiffProvider get(WaveId waveId) {

@@ -239,8 +239,6 @@ public class AccountService extends BaseService {
 
     ParticipantId loggedInUser = sessionManager.getLoggedInUser(req);
 
-    UrlBuilder urlBuilder = ServiceUtils.getUrlBuilder(req);
-
     try {
 
       ParticipantId participantId = getParticipantFromRequest(req);
@@ -257,7 +255,6 @@ public class AccountService extends BaseService {
 
       if (participantId.isAnonymous()) {
         updateAccountInSession(req, userData);
-        sendResponse(response, "");
       } else {
 
         AccountData accountData = accountStore.getAccount(participantId);
@@ -269,8 +266,10 @@ public class AccountService extends BaseService {
 
         HumanAccountData account = accountData.asHuman();
         updateAccountInStore(participantId, userData, account);
-        sendResponse(response, toServiceData(urlBuilder, account));
       }
+
+      // send updated response
+      getParticipantAccount(req, response);
 
     } catch (PersistenceException e) {
       throw new ServiceException("Can't write account to storage", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, RC_INTERNAL_SERVER_ERROR ,e);

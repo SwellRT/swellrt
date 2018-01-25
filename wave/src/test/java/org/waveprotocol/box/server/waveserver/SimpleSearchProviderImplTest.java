@@ -21,18 +21,10 @@ package org.waveprotocol.box.server.waveserver;
 
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.gxp.com.google.common.collect.Maps;
-import com.google.wave.api.SearchResult;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import junit.framework.TestCase;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -58,10 +50,18 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.concurrent.Executor;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.gxp.com.google.common.collect.Maps;
+import com.google.wave.api.SearchResult;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import junit.framework.TestCase;
 
 /**
  * @author yurize@apache.org (Yuri Zelikov)
@@ -189,6 +189,8 @@ public class SimpleSearchProviderImplTest extends TestCase {
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
     final Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
+    final WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {
           @Override
@@ -202,7 +204,8 @@ public class SimpleSearchProviderImplTest extends TestCase {
               throw new RuntimeException(e);
             }
             return new LocalWaveletContainerImpl(waveletName, notifiee,
-                Futures.immediateFuture(waveletState), DOMAIN, storageContinuationExecutor);
+                Futures.immediateFuture(waveletState), DOMAIN, storageContinuationExecutor,
+                accessController);
           }
         };
 

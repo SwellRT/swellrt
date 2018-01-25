@@ -2,9 +2,12 @@ package org.swellrt.beta.model.wave;
 
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.java.JavaModelFactory;
+import org.swellrt.beta.model.presence.SSession;
+import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.testing.BasicFactories;
 import org.waveprotocol.wave.model.testing.FakeIdGenerator;
@@ -37,16 +40,22 @@ public abstract class SWaveNodeAbstractTest extends TestCase {
 
   protected IdGenerator idGenerator;
   protected FakeWaveView wave;
+  protected SSession session;
+  protected SSessionProvider sessionProvider;
   protected SWaveObject object;
+
 
   protected void setUp() throws Exception {
 
     idGenerator = FakeIdGenerator.create();
     wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
+    session = new SSession("fake-session-id", ParticipantId.ofUnsafe("tom@acme.com"),
+        RgbColor.WHITE, "Fake Name", "fakie");
+    sessionProvider = new SSessionProvider(session);
 
-    SWaveNodeManager nodeManager = SWaveNodeManager.of(ParticipantId.ofUnsafe("tom@acme.com"),
+    SWaveNodeManager nodeManager = SWaveNodeManager.create(sessionProvider,
         idGenerator, "example.com", wave, null, nodeFactory);
-    object = SWaveObject.materialize(nodeManager);
+    object = nodeManager.getSWaveObject();
 
     // A different way to create a fake wave
     /*

@@ -24,7 +24,7 @@ public class ClientOperationExecutor extends OperationExecutor {
 
     try {
 
-      if (!operation.context.isSession()) {
+      if (!operation.context.hasSession()) {
         operation.doFailure(new SException(ResponseCode.NOT_LOGGED_IN));
       }
 
@@ -33,7 +33,7 @@ public class ClientOperationExecutor extends OperationExecutor {
       // Wave domain part is optional
       if (id != null) {
         if (!id.contains("/")) {
-          id = operation.context.getWaveDomain() + "/" + id;
+          id = operation.context.getServiceSession().getWaveDomain() + "/" + id;
         }
         waveId = ModernIdSerialiser.INSTANCE.deserialiseWaveId(id);
       } else {

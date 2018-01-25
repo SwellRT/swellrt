@@ -124,7 +124,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
 
   private StartCallback startCallback;
 
-  private final ProtocolMessageUtils messageUtils = WaveFactories.protocolMessageUtils;
+  private final ProtocolMessageUtils messageUtils = WaveDeps.protocolMessageUtils;
 
   /**
    * Create a new connection handler.
@@ -237,7 +237,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onDisconnect() {
     setState(ConnectState.DISCONNECTED);
-    WaveFactories.lowPriorityTimer.scheduleDelayed(reconnectTask, 5000);
+    WaveDeps.lowPriorityTimer.scheduleDelayed(reconnectTask, 5000);
   }
 
 
@@ -346,7 +346,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   @Override
   public void onError(String reason) {
     if (connectedAtLeastOnce)
-      WaveFactories.lowPriorityTimer.cancel(reconnectTask);
+      WaveDeps.lowPriorityTimer.cancel(reconnectTask);
 
     if (startCallback != null) {
       startCallback.onFailure(reason);

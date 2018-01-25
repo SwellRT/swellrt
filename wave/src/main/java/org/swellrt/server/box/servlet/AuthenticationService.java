@@ -247,9 +247,10 @@ public class AuthenticationService extends BaseService {
       accountData =
           AccountService.toServiceData(ServiceUtils.getUrlBuilder(req),
               accountStore.getAccount(participantId).asHuman());
-    else
+    else {
       accountData = new AccountService.AccountServiceData(participantId.getAddress());
-
+      accountData.name = "Anonymous";
+    }
     accountData.sessionId = sessionManager.getSessionId(req);
     accountData.transientSessionId = sessionManager.getTransientSessionId(req);
     accountData.domain = domain;
@@ -259,10 +260,10 @@ public class AuthenticationService extends BaseService {
 
   protected void doLogin(HttpServletRequest req, HttpServletResponse resp, ParticipantId participantId, boolean keepLogin) throws IOException, PersistenceException {
     if (participantId.isAnonymous()) {
-      participantId = ParticipantId.anonymousOfUnsafe(sessionManager.getSessionId(req), domain);
       keepLogin = false;
     }
-    sessionManager.login(req, participantId, keepLogin);
+    // Always get the returned participant.
+    participantId = sessionManager.login(req, participantId, keepLogin);
     LOG.info("Authenticated user " + participantId);
     sendResponse(resp, getAccountData(req, participantId));
   }

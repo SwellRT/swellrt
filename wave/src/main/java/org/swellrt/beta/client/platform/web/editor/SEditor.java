@@ -374,34 +374,22 @@ public class SEditor implements EditorUpdateListener {
 
   private void startCaretManager(STextWeb text) {
 
-    try {
-
-      if (caretManager != null) {
-        caretManager.stop();
-      }
-
-      caretManager = new CaretManager(profileManager.getCurrentParticipantId(),
-          profileManager.getCurrentSessionId(), text.getLiveCarets(), editor);
-      caretManager.start();
-
-    } catch (SException e) {
-      new IllegalStateException(e);
+    if (caretManager != null) {
+      caretManager.stop();
     }
+
+    caretManager = new CaretManager(profileManager.getCurrentParticipantId(),
+        profileManager.getCurrentSessionId(), text.getLiveCarets(), editor);
+    caretManager.start();
 
   }
 
   private void stopCaretManager() {
 
     if (caretManager != null) {
-      try {
-        caretManager.stop();
-      } catch (SException e) {
-        new IllegalStateException(e);
-      }
+      caretManager.stop();
     }
-
     caretManager = null;
-
   }
 
   /**

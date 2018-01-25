@@ -150,8 +150,8 @@ public final class RemoteWaveViewService implements WaveViewService, WaveWebSock
   private final WaveId waveId;
   private final RemoteViewServiceMultiplexer mux;
   private final DocumentFactory<?> docFactory;
-  private final VersionSignatureManager versions = WaveFactories.versionSignatureManager;
-  private final ProtocolMessageUtils messageUtils = WaveFactories.protocolMessageUtils;
+  private final VersionSignatureManager versions = WaveDeps.versionSignatureManager;
+  private final ProtocolMessageUtils messageUtils = WaveDeps.protocolMessageUtils;
 
   /** Filter for client-side filtering. */
   // TODO: remove after Issue 124 is addressed.

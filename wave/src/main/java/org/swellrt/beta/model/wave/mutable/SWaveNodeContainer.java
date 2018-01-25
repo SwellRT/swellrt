@@ -3,7 +3,7 @@ package org.swellrt.beta.model.wave.mutable;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.PathNavigator;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SHandlerFunc;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -68,12 +68,12 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
     }
 
     @Override
-    public void addListener(SHandlerFunc h, String path) throws SException {
+    public void addListener(SMutationHandler h, String path) throws SException {
 
     }
 
     @Override
-    public void removeListener(SHandlerFunc h, String path) {
+    public void removeListener(SMutationHandler h, String path) {
 
 
     }
@@ -115,11 +115,11 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
     }
 
     @Override
-    public void listen(SHandlerFunc h) {
+    public void listen(SMutationHandler h) {
     }
 
     @Override
-    public void unlisten(SHandlerFunc h) {
+    public void unlisten(SMutationHandler h) {
     }
 
     @Override
@@ -132,8 +132,8 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
 
   protected boolean eventsEnabled = false;
 
-  private final CopyOnWriteSet<SHandlerFunc> eventHandlerSet = CopyOnWriteSet
-      .<SHandlerFunc> createHashSet();
+  private final CopyOnWriteSet<SMutationHandler> eventHandlerSet = CopyOnWriteSet
+      .<SMutationHandler> createHashSet();
 
   protected SWaveNodeContainer() {
     super(null, null);
@@ -190,7 +190,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
   }
 
   @Override
-  public void addListener(SHandlerFunc h, String path) throws SException {
+  public void addListener(SMutationHandler h, String path) throws SException {
 
     if (h == null)
       throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
@@ -204,7 +204,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
   }
 
   @Override
-  public void listen(SHandlerFunc h) throws SException {
+  public void listen(SMutationHandler h) throws SException {
     if (h == null)
       throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
 
@@ -212,7 +212,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
   }
 
   @Override
-  public void removeListener(SHandlerFunc h, String path) throws SException {
+  public void removeListener(SMutationHandler h, String path) throws SException {
 
     if (h == null)
       throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
@@ -226,7 +226,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
   }
 
   @Override
-  public void unlisten(SHandlerFunc h) throws SException {
+  public void unlisten(SMutationHandler h) throws SException {
 
     if (h == null)
       throw new SException(SException.OPERATION_EXCEPTION, null, "Handler is null");
@@ -242,7 +242,7 @@ public abstract class SWaveNodeContainer extends SWaveNode implements SObservabl
 
     boolean propagate = true;
 
-    for (SHandlerFunc h : eventHandlerSet) {
+    for (SMutationHandler h : eventHandlerSet) {
       propagate = h.exec(e);
     }
 

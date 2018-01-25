@@ -164,29 +164,7 @@
         object.setPublic(true);
       }
 
-
-      service.profilesManager.addStatusHandler({
-
-        onUpdated: function(profile) {
-          console.log("profile update -> "+profile.address);
-        },
-
-        onLoaded: function(session) {
-          console.log("profile is LOADED -> "+session.profile.address);
-        },
-
-        onOffline: function(session) {
-          console.log("profile is OFFLINE -> "+session.profile.address);
-        },
-
-        onOnline: function(session) {
-          console.log("profile is ONLINE -> "+session.profile.address);
-        }
-
-
-      });
-
-      service.profilesManager.enableStatusEvents(true);
+	  	
 
       // Create editor instance, reusable
       editor = swell.Editor.createWithId("editor", service);

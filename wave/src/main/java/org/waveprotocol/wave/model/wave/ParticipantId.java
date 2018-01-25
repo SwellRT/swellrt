@@ -40,7 +40,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   public static final ParticipantId VOID = ParticipantId.ofUnsafe("void@void.com");
 
   @JsIgnore
-  public static final String ANONYMOUS_NAME = "_anonymous_";
+  public static final String ANONYMOUS_PREFIX = "_anonymous_";
 
   /** The prefix of a domain in the ParticpantId */
   @JsIgnore
@@ -152,7 +152,11 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   }
 
   public boolean isAnonymous() {
-    return getName().startsWith(ANONYMOUS_NAME);
+    return getName().startsWith(ANONYMOUS_PREFIX);
+  }
+
+  public boolean isNewAnonymous() {
+    return getName().equals(ANONYMOUS_PREFIX);
   }
 
   /**
@@ -204,17 +208,17 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
 
   @JsIgnore
   public static ParticipantId anonymousOfUnsafe(String id, String domain) {
-    return ofUnsafe(ANONYMOUS_NAME + id + DOMAIN_PREFIX + domain);
+    return ofUnsafe(ANONYMOUS_PREFIX + id + DOMAIN_PREFIX + domain);
   }
 
   @JsIgnore
   public static ParticipantId anonymousOfUnsafe(String domain) {
-    return ofUnsafe(ANONYMOUS_NAME + DOMAIN_PREFIX + domain);
+    return ofUnsafe(ANONYMOUS_PREFIX + DOMAIN_PREFIX + domain);
   }
 
   @JsIgnore
   public static boolean isAnonymousName(String name) {
-    return name != null && name.startsWith(ANONYMOUS_NAME);
+    return name != null && name.startsWith(ANONYMOUS_PREFIX);
   }
 
   @JsIgnore

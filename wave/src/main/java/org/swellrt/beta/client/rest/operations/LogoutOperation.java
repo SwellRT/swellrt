@@ -42,11 +42,13 @@ public final class LogoutOperation
 
     addPathElement("auth");
 
-    if (context.isSession()) {
+    if (context.hasSession()) {
+      String participantId = context.getServiceSession().getParticipantId().getAddress();
 
       if (options == null || options.getId() == null || (options.getId() != null
-          && options.getId().equals(context.getParticipantId()))) {
-        addPathElement(context.getParticipantId());
+          && options.getId().equals(participantId))) {
+
+        addPathElement(participantId);
         resetContext = true;
         }
     } else if (options.getId() != null) {

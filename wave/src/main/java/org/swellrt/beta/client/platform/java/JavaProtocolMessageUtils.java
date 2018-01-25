@@ -14,11 +14,13 @@ import org.waveprotocol.box.common.comms.gson.ProtocolSubmitResponseGsonImpl;
 import org.waveprotocol.box.common.comms.gson.ProtocolWaveletUpdateGsonImpl;
 import org.waveprotocol.wave.communication.gson.GsonException;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.federation.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
 import org.waveprotocol.wave.federation.gson.ProtocolWaveletDeltaGsonImpl;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
+import org.waveprotocol.wave.model.version.HashedVersion;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -201,6 +203,11 @@ public class JavaProtocolMessageUtils extends ProtocolMessageUtils {
     o.setDelta(createWaveletDelta(waveletName, delta));
     o.setWaveletName(serialize(waveletName));
     return o;
+  }
+
+  @Override
+  public ProtocolHashedVersion serialize(HashedVersion version) {
+    return JavaWaveletOperationSerializer.serialize(version);
   }
 
 }

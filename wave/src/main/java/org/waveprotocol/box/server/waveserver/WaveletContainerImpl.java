@@ -94,7 +94,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
   private final ReentrantReadWriteLock.WriteLock writeLock;
   private final WaveletName waveletName;
   private final WaveletNotificationSubscriber notifiee;
-  private final WaveletAccessChecker accessChecker;
+  private final WaveletAccessController accessChecker;
   /** Is counted down when initial loading from storage completes. */
   private final CountDownLatch loadLatch = new CountDownLatch(1);
   /** Is set at most once, before loadLatch is counted down. */
@@ -112,7 +112,7 @@ abstract class WaveletContainerImpl implements WaveletContainer {
    */
   public WaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
       final ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain,
-      Executor storageContinuationExecutor, WaveletAccessChecker accessChecker) {
+      Executor storageContinuationExecutor, WaveletAccessController accessChecker) {
     this.waveletName = waveletName;
     this.notifiee = notifiee;
     this.accessChecker = accessChecker;

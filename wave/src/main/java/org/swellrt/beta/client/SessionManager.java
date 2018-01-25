@@ -32,4 +32,5 @@ public interface SessionManager {
   public String getWaveDomain();
 
   String getUserId();
+
 }

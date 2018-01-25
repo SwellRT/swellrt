@@ -14,11 +14,14 @@ import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
+import org.swellrt.beta.model.presence.SSession;
+import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.account.ProfileManager;
+import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
@@ -42,6 +45,9 @@ public class ServerlessFrontend implements ServiceFrontend {
   private static final String WAVE_DOMAIN = "local.net";
 
   private ParticipantId participant = ParticipantId.ofUnsafe("fake@local.net");
+  private SSession session = new SSession("fake-session-id", participant, RgbColor.WHITE,
+      "Fake Name", "fakey");
+  private SSessionProvider sessionProvider = new SSessionProvider(session);
 
   private IdGenerator idGenerator = new IdGeneratorImpl("local.net", new IdGeneratorImpl.Seed() {
     @Override
@@ -222,9 +228,10 @@ public class ServerlessFrontend implements ServiceFrontend {
       return objects.get(waveId);
     }
 
-    SWaveNodeManager nodeManager = SWaveNodeManager.of(participant, idGenerator, "local.net", wave,
+    SWaveNodeManager nodeManager = SWaveNodeManager.create(sessionProvider, idGenerator,
+        "local.net", wave,
         null, nodeFactory);
-    SWaveObject object = SWaveObject.materialize(nodeManager);
+    SWaveObject object = nodeManager.getSWaveObject();
 
     objects.put(waveId, object);
 

@@ -1,6 +1,8 @@
 package org.swellrt.beta.model;
 
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.json.SJsonObject;
 import org.swellrt.beta.model.wave.mutable.SWaveNode;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
@@ -233,7 +235,13 @@ public class SPrimitive extends SWaveNode {
     doubleValue = Double.NaN;
     stringValue = null;
     boolValue = null;
-    jsoValue = value;
+
+    if (value instanceof SJsonObject) {
+      jsoValue = ((SJsonObject) value).getNative();
+    } else {
+      jsoValue = value;
+    }
+
     accessControl = token;
   }
 
@@ -245,7 +253,13 @@ public class SPrimitive extends SWaveNode {
     doubleValue = Double.NaN;
     stringValue = null;
     boolValue = null;
-    jsoValue = value;
+
+    if (value instanceof SJsonObject) {
+      jsoValue = ((SJsonObject) value).getNative();
+    } else {
+      jsoValue = value;
+    }
+
     accessControl = token;
 
     this.container = container;
@@ -340,6 +354,15 @@ public class SPrimitive extends SWaveNode {
   public String getValuePath() {
     return valuePath;
 
+  }
+
+  @JsIgnore
+  public SJsonObject asSJson() {
+    if (type == TYPE_JSO) {
+      return WaveDeps.sJsonFactory.create(this.jsoValue);
+    }
+
+    return null;
   }
 
   //

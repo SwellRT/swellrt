@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.rest;
 
 import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.rest.ServerOperation.Method;
 import org.swellrt.beta.client.rest.ServiceOperation.OperationError;
 import org.swellrt.beta.client.rest.ServiceOperation.Options;
@@ -69,17 +70,20 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
     url += restParams;
 
-    if (sessionInUrl && !context.isSessionCookieAvailable()) {
+    if (context.hasSession()) {
 
-      if (context.getTransientSessionId() != null)
-        url += ";" + PARAM_URL_TRANSIENT_SESSION_ID + "="
-            + context.getTransientSessionId();
+      ServiceSession session = context.getServiceSession();
 
-      if (context.getSessionId() != null)
-        url += ";" + PARAM_URL_SESSION_ID + "=" + context.getSessionId();
+      if (sessionInUrl && !session.isSessionCookie()) {
+
+        if (session.getTransientSessionId() != null)
+          url += ";" + PARAM_URL_TRANSIENT_SESSION_ID + "=" + session.getTransientSessionId();
+
+        if (session.getHttpSessionId() != null)
+          url += ";" + PARAM_URL_SESSION_ID + "=" + session.getHttpSessionId();
+      }
+
     }
-
-
 
     return url;
 
@@ -87,8 +91,9 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
   private Header[] buildHeaders() {
 
-    if (context.getWindowId() != null)
-      headers[1].value = context.getWindowId();
+    String windowId = ServiceSession.getWindowId();
+    if (windowId != null)
+      headers[1].value = windowId;
 
     return headers;
   }

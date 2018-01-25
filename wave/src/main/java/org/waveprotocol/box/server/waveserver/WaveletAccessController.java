@@ -17,16 +17,16 @@ import com.google.inject.name.Named;
  * @author pablojan@gmail.com
  *
  */
-public class WaveletAccessChecker {
+public class WaveletAccessController {
 
-  private static final Log LOG = Log.get(WaveletAccessChecker.class);
+  private static final Log LOG = Log.get(WaveletAccessController.class);
 
   private final ParticipantId sharedPid;
   private final ParticipantId superPid;
   private final String waveDomain;
 
   @Inject
-  public WaveletAccessChecker(
+  public WaveletAccessController(
       @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain) {
     this.waveDomain = waveDomain;
     String randomId = RandomStringUtils.randomAlphanumeric(10).toLowerCase();

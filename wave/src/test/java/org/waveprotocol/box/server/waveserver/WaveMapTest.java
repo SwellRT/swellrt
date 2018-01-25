@@ -22,14 +22,8 @@ package org.waveprotocol.box.server.waveserver;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.MoreExecutors;
-
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import junit.framework.TestCase;
+import java.util.Arrays;
+import java.util.concurrent.Executor;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -40,8 +34,14 @@ import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 
-import java.util.Arrays;
-import java.util.concurrent.Executor;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import junit.framework.TestCase;
 
 /**
  * @author josephg@gmail.com (Joseph Gentle)
@@ -68,6 +68,8 @@ public class WaveMapTest extends TestCase {
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
+    final WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {
           @Override
@@ -81,7 +83,8 @@ public class WaveMapTest extends TestCase {
               throw new RuntimeException(e);
             }
             return new LocalWaveletContainerImpl(waveletName, notifiee,
-                Futures.immediateFuture(waveletState), DOMAIN, storageContinuationExecutor);
+                Futures.immediateFuture(waveletState), DOMAIN, storageContinuationExecutor,
+                accessController);
           }
         };
 
