@@ -1,120 +1,113 @@
 package org.swellrt.beta.client.platform.web.editor;
 
 import jsinterop.annotations.JsOverlay;
-import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Wrapper for native object containing editor configuration
- * properties.
- * <p><br>
- * To be effectively used, add a script section before
- * loading SwellRT javascript declaring the config object:
- * <p><br>
- * <code>
- *  __swellrt_editor_config = {
- *      enableLog: true;
- *      ...
- *    }
- * </code>
+ * A class to define editor's settings. Create a javascript object with
+ * following properties and pass it to {@link SEditor}.
+ *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
-@JsType(isNative = true, name = "__swell_editor_config", namespace = JsPackage.GLOBAL)
+@JsType(isNative = true, namespace = "swell.Editor", name = "Config")
 public class SEditorConfig {
 
-  @JsProperty
-  private static native Boolean getEnableLog();
+  public Boolean traceUserAgent;
 
-  @JsProperty
-  private static native Boolean getDebugDialog();
+  public Boolean consoleLog;
 
-  @JsProperty
-  private static native Boolean getUndo();
+  public Boolean debugDialog;
 
-  @JsProperty
-  private static native Boolean getFancyCursorBias();
+  public Boolean undo;
 
-  @JsProperty
-  private static native Boolean getSemanticCopyPaste();
+  public Boolean fancyCursorBias;
 
-  @JsProperty
-  private static native Boolean getWhitelistEditor();
+  public Boolean semanticCopyPaste;
 
-  @JsProperty
-  private static native Boolean getWebkitComposition();
+  public Boolean whitelistEditor;
+
+  public Boolean webkitComposition;
 
 
   /*
-   * Methods with secure fall back value
-   * if property is not available
+   * Methods with secure default value if property is not available
    */
 
   @JsOverlay
-  public final static boolean enableLog() {
+  public final boolean traceUserAgent() {
     boolean DEFAULT = false;
     try {
-      return getEnableLog() != null ? getEnableLog() : DEFAULT;
+      return traceUserAgent != null ? traceUserAgent : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }
   }
 
   @JsOverlay
-  public final static boolean debugDialog() {
+  public final boolean consoleLog() {
     boolean DEFAULT = false;
     try {
-      return getDebugDialog() != null ? getDebugDialog() : DEFAULT;
+      return consoleLog != null ? consoleLog : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }
   }
 
   @JsOverlay
-  public final static boolean undo() {
+  public final boolean debugDialog() {
+    boolean DEFAULT = false;
+    try {
+      return debugDialog != null ? debugDialog : DEFAULT;
+    } catch (RuntimeException e) {
+      return DEFAULT;
+    }
+  }
+
+  @JsOverlay
+  public final boolean undo() {
     boolean DEFAULT = true;
     try {
-      return getUndo() != null ? getUndo() : DEFAULT;
+      return undo != null ? undo : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }
   }
 
   @JsOverlay
-  public final static boolean fancyCursorBias() {
+  public final boolean fancyCursorBias() {
     boolean DEFAULT = true;
     try {
-      return getFancyCursorBias() != null ? getFancyCursorBias() : DEFAULT;
+      return fancyCursorBias != null ? fancyCursorBias : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }
   }
 
   @JsOverlay
-  public final static boolean semanticCopyPaste() {
+  public final boolean semanticCopyPaste() {
     boolean DEFAULT = false;
     try {
-      return getSemanticCopyPaste() != null ? getSemanticCopyPaste() : DEFAULT;
+      return semanticCopyPaste != null ? semanticCopyPaste : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }
   }
 
   @JsOverlay
-  public final static boolean whitelistEditor() {
+  public final boolean whitelistEditor() {
     boolean DEFAULT = false;
     try {
-      return getWhitelistEditor() != null ? getWhitelistEditor() : DEFAULT;
+      return whitelistEditor != null ? whitelistEditor : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }
   }
 
   @JsOverlay
-  public final static boolean webkitComposition() {
+  public final boolean webkitComposition() {
     boolean DEFAULT = false;
     try {
-      return getWebkitComposition() != null ? getWebkitComposition() : DEFAULT;
+      return webkitComposition != null ? webkitComposition : DEFAULT;
     } catch (RuntimeException e) {
       return DEFAULT;
     }

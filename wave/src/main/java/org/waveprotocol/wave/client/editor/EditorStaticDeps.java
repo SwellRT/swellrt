@@ -19,7 +19,6 @@
 
 package org.waveprotocol.wave.client.editor;
 
-import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.PopupEventListener;
@@ -147,22 +146,5 @@ public class EditorStaticDeps {
     ignoreMutations--;
     assert ignoreMutations >= 0;
   }
-
-  /**
-   * Profile manager is required by some static annotation painters.
-   * The right component should set this static dependency before
-   * painters are executed.
-   */
-  private static ProfileManager profileManager = null;
-
-  public static void setProfileManager(ProfileManager pm) {
-    profileManager = pm;
-  }
-
-  public static ProfileManager getProfileManager() {
-    return profileManager;
-  }
-
-
 
 }

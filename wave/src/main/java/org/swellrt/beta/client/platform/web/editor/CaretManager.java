@@ -4,14 +4,14 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SMutationHandler;
-import org.waveprotocol.wave.client.common.util.JsoView;
+import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.presence.SSessionProvider;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * Carets positions are stored in a transient map (in the transient wavelet) by
@@ -43,9 +43,9 @@ public class CaretManager implements EditorUpdateListener {
 
       if (e.isAddEvent() || e.isUpdateEvent()) {
 
-        CaretInfo caretInfo = (CaretInfo) e.getValue();
+        CaretInfo caretInfo = CaretInfo.of(((SPrimitive) e.getNode()).asSJson());
 
-        if (!caretInfo.getParticipant().equals(participantId.getAddress()))
+        if (!caretInfo.getSession().getSessionId().equals(session.get().getSessionId()))
           updateAnnotations(caretInfo);
       }
 
@@ -53,15 +53,14 @@ public class CaretManager implements EditorUpdateListener {
     }
   };
 
-  private final ParticipantId participantId;
-  private final String sessionId;
+  private final SSessionProvider session;
   private final SMap carets;
   private final Editor editor;
 
-  public CaretManager(ParticipantId participantId, String sessionId, SMap carets,
+  public CaretManager(SSessionProvider session, SMap carets,
       Editor editor) {
-    this.participantId = participantId;
-    this.sessionId = sessionId;
+
+    this.session = session;
     this.carets = carets;
     this.editor = editor;
 
@@ -113,8 +112,8 @@ public class CaretManager implements EditorUpdateListener {
   private void updateCaretAnnotation(ContentDocument content,
       MutableAnnotationSet.Local annotations, CaretInfo caretInfo) {
 
-    String key = CaretAnnotationConstants.endKey(caretInfo.getSession());
-    String value = caretInfo.getParticipant();
+    String key = CaretAnnotationConstants.endKey(caretInfo.getSession().getSessionId());
+    Object value = caretInfo;
 
     int size = content.getMutableDoc().size();
     int currentFocusPos = annotations.firstAnnotationChange(0, size, key, null);
@@ -154,8 +153,8 @@ public class CaretManager implements EditorUpdateListener {
   private void updateSelectionAnnotation(ContentDocument content,
       MutableAnnotationSet.Local annotations, CaretInfo caretInfo) {
 
-    String rangeKey = CaretAnnotationConstants.rangeKey(caretInfo.getSession());
-    String value = caretInfo.getParticipant();
+    String rangeKey = CaretAnnotationConstants.rangeKey(caretInfo.getSession().getSessionId());
+    Object value = caretInfo;
 
     int size = content.getMutableDoc().size();
     int currentStart = annotations.firstAnnotationChange(0, size, rangeKey, null);
@@ -172,12 +171,10 @@ public class CaretManager implements EditorUpdateListener {
     if (event.selectionLocationChanged() && selection != null) {
 
       int caretPos = selection.asRange().getStart();
-
-      CaretInfo caretInfo = buildCaretInfo(participantId.getAddress(), sessionId, caretPos,
-          System.currentTimeMillis());
+      CaretInfo caretInfo = new CaretInfo(session.get(), System.currentTimeMillis(), caretPos);
 
       try {
-        carets.put(sessionId, caretInfo);
+        carets.put(session.get().getSessionId(), caretInfo.toSJson());
       } catch (SException e) {
         throw new IllegalStateException(e);
       }
@@ -185,17 +182,5 @@ public class CaretManager implements EditorUpdateListener {
 
   }
 
-  private static CaretInfo buildCaretInfo(String participantId, String sessionId, int caretPos,
-      long lastUpdateTime) {
-
-    JsoView caretInfo = JsoView.create();
-    caretInfo.setNumber("timestamp", lastUpdateTime);
-    caretInfo.setString("participant", participantId);
-    caretInfo.setString("session", sessionId);
-    caretInfo.setNumber("position", caretPos);
-
-    return caretInfo.cast();
-
-  }
 
 }

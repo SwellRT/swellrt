@@ -22,10 +22,6 @@ package org.waveprotocol.wave.client.doodad.diff;
 import java.util.Collections;
 import java.util.Map;
 
-import org.waveprotocol.wave.client.account.Profile;
-import org.waveprotocol.wave.client.account.ProfileManager;
-import org.waveprotocol.wave.client.common.util.RgbColorUtil;
-import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.BoundaryFunction;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFunction;
@@ -91,15 +87,8 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
       ParticipantId author = (ParticipantId) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
       if (author != null) {
         String color = DEFAULT_HILIGHT_COLOUR;
-        ProfileManager profileManager = EditorStaticDeps.getProfileManager();
-        if (profileManager != null) {
-          Profile profile = profileManager.getProfile(author);
-          if (profile != null) {
-            color = RgbColorUtil.getLighter(profile.getColor(), 0.6).getHexColor();
-          }
-        }
-
-        return color != null ? Collections.singletonMap("backgroundColor", color) : Collections.emptyMap();
+        return color != null ? Collections.singletonMap("backgroundColor", color)
+            : Collections.emptyMap();
       } else {
         return Collections.emptyMap();
       }

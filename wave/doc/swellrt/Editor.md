@@ -15,7 +15,7 @@ An editor is attached to a particular DIV of a page:
 ```
 
 ```js
-var editor = swell.Editor.createWithId("editor");
+var editor = swell.Editor.get("editor");
 ```
 
 An editor manages swell's text objects. A text can be just local...
@@ -363,12 +363,13 @@ Document events are only thrown when annotations are created or removed in the d
 
 ### Show debug messages in Web console
 
-Set the following configuration property before Swell script is loaded:
+Set the following configuration property before getting any editor instance:
 
-```
-    __swell_editor_config = {
-      enableLog: true
-    };
+```js
+var editor = swell.Editor.configure({
+	consoleLog: true
+
+});
 ```
 
 ### Wave Harness Editor 

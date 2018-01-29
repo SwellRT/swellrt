@@ -124,11 +124,6 @@
         websocketHeartbeatInterval: 30000
     };
 
-    // Configure editor globals
-    __swell_editor_config = {
-      enableLog: true,
-      webkitComposition: false
-    };
   </script>
 
   <script src="js/jquery.min.js"></script>
@@ -167,7 +162,7 @@
 	  	
 
       // Create editor instance, reusable
-      editor = swell.Editor.createWithId("editor", service);
+      editor = swell.Editor.get("editor");
 
       // Configure editor with a empty document
       configEditor();

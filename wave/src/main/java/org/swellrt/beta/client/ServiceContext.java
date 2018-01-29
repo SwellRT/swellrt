@@ -370,4 +370,8 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
   }
 
+  public SSessionProvider getSession() {
+    return ssessionProvider;
+  }
+
 }

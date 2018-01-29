@@ -1,5 +1,7 @@
 package org.waveprotocol.wave.client.common.util;
 
+import java.util.Collection;
+
 import org.waveprotocol.wave.model.util.Preconditions;
 
 /**
@@ -41,5 +43,17 @@ public class RgbColorUtil {
     return new RgbColor(red.intValue(), green.intValue(), blue.intValue());
   }
 
+  public static RgbColor average(Collection<RgbColor> colors) {
+
+    int size = colors.size();
+    int red = 0, green = 0, blue = 0;
+    for (RgbColor color : colors) {
+      red += color.red;
+      green += color.green;
+      blue += color.blue;
+    }
+
+    return size == 0 ? RgbColor.BLACK : new RgbColor(red / size, green / size, blue / size);
+  }
 
 }

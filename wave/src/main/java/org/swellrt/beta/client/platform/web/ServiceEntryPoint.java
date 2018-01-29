@@ -5,6 +5,7 @@ import java.util.Set;
 import org.swellrt.beta.client.DefaultFrontend;
 import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceConfigProvider;
+import org.swellrt.beta.client.ServiceConnection;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.ServiceFrontend;
@@ -64,6 +65,16 @@ public class ServiceEntryPoint implements EntryPoint {
   @JsMethod(name = "get")
   public static PromisableFrontend getPromisableInstance() {
     return promisableService;
+  }
+
+  @JsIgnore
+  public static ServiceConnection getServiceConnection() {
+    return service;
+  }
+
+  @JsIgnore
+  public static ServiceContext getServiceContext() {
+    return context;
   }
 
   private static String getServerURL() {
