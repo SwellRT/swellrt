@@ -1,4 +1,4 @@
-package org.swellrt.beta.client.platform.web.editor;
+package org.swellrt.beta.client.platform.web.editor.caret;
 
 import org.waveprotocol.wave.model.document.util.Annotations;
 

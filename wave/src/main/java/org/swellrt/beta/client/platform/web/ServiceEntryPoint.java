@@ -14,6 +14,7 @@ import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.platform.js.JsProtocolMessageUtils;
 import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.platform.web.browser.JSON;
+import org.swellrt.beta.client.platform.web.editor.SEditorStatics;
 import org.swellrt.beta.client.rest.JsonParser;
 import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.client.wave.Log;
@@ -25,6 +26,7 @@ import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.swellrt.beta.model.ModelFactory;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.common.util.RgbColorPalette;
+import org.waveprotocol.wave.client.debug.logger.LogLevel;
 import org.waveprotocol.wave.client.scheduler.SchedulerInstance;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
@@ -143,6 +145,10 @@ public class ServiceEntryPoint implements EntryPoint {
   @Override
   public void onModuleLoad() {
 
+    // Making sure Editor registries are initialized before
+    // getting any instance of ContentDocument
+    SEditorStatics.initRegistries();
+
     ModelFactory.instance = new WebModelFactory();
 
     WaveDeps.logFactory = new Log.Factory() {
@@ -235,20 +241,14 @@ public class ServiceEntryPoint implements EntryPoint {
     ServiceConfig.configProvider = getConfigProvider();
     getEditorConfigProvider();
 
-    if (ServiceConfig.captureExceptions()) {
+    if (ServiceConfig.captureExceptions() || LogLevel.showErrors()) {
 
       GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
 
         @Override
         public void onUncaughtException(Throwable e) {
-          Console.log("Uncaught Exception: " + e.getMessage());
-          String string = "";
-          for (StackTraceElement element : e.getStackTrace()) {
-            string += element + "\n";
-          }
-          Console.log("Trace: ");
-          Console.log(string);
-
+          GWT.log("Uncaught Exception", e);
+          e.printStackTrace(System.err);
         }
       });
 

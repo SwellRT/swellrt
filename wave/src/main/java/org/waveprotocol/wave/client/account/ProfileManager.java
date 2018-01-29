@@ -19,7 +19,7 @@
 
 package org.waveprotocol.wave.client.account;
 
-import org.swellrt.beta.client.platform.web.editor.CaretAnnotationHandler;
+import org.swellrt.beta.client.platform.web.editor.caret.CaretAnnotationHandler;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.SourcesEvents;
 

@@ -97,6 +97,11 @@
         </div>
       </div>
     </div>
+    
+    <div class="row">
+    	<div class="col-md-12" id="log" style="height:200px; overflow-y: scroll">
+    	</div>
+    </div>
 
   </div><!-- container -->
 
@@ -120,7 +125,7 @@
 
     __swell_config = {
         websocketDebugLog: true,
-        captureExceptions: false,
+        captureExceptions: true,
         websocketHeartbeatInterval: 30000
     };
 
@@ -159,7 +164,12 @@
         object.setPublic(true);
       }
 
-	  	
+
+	  swell.Editor.configure({
+		  traceUserAgent: true,
+		  logPanel: document.getElementById("log")
+	  });
+
 
       // Create editor instance, reusable
       editor = swell.Editor.get("editor");
@@ -341,6 +351,8 @@
       }
       window.location.reload();
   }
+
+
 
   </script>
 

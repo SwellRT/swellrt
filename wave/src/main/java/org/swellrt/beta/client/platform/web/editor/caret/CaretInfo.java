@@ -1,4 +1,4 @@
-package org.swellrt.beta.client.platform.web.editor;
+package org.swellrt.beta.client.platform.web.editor.caret;
 
 import org.swellrt.beta.model.json.SJsonObject;
 import org.swellrt.beta.model.presence.SSession;
@@ -43,17 +43,17 @@ public class CaretInfo {
   }
 
   @JsProperty
-  SSession getSession() {
+  public SSession getSession() {
     return this.session;
   }
 
   @JsProperty
-  double getTimestamp() {
+  public double getTimestamp() {
     return this.timestamp;
   }
 
   @JsProperty
-  int getPosition() {
+  public int getPosition() {
     return this.position;
   }
 }

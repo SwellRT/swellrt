@@ -1,5 +1,10 @@
 package org.swellrt.beta.client.platform.web.editor;
 
+import org.swellrt.beta.client.platform.web.editor.caret.CaretViewFactory;
+import org.swellrt.beta.client.platform.web.editor.caret.view.LegacyCaretViewFactory;
+
+import com.google.gwt.dom.client.Element;
+
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
@@ -28,6 +33,9 @@ public class SEditorConfig {
 
   public Boolean webkitComposition;
 
+  public CaretViewFactory caretFactory;
+
+  public Element logPanel;
 
   /*
    * Methods with secure default value if property is not available
@@ -113,4 +121,23 @@ public class SEditorConfig {
     }
   }
 
+  @JsOverlay
+  public final CaretViewFactory caretFactory() {
+    CaretViewFactory DEFAULT = LegacyCaretViewFactory.instance;
+    try {
+      return caretFactory != null ? caretFactory : DEFAULT;
+    } catch (RuntimeException e) {
+      return DEFAULT;
+    }
+  }
+
+  @JsOverlay
+  public final Element logPanel() {
+    Element DEFAULT = null;
+    try {
+      return logPanel;
+    } catch (RuntimeException e) {
+      return DEFAULT;
+    }
+  }
 }

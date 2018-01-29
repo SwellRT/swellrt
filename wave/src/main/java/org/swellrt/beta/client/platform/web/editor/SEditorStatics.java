@@ -3,6 +3,7 @@ package org.swellrt.beta.client.platform.web.editor;
 import java.util.Map;
 
 import org.swellrt.beta.client.platform.web.ServiceEntryPoint;
+import org.swellrt.beta.client.platform.web.editor.caret.CaretAnnotationHandler;
 import org.swellrt.beta.model.presence.SSessionProvider;
 import org.waveprotocol.wave.client.common.util.UserAgent;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
@@ -20,6 +21,7 @@ import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
+import org.waveprotocol.wave.common.logging.LoggerBundle;
 import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 
@@ -27,22 +29,14 @@ import org.waveprotocol.wave.model.document.util.LineContainers;
  * Put here all static dependencies and initializations for the editor
  * component. Editor depends on several static stuff (Doodads, registries...)
  * <br>
- * <p>
- * Current implementation only allows to configure editor's deps once during a
- * Swell client lifetime. See {@link Editor.ROOT_HANDLER_REGISTRY} and
+ *
+ * See {@link Editor.ROOT_HANDLER_REGISTRY} and
  * {@link Editor.ROOT_ANNOTATION_REGISTRY} for more info about Editor's
  * configuration.
  *
  *
  */
 public class SEditorStatics {
-
-
-  private static final String TOPLEVEL_CONTAINER_TAGNAME = "body";
-
-
-  /** Editor's specific settings */
-  private static EditorSettings editorSettings;
 
   /** The annotation handler for carets */
   private static CaretAnnotationHandler caretAnnotationHandler;
@@ -54,6 +48,13 @@ public class SEditorStatics {
   protected static KeyBindingRegistry getKeyBindingRegistry() {
     return keyBindingRegistry;
   }
+
+
+  /** Editor's specific settings */
+  private static EditorSettings editorSettings;
+
+  /** The latest configuration object */
+  protected static SEditorConfig config;
 
   /** @return editor settings */
   protected static EditorSettings getSettings() {
@@ -67,38 +68,41 @@ public class SEditorStatics {
 
   /** @return true if configuration was done */
   public static boolean isConfigured() {
-    return caretAnnotationHandler != null;
+    return config != null;
+  }
+
+  public static SEditorConfig getConfig() {
+    return config;
   }
 
   private static native SEditorConfig getDefaultConfig() /*-{
     return {};
   }-*/;
 
-  public static void configureDefault() {
-    configure(getDefaultConfig());
+  public static void setConfigDefault() {
+    setConfig(getDefaultConfig());
   }
 
   /**
-   * Reminder: Use always Editor.ROOT_REGISTRIES as reference for editor's
-   * registers.
    *
-   * @param editor
-   *          configuration object
    */
-  public static void configure(SEditorConfig config) {
+  public static void setConfig(SEditorConfig config) {
 
-    // EditorStaticDeps.logger is of type DomLogger
-    DomLogger.setEnableConsoleLogging(config.consoleLog());
+    if (config.logPanel() != null) {
+      DomLogger.enableAllModules();
+      DomLogger.enable(config.logPanel());
+    }
+
+    if (config.consoleLog()) {
+      EditorStaticDeps.logger = LoggerBundle.CONSOLE_IMPL;
+    }
 
     if (config.traceUserAgent())
       logUserAgent();
 
-    if (editorSettings == null) {
-      configureRegistries();
-    }
-
     configureEditorSettings(config);
 
+    SEditorStatics.config = config;
   }
 
   private static void configureEditorSettings(SEditorConfig config) {
@@ -111,7 +115,34 @@ public class SEditorStatics {
 
   }
 
-  private static void configureRegistries() {
+  private static void logUserAgent() {
+
+    String s = "";
+
+    s += "Android: " + UserAgent.isAndroid() + ", ";
+    s += "IPhone: " + UserAgent.isIPhone() + ", ";
+
+    s += "Linux: " + UserAgent.isLinux() + ", ";
+    s += "Mac: " + UserAgent.isMac() + ", ";
+    s += "Win: " + UserAgent.isWin() + ", ";
+
+    s += "Mobile Webkit: " + UserAgent.isMobileWebkit() + ", ";
+    s += "Webkit: " + UserAgent.isWebkit() + ", ";
+
+    s += "Safari: " + UserAgent.isSafari() + ", ";
+    s += "Chrome: " + UserAgent.isChrome() + ", ";
+    s += "Firefox: " + UserAgent.isFirefox() + ", ";
+
+    s += "IE: " + UserAgent.isIE() + ", ";
+    s += "IE7: " + UserAgent.isIE7() + ", ";
+    s += "IE8: " + UserAgent.isIE8() + ", ";
+
+    EditorStaticDeps.logger.trace().log("User Agent: " + UserAgent.debugUserAgentString());
+    EditorStaticDeps.logger.trace().log("User Agent details: " + s);
+
+  }
+
+  public static void initRegistries() {
 
     Editors.initRootRegistries();
 
@@ -128,10 +159,10 @@ public class SEditorStatics {
     //
 
     // Code taken from RegistriesHolder
-    Blips.init();
-    LineRendering.registerContainer(TOPLEVEL_CONTAINER_TAGNAME,
+    LineRendering.registerContainer(Blips.BODY_TAGNAME,
         Editor.ROOT_REGISTRIES.getElementHandlerRegistry());
-    LineContainers.setTopLevelContainerTagname(TOPLEVEL_CONTAINER_TAGNAME);
+    // Blips.init();
+    LineContainers.setTopLevelContainerTagname(Blips.BODY_TAGNAME);
 
     StyleAnnotationHandler.register(Editor.ROOT_REGISTRIES);
 
@@ -177,30 +208,5 @@ public class SEditorStatics {
   }
 
 
-  private static void logUserAgent() {
 
-    String s = "";
-
-    s += "Android: " + UserAgent.isAndroid() + ", ";
-    s += "IPhone: " + UserAgent.isIPhone() + ", ";
-
-    s += "Linux: " + UserAgent.isLinux() + ", ";
-    s += "Mac: " + UserAgent.isMac() + ", ";
-    s += "Win: " + UserAgent.isWin() + ", ";
-
-    s += "Mobile Webkit: " + UserAgent.isMobileWebkit() + ", ";
-    s += "Webkit: " + UserAgent.isWebkit() + ", ";
-
-    s += "Safari: " + UserAgent.isSafari() + ", ";
-    s += "Chrome: " + UserAgent.isChrome() + ", ";
-    s += "Firefox: " + UserAgent.isFirefox() + ", ";
-
-    s += "IE: " + UserAgent.isIE() + ", ";
-    s += "IE7: " + UserAgent.isIE7() + ", ";
-    s += "IE8: " + UserAgent.isIE8() + ", ";
-
-    EditorStaticDeps.logger.trace().log("User Agent String: " + UserAgent.debugUserAgentString());
-    EditorStaticDeps.logger.trace().log("User Agent Properties: " + s);
-
-  }
 }

@@ -10,6 +10,7 @@ import org.swellrt.beta.client.platform.web.ServiceEntryPoint;
 import org.swellrt.beta.client.platform.web.editor.annotation.AnnotationController;
 import org.swellrt.beta.client.platform.web.editor.annotation.AnnotationRegistry;
 import org.swellrt.beta.client.platform.web.editor.annotation.AnnotationValue;
+import org.swellrt.beta.client.platform.web.editor.caret.CaretManager;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.UserAgent;
@@ -63,7 +64,7 @@ public class SEditor implements EditorUpdateListener {
   public static void configure(SEditorConfig config) {
     if (config == null)
       return;
-    SEditorStatics.configure(config);
+    SEditorStatics.setConfig(config);
   }
 
   /** create a editor instance of get an existing one */
@@ -72,7 +73,7 @@ public class SEditor implements EditorUpdateListener {
     if (!SEditorStatics.isConfigured()) {
       // Just pass a empty javascript object. SEditorConfig overlay methods
       // will provide default values.
-      SEditorStatics.configureDefault();
+      SEditorStatics.setConfigDefault();
     }
 
     if (editors.containsKey(elementId)) {
@@ -569,8 +570,6 @@ public class SEditor implements EditorUpdateListener {
 
     return editor;
   }
-
-  Element caretMarker = null;
 
   @JsIgnore
   @Override

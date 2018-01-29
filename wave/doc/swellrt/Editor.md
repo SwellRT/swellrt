@@ -359,18 +359,25 @@ Document events are only thrown when annotations are created or removed in the d
 - *swell.Annotation.EVENT_CREATED*
 - *swell.Annotation.EVENT_REMOVED*
 
+
+### Custom carets
+
+
+
 ## Development
 
-### Show debug messages in Web console
+### Logging debug messages
 
 Set the following configuration property before getting any editor instance:
 
 ```js
 var editor = swell.Editor.configure({
 	consoleLog: true
-
 });
 ```
+
+Avoid silent capturing of execptions setting GWT log level to "DEBUG" or "ERROR" in "build.gradle" and GWT module files "ServiceFrontendDev.gwt.xml"
+
 
 ### Wave Harness Editor 
 

@@ -1,6 +1,7 @@
 package org.swellrt.beta.client.platform.web.editor;
 
 
+import org.swellrt.beta.client.platform.web.editor.caret.CaretInfo;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;

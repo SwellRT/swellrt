@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.swellrt.beta.client.platform.web.editor;
+package org.swellrt.beta.client.platform.web.editor.caret;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,12 +27,9 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import org.swellrt.beta.client.platform.web.editor.SEditorStatics;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.common.util.RgbColorUtil;
-import org.waveprotocol.wave.client.doodad.selection.CaretMarkerRenderer;
-import org.waveprotocol.wave.client.doodad.selection.CaretView;
-import org.waveprotocol.wave.client.doodad.selection.CaretView.CaretViewFactory;
-import org.waveprotocol.wave.client.doodad.selection.CaretWidget;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.BoundaryFunction;
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter.PaintFunction;
@@ -101,20 +98,20 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
    */
   public static CaretAnnotationHandler register(Registries registries) {
 
-    CaretMarkerRenderer carets = CaretMarkerRenderer.getInstance();
 
     registries.getElementHandlerRegistry().registerRenderer(
-        CaretMarkerRenderer.FULL_TAGNAME, carets);
+        CaretRenderer.FULL_TAGNAME, CaretRenderer.getInstance());
 
-    return register(registries, SchedulerInstance.getLowPriorityTimer(), carets);
+    return register(registries, SchedulerInstance.getLowPriorityTimer(),
+        SEditorStatics.getConfig().caretFactory());
   }
 
   @VisibleForTesting
   static CaretAnnotationHandler register(Registries registries, TimerService timer,
-      CaretViewFactory carets) {
+      CaretViewFactory caretViewFactory) {
 
     CaretAnnotationHandler selection = new CaretAnnotationHandler(
-        registries.getPaintRegistry(), timer, carets);
+        registries.getPaintRegistry(), timer, caretViewFactory);
 
     registries.getAnnotationHandlerRegistry().
         registerHandler(CaretAnnotationConstants.USER_PREFIX, selection);
@@ -165,21 +162,20 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
 
     Caret(String sessionId) {
       this.sessionId = sessionId;
-      this.caretView = new CaretWidget();
+      this.caretView = caretViewFactory.exec();
     }
 
-    private void updateView() {
-      this.caretView.setColor(this.info.getSession().getColor());
-      this.caretView.setName(this.info.getSession().getName());
-    }
 
     public void update(CaretInfo info) {
+      if (info == null)
+        return;
+
       this.info = info;
-      this.updateView();
+      this.caretView.info(this.info);
     }
 
     public void compositionStateUpdated(String newState) {
-      caretView.setCompositionState(newState);
+      caretView.compositionState(newState);
     }
 
     public boolean isStale() {
@@ -196,8 +192,11 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
       originallyScheduledExpiry = expiry;
     }
 
-    public void renderAt(Element e) {
-      caretView.attachToParent(e);
+    public void renderAt(Element parent) {
+      if (parent == null || caretView.element() == null)
+        return;
+
+      parent.appendChild(caretView.element());
     }
 
   }
@@ -255,7 +254,7 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
 
           if (caretElement == null) {
             // if needed, first create a simple container to put caret DOMs into:
-            ret = localDoc.transparentCreate(CaretMarkerRenderer.FULL_TAGNAME,
+            ret = localDoc.transparentCreate(CaretRenderer.FULL_TAGNAME,
                 Collections.<String, String> emptyMap(), parent, nodeAfter);
             caretElement = ret;
           }
@@ -278,11 +277,11 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
   /** Seed the annotation handler with all required config objects. */
   public CaretAnnotationHandler(PainterRegistry registry,
       TimerService timer,
-      CaretViewFactory markerFactory) {
+      CaretViewFactory caretViewFactory) {
 
     this.painterRegistry = registry;
     this.scheduler = timer;
-    this.caretViewFactory = markerFactory;
+    this.caretViewFactory = caretViewFactory;
   }
 
   /**

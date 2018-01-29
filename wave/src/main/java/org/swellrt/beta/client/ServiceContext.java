@@ -166,7 +166,6 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   public void update(Account account) {
     Preconditions.checkNotNull(account, "Can't update null account object");
     Preconditions.checkArgument(account.getId().equals(session.getParticipantId().getAddress()) , "Account update can't change participant id");
-    Preconditions.checkArgument(account.getSessionId().equals(session.getHttpSessionId()), "Account update can't change participant id");
 
     ssessionProvider.update(toSSession(session.getSessionToken(), account));
   }
