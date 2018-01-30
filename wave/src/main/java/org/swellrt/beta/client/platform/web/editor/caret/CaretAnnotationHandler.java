@@ -96,14 +96,15 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
   /**
    * Installs this doodad.
    */
-  public static CaretAnnotationHandler register(Registries registries) {
+  public static CaretAnnotationHandler register(Registries registries,
+      CaretViewFactory caretFactory) {
 
 
     registries.getElementHandlerRegistry().registerRenderer(
         CaretRenderer.FULL_TAGNAME, CaretRenderer.getInstance());
 
     return register(registries, SchedulerInstance.getLowPriorityTimer(),
-        SEditorStatics.getConfig().caretFactory());
+        caretFactory);
   }
 
   @VisibleForTesting
@@ -171,11 +172,7 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
         return;
 
       this.info = info;
-      this.caretView.info(this.info);
-    }
-
-    public void compositionStateUpdated(String newState) {
-      caretView.compositionState(newState);
+      this.caretView.update(this.info);
     }
 
     public boolean isStale() {
@@ -193,10 +190,10 @@ public class CaretAnnotationHandler implements AnnotationMutationHandler {
     }
 
     public void renderAt(Element parent) {
-      if (parent == null || caretView.element() == null)
+      if (parent == null || caretView.getElement() == null)
         return;
 
-      parent.appendChild(caretView.element());
+      parent.appendChild(caretView.getElement());
     }
 
   }

@@ -16,7 +16,8 @@ public class CaretInfo {
   @JsIgnore
   public static CaretInfo of(SJsonObject jso) {
     SSession session = SSession.of(jso.getObject("session"));
-    return new CaretInfo(session, jso.getInt("timestamp"), jso.getInt("position"));
+    return new CaretInfo(session, jso.getInt("timestamp"), jso.getInt("position"),
+        jso.getString("compositionState"));
   }
 
   @JsIgnore
@@ -26,6 +27,7 @@ public class CaretInfo {
     jso.addObject("session", session.toSJson());
     jso.addDouble("timestamp", timestamp);
     jso.addInt("position", position);
+    jso.addString("compositionState", compositionState);
     return jso;
 
   }
@@ -33,13 +35,15 @@ public class CaretInfo {
   private final SSession session;
   private final double timestamp;
   private final int position;
+  private final String compositionState;
 
   @JsIgnore
-  public CaretInfo(SSession session, double timestamp, int position) {
+  public CaretInfo(SSession session, double timestamp, int position, String compositionState) {
     super();
     this.session = session;
     this.timestamp = timestamp;
     this.position = position;
+    this.compositionState = compositionState;
   }
 
   @JsProperty
@@ -55,5 +59,10 @@ public class CaretInfo {
   @JsProperty
   public int getPosition() {
     return this.position;
+  }
+
+  @JsProperty
+  public String getCompositionState() {
+    return this.compositionState;
   }
 }

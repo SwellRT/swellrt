@@ -170,8 +170,10 @@ public class CaretManager implements EditorUpdateListener {
 
     if (event.selectionLocationChanged() && selection != null) {
 
+      String compositionState = event.context().getImeCompositionState();
       int caretPos = selection.asRange().getStart();
-      CaretInfo caretInfo = new CaretInfo(session.get(), System.currentTimeMillis(), caretPos);
+      CaretInfo caretInfo = new CaretInfo(session.get(), System.currentTimeMillis(), caretPos,
+          compositionState);
 
       try {
         carets.put(session.get().getSessionId(), caretInfo.toSJson());

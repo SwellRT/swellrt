@@ -2,6 +2,7 @@ package org.swellrt.beta.client.platform.web.editor.caret;
 
 import com.google.gwt.dom.client.Element;
 
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
@@ -11,11 +12,11 @@ import jsinterop.annotations.JsType;
 @JsType(isNative = true, namespace = "swell", name = "Caret")
 public interface CaretView {
 
-  public Element element();
+  /** the DOM element for the caret */
+  @JsProperty
+  public Element getElement();
 
-  public String compositionState(String state);
-
-  /** set the caret's session and user info */
-  public CaretInfo info(CaretInfo info);
+  /** update caret's session and user info */
+  public CaretInfo update(CaretInfo info);
 
 }

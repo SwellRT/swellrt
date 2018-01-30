@@ -18,22 +18,17 @@ public class LegacyCaretView implements CaretView {
   }
 
   @Override
-  public Element element() {
+  public Element getElement() {
     return widget.getElement();
   }
 
   @Override
-  public String compositionState(String state) {
-    widget.setCompositionState(state);
-    return state;
-  }
-
-  @Override
-  public CaretInfo info(CaretInfo info) {
+  public CaretInfo update(CaretInfo info) {
     if (info == null)
       return null;
     this.widget.setColor(info.getSession().getColor());
     this.widget.setName(info.getSession().getName());
+    this.widget.setCompositionState(info.getCompositionState());
     return info;
   }
 

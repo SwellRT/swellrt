@@ -362,7 +362,20 @@ Document events are only thrown when annotations are created or removed in the d
 
 ### Custom carets
 
+Rendering of carets can be customized. Custom carets must be objects providing following properties and methods:
 
+```js
+var caret = new Caret(); // our custom caret type
+caret.element; // property with the DOM element of the rendered caret.
+caret.update(caretInfo); // a method to pass info to the object.
+```
+Configure the editor component with a factory of carets using the configuration property "caretFactory":
+
+```js
+var editor = swell.Editor.configure({
+	caretFactory: function() { return new Caret(); }
+});
+```
 
 ## Development
 

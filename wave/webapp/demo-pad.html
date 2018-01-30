@@ -44,6 +44,16 @@
   .document-list {
 
   }
+  
+  .caret-bar {
+    border-left-width: 2px;    
+    border-color: gray;
+    border-left-style: solid;
+    width: 0.5px;  
+  }
+  
+  .caret-label {
+  }
 
   </style>
 </head>
@@ -136,7 +146,42 @@
   <script src="/swell.js"></script>
 
   <script>
+  
+  //
+  // An example of a custom caret renderer
+  //  
+  var Caret = (function invoke() {
+  	
+	  function Caret() {
+		  
+		  // Property initialization		  
+		  this.element = document.createElement("span");
+		  this.element.innerHTML = 
+			  '<span class="caret-label">(Unknown)</span><span class="caret-bar"></span>';
+		  
+	  }
+	  
+	  // Methods	  
+	  
+	  Caret.prototype.update = function(caretInfo) {
+		  
+		  var labelSpan = this.element.getElementsByClassName("caret-label")[0];
+		  labelSpan.innerHTML = caretInfo.session.name;   
+		  labelSpan.style.backgroundColor = caretInfo.session.color.cssColor;
+		  labelSpan.style.color = "white";
+		  
+		  var barSpan = this.element.getElementsByClassName("caret-bar")[0];
+		  barSpan.style.borderColor = caretInfo.session.color.cssColor;		  
+	  };
+	  
+	  return Caret;
+  }());
 
+  
+  //
+  // Starting swell
+  //
+  
   swell.onReady(function(service) {
 
     window.service = service;
@@ -164,10 +209,11 @@
         object.setPublic(true);
       }
 
-
+      
 	  swell.Editor.configure({
 		  traceUserAgent: true,
-		  logPanel: document.getElementById("log")
+		  logPanel: document.getElementById("log"),
+		  caretFactory: function() { return new Caret(); }
 	  });
 
 

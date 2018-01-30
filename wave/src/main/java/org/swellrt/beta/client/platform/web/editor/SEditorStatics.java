@@ -88,17 +88,27 @@ public class SEditorStatics {
    */
   public static void setConfig(SEditorConfig config) {
 
+    //
+    // Logging
+    //
+
     if (config.logPanel() != null) {
+
       DomLogger.enableAllModules();
       DomLogger.enable(config.logPanel());
-    }
 
-    if (config.consoleLog()) {
+    } else if (config.consoleLog()) {
       EditorStaticDeps.logger = LoggerBundle.CONSOLE_IMPL;
     }
 
     if (config.traceUserAgent())
       logUserAgent();
+
+    //
+    //
+    //
+
+    initConfigurableRegistries(config);
 
     configureEditorSettings(config);
 
@@ -142,6 +152,16 @@ public class SEditorStatics {
 
   }
 
+  /**
+   * Put here editor registry stuff depending on external configuration
+   */
+  private static void initConfigurableRegistries(SEditorConfig config) {
+
+    caretAnnotationHandler = CaretAnnotationHandler.register(Editor.ROOT_REGISTRIES,
+        config.caretFactory());
+
+  }
+
   public static void initRegistries() {
 
     Editors.initRootRegistries();
@@ -173,8 +193,6 @@ public class SEditorStatics {
         Editor.ROOT_REGISTRIES.getPaintRegistry());
 
     DiffDeleteRenderer.register(Editor.ROOT_REGISTRIES.getElementHandlerRegistry());
-
-    caretAnnotationHandler = CaretAnnotationHandler.register(Editor.ROOT_REGISTRIES);
 
     //
     // Reuse existing link annotation handler, but also support external
