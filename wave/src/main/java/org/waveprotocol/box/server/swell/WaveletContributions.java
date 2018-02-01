@@ -29,14 +29,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 import com.google.common.base.Preconditions;
 
 /**
- * Track participant contributions in text blips of a Wavelet.
- * <p>
- * Use this info to paint participant contributions highlights
- * in a document by local annotations. Thus the document doesn't
- * need to store explicitly this information.
- *
- * @author pablojan@apache.org (Pablo Ojanguren)
- *
+ * Implementation of {@link ReadableWaveletContributions} that is feed by
+ * {@link TransformedWaveletDelta} instances.
  */
 public class WaveletContributions implements ReadableWaveletContributions {
 

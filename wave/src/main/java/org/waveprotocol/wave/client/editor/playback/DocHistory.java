@@ -2,18 +2,25 @@ package org.waveprotocol.wave.client.editor.playback;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.waveprotocol.wave.client.wave.DocOpContext;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.algorithm.DocOpInverter;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
-public interface DocHistory {
-
+/**
+ * The history of document operations. Operations are grouped in Deltas, which
+ * has operations performed in a period of time by the same participant.
+ * <p>
+ * <br>
+ * History allows to navigate through document versions (Deltas).
+ *
+ * @author pablojan@gmail.com
+ *
+ */
+public interface DocHistory extends Iterable<DocHistory.Delta> {
 
   /**
-   * A delta is a set of ops from same author.
+   * A list of contiguous {@link DocOp}s in a document's history.
    */
   public static class Delta {
 
@@ -40,63 +47,28 @@ public interface DocHistory {
   }
 
   /**
-   * A revision is a point in the document version history meant by a group
-   * criteria (author, day...)
+   * An Iterator to move through the document's history
    */
-  public static class Revision {
+  public interface Iterator extends java.util.Iterator<Delta> {
 
-    /** wavelet version of this revision */
-    public long wversion;
+    /** return the Delta to move back to previous state */
+    Delta prev();
 
-    public ParticipantId[] participants;
+    /** reset the iterator, move to initial state */
+    void reset();
 
-    public long timestamp;
+    /**
+     * seek to a particular version. returns all deltas from 0 to requested
+     * version
+     */
+    List<Delta> seek(long version);
 
-    public Revision(long wversion, ParticipantId[] participants, long timestamp) {
-      super();
-      this.wversion = wversion;
-      this.participants = participants;
-      this.timestamp = timestamp;
-    }
+    /** return context of current state */
+    Delta current();
 
   }
 
-  public enum RevCriteria {
-    OP, AUTHOR, TIME
-  }
+  public long getEndVersion();
 
-  //
-  // Querying document revisions
-  //
-
-  /** returns the list of revisions for a criteria */
-  List<Revision> queryRevisions(RevCriteria criteria, long startVersion, int numOfRevisions);
-
-  long getLastVersion();
-
-  //
-  // Sequential access to deltas
-  //
-
-  /** resets the history to the initial state */
-  void reset();
-
-  /** operations to play the document to next state */
-  Optional<Delta> nextDelta();
-
-  /** operations to rewind document to previous state */
-  Optional<Delta> prevDelta();
-
-  /**
-   * If requested version is lower than internal pointer, returns all ops backwards.
-   * If requested version is greater than internal pointer, returns all ops
-   * up to the version.
-   * <p>
-   * This method doesn't return inverted ops.
-   *
-   */
-  List<Delta> toDelta(long version);
-
-  //
-
+  public DocHistory.Iterator iterator();
 }

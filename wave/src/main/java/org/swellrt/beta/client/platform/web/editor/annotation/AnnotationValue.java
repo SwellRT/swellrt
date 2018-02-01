@@ -1,6 +1,6 @@
 package org.swellrt.beta.client.platform.web.editor.annotation;
 
-import org.waveprotocol.wave.model.document.util.Range;
+import org.swellrt.beta.client.platform.web.editor.SRange;
 
 import com.google.gwt.dom.client.Node;
 
@@ -18,7 +18,7 @@ public class AnnotationValue {
    */
   public static final int MATCH_OUT = 1;
 
-  public Range range;
+  public SRange range;
   public String key;
   public Object value;
   public Object newValue;

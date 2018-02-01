@@ -7,7 +7,7 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * Context information of a doc op. It contains same info as the
- * {@link WaveletOperationContext} containing the {link DocOp}. Hence, use it
+ * {@link WaveletOperationContext} containing the @{link DocOp}. Hence, use it
  * instead to avoid mixing semantic context.
  *
  * @author pablojan@apache.org

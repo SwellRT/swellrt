@@ -1,14 +1,8 @@
 package org.waveprotocol.wave.client.editor.playback;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.client.editor.content.Registries;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.Delta;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.RevCriteria;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.Revision;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.util.Annotations;
@@ -17,30 +11,36 @@ import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
 /**
  *
- * A document that can playback document's history of changes. <br>
+ * A document that can playback a history of changes provided as
+ * {@link DocHistory}<br>
  * <p>
- * A playback document can replay document states iterating by each single delta
- * or by sets of deltas grouped by author or a period of time.
- * </p>
  * <br>
+ * Each {@link Version} represents a set of contiguous operations performed by
+ * the same participant in certain interval of time. Initial version is always
+ * 0. <br>
  * <p>
- * Document diffs can be rendered.
- * </p>
- * <br>
- * <p>
- * The initial state is the empty document. {@code PlaybackDocuments} are not
- * intended to be edited.
- * </p>
+ * The navigation methods of this class, control the version to be rendered.
+ * Highlighting of incremental diffs between versions is available.
  *
- * *
- *
- * @author pablojan@apache.org
+ * @author pablojan@gmail.com
  *
  */
 public class PlaybackDocument {
 
+  public class Version {
 
+    public double version;
+    public String participant;
+    public double timestamp;
+    public int numOfChanges;
+
+  }
+
+  /** history of doc ops */
   private final DocHistory history;
+
+  /** current iterator of doc ops */
+  private DocHistory.Iterator deltaIterator;
 
   /** Let's put in this cache any doc op sent to the content document */
   private final DocOpTracker docOpCache;
@@ -57,6 +57,7 @@ public class PlaybackDocument {
   /** Enable or disable the diff filter */
   private boolean useDiffFilter = false;
 
+
   public PlaybackDocument(Registries registries, DocumentSchema schema, DocHistory history,
       DocOpTracker docOpCache) {
     this.doc = new ContentDocument(schema);
@@ -64,17 +65,19 @@ public class PlaybackDocument {
     this.history = history;
     this.diffFilter = new DiffHighlightingFilter(this.doc.getDiffTarget(), docOpCache);
     this.docOpCache = docOpCache;
+
+    this.deltaIterator = history.iterator();
   }
 
   public ContentDocument getDocument() {
     return doc;
   }
 
-  public void renderDiffs(boolean isOn) {
+  public void enableDiffs(boolean isOn) {
     useDiffFilter = isOn;
   }
 
-  private void consume(Delta delta) {
+  private void consume(DocHistory.Delta delta) {
     delta.ops.forEach(op -> {
 
       docOpCache.add(op, delta.context);
@@ -91,11 +94,6 @@ public class PlaybackDocument {
   }
 
 
-  public List<Revision> queryRevisions(RevCriteria criteria, long startVersion,
-      int numOfRevisions) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
   private void resetContent() {
     doc.getMutableDoc().deleteRange(0, doc.getMutableDoc().size());
@@ -116,54 +114,74 @@ public class PlaybackDocument {
   }
 
   public void reset() {
-    history.reset();
+    deltaIterator = history.iterator();
     resetAnnotations();
     resetContent();
   }
 
-  public void nextDelta() {
 
-    Optional<Delta> opDeltas = history.nextDelta();
+  /** Render the document in its next version. */
+  public void renderNext() {
 
-    if (!opDeltas.isPresent())
+    if (!deltaIterator.hasNext())
       return;
 
-    currentVersion++;
-    consume(opDeltas.get());
+    consume(deltaIterator.next());
+
   }
 
-  public void prevDelta() {
+  /** Render the document in its previous version. */
+  public void renderPrev() {
 
-    Optional<Delta> opDeltas = history.prevDelta();
-
-    if (!opDeltas.isPresent())
+    if (deltaIterator.current() == null)
       return;
 
-    currentVersion--;
-    consume(opDeltas.get().invert());
-  }
+    consume(deltaIterator.current().invert());
 
-  public void toDelta(long version) {
-
-    boolean backwards = version < currentVersion;
-
-    history.toDelta(version).forEach(delta -> {
-
-      if (backwards) {
-        currentVersion--;
-        consume(delta.invert());
-      } else {
-        currentVersion++;
-        consume(delta);
-      }
-
-    });
+    deltaIterator.prev();
 
   }
 
 
-  public long getLastVersion() {
-    return history.getLastVersion();
+  /**
+   * Render the document at the specific version.
+   */
+  public void render(Version version) {
+
   }
+
+  /**
+   * Render the document at a specific version, highlighting differences between
+   * the provided versions.
+   *
+   * @param from
+   * @param to
+   */
+  public void renderDiff(Version from, Version to) {
+
+  }
+
+  /**
+   * Query version history.
+   *
+   * @param from first version number to return
+   * @param count number of versions to return
+   * @return array of available {@link Versions}
+   */
+  public Version[] getVersions(double from, int count) {
+    return null;
+  }
+
+  /**
+   * Query version history filtering by a period of time.
+   *
+   * @param from first version number to return
+   * @param timeSpan only returns version in a span after the first version's time.
+   * @return array of available {@link Versions}
+   */
+  public Version[] getVersionsByTime(double from, double timeSpan) {
+    return null;
+  }
+
 
 }

@@ -1,5 +1,6 @@
 package org.swellrt.beta.client.platform.web.editor.annotation;
 
+import org.swellrt.beta.client.platform.web.editor.SRange;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.ContentNode;
@@ -76,7 +77,7 @@ public class AnnotationValueBuilder {
 
     av.key = key;
     av.value = value;
-    av.range = range;
+    av.range = SRange.create(range);
     av.searchMatch = searchMatch;
 
     Point<ContentNode> point = doc.locate(range.getStart());
@@ -115,12 +116,12 @@ public class AnnotationValueBuilder {
 
     av.key = key;
     av.value = value;
-    av.range = Range.create(start, end);
+    av.range = SRange.create(start, end);
     av.searchMatch = searchMatch;
 
     av.node = element.getImplNodeletRightwards();
     av.line = av.node;
-    av.text = DocHelper.getText(doc, av.range.getStart(), av.range.getEnd());
+    av.text = DocHelper.getText(doc, av.range.start, av.range.end);
 
     // if (av.node.getNodeType() == Node.ELEMENT_NODE) {
     // av.text = ((Element) av.node).getInnerText();
@@ -193,7 +194,7 @@ public class AnnotationValueBuilder {
 
     av.key = key;
     av.value = value;
-    av.range = range != null ? range : Range.ALL;
+    av.range = SRange.create(range != null ? range : Range.ALL);
     av.searchMatch = -1;
 
     if (node.isImplAttached()) {

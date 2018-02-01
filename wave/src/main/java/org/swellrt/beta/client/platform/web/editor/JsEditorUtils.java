@@ -104,13 +104,6 @@ public class JsEditorUtils {
         new Double(jsv.getNumber("end")).intValue());
   }
 
-  public static JavaScriptObject rangeToNative(Range range) {
-    JsoView jsv = JsoView.create();
-    jsv.setNumber("start", range.getStart());
-    jsv.setNumber("end", range.getEnd());
-    return jsv.cast();
-  }
-
   public static JavaScriptObject intRangeToNative(IntRange range) {
     JsoView jsv = JsoView.create();
     jsv.setNumber("start", range.getFirst());

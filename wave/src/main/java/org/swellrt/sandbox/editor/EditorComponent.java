@@ -21,7 +21,7 @@ import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
-import org.waveprotocol.wave.client.editor.playback.FakeDocHistory;
+import org.waveprotocol.wave.client.editor.playback.DocHistoryLocal;
 import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
 import org.waveprotocol.wave.client.wave.DocOpContext;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
@@ -101,7 +101,7 @@ public class EditorComponent extends Composite {
   // Editor 2
 
   /** The ops history of doc 1 to be replayed in doc2 */
-  FakeDocHistory docHistory = new FakeDocHistory();
+  DocHistoryLocal docHistory = new DocHistoryLocal();
 
   /** A doc op cache to query op metadata from ops consumers */
   DocOpTracker docOpCache = new DocOpTracker() {
@@ -221,7 +221,7 @@ public class EditorComponent extends Composite {
       editor2.init(getRegistries(), new KeyBindingRegistry(), getSettings());
       doc2 =  new PlaybackDocument(getRegistries(), DOC_SCHEMA, docHistory, docOpCache);
       editor2.setContent(doc2.getDocument());
-      doc2.renderDiffs(true);
+      doc2.enableDiffs(true);
       editor2.setEditing(false);
 
       // Render a content document in a panel
@@ -274,7 +274,8 @@ public class EditorComponent extends Composite {
 
         } else if (replayMode.equals(REPLAY_FLOW)) {
 
-          docHistory.addSingleDelta(DUMMY_PARTICIPANT, op);
+          docHistory.add(DUMMY_PARTICIPANT, op);
+          docHistory.markDelta();
 
         }
 
@@ -324,11 +325,11 @@ public class EditorComponent extends Composite {
     if (!groupOps) {
       groupOps = true;
       doc1.getMutableDoc().beginMutationGroup();
-      btnOpGroup.setText("End Ops. Group");
+      btnOpGroup.setText("Start Group");
     } else {
       groupOps = false;
       doc1.getMutableDoc().endMutationGroup();
-      btnOpGroup.setText("Begin Ops. Group");
+      btnOpGroup.setText("End Group");
     }
   }
 
@@ -341,8 +342,8 @@ public class EditorComponent extends Composite {
   public void replay() {
 
     // take ops from doc1 to play them in doc2/editor2
-    // docHistory.addSingleDelta(ParticipantId.ofUnsafe("dummy@swellrt.org"), doc1ops);
-    docHistory.addAllDeltas(DUMMY_PARTICIPANT, doc1ops);
+    docHistory.add(DUMMY_PARTICIPANT, doc1ops);
+    docHistory.markDelta();
     doc1ops.clear();
   }
 
@@ -374,7 +375,7 @@ public class EditorComponent extends Composite {
 
     ctrlPanel1 = new HorizontalPanel();
 
-    btnOpGroup = new Button("Begin Ops. group", new ClickHandler() {
+    btnOpGroup = new Button("Start Group", new ClickHandler() {
       public void onClick(ClickEvent e) {
 
         toggleOpGrouping();
@@ -383,7 +384,7 @@ public class EditorComponent extends Composite {
     });
     ctrlPanel1.add(btnOpGroup);
 
-    lblOpsCounter = new Label("Generated Ops #");
+    lblOpsCounter = new Label("Op count: #");
     ctrlPanel1.add(lblOpsCounter);
     txtOpsCounter = new TextBox();
     txtOpsCounter.setWidth("5em");
@@ -434,7 +435,7 @@ public class EditorComponent extends Composite {
       public void onClick(ClickEvent e) {
 
         if (doc2 != null)
-          doc2.prevDelta();
+          doc2.renderPrev();
 
       }
     });
@@ -445,7 +446,7 @@ public class EditorComponent extends Composite {
       public void onClick(ClickEvent e) {
 
         if (doc2 != null)
-          doc2.nextDelta();
+          doc2.renderNext();
 
       }
     });

@@ -6,14 +6,17 @@ import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 
 /**
- * Provide a caché of metadada for operations.
+ * A tracker allows to attach and share doc operations metadata between
+ * components.
  * <p>
- * {@link PlaybackDocument} and {@link StaticChannelBinder} add elements to the
- * caché.
- * </p>
+ * <br>
+ * {@link PlaybackDocument} and {@link StaticChannelBinder} add elements to a
+ * tracker.
  * <p>
- * {@link DiffHighlightFilter} is a consumer of this caché.
- * </p>
+ * <br>
+ * {@link DiffHighlightFilter} is a consumer of a tracker.
+ * <p>
+ * <br>
  */
 public interface DocOpTracker {
 

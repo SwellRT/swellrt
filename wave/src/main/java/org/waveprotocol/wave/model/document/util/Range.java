@@ -21,14 +21,12 @@ package org.waveprotocol.wave.model.document.util;
 
 import org.waveprotocol.wave.model.util.Preconditions;
 
-import jsinterop.annotations.JsIgnore;
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
-
 /**
- * An immutable range of two locations integers
+ * An immutable range of two locations integers.
+ * <p>
+ * <br>
+ * (Don't expose this class to native Javascript, that causes editor fails)
  */
-@JsType(namespace = "swell", name = "Range")
 public final class Range {
 
   public static final Range ALL = new Range(0,0);
@@ -37,7 +35,6 @@ public final class Range {
   public static Range create(int start, int end) {
     return new Range(start, end);
   }
-
 
   private final int start;
   private final int end;
@@ -53,7 +50,6 @@ public final class Range {
    * @param start
    * @param end
    */
-  @JsIgnore
   public Range(int start, int end) {
     if (start < 0 || start > end) {
       Preconditions.illegalArgument("Bad range: (" + start + ", " + end + ")");
@@ -67,31 +63,34 @@ public final class Range {
    *
    * @param collapsedAt
    */
-  @JsIgnore
   public Range(int collapsedAt) {
     this(collapsedAt, collapsedAt);
   }
 
   /**
+   * (Don't put a JsProperty annotation here, it breaks editor)
+   *
    * @return start point
+   *
    */
-  @JsProperty
   public int getStart() {
     return start;
   }
 
   /**
+   * (Don't put a JsProperty annotation here, it breaks editor)
+   *
    * @return end point
    */
-  @JsProperty
   public int getEnd() {
     return end;
   }
 
   /**
+   * (Don't put a JsProperty annotation here, it breaks editor)
+   *
    * @return true if the range is collapsed
    */
-  @JsProperty
   public boolean isCollapsed() {
     return start == end;
   }
@@ -99,7 +98,6 @@ public final class Range {
   /**
    * {@inheritDoc}
    */
-  @JsIgnore
   @Override
   public int hashCode() {
     return start + 37 * end;
@@ -108,7 +106,6 @@ public final class Range {
   /**
    * {@inheritDoc}
    */
-  @JsIgnore
   @Override
   public boolean equals(Object obj) {
     if (this == obj) return true;
@@ -122,7 +119,6 @@ public final class Range {
   /**
    * {@inheritDoc}
    */
-  @JsIgnore
   @Override
   public String toString() {
     return "Range(" + getStart()

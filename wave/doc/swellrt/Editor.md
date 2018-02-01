@@ -372,24 +372,32 @@ caret.update(caretInfo); // a method to pass info to the object.
 Configure the editor component with a factory of carets using the configuration property "caretFactory":
 
 ```js
-var editor = swell.Editor.configure({
+swell.Editor.configure({
 	caretFactory: function() { return new Caret(); }
 });
 ```
 
 ## Development
 
-### Logging debug messages
+### Logging editor events
 
-Set the following configuration property before getting any editor instance:
+Log to browser's console:
 
 ```js
-var editor = swell.Editor.configure({
+swell.Editor.configure({
 	consoleLog: true
 });
 ```
 
-Avoid silent capturing of execptions setting GWT log level to "DEBUG" or "ERROR" in "build.gradle" and GWT module files "ServiceFrontendDev.gwt.xml"
+Log to an HTML panel:
+
+```js
+swell.Editor.configure({
+	logPanel: document.getElementById("log"),
+});
+```
+
+Logging is available when GWT log level is "DEBUG" or "ERROR". Check out current log level in "build.gradle" and GWT module files "ServiceFrontendDev.gwt.xml"
 
 
 ### Wave Harness Editor 
@@ -413,6 +421,8 @@ Harness editor runs solely in client side, hence no running server is required.
 
 ### Swell Editor Sandbox
 
+Editor sandbox is a small GWT app to play with editor component. Run with following commands:
+
 ```sh
 ./gradlew editorSandbox
 ```
@@ -421,7 +431,8 @@ Harness editor runs solely in client side, hence no running server is required.
 http://127.0.1.1:9876/org.swellrt.sandbox.editor.Editor/editor.html
 ```
 
-Sandbox editor runs solely in client side, hence no running server is required. 
+Sandbox editor runs solely in client side, 
+no running server is required. 
 
 ### Developer's recipes
 

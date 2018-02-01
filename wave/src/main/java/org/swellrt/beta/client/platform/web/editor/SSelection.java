@@ -41,7 +41,7 @@ public class SSelection {
 
       s.isCollapsed = nativeSelectionPoint.isCollapsed();
 
-      s.range = JsEditorUtils.rangeToNative(textRange);
+      s.range = SRange.create(textRange);
 
     return s;
 
@@ -77,7 +77,7 @@ public class SSelection {
   public int focusOffset;
 
   /** Range in the text document matching this selection */
-  public JavaScriptObject range;
+  public SRange range;
 
   public Element getElement() {
     return NativeSelectionUtil.getActiveElement();
