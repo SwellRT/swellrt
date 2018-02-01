@@ -61,6 +61,8 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.jboss.resteasy.plugins.guice.GuiceResteasyBootstrapServletContextListener;
+import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticate;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolAuthenticationResult;
 import org.waveprotocol.box.server.authentication.SessionManager;
@@ -495,16 +497,30 @@ public class ServerRpcProvider {
     try {
 
       final ServletModule servletModule = getServletModule();
+      final Injector servletInjector = injector.createChildInjector(servletModule);
 
       ServletContextListener contextListener = new GuiceServletContextListener() {
 
-        private final Injector childInjector = injector.createChildInjector(servletModule);
-
         @Override
         protected Injector getInjector() {
-          return childInjector;
+          return servletInjector;
         }
       };
+
+      //
+      // Configure RestEasy + Guice
+      //
+
+      context.setInitParameter("resteasy.guice.modules",
+          "org.waveprotocol.box.server.swell.rest.RestModule");
+
+      ServletHolder restServletHolder = new ServletHolder(HttpServletDispatcher.class);
+      restServletHolder.setInitParameter("resteasy.servlet.mapping.prefix", "/rest");
+
+      // use servlet injector so we can get Http stuff
+      context.addEventListener(
+          servletInjector.getInstance(GuiceResteasyBootstrapServletContextListener.class));
+      context.addServlet(restServletHolder, "/rest/*");
 
       context.addEventListener(contextListener);
       context.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
@@ -566,6 +582,7 @@ public class ServerRpcProvider {
         for (Pair<String, Class<? extends Filter>> filter : filterRegistry) {
           filter(filter.first).through(filter.second);
         }
+        bind(GuiceResteasyBootstrapServletContextListener.class).in(Singleton.class);
       }
     };
   }
