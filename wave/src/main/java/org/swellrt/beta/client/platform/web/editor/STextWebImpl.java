@@ -8,7 +8,6 @@ import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.common.util.LogicalPanel.Impl;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
-import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.dom.client.Document;
@@ -109,21 +108,21 @@ public class STextWebImpl implements STextWeb {
   }
 
   @Override
-  public Range insert(Range at, String content) {
+  public SRange insert(SRange at, String content) {
     Preconditions.checkArgument(at != null, "Can't insert text in a null position");
     content = SUtils.sanitizeString(content);
     if (content.length() > 0) {
-      doc.getMutableDoc().insertText(at.getStart(), content);
-      return new Range(at.getStart(), at.getStart() + content.length());
+      doc.getMutableDoc().insertText(at.start, content);
+      return SRange.create(at.start, at.start + content.length());
     }
     return null;
   }
 
   @Override
-  public Range replace(Range at, String content) {
+  public SRange replace(SRange at, String content) {
     Preconditions.checkArgument(at != null, "Can't replace text of a null range");
-    if (!at.isCollapsed())
-      doc.getMutableDoc().deleteRange(at.getStart(), at.getEnd());
+    if (at.start != at.end)
+      doc.getMutableDoc().deleteRange(at.start, at.end);
 
     return insert(at, content);
   }

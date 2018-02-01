@@ -14,7 +14,6 @@ import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.Nindo;
-import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.dom.client.Element;
@@ -91,12 +90,12 @@ public class STextRemoteWeb extends SWaveText implements STextWeb {
 
 
   @Override
-  public Range insert(Range at, String content) {
+  public SRange insert(SRange at, String content) {
     return textWeb.insert(at, content);
   }
 
   @Override
-  public Range replace(Range at, String content) {
+  public SRange replace(SRange at, String content) {
     return textWeb.replace(at, content);
   }
 
