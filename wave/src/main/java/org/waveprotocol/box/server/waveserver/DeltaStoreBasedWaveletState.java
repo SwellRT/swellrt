@@ -380,6 +380,7 @@ class DeltaStoreBasedWaveletState implements WaveletState {
 
     Receiver<WaveletDeltaRecord> target;
     WaveletDeltaRecord lastDelta = null;
+    boolean halted = false;
 
     public DeltaRecordTrackerReceiver(Receiver<WaveletDeltaRecord> target) {
       this.target = target;
@@ -388,7 +389,9 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     @Override
     public boolean put(WaveletDeltaRecord delta) {
       lastDelta = delta;
-      return target.put(delta);
+      boolean goNext = target.put(delta);
+      halted = !goNext;
+      return goNext;
     }
 
   }
@@ -426,6 +429,9 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     DeltaRecordTrackerReceiver internalReceiver = new DeltaRecordTrackerReceiver(receiver);
 
     reader.getDeltasInRange(startVersion.getVersion(), endVersion.getVersion(), internalReceiver);
+
+    if (internalReceiver.halted)
+      return;
 
     HashedVersion startVersionCache = null;
     HashedVersion endVersionCache = null;

@@ -19,12 +19,11 @@
 
 package org.waveprotocol.wave.model.version;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.Arrays;
 
+import org.waveprotocol.wave.model.util.Base64DecoderException;
 import org.waveprotocol.wave.model.util.CharBase64;
 import org.waveprotocol.wave.model.util.Preconditions;
-
-import java.util.Arrays;
 
 /**
  * A version number and a cryptographic hash of the deltas preceding that
@@ -38,6 +37,18 @@ public final class HashedVersion implements Comparable<HashedVersion> {
    */
   public static HashedVersion of(long version, byte[] historyHash) {
     return new HashedVersion(version, historyHash);
+  }
+
+  public static HashedVersion valueOf(String s)
+      throws NumberFormatException, Base64DecoderException {
+    if (s == null || s.isEmpty())
+      return null;
+
+    String[] pair = s.split(":");
+    if (pair.length != 2)
+      return null;
+
+    return new HashedVersion(Long.valueOf(pair[0]), CharBase64.decodeWebSafe(pair[1]));
   }
 
   /**
@@ -129,5 +140,9 @@ public final class HashedVersion implements Comparable<HashedVersion> {
     }
     // Bytes are equal up to the length of the shortest array. Then longest is bigger.
     return Integer.signum(first.length - second.length);
+  }
+
+  public String serialise() {
+    return String.valueOf(version) + ":" + CharBase64.encodeWebSafe(historyHash, true);
   }
 }

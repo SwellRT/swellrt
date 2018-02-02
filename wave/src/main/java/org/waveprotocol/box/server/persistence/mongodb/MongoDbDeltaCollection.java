@@ -242,7 +242,19 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
   }
 
-  private class DeltasBlockReader implements Block<BasicDBObject> {
+  /**
+   * Use this exception to halt a forEach() call but it is not an actual
+   * failure.
+   */
+  private class DeltaReaderHaltedException extends RuntimeException {
+    public final HashedVersion lastDeltaVersion;
+
+    public DeltaReaderHaltedException(HashedVersion lastDeltaVersion) {
+      this.lastDeltaVersion = lastDeltaVersion;
+    }
+  }
+
+  private class DeltaReader implements Block<BasicDBObject> {
 
 
     long count = 0;
@@ -250,7 +262,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     public Exception exception = null;
     Receiver<WaveletDeltaRecord> receiver = null;
 
-    public DeltasBlockReader(Receiver<WaveletDeltaRecord> receiver) {
+    public DeltaReader(Receiver<WaveletDeltaRecord> receiver) {
       this.receiver = receiver;
     }
 
@@ -272,14 +284,13 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
         return;
       }
 
-      if (!receiver.put(delta)) {
-        throw new IllegalStateException("Error loading delta from persistence at v="
-            + delta.getAppliedAtVersion().getVersion() + " to v="
-            + delta.getTransformedDelta().getAppliedAtVersion());
-      }
+      boolean halt = !receiver.put(delta);
 
       lastResultingVersion = delta.getTransformedDelta().getResultingVersion();
       count++;
+
+      if (halt)
+        throw new DeltaReaderHaltedException(lastResultingVersion);
     }
 
   }
@@ -291,7 +302,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
     BasicDBObject sort = new BasicDBObject();
     sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, 1);
 
-    DeltasBlockReader block = new DeltasBlockReader(receiver);
+    DeltaReader block = new DeltaReader(receiver);
     deltasCollection.find(createWaveletDBQuery()).sort(sort).forEach(block);
 
     if (block.exception != null)
@@ -312,9 +323,12 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
         Filters.gte(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, startVersion),
         Filters.lte(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, endVersion));
 
-    DeltasBlockReader block = new DeltasBlockReader(receiver);
-    deltasCollection.find(query).sort(sort).forEach(block);
+    DeltaReader block = new DeltaReader(receiver);
+    try {
+      deltasCollection.find(query).sort(sort).forEach(block);
+    } catch (DeltaReaderHaltedException e) {
 
+    }
     if (block.exception != null)
       throw new IOException(block.exception);
 
