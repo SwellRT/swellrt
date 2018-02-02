@@ -19,9 +19,9 @@
 
 package org.waveprotocol.wave.model.id;
 
-import org.waveprotocol.wave.model.util.Preconditions;
-
 import java.io.Serializable;
+
+import org.waveprotocol.wave.model.util.Preconditions;
 
 /**
  * A wave is identified by a tuple of a wave provider domain and a local
@@ -42,6 +42,10 @@ public final class WaveId implements Comparable<WaveId>, Serializable {
   private final String id;
 
   private transient String cachedSerialisation = null;
+
+  public static WaveId valueOf(String waveIdString) throws InvalidIdException {
+    return checkedDeserialise(waveIdString);
+  }
 
   /**
    * Deserialises a wave identifier from a string, throwing a checked exception
@@ -193,4 +197,5 @@ public final class WaveId implements Comparable<WaveId>, Serializable {
       return domainCompare;
     }
   }
+
 }

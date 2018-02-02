@@ -71,6 +71,10 @@ public final class WaveletId implements Comparable<WaveletId>, Serializable {
     }
   }
 
+  public static WaveletId valueOf(String s) throws InvalidIdException {
+    return ModernIdSerialiser.INSTANCE.deserialiseWaveletId(s);
+  }
+
   /**
    * Creates a wavelet id from a domain and local identifier.
    *
@@ -159,6 +163,10 @@ public final class WaveletId implements Comparable<WaveletId>, Serializable {
       cachedSerialisation = LegacyIdSerialiser.INSTANCE.serialiseWaveletId(this);
     }
     return cachedSerialisation;
+  }
+
+  public String newSerialise() {
+    return ModernIdSerialiser.INSTANCE.serialiseWaveletId(this);
   }
 
   @Override
