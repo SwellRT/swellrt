@@ -7,6 +7,7 @@ import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.client.rest.operations.params.VoidImpl;
 import org.swellrt.beta.common.SException;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 
 /**
  * See {@link NamingServlet}, GET operations
@@ -30,7 +31,7 @@ public class GetNamesOperation
 
   @Override
   public String getRestContext() {
-    return "naming";
+    return "/rest/naming";
   }
 
 
@@ -51,6 +52,8 @@ public class GetNamesOperation
       addPathElement("name");
       addPathElement(options.getName());
 
+    } else {
+      throw new SException(ResponseCode.BAD_REQUEST);
     }
   }
 

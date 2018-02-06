@@ -53,6 +53,6 @@ public class DeleteNameOperation
 
   @Override
   public String getRestContext() {
-    return "naming";
+    return "/rest/naming";
   }
 }

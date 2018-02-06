@@ -28,7 +28,7 @@ public class SetNameOperation
 
   @Override
   public String getRestContext() {
-    return "naming";
+    return "/rest/naming";
   }
 
   @Override

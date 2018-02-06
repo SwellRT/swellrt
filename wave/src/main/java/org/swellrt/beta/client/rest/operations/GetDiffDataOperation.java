@@ -62,15 +62,17 @@ public final class GetDiffDataOperation
 
   @Override
   public String getRestContext() {
-    return "contrib";
+    return "/rest/data";
   }
 
   @Override
   protected void buildRestParams() throws SException {
+    addPathElement("wave");
     addPathElement(options.waveId);
+    addPathElement("wavelet");
     addPathElement(options.waveletId);
-    addPathElement(options.base64HashVersion);
-    addPathElement(String.valueOf(options.version));
+    addPathElement("contrib");
+    addQueryParam("v", options.version + ":" + options.base64HashVersion);
   }
 
 }
