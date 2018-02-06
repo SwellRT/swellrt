@@ -49,7 +49,6 @@ import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.server.stat.RequestScopeFilter;
 import org.waveprotocol.box.server.stat.StatuszServlet;
 import org.waveprotocol.box.server.stat.TimingFilter;
-import org.waveprotocol.box.server.swell.NamingServlet;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
@@ -215,10 +214,6 @@ public class ServerMain {
 
     // SwellRT
     server.addServlet("/swell/*", SwellRtServlet.class);
-
-    // Wave Naming
-    server.addServlet(NamingServlet.SERVLET_URL_PATTERN, NamingServlet.class);
-
   }
 
   private static void initializeRobots(Injector injector, WaveBus waveBus) {

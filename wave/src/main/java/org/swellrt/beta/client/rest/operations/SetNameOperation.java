@@ -7,7 +7,6 @@ import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
 import org.swellrt.beta.client.rest.operations.params.VoidImpl;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.box.server.swell.NamingServlet;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 
 /**

@@ -1,36 +1,49 @@
 package org.waveprotocol.box.server.swell.rest;
 
-import java.io.IOException;
+import static org.waveprotocol.box.server.swell.rest.RestModule.WAVE_ID;
+import static org.waveprotocol.box.server.swell.rest.RestModule.WAVE_PATH;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.waveprotocol.box.server.authentication.SessionManager;
-import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
+import org.waveprotocol.box.server.persistence.NamingStore;
+import org.waveprotocol.box.server.persistence.NamingStore.WaveNaming;
+import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.swell.rest.exceptions.NoParticipantSessionException;
 import org.waveprotocol.box.server.swell.rest.exceptions.WaveletAccessForbiddenException;
-import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
 import org.waveprotocol.wave.model.id.WaveId;
-import org.waveprotocol.wave.model.id.WaveletId;
-import org.waveprotocol.wave.model.id.WaveletName;
-import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
-import com.google.gson.stream.JsonWriter;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
-
 
 /**
  * The naming REST resource allows to manage human friendly names for Waves.
+ *
+ * <p>
+ * <br>
+ * Responses syntax is: <code>
+ * {
+ *    wave_id: "...",
+ *    names: [
+ *      {
+ *        name: "...",
+ *        created: (timestamp)
+ *      },
+ *      ...
+ *    ]
+ *  }
+ * </code>
  *
  * @author pablojan@gmail.com
  *
@@ -39,185 +52,149 @@ import com.google.inject.Inject;
 @Produces(MediaType.APPLICATION_JSON)
 public class NamingRestResources {
 
-
-  private static final String WAVE_ID = "waveid";
-  private static final String WAVELET_ID = "waveletid";
-  private static final String DOC_ID = "docid";
-
-  private static final String VERSION = "v";
-  private static final String VERSION_START = "vs";
-  private static final String VERSION_END = "ve";
-  private static final String NUM_OF_RESULTS = "l";
-  private static final String RETURN_OPS = "ops";
-
-  private static final String VERSION_PATH_SEGMENT = "{version}";
-  private static final String WAVE_PATH_SEGMENT = "wave/{waveid:.*/.*}";
-  private static final String WAVELET_PATH_SEGMENT = "wavelet/{waveletid:.*/.*}";
-  private static final String DOC_PATH_SEGMENT = "doc/{docid}";
-
-  private static final String DOC_PATH = "/" + WAVE_PATH_SEGMENT + "/" + WAVELET_PATH_SEGMENT + "/"
-      + DOC_PATH_SEGMENT;
-  private static final String WAVELET_PATH = "/" + WAVE_PATH_SEGMENT + "/" + WAVELET_PATH_SEGMENT;
-  private static final String WAVE_PATH = "/" + WAVE_PATH_SEGMENT;
-
-  private static final CacheControl CACHE_24H = new CacheControl();
-  private static final CacheControl CACHE_NO_STORE = new CacheControl();
-
-  static {
-    CACHE_24H.setMaxAge(86400);
-    CACHE_NO_STORE.setNoStore(true);
-  }
-
+  private final NamingStore namingStore;
   private final SessionManager sessionManager;
   private final WaveletProvider waveletProvider;
+  private final Gson gson = new Gson();
 
   @Inject
-  public NamingRestResources(SessionManager sessionManager, WaveletProvider waveletProvider) {
+  public NamingRestResources(NamingStore namingStore, SessionManager sessionManager,
+      WaveletProvider waveletProvider) {
     this.sessionManager = sessionManager;
     this.waveletProvider = waveletProvider;
+    this.namingStore = namingStore;
   }
 
 
   /**
-   * Returns history log of a document.
+   * Query a Wave Id by name.
+   *
+   * @throws WaveletAccessForbiddenException
+   * @throws NoParticipantSessionException
    */
   @GET
-  @Path(DOC_PATH + "/log")
+  @Path("/name/{name}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response documentLog(
-      @PathParam(WAVE_ID) WaveId waveId,
-      @PathParam(WAVELET_ID) WaveletId waveletId,
-      @PathParam(DOC_ID) String docId,
-      final @QueryParam(VERSION_START) HashedVersion versionStart,
-      final @QueryParam(VERSION_END) HashedVersion versionEnd,
-      final @QueryParam(NUM_OF_RESULTS) int numberOfResults,
-      final @QueryParam(RETURN_OPS) @DefaultValue("false") boolean returnOperations) {
+  public Response getWaveId(
+      @Context HttpServletRequest httpRequest,
+      @PathParam("name") String name)
+      throws WaveletAccessForbiddenException, NoParticipantSessionException {
 
-    final WaveletName waveletName = WaveletName.of(waveId, waveletId);
+    String result = "{}";
 
-    JsonStreamingResponse response = new JsonStreamingResponse() {
+    WaveNaming naming;
+    try {
 
-      @Override
-      public void write(JsonWriter jw) throws IOException {
+      naming = namingStore.getWaveNamingsByName(name);
+      if (naming != null) {
 
-        try {
+        ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
 
-          HashedVersion start = versionStart;
-          if (start == null) {
-            start = RestUtils.HashVersionFactory.createVersionZero(waveletName);
-          }
+        RestUtils.checkWaveletAccess(RestUtils.getMasterWaveletName(naming.waveId),
+            waveletProvider, participantId);
 
-          HashedVersion end = versionEnd;
-          if (end == null) {
-            CommittedWaveletSnapshot committedSnaphot = waveletProvider.getSnapshot(waveletName);
-            end = committedSnaphot.snapshot.getHashedVersion();
-          }
-
-          DocumentLogBuilder.build(waveletProvider, waveletName, docId, start, end, numberOfResults,
-              jw, returnOperations);
-
-        } catch (WaveServerException e) {
-          throw new IllegalStateException(e);
-        }
-
+        result = gson.toJson(naming);
       }
 
-    };
-
-    return Response.status(200).cacheControl(CACHE_24H).entity(response).build();
-  }
-
-
-
-  /**
-   * Returns document's content.
-   */
-  @GET
-  @Path(DOC_PATH + "/content")
-  @Produces(MediaType.APPLICATION_XML)
-  public Response documentContent(
-      @PathParam(WAVE_ID) WaveId waveId,
-      @PathParam(WAVELET_ID) WaveletId waveletId,
-      @PathParam(DOC_ID) String docId,
-      @QueryParam(VERSION) HashedVersion version) {
-
-    final WaveletName waveletName = WaveletName.of(waveId, waveletId);
-
-    try {
-      String docXML = DocumentContentBuilder.build(waveletProvider, waveletName, docId, version);
-      return Response.status(200).cacheControl(CACHE_24H).entity(docXML).build();
-    } catch (WaveServerException e) {
+    } catch (PersistenceException e) {
       throw new IllegalStateException(e);
     }
+
+
+    return Response.status(200).cacheControl(RestModule.CACHE_NO_STORE).entity(result).build();
   }
 
 
-  @GET
-  @Path(WAVELET_PATH + "/contrib")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response waveletContributions(
-      @Context HttpServletRequest httpRequest,
-      @PathParam(WAVE_ID) WaveId waveId,
-      @PathParam(WAVELET_ID) WaveletId waveletId,
-      @QueryParam(VERSION) HashedVersion version)
-      throws NoParticipantSessionException, WaveletAccessForbiddenException {
-
-    final WaveletName waveletName = WaveletName.of(waveId, waveletId);
-
-    // ParticipantId participantId =
-    // RestUtils.getRequestParticipant(httpRequest, sessionManager);
-    // RestUtils.checkWaveletAccess(waveletName, waveletProvider,
-    // participantId);
-
-    JsonStreamingResponse response = new JsonStreamingResponse() {
-
-      @Override
-      public void write(JsonWriter jw) throws IOException {
-        try {
-          WaveletContributionsBuilder.build(waveletProvider, waveletName, version, jw);
-        } catch (WaveServerException e) {
-          throw new IllegalStateException(e);
-        }
-      }
-
-    };
-
-    return Response.status(200).cacheControl(CACHE_24H).entity(response).build();
-  }
 
   /**
-   * Returns info about the wave. Just an example of JAX-RS usage.
+   * Get synonymous names of a Wave.
+   *
+   * @throws WaveletAccessForbiddenException
+   * @throws NoParticipantSessionException
    */
   @GET
   @Path(WAVE_PATH)
-  public Response wave(@PathParam(WAVE_ID) WaveId waveId) {
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getWaveName(
+      @Context HttpServletRequest httpRequest,
+      @PathParam(WAVE_ID) WaveId waveId)
+      throws WaveletAccessForbiddenException, NoParticipantSessionException {
 
+    ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
 
-    JsonStreamingResponse response = new JsonStreamingResponse() {
+    RestUtils.checkWaveletAccess(RestUtils.getMasterWaveletName(waveId),
+        waveletProvider, participantId);
 
-      @Override
-      public void write(JsonWriter jw) throws IOException {
+    String result = "{}";
 
-        jw.beginObject();
-        jw.name("wavelets");
-        jw.beginArray();
+    WaveNaming naming = namingStore.getWaveNamingById(waveId);
+    if (naming != null) {
+      result = gson.toJson(naming);
+    }
 
-        try {
-          for (WaveletId id : waveletProvider.getWaveletIds(waveId)) {
-            jw.value(id.newSerialise());
-          }
-        } catch (WaveServerException e) {
-          e.printStackTrace();
-        }
+    return Response.status(200).cacheControl(RestModule.CACHE_NO_STORE).entity(result).build();
 
-        jw.endArray();
-        jw.endObject();
+  }
 
+  /**
+   * Set a new name for a Wave.
+   *
+   */
+  @POST
+  @Path(WAVE_PATH + "/{name}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response setWaveName(
+      @Context HttpServletRequest httpRequest,
+      @PathParam(WAVE_ID) WaveId waveId,
+      @PathParam("name") String name)
+      throws NoParticipantSessionException, WaveletAccessForbiddenException {
+
+    ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
+
+    RestUtils.checkWaveletAccess(RestUtils.getMasterWaveletName(waveId),
+        waveletProvider, participantId);
+
+    String result = "{}";
+
+    try {
+      WaveNaming naming = namingStore.addWaveName(waveId, name);
+      if (naming != null) {
+        result = gson.toJson(naming);
       }
+    } catch (PersistenceException e) {
+      throw new IllegalStateException(e);
+    }
 
-    };
+    return Response.status(200).cacheControl(RestModule.CACHE_NO_STORE).entity(result).build();
+  }
 
-    return Response.status(200).entity(response).build();
+
+  /**
+   * Delete a name of a Wave or all of them.
+   */
+  @DELETE
+  @Path(WAVE_PATH + "/{name}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deleteWaveName(
+      @Context HttpServletRequest httpRequest,
+      @PathParam(WAVE_ID) WaveId waveId,
+      @PathParam("name") String name)
+      throws NoParticipantSessionException, WaveletAccessForbiddenException {
+
+    ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
+
+    RestUtils.checkWaveletAccess(RestUtils.getMasterWaveletName(waveId),
+        waveletProvider, participantId);
+
+    String result = "{}";
+    WaveNaming naming = namingStore.removeWaveName(waveId, name);
+    if (naming != null) {
+      result = gson.toJson(naming);
+    }
+
+    return Response.status(200).cacheControl(RestModule.CACHE_NO_STORE).entity(result).build();
+
+
   }
 
 }

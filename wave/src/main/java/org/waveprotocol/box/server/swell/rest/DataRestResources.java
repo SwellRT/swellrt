@@ -1,5 +1,17 @@
 package org.waveprotocol.box.server.swell.rest;
 
+import static org.waveprotocol.box.server.swell.rest.RestModule.DOC_ID;
+import static org.waveprotocol.box.server.swell.rest.RestModule.DOC_PATH;
+import static org.waveprotocol.box.server.swell.rest.RestModule.NUM_OF_RESULTS;
+import static org.waveprotocol.box.server.swell.rest.RestModule.RETURN_OPS;
+import static org.waveprotocol.box.server.swell.rest.RestModule.VERSION;
+import static org.waveprotocol.box.server.swell.rest.RestModule.VERSION_END;
+import static org.waveprotocol.box.server.swell.rest.RestModule.VERSION_START;
+import static org.waveprotocol.box.server.swell.rest.RestModule.WAVELET_ID;
+import static org.waveprotocol.box.server.swell.rest.RestModule.WAVELET_PATH;
+import static org.waveprotocol.box.server.swell.rest.RestModule.WAVE_ID;
+import static org.waveprotocol.box.server.swell.rest.RestModule.WAVE_PATH;
+
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +35,7 @@ import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.version.HashedVersion;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gson.stream.JsonWriter;
 import com.google.inject.Inject;
@@ -39,26 +52,6 @@ import com.google.inject.Inject;
 public class DataRestResources {
 
 
-  private static final String WAVE_ID = "waveid";
-  private static final String WAVELET_ID = "waveletid";
-  private static final String DOC_ID = "docid";
-
-  private static final String VERSION = "v";
-  private static final String VERSION_START = "vs";
-  private static final String VERSION_END = "ve";
-  private static final String NUM_OF_RESULTS = "l";
-  private static final String RETURN_OPS = "ops";
-
-  private static final String VERSION_PATH_SEGMENT = "{version}";
-  private static final String WAVE_PATH_SEGMENT = "wave/{waveid:.*/.*}";
-  private static final String WAVELET_PATH_SEGMENT = "wavelet/{waveletid:.*/.*}";
-  private static final String DOC_PATH_SEGMENT = "doc/{docid}";
-
-  private static final String DOC_PATH = "/" + WAVE_PATH_SEGMENT + "/" + WAVELET_PATH_SEGMENT + "/"
-      + DOC_PATH_SEGMENT;
-  private static final String WAVELET_PATH = "/" + WAVE_PATH_SEGMENT + "/" + WAVELET_PATH_SEGMENT;
-  private static final String WAVE_PATH = "/" + WAVE_PATH_SEGMENT;
-
   private final SessionManager sessionManager;
   private final WaveletProvider waveletProvider;
 
@@ -73,18 +66,23 @@ public class DataRestResources {
    * Returns history log of a document.
    */
   @GET
-  @Path(DOC_PATH + "/log")
+  @Path(RestModule.DOC_PATH + "/log")
   @Produces(MediaType.APPLICATION_JSON)
   public Response documentLog(
+      @Context HttpServletRequest httpRequest,
       @PathParam(WAVE_ID) WaveId waveId,
       @PathParam(WAVELET_ID) WaveletId waveletId,
       @PathParam(DOC_ID) String docId,
       final @QueryParam(VERSION_START) HashedVersion versionStart,
       final @QueryParam(VERSION_END) HashedVersion versionEnd,
       final @QueryParam(NUM_OF_RESULTS) int numberOfResults,
-      final @QueryParam(RETURN_OPS) @DefaultValue("false") boolean returnOperations) {
+      final @QueryParam(RETURN_OPS) @DefaultValue("false") boolean returnOperations)
+      throws NoParticipantSessionException, WaveletAccessForbiddenException {
 
     final WaveletName waveletName = WaveletName.of(waveId, waveletId);
+
+    ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
+    RestUtils.checkWaveletAccess(waveletName, waveletProvider, participantId);
 
     JsonStreamingResponse response = new JsonStreamingResponse() {
 
@@ -127,12 +125,17 @@ public class DataRestResources {
   @Path(DOC_PATH + "/content")
   @Produces(MediaType.APPLICATION_XML)
   public Response documentContent(
+      @Context HttpServletRequest httpRequest,
       @PathParam(WAVE_ID) WaveId waveId,
       @PathParam(WAVELET_ID) WaveletId waveletId,
       @PathParam(DOC_ID) String docId,
-      @QueryParam(VERSION) HashedVersion version) {
+      @QueryParam(VERSION) HashedVersion version)
+      throws WaveletAccessForbiddenException, NoParticipantSessionException {
 
     final WaveletName waveletName = WaveletName.of(waveId, waveletId);
+
+    ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
+    RestUtils.checkWaveletAccess(waveletName, waveletProvider, participantId);
 
     try {
       String docXML = DocumentContentBuilder.build(waveletProvider, waveletName, docId, version);
@@ -155,10 +158,8 @@ public class DataRestResources {
 
     final WaveletName waveletName = WaveletName.of(waveId, waveletId);
 
-    // ParticipantId participantId =
-    // RestUtils.getRequestParticipant(httpRequest, sessionManager);
-    // RestUtils.checkWaveletAccess(waveletName, waveletProvider,
-    // participantId);
+    ParticipantId participantId = RestUtils.getRequestParticipant(httpRequest, sessionManager);
+    RestUtils.checkWaveletAccess(waveletName, waveletProvider, participantId);
 
     JsonStreamingResponse response = new JsonStreamingResponse() {
 
