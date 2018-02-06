@@ -26,7 +26,7 @@ import com.google.gson.stream.JsonWriter;
  * The helper class to generate a document history log in JSON with or without
  * doc. operations.
  */
-public class DocumentLog {
+public class DocumentLogBuilder {
 
   /**
    * Checks if a WaveletOperation concern a specific Document/Blip

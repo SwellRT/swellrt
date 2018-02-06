@@ -2,8 +2,11 @@ package org.waveprotocol.box.server.swell;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.swellrt.beta.common.SwellConstants;
+import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.indexed.SimpleAnnotationSet;
 import org.waveprotocol.wave.model.document.operation.AnnotationBoundaryMap;
 import org.waveprotocol.wave.model.document.operation.Attributes;
@@ -23,6 +26,7 @@ import org.waveprotocol.wave.model.operation.wave.VersionUpdateOp;
 import org.waveprotocol.wave.model.operation.wave.WaveletBlipOperation;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperationVisitor;
+import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -58,6 +62,12 @@ public class WaveletContributions implements ReadableWaveletContributions {
     @Override
     public SimpleAnnotationSet getAnnotations() {
       return annotations;
+    }
+
+    @Override
+    public Iterable<AnnotationInterval<Object>> getIntervals() {
+      return annotations.annotationIntervals(0, documentSize,
+          CollectionUtils.newStringSet(WaveletContributions.ANNOTATION_KEY));
     }
 
   }
@@ -279,6 +289,10 @@ public class WaveletContributions implements ReadableWaveletContributions {
       op.acceptVisitor(waveletOpVisitor);
     });
     version = delta.getResultingVersion();
+  }
+
+  public Set<Entry<String, BlipContributions>> getBlipContributions() {
+    return blipContribsMap.entrySet();
   }
 
   @Override

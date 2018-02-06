@@ -49,9 +49,7 @@ import org.waveprotocol.box.server.shutdown.Shutdownable;
 import org.waveprotocol.box.server.stat.RequestScopeFilter;
 import org.waveprotocol.box.server.stat.StatuszServlet;
 import org.waveprotocol.box.server.stat.TimingFilter;
-import org.waveprotocol.box.server.swell.ContributionsServlet;
 import org.waveprotocol.box.server.swell.NamingServlet;
-import org.waveprotocol.box.server.swell.VersionServlet;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewBus;
 import org.waveprotocol.box.server.waveserver.PerUserWaveViewDistpatcher;
 import org.waveprotocol.box.server.waveserver.WaveBus;
@@ -217,12 +215,6 @@ public class ServerMain {
 
     // SwellRT
     server.addServlet("/swell/*", SwellRtServlet.class);
-
-    // Contributions
-    server.addServlet(ContributionsServlet.SERVLET_URL_PATTERN, ContributionsServlet.class);
-
-    // Contributions
-    server.addServlet(VersionServlet.SERVLET_URL_PATTERN, VersionServlet.class);
 
     // Wave Naming
     server.addServlet(NamingServlet.SERVLET_URL_PATTERN, NamingServlet.class);

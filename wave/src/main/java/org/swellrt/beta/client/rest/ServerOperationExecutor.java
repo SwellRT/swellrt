@@ -47,9 +47,11 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
   private final ServiceContext context;
 
+  /** Keep the array order */
   private Header[] headers =
-    { new Header("Content-Type", "text/plain; charset=utf-8"),
-      new Header(HEADER_WINDOW_ID, null) };
+      { new Header("Content-Type", "application/json; charset=utf-8"),
+          new Header(HEADER_WINDOW_ID, null),
+          new Header("Accept", "text/plain, application/json") };
 
   protected ServerOperationExecutor(ServiceContext context) {
     this.context = context;

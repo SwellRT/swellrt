@@ -2,6 +2,7 @@ package org.waveprotocol.box.server.swell.rest;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -9,47 +10,44 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.waveprotocol.box.server.authentication.SessionManager;
 import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
+import org.waveprotocol.box.server.swell.rest.exceptions.NoParticipantSessionException;
+import org.waveprotocol.box.server.swell.rest.exceptions.WaveletAccessForbiddenException;
 import org.waveprotocol.box.server.waveserver.WaveServerException;
 import org.waveprotocol.box.server.waveserver.WaveletProvider;
-import org.waveprotocol.wave.model.id.IdURIEncoderDecoder;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.version.HashedVersion;
-import org.waveprotocol.wave.model.version.HashedVersionFactory;
-import org.waveprotocol.wave.model.version.HashedVersionZeroFactoryImpl;
-import org.waveprotocol.wave.util.escapers.jvm.JavaUrlCodec;
 
 import com.google.gson.stream.JsonWriter;
 import com.google.inject.Inject;
 
 
 /**
- * The Raw REST resource provides access to wavelet raw data, versions, etc.
+ * The naming REST resource allows to manage human friendly names for Waves.
  *
  * @author pablojan@gmail.com
  *
  */
-@Path("raw")
+@Path("naming")
 @Produces(MediaType.APPLICATION_JSON)
-public class RawResource {
-
-  HashedVersionFactory HashVersionFactory = new HashedVersionZeroFactoryImpl(
-      new IdURIEncoderDecoder(new JavaUrlCodec()));
+public class NamingRestResources {
 
 
   private static final String WAVE_ID = "waveid";
   private static final String WAVELET_ID = "waveletid";
   private static final String DOC_ID = "docid";
 
-  private static final String VERSION_START = "vstart";
-  private static final String VERSION_END = "vend";
-  private static final String NUM_OF_RESULTS = "limit";
+  private static final String VERSION = "v";
+  private static final String VERSION_START = "vs";
+  private static final String VERSION_END = "ve";
+  private static final String NUM_OF_RESULTS = "l";
   private static final String RETURN_OPS = "ops";
 
   private static final String VERSION_PATH_SEGMENT = "{version}";
@@ -74,18 +72,22 @@ public class RawResource {
   private final WaveletProvider waveletProvider;
 
   @Inject
-  public RawResource(SessionManager sessionManager, WaveletProvider waveletProvider) {
+  public NamingRestResources(SessionManager sessionManager, WaveletProvider waveletProvider) {
     this.sessionManager = sessionManager;
     this.waveletProvider = waveletProvider;
   }
+
 
   /**
    * Returns history log of a document.
    */
   @GET
   @Path(DOC_PATH + "/log")
-  public Response documentLog(@PathParam(WAVE_ID) WaveId waveId,
-      @PathParam(WAVELET_ID) WaveletId waveletId, @PathParam(DOC_ID) String docId,
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response documentLog(
+      @PathParam(WAVE_ID) WaveId waveId,
+      @PathParam(WAVELET_ID) WaveletId waveletId,
+      @PathParam(DOC_ID) String docId,
       final @QueryParam(VERSION_START) HashedVersion versionStart,
       final @QueryParam(VERSION_END) HashedVersion versionEnd,
       final @QueryParam(NUM_OF_RESULTS) int numberOfResults,
@@ -102,7 +104,7 @@ public class RawResource {
 
           HashedVersion start = versionStart;
           if (start == null) {
-            start = HashVersionFactory.createVersionZero(waveletName);
+            start = RestUtils.HashVersionFactory.createVersionZero(waveletName);
           }
 
           HashedVersion end = versionEnd;
@@ -111,7 +113,7 @@ public class RawResource {
             end = committedSnaphot.snapshot.getHashedVersion();
           }
 
-          DocumentLog.build(waveletProvider, waveletName, docId, start, end, numberOfResults,
+          DocumentLogBuilder.build(waveletProvider, waveletName, docId, start, end, numberOfResults,
               jw, returnOperations);
 
         } catch (WaveServerException e) {
@@ -126,17 +128,61 @@ public class RawResource {
   }
 
 
+
   /**
-   * Returns history log of a document.
+   * Returns document's content.
    */
   @GET
-  @Path(DOC_PATH + "/content/{version}")
-  public Response documentContent(@PathParam(WAVE_ID) WaveId waveId,
+  @Path(DOC_PATH + "/content")
+  @Produces(MediaType.APPLICATION_XML)
+  public Response documentContent(
+      @PathParam(WAVE_ID) WaveId waveId,
       @PathParam(WAVELET_ID) WaveletId waveletId,
       @PathParam(DOC_ID) String docId,
-      @PathParam(VERSION_PATH_SEGMENT) String version) {
+      @QueryParam(VERSION) HashedVersion version) {
 
-    return null;
+    final WaveletName waveletName = WaveletName.of(waveId, waveletId);
+
+    try {
+      String docXML = DocumentContentBuilder.build(waveletProvider, waveletName, docId, version);
+      return Response.status(200).cacheControl(CACHE_24H).entity(docXML).build();
+    } catch (WaveServerException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+
+  @GET
+  @Path(WAVELET_PATH + "/contrib")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response waveletContributions(
+      @Context HttpServletRequest httpRequest,
+      @PathParam(WAVE_ID) WaveId waveId,
+      @PathParam(WAVELET_ID) WaveletId waveletId,
+      @QueryParam(VERSION) HashedVersion version)
+      throws NoParticipantSessionException, WaveletAccessForbiddenException {
+
+    final WaveletName waveletName = WaveletName.of(waveId, waveletId);
+
+    // ParticipantId participantId =
+    // RestUtils.getRequestParticipant(httpRequest, sessionManager);
+    // RestUtils.checkWaveletAccess(waveletName, waveletProvider,
+    // participantId);
+
+    JsonStreamingResponse response = new JsonStreamingResponse() {
+
+      @Override
+      public void write(JsonWriter jw) throws IOException {
+        try {
+          WaveletContributionsBuilder.build(waveletProvider, waveletName, version, jw);
+        } catch (WaveServerException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+
+    };
+
+    return Response.status(200).cacheControl(CACHE_24H).entity(response).build();
   }
 
   /**

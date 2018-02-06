@@ -1,5 +1,6 @@
 package org.waveprotocol.box.server.swell;
 
+import org.waveprotocol.wave.model.document.AnnotationInterval;
 import org.waveprotocol.wave.model.document.indexed.SimpleAnnotationSet;
 
 /**
@@ -15,5 +16,8 @@ public interface ReadableBlipContributions {
 
   /** Returns all contributions of the blip as a annotation set */
   public SimpleAnnotationSet getAnnotations();
+
+  /** Returns all contributions as iterable of annotation intervals */
+  public Iterable<AnnotationInterval<Object>> getIntervals();
 
 }
