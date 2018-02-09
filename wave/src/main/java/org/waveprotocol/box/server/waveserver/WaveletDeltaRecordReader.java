@@ -19,13 +19,13 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+import java.io.IOException;
+
 import org.waveprotocol.box.common.Receiver;
 import org.waveprotocol.wave.federation.Proto.ProtocolAppliedWaveletDelta;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.TransformedWaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
-
-import java.io.IOException;
 
 /**
  * Reads wavelet deltas for a wavelet.
@@ -87,7 +87,7 @@ public interface WaveletDeltaRecordReader {
   /**
    * Returns all the persisted deltas. Convenience method to build snapshots
    * with only one call to the persistency component.
-   * 
+   *
    * @return
    * @throws IOException
    */
@@ -95,10 +95,11 @@ public interface WaveletDeltaRecordReader {
 
 
   /**
-   * Returns a range of deltas having their result version greater than startVersion
-   * and less or equals than endVersion
-   * 
-   * @param startVersion 
+   * Returns a set of deltas in the provided range of versions. Result is
+   * provided in ascending version order if startVersion is greater than
+   * endVersion or descending order otherwise.
+   *
+   * @param startVersion
    * @param endVersion
    * @param receiver
    */
@@ -107,9 +108,9 @@ public interface WaveletDeltaRecordReader {
 
   /**
    * Returns the last delta of the wavelet.
-   * 
+   *
    * @return the last delta
-   * @throws IOException 
+   * @throws IOException
    */
   WaveletDeltaRecord getLastDelta() throws IOException;
 

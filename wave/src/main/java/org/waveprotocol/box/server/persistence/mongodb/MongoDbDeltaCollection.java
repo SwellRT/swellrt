@@ -247,10 +247,10 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
    * failure.
    */
   private class DeltaReaderHaltedException extends RuntimeException {
-    public final HashedVersion lastDeltaVersion;
+    public final WaveletDeltaRecord lastDelta;
 
-    public DeltaReaderHaltedException(HashedVersion lastDeltaVersion) {
-      this.lastDeltaVersion = lastDeltaVersion;
+    public DeltaReaderHaltedException(WaveletDeltaRecord lastDelta) {
+      this.lastDelta = lastDelta;
     }
   }
 
@@ -258,12 +258,19 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
 
     long count = 0;
-    HashedVersion lastResultingVersion = null;
+    WaveletDeltaRecord lastProcDelta = null;
     public Exception exception = null;
     Receiver<WaveletDeltaRecord> receiver = null;
+    final boolean ascendingSort;
+
+    public DeltaReader(Receiver<WaveletDeltaRecord> receiver, boolean ascendingSort) {
+      this.receiver = receiver;
+      this.ascendingSort = ascendingSort;
+    }
 
     public DeltaReader(Receiver<WaveletDeltaRecord> receiver) {
       this.receiver = receiver;
+      this.ascendingSort = true;
     }
 
     @Override
@@ -277,20 +284,21 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
         return;
       }
 
-      if (lastResultingVersion != null
-          && !delta.getAppliedAtVersion().equals(lastResultingVersion)) {
-        LOG.warning("Skipping delta at v=" + delta.getAppliedAtVersion().getVersion()
-            + " to v=" + delta.getTransformedDelta().getAppliedAtVersion());
-        return;
+      if (lastProcDelta != null) {
+        if ( (ascendingSort && !delta.getAppliedAtVersion().equals(lastProcDelta.getResultingVersion())) ||
+            (!ascendingSort && !delta.getResultingVersion().equals(lastProcDelta.getAppliedAtVersion()))) {
+            LOG.warning("Delta history integrity error? Skipping delta at applied version=" + delta.getAppliedAtVersion().getVersion());
+            return;
+          }
       }
 
       boolean halt = !receiver.put(delta);
 
-      lastResultingVersion = delta.getTransformedDelta().getResultingVersion();
+      lastProcDelta = delta;
       count++;
 
       if (halt)
-        throw new DeltaReaderHaltedException(lastResultingVersion);
+        throw new DeltaReaderHaltedException(lastProcDelta);
     }
 
   }
@@ -316,14 +324,28 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
   public long getDeltasInRange(long startVersion, long endVersion,
       Receiver<WaveletDeltaRecord> receiver) throws IOException {
 
-    BasicDBObject sort = new BasicDBObject();
-    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, 1);
+    boolean ascendingSort = startVersion < endVersion;
 
-    Bson query = Filters.and(createWaveletDBQuery(),
+    BasicDBObject sort = new BasicDBObject();
+    sort.put(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION,
+        ascendingSort ? 1 : -1);
+
+    Bson query = null;
+    if (ascendingSort) {
+
+      query = Filters.and(createWaveletDBQuery(),
         Filters.gte(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, startVersion),
         Filters.lte(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION, endVersion));
 
-    DeltaReader block = new DeltaReader(receiver);
+    } else {
+
+      query = Filters.and(createWaveletDBQuery(),
+          Filters.gte(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_APPLIEDATVERSION, endVersion),
+          Filters.lte(MongoDbDeltaStoreUtil.FIELD_TRANSFORMED_RESULTINGVERSION_VERSION,
+              startVersion));
+    }
+
+    DeltaReader block = new DeltaReader(receiver, ascendingSort);
     try {
       deltasCollection.find(query).sort(sort).forEach(block);
     } catch (DeltaReaderHaltedException e) {

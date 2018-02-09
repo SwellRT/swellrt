@@ -22,6 +22,7 @@ package org.waveprotocol.box.server.waveserver;
 import static java.lang.String.format;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -412,7 +413,10 @@ class DeltaStoreBasedWaveletState implements WaveletState {
    *            |-----requested range---|
    *           start                    end
    * </pre>
-   *
+   * <b>
+   * <p>
+   * Deltas are returned in ascending sort if startVersion is greater than endVersion,
+   * and desceding sort otherwise.
    *
    * @param reader
    * @param cachedDeltas
@@ -426,6 +430,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
       HashedVersion startVersion, HashedVersion endVersion, Receiver<WaveletDeltaRecord> receiver)
       throws IOException {
 
+    boolean ascendingSort = startVersion.getVersion() < endVersion.getVersion();
+
     DeltaRecordTrackerReceiver internalReceiver = new DeltaRecordTrackerReceiver(receiver);
 
     reader.getDeltasInRange(startVersion.getVersion(), endVersion.getVersion(), internalReceiver);
@@ -437,15 +443,30 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     HashedVersion endVersionCache = null;
 
     if (internalReceiver.lastDelta == null) {
+
       startVersionCache = startVersion;
       endVersionCache = endVersion;
-    } else if (internalReceiver.lastDelta.getResultingVersion().getVersion() < endVersion
-        .getVersion()) {
-      startVersionCache = internalReceiver.lastDelta.getResultingVersion();
-      endVersionCache = endVersion;
+
+    } else if ( (ascendingSort && internalReceiver.lastDelta.getResultingVersion().getVersion() < endVersion.getVersion()) ||
+                (!ascendingSort && internalReceiver.lastDelta.getResultingVersion().getVersion() > endVersion.getVersion() )) {
+
+      // there are deltas left to retrieve from in memory cache
+        startVersionCache = internalReceiver.lastDelta.getResultingVersion();
+        endVersionCache = endVersion;
+
     } else {
-      return; // all deltas have been collected from storage
+      // all deltas where retrieved from storage
+      return;
     }
+
+
+    if (ascendingSort) {
+      readDeltasCacheAscending(cachedDeltas, startVersionCache, endVersionCache, internalReceiver);
+    } else {
+      readDeltasCacheDescending(cachedDeltas, startVersionCache, endVersionCache, internalReceiver);
+    }
+
+    /*
 
     WaveletDeltaRecord delta = internalReceiver.lastDelta;
     if (cachedDeltas != null) {
@@ -472,6 +493,47 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     Preconditions.checkArgument(
         delta != null && delta.getResultingVersion().equals(endVersionCache),
         "invalid end version");
+     */
+
+  }
+
+  private static void readDeltasCacheAscending(
+      ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas,
+      HashedVersion startVersion, HashedVersion endVersion, DeltaRecordTrackerReceiver receiver) {
+
+    Preconditions.checkArgument(startVersion.getVersion() < endVersion.getVersion(),
+        "Delta start version must be less than end version");
+    ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> subCachedDeltas = cachedDeltas
+        .tailMap(startVersion);
+
+    Iterator<HashedVersion> viterator = subCachedDeltas.navigableKeySet().iterator();
+    while (viterator.hasNext()) {
+      boolean stop = receiver.put(subCachedDeltas.get(viterator.next()));
+      stop = stop || receiver.halted
+          || receiver.lastDelta.getResultingVersion().getVersion() >= endVersion.getVersion();
+      if (stop)
+        return;
+    }
+
+  }
+
+  private static void readDeltasCacheDescending(
+      ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas,
+      HashedVersion startVersion, HashedVersion endVersion, DeltaRecordTrackerReceiver receiver) {
+
+    Preconditions.checkArgument(startVersion.getVersion() > endVersion.getVersion(),
+        "Delta start version must be greater than end version");
+    ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> subCachedDeltas = cachedDeltas
+        .headMap(startVersion);
+
+    Iterator<HashedVersion> viterator = subCachedDeltas.navigableKeySet().descendingIterator();
+    while (viterator.hasNext()) {
+      boolean stop = receiver.put(subCachedDeltas.get(viterator.next()));
+      stop = stop || receiver.halted
+          || receiver.lastDelta.getResultingVersion().getVersion() <= endVersion.getVersion();
+      if (stop)
+        return;
+    }
 
   }
 
