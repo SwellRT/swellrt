@@ -24,6 +24,7 @@ public class RestModule implements Module {
   static final String VERSION_END = "ve";
   static final String NUM_OF_RESULTS = "l";
   static final String RETURN_OPS = "ops";
+  static final String SORT = "sort";
 
   static final String VERSION_PATH_SEGMENT = "{version}";
   static final String WAVE_PATH_SEGMENT = "wave/{waveid:.*/.*}";

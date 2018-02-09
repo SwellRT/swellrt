@@ -4,6 +4,7 @@ import static org.waveprotocol.box.server.swell.rest.RestModule.DOC_ID;
 import static org.waveprotocol.box.server.swell.rest.RestModule.DOC_PATH;
 import static org.waveprotocol.box.server.swell.rest.RestModule.NUM_OF_RESULTS;
 import static org.waveprotocol.box.server.swell.rest.RestModule.RETURN_OPS;
+import static org.waveprotocol.box.server.swell.rest.RestModule.SORT;
 import static org.waveprotocol.box.server.swell.rest.RestModule.VERSION;
 import static org.waveprotocol.box.server.swell.rest.RestModule.VERSION_END;
 import static org.waveprotocol.box.server.swell.rest.RestModule.VERSION_START;
@@ -76,7 +77,8 @@ public class DataRestResources {
       final @QueryParam(VERSION_START) HashedVersion versionStart,
       final @QueryParam(VERSION_END) HashedVersion versionEnd,
       final @QueryParam(NUM_OF_RESULTS) int numberOfResults,
-      final @QueryParam(RETURN_OPS) @DefaultValue("false") boolean returnOperations)
+      final @QueryParam(RETURN_OPS) @DefaultValue("false") boolean returnOperations,
+      final @QueryParam(SORT) @DefaultValue("asc") String sort)
       throws NoParticipantSessionException, WaveletAccessForbiddenException {
 
     final WaveletName waveletName = WaveletName.of(waveId, waveletId);
@@ -92,15 +94,29 @@ public class DataRestResources {
         try {
 
           HashedVersion start = versionStart;
+          HashedVersion end = versionEnd;
+
+          // general case, ascending sort
+
           if (start == null) {
             start = RestUtils.HashVersionFactory.createVersionZero(waveletName);
           }
 
-          HashedVersion end = versionEnd;
           if (end == null) {
             CommittedWaveletSnapshot committedSnaphot = waveletProvider.getSnapshot(waveletName);
             end = committedSnaphot.snapshot.getHashedVersion();
           }
+
+          if (start.getVersion() > end.getVersion()) {
+            throw new IllegalStateException("Start version must be less than end version");
+          }
+
+          if (sort.equals("des")) {
+            HashedVersion tmp = end;
+            end = start;
+            start = tmp;
+          }
+
 
           DocumentLogBuilder.build(waveletProvider, waveletName, docId, start, end, numberOfResults,
               jw, returnOperations);

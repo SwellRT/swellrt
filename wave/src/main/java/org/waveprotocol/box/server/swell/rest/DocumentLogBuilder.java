@@ -134,6 +134,12 @@ public class DocumentLogBuilder {
       });
     }
 
+    /**
+     * Process a delta generating a JSON object with its data if it matches the
+     * criterion.
+     *
+     * @return true if the delta was processed.
+     */
     public boolean process(TransformedWaveletDelta delta) {
 
       blipMatcher.reset();
@@ -161,9 +167,11 @@ public class DocumentLogBuilder {
         } catch (IOException e) {
           throw new IllegalStateException(e);
         }
+
+        return true;
       }
 
-      return true;
+      return false;
     }
 
   }
@@ -181,8 +189,9 @@ public class DocumentLogBuilder {
 
           @Override
           public boolean put(TransformedWaveletDelta delta) {
-            count++;
-            logBuilder.process(delta);
+
+            if (logBuilder.process(delta))
+              count++;
 
             if (limit > 0 && count >= limit)
               return false;
