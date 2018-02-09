@@ -421,14 +421,14 @@ Harness editor runs solely in client side, hence no running server is required.
 
 ### Swell Editor Sandbox
 
-Editor sandbox is a small GWT app to play with editor component. Run with following commands:
+Editor sandbox is a small GWT app to play editor features. Run with following commands:
 
 ```sh
-./gradlew editorSandbox
+./gradlew sandbox
 ```
 
 ```
-http://127.0.1.1:9876/org.swellrt.sandbox.editor.Editor/editor.html
+http://127.0.1.1:9876/org.swellrt.sandbox.editor.Sandbox/editor.html
 ```
 
 Sandbox editor runs solely in client side, 

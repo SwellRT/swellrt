@@ -9,6 +9,7 @@ import org.waveprotocol.wave.model.document.MutableDocumentImpl;
 import org.waveprotocol.wave.model.document.indexed.IndexedDocument;
 import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.Nindo;
+import org.waveprotocol.wave.model.document.operation.algorithm.DocOpCollector;
 import org.waveprotocol.wave.model.document.operation.algorithm.DocOpInverter;
 import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
 import org.waveprotocol.wave.model.document.raw.impl.Element;
@@ -72,6 +73,11 @@ public class DocSnippets {
       The operation sequencer consume ops (created in the mutable doc) and...
         - pass ops to the IndexedDocument to be consumed ( consume() or consumeAndReturnInvertible() )
         - sends out the operation to an output sink
+
+
+      See also BasicFactories class for ready to use document factories.
+      
+      To compose a sequence of DocOps user a DocOpCollector
 
     */
 

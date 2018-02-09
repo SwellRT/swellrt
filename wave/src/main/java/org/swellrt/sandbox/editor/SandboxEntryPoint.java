@@ -5,23 +5,23 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class EditorEntryPoint implements EntryPoint {
+public class SandboxEntryPoint implements EntryPoint {
 
   public void onModuleLoad() {
 
     VerticalPanel basePanel = new VerticalPanel();
     basePanel.setWidth("100%");
 
-    HTML titleHtml = new HTML("<div> Editor Sandox </div>");
+    HTML titleHtml = new HTML("<div> Document History Viewer </div>");
     basePanel.add(titleHtml);
 
-    EditorComponent editorComponent = new EditorComponent();
-    editorComponent.init();
+    HistoryViewer historyViewer = new HistoryViewer();
+    historyViewer.init();
 
-    basePanel.add(editorComponent);
+    basePanel.add(historyViewer);
     RootPanel.get().add(basePanel);
 
-    editorComponent.getEditor().focus(true);
+    historyViewer.getViewerEditor().focus(true);
   }
 
 

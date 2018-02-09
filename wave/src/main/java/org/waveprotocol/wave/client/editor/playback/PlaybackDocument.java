@@ -4,46 +4,32 @@ import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
+import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
+import org.waveprotocol.wave.model.document.operation.impl.DocOpBuilder;
+import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
 import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
 
 /**
  *
- * A document that can playback a history of changes provided as
- * {@link DocHistory}<br>
+ * A document that can playback a document history {@link DocHistory}<br>
  * <p>
  * <br>
- * Each {@link Version} represents a set of contiguous operations performed by
- * the same participant in certain interval of time. Initial version is always
- * 0. <br>
- * <p>
- * The navigation methods of this class, control the version to be rendered.
- * Highlighting of incremental diffs between versions is available.
  *
  * @author pablojan@gmail.com
  *
  */
 public class PlaybackDocument {
 
-  public class Version {
+  private final Registries registries;
 
-    public double version;
-    public String participant;
-    public double timestamp;
-    public int numOfChanges;
+  private final DocumentSchema schema;
 
-  }
-
-  /** history of doc ops */
   private final DocHistory history;
 
-  /** current iterator of doc ops */
-  private DocHistory.Iterator deltaIterator;
-
-  /** Let's put in this cache any doc op sent to the content document */
-  private final DocOpTracker docOpCache;
+  private final DocOpTracker docOpTracker;
 
   /** The actual content document */
   private ContentDocument doc;
@@ -51,46 +37,54 @@ public class PlaybackDocument {
   /** A filtered sink for the content document, to add diff marks as annotations */
   private DiffHighlightingFilter diffFilter;
 
-  /** the version the content document is at. */
-  private long currentVersion = 0;
-
   /** Enable or disable the diff filter */
   private boolean useDiffFilter = false;
 
+  private DocHistory.Iterator revisionIterator;
 
   public PlaybackDocument(Registries registries, DocumentSchema schema, DocHistory history,
-      DocOpTracker docOpCache) {
-    this.doc = new ContentDocument(schema);
-    this.doc.setRegistries(registries);
+      DocOpTracker docOpTracker) {
+    this.registries = registries;
+    this.schema = schema;
     this.history = history;
-    this.diffFilter = new DiffHighlightingFilter(this.doc.getDiffTarget(), docOpCache);
-    this.docOpCache = docOpCache;
+    this.docOpTracker = docOpTracker;
+    initContent(null);
+  }
 
-    this.deltaIterator = history.iterator();
+  /**
+   * Initialize the content document.
+   */
+  protected void initContent(DocInitialization docInit) {
+    this.useDiffFilter = false;
+    if (docInit == null)
+      docInit = DocOpUtil.asInitialization(new DocOpBuilder().build());
+
+    this.doc = new ContentDocument(registries, docInit, schema);
+    this.diffFilter = new DiffHighlightingFilter(this.doc.getDiffTarget(), docOpTracker);
+    this.revisionIterator = history.getIterator();
   }
 
   public ContentDocument getDocument() {
     return doc;
   }
 
-  public void enableDiffs(boolean isOn) {
-    useDiffFilter = isOn;
-  }
+  private void consume(DocRevision revision) {
 
-  private void consume(DocHistory.Delta delta) {
-    delta.ops.forEach(op -> {
+    revision.getDocOps(ops -> {
 
-      docOpCache.add(op, delta.context);
+      for (int i = 0; i < ops.length; i++) {
+        if (useDiffFilter) {
+          try {
+            diffFilter.consume(ops[i]);
+          } catch (OperationException e) {
+            throw new IllegalStateException(e);
+          }
+        } else
+          doc.consume(ops[i]);
+      }
 
-      if (useDiffFilter) {
-        try {
-          diffFilter.consume(op);
-        } catch (OperationException e) {
-          throw new IllegalStateException(e);
-        }
-      } else
-        doc.consume(op);
     });
+
   }
 
 
@@ -110,78 +104,66 @@ public class PlaybackDocument {
       }
 
     });
-
-  }
-
-  public void reset() {
-    deltaIterator = history.iterator();
-    resetAnnotations();
-    resetContent();
-  }
-
-
-  /** Render the document in its next version. */
-  public void renderNext() {
-
-    if (!deltaIterator.hasNext())
-      return;
-
-    consume(deltaIterator.next());
-
-  }
-
-  /** Render the document in its previous version. */
-  public void renderPrev() {
-
-    if (deltaIterator.current() == null)
-      return;
-
-    consume(deltaIterator.current().invert());
-
-    deltaIterator.prev();
-
   }
 
 
   /**
    * Render the document at the specific version.
    */
-  public void render(Version version) {
+  public void render(DocRevision revision) {
+    history.getSnapshot(revision, docInit -> {
+      initContent(docInit);
+      revisionIterator = history.getIteratorAt(revision);
+    });
+  }
+
+  protected void cosumeNextUntilRevision(DocRevision toRevision) {
+
+    if (revisionIterator.hasNext())
+      revisionIterator.next(revision -> {
+        consume(revision);
+        if (!revision.resultingVersion.equals(toRevision.resultingVersion))
+          cosumeNextUntilRevision(toRevision);
+    });
 
   }
 
   /**
-   * Render the document at a specific version, highlighting differences between
-   * the provided versions.
+   * Render the document at base version, highlighting differences with the
+   * target version.
    *
-   * @param from
-   * @param to
+   * @param baseRevision
+   * @param targetRevision
    */
-  public void renderDiff(Version from, Version to) {
+  public void renderDiff(DocRevision baseRevision, DocRevision targetRevision) {
+
+    // if both versions are the same, no diffs to show
+    if (baseRevision.resultingVersion.equals(targetRevision.resultingVersion)) {
+      render(baseRevision);
+      return;
+    }
+
+    // baseRevision must be always less that targetRevision
+    if (baseRevision.resultingVersion.getVersion() > targetRevision.resultingVersion.getVersion()) {
+      DocRevision aux = baseRevision;
+      baseRevision = targetRevision;
+      targetRevision = aux;
+    }
+
+    final DocRevision base = baseRevision;
+    final DocRevision target = targetRevision;
+
+    history.getSnapshot(baseRevision, docInit -> {
+      initContent(docInit);
+      revisionIterator = history.getIteratorAt(base);
+      useDiffFilter = true;
+      cosumeNextUntilRevision(target);
+    });
 
   }
 
-  /**
-   * Query version history.
-   *
-   * @param from first version number to return
-   * @param count number of versions to return
-   * @return array of available {@link Versions}
-   */
-  public Version[] getVersions(double from, int count) {
-    return null;
+  public DocHistory.Iterator getHistoryIterator() {
+    return history.getIterator();
   }
-
-  /**
-   * Query version history filtering by a period of time.
-   *
-   * @param from first version number to return
-   * @param timeSpan only returns version in a span after the first version's time.
-   * @return array of available {@link Versions}
-   */
-  public Version[] getVersionsByTime(double from, double timeSpan) {
-    return null;
-  }
-
 
 }

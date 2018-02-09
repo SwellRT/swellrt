@@ -1,12 +1,9 @@
 package org.swellrt.sandbox.editor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.diff.DiffDeleteRenderer;
@@ -21,7 +18,8 @@ import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
-import org.waveprotocol.wave.client.editor.playback.DocHistoryLocal;
+import org.waveprotocol.wave.client.editor.playback.DocHistory;
+import org.waveprotocol.wave.client.editor.playback.DocRevision;
 import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
 import org.waveprotocol.wave.client.wave.DocOpContext;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
@@ -36,12 +34,9 @@ import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.operation.impl.DocOpValidator;
 import org.waveprotocol.wave.model.document.util.DocProviders;
 import org.waveprotocol.wave.model.document.util.LineContainers;
-import org.waveprotocol.wave.model.operation.SilentOperationSink;
 import org.waveprotocol.wave.model.schema.conversation.ConversationSchemas;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
@@ -52,7 +47,13 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class EditorComponent extends Composite {
+/**
+ * A sandbox for document's history management features.
+ *
+ * @author pablojan@gmail.com
+ *
+ */
+public class HistoryViewer extends Composite {
 
   public static String toCamel(String cssName) {
     String[] parts = cssName.split("-");
@@ -89,19 +90,15 @@ public class EditorComponent extends Composite {
   // Logger
   LoggerBundle logger = new DomLogger("test");
 
-  final ParticipantId DUMMY_PARTICIPANT = ParticipantId.ofUnsafe("dummy@dummy.org");
 
-  // Editor 1
+  //
+  // DOCUMENT STUFF
+  //
 
-  ContentDocument doc1;
-  Editor editor1;
-  List<DocOp> doc1ops = new ArrayList<DocOp>();
+  DocHistory docHistory;
+  PlaybackDocument playbackDoc;
+  Editor docViewer;
 
-
-  // Editor 2
-
-  /** The ops history of doc 1 to be replayed in doc2 */
-  DocHistoryLocal docHistory = new DocHistoryLocal();
 
   /** A doc op cache to query op metadata from ops consumers */
   DocOpTracker docOpCache = new DocOpTracker() {
@@ -119,22 +116,7 @@ public class EditorComponent extends Composite {
     }
   };
 
-  Editor editor2;
-  /** a document that can play back and forth its ops */
-  PlaybackDocument doc2;
 
-  final static String REPLAY_FLOW = "flow"; // default
-  final static String REPLAY_BATCH = "batch";
-
-  String replayMode = REPLAY_FLOW;
-
-  // Panel to render the document with no editor
-  LogicalPanel.Impl displayDoc2 = new LogicalPanel.Impl() {
-    {
-      setElement(Document.get().createDivElement());
-      getElement().getStyle().setProperty("border", "1px solid black");
-    }
-  };
 
 
   // Init Editor registries
@@ -207,22 +189,16 @@ public class EditorComponent extends Composite {
       registerDoodads(getRegistries());
 
       //
-      // Editor 1
+      // Document viewer (using editor)
       //
 
-      editor1 = createEditor("editor1");
-      editor1.init(getRegistries(), new KeyBindingRegistry(), getSettings());
-      doc1 = createContentDocument(false);
-      editor1.setContent(doc1);
-      editor1.setEditing(true);
+      docViewer = createEditor("docViewer");
+      docViewer.init(getRegistries(), new KeyBindingRegistry(), getSettings());
 
-      boolean showDiffs = true;
-      editor2 = createEditor("editor2");
-      editor2.init(getRegistries(), new KeyBindingRegistry(), getSettings());
-      doc2 =  new PlaybackDocument(getRegistries(), DOC_SCHEMA, docHistory, docOpCache);
-      editor2.setContent(doc2.getDocument());
-      doc2.enableDiffs(true);
-      editor2.setEditing(false);
+      docHistory = SampleDocHistories.getHistoryOne();
+      playbackDoc = new PlaybackDocument(getRegistries(), getSchema(), docHistory, docOpCache);
+      docViewer.setContent(playbackDoc.getDocument());
+      docViewer.setEditing(false);
 
       // Render a content document in a panel
       /*
@@ -233,24 +209,11 @@ public class EditorComponent extends Composite {
        * getImplNodelet());
        */
 
-      // Mirror changes in editor1 to doc2
-      setSinks();
-
-      //
-      // Attach to HTML
-      //
-
-      HorizontalPanel mainPanel = new HorizontalPanel();
-      mainPanel.setWidth("100%");
-
-      mainPanel.add(uiEditor1());
-      mainPanel.setCellWidth(uiEditor1(), "50%");
-
-      mainPanel.add(uiEditor2());
-      mainPanel.setCellWidth(uiEditor2(), "50%");
 
 
-      initWidget(mainPanel);
+
+      buildUI();
+
 
 
     } catch (RuntimeException ex) {
@@ -258,33 +221,8 @@ public class EditorComponent extends Composite {
     }
   }
 
-  private long opCounter = 0;
 
-  private void setSinks() {
 
-    editor1.setOutputSink(new SilentOperationSink<DocOp>() {
-      @Override
-      public void consume(DocOp op) {
-
-        opCounter++;
-
-        if (replayMode.equals(REPLAY_BATCH)) {
-
-          doc1ops.add(op);
-
-        } else if (replayMode.equals(REPLAY_FLOW)) {
-
-          docHistory.add(DUMMY_PARTICIPANT, op);
-          docHistory.markDelta();
-
-        }
-
-        updateInfo1();
-
-      }
-
-    });
-  }
 
   private ContentDocument createContentDocument(boolean validateSchema) {
 
@@ -308,159 +246,125 @@ public class EditorComponent extends Composite {
 
   }
 
-  public Editor getEditor() {
-    return editor1;
-  }
-
-  //
-  // UI Behavior
-  //
-
-  boolean groupOps = false;
-
-  public void toggleOpGrouping() {
-    // Operation grouping doesn't work with
-    // the EditorOperationSequencer for the CMutableDocument
-
-    if (!groupOps) {
-      groupOps = true;
-      doc1.getMutableDoc().beginMutationGroup();
-      btnOpGroup.setText("Start Group");
-    } else {
-      groupOps = false;
-      doc1.getMutableDoc().endMutationGroup();
-      btnOpGroup.setText("End Group");
-    }
-  }
 
 
-
-  /*
-   * Load doc ops generated in doc1 into the doc2 using a DocHistory. Replay is
-   * accumulative, every call adds new ops to doc2
-   */
-  public void replay() {
-
-    // take ops from doc1 to play them in doc2/editor2
-    docHistory.add(DUMMY_PARTICIPANT, doc1ops);
-    docHistory.markDelta();
-    doc1ops.clear();
-  }
 
 
   //
   // UI
   //
+  DocRevision baseRevision;
+  DocRevision targetRevision;
 
-  VerticalPanel vpEditor1;
-  HorizontalPanel ctrlPanel1;
-  Label lblOpsCounter;
-  TextBox txtOpsCounter;
-  Button btnOpGroup;
+  VerticalPanel panelLeft;
+  VerticalPanel panelRight;
+  VerticalPanel panelPlayControl;
 
-  public Widget uiEditor1() {
+  Label labelShowingRevision;
+  Label labelBaseRevision;
+  TextBox boxTargetRevision;
 
-    if (vpEditor1 != null)
-      return vpEditor1;
+  Button btnShow;
+  Button btnShowDiff;
 
-    vpEditor1 = new VerticalPanel();
-    vpEditor1.add(editor1.getWidget());
-    vpEditor1.setWidth("100%");
-    setCSS(editor1.getWidget(),
+  public void buildUI() {
+
+    //
+    // Panel Left (document viewer and playback controls)
+    //
+
+    panelLeft = new VerticalPanel();
+    panelLeft.add(docViewer.getWidget());
+    panelLeft.setWidth("100%");
+    setCSS(docViewer.getWidget(),
         "padding", "5px",
         "margin", "10px",
         "border", "1px solid darkgray",
         "min-height", "300px");
 
 
-    ctrlPanel1 = new HorizontalPanel();
+    panelPlayControl = new VerticalPanel();
+    panelLeft.add(panelPlayControl);
 
-    btnOpGroup = new Button("Start Group", new ClickHandler() {
+    labelShowingRevision = new Label("Base revision #");
+    panelPlayControl.add(labelShowingRevision);
+
+    labelBaseRevision = new Label("?");
+    panelPlayControl.add(labelBaseRevision);
+
+    panelPlayControl.add(new Label("Diff with revision #"));
+    boxTargetRevision = new TextBox();
+    boxTargetRevision.setWidth("5em");
+    boxTargetRevision.setValue("?");
+    panelPlayControl.add(boxTargetRevision);
+
+
+    btnShowDiff = new Button("Show diffs", new ClickHandler() {
       public void onClick(ClickEvent e) {
 
-        toggleOpGrouping();
+        try {
+          int targetRevisionIndex = Integer.valueOf(boxTargetRevision.getValue());
+          targetRevision = docHistory.getUnsafe(targetRevisionIndex);
 
+          docViewer.removeContentAndUnrender();
+          playbackDoc.renderDiff(baseRevision, targetRevision);
+          docViewer.setContent(playbackDoc.getDocument());
+
+        } catch (NumberFormatException ex) {
+
+        }
       }
     });
-    ctrlPanel1.add(btnOpGroup);
-
-    lblOpsCounter = new Label("Op count: #");
-    ctrlPanel1.add(lblOpsCounter);
-    txtOpsCounter = new TextBox();
-    txtOpsCounter.setWidth("5em");
-    txtOpsCounter.setValue("0");
-    ctrlPanel1.add(txtOpsCounter);
+    panelPlayControl.add(btnShowDiff);
+    panelLeft.add(panelPlayControl);
 
 
-    vpEditor1.add(ctrlPanel1);
+    //
+    // Right panel (history log)
+    //
 
+    panelRight = new VerticalPanel();
 
-    return vpEditor1;
+    DocHistory.Iterator history = docHistory.getIterator();
 
-  }
+    while (history.hasPrev()) {
+      history.prev(revision -> {
+        panelRight.add(new Button(revision.toString(), new ClickHandler() {
 
-
-  VerticalPanel vpEditor2;
-  HorizontalPanel ctrlPanel2;
-  Button btnReplayDoc1Ops, btnFastForwardOps, btnRewindOps;
-
-  public Widget uiEditor2() {
-
-    if (vpEditor2 != null) {
-      return vpEditor2;
+          @Override
+          public void onClick(ClickEvent event) {
+            docViewer.removeContentAndUnrender();
+            playbackDoc.render(revision);
+            docViewer.setContent(playbackDoc.getDocument());
+            baseRevision = revision;
+            labelBaseRevision.setText("" + baseRevision.getRevisionIndex());
+          }
+        }));
+      });
     }
 
-    vpEditor2 = new VerticalPanel();
-    vpEditor2.add(editor2.getWidget());
-    vpEditor2.setWidth("100%");
-    setCSS(editor2.getWidget(),
-        "padding", "5px",
-        "margin", "10px",
-        "border", "1px solid darkgray",
-        "min-height", "300px");
+    //
+    //
+    //
 
-    ctrlPanel2 = new HorizontalPanel();
+    HorizontalPanel mainPanel = new HorizontalPanel();
+    mainPanel.setWidth("100%");
 
-    btnReplayDoc1Ops = new Button("Replay", new ClickHandler() {
-      public void onClick(ClickEvent e) {
+    mainPanel.add(panelLeft);
+    mainPanel.setCellWidth(panelLeft, "75%");
 
-        replay();
+    mainPanel.add(panelRight);
+    mainPanel.setCellWidth(panelRight, "25%");
 
-      }
-    });
-    ctrlPanel2.add(btnReplayDoc1Ops);
-
-
-    btnRewindOps = new Button(" &lt; prev op ", new ClickHandler() {
-      public void onClick(ClickEvent e) {
-
-        if (doc2 != null)
-          doc2.renderPrev();
-
-      }
-    });
-    ctrlPanel2.add(btnRewindOps);
-
-
-    btnFastForwardOps = new Button(" next op &gt; ", new ClickHandler() {
-      public void onClick(ClickEvent e) {
-
-        if (doc2 != null)
-          doc2.renderNext();
-
-      }
-    });
-    ctrlPanel2.add(btnFastForwardOps);
-
-
-    vpEditor2.add(ctrlPanel2);
-
-    return vpEditor2;
+    initWidget(mainPanel);
 
   }
 
-  public void updateInfo1() {
-    txtOpsCounter.setValue("" + opCounter);
+
+  public Editor getViewerEditor() {
+    return docViewer;
   }
+
+
 
 }
