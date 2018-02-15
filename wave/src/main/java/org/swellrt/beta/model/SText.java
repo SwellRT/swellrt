@@ -1,7 +1,9 @@
 package org.swellrt.beta.model;
 
 
+import org.swellrt.beta.client.platform.web.editor.caret.CaretInfo;
 import org.swellrt.beta.common.SException;
+import org.waveprotocol.wave.client.editor.playback.DocHistory;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 
 import jsinterop.annotations.JsIgnore;
@@ -19,23 +21,28 @@ public interface SText extends SNode {
     return ModelFactory.instance.createLocalText(text);
   }
 
-  public String getRawContent();
-
-  public boolean isEmpty();
-
   /**
-   * A representation of the text data suitable to
-   * inject in new documents.
-   * @return
-   */
-  @JsIgnore
-  public DocInitialization getInitContent();
-
-  /**
-   * Cosume raw operations
+   * The returned map stores pairs of (sessionId, {@link CaretInfo}) that must
+   * be updated by editors.
    *
-   * @param ops
+   * @return a map of carets' metadata.
+   */
+  SMap getLiveCarets();
+
+  /**
+   * @return an iterator of the document history.
+   */
+  DocHistory.Iterator getHistoryIterator();
+
+  /**
+   * @return content's of this object as a initial document operation.
    */
   @JsIgnore
-  public void setInitContent(DocInitialization ops);
+  DocInitialization asDocInitialization();
+
+  /**
+   * @return the XML view of the current state of this document.
+   */
+  @JsIgnore
+  String asXmlString();
 }

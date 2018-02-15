@@ -1,19 +1,28 @@
 package org.swellrt.beta.model.wave;
 
+import java.util.Random;
+
+import org.swellrt.beta.client.wave.DummyLazyContentFactory;
+import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.java.JavaModelFactory;
 import org.swellrt.beta.model.presence.SSession;
 import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
-import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.common.util.RgbColor;
+import org.waveprotocol.wave.client.editor.Editor;
+import org.waveprotocol.wave.client.wave.LazyContentDocument;
+import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.id.IdGenerator;
+import org.waveprotocol.wave.model.id.IdGeneratorImpl;
+import org.waveprotocol.wave.model.id.IdGeneratorImpl.Seed;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.testing.BasicFactories;
-import org.waveprotocol.wave.model.testing.FakeIdGenerator;
 import org.waveprotocol.wave.model.testing.FakeWaveView;
-import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.impl.ObservablePluggableMutableDocument;
 
 import junit.framework.TestCase;
 
@@ -27,34 +36,48 @@ public abstract class SWaveNodeAbstractTest extends TestCase {
 
   private static ModelFactory modelFactory = new JavaModelFactory();
 
-  private static SWaveNodeManager.NodeFactory nodeFactory = new SWaveNodeManager.NodeFactory() {
-
-    @Override
-    public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
-        Blip blip) {
-
-      return modelFactory.createWaveText(nodeManager, substrateId, blip, null);
-    }
-
-  };
-
   protected IdGenerator idGenerator;
   protected FakeWaveView wave;
   protected SSession session;
   protected SSessionProvider sessionProvider;
   protected SWaveObject object;
+  protected SWaveDocuments<LazyContentDocument> docRegistry;
+  protected ParticipantId participant = ParticipantId.ofUnsafe("tom@acme.com");
 
 
   protected void setUp() throws Exception {
 
-    idGenerator = FakeIdGenerator.create();
-    wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).build();
-    session = new SSession("fake-session-id", ParticipantId.ofUnsafe("tom@acme.com"),
+    docRegistry = SWaveDocuments.create(new DummyLazyContentFactory(Editor.ROOT_REGISTRIES),
+
+        ObservablePluggableMutableDocument.createFactory(new SchemaProvider() {
+
+          @Override
+          public DocumentSchema getSchemaForId(WaveletId waveletId, String documentId) {
+            return DocumentSchema.NO_SCHEMA_CONSTRAINTS;
+          }
+        }));
+
+    idGenerator = new IdGeneratorImpl("acme.com", new Seed() {
+
+      Random r = new Random(System.currentTimeMillis());
+
+      @Override
+      public String get() {
+        return r.nextInt(1000) + "";
+      }
+
+    });
+
+    wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(docRegistry)
+        .with(participant).build();
+    session = new SSession("fake-session-id", participant,
         RgbColor.WHITE, "Fake Name", "fakie");
     sessionProvider = new SSessionProvider(session);
 
+
+
     SWaveNodeManager nodeManager = SWaveNodeManager.create(sessionProvider,
-        idGenerator, "example.com", wave, null, nodeFactory);
+        idGenerator, "example.com", wave, null, docRegistry);
     object = nodeManager.getSWaveObject();
 
     // A different way to create a fake wave

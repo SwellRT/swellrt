@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
 import org.swellrt.beta.client.rest.operations.params.Account;
 import org.swellrt.beta.client.rest.operations.params.Credential;
@@ -12,30 +11,28 @@ import org.swellrt.beta.client.rest.operations.params.CredentialData;
 import org.swellrt.beta.client.rest.operations.params.ObjectId;
 import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
+import org.swellrt.beta.client.wave.DummyLazyContentFactory;
+import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.presence.SSession;
 import org.swellrt.beta.model.presence.SSessionProvider;
-import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
-import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.client.editor.Editor;
-import org.waveprotocol.wave.client.wave.DiffProvider;
-import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.client.wave.LazyContentDocument;
-import org.waveprotocol.wave.client.wave.SimpleDiffDoc;
-import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
-import org.waveprotocol.wave.model.document.parser.XmlParseException;
+import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.IdGeneratorImpl;
 import org.waveprotocol.wave.model.id.WaveId;
+import org.waveprotocol.wave.model.id.WaveletId;
+import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.testing.BasicFactories;
 import org.waveprotocol.wave.model.testing.FakeWaveView;
-import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.data.MuteDocumentFactory;
 
 import jsinterop.annotations.JsType;
 
@@ -56,25 +53,8 @@ public class ServerlessFrontend implements ServiceFrontend {
     }
   });
 
-  private SWaveNodeManager.NodeFactory nodeFactory = new SWaveNodeManager.NodeFactory() {
 
-    @Override
-    public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
-        Blip blip) {
 
-      try {
-        return new STextRemoteWeb(nodeManager, substrateId, blip,
-            LazyContentDocument.create(Editor.ROOT_REGISTRIES,
-                SimpleDiffDoc.create(DocOpUtil.docInitializationFromXml(""), null),
-                DocOpTracker.VOID, DiffProvider.VOID_DOC_DIFF_PROVIDER));
-
-      } catch (XmlParseException e) {
-        throw new RuntimeException(e);
-      }
-
-    }
-
-  };
 
   private Map<WaveId, SWaveObject> objects = new HashMap<WaveId, SWaveObject>();
 
@@ -213,6 +193,17 @@ public class ServerlessFrontend implements ServiceFrontend {
 
   public SObject openSync(String id) {
 
+    SWaveDocuments<LazyContentDocument> docRegistry = SWaveDocuments.create(
+        new DummyLazyContentFactory(Editor.ROOT_REGISTRIES),
+
+        new MuteDocumentFactory(new SchemaProvider() {
+
+          @Override
+          public DocumentSchema getSchemaForId(WaveletId waveletId, String documentId) {
+            return DocumentSchema.NO_SCHEMA_CONSTRAINTS;
+          }
+        }));
+
     WaveId waveId = null;
 
     FakeWaveView wave;
@@ -220,17 +211,19 @@ public class ServerlessFrontend implements ServiceFrontend {
     waveId = WaveId.of("local.net", id);
 
     if (waveId == null)
-      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).build();
+      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant)
+          .with(docRegistry).build();
     else if (!objects.containsKey(waveId))
-      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant).with(waveId)
+      wave = BasicFactories.fakeWaveViewBuilder().with(idGenerator).with(participant)
+          .with(docRegistry).with(waveId)
           .build();
     else {
       return objects.get(waveId);
     }
 
     SWaveNodeManager nodeManager = SWaveNodeManager.create(sessionProvider, idGenerator,
-        "local.net", wave,
-        null, nodeFactory);
+        "local.net", wave, null,
+        docRegistry);
     SWaveObject object = nodeManager.getSWaveObject();
 
     objects.put(waveId, object);

@@ -8,14 +8,10 @@ import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.presence.SSessionProvider;
-import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
-import org.swellrt.beta.model.wave.mutable.SWaveNodeManager.NodeFactory;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
-import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
@@ -25,7 +21,6 @@ import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.Preconditions;
-import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -108,17 +103,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
             SWaveNodeManager nodeManager = SWaveNodeManager.create(session,
                 loader.getIdGenerator(),
                 loader.getLocalDomain(), loader.getWave(), WaveContext.this,
-                new NodeFactory() {
-
-                  @Override
-                  public SWaveText createWaveText(SWaveNodeManager nodeManager,
-                      SubstrateId substrateId, Blip blip) {
-
-                    return ModelFactory.instance.createWaveText(nodeManager, substrateId, blip,
-                        loader.getDocumentRegistry().getTextDocument(substrateId));
-
-                  }
-                });
+                loader.getDocumentRegistry());
 
             SWaveObject sobject = nodeManager.getSWaveObject();
 

@@ -14,12 +14,12 @@ import org.waveprotocol.wave.model.wave.data.DocumentOperationSink;
 import com.google.common.base.Preconditions;
 
 /**
- * Manages the creation of all documents in a particular wave. 
+ * Manages the creation of all documents in a particular wave.
  * This class is called from {@see WaveletDataImpl} if is properly
- * configured by its factory. 
+ * configured by its factory.
  * <p>
  * Based on original WaveDocuments class, adapted version for SwellRT
- * 
+ *
  * @author pablojan@gmail.con (Pablo Ojanguren)
  *
  */
@@ -35,42 +35,42 @@ public final class SWaveDocuments<TextDocument extends DocumentOperationSink> im
       DocumentFactory<B> textDocFactory, DocumentFactory<?> dataDocFactory) {
     return new SWaveDocuments<B>(textDocFactory, dataDocFactory);
   }
-  
+
   private final DocumentFactory<TextDocument> textDocFactory;
   private final DocumentFactory<?> dataDocFactory;
-  
- 
+
+
   private final Map<SubstrateId, TextDocument> textDocRegistry = new HashMap<SubstrateId, TextDocument>();
-  
+
   private SWaveDocuments(DocumentFactory<TextDocument> textDocFactory, DocumentFactory<?> dataDocFactory) {
     this.dataDocFactory = dataDocFactory;
     this.textDocFactory = textDocFactory;
   }
-  
+
   @Override
   public DocumentOperationSink create(WaveletId waveletId, String docId,
       DocInitialization content) {
 
-    if (SubstrateId.isText(docId)) {      
+    if (SubstrateId.isText(docId)) {
       SubstrateId substrateId = SubstrateId.ofText(waveletId, docId);
       Preconditions.checkState(!textDocRegistry.containsKey(substrateId));
-      
+
       TextDocument textDoc = textDocFactory.create(waveletId, docId, content);
       textDocRegistry.put(substrateId, textDoc);
       return textDoc;
-      
+
     } else {
       return dataDocFactory.create(waveletId, docId, content);
     }
-      
+
   }
-  
+
   public TextDocument getTextDocument(SubstrateId substrateId) {
     return textDocRegistry.get(substrateId);
   }
-  
+
   public TextDocument getTextDocument(String waveletId, String docId) {
-    SubstrateId substrateId;    
+    SubstrateId substrateId;
     try {
       substrateId = SubstrateId.ofText(ModernIdSerialiser.INSTANCE.deserialiseWaveletId(waveletId), docId);
     } catch (InvalidIdException e) {

@@ -106,7 +106,7 @@ public class SViewBuilderJava<T extends SNode> implements SViewBuilder, SVisitor
 
   @Override
   public void visit(SText text) {
-    currentObject = new JsonPrimitive(text.getRawContent());
+    currentObject = new JsonPrimitive(text.asXmlString());
   }
 
   public Object build() throws SException {

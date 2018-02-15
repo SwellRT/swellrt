@@ -7,8 +7,7 @@ import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 
 /**
- * A range of text, suitable to use in native Javascript.
- *
+ * A range of text.
  */
 @JsType(isNative = true, namespace = "swell", name = "Range")
 public class SRange {

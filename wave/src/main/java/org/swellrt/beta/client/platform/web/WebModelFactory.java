@@ -1,20 +1,21 @@
 package org.swellrt.beta.client.platform.web;
 
-import org.swellrt.beta.client.platform.web.editor.STextLocalWeb;
-import org.swellrt.beta.client.platform.web.editor.STextRemoteWeb;
+import org.swellrt.beta.client.platform.web.editor.STextWebLocal;
+import org.swellrt.beta.client.platform.web.editor.STextWebRemote;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SNodeBuilder;
+import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SViewBuilder;
 import org.swellrt.beta.model.js.SNodeBuilderJs;
 import org.swellrt.beta.model.js.SViewBuilderJs;
-import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -30,14 +31,15 @@ public class WebModelFactory extends ModelFactory {
 
   @Override
   public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
+      DocInitialization docInit,
       InteractiveDocument doc) {
-    return new STextRemoteWeb(nodeManager, substrateId, blip, doc);
+    return new STextWebRemote(nodeManager, substrateId, blip, docInit, doc);
 
   }
 
   @Override
-  public STextLocal createLocalText(String text) throws SException {
-    return STextLocalWeb.create(text);
+  public SText createLocalText(String text) throws SException {
+    return STextWebLocal.create(text);
   }
 
   @Override
@@ -57,7 +59,7 @@ public class WebModelFactory extends ModelFactory {
   public String serializeJsonObject(Object o) {
 
     if (isJsPrimitive(o)) {
-      return o.toString();      
+      return o.toString();
     } else if (o instanceof JavaScriptObject) {
       return JsonUtils.stringify((JavaScriptObject) o);
     }

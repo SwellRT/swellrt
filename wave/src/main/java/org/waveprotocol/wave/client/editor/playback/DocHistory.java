@@ -9,6 +9,10 @@ import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
 import org.waveprotocol.wave.model.document.parser.XmlParseException;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
+import jsinterop.annotations.JsFunction;
+import jsinterop.annotations.JsIgnore;
+import jsinterop.annotations.JsType;
+
 /**
  * Manage the document history of revisions from a human perspective. So we
  * avoid to expose specific Wavelet/Blip concepts here. <br>
@@ -24,13 +28,16 @@ import org.waveprotocol.wave.model.version.HashedVersion;
  * @author pablojan@gmail.com
  *
  */
+@JsType
 public abstract class DocHistory {
 
+  @JsFunction
   @FunctionalInterface
   public interface RevisionResult {
     void result(DocRevision revision);
   }
 
+  @JsFunction
   @FunctionalInterface
   public interface MultipleRevisionResult {
     void result(List<DocRevision> revisionArray);
@@ -51,6 +58,7 @@ public abstract class DocHistory {
     public void result(DocOp[] ops);
   }
 
+  @JsType
   public class Iterator {
 
     /**
@@ -100,6 +108,7 @@ public abstract class DocHistory {
 
   private final HashedVersion topVersion;
 
+  @JsIgnore
   public DocHistory(HashedVersion topVersion) {
     this.topVersion = topVersion;
   }
@@ -158,6 +167,7 @@ public abstract class DocHistory {
     return iterator;
   }
 
+  @JsIgnore
   public void getSnapshot(DocRevision revision, SnapshotResult callback) {
     fetchSnaphost(revision, rawSnapshot -> {
       try {

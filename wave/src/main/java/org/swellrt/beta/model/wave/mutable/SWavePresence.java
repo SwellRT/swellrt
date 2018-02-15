@@ -215,6 +215,10 @@ public class SWavePresence {
 
   public void start() {
 
+    // Ignore for platforms not supported yet
+    if (WaveDeps.lowPriorityTimer == null)
+      return;
+
     try {
       this.presenceStatusMap.listen(presenceUpdateHandler);
     } catch (SException e) {
@@ -229,6 +233,10 @@ public class SWavePresence {
   }
 
   public void stop() {
+
+    // Ignore for platforms not supported yet
+    if (WaveDeps.lowPriorityTimer == null)
+      return;
 
     if (hasStarted) {
 

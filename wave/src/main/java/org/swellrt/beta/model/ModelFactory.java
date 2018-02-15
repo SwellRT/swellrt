@@ -1,11 +1,11 @@
 package org.swellrt.beta.model;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.local.STextLocal;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
+import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
 public abstract class ModelFactory {
@@ -15,11 +15,35 @@ public abstract class ModelFactory {
    */
   public static ModelFactory instance = null;
 
+  /**
+   * Creates a text node supported by a Wave document.
+   * <p>
+   *
+   * @param nodeManager
+   *          the node manager of the Swell
+   * @param substrateId
+   *          the id of the document in the Wave/Object
+   * @param blip
+   *          the wavelet's blip view of the document
+   * @param docInit
+   *          initialization data if blip is new
+   * @param doc
+   *          the interactive view of the document
+   *
+   * @return
+   */
   public abstract SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
-      Blip blip,
+      Blip blip, DocInitialization docInit,
       InteractiveDocument doc);
 
-  public abstract STextLocal createLocalText(String text) throws SException;
+  /**
+   * Creates a stand alone text node.
+   *
+   * @param text
+   * @return
+   * @throws SException
+   */
+  public abstract SText createLocalText(String text) throws SException;
 
   /** Check if an object's type is a valid Json representation:
    *  <li>JavaScriptObject for GWT</li>

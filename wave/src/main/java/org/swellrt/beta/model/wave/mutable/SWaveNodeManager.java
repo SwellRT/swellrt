@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
@@ -17,6 +19,7 @@ import org.swellrt.beta.model.presence.SSessionProvider;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.WaveCommons;
 import org.swellrt.beta.model.wave.adt.DocumentBasedBasicRMap;
+import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.adt.ObservableBasicMap;
 import org.waveprotocol.wave.model.adt.ObservableElementList;
 import org.waveprotocol.wave.model.adt.docbased.DocumentBasedElementList;
@@ -126,7 +129,7 @@ public class SWaveNodeManager {
           return materializeMap(substrateId);
 
         if (substrateId.isText())
-          return materializeText(substrateId, null);
+          return materializeText(substrateId);
 
         return null;
 
@@ -140,7 +143,7 @@ public class SWaveNodeManager {
 
     protected abstract SWaveNode materializeMap(SubstrateId substrateId);
 
-    protected abstract SWaveNode materializeText(SubstrateId substrateId, DocInitialization docInit);
+    protected abstract SWaveNode materializeText(SubstrateId substrateId);
 
 
 
@@ -221,8 +224,8 @@ public class SWaveNodeManager {
     }
 
     @Override
-    protected SWaveNode materializeText(SubstrateId substrateId, DocInitialization docInit) {
-      return loadText(substrateId, docInit);
+    protected SWaveNode materializeText(SubstrateId substrateId) {
+      return loadText(substrateId, null);
     }
 
   };
@@ -240,15 +243,16 @@ public class SWaveNodeManager {
   private final ObservableWavelet userWavelet;
   private final ObservableWavelet transientWavelet;
 
-  private final NodeFactory nodeFactory;
+  private final SWaveDocuments<? extends InteractiveDocument> documentRegistry;
 
   private SWaveTransient transientData;
 
   private SWaveObject waveObject;
 
   public static SWaveNodeManager create(SSessionProvider session, IdGenerator idGenerator,
-      String domain, ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
-    return new SWaveNodeManager(session, idGenerator, domain, wave, waveStatus, nodeFactory);
+      String domain, ObservableWaveView wave, ContextStatus waveStatus,
+      SWaveDocuments<? extends InteractiveDocument> documentRegistry) {
+    return new SWaveNodeManager(session, idGenerator, domain, wave, waveStatus, documentRegistry);
   }
 
   private static ObservableWavelet retrieveDataWavelet(String domain, ObservableWaveView wave) {
@@ -275,7 +279,7 @@ public class SWaveNodeManager {
           .getWavelet(WaveletId.of(domain, userWaveletid));
 
       if (userWavelet == null) {
-        userWavelet = wave.createWavelet(WaveletId.of(domain, IdConstants.DATA_MASTER_WAVELET));
+        userWavelet = wave.createWavelet(WaveletId.of(domain, userWaveletid));
       }
 
       return userWavelet;
@@ -320,7 +324,8 @@ public class SWaveNodeManager {
 
 
   private SWaveNodeManager(SSessionProvider session, IdGenerator idGenerator, String domain,
-      ObservableWaveView wave, ContextStatus waveStatus, NodeFactory nodeFactory) {
+      ObservableWaveView wave, ContextStatus waveStatus,
+      SWaveDocuments<? extends InteractiveDocument> documentRegistry) {
     this.session = session;
     this.idGenerator = idGenerator;
     this.domain = domain;
@@ -329,7 +334,7 @@ public class SWaveNodeManager {
     this.userWavelet = retrieveUserWavelet(domain, wave, session.get().getParticipantId());
     this.transientWavelet = retrieveTransientWavelet(domain, wave);
     this.waveStatus = waveStatus;
-    this.nodeFactory = nodeFactory;
+    this.documentRegistry = documentRegistry;
   }
 
   public void setListener(SWaveletListener listener) {
@@ -509,11 +514,9 @@ public class SWaveNodeManager {
       // docInit);
     }
 
+    SWaveText textRemote = ModelFactory.instance.createWaveText(this, substrateId, blip, docInit,
+        documentRegistry.getTextDocument(substrateId));
 
-    SWaveText textRemote = nodeFactory.createWaveText(this, substrateId, blip);
-    if (docInit != null) {
-      textRemote.setInitContent(docInit);
-    }
     nodeStore.put(substrateId, textRemote);
     return textRemote;
   }
@@ -613,7 +616,7 @@ public class SWaveNodeManager {
 
     } else if (node instanceof SText) {
       SText text = (SText) node;
-      SWaveText remoteText = createText(text.getInitContent(),
+      SWaveText remoteText = createText(text.asDocInitialization(),
           parentNode.getSubstrateId());
       remoteText.attach(parentNode);
 

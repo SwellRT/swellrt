@@ -63,6 +63,7 @@ public class DocRevision {
     callback.result(ops);
   }
 
+  @JsProperty
   public int getRevisionIndex() {
     return revisionIndex;
   }

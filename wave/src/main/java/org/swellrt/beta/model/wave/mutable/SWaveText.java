@@ -20,7 +20,7 @@ public abstract class SWaveText extends SWaveNode implements SText {
    * Blip is also platform independent unlike ContentDocument that is a
    * specific wrapper of a Blip for Web rendering.
    */
-  private final Blip blip;
+  protected final Blip blip;
 
   protected SWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip) {
     super(substrateId, nodeManager);
