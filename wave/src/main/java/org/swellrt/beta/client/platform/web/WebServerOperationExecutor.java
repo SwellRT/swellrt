@@ -1,5 +1,7 @@
 package org.swellrt.beta.client.platform.web;
 
+import java.util.Map;
+
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServerOperation.Method;
@@ -36,17 +38,15 @@ public class WebServerOperationExecutor extends ServerOperationExecutor
 
   @Override
   protected void executeHTTP(Method method, String url,
-      ServerOperationExecutor.Header[] headers, String body,
+      Map<String, String> headers, String body,
       ServerOperationExecutor.HTTPCallback httpCallback) throws Exception {
 
     RequestBuilder rb = new RequestBuilder(toMethod(method), url);
     rb.setIncludeCredentials(true);
 
-    for (int i = 0; i < headers.length; i++) {
-      Header header = headers[i];
-      if (header.value != null)
-        rb.setHeader(header.name, header.value);
-    }
+    headers.forEach((name, value) -> {
+      rb.setHeader(name, value);
+    });
 
     try {
 

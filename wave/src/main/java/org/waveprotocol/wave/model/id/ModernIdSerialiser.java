@@ -36,6 +36,10 @@ public class ModernIdSerialiser implements IdSerialiser {
   private static final String SEP = "/";
   private static final String ELIDE = "~";
 
+  public static IdSerialiser get() {
+    return INSTANCE;
+  }
+
   @Override
   public String serialiseWaveId(WaveId id) {
     // These checks will be unnecessary once it's impossible to construct

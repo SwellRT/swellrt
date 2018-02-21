@@ -10,6 +10,7 @@ import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.wave.WaveSchemas;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.editor.playback.DocHistory;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
@@ -146,6 +147,11 @@ public class STextWebLocal implements STextWeb {
   @Override
   public String asXmlString() {
     return doc.getMutableDoc().toXmlString();
+  }
+
+  @Override
+  public DocHistory getDocHistory() {
+    return null;
   }
 
 }

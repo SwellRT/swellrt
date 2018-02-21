@@ -39,7 +39,7 @@ public abstract class DocHistory {
 
   @JsFunction
   @FunctionalInterface
-  public interface MultipleRevisionResult {
+  public interface RevisionListResult {
     void result(List<DocRevision> revisionArray);
   }
 
@@ -49,12 +49,17 @@ public abstract class DocHistory {
   }
 
   @FunctionalInterface
-  interface RawSnapshotResult {
+  public interface RawSnapshotResult {
     void result(String xmlSnapshot);
   }
 
   @FunctionalInterface
   public interface DocOpResult {
+    public void result(DocOp ops);
+  }
+
+  @FunctionalInterface
+  public interface DocOpArrayResult {
     public void result(DocOp[] ops);
   }
 
@@ -66,39 +71,33 @@ public abstract class DocHistory {
      */
     private int revPointer = -1;
 
-    public boolean hasPrev() {
-      return revisions.isEmpty()
-          || (revPointer >= 0 && revisions.get(revPointer).appliedAtVersion.getVersion() != 0);
-    }
-
-    public boolean hasNext() {
-      return revPointer > 0;
-    }
-
     public void next(RevisionResult callback) {
+      if (revPointer <= 0)
+        if (callback != null)
+          callback.result(null);
 
-      if (!hasNext())
-        return;
-
+      // we can always go back in the revision's list
       getRevision(--revPointer, callback);
     }
 
     public void prev(RevisionResult callback) {
-
-      if (!hasPrev())
-        return;
-
-      getRevision(++revPointer, callback);
-
+      getRevision(revPointer + 1, rev -> {
+        if (rev != null) revPointer++;
+        if (callback != null)
+          callback.result(rev);
+      });
     }
 
     public void current(RevisionResult callback) {
-      getRevision(revPointer, callback);
+      if (revPointer >= 0)
+        getRevision(revPointer, callback);
+      else if (callback != null)
+        callback.result(null);
     }
 
 
     public void reset() {
-      this.revPointer = 0;
+      this.revPointer = -1;
     }
 
   }
@@ -118,6 +117,18 @@ public abstract class DocHistory {
     return revisions.get(revisions.size() - 1);
   }
 
+  private void getRevisionSafe(int index, RevisionResult callback) {
+
+    if (callback == null)
+      return;
+
+    if (revisions.size() > index) {
+      callback.result(revisions.get(index));
+    } else {
+      callback.result(null);
+    }
+  }
+
   /** Gets a revision, fetching it remotely if necessary */
   private void getRevision(int index, RevisionResult callback) {
 
@@ -127,12 +138,12 @@ public abstract class DocHistory {
       if (!revisions.isEmpty())
         versionToFetch = getLastRevision().appliedAtVersion;
 
-      fetchRevision(versionToFetch, 10, index, revisionList -> {
+      fetchRevision(versionToFetch, index, revisionList -> {
         revisions.addAll(revisionList);
-        callback.result(revisions.get(index));
+        getRevisionSafe(index, callback);
       });
     } else {
-      callback.result(revisions.get(index));
+      getRevisionSafe(index, callback);
     }
 
 
@@ -149,13 +160,11 @@ public abstract class DocHistory {
    * @param callback
    *          callback to return revisions asynchronously
    */
-  protected abstract void fetchRevision(HashedVersion resultingVersion, int fetchCount,
+  protected abstract void fetchRevision(HashedVersion resultingVersion,
       int nextRevisionIndex,
-      MultipleRevisionResult callback);
+      RevisionListResult callback);
 
   protected abstract void fetchSnaphost(DocRevision revision, RawSnapshotResult callback);
-
-  protected abstract void fetchOps(DocRevision revision, DocOpResult callback);
 
   public DocHistory.Iterator getIterator() {
     return new DocHistory.Iterator();
@@ -171,7 +180,8 @@ public abstract class DocHistory {
   public void getSnapshot(DocRevision revision, SnapshotResult callback) {
     fetchSnaphost(revision, rawSnapshot -> {
       try {
-        callback.result(DocOpUtil.docInitializationFromXml(rawSnapshot));
+        if (callback != null)
+          callback.result(DocOpUtil.docInitializationFromXml(rawSnapshot));
       } catch (XmlParseException e) {
         throw new IllegalStateException(e);
       }

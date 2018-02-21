@@ -9,6 +9,7 @@ import org.waveprotocol.box.common.comms.ProtocolWaveletUpdate;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
 import org.waveprotocol.wave.federation.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
+import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.version.HashedVersion;
@@ -98,5 +99,7 @@ public abstract class ProtocolMessageUtils {
   }
 
   public abstract ProtocolHashedVersion serialize(HashedVersion version);
+
+  public abstract DocOp deserializeDocOp(Object json);
 
 }

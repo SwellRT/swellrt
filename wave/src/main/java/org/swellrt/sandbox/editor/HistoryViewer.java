@@ -1,8 +1,7 @@
 package org.swellrt.sandbox.editor;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
@@ -21,14 +20,11 @@ import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
 import org.waveprotocol.wave.client.editor.playback.DocHistory;
 import org.waveprotocol.wave.client.editor.playback.DocRevision;
 import org.waveprotocol.wave.client.editor.playback.PlaybackDocument;
-import org.waveprotocol.wave.client.wave.DocOpContext;
-import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.client.widget.popup.PopupChrome;
 import org.waveprotocol.wave.client.widget.popup.PopupChromeProvider;
 import org.waveprotocol.wave.client.widget.popup.simple.Popup;
 import org.waveprotocol.wave.common.logging.LoggerBundle;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
-import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.document.operation.automaton.DocOpAutomaton.ViolationCollector;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.operation.impl.DocOpValidator;
@@ -98,25 +94,6 @@ public class HistoryViewer extends Composite {
   DocHistory docHistory;
   PlaybackDocument playbackDoc;
   Editor docViewer;
-
-
-  /** A doc op cache to query op metadata from ops consumers */
-  DocOpTracker docOpCache = new DocOpTracker() {
-
-    Map<DocOp, DocOpContext> cacheData = new HashMap<DocOp, DocOpContext>();
-
-    @Override
-    public Optional<DocOpContext> fetch(DocOp op) {
-      return Optional.ofNullable(cacheData.get(op));
-    }
-
-    @Override
-    public void add(DocOp op, DocOpContext opCtx) {
-      cacheData.put(op, opCtx);
-    }
-  };
-
-
 
 
   // Init Editor registries
@@ -196,7 +173,7 @@ public class HistoryViewer extends Composite {
       docViewer.init(getRegistries(), new KeyBindingRegistry(), getSettings());
 
       docHistory = SampleDocHistories.getHistoryOne();
-      playbackDoc = new PlaybackDocument(getRegistries(), getSchema(), docHistory, docOpCache);
+      playbackDoc = new PlaybackDocument(getRegistries(), getSchema(), docHistory);
       docViewer.setContent(playbackDoc.getDocument());
       docViewer.setEditing(false);
 
@@ -247,7 +224,14 @@ public class HistoryViewer extends Composite {
   }
 
 
-
+  protected static void traverseAllPrev(DocHistory.Iterator it, Consumer<DocRevision> consumer) {
+    it.prev(r -> {
+      if (r != null) {
+        consumer.accept(r);
+        traverseAllPrev(it, consumer);
+      }
+    });
+  }
 
 
   //
@@ -307,7 +291,8 @@ public class HistoryViewer extends Composite {
           targetRevision = docHistory.getUnsafe(targetRevisionIndex);
 
           docViewer.removeContentAndUnrender();
-          playbackDoc.renderDiff(baseRevision, targetRevision);
+          playbackDoc.renderDiff(baseRevision, targetRevision, doc -> {
+          });
           docViewer.setContent(playbackDoc.getDocument());
 
         } catch (NumberFormatException ex) {
@@ -327,21 +312,22 @@ public class HistoryViewer extends Composite {
 
     DocHistory.Iterator history = docHistory.getIterator();
 
-    while (history.hasPrev()) {
-      history.prev(revision -> {
-        panelRight.add(new Button(revision.toString(), new ClickHandler() {
+    traverseAllPrev(history, revision -> {
+      panelRight.add(new Button(revision.toString(), new ClickHandler() {
 
-          @Override
-          public void onClick(ClickEvent event) {
-            docViewer.removeContentAndUnrender();
-            playbackDoc.render(revision);
-            docViewer.setContent(playbackDoc.getDocument());
-            baseRevision = revision;
-            labelBaseRevision.setText("" + baseRevision.getRevisionIndex());
-          }
-        }));
-      });
-    }
+        @Override
+        public void onClick(ClickEvent event) {
+          docViewer.removeContentAndUnrender();
+          playbackDoc.render(revision, doc -> {
+          });
+          docViewer.setContent(playbackDoc.getDocument());
+          baseRevision = revision;
+          labelBaseRevision.setText("" + baseRevision.getRevisionIndex());
+        }
+
+      }));
+
+    });
 
     //
     //

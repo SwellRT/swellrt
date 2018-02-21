@@ -117,9 +117,13 @@ public class DataRestResources {
             start = tmp;
           }
 
+          jw.beginObject();
+          jw.name("log");
 
           DocumentLogBuilder.build(waveletProvider, waveletName, docId, start, end, numberOfResults,
               jw, returnOperations);
+
+          jw.endObject();
 
         } catch (WaveServerException e) {
           throw new IllegalStateException(e);

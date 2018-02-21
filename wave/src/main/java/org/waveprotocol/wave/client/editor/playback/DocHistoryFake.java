@@ -57,14 +57,9 @@ public class DocHistoryFake extends DocHistory {
   }
 
   @Override
-  protected void fetchOps(DocRevision revision, DocOpResult callback) {
-    throw new IllegalStateException("Ops should be already present in the caller DocRevision");
-  }
-
-  @Override
-  protected void fetchRevision(HashedVersion resultingVersion, int fetchCount,
+  protected void fetchRevision(HashedVersion resultingVersion,
       int nextRevisionIndex,
-      MultipleRevisionResult callback) {
+      RevisionListResult callback) {
 
     int d = 0;
     int revisionDeltaStart = -1;
@@ -106,7 +101,9 @@ public class DocHistoryFake extends DocHistory {
         deltas.get(revisionDeltaStart).resultingVersion, deltas.get(revisionDeltaStart).timestap,
         participant, nextRevisionIndex);
 
-    revision.ops = ops.toArray(new DocOp[ops.size()]);
+    DocOpCollector opCollector = new DocOpCollector();
+    ops.forEach(op -> opCollector.add(op));
+    revision.setDocOp(opCollector.composeAll());
 
     callback.result(Collections.singletonList(revision));
   }

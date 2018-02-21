@@ -190,7 +190,11 @@ public class SEditor implements EditorUpdateListener {
     ContentDocument doc = text.getContentDocument();
     // Ensure the document is rendered and listen for events
     // in a deattached DOM node
-    text.getContentDocument().setInteractive();
+    text.getContentDocument().setInteractive(new LogicalPanel.Impl() {
+      {
+        setElement(Document.get().createDivElement());
+      }
+    });
 
     // Add the document's root DOM node to the editor's panel
     editorPanel.getElement()

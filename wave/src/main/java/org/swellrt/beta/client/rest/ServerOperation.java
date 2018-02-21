@@ -1,5 +1,8 @@
 package org.swellrt.beta.client.rest;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.common.SException;
@@ -33,6 +36,11 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
     this.responseImplClass = responseImplClass;
   }
 
+  public ServerOperation(ServiceContext context, O options, Callback<R> callback) {
+    super(context, options, callback);
+    this.responseImplClass = null;
+  }
+
   protected ServerOperation<O, R> addPathElement(String element) {
     path += pathSeparator + element;
     return this;
@@ -64,10 +72,16 @@ public abstract class ServerOperation<O extends ServiceOperation.Options, R exte
 
   public abstract Method getMethod();
 
+
   protected abstract void buildRestParams() throws SException;
 
-  protected final void doSuccessJson(String json) {
-    doSuccess(WaveDeps.json.parse(json, responseImplClass));
+  protected Map<String, String> getHeaders() {
+    return Collections.emptyMap();
+  }
+
+  /** By default parse JSON. Overwrite to process response in other formats */
+  protected void doSuccessRaw(String raw) {
+    doSuccess(WaveDeps.json.parse(raw, responseImplClass));
   }
 
   public boolean sendSessionInUrl() {

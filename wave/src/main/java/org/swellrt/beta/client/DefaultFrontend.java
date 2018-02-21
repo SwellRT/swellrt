@@ -30,6 +30,7 @@ import org.swellrt.beta.client.rest.operations.params.CredentialImpl;
 import org.swellrt.beta.client.rest.operations.params.ObjectId;
 import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
+import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.waveprotocol.wave.client.account.Profile;
@@ -48,25 +49,22 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell", name = "DefaultService")
 public class DefaultFrontend implements ServiceFrontend {
 
-
+  private static Log LOG = Log.get(DefaultFrontend.class);
 
   @JsIgnore
   public static DefaultFrontend create(ServiceContext context,
-      ServerOperationExecutor serverOpExecutor,
-      ServiceLogger logger) {
+      ServerOperationExecutor serverOpExecutor) {
 
     Preconditions.checkNotNull(context, "Service context can't be null");
     Preconditions.checkNotNull(serverOpExecutor, "Operation executor can't be null");
-    Preconditions.checkNotNull(logger, "Service logger can't be null");
 
-    DefaultFrontend sf = new DefaultFrontend(context, serverOpExecutor, logger);
+    DefaultFrontend sf = new DefaultFrontend(context, serverOpExecutor);
     return sf;
   }
 
   private final ServiceContext context;
   private final ServerOperationExecutor serverOpExecutor;
   private final ClientOperationExecutor clientOpExecutor;
-  private final ServiceLogger logger;
 
   private ProfileManager profileManager = new AbstractProfileManager() {
 
@@ -97,7 +95,7 @@ public class DefaultFrontend implements ServiceFrontend {
 
             @Override
             public void onError(SException exception) {
-              logger.log("Error loading profile " + exception.getMessage());
+              LOG.severe("Error loading profile ", exception);
             }
 
             @Override
@@ -190,7 +188,7 @@ public class DefaultFrontend implements ServiceFrontend {
 
             @Override
             public void onError(SException exception) {
-              logger.log("Error storing profile " + exception.getMessage());
+              LOG.severe("Error storing profile", exception);
             }
 
             @Override
@@ -206,12 +204,10 @@ public class DefaultFrontend implements ServiceFrontend {
 
   @JsIgnore
   public DefaultFrontend(ServiceContext context,
-      ServerOperationExecutor serverOpExecutor,
-      ServiceLogger logger) {
+      ServerOperationExecutor serverOpExecutor) {
     this.context = context;
     this.serverOpExecutor = serverOpExecutor;
     this.clientOpExecutor = new ClientOperationExecutor();
-    this.logger = logger;
   }
 
   /* (non-Javadoc)
@@ -234,7 +230,7 @@ public class DefaultFrontend implements ServiceFrontend {
 
       @Override
       public void onError(SException exception) {
-        logger.log("Echo operation failed: " + exception.getMessage());
+        LOG.severe("Echo operation failed", exception);
       }
 
       @Override

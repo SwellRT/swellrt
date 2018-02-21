@@ -1,44 +1,60 @@
 package org.waveprotocol.wave.client.editor.playback;
 
-import org.waveprotocol.wave.client.editor.playback.DocHistory.DocOpResult;
 import org.waveprotocol.wave.model.document.operation.DocOp;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
+/**
+ * A DocRevision represents a one or more contiguous wave operations performed
+ * against a Wave's document for the same author.
+ * <p>
+ * Revisions can be generated grouping deltas so, they don't necessarily match
+ * one-to-one with a Wavelet-delta.
+ * <p>
+ *
+ */
 @JsType
 public class DocRevision {
 
   final DocHistory history;
   final int revisionIndex;
-  final HashedVersion appliedAtVersion;
+  HashedVersion appliedAtVersion;
   final HashedVersion resultingVersion;
-  final long resultingTime;
+  final double resultingTime;
   final String participant;
-  DocOp[] ops;
+  DocOp op;
 
-  DocRevision(DocHistory history, HashedVersion appliedAtVersion, HashedVersion resultingVersion,
-      long resultingTime, String participant, int nextRevisionIndex) {
+  @JsIgnore
+  public DocRevision(DocHistory history,
+      HashedVersion resultingVersion, HashedVersion appliedAtVersion,
+      double resultingTime, String participant, int nextRevisionIndex) {
     super();
     this.history = history;
-    this.appliedAtVersion = appliedAtVersion;
     this.resultingVersion = resultingVersion;
+    this.appliedAtVersion = appliedAtVersion;
     this.resultingTime = resultingTime;
     this.participant = participant;
     this.revisionIndex = nextRevisionIndex;
-    this.ops = null;
   }
 
   @JsProperty
   public double getAppliedAtVersion() {
-    return appliedAtVersion.getVersion();
+    if (appliedAtVersion != null)
+      return appliedAtVersion.getVersion();
+    else
+      return -1;
   }
 
   @JsProperty
   public double getResultingVersion() {
-    return resultingVersion.getVersion();
+    if (resultingVersion != null)
+      return resultingVersion.getVersion();
+    else
+      return -1;
   }
 
   @JsProperty
@@ -51,16 +67,16 @@ public class DocRevision {
     return participant;
   }
 
-  @JsIgnore
-  public void getDocOps(DocOpResult callback) {
-    if (ops == null) {
-      history.fetchOps(this, fetchedOps -> {
-        ops = fetchedOps;
-        callback.result(ops);
-      });
-    }
 
-    callback.result(ops);
+  @JsIgnore
+  public DocOp getDocOp() {
+    return this.op;
+  }
+
+  @JsIgnore
+  public void setDocOp(DocOp op) {
+    Preconditions.checkArgument(this.op == null, "Can't overwrite the revision's doc op.");
+    this.op = op;
   }
 
   @JsProperty
@@ -69,9 +85,25 @@ public class DocRevision {
   }
 
   @JsIgnore
+  public void setAppliedAtHashedVersion(HashedVersion appliedAtVersion) {
+    this.appliedAtVersion = appliedAtVersion;
+  }
+
+  @JsIgnore
+  public HashedVersion getAppliedAtHashedVersion() {
+    return this.appliedAtVersion;
+  }
+
+  @JsIgnore
+  public HashedVersion getResultingHashedVersion() {
+    return this.resultingVersion;
+  }
+
+  @JsIgnore
   @Override
   public String toString() {
     return "[DocRevision#" + revisionIndex + "] version ( " + appliedAtVersion.getVersion() + " -> "
         + resultingVersion.getVersion() + ") by " + participant;
   }
+
 }

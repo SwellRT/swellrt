@@ -2,6 +2,7 @@ package org.swellrt.beta.client.platform.java;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -35,7 +36,7 @@ public class JavaServerOperationExecutor extends ServerOperationExecutor {
 
   @SuppressWarnings("unchecked")
   @Override
-  protected void executeHTTP(Method method, String url, Header[] headers, String body,
+  protected void executeHTTP(Method method, String url, Map<String, String> headers, String body,
       HTTPCallback httpCallback) throws Exception {
 
     HttpUriRequest hm = null;
@@ -61,11 +62,11 @@ public class JavaServerOperationExecutor extends ServerOperationExecutor {
       return;
     }
 
-    for (int i = 0; i < headers.length; i++) {
-      if (headers[i].value != null) {
-        hm.addHeader(headers[i].name, headers[i].value);
-      }
-    }
+    final HttpUriRequest req = hm;
+    headers.forEach((name, value) -> {
+      req.addHeader(name, value);
+    });
+
 
     try {
 

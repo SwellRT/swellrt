@@ -2,6 +2,7 @@ package org.waveprotocol.wave.client.editor.playback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
 import org.waveprotocol.wave.client.editor.playback.DocHistoryFake.Delta;
@@ -121,6 +122,24 @@ public class DocHistoryFakeBuilder {
     return deltaHistory;
   }
 
+  protected static void traverseAllPrev(DocHistory.Iterator it, Consumer<DocRevision> consumer) {
+    it.prev(r -> {
+      if (r != null) {
+        consumer.accept(r);
+        traverseAllPrev(it, consumer);
+      }
+    });
+  }
+
+  protected static void traverseAllNext(DocHistory.Iterator it, Consumer<DocRevision> consumer) {
+    it.next(r -> {
+      if (r != null) {
+        consumer.accept(r);
+        traverseAllNext(it, consumer);
+      }
+    });
+  }
+
   public static void main(String[] args) {
 
     DocHistoryFakeBuilder db = new DocHistoryFakeBuilder();
@@ -152,11 +171,7 @@ public class DocHistoryFakeBuilder {
 
     DocHistory.Iterator historyIterator = history.getIterator();
 
-    while (historyIterator.hasPrev()) {
-      historyIterator.prev(revision -> {
-        System.out.println(revision);
-      });
-    }
+    traverseAllPrev(historyIterator, System.out::println);
 
     historyIterator.current(revision -> {
       history.getSnapshot(revision, snapshot -> {
@@ -166,14 +181,12 @@ public class DocHistoryFakeBuilder {
     });
 
 
-    while (historyIterator.hasNext()) {
-      historyIterator.next(revision -> {
-        history.getSnapshot(revision, snapshot -> {
-          System.out.println(revision);
-          System.out.println(DocOpUtil.toXmlString(snapshot));
-        });
+    traverseAllNext(historyIterator, revision -> {
+      history.getSnapshot(revision, snapshot -> {
+        System.out.println(revision);
+        System.out.println(DocOpUtil.toXmlString(snapshot));
       });
-    }
+    });
 
   }
 

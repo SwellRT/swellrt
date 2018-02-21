@@ -8,7 +8,6 @@ import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.ServiceLogger;
 import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.rest.JsonParser;
 import org.swellrt.beta.client.rest.operations.params.Account;
@@ -164,15 +163,9 @@ public class Swell {
       }
     });
 
-    service = new DefaultFrontend(context, new JavaServerOperationExecutor(context),
-        new ServiceLogger() {
+    ServiceDeps.remoteOperationExecutor = new JavaServerOperationExecutor(context);
 
-          @Override
-          public void log(String message) {
-            System.out.println(message);
-          }
-
-        });
+    service = new DefaultFrontend(context, ServiceDeps.remoteOperationExecutor);
   }
 
 

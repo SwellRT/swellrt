@@ -37,6 +37,7 @@ import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
+import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.testing.OpBasedWaveletFactory;
@@ -354,6 +355,9 @@ public class SWaveNodeManager {
     return ModernIdSerialiser.INSTANCE.serialiseWaveId(wave.getWaveId());
   }
 
+  public WaveId getWaveId() {
+    return wave.getWaveId();
+  }
 
   public SWaveMap getDataRoot() {
     SWaveMap map = loadMap(

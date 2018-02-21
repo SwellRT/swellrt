@@ -9,10 +9,8 @@ import org.swellrt.beta.client.ServiceConnection;
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.ServiceFrontend;
-import org.swellrt.beta.client.ServiceLogger;
 import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.platform.js.JsProtocolMessageUtils;
-import org.swellrt.beta.client.platform.web.browser.Console;
 import org.swellrt.beta.client.platform.web.browser.JSON;
 import org.swellrt.beta.client.platform.web.editor.SEditorStatics;
 import org.swellrt.beta.client.rest.JsonParser;
@@ -225,6 +223,7 @@ public class ServiceEntryPoint implements EntryPoint {
       }
     };
 
+
     ServiceDeps.serviceSessionFactory = new ServiceSession.Factory() {
 
       @Override
@@ -272,16 +271,12 @@ public class ServiceEntryPoint implements EntryPoint {
               }
             });
 
+        ServiceDeps.serviceContext = context;
+
+        ServiceDeps.remoteOperationExecutor = new WebServerOperationExecutor(context);
+
         service = DefaultFrontend.create(context,
-            new WebServerOperationExecutor(context),
-            new ServiceLogger() {
-
-              @Override
-              public void log(String message) {
-                Console.log(message);
-              }
-
-            });
+            ServiceDeps.remoteOperationExecutor);
 
         promisableService = new PromisableFrontend(service);
 

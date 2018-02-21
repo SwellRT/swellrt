@@ -1,12 +1,10 @@
 package org.swellrt.beta.client.rest.operations.params;
 
-import org.swellrt.beta.client.rest.ServiceOperation;
-
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true)
-public interface Delta extends ServiceOperation.Options {
+public interface DocLogDelta {
 
   @JsProperty
   public String getVersion();
@@ -18,5 +16,6 @@ public interface Delta extends ServiceOperation.Options {
   public double getTime();
 
   @JsProperty
-  public Object getOps();
+  public Object[] getOps();
+
 }

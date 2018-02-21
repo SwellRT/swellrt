@@ -1,5 +1,8 @@
 package org.swellrt.beta.client.rest;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.swellrt.beta.client.ServiceContext;
 import org.swellrt.beta.client.ServiceSession;
 import org.swellrt.beta.client.rest.ServerOperation.Method;
@@ -26,17 +29,6 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
   private final static String pathSeparator = "/";
 
-  protected static class Header {
-    public String name;
-    public String value;
-
-    public Header(String name, String value) {
-      super();
-      this.name = name;
-      this.value = value;
-    }
-  }
-
   protected interface HTTPCallback {
 
     void onResponse(int statusCode, String statusText, String response);
@@ -47,11 +39,7 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
   private final ServiceContext context;
 
-  /** Keep the array order */
-  private Header[] headers =
-      { new Header("Content-Type", "application/json; charset=utf-8"),
-          new Header(HEADER_WINDOW_ID, null),
-          new Header("Accept", "text/plain, application/json") };
+  private Map<String, String> headerMap = new HashMap<String, String>();
 
   protected ServerOperationExecutor(ServiceContext context) {
     this.context = context;
@@ -91,13 +79,23 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
   }
 
-  private Header[] buildHeaders() {
+  private Map<String, String> getHeaders(
+      ServerOperation<? extends ServiceOperation.Options, ? extends ServiceOperation.Response> operation) {
+
+    headerMap.clear();
 
     String windowId = ServiceSession.getWindowId();
     if (windowId != null)
-      headers[1].value = windowId;
+      headerMap.put(HEADER_WINDOW_ID, windowId);
 
-    return headers;
+    // default headers
+    headerMap.put("Content-Type", "application/json; charset=utf-8");
+    headerMap.put("Accept", "text/plain, application/json");
+
+    // overwrite with custom headers
+    headerMap.putAll(operation.getHeaders());
+
+    return headerMap;
   }
 
   @Override
@@ -125,7 +123,7 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
       executeHTTP(operation.getMethod(),
           buildUrl(operation.getRestContext(), operation.getRestParams(),
               operation.sendSessionInUrl()),
-          buildHeaders(),
+          getHeaders(operation),
           body, new HTTPCallback() {
 
             @Override
@@ -133,7 +131,7 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
               if (statusCode == 200) {
 
-                operation.doSuccessJson(response);
+                operation.doSuccessRaw(response);
 
               } else {
 
@@ -161,7 +159,8 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
   }
 
-  protected abstract void executeHTTP(Method method, String url, Header[] headers, String body,
+  protected abstract void executeHTTP(Method method, String url, Map<String, String> headers,
+      String body,
       HTTPCallback httpCallback) throws Exception;
 
   protected abstract OperationError parseServiceError(String json);

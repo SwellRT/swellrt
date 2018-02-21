@@ -17,9 +17,12 @@ import org.waveprotocol.wave.communication.gwt.JsonHelper;
 import org.waveprotocol.wave.communication.gwt.JsonMessage;
 import org.waveprotocol.wave.communication.json.JsonException;
 import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.federation.ProtocolDocumentOperation;
 import org.waveprotocol.wave.federation.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.ProtocolWaveletDelta;
+import org.waveprotocol.wave.federation.jso.ProtocolDocumentOperationJsoImpl;
 import org.waveprotocol.wave.federation.jso.ProtocolWaveletDeltaJsoImpl;
+import org.waveprotocol.wave.model.document.operation.DocOp;
 import org.waveprotocol.wave.model.id.WaveletName;
 import org.waveprotocol.wave.model.operation.wave.WaveletDelta;
 import org.waveprotocol.wave.model.operation.wave.WaveletOperation;
@@ -213,6 +216,12 @@ public class JsProtocolMessageUtils extends ProtocolMessageUtils {
   @Override
   public ProtocolHashedVersion serialize(HashedVersion version) {
     return WaveletOperationSerializer.serialize(version);
+  }
+
+  @Override
+  public DocOp deserializeDocOp(Object rawJson) {
+      ProtocolDocumentOperation protocolDocOp = (ProtocolDocumentOperationJsoImpl) rawJson;
+      return WaveletOperationSerializer.deserialize(protocolDocOp);
   }
 
 }

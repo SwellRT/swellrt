@@ -513,6 +513,8 @@ public class ServerRpcProvider {
 
       context.setInitParameter("resteasy.guice.modules",
           "org.waveprotocol.box.server.swell.rest.RestModule");
+      context.setInitParameter("resteasy.providers",
+          "org.waveprotocol.box.server.swell.rest.CleanupQueryFilter");
 
       ServletHolder restServletHolder = new ServletHolder(HttpServletDispatcher.class);
       restServletHolder.setInitParameter("resteasy.servlet.mapping.prefix", "/rest");

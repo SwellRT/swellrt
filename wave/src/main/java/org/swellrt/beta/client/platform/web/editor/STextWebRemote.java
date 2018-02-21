@@ -1,5 +1,6 @@
 package org.swellrt.beta.client.platform.web.editor;
 
+import org.swellrt.beta.client.platform.web.editor.history.DocHistoryRemote;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
@@ -10,6 +11,7 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
+import org.waveprotocol.wave.client.editor.playback.DocHistory;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
@@ -25,6 +27,7 @@ import org.waveprotocol.wave.model.wave.Blip;
 public class STextWebRemote extends SWaveText implements STextWeb {
 
   private final InteractiveDocument interactiveDoc;
+  private DocHistory docHistory;
 
   public STextWebRemote(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
       DocInitialization docInit, InteractiveDocument interactiveDoc) {
@@ -38,6 +41,14 @@ public class STextWebRemote extends SWaveText implements STextWeb {
     }
 
     this.interactiveDoc = interactiveDoc;
+    this.updateHistory();
+  }
+
+  protected void updateHistory() {
+    this.docHistory = new DocHistoryRemote(getNodeManager().getWaveId(),
+        getSubstrateId().getContainerId(), getSubstrateId().getDocumentId(),
+        blip.getWavelet().getHashedVersion());
+
   }
 
   @Override
@@ -47,7 +58,8 @@ public class STextWebRemote extends SWaveText implements STextWeb {
 
   @Override
   public Iterator getHistoryIterator() {
-    return null;
+    updateHistory();
+    return docHistory.getIterator();
   }
 
   @Override
@@ -146,6 +158,11 @@ public class STextWebRemote extends SWaveText implements STextWeb {
   @Override
   public String asXmlString() {
     return this.interactiveDoc.getDocument().getMutableDoc().toXmlString();
+  }
+
+  @Override
+  public DocHistory getDocHistory() {
+    return docHistory;
   }
 
 }

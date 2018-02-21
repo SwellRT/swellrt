@@ -110,7 +110,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
   private final SSessionProvider ssessionProvider;
 
-  public ServiceContext(String httpAddress,
+  public ServiceContext(String httpAddress, 
       DiffProvider.Factory diffProviderFactory) {
     this.httpAddress = httpAddress;
     this.websocketAddress = getWebsocketAddress(httpAddress);

@@ -30,7 +30,8 @@ public interface SText extends SNode {
   SMap getLiveCarets();
 
   /**
-   * @return an iterator of the document history.
+   * @return an iterator for the document history, starting at the most recent
+   *         version.
    */
   DocHistory.Iterator getHistoryIterator();
 
