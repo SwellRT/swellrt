@@ -1,16 +1,21 @@
 package org.swellrt.beta.client.platform.web.editor.history;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 
 import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.rest.ServiceOperation;
-import org.swellrt.beta.client.rest.operations.GetDocLogOperation;
-import org.swellrt.beta.client.rest.operations.GetDocLogOperation.Response;
+import org.swellrt.beta.client.rest.operations.GetDocDeltasOperation;
+import org.swellrt.beta.client.rest.operations.GetDocRevisionOperation;
+import org.swellrt.beta.client.rest.operations.GetDocRevisionOperation.Response;
 import org.swellrt.beta.client.rest.operations.GetDocSnapshotOperation;
-import org.swellrt.beta.client.rest.operations.params.DocLogDelta;
+import org.swellrt.beta.client.rest.operations.params.LogDocDelta;
+import org.swellrt.beta.client.rest.operations.params.LogDocRevision;
 import org.swellrt.beta.client.rest.operations.params.ResponseWrapper;
+import org.swellrt.beta.client.wave.Log;
 import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.common.util.ClientPercentEncoderDecoder;
@@ -28,24 +33,13 @@ import org.waveprotocol.wave.model.version.HashedVersionFactoryImpl;
 
 public class DocHistoryRemote extends DocHistory {
 
+  private static Log log = WaveDeps.logFactory.create(DocHistoryRemote.class);
+
   private HashedVersionFactory hashFactory = new HashedVersionFactoryImpl(
       new IdURIEncoderDecoder(new ClientPercentEncoderDecoder()));
 
-  private static HashedVersion hashedVersionOf(DocLogDelta delta) {
-    HashedVersion v;
-    try {
-      v = HashedVersion.valueOf(delta.getVersion());
-    } catch (NumberFormatException e) {
-      throw new IllegalStateException(e);
-    } catch (Base64DecoderException e) {
-      throw new IllegalStateException(e);
-    }
-
-    return v;
-  }
-
   /** max number of deltas to fetch from remote server on every request */
-  private static final int DELTAS_TO_FETCH = 200;
+  private static final int REVISIONS_TO_FETCH = 10;
 
   final WaveId waveId;
   final WaveletId waveletId;
@@ -116,15 +110,15 @@ public class DocHistoryRemote extends DocHistory {
 
     DocHistory history = this;
 
-    GetDocLogOperation.Options options = new GetDocLogOperation.Options(waveId, waveletId,
+    GetDocDeltasOperation.Options options = new GetDocDeltasOperation.Options(waveId, waveletId,
         documentId);
     options.endHashVersion = resultingVersion;
-    options.numberOfResults = DELTAS_TO_FETCH;
+    options.numberOfResults = REVISIONS_TO_FETCH;
     options.orderDesc = true;
     options.returnOps = true;
 
-    GetDocLogOperation getDocLogOperation = new GetDocLogOperation(ServiceDeps.serviceContext,
-        options, new ServiceOperation.Callback<GetDocLogOperation.Response>() {
+    GetDocDeltasOperation getDocLogOperation = new GetDocDeltasOperation(ServiceDeps.serviceContext,
+        options, new ServiceOperation.Callback<GetDocDeltasOperation.Response>() {
 
           @Override
           public void onError(SException exception) {
@@ -132,7 +126,7 @@ public class DocHistoryRemote extends DocHistory {
           }
 
           @Override
-          public void onSuccess(Response response) {
+          public void onSuccess(GetDocDeltasOperation.Response response) {
 
             if (response.getLog().length == 1 && revisionIndex > 0) {
               finalCallback.result(null);
@@ -142,18 +136,18 @@ public class DocHistoryRemote extends DocHistory {
             DocRevision crevision = revision;
 
             boolean stopDifferentDeltaAuthor = false;
-            boolean stopNoMoreDeltas = response.getLog().length < DELTAS_TO_FETCH;
+            boolean stopNoMoreDeltas = response.getLog().length < REVISIONS_TO_FETCH;
 
             for (int i = 0; i < response.getLog().length && !stopDifferentDeltaAuthor; i++) {
 
-              DocLogDelta delta = response.getLog()[i];
+              LogDocDelta delta = response.getLog()[i];
 
               if (crevision == null) {
-                crevision = new DocRevision(history, hashedVersionOf(delta), null,
+                crevision = new DocRevision(history, hashedVersionOf(delta.getVersion()), null,
                     delta.getTime(), delta.getAuthor(), revisionIndex);
               } else {
 
-                HashedVersion deltaHashedVersion = hashedVersionOf(delta);
+                HashedVersion deltaHashedVersion = hashedVersionOf(delta.getVersion());
 
                 if (deltaHashedVersion.equals(crevision.getAppliedAtHashedVersion())) {
                   // On second and next calls to the remote server the first
@@ -202,8 +196,7 @@ public class DocHistoryRemote extends DocHistory {
 
   }
 
-  @Override
-  protected void fetchRevision(HashedVersion resultingVersion,
+  protected void legacyFetchRevision(HashedVersion resultingVersion,
       int nextRevisionIndex, RevisionListResult callback) {
 
     revisionOpStack.clear();
@@ -224,5 +217,71 @@ public class DocHistoryRemote extends DocHistory {
 
   }
 
+  @Override
+  protected void fetchRevision(HashedVersion resultingVersion, int nextRevisionIndex,
+      RevisionListResult callback) {
+
+    DocHistory history = this;
+
+    GetDocRevisionOperation.Options options = new GetDocRevisionOperation.Options(waveId, waveletId,
+        documentId, resultingVersion, REVISIONS_TO_FETCH);
+
+    GetDocRevisionOperation getDocRevisionOp = new GetDocRevisionOperation(
+        ServiceDeps.serviceContext,
+        options, new ServiceOperation.Callback<GetDocRevisionOperation.Response>() {
+
+          int nextIndex = nextRevisionIndex;
+
+          @Override
+          public void onError(SException exception) {
+            log.severe("Exception fetching document revision", exception);
+            if (callback != null)
+              callback.result(Collections.emptyList());
+          }
+
+          @Override
+          public void onSuccess(Response response) {
+
+            if (callback == null)
+              return;
+
+            List<DocRevision> revisions = new ArrayList<DocRevision>();
+            for (int i=0; i<response.getLog().length; i++) {
+              revisions.add(adapt(response.getLog()[i], history, nextIndex++));
+            }
+
+            callback.result(revisions);
+
+          }
+
+    });
+
+    ServiceDeps.remoteOperationExecutor.execute(getDocRevisionOp);
+  }
+
+  private static DocRevision adapt(LogDocRevision logDocRevision, DocHistory history, int index) {
+
+    DocRevision docRevision = new DocRevision(history,
+        hashedVersionOf(logDocRevision.getResulting()),
+        hashedVersionOf(logDocRevision.getAppliedAt()), logDocRevision.getTime(),
+        logDocRevision.getAuthor(), index);
+
+    docRevision.setDocOp(WaveDeps.protocolMessageUtils.deserializeDocOp(logDocRevision.getOp()));
+
+    return docRevision;
+  }
+
+  private static HashedVersion hashedVersionOf(String str) {
+    HashedVersion v;
+    try {
+      v = HashedVersion.valueOf(str);
+    } catch (NumberFormatException e) {
+      throw new IllegalStateException(e);
+    } catch (Base64DecoderException e) {
+      throw new IllegalStateException(e);
+    }
+
+    return v;
+  }
 
 }

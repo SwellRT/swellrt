@@ -79,7 +79,7 @@ public class GetDocSnapshotOperation
     addPathElement("content");
 
     if (options.version != null)
-      addQueryParam("v", options.version.serialise());
+      addQueryParam("version", options.version.serialise());
 
 
   }

@@ -91,8 +91,7 @@ public class DocumentContentBuilder {
 
     }
 
-    return "<doc v='" + blipVersion.serialise() + "'>"
-        + blip.getContent().getMutableDocument().toXmlString() + "</doc>";
+    return blip.getContent().getMutableDocument().toXmlString();
 
 
   }

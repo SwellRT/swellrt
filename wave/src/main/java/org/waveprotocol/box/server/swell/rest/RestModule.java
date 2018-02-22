@@ -19,12 +19,15 @@ public class RestModule implements Module {
   static final String WAVELET_ID = "waveletid";
   static final String DOC_ID = "docid";
 
-  static final String VERSION = "v";
-  static final String VERSION_START = "vs";
-  static final String VERSION_END = "ve";
-  static final String NUM_OF_RESULTS = "l";
-  static final String RETURN_OPS = "ops";
+  static final String VERSION = "version";
+  static final String VERSION_START = "vstart";
+  static final String VERSION_END = "vend";
+  static final String NUM_OF_RESULTS = "results";
+  static final String RETURN_OPS = "withops";
   static final String SORT = "sort";
+
+  static final String GROUPBY_TIME = "groupbytime";
+  static final String GROUPBY_USER = "groupbyuser";
 
   static final String VERSION_PATH_SEGMENT = "{version}";
   static final String WAVE_PATH_SEGMENT = "wave/{waveid:.*/.*}";

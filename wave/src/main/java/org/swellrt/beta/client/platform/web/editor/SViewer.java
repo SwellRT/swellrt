@@ -54,7 +54,6 @@ public class SViewer {
   private final Element element;
 
   private STextWeb text;
-  private DocHistory.Iterator historyIterator;
   private PlaybackDocument playbackDoc;
 
   protected SViewer(Element element) {
@@ -65,7 +64,6 @@ public class SViewer {
   private void setupPlaybackDoc() {
     DocHistory docHistory = text.getDocHistory();
     this.playbackDoc = new PlaybackDocument(docHistory);
-    this.historyIterator = playbackDoc.getHistoryIterator();
   }
 
   public void attachDocView() {
@@ -79,17 +77,20 @@ public class SViewer {
     attachDocView();
   }
 
-  public void deattachDocView() {
+  private void deattachDocView() {
     if (element.getFirstChild() != null) {
       element.getFirstChild().removeFromParent();
     }
   }
 
+  private boolean isTextRender() {
+    return element.getFirstChild() != null;
+  }
 
-  private void cleanUp() {
+
+  private void clear() {
     if (this.text != null) {
       deattachDocView();
-      this.historyIterator = null;
       this.playbackDoc = null;
       this.text = null;
     }
@@ -113,7 +114,7 @@ public class SViewer {
     if (text != null && this.text != null && text.equals(this.text))
       return;
 
-    cleanUp();
+    clear();
 
     this.text = text;
     setupPlaybackDoc();
@@ -125,8 +126,9 @@ public class SViewer {
   public void render(@JsOptional DocRevision revision) {
     Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
     if (revision == null) {
-      historyIterator.reset();
-      historyIterator.prev(rev -> {
+      DocHistory.Iterator it = playbackDoc.getHistoryIterator();
+      it.reset();
+      it.prev(rev -> {
         playbackDoc.render(rev, doc -> {
           refreshDocView();
         });
@@ -136,7 +138,6 @@ public class SViewer {
       playbackDoc.render(revision, doc -> {
         refreshDocView();
       });
-      refreshDocView();
     }
   }
 
@@ -150,16 +151,40 @@ public class SViewer {
     });
   }
 
+  /**
+   * @return an iterator of the document's history at the revision shown in the
+   *         viewer.
+   */
   public DocHistory.Iterator getHistoryIterator() {
     Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
     return playbackDoc.getHistoryIterator();
+  }
+
+  public void renderNext() {
+    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+    if (isTextRender()) {
+      playbackDoc.renderNext(doc -> {
+      });
+    }
+  }
+
+  public void renderPrev() {
+    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+    if (isTextRender()) {
+      playbackDoc.renderPrev(doc -> {
+      });
+    }
+  }
+
+  public DocRevision getCurrentDocRevision() {
+    return playbackDoc.getHistoryIterator().current(null);
   }
 
   /**
    * Clear the viewer, clearing the display of a already set text.
    */
   public void unset() {
-    cleanUp();
+    clear();
   }
 
 }

@@ -4,10 +4,13 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true)
-public interface DocLogDelta {
+public interface LogDocRevision {
 
   @JsProperty
-  public String getVersion();
+  public String getAppliedAt();
+
+  @JsProperty
+  public String getResulting();
 
   @JsProperty
   public String getAuthor();
@@ -16,6 +19,6 @@ public interface DocLogDelta {
   public double getTime();
 
   @JsProperty
-  public Object[] getOps();
+  public Object getOp();
 
 }

@@ -71,6 +71,14 @@ public abstract class DocHistory {
      */
     private int revPointer = -1;
 
+    public boolean isPrevReady() {
+      return revisions.size() - 1 > revPointer;
+    }
+
+    public boolean hasNext() {
+      return revPointer > 0;
+    }
+
     public void next(RevisionResult callback) {
       if (revPointer <= 0)
         if (callback != null)
@@ -88,11 +96,17 @@ public abstract class DocHistory {
       });
     }
 
-    public void current(RevisionResult callback) {
-      if (revPointer >= 0)
+    public DocRevision current(RevisionResult callback) {
+      if (revPointer >= 0) {
         getRevision(revPointer, callback);
-      else if (callback != null)
+        return revisions.get(revPointer);
+
+      }
+
+      if (callback != null) {
         callback.result(null);
+      }
+      return null;
     }
 
 
@@ -165,6 +179,12 @@ public abstract class DocHistory {
       RevisionListResult callback);
 
   protected abstract void fetchSnaphost(DocRevision revision, RawSnapshotResult callback);
+
+  public DocHistory.Iterator cloneIterator(DocHistory.Iterator it) {
+    DocHistory.Iterator clonedIt = new DocHistory.Iterator();
+    clonedIt.revPointer = it.revPointer;
+    return clonedIt;
+  }
 
   public DocHistory.Iterator getIterator() {
     return new DocHistory.Iterator();

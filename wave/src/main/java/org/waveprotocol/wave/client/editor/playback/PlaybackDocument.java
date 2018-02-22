@@ -13,6 +13,7 @@ import org.waveprotocol.wave.client.wave.DocOpContext;
 import org.waveprotocol.wave.client.wave.DocOpTracker;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.DocOp;
+import org.waveprotocol.wave.model.document.operation.algorithm.DocOpInverter;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
 import org.waveprotocol.wave.model.document.operation.impl.DocOpBuilder;
 import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
@@ -142,16 +143,16 @@ public class PlaybackDocument {
     return doc;
   }
 
-  private void consume(DocRevision revision) {
+  private void consume(DocOp op) {
 
     if (useDiffFilter) {
       try {
-        diffFilter.consume(revision.getDocOp());
+        diffFilter.consume(op);
       } catch (OperationException e) {
         throw new IllegalStateException(e);
       }
     } else {
-      doc.consume(revision.getDocOp());
+      doc.consume(op);
     }
 
   }
@@ -193,7 +194,8 @@ public class PlaybackDocument {
 
       if (revision != null) {
 
-        consume(revision);
+        consume(revision.op);
+        revisionIterator = history.getIteratorAt(revision);
         if (!revision.resultingVersion.equals(toRevision.resultingVersion))
           cosumeNextUntilRevision(toRevision, finalCallback);
         else if (finalCallback != null)
@@ -241,10 +243,37 @@ public class PlaybackDocument {
 
   }
 
-  /** Return a new iterator for the current history */
-  public DocHistory.Iterator getHistoryIterator() {
-    return history.getIterator();
+  public void renderNext(RenderCallback callback) {
+    revisionIterator.next(revision -> {
+      if (revision != null) {
+        consume(revision.getDocOp());
+        if (callback != null)
+          callback.onRenderCompleted(doc);
+      }
+    });
+  }
 
+  public void renderPrev(RenderCallback callback) {
+
+    DocRevision current = revisionIterator.current(null);
+    if (current != null) {
+
+      revisionIterator.prev(prevRevision -> {
+        if (prevRevision != null) {
+          consume(DocOpInverter.invert(current.op));
+          if (callback != null)
+            callback.onRenderCompleted(doc);
+
+        }
+      });
+
+    }
+
+  }
+
+  /** Return a copy of the current iterator */
+  public DocHistory.Iterator getHistoryIterator() {
+    return history.cloneIterator(revisionIterator);
   }
 
 }
