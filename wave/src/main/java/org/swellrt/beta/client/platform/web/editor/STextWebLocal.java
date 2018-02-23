@@ -8,6 +8,7 @@ import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.wave.WaveSchemas;
+import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.playback.DocHistory;
@@ -15,6 +16,9 @@ import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DocProviders;
+
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 
 public class STextWebLocal implements STextWeb {
 
@@ -37,6 +41,11 @@ public class STextWebLocal implements STextWeb {
 
   private final ContentDocument doc;
   private final SMap fakeCaretMap = new SMapLocal();
+  private final LogicalPanel panel = new LogicalPanel.Impl() {
+    {
+      setElement(Document.get().createDivElement());
+    }
+  };
 
   protected STextWebLocal(ContentDocument doc) {
     this.doc = doc;
@@ -152,6 +161,12 @@ public class STextWebLocal implements STextWeb {
   @Override
   public DocHistory getDocHistory() {
     return null;
+  }
+
+  @Override
+  public Element getElement() {
+    doc.setInteractive(panel);
+    return doc.getFullContentView().getDocumentElement().getImplNodelet();
   }
 
 }

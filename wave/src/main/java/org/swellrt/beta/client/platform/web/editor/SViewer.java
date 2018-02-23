@@ -56,6 +56,8 @@ public class SViewer {
   private STextWeb text;
   private PlaybackDocument playbackDoc;
 
+  private boolean isViewAttached = false;
+
   protected SViewer(Element element) {
     this.element = element;
   }
@@ -67,9 +69,16 @@ public class SViewer {
   }
 
   public void attachDocView() {
+    if (isViewAttached)
+      return;
+
     if (playbackDoc != null) {
       element.appendChild(playbackDoc.getElement());
+    } else {
+      element.appendChild(text.getElement());
     }
+
+    isViewAttached = true;
   }
 
   private void refreshDocView() {
@@ -77,10 +86,16 @@ public class SViewer {
     attachDocView();
   }
 
-  private void deattachDocView() {
-    if (element.getFirstChild() != null) {
-      element.getFirstChild().removeFromParent();
-    }
+  public void deattachDocView() {
+    if (!isViewAttached)
+      return;
+
+    if (playbackDoc != null)
+      element.removeChild(playbackDoc.getElement());
+    else
+      element.removeChild(text.getElement());
+
+    isViewAttached = false;
   }
 
   private boolean isTextRender() {
@@ -90,8 +105,10 @@ public class SViewer {
 
   private void clear() {
     if (this.text != null) {
-      deattachDocView();
+
       this.playbackDoc = null;
+      deattachDocView();
+
       this.text = null;
     }
   }
@@ -114,36 +131,53 @@ public class SViewer {
     if (text != null && this.text != null && text.equals(this.text))
       return;
 
-    clear();
-
     this.text = text;
-    setupPlaybackDoc();
-    attachDocView();
+
+    if (text.getDocHistory() != null) {
+
+      clear();
+      setupPlaybackDoc();
+      attachDocView();
+
+    }
 
   }
 
   /** Render a specific revision or the most recent */
   public void render(@JsOptional DocRevision revision) {
-    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+
     if (revision == null) {
-      DocHistory.Iterator it = playbackDoc.getHistoryIterator();
-      it.reset();
-      it.prev(rev -> {
-        playbackDoc.render(rev, doc -> {
-          refreshDocView();
+
+      if (playbackDoc != null) {
+
+        DocHistory.Iterator it = playbackDoc.getHistoryIterator();
+        it.reset();
+        it.prev(rev -> {
+          playbackDoc.render(rev, doc -> {
+            refreshDocView();
+          });
+
         });
 
-      });
+      } else {
+        refreshDocView();
+      }
+
     } else {
+      checkHasHistory();
       playbackDoc.render(revision, doc -> {
         refreshDocView();
       });
     }
   }
 
+  private void checkHasHistory() {
+    Preconditions.checkNotNull(playbackDoc, "The SText doesn't provide a change history.");
+  }
+
   /** Render diff between revisions */
   public void renderDiff(DocRevision baseRevision, DocRevision targetRevision) {
-    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+    checkHasHistory();
     Preconditions.checkNotNull(baseRevision, "Missing base revision");
     Preconditions.checkNotNull(targetRevision, "Missing target revision");
     playbackDoc.renderDiff(baseRevision, targetRevision, doc -> {
@@ -156,12 +190,12 @@ public class SViewer {
    *         viewer.
    */
   public DocHistory.Iterator getHistoryIterator() {
-    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+    checkHasHistory();
     return playbackDoc.getHistoryIterator();
   }
 
   public void renderNext() {
-    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+    checkHasHistory();
     if (isTextRender()) {
       playbackDoc.renderNext(doc -> {
       });
@@ -169,7 +203,7 @@ public class SViewer {
   }
 
   public void renderPrev() {
-    Preconditions.checkNotNull(playbackDoc, "Viewer doesn't have an attached SText");
+    checkHasHistory();
     if (isTextRender()) {
       playbackDoc.renderPrev(doc -> {
       });
@@ -177,6 +211,7 @@ public class SViewer {
   }
 
   public DocRevision getCurrentDocRevision() {
+    checkHasHistory();
     return playbackDoc.getHistoryIterator().current(null);
   }
 

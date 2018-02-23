@@ -10,6 +10,7 @@ import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
+import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.playback.DocHistory;
 import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
@@ -17,6 +18,9 @@ import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.Blip;
+
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 
 /**
  * A text document supported by a remote wave document.
@@ -28,6 +32,11 @@ public class STextWebRemote extends SWaveText implements STextWeb {
 
   private final InteractiveDocument interactiveDoc;
   private DocHistory docHistory;
+  private final LogicalPanel panel = new LogicalPanel.Impl() {
+    {
+      setElement(Document.get().createDivElement());
+    }
+  };
 
   public STextWebRemote(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
       DocInitialization docInit, InteractiveDocument interactiveDoc) {
@@ -163,6 +172,12 @@ public class STextWebRemote extends SWaveText implements STextWeb {
   @Override
   public DocHistory getDocHistory() {
     return docHistory;
+  }
+
+  @Override
+  public Element getElement() {
+    interactiveDoc.getDocument().setInteractive(panel);
+    return interactiveDoc.getDocument().getFullContentView().getDocumentElement().getImplNodelet();
   }
 
 }
