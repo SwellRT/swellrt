@@ -19,15 +19,15 @@
 
 package org.waveprotocol.wave.client.doodad.diff;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
+import java.util.List;
 
 import org.waveprotocol.wave.client.common.util.DomHelper;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.Renderer;
 
-import java.util.List;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 
 /**
  * Renders diff content for things that have been removed since last view.
@@ -47,6 +47,9 @@ public class DiffDeleteRenderer implements Renderer {
 
   /** Tag details: */
   public static final String FULL_TAGNAME = "l:diffdel";
+
+  /** Rendered node class attribute */
+  private final static String DIFF_DELETE_CSS_CLASS = "diffdel";
 
   /**
    * Registers subclass with ContentElement
@@ -73,6 +76,7 @@ public class DiffDeleteRenderer implements Renderer {
     Element nodelet = Document.get().createSpanElement();
     DomHelper.makeUnselectable(nodelet);
     DomHelper.setContentEditable(nodelet, false, true);
+    nodelet.setAttribute("class", DIFF_DELETE_CSS_CLASS);
     return element.setAutoAppendContainer(nodelet);
   }
 }

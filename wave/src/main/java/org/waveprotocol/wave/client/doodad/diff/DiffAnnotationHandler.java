@@ -20,6 +20,7 @@
 package org.waveprotocol.wave.client.doodad.diff;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.waveprotocol.wave.client.editor.content.AnnotationPainter;
@@ -29,13 +30,14 @@ import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter;
 import org.waveprotocol.wave.client.editor.content.DiffHighlightingFilter.DeleteInfo;
 import org.waveprotocol.wave.client.editor.content.PainterRegistry;
+import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
+import org.waveprotocol.wave.client.wave.DocOpContext;
 import org.waveprotocol.wave.model.document.AnnotationMutationHandler;
 import org.waveprotocol.wave.model.document.util.AnnotationRegistry;
 import org.waveprotocol.wave.model.document.util.DocumentContext;
 import org.waveprotocol.wave.model.document.util.LocalDocument;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * Defines behaviour for rendering diffs
@@ -57,6 +59,7 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
   private final static ReadableStringSet BOUNDARY_KEYS =
     CollectionUtils.newStringSet(DiffHighlightingFilter.DIFF_DELETE_KEY);
 
+  private final static String DIFF_INSERT_CSS_CLASS = "diffins";
 
   /**
    * Create and register a style annotation handler
@@ -84,14 +87,33 @@ public class DiffAnnotationHandler implements AnnotationMutationHandler {
   private static final PaintFunction paintFunc = new PaintFunction() {
     @Override
     public Map<String, String> apply(Map<String, Object> from, boolean isEditing) {
-      ParticipantId author = (ParticipantId) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
-      if (author != null) {
-        String color = DEFAULT_HILIGHT_COLOUR;
-        return color != null ? Collections.singletonMap("backgroundColor", color)
-            : Collections.emptyMap();
-      } else {
-        return Collections.emptyMap();
+
+      DocOpContext diffOpContext = (DocOpContext) from.get(DiffHighlightingFilter.DIFF_INSERT_KEY);
+
+      Map<String, String> attributes = new HashMap<String, String>();
+
+      attributes.put(AnnotationPaint.CLASS_ATTR, DIFF_INSERT_CSS_CLASS);
+
+      if (diffOpContext != null) {
+
+        if (diffOpContext.getCreator() != null)
+          attributes.put(AnnotationPaint.createAttributeName("diff-author", AnnotationPaint.GENERIC_ATTR_SUFFIX),
+            diffOpContext.getCreator().getAddress());
+
+        if (diffOpContext.getHashedVersion() != null) {
+          attributes.put(
+              AnnotationPaint.createAttributeName("diff-version",
+                  AnnotationPaint.GENERIC_ATTR_SUFFIX),
+              "" + diffOpContext.getHashedVersion().getVersion());
+        }
+
+        if (diffOpContext.getTimestamp() != 0) {
+          attributes.put(AnnotationPaint.createAttributeName("diff-timestamp",
+              AnnotationPaint.GENERIC_ATTR_SUFFIX), "" + diffOpContext.getTimestamp());
+        }
       }
+
+      return attributes;
     }
   };
 

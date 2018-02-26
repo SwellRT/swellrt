@@ -90,10 +90,9 @@ public class SViewer {
     if (!isViewAttached)
       return;
 
-    if (playbackDoc != null)
-      element.removeChild(playbackDoc.getElement());
-    else
-      element.removeChild(text.getElement());
+    if (element.hasChildNodes()) {
+      element.removeAllChildren();
+    }
 
     isViewAttached = false;
   }
@@ -131,11 +130,9 @@ public class SViewer {
     if (text != null && this.text != null && text.equals(this.text))
       return;
 
-    this.text = text;
-
     if (text.getDocHistory() != null) {
-
       clear();
+      this.text = text;
       setupPlaybackDoc();
       attachDocView();
 

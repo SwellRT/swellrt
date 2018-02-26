@@ -307,6 +307,7 @@ public class AnnotationRegistry {
     return key.startsWith("paragraph/");
   }
 
+
   /**
    * Define a new custom annotation.
    *

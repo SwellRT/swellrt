@@ -21,7 +21,7 @@ public class TextEventHandler
   public TextEventHandler(String key) {
     super();
     this.key = key;
-    this.valueAttribute = AnnotationPaint.VALUE_ATTR_PREFIX + UserAnnotationHandler.getSafeKey(key);
+    this.valueAttribute = AnnotationPaint.VALUE_ATTR_SUFFIX + UserAnnotationHandler.getSafeKey(key);
   }
 
   protected void setHandler(AnnotationEvent.Handler handler) {

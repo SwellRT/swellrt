@@ -41,6 +41,14 @@ public class DocRevision {
     this.revisionIndex = nextRevisionIndex;
   }
 
+  @JsIgnore
+  public DocRevision cloneWithOps(DocOp op) {
+    DocRevision r = new DocRevision(history, resultingVersion, appliedAtVersion, resultingTime,
+        participant, revisionIndex);
+    r.op = op;
+    return r;
+  }
+
   @JsProperty
   public double getAppliedAtVersion() {
     if (appliedAtVersion != null)

@@ -25,7 +25,6 @@ import java.util.Map;
 import org.waveprotocol.wave.client.editor.ElementHandlerRegistry;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.extract.PasteFormatRenderers;
-import org.waveprotocol.wave.model.document.util.Annotations;
 
 import com.google.gwt.user.client.Event;
 
@@ -47,29 +46,38 @@ public class AnnotationPaint {
     void onEvent(ContentElement node, Event event);
   }
 
-  
-  //
-  // Below, local node attributes for custom annotations
-  //
-  
-  public static final String VALUE_ATTR_PREFIX = "v-";
 
-  public static final String EVENT_LISTENER_ATTR_PREFIX = "el-";
-  
-  public static final String MUTATION_LISTENER_ATTR_PREFIX = "ml-";
-  
-  public static final String CLASS_ATTR_PREFIX = "class-";
-  
-  
-  public static String extractKey(String prefix, String attributeName) {
-   return attributeName
-        .replace(prefix, "");       
+  //
+  // Local node attributes for custom annotations
+  //
+
+  /** Node attributes with this suffix are render in HTML DOM as attributes */
+  public static final String GENERIC_ATTR_SUFFIX = ":attr";
+
+  public static final String VALUE_ATTR_SUFFIX = ":value";
+
+  public static final String CLASS_ATTR_SUFFIX = ":class";
+
+  public static final String EVENT_LISTENER_ATTR_SUFFIX = ":el";
+
+  public static final String MUTATION_LISTENER_ATTR_SUFFIX = ":ml";
+
+  public static String createAttributeName(String key, String attributeSuffix) {
+    return key + attributeSuffix;
   }
-  
+
+  public static boolean isAttribute(String key, String attributeSuffix) {
+    return key.endsWith(attributeSuffix);
+  }
+
+  public static String getKeyFromAttribute(String attribute) {
+    return attribute.substring(0, attribute.indexOf(":"));
+  }
+
   //
-  // Below, local node attributes for original annotations (style, links...)
+  // Local node attributes for original annotations (style, links...)
   //
-  
+
   /**
    * Attribute for setting a CSS class
    */
@@ -78,13 +86,17 @@ public class AnnotationPaint {
   /**
    * Attribute for mapping callback strings.
    */
-  public static final String LINK_EVENT_LISTENER_ATTR = "el-link";
+  public static final String LINK_EVENT_LISTENER_ATTR = "link:el";
 
   /**
    * Attribute for mapping callback strings.
    */
-  public static final String LINK_MUTATION_LISTENER_ATTR = "ml-link";
-  
+  public static final String LINK_MUTATION_LISTENER_ATTR = "link:ml";
+
+  public static String extractKey(String prefix, String attributeName) {
+    return attributeName.replace(prefix, "");
+  }
+
   /**
    * Handlers may register callback for mutation events over painted regions.
    */
@@ -97,7 +109,7 @@ public class AnnotationPaint {
   static final Map<String, MutationHandler> mutationHandlerRegistry =
     new HashMap<String, MutationHandler>();
 
-  
+
   static final Map<String, EventHandler> eventHandlerRegistry =
       new HashMap<String, EventHandler>();
 
@@ -105,7 +117,7 @@ public class AnnotationPaint {
    * The link attribute, i.e. an url.
    */
   public static final String LINK_ATTR = "link";
-  
+
 
   /**
    * "l" for "local" (as in non-persistent)

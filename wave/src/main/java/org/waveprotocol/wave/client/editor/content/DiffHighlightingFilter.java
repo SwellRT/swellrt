@@ -50,6 +50,7 @@ import org.waveprotocol.wave.model.util.ReadableIntMap;
 import org.waveprotocol.wave.model.util.ReadableStringMap;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.StringMap;
+import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.dom.client.Document;
@@ -146,11 +147,6 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    */
   public static final String DIFF_DELETE_KEY = DIFF_KEY + "/del";
 
-  @Deprecated
-  private static final Object INSERT_MARKER = new Object(); // Replaced by participantId
-
-  public static final ParticipantId UKNOWN_PARTICIPANT = ParticipantId.ofUnsafe("unknown@unknown.com");
-
   private final DiffHighlightTarget inner;
 
   // Munging to wrap the op
@@ -162,7 +158,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   /**
    * Participant who performs the op.
    */
-  private ParticipantId author;
+  private DocOpContext operationCtx;
 
   // Diff state
 
@@ -178,6 +174,8 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   IntMap<Object> deleteInfos;
 
   int currentLocation = 0;
+
+  boolean markDeletedText = false;
 
   /** to query author of doc ops */
   private final DocOpTracker opCtxProvider;
@@ -215,12 +213,14 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     Preconditions.checkState(target == null, "Diff inner target not initialised");
 
     operation = op;
-    author = UKNOWN_PARTICIPANT;
 
-    Optional<DocOpContext> opCtx = opCtxProvider.fetch(operation);
-    opCtx.ifPresent(ctx -> {
-      author = ctx.getCreator();
+    Optional<DocOpContext> opCtxOptional = opCtxProvider.fetch(operation);
+
+    DocOpContext opCtx = opCtxOptional.orElseGet(() -> {
+      return new DocOpContext(0, null, 0, HashedVersion.unsigned(0));
     });
+
+    operationCtx = opCtx;
 
     inner.consume(opWrapper);
 
@@ -238,34 +238,38 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     //
     for (int i = 0; i < insertAnnotationsRanges.size(); i++) {
       Range r = insertAnnotationsRanges.get(i);
-      inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, author);
+      inner.setAnnotation(r.getStart(), r.getEnd(), DIFF_INSERT_KEY, opCtx);
     }
 
     final int size = inner.size();
 
-    deleteInfos.each(new ReadableIntMap.ProcV<Object>() {
-      @Override
-      public void apply(int location, Object _item) {
-        assert location <= size;
+    if (markDeletedText) {
 
-        if (location == size) {
-          // TODO(danilatos): Figure out a way to render this.
-          // For now, do nothing, which is better than crashing.
-          return;
-        }
+      deleteInfos.each(new ReadableIntMap.ProcV<Object>() {
+        @Override
+        public void apply(int location, Object _item) {
+          assert location <= size;
 
-        if (_item instanceof DeleteInfo) {
-          DeleteInfo item = (DeleteInfo) _item;
-          DeleteInfo existing = (DeleteInfo) inner.getAnnotation(location, DIFF_DELETE_KEY);
-
-          if (existing != null) {
-            item.htmlElements.addAll(existing.htmlElements);
+          if (location == size) {
+            // TODO(danilatos): Figure out a way to render this.
+            // For now, do nothing, which is better than crashing.
+            return;
           }
 
-          inner.setAnnotation(location, location + 1, DIFF_DELETE_KEY, item);
+          if (_item instanceof DeleteInfo) {
+            DeleteInfo item = (DeleteInfo) _item;
+            DeleteInfo existing = (DeleteInfo) inner.getAnnotation(location, DIFF_DELETE_KEY);
+
+            if (existing != null) {
+              item.htmlElements.addAll(existing.htmlElements);
+            }
+
+            inner.setAnnotation(location, location + 1, DIFF_DELETE_KEY, item);
+          }
         }
-      }
-    });
+      });
+
+    }
   }
 
   private final DocOp opWrapper =
@@ -407,7 +411,9 @@ public class DiffHighlightingFilter implements ModifiableDocument {
         return;
       }
 
-      DiffManager.styleElement(element, DiffType.DELETE, author.getName());
+      DiffManager.styleElement(element, DiffType.DELETE,
+          operationCtx.getCreator() != null ? operationCtx.getCreator().getAddress() : "",
+          operationCtx.getHashedVersion().getVersion(), operationCtx.getTimestamp());
       DomHelper.makeUnselectable(element);
 
       for (Node n = element.getFirstChild(); n != null; n = n.getNextSibling()) {
@@ -514,7 +520,9 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     private void createDeleteElement(String innerText, ReadableStringMap<Object> annotations) {
       Element element = Document.get().createSpanElement();
       applyAnnotationsToElement(element, annotations);
-      DiffManager.styleElement(element, DiffType.DELETE, author.getName());
+      DiffManager.styleElement(element, DiffType.DELETE,
+          operationCtx.getCreator() != null ? operationCtx.getCreator().getAddress() : "",
+          operationCtx.getHashedVersion().getVersion(), operationCtx.getTimestamp());
       element.setInnerText(innerText);
       currentDeleteInfo.htmlElements.add(element);
     }
@@ -550,6 +558,10 @@ public class DiffHighlightingFilter implements ModifiableDocument {
    */
   public void clearDiffs() {
     clearDiffs(inner);
+  }
+
+  public void markDeletedText(boolean on) {
+    this.markDeletedText = on;
   }
 
   public static void clearDiffs(MutableAnnotationSet.Local doc) {

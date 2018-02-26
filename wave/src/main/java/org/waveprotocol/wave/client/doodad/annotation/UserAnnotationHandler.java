@@ -47,6 +47,7 @@ public class UserAnnotationHandler implements AnnotationMutationHandler {
     return key.replace("/", "-");
   }
 
+
   /**
    * Logic to set paint attributes for the annotation (see {@link AnnotationPaint}).
    * Eventually, these attributes are rendered to HTML by {@link AnnotationSpreadRenderer}.
@@ -73,16 +74,19 @@ public class UserAnnotationHandler implements AnnotationMutationHandler {
           String safeKey = getSafeKey(key);
           String safeValue = from.get(key).toString();
 
-          // <l:s v-comment="1234">
-          ret.put(AnnotationPaint.VALUE_ATTR_PREFIX + safeKey, safeValue);
+          // <l:s comment:value="1234">
+          ret.put(AnnotationPaint.createAttributeName(safeKey, AnnotationPaint.VALUE_ATTR_SUFFIX),
+              safeValue);
 
-          // <l:s el-comment="comment"> ... </l:s>
-          ret.put(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX + safeKey, key);
+          // <l:s comment:el="comment"> ... </l:s>
+          ret.put(AnnotationPaint.createAttributeName(safeKey,
+              AnnotationPaint.EVENT_LISTENER_ATTR_SUFFIX), key);
 
-          // <l:s ml-comment="comment"> ... </l:s>
-          ret.put(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX + safeKey, key);
+          // <l:s comment:ml="comment"> ... </l:s>
+          ret.put(AnnotationPaint.createAttributeName(safeKey,
+              AnnotationPaint.MUTATION_LISTENER_ATTR_SUFFIX), key);
 
-          // <l:s class-comment="?"> .. </l:s>
+          // <l:s class="xyz"> ... </l:s>
           if (cssClass != null)
             ret.put(AnnotationPaint.CLASS_ATTR, cssClass);
 

@@ -19,16 +19,17 @@
 
 package org.waveprotocol.wave.client.editor.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.waveprotocol.wave.client.editor.content.TransparentManager;
+import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.StyleInjector;
-import org.waveprotocol.wave.client.editor.content.TransparentManager;
-import org.waveprotocol.wave.model.document.util.FilteredView.Skip;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Transparent node manager for diff annotations
@@ -99,7 +100,7 @@ public class DiffManager implements TransparentManager<Element> {
         break;
     }
 
-    styleElement(element, type, author);
+    styleElement(element, type, author, 0, 0);
 
     elements.add(element);
 
@@ -113,7 +114,8 @@ public class DiffManager implements TransparentManager<Element> {
    * @param element
    * @param type
    */
-  public static void styleElement(Element element, DiffType type, String author) {
+  public static void styleElement(Element element, DiffType type, String author, long version,
+      long timestamp) {
     switch (type) {
       case INSERT:
         element.addClassName(resources.css().insert());

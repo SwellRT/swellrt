@@ -55,16 +55,16 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   private static final int NOTIFY_SCHEDULE_DELAY_MS = 200;
 
   private static final int MOUSE_LISTENER_EVENTS = Event.MOUSEEVENTS | Event.ONCLICK;
-  
-  
-  public static final String HTML_DATA_ATTR_PREFIX = "data-"; 
-  
-  
+
+
+  public static final String HTML_DATA_ATTR_PREFIX = "data:";
+
+
   public static String htmlSafeKey(String key) {
     return (Annotations.LOCAL == key.charAt(0) ? key.substring(1) : key);
   }
 
-  
+
   private final Set<ContentElement> mutatedElements = new HashSet<ContentElement>();
 
   private final Task mutationNotificationTask = new Task() {
@@ -83,7 +83,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
           } catch (Exception e) {
             EditorStaticDeps.logger.error().log("Exception invoking annotation mutation handler", e);
           }
-          
+
         }
 
       }
@@ -92,22 +92,22 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   };
 
   private static Set<MutationHandler> getMutationHandlers(ContentElement element) {
-	
-	Set<MutationHandler> handlers = new HashSet<MutationHandler>();  
-	
-	
+
+	Set<MutationHandler> handlers = new HashSet<MutationHandler>();
+
+
 	element.getAttributes().each(new ProcV<String>() {
 		@Override
 		public void apply(String key, String value) {
-			
-		  if (key.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX)) {		    
+
+		  if (AnnotationPaint.isAttribute(key,AnnotationPaint.MUTATION_LISTENER_ATTR_SUFFIX)) {
 		    MutationHandler h = AnnotationPaint.mutationHandlerRegistry.get(value);
         if (h != null)
-          handlers.add(h);		    
-		  }		
-		}		
+          handlers.add(h);
+		  }
+		}
 	});
-	
+
 	return handlers;
   }
 
@@ -119,9 +119,9 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
   @Override
   public void onAttributeModified(final ContentElement element, String name,
       String oldValue, final String newValue) {
-    
+
     if (name.equals(AnnotationPaint.LINK_ATTR)) {
-    
+
       // NOTE(user): This is a special case, because it replaces the DOM node,
       // we must reapply all the attributes.
       maybeConvertToAnchor(element, newValue != null);
@@ -132,7 +132,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
         }
       });
     } else {
-      
+
       applyAttribute(element, name, newValue);
     }
   }
@@ -141,63 +141,69 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     // NOTE(user): If an link attribute is added, then handle specially,
     // otherwise treat as style attribute.
 
-    
+
     Element implNodelet = element.getImplNodelet();
-    
+
     if (name.equals(AnnotationPaint.LINK_ATTR)) {
-      
+
       if (newValue != null) {
-        
+
         String scrubbedValue = Scrub.scrub(newValue);
-        
+
         implNodelet.setAttribute("href", scrubbedValue);
-        
+
         if (scrubbedValue.startsWith("#")) {
           implNodelet.removeAttribute("target");
         } else {
           implNodelet.setAttribute("target", "_blank");
         }
-        
+
       } else {
-        
+
         implNodelet.removeAttribute("href");
       }
-      
-      
+
+
     } else if (name.equals(AnnotationPaint.CLASS_ATTR)) {
       // If a class attribute is provided, set as a CSS class name
       implNodelet.addClassName(newValue);
     }
     //
     // Attributes for generic annotations
-    //    
-    else if (name.startsWith(AnnotationPaint.VALUE_ATTR_PREFIX)) {    	
-      String annotationName = AnnotationPaint.extractKey(AnnotationPaint.VALUE_ATTR_PREFIX, name);
-      String safeAnnotationName = htmlSafeKey(annotationName);       	   			
-    	implNodelet.addClassName(safeAnnotationName);
-    	
-    	String data = implNodelet.getAttribute(HTML_DATA_ATTR_PREFIX + safeAnnotationName);
+    //
+    else if (AnnotationPaint.isAttribute(name, AnnotationPaint.VALUE_ATTR_SUFFIX)) {
+      String key = htmlSafeKey(AnnotationPaint.getKeyFromAttribute(name));
+      implNodelet.addClassName(key);
+
+      String data = implNodelet.getAttribute(HTML_DATA_ATTR_PREFIX + key);
     	if (!data.contains(newValue)) {
     	  if (!data.isEmpty())
     	    data += ",";
-    	  
+
     	  data += newValue;
     	}
-    	implNodelet.setAttribute(HTML_DATA_ATTR_PREFIX + safeAnnotationName, 
-    	     data);   
-    	
-    } else if (name.startsWith(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX)) {   
-      
-      String annotationName = AnnotationPaint.extractKey(AnnotationPaint.EVENT_LISTENER_ATTR_PREFIX, name);        
-      updateEventHandler(element, annotationName, newValue != null && !newValue.isEmpty());  	    
-    
-    } else if (name.startsWith(AnnotationPaint.MUTATION_LISTENER_ATTR_PREFIX)) {
+      implNodelet.setAttribute(HTML_DATA_ATTR_PREFIX + key,
+    	     data);
+
+    } else if (AnnotationPaint.isAttribute(name, AnnotationPaint.EVENT_LISTENER_ATTR_SUFFIX)) {
+
+      String key = htmlSafeKey(AnnotationPaint.getKeyFromAttribute(name));
+      updateEventHandler(element, key, newValue != null && !newValue.isEmpty());
+
+    } else if (AnnotationPaint.isAttribute(name, AnnotationPaint.MUTATION_LISTENER_ATTR_SUFFIX)) {
     	// Ignore mutation listener attributes, not need to paint
-      
-    } else { 	
+
+    } else if (AnnotationPaint.isAttribute(name, AnnotationPaint.GENERIC_ATTR_SUFFIX)) {
+
+      if (newValue != null) {
+        String key = htmlSafeKey(AnnotationPaint.getKeyFromAttribute(name));
+        implNodelet.setAttribute(key, newValue);
+      }
+
+    } else {
     //
-    // Rest of local node attributes are meant to be inline styles
-    //	
+      // Rest of local node attributes should be inline styles
+    //
       try {
         implNodelet.getStyle().setProperty(name, newValue);
       } catch (RuntimeException e) {
@@ -207,43 +213,43 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
       }
     }
   }
-  
+
   @JsFunction
   public interface DOMEventListener {
     void exec(Event e);
   }
-  
+
   private native void DOMAddEventListener(Element e, String listenerId, DOMEventListener listener) /*-{
-  
+
     var events = ["click", "mousedown", "mouseup", "mousemove", "mouseover", "mouseout"];
-       
+
     for (var i in events) {
       e.addEventListener(events[i], listener, false);
     }
-    
+
     if (!e.listeners) {
       e.listeners = new Object();
     }
-    
+
     e.listeners[listenerId] = listener;
-  
+
   }-*/;
-  
+
   private native void DOMRemoveEventListener(Element e, String listenerId) /*-{
-  
+
     var events = ["click", "mousedown", "mouseup", "mousemove", "mouseover", "mouseout"];
-    
+
     var listener = e.listeners[listenerId];
-    
-    if (listener) {   
+
+    if (listener) {
       for (var i in events) {
         e.removeEventListener(events[i], listener, false);
       }
-    
-      delete e.listeners[listenerId]; 
-    
+
+      delete e.listeners[listenerId];
+
     }
-  
+
   }-*/;
 
   /**
@@ -251,7 +257,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
    * annotation type (eventHandlerId).
    * <p>
    * The same handler will be registered for all supported events.
-   * 
+   *
    * @param element
    * @param eventHandlerId
    * @param enable
@@ -260,11 +266,11 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
     Element implNodelet = element.getImplNodelet();
     final EventHandler handler =
         eventHandlerId == null ? null : AnnotationPaint.eventHandlerRegistry.get(eventHandlerId);
-    
+
     if (handler != null && enable) {
-      
+
       DOM.sinkEvents(DomHelper.castToOld(implNodelet), MOUSE_LISTENER_EVENTS);
-      
+
       // Old way
       /*
       DOM.setEventListener(DomHelper.castToOld(implNodelet), new EventListener() {
@@ -274,7 +280,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
         }
       });
       */
-      
+
       /**
        * Allow to have multiple handlers in same node, i.e. same text could have
        * more that one annotations.
@@ -289,10 +295,10 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
             EditorStaticDeps.logger.error().log("Error invoking annotation event handler", ex);
           }
         }
-        
+
       });
-      
-    } else if (!enable) {           
+
+    } else if (!enable) {
       DOMRemoveEventListener(implNodelet, eventHandlerId);
       // Old way
       // DOM.setEventListener(implNodelet, null);
@@ -334,7 +340,7 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
       element.setBothNodelets(newNodelet);
     }
   }
-    
+
   @Override
   public void onAddedToParent(ContentElement element, ContentElement oldParent) {
     Set<MutationHandler> handlers = getMutationHandlers(element);
@@ -345,14 +351,14 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
         EditorStaticDeps.logger.error().log("Error invoking annotation onAdded handler", ex);
       }
     }
-  }  
+  }
 
   @Override
   public void onRemovedFromParent(ContentElement element, ContentElement newParent) {
     if (newParent != null) {
       return;
     }
-    
+
     Set<MutationHandler> handlers = getMutationHandlers(element);
     for (MutationHandler h : handlers) {
       try {
@@ -361,11 +367,11 @@ class AnnotationSpreadRenderer extends RenderingMutationHandler {
         EditorStaticDeps.logger.error().log("Error invoking annotation onRemoved handler", ex);
       }
     }
-    
+
     removeListener(DomHelper.castToOld(element.getImplNodelet()));
     super.onRemovedFromParent(element, newParent);
   }
-  
+
   @Deprecated
   private void removeListener(com.google.gwt.user.client.Element implNodelet) {
     DOM.setEventListener(implNodelet, null);

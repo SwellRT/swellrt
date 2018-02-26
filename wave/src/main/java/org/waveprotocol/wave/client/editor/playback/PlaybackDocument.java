@@ -20,6 +20,7 @@ import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
 import org.waveprotocol.wave.model.document.util.Annotations;
 import org.waveprotocol.wave.model.operation.OperationException;
 import org.waveprotocol.wave.model.util.ReadableStringSet.Proc;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -143,16 +144,19 @@ public class PlaybackDocument {
     return doc;
   }
 
-  private void consume(DocOp op) {
+  private void consume(DocRevision revision) {
 
     if (useDiffFilter) {
       try {
-        diffFilter.consume(op);
+        opTracker.add(revision.op,
+            new DocOpContext(new Double(revision.resultingTime).longValue(),
+                ParticipantId.ofUnsafe(revision.participant), 0L, revision.resultingVersion));
+        diffFilter.consume(revision.op);
       } catch (OperationException e) {
         throw new IllegalStateException(e);
       }
     } else {
-      doc.consume(op);
+      doc.consume(revision.op);
     }
 
   }
@@ -194,7 +198,7 @@ public class PlaybackDocument {
 
       if (revision != null) {
 
-        consume(revision.op);
+        consume(revision);
         revisionIterator = history.getIteratorAt(revision);
         if (!revision.resultingVersion.equals(toRevision.resultingVersion))
           cosumeNextUntilRevision(toRevision, finalCallback);
@@ -246,7 +250,7 @@ public class PlaybackDocument {
   public void renderNext(RenderCallback callback) {
     revisionIterator.next(revision -> {
       if (revision != null) {
-        consume(revision.getDocOp());
+        consume(revision);
         if (callback != null)
           callback.onRenderCompleted(doc);
       }
@@ -260,7 +264,8 @@ public class PlaybackDocument {
 
       revisionIterator.prev(prevRevision -> {
         if (prevRevision != null) {
-          consume(DocOpInverter.invert(current.op));
+          DocRevision invertRevision = prevRevision.cloneWithOps(DocOpInverter.invert(current.op));
+          consume(invertRevision);
           if (callback != null)
             callback.onRenderCompleted(doc);
 
