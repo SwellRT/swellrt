@@ -200,7 +200,14 @@ public class DataRestResources {
       @Override
       public void write(JsonWriter jw) throws IOException {
         try {
+
+          jw.beginObject();
+          jw.name("contrib");
+
           WaveletContributionsBuilder.build(waveletProvider, waveletName, version, jw);
+
+          jw.endObject();
+
         } catch (WaveServerException e) {
           throw new IllegalStateException(e);
         }

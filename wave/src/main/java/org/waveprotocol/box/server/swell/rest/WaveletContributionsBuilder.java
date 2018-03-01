@@ -40,20 +40,27 @@ public class WaveletContributionsBuilder {
     // Output as JSON
     //
 
-    jw.beginObject();
+    jw.beginArray();
 
     waveletContribs.getBlipContributions().forEach((pair) -> {
       try {
 
-        jw.name(pair.getKey());
+        jw.beginObject();
+
+        jw.name("docId");
+        jw.value(pair.getKey());
+
+        jw.name("ranges");
         serializeBlipContributions(jw, pair.getValue());
+
+        jw.endObject();
 
       } catch (IOException e) {
         e.printStackTrace();
       }
     });
 
-    jw.endObject();
+    jw.endArray();
 
     LOG.fine("Wavelet contributions built for " + waveletName.toString() + ", version "
         + version.getVersion());

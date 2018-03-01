@@ -50,7 +50,6 @@ import org.waveprotocol.wave.model.util.ReadableIntMap;
 import org.waveprotocol.wave.model.util.ReadableStringMap;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
 import org.waveprotocol.wave.model.util.StringMap;
-import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gwt.dom.client.Document;
@@ -204,7 +203,8 @@ public class DiffHighlightingFilter implements ModifiableDocument {
 
 
   public void setDiff(int start, int end, ParticipantId author) {
-    inner.setAnnotation(start, end, DIFF_INSERT_KEY, author);
+    inner.setAnnotation(start, end, DIFF_INSERT_KEY,
+        new DocOpContext(0, author, 0, null));
   }
 
 
@@ -217,7 +217,7 @@ public class DiffHighlightingFilter implements ModifiableDocument {
     Optional<DocOpContext> opCtxOptional = opCtxProvider.fetch(operation);
 
     DocOpContext opCtx = opCtxOptional.orElseGet(() -> {
-      return new DocOpContext(0, null, 0, HashedVersion.unsigned(0));
+      return new DocOpContext(0, null, 0, null);
     });
 
     operationCtx = opCtx;

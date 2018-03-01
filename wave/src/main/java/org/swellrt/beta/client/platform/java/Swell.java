@@ -20,7 +20,7 @@ import org.swellrt.beta.client.wave.ws.WebSocket;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.java.JavaModelFactory;
 import org.waveprotocol.wave.client.common.util.RgbColor;
-import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
+import org.waveprotocol.wave.client.wave.DiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.concurrencycontrol.common.TurbulenceListener;
 import org.waveprotocol.wave.concurrencycontrol.common.UnsavedDataListener;
@@ -155,7 +155,7 @@ public class Swell {
 
           @Override
           public void getDiffs(WaveletId waveletId, String docId, HashedVersion version,
-              Callback<WaveletDiffData, Exception> callback) {
+              Callback<DiffData, Exception> callback) {
             callback.onSuccess(null);
           }
 

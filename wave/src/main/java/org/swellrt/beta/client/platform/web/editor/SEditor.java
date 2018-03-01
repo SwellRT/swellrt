@@ -115,6 +115,8 @@ public class SEditor implements EditorUpdateListener {
 
   private boolean canEdit = true;
 
+  private STextWeb text = null;
+
   private ConnectionHandler connectionHandler = new ConnectionHandler() {
 
     @Override
@@ -207,6 +209,8 @@ public class SEditor implements EditorUpdateListener {
     startCaretManager(text);
 
     AnnotationRegistry.muteHandlers(false);
+
+    this.text = text;
   }
 
   private void startCaretManager(STextWeb text) {
@@ -261,6 +265,7 @@ public class SEditor implements EditorUpdateListener {
       editor.removeUpdateListener(this);
       AnnotationRegistry.muteHandlers(true);
 
+      this.text = null;
     }
   }
 
@@ -598,6 +603,16 @@ public class SEditor implements EditorUpdateListener {
     return COMPAT_MODE_EDIT;
   }
 
+  public void renderContribs(boolean on) {
+    if (text == null)
+      return;
+    if (on) {
+      text.getInteractiveDocument().startShowDiffs();
+    } else {
+      text.getInteractiveDocument().stopShowDiffs();
+    }
+
+  }
 
   public String __getContentView() {
     ContentNode node = editor.getContent().getFullContentView().getDocumentElement();

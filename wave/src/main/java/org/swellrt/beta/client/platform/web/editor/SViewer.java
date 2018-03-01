@@ -219,4 +219,15 @@ public class SViewer {
     clear();
   }
 
+  public void renderContribs(boolean on) {
+    if (text == null)
+      return;
+    if (on) {
+      text.getInteractiveDocument().startShowDiffs();
+    } else {
+      text.getInteractiveDocument().stopShowDiffs();
+    }
+
+  }
+
 }

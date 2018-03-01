@@ -1,20 +1,21 @@
 package org.swellrt.beta.client.platform.web;
 
+import java.util.Arrays;
+
 import org.swellrt.beta.client.ServiceContext;
+import org.swellrt.beta.client.ServiceDeps;
 import org.swellrt.beta.client.rest.ServiceOperation;
-import org.swellrt.beta.client.rest.operations.GetDiffDataOperation;
-import org.swellrt.beta.client.rest.operations.GetDiffDataOperation.Response;
+import org.swellrt.beta.client.rest.operations.GetContributionsOperation;
+import org.swellrt.beta.client.rest.operations.GetContributionsOperation.Response;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.wave.DiffData;
-import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
-import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Callback;
 
 /**
  * A diff provider that retrieves data from server.
@@ -31,32 +32,18 @@ public class RemoteDiffProvider implements DiffProvider {
     this.waveId = waveId;
   }
 
-  public static class JsoWaveletDiffData extends JavaScriptObject
-      implements GetDiffDataOperation.Response {
-
-    protected JsoWaveletDiffData() {
-
-    }
-
-    @Override
-    public final DiffData[] get(String blipId) {
-      return (DiffData[]) JsoView.as(this).getObjectUnsafe(blipId);
-    }
-
-  }
-
 
   @Override
   public void getDiffs(WaveletId waveletId, String docId, HashedVersion version,
-      com.google.gwt.core.client.Callback<WaveletDiffData, Exception> callback) {
+      Callback<DiffData, Exception> callback) {
 
-    GetDiffDataOperation.Options options = new GetDiffDataOperation.Options(
+    GetContributionsOperation.Options options = new GetContributionsOperation.Options(
         ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId),
         ModernIdSerialiser.INSTANCE.serialiseWaveletId(waveletId),
         docId, version);
 
-    GetDiffDataOperation op = new GetDiffDataOperation(context, options,
-        new ServiceOperation.Callback<GetDiffDataOperation.Response>() {
+    GetContributionsOperation op = new GetContributionsOperation(context, options,
+        new ServiceOperation.Callback<GetContributionsOperation.Response>() {
 
           @Override
           public void onError(SException exception) {
@@ -65,14 +52,19 @@ public class RemoteDiffProvider implements DiffProvider {
 
           @Override
           public void onSuccess(Response response) {
-            // Force cast to JsoWaveletDiffData to access js internals.
-            JsoWaveletDiffData jsoResponse = (JsoWaveletDiffData) response;
-            callback.onSuccess(jsoResponse);
+
+            Arrays.<DiffData> stream(response.getContrib()).filter((DiffData diffData) -> {
+              return diffData.getDocId().equals(docId);
+            }).findFirst().ifPresent(diffData -> {
+              callback.onSuccess(diffData);
+            });
+            ;
+
           }
 
     });
 
-
+    ServiceDeps.remoteOperationExecutor.execute(op);
   }
 
 }

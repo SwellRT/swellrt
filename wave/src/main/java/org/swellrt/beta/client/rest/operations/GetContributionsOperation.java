@@ -5,13 +5,15 @@ import org.swellrt.beta.client.rest.ServerOperation;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.common.SException;
 import org.waveprotocol.wave.client.wave.DiffData;
+import org.waveprotocol.wave.client.wave.DiffDataImpl;
 import org.waveprotocol.wave.model.util.CharBase64;
 import org.waveprotocol.wave.model.version.HashedVersion;
 
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
-public final class GetDiffDataOperation
-    extends ServerOperation<GetDiffDataOperation.Options, GetDiffDataOperation.Response> {
+public final class GetContributionsOperation
+    extends ServerOperation<GetContributionsOperation.Options, GetContributionsOperation.Response> {
 
   public static class Options implements ServerOperation.Options {
 
@@ -34,24 +36,29 @@ public final class GetDiffDataOperation
 
   @JsType(isNative = true)
   public static interface Response
-      extends ServerOperation.Response, DiffData.WaveletDiffData {
+      extends ServerOperation.Response {
 
-    @Override
-    public DiffData[] get(String blipId);
+    @JsProperty
+    public <R extends DiffData<?, ?>> R[] getContrib();
 
   }
 
 
-  public GetDiffDataOperation(ServiceContext context, GetDiffDataOperation.Options options,
-      ServiceOperation.Callback<GetDiffDataOperation.Response> callback) {
-    super(context, options, callback, new Response() {
+  public static class ResponseImpl implements Response {
 
-      @Override
-      public DiffData[] get(String blipId) {
-        return null;
-      }
+    public DiffDataImpl[] contrib;
 
-    }.getClass());
+    @SuppressWarnings("unchecked")
+    @Override
+    public DiffDataImpl[] getContrib() {
+      return contrib;
+    }
+
+  }
+
+  public GetContributionsOperation(ServiceContext context, GetContributionsOperation.Options options,
+      ServiceOperation.Callback<GetContributionsOperation.Response> callback) {
+    super(context, options, callback, ResponseImpl.class);
   }
 
 
@@ -72,7 +79,7 @@ public final class GetDiffDataOperation
     addPathElement("wavelet");
     addPathElement(options.waveletId);
     addPathElement("contrib");
-    addQueryParam("v", options.version + ":" + options.base64HashVersion);
+    addQueryParam("version", options.version + ":" + options.base64HashVersion);
   }
 
 }

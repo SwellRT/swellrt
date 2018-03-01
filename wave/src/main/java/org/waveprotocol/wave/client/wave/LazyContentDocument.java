@@ -253,27 +253,30 @@ public final class LazyContentDocument extends MutableDocumentProxy<Doc.N, Doc.E
 
 
   @Override
+  @SuppressWarnings("rawtypes")
   public void startShowDiffs() {
 
     diffsSuppressed = false;
 
-    diffProvider.getDiffs(new Callback<DiffData[], Exception>() {
+    diffProvider.getDiffs(new Callback<DiffData, Exception>() {
 
       @Override
-      public void onSuccess(DiffData[] result) {
+      public void onSuccess(DiffData result) {
         // remove old diffs
         getTarget().clearDiffs();
 
-        for (int i = 0; i < result.length; i++) {
+        DiffData.Range[] ranges = result.getRanges();
+
+        for (int i = 0; i < ranges.length; i++) {
           // show all diffs
-          DiffData diff = result[i];
+          DiffData.Range diff = ranges[i];
           ParticipantId author = null;
           try {
-            author = ParticipantId.of(diff.values.author);
+            author = ParticipantId.of(diff.getValues().getAuthor());
           } catch (InvalidParticipantAddress e) {
             author = ParticipantId.VOID;
           }
-          getTarget().setDiff(diff.start, diff.end, author);
+          getTarget().setDiff(diff.getStart(), diff.getEnd(), author);
 
         }
       }

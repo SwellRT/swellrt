@@ -1,26 +1,37 @@
 package org.waveprotocol.wave.client.wave;
 
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true)
-public class DiffData {
+public interface DiffData<R extends DiffData.Range<V>, V extends DiffData.Values> {
 
   @JsType(isNative = true)
-  public static class Values {
+  public interface Values {
 
-    public String author;
+    @JsProperty
+    public String getAuthor();
 
   }
 
   @JsType(isNative = true)
-  public interface WaveletDiffData {
+  public interface Range<V extends DiffData.Values> {
 
-    DiffData[] get(String blipId);
+    @JsProperty
+    public int getStart();
+
+    @JsProperty
+    public int getEnd();
+
+    @JsProperty
+    public V getValues();
 
   }
 
-  public int start;
-  public int end;
-  public Values values;
+  @JsProperty
+  public String getDocId();
+
+  @JsProperty
+  public R[] getRanges();
 
 }

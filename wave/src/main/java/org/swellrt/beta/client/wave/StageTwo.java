@@ -38,7 +38,6 @@ import org.waveprotocol.wave.client.doodad.link.LinkAnnotationHandler.LinkAttrib
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.wave.DiffData;
-import org.waveprotocol.wave.client.wave.DiffData.WaveletDiffData;
 import org.waveprotocol.wave.client.wave.DiffProvider;
 import org.waveprotocol.wave.client.wave.DiffProvider.DocDiffProvider;
 import org.waveprotocol.wave.client.wave.DocOpContext;
@@ -386,7 +385,7 @@ public interface StageTwo {
                   new DocDiffProvider() {
 
                     @Override
-                    public void getDiffs(Callback<DiffData[], Exception> callback) {
+                    public void getDiffs(Callback<DiffData, Exception> callback) {
 
                       Optional<HashedVersion> optVersion = docOpTracker.getVersion(waveletIdStr,
                           docId);
@@ -396,7 +395,7 @@ public interface StageTwo {
                             + waveletIdStr + "/" + docId + " in DocOpTracker"));
 
                       diffProvider.getDiffs(waveletId, docId, optVersion.get(),
-                          new Callback<WaveletDiffData, Exception>() {
+                          new Callback<DiffData, Exception>() {
 
                             @Override
                             public void onFailure(Exception reason) {
@@ -404,8 +403,8 @@ public interface StageTwo {
                             }
 
                             @Override
-                            public void onSuccess(WaveletDiffData result) {
-                              callback.onSuccess(result.get(docId));
+                            public void onSuccess(DiffData result) {
+                              callback.onSuccess(result);
                             }
 
                           });
