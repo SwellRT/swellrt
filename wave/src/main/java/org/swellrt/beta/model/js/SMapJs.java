@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
-import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
@@ -205,5 +205,21 @@ public class SMapJs implements SMap {
   @Override
   public void unlisten(SMutationHandler h) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
+  }
+
+  @Override
+  public SNode[] values() throws SException {
+
+    ArrayList<SNode> values = new ArrayList<SNode>();
+
+    SNodeJs.iterateObject(this.jso, new Func() {
+      @Override
+      public void apply(String key, Object value) {
+        values.add(SNodeJs.castToSNode(value));
+      }
+    });
+
+    return values.toArray(new SNode[values.size()]);
+
   }
 }

@@ -5,9 +5,9 @@ import java.util.Set;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
-import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
@@ -196,5 +196,17 @@ public class SMapGson implements SMap {
   @Override
   public void unlisten(SMutationHandler h) throws SException {
     throw new IllegalStateException("Local nodes don't support event listeners");
+  }
+
+  @Override
+  public SNode[] values() throws SException {
+    SNode[] values = new SNode[jso.entrySet().size()];
+
+    int[] c = new int[] { 0 };
+    jso.entrySet().forEach(e -> {
+      values[c[0]++] = SNodeGson.castToSNode(e.getValue());
+    });
+
+    return values;
   }
 }

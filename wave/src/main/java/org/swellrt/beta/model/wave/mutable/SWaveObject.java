@@ -14,6 +14,7 @@ import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.presence.SPresenceEvent;
+import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
 import jsinterop.annotations.JsIgnore;
@@ -46,6 +47,7 @@ public class SWaveObject implements SObject, SObservableNode {
   private SObject.StatusHandler statusHandler = null;
 
   private final SWavePresence presence;
+  private final SWaveMetadata metadata;
   private final SWaveNodeManager waveManager;
 
 
@@ -62,6 +64,7 @@ public class SWaveObject implements SObject, SObservableNode {
     this.presence = new SWavePresence(waveManager.getTransient().getPresenceStatusMap(),
         waveManager.getSession());
     this.presence.start();
+    this.metadata = waveManager.getMetadata();
   }
 
   /**
@@ -109,8 +112,8 @@ public class SWaveObject implements SObject, SObservableNode {
   }
 
   @Override
-  public String[] getParticipants() {
-    return waveManager.getParticipants();
+  public SSession[] getParticipants() {
+    return waveManager.getMetadata().getParticipants();
   }
 
 
@@ -312,6 +315,11 @@ public class SWaveObject implements SObject, SObservableNode {
   @Override
   public String _getContent(String waveletId, String documentId) {
     return waveManager.getContent(waveletId, documentId);
+  }
+
+  @Override
+  public SNode[] values() throws SException {
+    return root.values();
   }
 
 }

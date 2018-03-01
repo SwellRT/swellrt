@@ -39,7 +39,7 @@ public final class EditUserOperation
 
   @Override
   protected void doSuccess(Account response) {
-    context.update(response);
+    context.updateSession(response);
     super.doSuccess(response);
   }
 

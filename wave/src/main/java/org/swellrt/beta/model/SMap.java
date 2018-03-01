@@ -64,6 +64,8 @@ public interface SMap extends SNode, SObservableNode {
 
   public String[] keys() throws SException;
 
+  public SNode[] values() throws SException;
+
   public void clear() throws SException;
 
   boolean isEmpty();

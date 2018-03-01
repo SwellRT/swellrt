@@ -9,7 +9,7 @@ import org.swellrt.beta.client.wave.WaveLoader;
 import org.swellrt.beta.common.ContextStatus;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SStatusEvent;
-import org.swellrt.beta.model.presence.SSessionProvider;
+import org.swellrt.beta.model.presence.SSessionManager;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.wave.DiffProvider;
@@ -45,7 +45,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
 
   private final WaveId waveId;
   private final String waveDomain;
-  private final SSessionProvider session;
+  private final SSessionManager session;
   private final ServiceStatus serviceStatus;
 
   private WaveLoader loader;
@@ -55,7 +55,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
   private final DiffProvider diffProvider;
 
 
-  public WaveContext(WaveId waveId, String waveDomain, SSessionProvider session,
+  public WaveContext(WaveId waveId, String waveDomain, SSessionManager session,
       ServiceStatus serviceStatus, DiffProvider diffProvider) {
     super();
     this.waveId = waveId;

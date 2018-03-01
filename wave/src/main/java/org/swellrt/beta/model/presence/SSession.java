@@ -18,9 +18,15 @@ public class SSession {
 
   @JsIgnore
   public static SSession of(SJsonObject jso) {
-    return new SSession(jso.getString("session"),
+
+    SSession session = new SSession(jso.getString("session"),
         ParticipantId.ofUnsafe(jso.getString("participant")),
         new RgbColor(jso.getString("color")), jso.getString("name"), jso.getString("nickname"));
+
+    session.lastAccessTime = jso.getDouble("lasttime");
+    session.firstAccessTime = jso.getDouble("firsttime");
+
+    return session;
   }
 
   private String sessionId;
@@ -28,7 +34,15 @@ public class SSession {
   private RgbColor color;
   private String name;
   private String nickname;
+  private Double lastAccessTime;
+  private Double firstAccessTime;
 
+  @JsIgnore
+  protected SSession() {
+
+  }
+
+  @JsIgnore
   public SSession(String sessionId, ParticipantId participantId, RgbColor color, String name,
       String nickname) {
     super();
@@ -44,9 +58,14 @@ public class SSession {
     return sessionId;
   }
 
-  @JsProperty
+  @JsIgnore
   public ParticipantId getParticipantId() {
     return participantId;
+  }
+
+  @JsProperty
+  public String getId() {
+    return participantId.getAddress();
   }
 
   @JsProperty
@@ -64,6 +83,26 @@ public class SSession {
     return nickname;
   }
 
+  @JsProperty
+  public double getLastAccessTime() {
+    return lastAccessTime;
+  }
+
+  @JsProperty
+  public double getFirstAccessTime() {
+    return firstAccessTime;
+  }
+
+  @JsIgnore
+  public void setFirstAccessTime(double time) {
+    this.firstAccessTime = time;
+  }
+
+  @JsIgnore
+  public void setLastAccessTime(double time) {
+    this.lastAccessTime = time;
+  }
+
   @JsIgnore
   public SJsonObject toSJson() {
 
@@ -73,6 +112,13 @@ public class SSession {
     jso.addString("color", color.getHexColor());
     jso.addString("name", name);
     jso.addString("nickname", nickname);
+
+    if (lastAccessTime != null)
+      jso.addDouble("lasttime", lastAccessTime);
+
+    if (firstAccessTime != null)
+      jso.addDouble("firsttime", firstAccessTime);
+
     return jso;
 
   }

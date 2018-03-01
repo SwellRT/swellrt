@@ -1,5 +1,6 @@
 package org.swellrt.beta.model.wave.mutable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -356,5 +357,14 @@ public class SWaveMap extends SWaveNodeContainer implements SMap, HasJsProxy, Ob
   @Override
   public SText asText() {
     throw new IllegalStateException("Node is not a text");
+  }
+
+  @Override
+  public SNode[] values() throws SException {
+    ArrayList<SNode> values = new ArrayList<SNode>();
+    map.keySet().forEach(key -> {
+      values.add(map.get(key));
+    });
+    return values.toArray(new SNode[values.size()]);
   }
 }

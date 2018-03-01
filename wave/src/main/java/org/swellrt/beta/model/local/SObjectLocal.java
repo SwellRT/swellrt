@@ -5,9 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.swellrt.beta.common.SException;
-import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SText;
@@ -15,6 +15,7 @@ import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.presence.SPresenceEvent;
+import org.swellrt.beta.model.presence.SSession;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
@@ -93,8 +94,8 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public String[] getParticipants() {
-    return participants.toArray(new String[participants.size()]);
+  public SSession[] getParticipants() {
+    return new SSession[] {};
   }
 
   @Override
@@ -263,5 +264,10 @@ public class SObjectLocal implements SObject {
   @Override
   public void setPresenceHandler(SPresenceEvent.Handler h) {
     // Ignore in local objects
+  }
+
+  @Override
+  public SNode[] values() throws SException {
+    return delegateMap.values();
   }
 }

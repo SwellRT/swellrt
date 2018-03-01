@@ -5,7 +5,7 @@ import org.swellrt.beta.model.SEvent;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SPrimitive;
-import org.swellrt.beta.model.presence.SSessionProvider;
+import org.swellrt.beta.model.presence.SSessionManager;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent;
 import org.waveprotocol.wave.client.editor.EditorUpdateEvent.EditorUpdateListener;
@@ -53,11 +53,11 @@ public class CaretManager implements EditorUpdateListener {
     }
   };
 
-  private final SSessionProvider session;
+  private final SSessionManager session;
   private final SMap carets;
   private final Editor editor;
 
-  public CaretManager(SSessionProvider session, SMap carets,
+  public CaretManager(SSessionManager session, SMap carets,
       Editor editor) {
 
     this.session = session;

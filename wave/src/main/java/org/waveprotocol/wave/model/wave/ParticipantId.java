@@ -102,6 +102,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   /**
    * @return the participant's address
    */
+  @JsProperty
   public String getAddress() {
     return address;
   }

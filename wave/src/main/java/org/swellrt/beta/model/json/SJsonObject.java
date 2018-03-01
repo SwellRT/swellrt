@@ -47,13 +47,15 @@ public interface SJsonObject {
 
   public SJsonObject addObject(String name, SJsonObject value);
 
-  public int getInt(String name);
+  public Integer getInt(String name);
 
-  public long getLong(String name);
+  public Long getLong(String name);
 
   public boolean getBoolean(String name);
 
   public String getString(String name);
+
+  public Double getDouble(String name);
 
   public SJsonObject getObject(String name);
 

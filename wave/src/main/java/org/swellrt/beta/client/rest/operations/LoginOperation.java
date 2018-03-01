@@ -24,7 +24,7 @@ public final class LoginOperation
 
   @Override
   protected void doSuccess(Account response) {
-    context.init(response);
+    context.initSession(response);
     super.doSuccess(response);
   }
 

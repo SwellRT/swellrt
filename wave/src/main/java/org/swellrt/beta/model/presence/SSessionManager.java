@@ -9,7 +9,7 @@ import org.waveprotocol.wave.model.util.Preconditions;
  * Provides live updates of the {@link SSession} for the current logged in
  * participant.
  */
-public class SSessionProvider {
+public class SSessionManager {
 
   /** Handles updates of the session */
   public interface UpdateHandler {
@@ -19,10 +19,10 @@ public class SSessionProvider {
   private List<UpdateHandler> handlers = new ArrayList<UpdateHandler>();
   private SSession session = null;
 
-  public SSessionProvider() {
+  public SSessionManager() {
   }
 
-  public SSessionProvider(SSession session) {
+  public SSessionManager(SSession session) {
     this.session = session;
   }
 

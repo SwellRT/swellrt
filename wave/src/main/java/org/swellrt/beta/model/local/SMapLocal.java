@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.IllegalCastException;
-import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SUtils;
@@ -198,5 +198,10 @@ public class SMapLocal implements SMap, HasJsProxy {
 
   @Override
   public void unlisten(SMutationHandler h) throws SException {
+  }
+
+  @Override
+  public SNode[] values() throws SException {
+    return map.values().toArray(new SNode[map.size()]);
   }
 }

@@ -15,7 +15,7 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SText;
-import org.swellrt.beta.model.presence.SSessionProvider;
+import org.swellrt.beta.model.presence.SSessionManager;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.WaveCommons;
 import org.swellrt.beta.model.wave.adt.DocumentBasedBasicRMap;
@@ -234,7 +234,7 @@ public class SWaveNodeManager {
   private SWaveNodeManager.SubstrateMapSerializer mapSerializer = new SWaveNodeManager.SubstrateMapSerializer(d);
 
   private final Map<SubstrateId, SWaveNode> nodeStore = new HashMap<SubstrateId, SWaveNode>();
-  private final SSessionProvider session;
+  private final SSessionManager session;
   private final IdGenerator idGenerator;
   private final String domain;
   private final ObservableWaveView wave;
@@ -247,10 +247,11 @@ public class SWaveNodeManager {
   private final SWaveDocuments<? extends InteractiveDocument> documentRegistry;
 
   private SWaveTransient transientData;
+  private SWaveMetadata metadata;
 
   private SWaveObject waveObject;
 
-  public static SWaveNodeManager create(SSessionProvider session, IdGenerator idGenerator,
+  public static SWaveNodeManager create(SSessionManager session, IdGenerator idGenerator,
       String domain, ObservableWaveView wave, ContextStatus waveStatus,
       SWaveDocuments<? extends InteractiveDocument> documentRegistry) {
     return new SWaveNodeManager(session, idGenerator, domain, wave, waveStatus, documentRegistry);
@@ -324,7 +325,7 @@ public class SWaveNodeManager {
   }
 
 
-  private SWaveNodeManager(SSessionProvider session, IdGenerator idGenerator, String domain,
+  private SWaveNodeManager(SSessionManager session, IdGenerator idGenerator, String domain,
       ObservableWaveView wave, ContextStatus waveStatus,
       SWaveDocuments<? extends InteractiveDocument> documentRegistry) {
     this.session = session;
@@ -347,7 +348,7 @@ public class SWaveNodeManager {
     return session.get().getParticipantId();
   }
 
-  public SSessionProvider getSession() {
+  public SSessionManager getSession() {
     return session;
   }
 
@@ -370,6 +371,19 @@ public class SWaveNodeManager {
     SWaveMap map = loadMap(SubstrateId.ofMap(transientWavelet.getId(), IdConstants.MAP_ROOT_DOC));
     map.attach(SWaveNodeContainer.Void);
     return map;
+  }
+
+  public SWaveMap getMetadataRoot() {
+    SWaveMap map = loadMap(SubstrateId.ofMap(dataWavelet.getId(), IdConstants.MAP_METADATA_ROOT_DOC));
+    map.attach(SWaveNodeContainer.Void);
+    return map;
+  }
+
+  public SWaveMetadata getMetadata() {
+    if (metadata == null) {
+      metadata = new SWaveMetadata(getMetadataRoot());
+    }
+    return metadata;
   }
 
   public SWaveTransient getTransient() {
@@ -802,6 +816,7 @@ public class SWaveNodeManager {
 
     if (waveObject == null) {
       waveObject = new SWaveObject(this);
+      getMetadata().logParticipant(session.get());
       this.setListener(new SWaveletListener(waveObject));
     }
 

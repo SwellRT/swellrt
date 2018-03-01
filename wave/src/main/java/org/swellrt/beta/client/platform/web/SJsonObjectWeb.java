@@ -55,13 +55,26 @@ public class SJsonObjectWeb implements SJsonObject {
   }
 
   @Override
-  public int getInt(String name) {
-    return (int) jso.getNumber(name);
+  public Integer getInt(String name) {
+    if (jso.containsKey(name))
+      return new Double(jso.getNumber(name)).intValue();
+    return null;
   }
 
   @Override
-  public long getLong(String name) {
-    return (long) jso.getNumber(name);
+  public Long getLong(String name) {
+    if (jso.containsKey(name))
+      return new Double(jso.getNumber(name)).longValue();
+    else
+      return null;
+  }
+
+  @Override
+  public Double getDouble(String name) {
+    if (jso.containsKey(name))
+      return new Double(jso.getNumber(name));
+    else
+      return null;
   }
 
   @Override

@@ -59,13 +59,19 @@ public class SJsonObjectJava implements SJsonObject {
   }
 
   @Override
-  public int getInt(String name) {
-    return jso.get(name).getAsInt();
+  public Integer getInt(String name) {
+    if (jso.has(name))
+      return jso.get(name).getAsInt();
+    else
+      return null;
   }
 
   @Override
-  public long getLong(String name) {
-    return jso.get(name).getAsLong();
+  public Long getLong(String name) {
+    if (jso.has(name))
+      return jso.get(name).getAsLong();
+    else
+      return null;
   }
 
   @Override
@@ -75,7 +81,10 @@ public class SJsonObjectJava implements SJsonObject {
 
   @Override
   public String getString(String name) {
-    return jso.get(name).getAsString();
+    if (jso.has(name))
+      return jso.get(name).getAsString();
+    else
+      return null;
   }
 
   @Override
@@ -96,6 +105,14 @@ public class SJsonObjectJava implements SJsonObject {
   @Override
   public Object getNative() {
     return jso;
+  }
+
+  @Override
+  public Double getDouble(String name) {
+    if (jso.has(name))
+      return jso.get(name).getAsDouble();
+    else
+      return null;
   }
 
 }

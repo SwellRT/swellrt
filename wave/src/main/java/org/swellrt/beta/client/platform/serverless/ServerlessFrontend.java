@@ -16,7 +16,7 @@ import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.presence.SSession;
-import org.swellrt.beta.model.presence.SSessionProvider;
+import org.swellrt.beta.model.presence.SSessionManager;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.account.ProfileManager;
@@ -44,7 +44,7 @@ public class ServerlessFrontend implements ServiceFrontend {
   private ParticipantId participant = ParticipantId.ofUnsafe("fake@local.net");
   private SSession session = new SSession("fake-session-id", participant, RgbColor.WHITE,
       "Fake Name", "fakey");
-  private SSessionProvider sessionProvider = new SSessionProvider(session);
+  private SSessionManager sessionProvider = new SSessionManager(session);
 
   private IdGenerator idGenerator = new IdGeneratorImpl("local.net", new IdGeneratorImpl.Seed() {
     @Override

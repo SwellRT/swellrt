@@ -2,6 +2,7 @@ package org.swellrt.beta.model;
 
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.model.presence.SPresenceEvent;
+import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 
 import jsinterop.annotations.JsFunction;
@@ -38,9 +39,10 @@ public interface SObject extends SMap, ServiceOperation.Response {
   public void removeParticipant(String participantId) throws InvalidParticipantAddress;
 
   /**
-   * @return static array of current participants of this object.
+   * @return array of all participants of this object, even with no permissions
+   *         currently.
    */
-  public String[] getParticipants();
+  public SSession[] getParticipants();
 
 
   /** Make this object to be public to any user */
@@ -75,4 +77,5 @@ public interface SObject extends SMap, ServiceOperation.Response {
    * Register a handler for presence events. Pass null value to unset.
    */
   public void setPresenceHandler(SPresenceEvent.Handler h);
+
 }

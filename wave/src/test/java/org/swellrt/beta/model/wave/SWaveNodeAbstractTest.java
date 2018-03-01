@@ -7,7 +7,7 @@ import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.java.JavaModelFactory;
 import org.swellrt.beta.model.presence.SSession;
-import org.swellrt.beta.model.presence.SSessionProvider;
+import org.swellrt.beta.model.presence.SSessionManager;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
 import org.waveprotocol.wave.client.common.util.RgbColor;
@@ -39,7 +39,7 @@ public abstract class SWaveNodeAbstractTest extends TestCase {
   protected IdGenerator idGenerator;
   protected FakeWaveView wave;
   protected SSession session;
-  protected SSessionProvider sessionProvider;
+  protected SSessionManager sessionProvider;
   protected SWaveObject object;
   protected SWaveDocuments<LazyContentDocument> docRegistry;
   protected ParticipantId participant = ParticipantId.ofUnsafe("tom@acme.com");
@@ -72,7 +72,7 @@ public abstract class SWaveNodeAbstractTest extends TestCase {
         .with(participant).build();
     session = new SSession("fake-session-id", participant,
         RgbColor.WHITE, "Fake Name", "fakie");
-    sessionProvider = new SSessionProvider(session);
+    sessionProvider = new SSessionManager(session);
 
 
 

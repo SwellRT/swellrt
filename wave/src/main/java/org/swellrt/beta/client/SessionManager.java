@@ -10,10 +10,6 @@ import org.swellrt.beta.client.rest.operations.params.Account;
  */
 public interface SessionManager {
 
-  public class ParticipantId {
-
-  }
-
   public void setSession(Account profile);
 
   public String getSessionId();

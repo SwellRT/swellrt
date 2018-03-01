@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.swellrt.beta.client.platform.web.ServiceEntryPoint;
 import org.swellrt.beta.client.platform.web.editor.caret.CaretAnnotationHandler;
-import org.swellrt.beta.model.presence.SSessionProvider;
+import org.swellrt.beta.model.presence.SSessionManager;
 import org.waveprotocol.wave.client.common.util.UserAgent;
 import org.waveprotocol.wave.client.debug.logger.DomLogger;
 import org.waveprotocol.wave.client.doodad.diff.DiffAnnotationHandler;
@@ -62,7 +62,7 @@ public class SEditorStatics {
   }
 
   /** @return the session provider of the currently connected participants */
-  public static SSessionProvider getSSession() {
+  public static SSessionManager getSSession() {
     return ServiceEntryPoint.getServiceContext().getSession();
   }
 

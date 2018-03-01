@@ -124,4 +124,10 @@ public interface IdConstants {
   /** Id of root map for storing participants presence status */
   public static final String MAP_PRESENCE = "presence";
 
+  /** Id of persistent metadata root doc. */
+  public static final String MAP_METADATA_ROOT_DOC = MAP_DATA_DOC_PREFIX + TOKEN_SEPARATOR + "metadata";
+
+  /** Id of map storing historical list of a wavelet participants */
+  public static final String MAP_METADATA_PARTICIPANTS = "participants";
+
 }

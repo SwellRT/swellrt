@@ -12,8 +12,8 @@ import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.json.SJsonObject;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
-import org.swellrt.beta.model.presence.SSessionProvider;
-import org.swellrt.beta.model.presence.SSessionProvider.UpdateHandler;
+import org.swellrt.beta.model.presence.SSessionManager;
+import org.swellrt.beta.model.presence.SSessionManager.UpdateHandler;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.model.util.Preconditions;
 
@@ -60,7 +60,7 @@ public class SWavePresence {
           String sessionId = keys[i];
 
           // ignore our own status
-          if (sessionId.equals(session.get().getSessionId())) {
+          if (sessionId.equals(sessionManager.get().getSessionId())) {
             continue;
           }
 
@@ -101,7 +101,7 @@ public class SWavePresence {
       long lastActiveTime = status.asSJson().getLong(LAST_ACTIVITY_TIME);
 
       // Skip our own status
-      if (eventSession.getSessionId().equals(session.get().getSessionId())) {
+      if (eventSession.getSessionId().equals(sessionManager.get().getSessionId())) {
         return false;
       }
 
@@ -127,7 +127,7 @@ public class SWavePresence {
   };
 
   /** Listen for changes in user name... */
-  private final SSessionProvider.UpdateHandler sessionHandler = new UpdateHandler() {
+  private final SSessionManager.UpdateHandler sessionHandler = new UpdateHandler() {
 
     @Override
     public void onUpdate(SSession session) {
@@ -139,15 +139,15 @@ public class SWavePresence {
   private final SMap presenceStatusMap;
 
   /** Local user's sessions using the object */
-  private final SSessionProvider session;
+  private final SSessionManager sessionManager;
 
   /** the handler to receive presence events */
   private SPresenceEvent.Handler eventHandler;
 
-  public SWavePresence(SMap presenceStatusMap, SSessionProvider session) {
+  public SWavePresence(SMap presenceStatusMap, SSessionManager session) {
     Preconditions.checkNotNull(presenceStatusMap, "Presence requires a map for storage");
     this.presenceStatusMap = presenceStatusMap;
-    this.session = session;
+    this.sessionManager = session;
 
 
 
@@ -157,10 +157,10 @@ public class SWavePresence {
   /** Refresh our session's time stamp to inform that we are alive */
   private void refreshSession() {
 
-    SJsonObject sjson = session.get().toSJson();
+    SJsonObject sjson = sessionManager.get().toSJson();
     sjson.addLong(LAST_ACTIVITY_TIME, System.currentTimeMillis());
     try {
-      presenceStatusMap.put(session.get().getSessionId(), sjson);
+      presenceStatusMap.put(sessionManager.get().getSessionId(), sjson);
     } catch (SException e) {
       throw new IllegalStateException(e);
     }
@@ -182,7 +182,7 @@ public class SWavePresence {
         String sessionId = keys[i];
 
         // ignore our own status
-        if (sessionId.equals(session.get().getSessionId())) {
+        if (sessionId.equals(sessionManager.get().getSessionId())) {
           continue;
         }
 
@@ -225,7 +225,7 @@ public class SWavePresence {
       throw new IllegalStateException(e);
     }
 
-    this.session.registerHandler(sessionHandler);
+    this.sessionManager.registerHandler(sessionHandler);
 
     WaveDeps.lowPriorityTimer.scheduleRepeating(presenceUpdateTask, 0, REFRESH_TIME_MS);
 
@@ -249,12 +249,12 @@ public class SWavePresence {
       }
 
       try {
-        this.presenceStatusMap.remove(session.get().getSessionId());
+        this.presenceStatusMap.remove(sessionManager.get().getSessionId());
       } catch (SException e) {
         throw new IllegalStateException(e);
       }
 
-      this.session.unregisterHandler(sessionHandler);
+      this.sessionManager.unregisterHandler(sessionHandler);
 
       hasStarted = false;
 
