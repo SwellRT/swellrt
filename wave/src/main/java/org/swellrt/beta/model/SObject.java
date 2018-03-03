@@ -78,4 +78,6 @@ public interface SObject extends SMap, ServiceOperation.Response {
    */
   public void setPresenceHandler(SPresenceEvent.Handler h);
 
+  /** Get the version manager to tag node versions */
+  public SVersionManager getVersionManager();
 }

@@ -3,7 +3,6 @@ package org.swellrt.beta.model;
 
 import org.swellrt.beta.client.platform.web.editor.caret.CaretInfo;
 import org.swellrt.beta.common.SException;
-import org.waveprotocol.wave.client.editor.playback.DocHistory;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 
 import jsinterop.annotations.JsIgnore;
@@ -28,12 +27,6 @@ public interface SText extends SNode {
    * @return a map of carets' metadata.
    */
   SMap getLiveCarets();
-
-  /**
-   * @return an iterator for the document history, starting at the most recent
-   *         version.
-   */
-  DocHistory.Iterator getHistoryIterator();
 
   /**
    * @return content's of this object as a initial document operation.

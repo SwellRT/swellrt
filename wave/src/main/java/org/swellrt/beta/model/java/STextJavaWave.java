@@ -9,7 +9,6 @@ import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
@@ -22,11 +21,6 @@ public class STextJavaWave extends SWaveText {
   @Override
   public SMap getLiveCarets() {
     return getNodeManager().getTransient().getCaretsForDocument(getSubstrateId().getDocumentId());
-  }
-
-  @Override
-  public Iterator getHistoryIterator() {
-    return null;
   }
 
   @Override

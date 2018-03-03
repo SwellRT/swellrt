@@ -1,6 +1,5 @@
 package org.swellrt.beta.client.platform.web.editor;
 
-import org.swellrt.beta.client.platform.web.editor.history.DocHistoryRemote;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
@@ -11,9 +10,6 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
-import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.editor.playback.DocHistory;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.util.Preconditions;
@@ -21,6 +17,8 @@ import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+
+import jsinterop.annotations.JsOptional;
 
 /**
  * A text document supported by a remote wave document.
@@ -31,7 +29,6 @@ import com.google.gwt.dom.client.Element;
 public class STextWebRemote extends SWaveText implements STextWeb {
 
   private final InteractiveDocument interactiveDoc;
-  private DocHistory docHistory;
   private final LogicalPanel panel = new LogicalPanel.Impl() {
     {
       setElement(Document.get().createDivElement());
@@ -50,25 +47,12 @@ public class STextWebRemote extends SWaveText implements STextWeb {
     }
 
     this.interactiveDoc = interactiveDoc;
-    this.updateHistory();
   }
 
-  protected void updateHistory() {
-    this.docHistory = new DocHistoryRemote(getNodeManager().getWaveId(),
-        getSubstrateId().getContainerId(), getSubstrateId().getDocumentId(),
-        blip.getWavelet().getHashedVersion());
-
-  }
 
   @Override
   public SMap getLiveCarets() {
     return getNodeManager().getTransient().getCaretsForDocument(getSubstrateId().getDocumentId());
-  }
-
-  @Override
-  public Iterator getHistoryIterator() {
-    updateHistory();
-    return docHistory.getIterator();
   }
 
   @Override
@@ -150,13 +134,8 @@ public class STextWebRemote extends SWaveText implements STextWeb {
   }
 
   @Override
-  public InteractiveDocument getInteractiveDocument() {
+  public InteractiveDocument getContentDocument() {
     return interactiveDoc;
-  }
-
-  @Override
-  public ContentDocument getContentDocument() {
-    return interactiveDoc.getDocument();
   }
 
   @Override
@@ -169,15 +148,37 @@ public class STextWebRemote extends SWaveText implements STextWeb {
     return this.interactiveDoc.getDocument().getMutableDoc().toXmlString();
   }
 
+
   @Override
-  public DocHistory getDocHistory() {
-    return docHistory;
+  public void attachToDOM(Element element) {
+    Preconditions.checkNotNull(element, "Can't attach text to empty element");
+    interactiveDoc.getDocument().setInteractive(panel);
+    Element textElement = interactiveDoc.getDocument().getFullContentView().getDocumentElement()
+        .getImplNodelet();
+    element.appendChild(textElement);
   }
 
   @Override
-  public Element getElement() {
-    interactiveDoc.getDocument().setInteractive(panel);
-    return interactiveDoc.getDocument().getFullContentView().getDocumentElement().getImplNodelet();
+  public void deattachFromDOM() {
+    Element textElement = interactiveDoc.getDocument().getFullContentView().getDocumentElement()
+        .getImplNodelet();
+
+    if (textElement != null) {
+      textElement.removeFromParent();
+      interactiveDoc.getDocument().setShelved();
+    }
+
+  }
+
+  @Override
+  public SPlaybackText getPlaybackTextFor(@JsOptional String historyType) {
+
+    if (historyType == null || REV_HISTORY.equals(historyType))
+      return SPlaybackText.createForRevisionHistory(this);
+    else if (historyType.equals(TAG_HISTORY))
+      return SPlaybackText.createForTagHistory(this);
+
+    return null;
   }
 
 }

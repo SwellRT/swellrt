@@ -3,7 +3,6 @@ package org.swellrt.beta.model.wave.mutable;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.local.SMapLocal;
-import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 /**
@@ -15,10 +14,17 @@ import org.waveprotocol.wave.model.util.Preconditions;
  */
 public class SWaveTransient {
 
+  /** Id of root map for storing doc carets */
+  public static final String CARETS_NODE = "carets";
+
   private final SMap transientRootMap;
 
   public SWaveTransient(SMap transientRootMap) {
     this.transientRootMap = transientRootMap;
+  }
+
+  protected SMap getRootMap() {
+    return transientRootMap;
   }
 
   public SMap getCaretsForDocument(String documentId) {
@@ -28,12 +34,12 @@ public class SWaveTransient {
 
     try {
 
-      if (!transientRootMap.has(IdConstants.MAP_CARETS)) {
-        transientRootMap.put(IdConstants.MAP_CARETS, new SMapLocal());
+      if (!transientRootMap.has(CARETS_NODE)) {
+        transientRootMap.put(CARETS_NODE, new SMapLocal());
       }
 
       // A map referencing text documents
-      SMap caretDocIndexMap = transientRootMap.pick(IdConstants.MAP_CARETS).asMap();
+      SMap caretDocIndexMap = transientRootMap.pick(CARETS_NODE).asMap();
 
       if (!caretDocIndexMap.has(documentId)) {
         caretDocIndexMap.put(documentId, new SMapLocal());
@@ -43,22 +49,6 @@ public class SWaveTransient {
       SMap caretMap = caretDocIndexMap.pick(documentId).asMap();
 
       return caretMap;
-
-    } catch (SException e) {
-      throw new IllegalStateException(e);
-    }
-
-  }
-
-  public SMap getPresenceStatusMap() {
-
-    try {
-
-      if (!transientRootMap.has(IdConstants.MAP_PRESENCE)) {
-        transientRootMap.put(IdConstants.MAP_PRESENCE, new SMapLocal());
-      }
-
-      return transientRootMap.pick(IdConstants.MAP_PRESENCE).asMap();
 
     } catch (SException e) {
       throw new IllegalStateException(e);

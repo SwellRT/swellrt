@@ -43,6 +43,7 @@ import org.waveprotocol.wave.model.schema.SchemaProvider;
 import org.waveprotocol.wave.model.testing.OpBasedWaveletFactory;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.util.Serializer;
+import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
@@ -821,6 +822,15 @@ public class SWaveNodeManager {
     }
 
     return waveObject;
+
+  }
+
+  public HashedVersion getWaveSubstrateVersion(SWaveNode node) {
+
+    Blip blip = wave.getWavelet(node.getSubstrateId().getContainerId())
+        .getBlip(node.getSubstrateId().getDocumentId());
+
+    return blip.getWavelet().getHashedVersion();
 
   }
 }

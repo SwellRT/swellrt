@@ -10,6 +10,7 @@ import org.swellrt.beta.model.SObservableNode;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.SStatusEvent;
 import org.swellrt.beta.model.SText;
+import org.swellrt.beta.model.SVersionManager;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
@@ -48,7 +49,8 @@ public class SWaveObject implements SObject, SObservableNode {
 
   private final SWavePresence presence;
   private final SWaveMetadata metadata;
-  private final SWaveNodeManager waveManager;
+  private final SWaveNodeManager nodeManager;
+  private final SWaveVersionManager versionManager;
 
 
   /**
@@ -59,12 +61,14 @@ public class SWaveObject implements SObject, SObservableNode {
    * @param wave
    */
   protected SWaveObject(SWaveNodeManager waveManager) {
-    this.waveManager = waveManager;
+    this.nodeManager = waveManager;
     root = waveManager.getDataRoot();
-    this.presence = new SWavePresence(waveManager.getTransient().getPresenceStatusMap(),
+    this.presence = SWavePresence.create(waveManager.getTransient().getRootMap(),
         waveManager.getSession());
     this.presence.start();
     this.metadata = waveManager.getMetadata();
+    this.versionManager = SWaveVersionManager.create(waveManager.getMetadataRoot(),
+        waveManager.getSession().get());
   }
 
   /**
@@ -98,32 +102,32 @@ public class SWaveObject implements SObject, SObservableNode {
 
   @Override
   public String getId() {
-    return waveManager.getId();
+    return nodeManager.getId();
   }
 
   @Override
   public void addParticipant(String participantId) throws InvalidParticipantAddress {
-    waveManager.addParticipant(participantId);
+    nodeManager.addParticipant(participantId);
   }
 
   @Override
   public void removeParticipant(String participantId) throws InvalidParticipantAddress {
-    waveManager.removeParticipant(participantId);
+    nodeManager.removeParticipant(participantId);
   }
 
   @Override
   public SSession[] getParticipants() {
-    return waveManager.getMetadata().getParticipants();
+    return nodeManager.getMetadata().getParticipants();
   }
 
 
   @Override
   public void setPublic(boolean isPublic) {
-    waveManager.setPublic(isPublic);
+    nodeManager.setPublic(isPublic);
   }
 
   public boolean isPublic() {
-    return waveManager.isPublic();
+    return nodeManager.isPublic();
   }
 
   public Object js() {
@@ -294,32 +298,37 @@ public class SWaveObject implements SObject, SObservableNode {
 
   @Override
   public SMap getUserStore() {
-    return waveManager.getUserRoot();
+    return nodeManager.getUserRoot();
   }
 
   @Override
   public SMap getTransientStore() {
-    return waveManager.getTransientRoot();
+    return nodeManager.getTransientRoot();
   }
 
   @Override
   public String[] _getWavelets() {
-    return waveManager.getWavelets();
+    return nodeManager.getWavelets();
   }
 
   @Override
   public String[] _getDocuments(String waveletId) {
-    return waveManager.getDocuments(waveletId);
+    return nodeManager.getDocuments(waveletId);
   }
 
   @Override
   public String _getContent(String waveletId, String documentId) {
-    return waveManager.getContent(waveletId, documentId);
+    return nodeManager.getContent(waveletId, documentId);
   }
 
   @Override
   public SNode[] values() throws SException {
     return root.values();
+  }
+
+  @Override
+  public SVersionManager getVersionManager() {
+    return versionManager;
   }
 
 }

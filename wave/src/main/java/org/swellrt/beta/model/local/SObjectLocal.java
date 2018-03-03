@@ -11,6 +11,7 @@ import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SObject;
 import org.swellrt.beta.model.SText;
+import org.swellrt.beta.model.SVersionManager;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
@@ -269,5 +270,11 @@ public class SObjectLocal implements SObject {
   @Override
   public SNode[] values() throws SException {
     return delegateMap.values();
+  }
+
+  @Override
+  public SVersionManager getVersionManager() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

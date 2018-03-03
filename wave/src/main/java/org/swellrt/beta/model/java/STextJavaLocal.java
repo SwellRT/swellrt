@@ -7,7 +7,6 @@ import org.swellrt.beta.model.SNode;
 import org.swellrt.beta.model.SText;
 import org.swellrt.beta.model.SVisitor;
 import org.swellrt.beta.model.local.SMapLocal;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
 import org.waveprotocol.wave.model.document.MutableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DocProviders;
@@ -108,11 +107,6 @@ public class STextJavaLocal implements SText {
   @Override
   public SMap getLiveCarets() {
     return fakeCaretMap;
-  }
-
-  @Override
-  public Iterator getHistoryIterator() {
-    return null;
   }
 
   @Override

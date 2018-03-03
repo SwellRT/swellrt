@@ -189,10 +189,10 @@ public class SEditor implements EditorUpdateListener {
     Editor e = getEditor();
     clean();
 
-    ContentDocument doc = text.getContentDocument();
+    ContentDocument doc = text.getContentDocument().getDocument();
     // Ensure the document is rendered and listen for events
     // in a deattached DOM node
-    text.getContentDocument().setInteractive(new LogicalPanel.Impl() {
+    text.getContentDocument().getDocument().setInteractive(new LogicalPanel.Impl() {
       {
         setElement(Document.get().createDivElement());
       }
@@ -607,9 +607,9 @@ public class SEditor implements EditorUpdateListener {
     if (text == null)
       return;
     if (on) {
-      text.getInteractiveDocument().startShowDiffs();
+      text.getContentDocument().startShowDiffs();
     } else {
-      text.getInteractiveDocument().stopShowDiffs();
+      text.getContentDocument().stopShowDiffs();
     }
 
   }

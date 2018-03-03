@@ -10,6 +10,7 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.json.SJsonObject;
+import org.swellrt.beta.model.local.SMapLocal;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
 import org.swellrt.beta.model.presence.SSessionManager;
@@ -26,6 +27,8 @@ import org.waveprotocol.wave.model.util.Preconditions;
  *
  */
 public class SWavePresence {
+
+  private static final String PRESENCE_NODE = "presence";
 
   private static final int REFRESH_TIME_MS = 5000;
   private static final int MAX_INACTIVE_TIME = 8000;
@@ -144,10 +147,29 @@ public class SWavePresence {
   /** the handler to receive presence events */
   private SPresenceEvent.Handler eventHandler;
 
-  public SWavePresence(SMap presenceStatusMap, SSessionManager session) {
+  public static SWavePresence create(SMap transientMap, SSessionManager sessionMgr) {
+
+    SMap presenceMap = null;
+
+    try {
+
+      if (!transientMap.has(PRESENCE_NODE)) {
+        transientMap.put(PRESENCE_NODE, new SMapLocal());
+      }
+
+      presenceMap = transientMap.pick(PRESENCE_NODE).asMap();
+
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
+
+    return new SWavePresence(presenceMap, sessionMgr);
+  }
+
+  protected SWavePresence(SMap presenceStatusMap, SSessionManager sessionMgr) {
     Preconditions.checkNotNull(presenceStatusMap, "Presence requires a map for storage");
     this.presenceStatusMap = presenceStatusMap;
-    this.sessionManager = session;
+    this.sessionManager = sessionMgr;
 
 
 

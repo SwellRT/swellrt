@@ -95,6 +95,7 @@ public class PlaybackDocument {
     this.registries = registries;
     this.schema = schema;
     this.history = history;
+    this.revisionIterator = history.getIterator();
     initContent(null);
   }
 
@@ -106,11 +107,8 @@ public class PlaybackDocument {
    *          instance of a document history.
    */
   public PlaybackDocument(DocHistory history) {
-    this.registries = Editor.ROOT_REGISTRIES;
-    this.schema = DocumentSchema.NO_SCHEMA_CONSTRAINTS;
-    this.history = history;
-    this.revisionIterator = history.getIterator();
-    initContent(null);
+    this(Editor.ROOT_REGISTRIES, DocumentSchema.NO_SCHEMA_CONSTRAINTS,
+        history);
   }
 
   /**
@@ -278,7 +276,7 @@ public class PlaybackDocument {
 
   /** Return a copy of the current iterator */
   public DocHistory.Iterator getHistoryIterator() {
-    return history.cloneIterator(revisionIterator);
+    return history.getIterator();
   }
 
 }

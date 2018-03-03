@@ -7,7 +7,6 @@ import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
 import org.swellrt.beta.model.presence.SSession;
-import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
@@ -18,6 +17,8 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
  */
 public class SWaveMetadata {
 
+  private static final String PARTICIPANTS_NODE = "participants";
+
   protected final SMap metadataMap;
 
   protected SWaveMetadata(SMap metadataMap) {
@@ -27,11 +28,11 @@ public class SWaveMetadata {
   protected SMap getParticipantsMap() {
     try {
 
-      if (!metadataMap.has(IdConstants.MAP_METADATA_PARTICIPANTS)) {
-        metadataMap.put(IdConstants.MAP_METADATA_PARTICIPANTS, SMap.create());
+      if (!metadataMap.has(PARTICIPANTS_NODE)) {
+        metadataMap.put(PARTICIPANTS_NODE, SMap.create());
       }
 
-      return metadataMap.pick(IdConstants.MAP_METADATA_PARTICIPANTS).asMap();
+      return metadataMap.pick(PARTICIPANTS_NODE).asMap();
 
     } catch (SException e) {
       throw new IllegalStateException(e);
@@ -81,6 +82,7 @@ public class SWaveMetadata {
       throw new IllegalStateException(e);
     }
   }
+
 
   private static String getSafeKeyFromParticipantId(ParticipantId participantId) {
     String address = participantId.getAddress();

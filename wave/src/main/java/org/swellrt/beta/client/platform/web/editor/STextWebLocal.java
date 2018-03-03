@@ -11,14 +11,16 @@ import org.swellrt.beta.model.wave.WaveSchemas;
 import org.waveprotocol.wave.client.common.util.LogicalPanel;
 import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.content.ContentDocument;
-import org.waveprotocol.wave.client.editor.playback.DocHistory;
-import org.waveprotocol.wave.client.editor.playback.DocHistory.Iterator;
+import org.waveprotocol.wave.client.editor.content.Registries;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.util.DocProviders;
+import org.waveprotocol.wave.model.util.Preconditions;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+
+import jsinterop.annotations.JsOptional;
 
 public class STextWebLocal implements STextWeb {
 
@@ -54,11 +56,6 @@ public class STextWebLocal implements STextWeb {
   @Override
   public SMap getLiveCarets() {
     return this.fakeCaretMap;
-  }
-
-  @Override
-  public Iterator getHistoryIterator() {
-    return null;
   }
 
   @Override
@@ -139,14 +136,60 @@ public class STextWebLocal implements STextWeb {
   }
 
   @Override
-  public InteractiveDocument getInteractiveDocument() {
-    return null;
+  public InteractiveDocument getContentDocument() {
+    return new InteractiveDocument() {
+
+      @Override
+      public void stopShowDiffs() {
+      }
+
+      @Override
+      public void stopRendering() {
+        doc.setShelved();
+      }
+
+      @Override
+      public void stopDiffSuppression() {
+
+      }
+
+      @Override
+      public void stopDiffRetention() {
+      }
+
+      @Override
+      public void startShowDiffs() {
+      }
+
+      @Override
+      public void startRendering(Registries registries, LogicalPanel panel) {
+        doc.setInteractive(panel);
+      }
+
+      @Override
+      public void startDiffSuppression() {
+      }
+
+      @Override
+      public void startDiffRetention() {
+      }
+
+      @Override
+      public boolean isCompleteDiff() {
+        return false;
+      }
+
+      @Override
+      public ContentDocument getDocument() {
+        return doc;
+      }
+
+      @Override
+      public void clearDiffs() {
+      }
+    };
   }
 
-  @Override
-  public ContentDocument getContentDocument() {
-    return doc;
-  }
 
   @Override
   public DocInitialization asDocInitialization() {
@@ -159,14 +202,28 @@ public class STextWebLocal implements STextWeb {
   }
 
   @Override
-  public DocHistory getDocHistory() {
-    return null;
+  public void attachToDOM(Element element) {
+    Preconditions.checkNotNull(element, "Can't attach text to empty element");
+    doc.setInteractive(panel);
+    Element textElement = doc.getFullContentView().getDocumentElement()
+        .getImplNodelet();
+    element.appendChild(textElement);
   }
 
   @Override
-  public Element getElement() {
-    doc.setInteractive(panel);
-    return doc.getFullContentView().getDocumentElement().getImplNodelet();
+  public void deattachFromDOM() {
+    Element textElement = doc.getFullContentView().getDocumentElement().getImplNodelet();
+
+    if (textElement != null) {
+      textElement.removeFromParent();
+      doc.setShelved();
+    }
+  }
+
+  @Override
+  public SPlaybackText getPlaybackTextFor(@JsOptional String historyType) {
+    // Local texts can't have playback
+    return null;
   }
 
 }
