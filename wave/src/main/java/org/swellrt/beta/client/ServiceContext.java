@@ -82,7 +82,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
   private static SSession toSSession(String sessionId, Account account) {
 
     ParticipantId participantId = ParticipantId.ofUnsafe(account.getId());
-    RgbColor color = WaveDeps.colorGeneratorInstance.getColor(sessionId);
+    RgbColor color = WaveDeps.colorGeneratorInstance.getColor(participantId.getAddress());
 
 
     return new SSession(sessionId, participantId, color, account.getName(),
@@ -110,7 +110,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
   private final SSessionManager ssessionManager;
 
-  public ServiceContext(String httpAddress, 
+  public ServiceContext(String httpAddress,
       DiffProvider.Factory diffProviderFactory) {
     this.httpAddress = httpAddress;
     this.websocketAddress = getWebsocketAddress(httpAddress);
