@@ -27,6 +27,7 @@ public class DocRevision {
   final double resultingTime;
   final String participant;
   DocOp op;
+  public Object info;
 
   @JsIgnore
   public DocRevision(DocHistory history,

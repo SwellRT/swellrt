@@ -64,13 +64,13 @@ public class TagDocHistory extends DocHistory {
     options.groupOps = true;
     options.orderDesc = true;
     options.endHashVersion = resultingVersion;
+
     if (nextRevisionIndex < tags.length) {
       options.startHashVersion = tags[tags.length - nextRevisionIndex - 1].version;
     }
 
-    GetDocDeltasOperation getDocDeltasOp = new GetDocDeltasOperation(
-        ServiceDeps.serviceContext, options,
-        new ServiceOperation.Callback<GetDocDeltasOperation.Response>() {
+    GetDocDeltasOperation getDocDeltasOp = new GetDocDeltasOperation(ServiceDeps.serviceContext,
+        options, new ServiceOperation.Callback<GetDocDeltasOperation.Response>() {
 
           int nextIndex = nextRevisionIndex;
 
@@ -85,23 +85,34 @@ public class TagDocHistory extends DocHistory {
           public void onSuccess(
               org.swellrt.beta.client.rest.operations.GetDocDeltasOperation.Response response) {
 
-              if (callback == null)
-                return;
+            if (callback == null)
+              return;
 
-              List<DocRevision> revisions = new ArrayList<DocRevision>();
-              for (int i = 0; i < response.getLog().length; i++) {
-                revisions.add(LogDocUtils.adapt(response.getLog()[i], history, nextIndex++));
-              }
-
-              callback.result(revisions);
-
+            List<DocRevision> revisions = new ArrayList<DocRevision>();
+            for (int i = 0; i < response.getLog().length; i++) {
+              // attach tag info to the DocRevision object
+              DocRevision rev = LogDocUtils.adapt(response.getLog()[i], history, nextIndex++);
+              Tag tag = getTagForDocRevision(rev);
+              rev.info = tag;
+              revisions.add(rev);
             }
 
+            callback.result(revisions);
+
+          }
 
         });
 
     ServiceDeps.remoteOperationExecutor.execute(getDocDeltasOp);
 
+  }
+
+  private Tag getTagForDocRevision(DocRevision rev) {
+    for (int i = 0; i < tags.length; i++) {
+      if (tags[i].version.getVersion() == (rev.getResultingVersion()))
+        return tags[i];
+    }
+    return null;
   }
 
   @Override
