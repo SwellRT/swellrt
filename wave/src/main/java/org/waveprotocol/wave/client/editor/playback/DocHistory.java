@@ -85,7 +85,11 @@ public abstract class DocHistory {
           callback.result(null);
 
       // we can always go back in the revision's list
-      getRevision(--revPointer, callback);
+      getRevision(revPointer - 1, rev -> {
+        if (rev != null) revPointer--;
+        if (callback != null)
+          callback.result(rev);
+      });
     }
 
     public void prev(RevisionResult callback) {
@@ -119,6 +123,7 @@ public abstract class DocHistory {
   /** List of document revisions, newest version first (descending sort) */
   private final List<DocRevision> revisions = new ArrayList<DocRevision>();
 
+  /** Normally it shouldn't change */
   private final HashedVersion topVersion;
 
   @JsIgnore
@@ -136,7 +141,7 @@ public abstract class DocHistory {
     if (callback == null)
       return;
 
-    if (revisions.size() > index) {
+    if (revisions.size() > index && index >= 0) {
       callback.result(revisions.get(index));
     } else {
       callback.result(null);
@@ -152,6 +157,13 @@ public abstract class DocHistory {
       if (!revisions.isEmpty())
         versionToFetch = getLastRevision().appliedAtVersion;
 
+      if (versionToFetch.getVersion() == 0L) {
+        if (callback != null) {
+          callback.result(null);
+        }
+        return;
+      }
+
       fetchRevision(versionToFetch, index, revisionList -> {
         revisions.addAll(revisionList);
         getRevisionSafe(index, callback);
@@ -162,6 +174,7 @@ public abstract class DocHistory {
 
 
   }
+
 
   /**
    *

@@ -4,6 +4,7 @@ import static org.waveprotocol.box.server.swell.rest.RestModule.DOC_ID;
 import static org.waveprotocol.box.server.swell.rest.RestModule.DOC_PATH;
 import static org.waveprotocol.box.server.swell.rest.RestModule.GROUPBY_TIME;
 import static org.waveprotocol.box.server.swell.rest.RestModule.GROUPBY_USER;
+import static org.waveprotocol.box.server.swell.rest.RestModule.GROUPOPS;
 import static org.waveprotocol.box.server.swell.rest.RestModule.NUM_OF_RESULTS;
 import static org.waveprotocol.box.server.swell.rest.RestModule.RETURN_OPS;
 import static org.waveprotocol.box.server.swell.rest.RestModule.SORT;
@@ -82,7 +83,8 @@ public class DataRestResources {
       final @QueryParam(RETURN_OPS) @DefaultValue("false") boolean returnOperations,
       final @QueryParam(SORT) @DefaultValue("asc") String sort,
       final @QueryParam(GROUPBY_TIME) @DefaultValue("0") long groupByTime,
-      final @QueryParam(GROUPBY_USER) @DefaultValue("false") boolean groupByUser)
+      final @QueryParam(GROUPBY_USER) @DefaultValue("false") boolean groupByUser,
+      final @QueryParam(GROUPOPS) @DefaultValue("false") boolean groupops)
 
       throws NoParticipantSessionException, WaveletAccessForbiddenException {
 
@@ -125,7 +127,11 @@ public class DataRestResources {
           jw.beginObject();
           jw.name("log");
 
-          if (groupByUser || groupByTime > 0) {
+          if (groupops) {
+
+            DocumentLogBuilder.queryGroupOps(jw, waveletProvider, waveletName, docId, start, end);
+
+          } else if (groupByUser || groupByTime > 0) {
 
             DocumentLogBuilder.queryGroupBy(jw, waveletProvider, waveletName, docId, start, end,
                 returnOperations, groupByUser, groupByTime,

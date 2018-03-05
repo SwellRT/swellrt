@@ -30,7 +30,7 @@ public class GetDocDeltasOperation
     public int numberOfResults;
     public boolean returnOps;
     public boolean orderDesc;
-    public boolean groupByUser;
+    public boolean groupOps;
 
     public Options(WaveId waveId, WaveletId waveletId, String docId) {
       super();
@@ -103,6 +103,10 @@ public class GetDocDeltasOperation
 
     if (options.orderDesc)
       addQueryParam("sort", "des");
+
+    if (options.groupOps) {
+      addQueryParam("groupops", "true");
+    }
 
   }
 

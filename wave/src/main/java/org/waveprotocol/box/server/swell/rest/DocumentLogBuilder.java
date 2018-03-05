@@ -220,7 +220,11 @@ public class DocumentLogBuilder {
 
         if (outputOperations) {
           writer.name("op");
-          composeAndSerializeDocOps(ops, writer);
+          if (!ops.isEmpty()) {
+            composeAndSerializeDocOps(ops, writer);
+          } else {
+            writer.nullValue();
+          }
         }
 
         writer.endObject();
@@ -230,6 +234,58 @@ public class DocumentLogBuilder {
       }
 
     }
+
+  }
+
+  /**
+   * Generates a single delta with all ops composed in a single one.
+   */
+  public static void queryGroupOps(JsonWriter jw, WaveletProvider waveletProvider,
+      WaveletName waveletName, String documentId, HashedVersion versionStart,
+      HashedVersion versionEnd) throws WaveServerException, IOException {
+
+    final OpMatcher blipMatcher = new OpMatcher(documentId);
+    final boolean descOrder = versionStart.getVersion() > versionEnd.getVersion();
+    final List<WaveletOperation> ops = new ArrayList<WaveletOperation>();
+    final LogJsonBuilder logBuilder = new LogJsonBuilder(documentId, true, jw);
+    final long[] resultingTime = new long[] { 0 };
+    final ParticipantId[] participant = new ParticipantId[] { ParticipantId.VOID };
+    logBuilder.begin();
+
+    waveletProvider.getHistory(waveletName, versionStart, versionEnd,
+        new Receiver<TransformedWaveletDelta>() {
+
+          @Override
+          public boolean put(TransformedWaveletDelta delta) {
+
+            if (!blipMatcher.match(delta))
+              return true;
+
+            if (delta.getApplicationTimestamp() > resultingTime[0]) {
+              resultingTime[0] = delta.getApplicationTimestamp();
+              participant[0] = delta.getAuthor();
+            }
+
+            if (descOrder) {
+              for (int i = delta.size() - 1; i >= 0; i--)
+                ops.add(0, delta.get(i));
+            } else {
+              for (int i = 0; i < delta.size(); i++)
+                ops.add(delta.get(i));
+            }
+
+            return true;
+          }
+
+        });
+
+    if (descOrder) {
+      logBuilder.proccess(versionEnd, versionStart, resultingTime[0], participant[0], ops);
+    } else {
+      logBuilder.proccess(versionStart, versionEnd, resultingTime[0], participant[0], ops);
+    }
+
+    logBuilder.end();
 
   }
 

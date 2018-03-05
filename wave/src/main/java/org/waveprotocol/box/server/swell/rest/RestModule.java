@@ -28,6 +28,7 @@ public class RestModule implements Module {
 
   static final String GROUPBY_TIME = "groupbytime";
   static final String GROUPBY_USER = "groupbyuser";
+  static final String GROUPOPS = "groupops";
 
   static final String VERSION_PATH_SEGMENT = "{version}";
   static final String WAVE_PATH_SEGMENT = "wave/{waveid:.*/.*}";

@@ -144,6 +144,11 @@ public class PlaybackDocument {
 
   private void consume(DocRevision revision) {
 
+    // Handle transparently revisions with empty op.
+    // They can we used to mark special cases.
+    if (revision.op == null || revision.op.size() == 0)
+      return;
+
     if (useDiffFilter) {
       try {
         opTracker.add(revision.op,
@@ -262,8 +267,12 @@ public class PlaybackDocument {
 
       revisionIterator.prev(prevRevision -> {
         if (prevRevision != null) {
-          DocRevision invertRevision = prevRevision.cloneWithOps(DocOpInverter.invert(current.op));
-          consume(invertRevision);
+          // Handle transparently empty ops
+          if (current.op != null && current.op.size() > 0) {
+            DocRevision invertRevision = prevRevision
+                .cloneWithOps(DocOpInverter.invert(current.op));
+            consume(invertRevision);
+          }
           if (callback != null)
             callback.onRenderCompleted(doc);
 

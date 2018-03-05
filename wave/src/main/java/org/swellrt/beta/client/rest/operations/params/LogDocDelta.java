@@ -7,6 +7,12 @@ import jsinterop.annotations.JsType;
 public interface LogDocDelta {
 
   @JsProperty
+  public String getAppliedAt();
+
+  @JsProperty
+  public String getResulting();
+
+  @JsProperty
   public String getVersion();
 
   @JsProperty
@@ -17,5 +23,8 @@ public interface LogDocDelta {
 
   @JsProperty
   public Object[] getOps();
+
+  @JsProperty
+  public Object getOp();
 
 }

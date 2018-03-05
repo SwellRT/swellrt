@@ -1,6 +1,8 @@
 package org.swellrt.beta.client.platform.web.editor;
 
-import org.swellrt.beta.client.platform.web.editor.history.DocHistoryRemote;
+import org.swellrt.beta.client.platform.web.editor.history.RevDocHistory;
+import org.swellrt.beta.client.platform.web.editor.history.TagDocHistory;
+import org.swellrt.beta.model.SVersionManager.Tag;
 import org.swellrt.beta.model.wave.WaveSchemas;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.editor.Editor;
@@ -28,7 +30,7 @@ public class SPlaybackText {
       WaveletId waveletId = wText.getSubstrateId().getContainerId();
       String documentId = wText.getSubstrateId().getDocumentId();
 
-      DocHistory revHistory = new DocHistoryRemote(waveId, waveletId, documentId,
+      DocHistory revHistory = new RevDocHistory(waveId, waveletId, documentId,
           wText.getLastVersion());
 
       return new SPlaybackText(new PlaybackDocument(Editor.ROOT_REGISTRIES,
@@ -49,9 +51,16 @@ public class SPlaybackText {
       WaveletId waveletId = wText.getSubstrateId().getContainerId();
       String documentId = wText.getSubstrateId().getDocumentId();
 
-      DocHistory tagHistory = null; // TODO
+      Tag[] tags = wText.getNodeManager().getSWaveObject().getVersionManager().getTags(wText);
 
-      return new SPlaybackText(null);
+      if (tags == null || tags.length == 0)
+        return null;
+
+      DocHistory tagHistory = new TagDocHistory(waveId, waveletId, documentId,
+          wText.getLastVersion(), tags);
+
+      return new SPlaybackText(new PlaybackDocument(Editor.ROOT_REGISTRIES,
+          WaveSchemas.STEXT_SCHEMA_CONSTRAINTS, tagHistory));
 
     }
 
