@@ -181,4 +181,11 @@ public class STextWebRemote extends SWaveText implements STextWeb {
     return null;
   }
 
+  @Override
+  public boolean isAttachedToDOM() {
+    Element nodelet = interactiveDoc.getDocument().getFullContentView().getDocumentElement()
+        .getImplNodelet();
+    return nodelet != null && nodelet.getParentElement() != null;
+  }
+
 }

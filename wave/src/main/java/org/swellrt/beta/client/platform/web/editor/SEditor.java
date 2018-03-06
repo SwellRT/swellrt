@@ -28,15 +28,12 @@ import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.Pretty;
 import org.waveprotocol.wave.model.document.util.Range;
-import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
-import org.waveprotocol.wave.model.util.StringMap;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
-import com.google.gwt.user.client.DOM;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsIgnore;
@@ -56,7 +53,6 @@ public class SEditor implements EditorUpdateListener {
     void exec(SRange range, SEditor editor, SSelection node);
   }
 
-  private static StringMap<SEditor> editors = CollectionUtils.createStringMap();
 
   /** Configure editor component with custom settings */
   public static void configure(SEditorConfig config) {
@@ -65,41 +61,12 @@ public class SEditor implements EditorUpdateListener {
     SEditorStatics.setConfig(config);
   }
 
-  /** create a editor instance of get an existing one */
-  public static SEditor get(String elementId) {
+  public static SEditor create(@JsOptional Element e) {
+    if (e != null)
+      return new SEditor(e);
 
-    if (!SEditorStatics.isConfigured()) {
-      // Just pass a empty javascript object. SEditorConfig overlay methods
-      // will provide default values.
-      SEditorStatics.setConfigDefault();
-    }
-
-    if (editors.containsKey(elementId)) {
-      return editors.get(elementId);
-    }
-
-    Element containerElement = DOM.getElementById(elementId);
-
-    if (containerElement == null) {
-      throw new IllegalStateException("Element with id=" + elementId + " not found");
-    }
-
-    if (!containerElement.getNodeName().equalsIgnoreCase("div")) {
-      throw new IllegalStateException("Element with id=" + elementId + " is not a DIV");
-    }
-
-    SEditor editor = new SEditor(containerElement);
-    editors.put(elementId, editor);
-
-    return editor;
+    return new SEditor();
   }
-
-
-  public static SEditor create() {
-    SEditor se = new SEditor();
-    return se;
-  }
-
 
   private LogicalPanel.Impl editorPanel;
 
@@ -131,14 +98,11 @@ public class SEditor implements EditorUpdateListener {
 
   };
 
-  /**
-   * Create editor instance tied to a DOM element
-   * @param containerElement
-   */
-  protected SEditor(final Element containerElement) {
+
+  protected SEditor(Element parentElement) {
     this.editorPanel = new LogicalPanel.Impl() {
       {
-        setElement(containerElement);
+        setElement(parentElement);
       }
     };
     this.service = ServiceEntryPoint.getServiceConnection();
@@ -157,22 +121,39 @@ public class SEditor implements EditorUpdateListener {
   }
 
   /**
-   * Attach the editor panel to an existing DOM element
-   * iff the panel is not already attached.
+   * Attach the editor panel to an existing DOM element.
    *
-   * @param element the parent element
+   * @param element
+   *          the parent element
    */
-  public void setParent(Element element) {
+  public void attachToDOM(Element element) {
 
-    if (editorPanel.getParent() != null) {
-      editorPanel.getElement().removeFromParent();
-    }
+    deattachFromDOM();
 
     if (element != null) {
       element.appendChild(editorPanel.getElement());
     }
 
   }
+
+  /**
+   * Deattach this text object from DOM
+   */
+  public void deattachFromDOM() {
+
+    if (editorPanel.getParent() != null) {
+      editorPanel.getElement().removeFromParent();
+    }
+
+  }
+
+  /**
+   * Check if the text is attached to a DOM anchor element
+   */
+  public boolean isAttachedToDOM() {
+    return editorPanel.getParent() != null;
+  }
+
 
   /**
    * Attach a text object to this editor. The text will be
@@ -190,17 +171,29 @@ public class SEditor implements EditorUpdateListener {
     clean();
 
     ContentDocument doc = text.getContentDocument().getDocument();
+
     // Ensure the document is rendered and listen for events
     // in a deattached DOM node
-    text.getContentDocument().getDocument().setInteractive(new LogicalPanel.Impl() {
-      {
-        setElement(Document.get().createDivElement());
-      }
-    });
+    Element textNodelet = doc.getFullContentView().getDocumentElement().getImplNodelet();
+
+    // ensure the text is interactive
+    if (textNodelet == null) {
+      doc.setInteractive(new LogicalPanel.Impl() {
+        {
+          setElement(Document.get().createDivElement());
+        }
+      });
+      textNodelet = doc.getFullContentView().getDocumentElement().getImplNodelet();
+    }
+
+    // clean any previous document in the editor
+    if (editorPanel.getElement().getFirstChild() != null) {
+      editorPanel.getElement().getFirstChild().removeFromParent();
+    }
 
     // Add the document's root DOM node to the editor's panel
     editorPanel.getElement()
-        .appendChild(doc.getFullContentView().getDocumentElement().getImplNodelet());
+        .appendChild(textNodelet);
 
     // make editor aware of the document
     e.setContent(doc);

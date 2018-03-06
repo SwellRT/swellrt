@@ -226,4 +226,10 @@ public class STextWebLocal implements STextWeb {
     return null;
   }
 
+  @Override
+  public boolean isAttachedToDOM() {
+    Element nodelet = doc.getFullContentView().getDocumentElement().getImplNodelet();
+    return nodelet != null && nodelet.getParentElement() != null;
+  }
+
 }

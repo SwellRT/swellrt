@@ -28,6 +28,9 @@ public interface STextWeb extends SText {
   /** deattach and this text object from DOM */
   public void deattachFromDOM();
 
+  /** check if the text is attached to a DOM anchor element */
+  public boolean isAttachedToDOM();
+
   /** gets a text object that can playback a history of text changes */
   public SPlaybackText getPlaybackTextFor(@JsOptional String historyType);
 }

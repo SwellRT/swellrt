@@ -150,4 +150,8 @@ public class SPlaybackText {
     playbackDoc.getHistoryIterator().reset();
   }
 
+  public void setDiffMode(boolean diffOn) {
+    playbackDoc.setDiffMode(diffOn);
+  }
+
 }
