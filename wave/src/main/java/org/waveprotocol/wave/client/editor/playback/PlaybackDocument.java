@@ -288,4 +288,8 @@ public class PlaybackDocument {
     return history.getIterator();
   }
 
+  public void setDiffMode(boolean on) {
+    useDiffFilter = on;
+  }
+
 }
