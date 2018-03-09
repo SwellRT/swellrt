@@ -207,7 +207,7 @@ public class AuthenticationService extends BaseService {
 
     if (authData != null && authData.has("id") && authData.id != null) {
 
-      if (!ParticipantId.isAnonymousName(authData.id)) {
+      if (!ParticipantId.ofUnsafe(authData.id).isAnonymous()) {
 
         try {
 

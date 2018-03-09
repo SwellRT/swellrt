@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.waveprotocol.box.server.CoreSettingsNames;
+import org.waveprotocol.box.server.persistence.GroupStore;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
@@ -17,21 +18,23 @@ import com.google.inject.name.Named;
  * @author pablojan@gmail.com
  *
  */
-public class WaveletAccessController {
+public class AccessController {
 
-  private static final Log LOG = Log.get(WaveletAccessController.class);
+  private static final Log LOG = Log.get(AccessController.class);
 
   private final ParticipantId sharedPid;
   private final ParticipantId superPid;
   private final String waveDomain;
+  private final GroupStore groupStore;
 
   @Inject
-  public WaveletAccessController(
-      @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain) {
+  public AccessController(
+      @Named(CoreSettingsNames.WAVE_SERVER_DOMAIN) final String waveDomain, GroupStore groupStore) {
     this.waveDomain = waveDomain;
     String randomId = RandomStringUtils.randomAlphanumeric(10).toLowerCase();
     this.superPid = ParticipantIdUtil.makeSuperPartincipantId(randomId, waveDomain);
     this.sharedPid = ParticipantIdUtil.makeUnsafeSharedDomainParticipantId(waveDomain);
+    this.groupStore = groupStore;
     LOG.info("Random Super Participant Id is " + superPid.toString());
   }
 
@@ -42,15 +45,31 @@ public class WaveletAccessController {
    *          the wavelet data.
    * @param user
    *          the user that wants to access the wavelet.
-   * @param sharedDomainParticipantId
-   *          the shared domain participant id.
-   * @param superParticipantId
-   *          id for the super user.
+   *
    * @return true if the user has access to the wavelet.
    */
   public boolean checkAccessPermission(ReadableWaveletData snapshot, ParticipantId user) {
-    return user != null && (snapshot == null || snapshot.getParticipants().contains(user)
-        || (sharedPid != null && snapshot.getParticipants().contains(sharedPid)));
+    return user != null && (snapshot == null || snapshot.getParticipants().contains(user));
+
+/*
+    if (user == null)
+      return false;
+
+    if (snapshot == null)
+      return true;
+
+    // check single participant
+    if (snapshot.getParticipants().contains(user))
+      return true;
+
+    // check groups
+    // snapshot.getParticipants().stream().filter(ParticipantId::isGroup).filter(groupId
+    // => { groupStore.getGroup(groupId); return true; });
+
+
+    // return true;
+
+*/
   }
 
   public ParticipantId getSharedParticipantId() {

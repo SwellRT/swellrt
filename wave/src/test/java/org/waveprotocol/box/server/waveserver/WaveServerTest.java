@@ -19,6 +19,7 @@
 package org.waveprotocol.box.server.waveserver;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -109,7 +110,7 @@ public class WaveServerTest extends TestCase {
     final Executor waveletLoadExecutor = MoreExecutors.sameThreadExecutor();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
-    final WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+    final AccessController accessController = mock(AccessController.class);
     Factory localWaveletContainerFactory = new LocalWaveletContainer.Factory() {
       @Override
       public LocalWaveletContainer create(WaveletNotificationSubscriber notifiee,

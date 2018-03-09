@@ -50,7 +50,7 @@ public final class ProfileImpl implements Profile {
     List<String> names = CollectionUtils.newArrayList();
     String nameWithoutDomain = id.getName();
 
-    if (ParticipantId.isAnonymousName(nameWithoutDomain)) {
+    if (id.isAnonymous()) {
       return ANONYMOUS_NAME;
     } else if (nameWithoutDomain != null && !nameWithoutDomain.isEmpty()) {
 

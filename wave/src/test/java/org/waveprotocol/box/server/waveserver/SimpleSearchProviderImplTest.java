@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.waveserver;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -189,7 +190,7 @@ public class SimpleSearchProviderImplTest extends TestCase {
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
     final Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
-    final WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+    final AccessController accessController = mock(AccessController.class);
 
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {

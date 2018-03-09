@@ -168,6 +168,7 @@ public class PersistenceModule extends AbstractModule {
     if (deltaStoreType.equalsIgnoreCase("mongodb")) {
       MongoDbProvider mongoDbProvider = getMongoDbProvider();
       bind(NamingStore.class).toInstance(mongoDbProvider.provideMongoDbNamingStore());
+      bind(GroupStore.class).toInstance(mongoDbProvider.provideMongoDbGroupStore());
     } else {
       bind(NamingStore.class).toInstance(new NamingStore() {
 

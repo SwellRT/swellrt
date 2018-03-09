@@ -28,9 +28,6 @@ import org.waveprotocol.wave.model.util.Preconditions;
  */
 public final class ParticipantIdUtil {
 
-  /** Unknown participant ID */
-  public static final ParticipantId UNKNOWN = new ParticipantId("unknown");
-
   private ParticipantIdUtil() {}
 
   /**
@@ -110,7 +107,7 @@ public final class ParticipantIdUtil {
    */
   public static ParticipantId makeSuperPartincipantId(String baseId, String domain) {
     return ParticipantId
-        .ofUnsafe(ParticipantId.SUPER_ID_MARKER + baseId + ParticipantId.DOMAIN_PREFIX + domain);
+        .ofUnsafe(ParticipantId.SUPER_USER_PREFIX + baseId + ParticipantId.DOMAIN_PREFIX + domain);
   }
 
 }

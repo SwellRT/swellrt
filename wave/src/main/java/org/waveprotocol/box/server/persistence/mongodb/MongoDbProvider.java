@@ -19,6 +19,7 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
+import org.waveprotocol.box.server.persistence.GroupStore;
 import org.waveprotocol.box.server.persistence.NamingStore;
 import org.waveprotocol.box.server.persistence.PersistenceStartException;
 import org.waveprotocol.wave.util.logging.Log;
@@ -69,6 +70,11 @@ public class MongoDbProvider {
    * Store for {@link NamingStore}
    */
   private MongoDbNamingStore mongoDbNamingStore;
+
+  /**
+   * Store for {@link GroupStore}
+   */
+  private MongoDbGroupStore mongoDbGroupStore;
 
   /** Stores whether we have successfully setup a live {@link Mongo} instance. */
   private boolean isRunning;
@@ -184,5 +190,13 @@ public class MongoDbProvider {
    */
   public MongoCollection<BasicDBObject> getDBCollection(String name) {
     return getDatabase().getCollection(name, BasicDBObject.class);
+  }
+
+  public GroupStore provideMongoDbGroupStore() {
+    if (mongoDbGroupStore == null) {
+      mongoDbGroupStore = MongoDbGroupStore.create(getDatabase());
+    }
+
+    return mongoDbGroupStore;
   }
 }

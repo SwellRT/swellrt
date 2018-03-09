@@ -2,8 +2,10 @@ package org.swellrt.beta.model.wave;
 
 import java.util.Random;
 
+import org.swellrt.beta.client.platform.java.SJsonFactoryJava;
 import org.swellrt.beta.client.wave.DummyLazyContentFactory;
 import org.swellrt.beta.client.wave.SWaveDocuments;
+import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.model.ModelFactory;
 import org.swellrt.beta.model.java.JavaModelFactory;
 import org.swellrt.beta.model.presence.SSession;
@@ -46,6 +48,8 @@ public abstract class SWaveNodeAbstractTest extends TestCase {
 
 
   protected void setUp() throws Exception {
+
+    WaveDeps.sJsonFactory = new SJsonFactoryJava();
 
     docRegistry = SWaveDocuments.create(new DummyLazyContentFactory(Editor.ROOT_REGISTRIES),
 

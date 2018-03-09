@@ -142,7 +142,7 @@ public class DefaultFrontend implements ServiceFrontend {
 
                 @Override
                 public boolean getAnonymous() {
-                  return ParticipantId.isAnonymousName(response.getId());
+                  return ParticipantId.ofUnsafe(response.getId()).isAnonymous();
                 }
 
                 @Override

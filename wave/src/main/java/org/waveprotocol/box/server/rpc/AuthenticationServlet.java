@@ -63,7 +63,6 @@ import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.gxp.base.GxpContext;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.typesafe.config.Config;
@@ -465,7 +464,7 @@ public class AuthenticationServlet extends HttpServlet {
     if (parameters.containsKey(HttpRequestBasedCallbackHandler.ADDRESS_FIELD)) {
       String address = parameters.get(HttpRequestBasedCallbackHandler.ADDRESS_FIELD).get(0);
 
-      return ParticipantId.isAnonymousName(address);
+      return ParticipantId.ofUnsafe(address).isAnonymous();
     }
 
     return false;

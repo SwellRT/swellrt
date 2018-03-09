@@ -83,22 +83,6 @@ public class DiffHighlightingFilter implements ModifiableDocument {
   }
 
   /**
-   * Removes the anonymous prefix to avoid duplicated colour highlighting.
-   *
-   * @param author
-   * @return
-   */
-  public static String wrapAnonymousAuthor(String author) {
-    String wrappedAuthor = author;
-
-    if (ParticipantId.isAnonymousName(wrappedAuthor))
-      wrappedAuthor = wrappedAuthor.substring(ParticipantId.ANONYMOUS_PREFIX.length(),
-          wrappedAuthor.length());
-
-    return wrappedAuthor;
-  }
-
-  /**
    * Dependencies for implementing the diff filter
    */
   public interface DiffHighlightTarget extends MutableAnnotationSet<Object>, ModifiableDocument {

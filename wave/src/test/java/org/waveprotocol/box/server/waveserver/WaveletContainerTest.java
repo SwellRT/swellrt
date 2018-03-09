@@ -123,8 +123,8 @@ public class WaveletContainerTest extends TestCase {
     super.setUp();
     WaveletNotificationSubscriber notifiee = mock(WaveletNotificationSubscriber.class);
     DeltaStore deltaStore = new MemoryDeltaStore();
-    WaveletAccessController localAccessController = new WaveletAccessController(localDomain);
-    WaveletAccessController remoteAccessController = new WaveletAccessController(remoteDomain);
+    AccessController localAccessController = mock(AccessController.class);
+    AccessController remoteAccessController = mock(AccessController.class);
 
     WaveletState localWaveletState =
         DeltaStoreBasedWaveletState.create(deltaStore.open(localWaveletName), PERSIST_EXECUTOR);

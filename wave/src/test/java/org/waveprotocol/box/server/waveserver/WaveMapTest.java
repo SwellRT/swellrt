@@ -68,7 +68,7 @@ public class WaveMapTest extends TestCase {
     final DeltaStore deltaStore = new MemoryDeltaStore();
     final Executor persistExecutor = MoreExecutors.sameThreadExecutor();
     final Executor storageContinuationExecutor = MoreExecutors.sameThreadExecutor();
-    final WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+    final AccessController accessController = mock(AccessController.class);
 
     LocalWaveletContainer.Factory localWaveletContainerFactory =
         new LocalWaveletContainer.Factory() {

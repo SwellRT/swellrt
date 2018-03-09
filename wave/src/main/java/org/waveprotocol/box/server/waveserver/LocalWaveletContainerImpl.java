@@ -82,7 +82,7 @@ class LocalWaveletContainerImpl extends WaveletContainerImpl implements LocalWav
 
   public LocalWaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
       ListenableFuture<? extends WaveletState> waveletStateFuture, String waveDomain,
-      Executor storageContinuationExecutor, WaveletAccessController accessChecker) {
+      Executor storageContinuationExecutor, AccessController accessChecker) {
     super(waveletName, notifiee, waveletStateFuture, waveDomain, storageContinuationExecutor,
         accessChecker);
   }

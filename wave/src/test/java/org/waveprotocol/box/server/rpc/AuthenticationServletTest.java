@@ -64,8 +64,7 @@ import junit.framework.TestCase;
 public class AuthenticationServletTest extends TestCase {
   private static final ParticipantId USER = ParticipantId.ofUnsafe("frodo@example.com");
   private static final ParticipantId ANONYMOUS_USER = ParticipantId
-      .ofUnsafe("_anonymous_null@example.com");
-
+      .anonymousOfUnsafe("example.com");
   private AuthenticationServlet servlet;
 
   @Mock private HttpServletRequest req;
@@ -94,6 +93,8 @@ public class AuthenticationServletTest extends TestCase {
     servlet = new AuthenticationServlet(store, AuthTestUtil.makeConfiguration(),
         manager, "examPLe.com", config);
     AccountStoreHolder.init(store, "eXaMple.com");
+
+    when(session.getId()).thenReturn("");
   }
 
   @Override
@@ -130,7 +131,7 @@ public class AuthenticationServletTest extends TestCase {
   }
 
   public void testUserWithNoDomainGetsDomainAutomaticallyAdded() throws Exception {
-    attemptLogin("frodo", "password", true);
+    attemptLogin("frodo@example.com", "password", true);
     verify(resp).sendRedirect("/");
   }
 
@@ -166,14 +167,14 @@ public class AuthenticationServletTest extends TestCase {
 
   public void testUserWithNoDomainReturnAddress() throws Exception {
     configureRedirectString("none");
-    attemptLogin("frodo", "password", true);
+    attemptLogin("frodo@example.com", "password", true);
     verify(resp.getWriter()).write(
-        "{ \"participantId\" : \"" + "frodo@example.com" + "\", " + " \"sessionId\" : \"" + "null"
+        "{ \"participantId\" : \"" + "frodo@example.com" + "\", " + " \"sessionId\" : \"" + ""
             + "\" }");
   }
 
   public void testAnonymousLogin() throws IOException {
-    attemptLogin(ParticipantId.ANONYMOUS_PREFIX, "", true);
+    attemptLogin(ANONYMOUS_USER.getAddress(), "", true);
   }
 
   // *** Utility methods
@@ -190,7 +191,7 @@ public class AuthenticationServletTest extends TestCase {
     PercentEscaper escaper = new PercentEscaper(PercentEscaper.SAFECHARS_URLENCODER, true);
     String data =
         "address=" + escaper.escape(address) + "&" + "password=" + escaper.escape(password);
-
+    ParticipantId participant = ParticipantId.ofUnsafe(address);
     Reader reader = new StringReader(data);
     when(req.getReader()).thenReturn(new BufferedReader(reader));
     PrintWriter writer = mock(PrintWriter.class);
@@ -203,7 +204,7 @@ public class AuthenticationServletTest extends TestCase {
     // Servlet control flow forces us to set these return values first and
     // verify the logged in user was set afterwards.
     if (expectSuccess) {
-      if (ParticipantId.isAnonymousName(address)) {
+      if (participant.isAnonymous()) {
         when(manager.getLoggedInUser(Mockito.any(HttpSession.class))).thenReturn(ANONYMOUS_USER);
         when(manager.getLoggedInUser(eq(req))).thenReturn(ANONYMOUS_USER);
         when(session.getAttribute(eq("user"))).thenReturn(ANONYMOUS_USER);
@@ -215,7 +216,7 @@ public class AuthenticationServletTest extends TestCase {
     }
     servlet.doPost(req, resp);
     if (expectSuccess) {
-      if (ParticipantId.isAnonymousName(address))
+      if (participant.isAnonymous())
         verify(manager).login(session, ANONYMOUS_USER);
       else
         verify(manager).login(session, USER);

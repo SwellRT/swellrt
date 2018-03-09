@@ -85,7 +85,7 @@ class RemoteWaveletContainerImpl extends WaveletContainerImpl implements RemoteW
    */
   public RemoteWaveletContainerImpl(WaveletName waveletName, WaveletNotificationSubscriber notifiee,
       ListenableFuture<? extends WaveletState> waveletStateFuture,
-      Executor storageContinuationExecutor, WaveletAccessController accessChecker) {
+      Executor storageContinuationExecutor, AccessController accessChecker) {
     // We pass here null for waveDomain because you have to be explicit
     // participant on remote wavelet to have access permission.
     super(waveletName, notifiee, waveletStateFuture, null, storageContinuationExecutor,

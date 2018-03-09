@@ -91,7 +91,7 @@ public class LocalWaveletContainerImplTest extends TestCase {
     DeltaStore deltaStore = new MemoryDeltaStore();
     WaveletState waveletState = DeltaStoreBasedWaveletState.create(deltaStore.open(WAVELET_NAME),
         PERSIST_EXECUTOR);
-    WaveletAccessController accessController = new WaveletAccessController(DOMAIN);
+    AccessController accessController = mock(AccessController.class);
 
     wavelet = new LocalWaveletContainerImpl(WAVELET_NAME, notifiee,
         Futures.immediateFuture(waveletState), null, STORAGE_CONTINUATION_EXECUTOR, accessController);

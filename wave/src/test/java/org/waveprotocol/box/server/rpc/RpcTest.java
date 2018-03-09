@@ -39,6 +39,8 @@ import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolSubmitRequest;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolSubmitResponse;
 import org.waveprotocol.box.common.comms.WaveClientRpc.ProtocolWaveletUpdate;
 import org.waveprotocol.box.server.authentication.SessionManager;
+import org.waveprotocol.box.server.persistence.NamingStore;
+import org.waveprotocol.box.server.waveserver.WaveletProvider;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -89,6 +91,9 @@ public class RpcTest extends TestCase {
       protected void configure() {
         bind(ServerRpcProvider.class).toInstance(server);
         bind(Config.class).toInstance(ConfigFactory.parseMap(props));
+        bind(SessionManager.class).toInstance(sessionManager);
+        bind(NamingStore.class).toInstance(Mockito.mock(NamingStore.class));
+        bind(WaveletProvider.class).toInstance(Mockito.mock(WaveletProvider.class));
       }
     });
     server.startWebSocketServer(injector);
