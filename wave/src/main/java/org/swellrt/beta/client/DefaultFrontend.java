@@ -46,7 +46,7 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 
-@JsType(namespace = "swell", name = "DefaultService")
+@JsType(namespace = "swell", name = "DefaultServiceFrontend")
 public class DefaultFrontend implements ServiceFrontend {
 
   private static Log LOG = Log.get(DefaultFrontend.class);
@@ -65,6 +65,8 @@ public class DefaultFrontend implements ServiceFrontend {
   private final ServiceContext context;
   private final ServerOperationExecutor serverOpExecutor;
   private final ClientOperationExecutor clientOpExecutor;
+
+  private final GroupsFrontend groupsFrontend;
 
   private ProfileManager profileManager = new AbstractProfileManager() {
 
@@ -208,6 +210,7 @@ public class DefaultFrontend implements ServiceFrontend {
     this.context = context;
     this.serverOpExecutor = serverOpExecutor;
     this.clientOpExecutor = new ClientOperationExecutor();
+    this.groupsFrontend = new DefaultGroupFrontend(context);
   }
 
   /* (non-Javadoc)
@@ -416,5 +419,17 @@ public class DefaultFrontend implements ServiceFrontend {
   @Override
   public String getAppDomain() {
     return context.getServiceSession().getWaveDomain();
+  }
+
+  @JsProperty(name = "groups")
+  @Override
+  public GroupsFrontend groups() throws SException {
+    if (!context.hasSession())
+      throw new SException(SException.NOT_LOGGED_IN, null, "Not logged in");
+
+    if (context.getServiceSession().getParticipantId().isAnonymous())
+      throw new SException(SException.INVALID_ID, null, "Anonymous users can't handle groups");
+
+    return groupsFrontend;
   }
 }

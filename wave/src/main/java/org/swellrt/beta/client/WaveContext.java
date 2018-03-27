@@ -1,7 +1,6 @@
 package org.swellrt.beta.client;
 
 import java.util.Collections;
-import java.util.concurrent.ExecutionException;
 
 import org.swellrt.beta.client.wave.RemoteViewServiceMultiplexer;
 import org.swellrt.beta.client.wave.WaveDeps;
@@ -22,6 +21,7 @@ import org.waveprotocol.wave.model.id.ModernIdSerialiser;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -49,8 +49,10 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
   private final ServiceStatus serviceStatus;
 
   private WaveLoader loader;
-  private SettableFuture<SWaveObject> sobjectFuture;
+  private SettableFuture<ObservableWaveView> waveViewFuture;
+  private SWaveObject sobject;
   private ChannelException lastException;
+
 
   private final DiffProvider diffProvider;
 
@@ -62,7 +64,8 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
     this.waveDomain = waveDomain;
     this.session = session;
     this.serviceStatus = serviceStatus;
-    this.sobjectFuture = SettableFuture.<SWaveObject> create();
+    this.sobject = null;
+    this.waveViewFuture = SettableFuture.<ObservableWaveView> create();
     this.diffProvider = diffProvider;
   }
 
@@ -79,8 +82,8 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
       loader.destroy();
 
     // Create a future for the object
-    if (this.sobjectFuture == null || this.sobjectFuture.isDone())
-      this.sobjectFuture = SettableFuture.<SWaveObject> create();
+    if (this.waveViewFuture == null || this.waveViewFuture.isDone())
+      this.waveViewFuture = SettableFuture.<ObservableWaveView> create();
 
     // Load the wave and bind to the object
     state = ACTIVE;
@@ -98,32 +101,55 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
         public void execute() {
 
           try {
-            // there was exception during loading process?
-            check();
-            SWaveNodeManager nodeManager = SWaveNodeManager.create(session,
-                loader.getIdGenerator(),
-                loader.getLocalDomain(), loader.getWave(), WaveContext.this,
-                loader.getDocumentRegistry());
 
-            SWaveObject sobject = nodeManager.getSWaveObject();
-
-            sobjectFuture.set(sobject);
+            check(); // check for troubles in comms or async load.
+            waveViewFuture.set(loader.getWave());
 
           } catch (SException ex) {
-            sobjectFuture.setException(ex);
+            waveViewFuture.setException(ex);
           }
 
         }
       });
 
     } catch (RuntimeException ex) {
-      sobjectFuture.setException(ex.getCause());
+      waveViewFuture.setException(ex.getCause());
     }
 
   }
 
   public void getSObject(FutureCallback<SWaveObject> callback) {
-    Futures.addCallback(this.sobjectFuture, callback);
+
+    Futures.addCallback(this.waveViewFuture, new FutureCallback<ObservableWaveView>() {
+
+      @Override
+      public void onSuccess(ObservableWaveView result) {
+
+        if (WaveContext.this.sobject == null) {
+
+          SWaveNodeManager nodeManager = SWaveNodeManager.create(session, loader.getIdGenerator(),
+              loader.getLocalDomain(), loader.getWave(), WaveContext.this,
+              loader.getDocumentRegistry());
+
+          WaveContext.this.sobject = nodeManager.getSWaveObject();
+
+        }
+
+        callback.onSuccess(WaveContext.this.sobject);
+
+
+      }
+
+      @Override
+      public void onFailure(Throwable t) {
+        callback.onFailure(t);
+      }
+
+    });
+  }
+
+  public void getWave(FutureCallback<ObservableWaveView> callback) {
+    Futures.addCallback(this.waveViewFuture, callback);
   }
 
   public void close() {
@@ -141,14 +167,13 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
     this.state = ERROR;
     // If an exception occurs during stage loader (WaveLoader)
     // it will reach here. Check the future so.
-    if (!this.sobjectFuture.isDone()) {
-      this.sobjectFuture.setException(new SException(e));
+    if (!this.waveViewFuture.isDone()) {
+      this.waveViewFuture.setException(new SException(e));
     } else {
-      try {
-        this.sobjectFuture.get().onStatusEvent(new SStatusEvent(
+      // if the Swell object was retrieved, notify the exception
+      if (this.sobject != null) {
+        this.sobject.onStatusEvent(new SStatusEvent(
             ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), new SException(e)));
-      } catch (InterruptedException | ExecutionException e1) {
-        //
       }
     }
     serviceStatus.raise(ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), new SException(e));
@@ -157,28 +182,20 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
 
   @Override
   public void onUpdate(UnsavedDataInfo unsavedDataInfo) {
-    if (this.sobjectFuture.isDone()) {
-      try {
-        this.sobjectFuture.get()
-            .onStatusEvent(new SStatusEvent(ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId),
-                unsavedDataInfo.inFlightSize(), unsavedDataInfo.estimateUnacknowledgedSize(),
-                unsavedDataInfo.estimateUncommittedSize(), unsavedDataInfo.laskAckVersion(),
-                unsavedDataInfo.lastCommitVersion()));
-      } catch (InterruptedException | ExecutionException e1) {
-        throw new RuntimeException(e1);
-      }
+    if (this.sobject != null) {
+      this.sobject.onStatusEvent(new SStatusEvent(
+          ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), unsavedDataInfo.inFlightSize(),
+          unsavedDataInfo.estimateUnacknowledgedSize(), unsavedDataInfo.estimateUncommittedSize(),
+          unsavedDataInfo.laskAckVersion(), unsavedDataInfo.lastCommitVersion()));
+
     }
   }
 
   @Override
   public void onClose(boolean everythingCommitted) {
-    if (this.sobjectFuture.isDone()) {
-      try {
-        this.sobjectFuture.get().onStatusEvent(new SStatusEvent(
-            ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), everythingCommitted));
-      } catch (InterruptedException | ExecutionException e1) {
-        throw new RuntimeException(e1);
-      }
+    if (this.sobject != null) {
+      this.sobject.onStatusEvent(new SStatusEvent(
+          ModernIdSerialiser.INSTANCE.serialiseWaveId(waveId), everythingCommitted));
     }
   }
 

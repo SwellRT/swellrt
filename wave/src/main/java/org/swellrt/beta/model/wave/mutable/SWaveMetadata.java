@@ -11,13 +11,17 @@ import org.waveprotocol.wave.model.wave.ParticipantId;
 
 /**
  * Object's meta data stored in the object permanent storage.
+ * <p>
+ * <br>
+ * Stores a log of all participants connected to the object. Object's instances
+ * must call <code>logSession()</code> every time the object is opened.
  *
  * @author pablojan@gmail.com
  *
  */
 public class SWaveMetadata {
 
-  private static final String PARTICIPANTS_NODE = "participants";
+  private static final String SESSIONS_NODE = "sessions";
 
   protected final SMap metadataMap;
 
@@ -25,14 +29,14 @@ public class SWaveMetadata {
     this.metadataMap = metadataMap;
   }
 
-  protected SMap getParticipantsMap() {
+  protected SMap getSessionsMap() {
     try {
 
-      if (!metadataMap.has(PARTICIPANTS_NODE)) {
-        metadataMap.put(PARTICIPANTS_NODE, SMap.create());
+      if (!metadataMap.has(SESSIONS_NODE)) {
+        metadataMap.put(SESSIONS_NODE, SMap.create());
       }
 
-      return metadataMap.pick(PARTICIPANTS_NODE).asMap();
+      return metadataMap.pick(SESSIONS_NODE).asMap();
 
     } catch (SException e) {
       throw new IllegalStateException(e);
@@ -40,13 +44,13 @@ public class SWaveMetadata {
   }
 
   /**
-   * @return array of all participants of the object, whether they can currently
-   *         access the object or not.
+   * @return array of all participants that were connected to the object at
+   *         least once. Some could not have access permissions currently.
    */
-  public SSession[] getParticipants() {
+  public SSession[] getSessions() {
 
     try {
-      return Arrays.stream(getParticipantsMap().values()).map(node -> {
+      return Arrays.stream(getSessionsMap().values()).map(node -> {
         return SSession.of(((SPrimitive) node).asSJson());
       }).toArray(SSession[]::new);
     } catch (SException e) {
@@ -56,27 +60,27 @@ public class SWaveMetadata {
 
   /**
    * This register method should be called every time a participant opens the
-   * object.
+   * object. Sessions are indexed by participant's Id.
    *
-   * @param participant
+   * @param session
    */
-  protected void logParticipant(SSession participant) {
-    SMap participantsMap = getParticipantsMap();
+  protected void logSession(SSession session) {
+    SMap participantsMap = getSessionsMap();
     long now = System.currentTimeMillis();
-    String participantIdKey = getSafeKeyFromParticipantId(participant.getParticipantId());
+    String participantIdKey = getSafeKeyFromParticipantId(session.getParticipantId());
     try {
 
       if (participantsMap.has(participantIdKey)) {
         SPrimitive participantNode = (SPrimitive) participantsMap.get(participantIdKey);
         SSession current = SSession.of(participantNode.asSJson());
-        participant.setFirstAccessTime(current.getFirstAccessTime());
+        session.setFirstAccessTime(current.getFirstAccessTime());
       } else {
-        participant.setFirstAccessTime(now);
+        session.setFirstAccessTime(now);
       }
 
-      participant.setLastAccessTime(now);
+      session.setLastAccessTime(now);
       participantsMap.put(participantIdKey,
-          new SPrimitive(participant.toSJson(), new SNodeAccessControl()));
+          new SPrimitive(session.toSJson(), new SNodeAccessControl()));
 
     } catch (SException e) {
       throw new IllegalStateException(e);

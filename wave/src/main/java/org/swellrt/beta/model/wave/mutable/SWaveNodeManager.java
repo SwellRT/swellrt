@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.swellrt.beta.client.wave.SWaveDocuments;
 import org.swellrt.beta.common.ContextStatus;
@@ -736,13 +737,8 @@ public class SWaveNodeManager {
     transientWavelet.removeParticipant(p);
   }
 
-  public String[] getParticipants() {
-    String[] array = new String[dataWavelet.getParticipantIds().size()];
-    int i = 0;
-    for (ParticipantId p : dataWavelet.getParticipantIds()) {
-      array[i++] = p.getAddress();
-    }
-    return array;
+  public Set<ParticipantId> getParticipants() {
+    return dataWavelet.getParticipantIds();
   }
 
 
@@ -817,7 +813,7 @@ public class SWaveNodeManager {
 
     if (waveObject == null) {
       waveObject = new SWaveObject(this);
-      getMetadata().logParticipant(session.get());
+      getMetadata().logSession(session.get());
       this.setListener(new SWaveletListener(waveObject));
     }
 

@@ -3,6 +3,7 @@ package org.swellrt.beta.client.platform.serverless;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.swellrt.beta.client.GroupsFrontend;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.rest.ServiceOperation.Callback;
 import org.swellrt.beta.client.rest.operations.params.Account;
@@ -230,6 +231,11 @@ public class ServerlessFrontend implements ServiceFrontend {
 
     return objects.get(waveId);
 
+  }
+
+  @Override
+  public GroupsFrontend groups() {
+    throw new IllegalStateException("Not implemented yet");
   }
 
 }

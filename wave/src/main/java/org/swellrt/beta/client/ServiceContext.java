@@ -11,6 +11,7 @@ import org.swellrt.beta.client.wave.WaveWebSocketClient;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.ConnectState;
 import org.swellrt.beta.client.wave.WaveWebSocketClient.StartCallback;
 import org.swellrt.beta.common.SException;
+import org.swellrt.beta.common.SwellConstants;
 import org.swellrt.beta.model.presence.SSession;
 import org.swellrt.beta.model.presence.SSessionManager;
 import org.swellrt.beta.model.wave.mutable.SWaveObject;
@@ -25,6 +26,7 @@ import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.util.CopyOnWriteSet;
 import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -221,45 +223,35 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    * @param callback
    */
   public void getObject(WaveId waveId, FutureCallback<SWaveObject> callback) {
+    getWaveContext(waveId, new FutureCallback<WaveContext>() {
 
-    if (!hasSession()) {
-      callback.onFailure(new SException(ResponseCode.NOT_LOGGED_IN));
-      return;
-    }
+      @Override
+      public void onSuccess(WaveContext result) {
+        result.getSObject(callback);
+      }
 
-    if (!waveRegistry.containsKey(waveId)) {
-      waveRegistry.put(waveId,
-          new WaveContext(waveId,
-              serviceSession.getWaveDomain(),
-              ssessionManager,
-              this,
-              diffProviderFactory.get(waveId)));
-    }
+      @Override
+      public void onFailure(Throwable t) {
+        callback.onFailure(t);
+      }
 
-    WaveContext waveContext = waveRegistry.get(waveId);
+    });
+  }
 
-    lazyWebsocketStart();
+  protected void getWaveView(WaveId waveId, FutureCallback<ObservableWaveView> callback) {
+    getWaveContext(waveId, new FutureCallback<WaveContext>() {
 
-    Futures.addCallback(serviceMultiplexerFuture,
-        new FutureCallback<RemoteViewServiceMultiplexer>() {
+      @Override
+      public void onSuccess(WaveContext result) {
+        result.getWave(callback);
+      }
 
-          @Override
-          public void onSuccess(RemoteViewServiceMultiplexer multiplexer) {
+      @Override
+      public void onFailure(Throwable t) {
+        callback.onFailure(t);
+      }
 
-            if (!waveContext.isActive())
-              waveContext.init(multiplexer, ServiceContext.this.legacyIdGenerator);
-
-            waveContext.getSObject(callback);
-          }
-
-          @Override
-          public void onFailure(Throwable t) {
-            callback.onFailure(t);
-          }
-
-        });
-
-
+    });
   }
 
   /**
@@ -371,6 +363,49 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
   public SSessionManager getSession() {
     return ssessionManager;
+  }
+
+  private void getWaveContext(WaveId waveId, FutureCallback<WaveContext> callback) {
+
+    if (!hasSession()) {
+      callback.onFailure(new SException(ResponseCode.NOT_LOGGED_IN));
+      return;
+    }
+
+    if (!waveRegistry.containsKey(waveId)) {
+      waveRegistry.put(waveId, new WaveContext(waveId, serviceSession.getWaveDomain(),
+          ssessionManager, this, diffProviderFactory.get(waveId)));
+    }
+
+    WaveContext waveContext = waveRegistry.get(waveId);
+
+    lazyWebsocketStart();
+
+    Futures.addCallback(serviceMultiplexerFuture,
+        new FutureCallback<RemoteViewServiceMultiplexer>() {
+
+          @Override
+          public void onSuccess(RemoteViewServiceMultiplexer multiplexer) {
+
+            if (!waveContext.isActive()) {
+              waveContext.init(multiplexer, ServiceContext.this.legacyIdGenerator);
+            }
+
+            callback.onSuccess(waveContext);
+          }
+
+          @Override
+          public void onFailure(Throwable t) {
+            callback.onFailure(t);
+          }
+
+        });
+
+  }
+
+  public void getMetadataWave(String domain, FutureCallback<ObservableWaveView> callback) {
+    WaveId metaWaveId = WaveId.of(domain, SwellConstants.DOMAIN_METADATA_WAVE_ID);
+    getWaveView(metaWaveId, callback);
   }
 
 }

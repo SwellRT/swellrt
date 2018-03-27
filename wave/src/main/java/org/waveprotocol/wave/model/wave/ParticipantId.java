@@ -36,7 +36,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
 
   private static final long serialVersionUID = -1465142562958113670L;
 
-  public static final ParticipantId VOID = new ParticipantId("void");
+  public static final ParticipantId VOID = new ParticipantId("=void=");
 
   /** The prefix of anonymous participant names */
   protected static final String ANONYMOUS_PREFIX = "!";
@@ -49,7 +49,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   protected static final String SUPER_USER_PREFIX = "$";
 
   /** The prefix of group id's */
-  protected static final String GROUP_ID_PREFIX = "&";
+  protected static final String GROUP_ID_PREFIX = "%";
 
   /** The participant's address */
   private final String address;
@@ -171,8 +171,21 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
     return address.startsWith(SUPER_USER_PREFIX);
   }
 
-  public boolean isEveryone() {
-    return getName().isEmpty();
+  /**
+   * @return true if participant stands for any participant excluding anonymous
+   *         (regular participants)
+   */
+  public boolean isRegularAnyone() {
+    String name = getName();
+    return name.isEmpty();
+  }
+
+  /**
+   * @return true if participant stands for any participant including anonymous.
+   */
+  public boolean isAnyone() {
+    String name = getName();
+    return name.equals(ANONYMOUS_PREFIX);
   }
 
   /**

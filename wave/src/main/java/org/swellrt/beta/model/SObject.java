@@ -4,6 +4,7 @@ import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsProperty;
@@ -39,10 +40,17 @@ public interface SObject extends SMap, ServiceOperation.Response {
   public void removeParticipant(String participantId) throws InvalidParticipantAddress;
 
   /**
-   * @return array of all participants of this object, even with no permissions
-   *         currently.
+   * @return array of all participants with access to the object currently. They
+   *         might not get connected to the object yet.
    */
-  public SSession[] getParticipants();
+  public ParticipantId[] getParticipants();
+
+  /**
+   * @return array with the last session of any participant who had access to
+   *         the object. Use to provide a list of effective participants with
+   *         its last visit time.
+   */
+  public SSession[] getSessions();
 
 
   /** Make this object to be public to any user */

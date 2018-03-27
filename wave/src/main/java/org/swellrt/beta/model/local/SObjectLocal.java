@@ -17,6 +17,7 @@ import org.swellrt.beta.model.js.Proxy;
 import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsProperty;
@@ -95,7 +96,12 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
-  public SSession[] getParticipants() {
+  public ParticipantId[] getParticipants() {
+    return participants.toArray(new ParticipantId[participants.size()]);
+  }
+
+  @Override
+  public SSession[] getSessions() {
     return new SSession[] {};
   }
 

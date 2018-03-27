@@ -10,12 +10,23 @@ import org.swellrt.beta.client.rest.operations.params.CredentialData;
 import org.swellrt.beta.client.rest.operations.params.ObjectId;
 import org.swellrt.beta.client.rest.operations.params.ObjectName;
 import org.swellrt.beta.client.rest.operations.params.Void;
+import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SObject;
 
+import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(namespace = "swell", name = "ServiceFrontend")
 public interface ServiceFrontend extends ServiceConnection {
+
+  @JsType(isNative = true)
+  public interface AsyncResponse<T> {
+
+    public void onError(SException exception);
+
+    public void onSuccess(T response);
+
+  }
 
   void createUser(Account options, Callback<Account> callback);
 
@@ -57,5 +68,8 @@ public interface ServiceFrontend extends ServiceConnection {
 
 
   String getAppDomain();
+
+  @JsProperty(name = "groups")
+  GroupsFrontend groups() throws SException;
 
 }

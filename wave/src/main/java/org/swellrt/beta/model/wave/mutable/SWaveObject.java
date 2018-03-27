@@ -17,6 +17,7 @@ import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
 
@@ -116,8 +117,14 @@ public class SWaveObject implements SObject, SObservableNode {
   }
 
   @Override
-  public SSession[] getParticipants() {
-    return nodeManager.getMetadata().getParticipants();
+  public ParticipantId[] getParticipants() {
+    return nodeManager.getParticipants()
+        .toArray(new ParticipantId[nodeManager.getParticipants().size()]);
+  }
+
+  @Override
+  public SSession[] getSessions() {
+    return nodeManager.getMetadata().getSessions();
   }
 
 

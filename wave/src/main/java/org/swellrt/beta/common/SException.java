@@ -52,6 +52,10 @@ public class SException extends Exception {
 
   public static final int PATH_NOT_FOUND = 116;
 
+  public static final int GROUP_ALREADY_EXISTS = 117;
+
+  public static final int GROUP_NOT_FOUND = 118;
+
   // Codes above 200 are reserved for editors
 
   // Codes from ResponseCode
