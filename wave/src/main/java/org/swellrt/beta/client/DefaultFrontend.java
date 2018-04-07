@@ -38,6 +38,7 @@ import org.waveprotocol.wave.client.account.ProfileManager;
 import org.waveprotocol.wave.client.account.impl.AbstractProfileManager;
 import org.waveprotocol.wave.client.common.util.RgbColor;
 import org.waveprotocol.wave.model.util.Preconditions;
+import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
@@ -227,6 +228,12 @@ public class DefaultFrontend implements ServiceFrontend {
   public void login(Credential options, Callback<Account> callback) {
 
     // Execute an echo after a successful login.
+    try {
+      ParticipantId.of(options.getId());
+    } catch (InvalidParticipantAddress e) {
+      callback.onError(new SException(SException.INVALID_ID, e, "Not a valid user id"));
+      return;
+    }
 
     EchoOperation echoOp = new EchoOperation(context, new Void() {
     }, new Callback<EchoOperation.Response>() {
@@ -277,6 +284,16 @@ public class DefaultFrontend implements ServiceFrontend {
    */
   @Override
   public void resume(Credential options, @JsOptional Callback<Account> callback) {
+
+    if (options.getId() != null) {
+      try {
+        ParticipantId.of(options.getId());
+      } catch (InvalidParticipantAddress e) {
+        callback.onError(new SException(SException.INVALID_ID, e, "Not a valid user id"));
+        return;
+      }
+    }
+
     ResumeOperation op = new ResumeOperation(context, options, callback);
     serverOpExecutor.execute(op);
   }

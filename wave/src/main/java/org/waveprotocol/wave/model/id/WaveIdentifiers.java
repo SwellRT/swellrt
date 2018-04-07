@@ -19,10 +19,10 @@
 
 package org.waveprotocol.wave.model.id;
 
+import java.util.Arrays;
+
 import org.waveprotocol.wave.model.util.Utf16Util;
 import org.waveprotocol.wave.model.util.Utf16Util.CodePointHandler;
-
-import java.util.Arrays;
 
 /**
  * Utilities for working with identifiers compliant with the new specification.
@@ -50,6 +50,10 @@ public final class WaveIdentifiers {
       SAFE_ASCII_CHARS[c] = true;
     }
     for (char c : Arrays.asList('-', '.', '_', '~', '+', '*', '@')) {
+      SAFE_ASCII_CHARS[c] = true;
+    }
+    // For anonymous and group participants
+    for (char c : Arrays.asList(':', ';')) {
       SAFE_ASCII_CHARS[c] = true;
     }
   }

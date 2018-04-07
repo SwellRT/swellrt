@@ -23,6 +23,10 @@ public interface SJsonObject {
 
   }
 
+  public static SJsonObject cast(Object nativeJso) {
+    return WaveDeps.sJsonFactory.create(nativeJso);
+  }
+
   public static SJsonObject create() {
     return WaveDeps.sJsonFactory.create();
   }

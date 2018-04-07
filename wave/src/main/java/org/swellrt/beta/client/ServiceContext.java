@@ -278,9 +278,10 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
 
         @Override
         public void onFailure(String e) {
+          ChannelException ex = new ChannelException(e, Recoverable.NOT_RECOVERABLE);
           serviceMultiplexerFuture
-              .setException(new SException(SException.WEBSOCKET_ERROR, null, e));
-          onStateChange(ConnectState.ERROR, e);
+              .setException(ex);
+          onStateChange(ConnectState.ERROR, ex);
         }
       });
       return true;
@@ -294,7 +295,7 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
    * Handle WebSocket status
    */
   @Override
-  public void onStateChange(ConnectState state, String e) {
+  public void onStateChange(ConnectState state, ChannelException e) {
 
     if (connectState == ConnectState.ERROR) {
       // ignore further error messages
@@ -307,19 +308,19 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
     SException sexception = null;
 
     if (state.equals(ConnectState.ERROR)) {
-      sexception = new SException(SException.WEBSOCKET_ERROR, null, e);
+      sexception = new SException(e);
 
       if (!serviceMultiplexerFuture.isDone())
-        serviceMultiplexerFuture.setException(new SException(SException.WEBSOCKET_ERROR));
+        serviceMultiplexerFuture.setException(sexception);
 
       for (WaveContext ctx : waveRegistry.values()) {
-        ctx.onFailure(new ChannelException(ResponseCode.WEBSOCKET_ERROR, e, null,
-            Recoverable.NOT_RECOVERABLE, null, null));
+        ctx.onFailure(e);
       }
+
+      exception = sexception;
     }
 
     connectState = state;
-    exception = sexception;
 
     for (DefaultFrontend.ConnectionHandler ch : connectionHandlers)
       ch.exec(state.toString(), sexception);
@@ -387,11 +388,18 @@ public class ServiceContext implements WaveWebSocketClient.StatusListener, Servi
           @Override
           public void onSuccess(RemoteViewServiceMultiplexer multiplexer) {
 
-            if (!waveContext.isActive()) {
-              waveContext.init(multiplexer, ServiceContext.this.legacyIdGenerator);
+            try {
+
+              if (!waveContext.isActive()) {
+                waveContext.init(multiplexer, ServiceContext.this.legacyIdGenerator);
+              }
+
+            } catch (RuntimeException ex) {
+              callback.onFailure(ex);
             }
 
             callback.onSuccess(waveContext);
+
           }
 
           @Override

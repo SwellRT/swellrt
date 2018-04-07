@@ -30,6 +30,9 @@ import org.waveprotocol.box.common.comms.impl.ProtocolAuthenticateImpl;
 import org.waveprotocol.box.stat.Timer;
 import org.waveprotocol.box.stat.Timing;
 import org.waveprotocol.wave.client.scheduler.Scheduler;
+import org.waveprotocol.wave.concurrencycontrol.common.ChannelException;
+import org.waveprotocol.wave.concurrencycontrol.common.Recoverable;
+import org.waveprotocol.wave.concurrencycontrol.common.ResponseCode;
 import org.waveprotocol.wave.model.util.CollectionUtils;
 import org.waveprotocol.wave.model.util.IntMap;
 
@@ -51,7 +54,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
   private static final Log LOG = Log.get(WaveWebSocketClient.class);
 
   public static interface StatusListener {
-    public void onStateChange(ConnectState state, String error);
+    public void onStateChange(ConnectState state, ChannelException ex);
   }
 
   public static interface StartCallback {
@@ -171,7 +174,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
       LOG.severe("start() exception ", e);
       startCallback.onFailure(e.getMessage());
       startCallback = null;
-      setState(ConnectState.ERROR, e.getMessage());
+      setState(ConnectState.ERROR, new ChannelException(ResponseCode.WEBSOCKET_ERROR,
+          e.getMessage(), e, Recoverable.NOT_RECOVERABLE, null, null));
     }
   }
 
@@ -265,7 +269,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         } catch (Exception e) {
           // TODO consider if we should drop the connection or just invalidate the broken wave
           LOG.severe("onMessage() exception: ", e);
-          setState(ConnectState.ERROR, e.getMessage());
+          setState(ConnectState.ERROR, new ChannelException(ResponseCode.INTERNAL_ERROR,
+              e.getMessage(), e, Recoverable.NOT_RECOVERABLE, null, null));
         }
 
       }
@@ -281,7 +286,8 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         } catch (Exception e) {
           // TODO consider if we should drop the connection or just invalidate the broken wave
           LOG.severe("onMessage() exception ", e);
-          setState(ConnectState.ERROR, e.getMessage());
+          setState(ConnectState.ERROR, new ChannelException(ResponseCode.INTERNAL_ERROR,
+              e.getMessage(), e, Recoverable.NOT_RECOVERABLE, null, null));
         }
 
 
@@ -295,9 +301,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
         callback.onFinished(m);
         }
       if (m.hasFailed()) {
-        setState(ConnectState.ERROR,
-            "A server error has closed the RPC connection: "
-                + (m.hasErrorText() ? m.getErrorText() : ""));
+        setState(ConnectState.ERROR, m.getChannelException());
       }
     } else if (wrapper.isProtocolAuthenticationResult()) {
       if (startCallback != null) {
@@ -354,7 +358,7 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     }
 
     reconnectionDisabled = true;
-    setState(ConnectState.ERROR, reason);
+    setState(ConnectState.ERROR, new ChannelException(reason, Recoverable.NOT_RECOVERABLE));
   }
 
   @Override
@@ -372,9 +376,10 @@ public class WaveWebSocketClient implements WaveSocket.WaveSocketCallback {
     setState(state, null);
   }
 
-  protected void setState(ConnectState state, String error) {
+  protected void setState(ConnectState state, ChannelException ex) {
     connectState = state;
-    if (statusListener != null) statusListener.onStateChange(state, error);
+    if (statusListener != null)
+      statusListener.onStateChange(state, ex);
   }
 
 }

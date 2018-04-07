@@ -366,7 +366,7 @@ public final class SessionManagerImpl implements SessionManager {
 
     HttpSession session = request.getSession(true);
 
-    if (participantId.isAnonymous() && participantId.getName().isEmpty()) {
+    if (participantId.isAnonymous()) {
       // For first time anonymous login we must complete the participant id
       participantId = ParticipantId.anonymousOfUnsafe(session.getId(), participantId.getDomain());
     }

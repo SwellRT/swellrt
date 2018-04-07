@@ -39,7 +39,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   public static final ParticipantId VOID = new ParticipantId("=void=");
 
   /** The prefix of anonymous participant names */
-  protected static final String ANONYMOUS_PREFIX = "!";
+  public static final String ANONYMOUS_PREFIX = ";";
 
   /** The prefix of a domain in the ParticpantId */
   @JsIgnore
@@ -49,7 +49,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   protected static final String SUPER_USER_PREFIX = "$";
 
   /** The prefix of group id's */
-  protected static final String GROUP_ID_PREFIX = "%";
+  protected static final String GROUP_ID_PREFIX = ":";
 
   /** The participant's address */
   private final String address;
@@ -161,6 +161,10 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
 
   public boolean isAnonymous() {
     return address.startsWith(ANONYMOUS_PREFIX);
+  }
+
+  public boolean isRegular() {
+    return !getName().isEmpty() && !isAnonymous() && !isGroup() && !isSuperUser();
   }
 
   public boolean isGroup() {

@@ -113,7 +113,7 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
       });
 
     } catch (RuntimeException ex) {
-      waveViewFuture.setException(ex.getCause());
+      waveViewFuture.setException(ex);
     }
 
   }

@@ -198,12 +198,19 @@
 
     // We work with anonymous user
     service.login({
-      id : swell.Constants.ANONYMOUS_USER_ID,
-      password : ""
+      id : swell.Constants.ANONYMOUS_USER_ID+"@local.net",
+      password : ""    
+
+      /*
+      id : "tam@local.net",
+      password : "tam"
+      */
     })
     .then(function(profile) {
       // Open the collaborative object to store text documents
-      return service.open({ id : "demo-pad-list" });
+      // "local.net/demo-pad-list"
+      // "local.net/pads"
+      return service.open({ id : "local.net/demo-pad-list" });
     })
     .then(function(_object) {
 
@@ -365,7 +372,7 @@
 
 
   function connectionHandler(s, e) {
-    console.log(s);
+    console.log(s+ (e != null ? " "+e : ""));
     var netStatus = document.getElementById("netStatus");
 
     if (s == "CONNECTED")
@@ -378,7 +385,7 @@
       netStatus.innerHTML = '<span class="label label-danger">Disconnected</span>';
 
     if (s == "ERROR")
-      netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
+      netStatus.innerHTML = '<span class="label label-danger">Connection error: '+e.code+'</span>';
   }
 
 

@@ -167,13 +167,12 @@ public class SException extends Exception {
 
   @Override
   public String getMessage() {
-    String msg = "error=" + code;
-    if (super.getMessage() != null && !super.getMessage().isEmpty())
-      msg += ", " + super.getMessage();
-    else if (getStatusMessage() != null && !getStatusMessage().isEmpty())
-      msg += ", " + getStatusMessage();
+    String msg = (super.getMessage() != null ? super.getMessage() : "");
 
-      return msg;
+    if (super.getCause() != null)
+      msg = super.getCause().getMessage();
+
+    return msg;
   }
 
   @Override

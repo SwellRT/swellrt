@@ -6,6 +6,7 @@ import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SMap;
 import org.swellrt.beta.model.SNodeAccessControl;
 import org.swellrt.beta.model.SPrimitive;
+import org.swellrt.beta.model.json.SJsonObject;
 import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 
@@ -71,8 +72,8 @@ public class SWaveMetadata {
     try {
 
       if (participantsMap.has(participantIdKey)) {
-        SPrimitive participantNode = (SPrimitive) participantsMap.get(participantIdKey);
-        SSession current = SSession.of(participantNode.asSJson());
+        SJsonObject participantNode = SJsonObject.cast(participantsMap.get(participantIdKey));
+        SSession current = SSession.of(participantNode);
         session.setFirstAccessTime(current.getFirstAccessTime());
       } else {
         session.setFirstAccessTime(now);
