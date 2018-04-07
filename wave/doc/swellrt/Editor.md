@@ -15,7 +15,7 @@ An editor is attached to a particular DIV of a page:
 ```
 
 ```js
-var editor = swell.Editor.get("editor");
+var editor = swell.Editor.create(document.getElementById("editor"));
 ```
 
 An editor manages swell's text objects. A text can be just local...
