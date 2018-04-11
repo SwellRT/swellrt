@@ -49,6 +49,7 @@ import org.waveprotocol.wave.model.wave.Blip;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ObservableWavelet;
 import org.waveprotocol.wave.model.wave.ParticipantId;
+import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.model.wave.opbased.ObservableWaveView;
 
 /**
@@ -709,7 +710,7 @@ public class SWaveNodeManager {
   //
 
   public void setPublic(boolean isPublic) {
-    ParticipantId publicParticipanId = ParticipantId.ofPublic(domain);
+    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneParticipantId(domain);
 
     if (isPublic) {
       dataWavelet.addParticipant(publicParticipanId);
