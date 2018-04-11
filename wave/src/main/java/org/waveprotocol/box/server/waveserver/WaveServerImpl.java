@@ -19,25 +19,22 @@
 
 package org.waveprotocol.box.server.waveserver;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.waveprotocol.box.common.ExceptionalIterator;
-import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
-import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.box.common.Receiver;
+import org.waveprotocol.box.server.common.CoreWaveletOperationSerializer;
+import org.waveprotocol.box.server.executor.ExecutorAnnotations.ListenerExecutor;
+import org.waveprotocol.box.server.frontend.CommittedWaveletSnapshot;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.wave.crypto.SignatureException;
 import org.waveprotocol.wave.crypto.SignerInfo;
 import org.waveprotocol.wave.crypto.UnknownSignerException;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
+import org.waveprotocol.wave.federation.FederationErrorProto.FederationError.Code;
 import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.FederationException;
 import org.waveprotocol.wave.federation.FederationRemoteBridge;
@@ -58,15 +55,16 @@ import org.waveprotocol.wave.model.version.HashedVersion;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
 import org.waveprotocol.wave.model.wave.ParticipantId;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
-import org.waveprotocol.wave.model.operation.TransformException;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations;
-import org.waveprotocol.box.server.executor.ExecutorAnnotations.ListenerExecutor;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 /**
  * The main class that services the FederationHost, FederationRemote and ClientFrontend.
@@ -550,8 +548,9 @@ public class WaveServerImpl implements WaveletProvider, ReadableWaveletDataProvi
       LocalWaveletContainer wavelet = getOrCreateLocalWavelet(waveletName);
       try {
         if (!wavelet.checkAccessPermission(ParticipantId.of(delta.getAuthor()))) {
-          resultListener.onFailure(FederationErrors.badRequest(
-              delta.getAuthor() + " is not a participant of " + waveletName));
+          String msg = delta.getAuthor() + " is not a participant of " + waveletName;
+          LOG.info(msg);
+          resultListener.onFailure(FederationErrors.newFederationError(Code.NOT_AUTHORIZED, msg));
           return;
         }
       } catch (InvalidParticipantAddress e) {
