@@ -225,7 +225,8 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       @Override
       public void onFailure(String error) {
         listener.onFailure(error);
-        waveletInfo.getUserManager(author).submitResponse(channelId, waveletName, null);
+        // (pablojan) this always throws a npe in the submitResponse precondition
+        //waveletInfo.getUserManager(author).submitResponse(channelId, waveletName, null);
       }
     });
   }
