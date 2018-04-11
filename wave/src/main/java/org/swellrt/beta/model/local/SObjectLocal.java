@@ -274,6 +274,11 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
+  public void trackPresence(boolean enable) {
+    // Ignore in local objects
+  }
+
+  @Override
   public SNode[] values() throws SException {
     return delegateMap.values();
   }

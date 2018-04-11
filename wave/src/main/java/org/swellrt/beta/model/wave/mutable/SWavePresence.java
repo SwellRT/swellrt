@@ -241,6 +241,9 @@ public class SWavePresence {
     if (WaveDeps.lowPriorityTimer == null)
       return;
 
+    if (hasStarted)
+      return;
+
     try {
       this.presenceStatusMap.listen(presenceUpdateHandler);
     } catch (SException e) {

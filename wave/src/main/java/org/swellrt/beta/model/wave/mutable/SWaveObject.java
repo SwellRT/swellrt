@@ -157,6 +157,14 @@ public class SWaveObject implements SObject, SObservableNode {
     presence.registerHandler(handler);
   }
 
+  @Override
+  public void trackPresence(boolean enable) {
+    if (enable)
+      presence.start();
+    else
+      presence.stop();
+  }
+
   //
   // SMap interface
   //

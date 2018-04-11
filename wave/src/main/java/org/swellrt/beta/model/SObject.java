@@ -86,6 +86,9 @@ public interface SObject extends SMap, ServiceOperation.Response {
    */
   public void setPresenceHandler(SPresenceEvent.Handler h);
 
+  /** start/stops the presence tracking */
+  void trackPresence(boolean enable);
+
   /** Get the version manager to tag node versions */
   public SVersionManager getVersionManager();
 }

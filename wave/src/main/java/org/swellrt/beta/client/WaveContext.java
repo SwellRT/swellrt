@@ -153,6 +153,10 @@ public class WaveContext implements UnsavedDataListener, TurbulenceListener, Con
   }
 
   public void close() {
+    if (this.sobject != null) {
+      this.sobject.trackPresence(false);
+    }
+
     onClose(false);
 
     if (loader != null)
