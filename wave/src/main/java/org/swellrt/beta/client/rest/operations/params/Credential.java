@@ -17,4 +17,13 @@ public interface Credential extends ServiceOperation.Options {
   @JsProperty
   public boolean getRemember();
 
+  @JsProperty
+  public void setId(String id);
+
+  @JsProperty
+  public void setPassword(String password);
+
+  @JsProperty
+  public void setRemember(boolean remember);
+
 }

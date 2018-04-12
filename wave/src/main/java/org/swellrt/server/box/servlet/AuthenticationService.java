@@ -45,11 +45,12 @@ import com.typesafe.config.Config;
  *
  * Login
  *
- * POST /auth { id : <ParticipantId>, password : <Password>, remember : <boolean> (optional) }
+ * POST /auth { id : <ParticipantId>, password : <Password>, remember :
+ * <boolean> (optional) }
  *
  * Login (Anonymous)
  *
- * POST /auth { id : "_anonymous_", password : "_anonymous_" }
+ * POST /auth { id : ";anonymous" }
  *
  * Resume
  *
@@ -71,7 +72,7 @@ import com.typesafe.config.Config;
 @Singleton
 public class AuthenticationService extends BaseService {
 
-
+  private static final String ANONYMOUS_ID = ParticipantId.ANONYMOUS_PREFIX + "anonymous";
 
   public static class AuthenticationServiceData extends ServiceData {
 
@@ -204,10 +205,15 @@ public class AuthenticationService extends BaseService {
       return;
     }
 
+    boolean requestHasId = authData != null && authData.has("id") && authData.id != null;
 
-    if (authData != null && authData.has("id") && authData.id != null) {
+    if (requestHasId) {
 
-      if (!ParticipantId.ofUnsafe(authData.id).isAnonymous()) {
+      if (authData.id.equals(ANONYMOUS_ID)) {
+
+        doLogin(req, resp, ParticipantId.anonymousOfUnsafe(domain), false);
+
+      } else {
 
         try {
 
@@ -228,9 +234,6 @@ public class AuthenticationService extends BaseService {
           return;
 
         }
-
-      } else {
-        doLogin(req, resp, ParticipantId.anonymousOfUnsafe(domain), false);
 
       }
 

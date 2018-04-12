@@ -33,10 +33,12 @@ public class SException extends Exception {
 
   // Codes from SException
 
-  /** a generic exception for REST operations */
+  /** a generic exception, avoid using it */
   public static final int OPERATION_EXCEPTION = 100;
 
   public static final int MISSING_PARAMETERS = 101;
+
+  public static final int INVALID_PARAMETERS = 102;
 
   public static final int NOT_ATTACHED_NODE = 110;
 
@@ -55,6 +57,8 @@ public class SException extends Exception {
   public static final int GROUP_ALREADY_EXISTS = 117;
 
   public static final int GROUP_NOT_FOUND = 118;
+
+  public static final int HTTP_EXCEPTION = 120;
 
   // Codes above 200 are reserved for editors
 
@@ -136,7 +140,7 @@ public class SException extends Exception {
 
   @JsIgnore
   public SException(int httpStatusCode, String httpStatusMessage) {
-    this.code = SException.OPERATION_EXCEPTION;
+    this.code = SException.HTTP_EXCEPTION;
     this.httpStatusCode = httpStatusCode;
     this.httpStatusMessage = httpStatusMessage;
   }
@@ -167,10 +171,17 @@ public class SException extends Exception {
 
   @Override
   public String getMessage() {
-    String msg = (super.getMessage() != null ? super.getMessage() : "");
+
+    if (code == SException.HTTP_EXCEPTION)
+      return httpStatusMessage;
+
+    String msg = "";
 
     if (super.getCause() != null)
       msg = super.getCause().getMessage();
+
+    if (msg == null || msg.isEmpty())
+      msg = super.getMessage() != null ? super.getMessage() : "";
 
     return msg;
   }

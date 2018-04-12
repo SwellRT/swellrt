@@ -115,6 +115,8 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
     try {
 
+      operation.validateOptions();
+
       String body = null;
       if (operation.sendOptionsAsBody()) {
         body = toJson(operation.options);
@@ -150,11 +152,8 @@ public abstract class ServerOperationExecutor extends OperationExecutor {
 
           });
 
-    } catch (SException e) {
-      operation.doFailure(e);
-      return;
     } catch (Exception e) {
-      operation.doFailure(new SException(SException.OPERATION_EXCEPTION, e));
+      operation.doFailure(e);
     }
 
   }

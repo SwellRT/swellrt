@@ -33,4 +33,19 @@ public class CredentialImpl implements Credential {
   public boolean getRemember() {
     return remember;
   }
+
+  @Override
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  @Override
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  @Override
+  public void setRemember(boolean remember) {
+    this.remember = remember;
+  }
 }

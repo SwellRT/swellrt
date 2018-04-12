@@ -97,12 +97,11 @@
     service.addConnectionHandler(connectionHandler);
 
     service.login({
-      id : swell.Constants.ANONYMOUS_USER_ID,
-      password : ""
+      // anonymous login
     })
     .then(r=>{
       return service.open({
-        id : getURLSearchParam('form','form-demo-default')
+        id : getURLSearchParam('form','form-01')
       });
     })
     .then(_object => {

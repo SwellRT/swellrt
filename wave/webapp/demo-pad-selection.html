@@ -184,15 +184,13 @@
 
     // Put on eye on live commucation turbulences
     service.addConnectionHandler(connectionHandler);
-
-    // We work with anonymous user
+    
     service.login({
-      id : swell.Constants.ANONYMOUS_USER_ID,
-      password : ""
+      // anonymous login
     })
     .then(profile => {
       // Open the collaborative object to store text documents
-      return service.open({ id : "demo-pad-list" });
+      return service.open({ id : "pads-01" });
     })
     .then(_object => {
 

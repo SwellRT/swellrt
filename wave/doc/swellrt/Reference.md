@@ -240,12 +240,10 @@ Log a user in the Swell server.
     .then( profile => {   });
 ```
 
-To log in as anonymous user use an empty password:
+To log in as anonymous user, don't provide any argument:
 
 ```js
     service.login({
-      id : swell.Constants.ANONYMOUS_USER_ID,
-      password : ''
     })
     .then( profile => {   });
 ```

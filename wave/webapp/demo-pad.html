@@ -196,21 +196,12 @@
     // Put on eye on live commucation turbulences
     service.addConnectionHandler(connectionHandler);
 
-    // We work with anonymous user
     service.login({
-      id : swell.Constants.ANONYMOUS_USER_ID+"@local.net",
-      password : ""    
-
-      /*
-      id : "tam@local.net",
-      password : "tam"
-      */
+      // anonymous user
     })
     .then(function(profile) {
       // Open the collaborative object to store text documents
-      // "local.net/demo-pad-list"
-      // "local.net/pads"
-      return service.open({ id : "local.net/demo-pad-list" });
+      return service.open({ id : "local.net/pads-01" });
     })
     .then(function(_object) {
 

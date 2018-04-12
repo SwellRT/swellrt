@@ -51,9 +51,31 @@ public abstract class ServiceOperation<O extends ServiceOperation.Options, R ext
   }
 
   protected void doFailure(Throwable exception) {
-    if (callback != null)
-      callback.onError(new SException(SException.OPERATION_EXCEPTION, exception,
-          "Error executing service operation."));
+    if (callback != null) {
+
+      if (exception instanceof IllegalArgumentException) {
+
+        callback.onError(new SException(SException.INVALID_PARAMETERS, exception.getCause(),
+            "Not valid parameters"));
+
+      }
+      if (exception instanceof SException) {
+
+        callback.onError((SException) exception);
+
+      } else {
+
+        callback.onError(new SException(SException.OPERATION_EXCEPTION, exception,
+            "Error executing service operation."));
+
+      }
+
+    }
+
+  }
+
+  protected void validateOptions() {
+
   }
 
 }

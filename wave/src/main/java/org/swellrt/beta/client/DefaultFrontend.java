@@ -227,14 +227,6 @@ public class DefaultFrontend implements ServiceFrontend {
   @Override
   public void login(Credential options, Callback<Account> callback) {
 
-    // Execute an echo after a successful login.
-    try {
-      ParticipantId.of(options.getId());
-    } catch (InvalidParticipantAddress e) {
-      callback.onError(new SException(SException.INVALID_ID, e, "Not a valid user id"));
-      return;
-    }
-
     EchoOperation echoOp = new EchoOperation(context, new Void() {
     }, new Callback<EchoOperation.Response>() {
 

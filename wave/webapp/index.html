@@ -124,12 +124,11 @@
       service.addConnectionHandler(connectionHandler);
 
       service.login({
-        id : "_anonymous_",
-        password : ""
+        // anonymous login
       })
       .then(function(r) {
         return service.open({
-          id : "local.net/status-echo"
+          id : "local.net/echo-01"
         });
       })
       .then(function(_object) {

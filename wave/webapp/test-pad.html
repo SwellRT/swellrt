@@ -167,15 +167,14 @@
     // Put on eye on live commucation turbulences
     service.addConnectionHandler(connectionHandler);
 
-    // We work with anonymous user
+    
     service.login({
-      id : swellrt.Service.ANONYMOUS_USER_ID,
-      password : ""
+      // We work with anonymous user
     })
     .then(function(profile) {
       // Open the collaborative object to store text documents
 
-      var docId = "write-test"
+      var docId = "write-test-01"
       if (params.id) {
           docId = params.id;
       }

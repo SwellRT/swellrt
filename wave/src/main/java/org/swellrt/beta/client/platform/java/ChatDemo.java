@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.CountDownLatch;
 
-import org.swellrt.beta.client.ServiceConstants;
 import org.swellrt.beta.client.ServiceFrontend;
 import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.client.rest.operations.params.Account;
@@ -13,9 +12,10 @@ import org.swellrt.beta.client.rest.operations.params.CredentialImpl;
 import org.swellrt.beta.client.rest.operations.params.ObjectIdImpl;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
-import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SList;
+import org.swellrt.beta.model.SMutationHandler;
 import org.swellrt.beta.model.SObject;
+import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -158,7 +158,7 @@ public class ChatDemo {
   public static void main(String[] args) {
 
     ChatDemo chat = new ChatDemo("http://localhost:9898",
-        ServiceConstants.ANONYMOUS_USER_ID + "@local.net", "");
+        ParticipantId.anonymousOfUnsafe("local.net").getAddress(), "");
 
     try {
       chat.run();
