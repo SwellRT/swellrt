@@ -43,7 +43,7 @@ public class SSessionManager {
 
     // not sure if color value changes, so ensure we keep it on updates.
     if (this.session != null) {
-      this.session = new SSession(this.session.getSessionId(), this.session.getParticipantId(),
+      this.session = new SSession(session.getSessionId(), session.getParticipantId(),
           this.session.getColor(), session.getName(), session.getNickname());
     } else {
       this.session = session;
