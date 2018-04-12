@@ -18,6 +18,7 @@
  */
 package org.waveprotocol.box.server.waveserver;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -122,6 +123,8 @@ public class WaveServerTest extends TestCase {
       }
     };
 
+    when(accessController.checkAccessPermission(any(ReadableWaveletData.class),
+        any(ParticipantId.class))).thenReturn(true);
     waveletStore = new DeltaStoreBasedSnapshotStore(deltaStore);
     Executor lookupExecutor = MoreExecutors.sameThreadExecutor();
     Config config = ConfigFactory.parseMap(ImmutableMap.<String, Object>of(

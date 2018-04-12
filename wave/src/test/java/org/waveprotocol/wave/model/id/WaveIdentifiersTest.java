@@ -20,9 +20,9 @@
 package org.waveprotocol.wave.model.id;
 
 
-import junit.framework.TestCase;
-
 import java.util.Arrays;
+
+import junit.framework.TestCase;
 
 /**
  * Tests for the wave identifiers utilities.
@@ -42,15 +42,15 @@ public class WaveIdentifiersTest extends TestCase {
   }
 
   public void testUriGenDelimsAreInvalid() {
-    // Gen-delims except "@".
-    for (String s : Arrays.asList(":", "/", "?", "#", "[", "]")) {
+    // Gen-delims except "@" and ":".
+    for (String s : Arrays.asList("/", "?", "#", "[", "]")) {
       assertFalse(WaveIdentifiers.isValidIdentifier(s));
     }
   }
 
   public void testUriSubDelimsAreInvalid() {
-    // Sub-delims except "+", "*".
-    for (String s : Arrays.asList("!", "$", "&", "'", "(", ")", ",", ";", "=")) {
+    // Sub-delims except "+", "*", ";".
+    for (String s : Arrays.asList("!", "$", "&", "'", "(", ")", ",", "=")) {
       assertFalse(WaveIdentifiers.isValidIdentifier(s));
     }
   }
