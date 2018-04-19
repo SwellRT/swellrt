@@ -50,18 +50,21 @@ public class SEditor implements EditorUpdateListener {
 
   @JsFunction
   public interface SelectionChangeHandler {
-    void exec(SRange range, SEditor editor, SSelection node);
+    void exec(Range range, SEditor editor, SSelection node);
   }
 
+  private static boolean wasConfigured = false;
 
   /** Configure editor component with custom settings */
   public static void configure(SEditorConfig config) {
     if (config == null)
       return;
     SEditorStatics.setConfig(config);
+    wasConfigured = true;
   }
 
   public static SEditor create(@JsOptional Element e) {
+
     if (e != null)
       return new SEditor(e);
 
@@ -569,7 +572,6 @@ public class SEditor implements EditorUpdateListener {
             : new EditorImpl(false, editorPanel.getElement());
 
       editor.init(null, SEditorStatics.getKeyBindingRegistry(), SEditorStatics.getSettings());
-
       this.service.addConnectionHandler(connectionHandler);
     }
 
@@ -584,7 +586,7 @@ public class SEditor implements EditorUpdateListener {
     if (selectionHandler != null) {
       Range range = editor.getSelectionHelper().getOrderedSelectionRange();
       if (range != null)
-        selectionHandler.exec(SRange.create(range), this, SSelection.get(range));
+        selectionHandler.exec(range, this, SSelection.get(range));
     }
   }
 

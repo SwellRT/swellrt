@@ -203,8 +203,12 @@
         object.setPublic(true);
       }
 
+      swell.Editor.configure({
+		    traceUserAgent: true
+	    });
+
       // Create editor instance, reusable
-      editor = swell.Editor.createWithId("editor");
+      editor = swell.Editor.create(document.getElementById("editor"));
 
       _lastSelectionAnnotation = undefined;
 

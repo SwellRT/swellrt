@@ -225,6 +225,10 @@
       // Create editor instance, reusable
       editor = swell.Editor.create(document.getElementById("editor"));
 
+      editor.setSelectionHandler((range, editor, selection) => {
+          console.log('selection changed '+ range);
+      });
+
       // Configure editor with a empty document
       configEditor();
       // Show list of stored documents
