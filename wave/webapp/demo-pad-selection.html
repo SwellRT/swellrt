@@ -127,9 +127,8 @@
     currentSelectionRange = undefined;
     currentSelection = undefined;
 
-  swell.onReady(function(service) {
-    window.service = service;
-
+  function initMarkMenu() {
+    
     var editorElt = document.getElementById("editor");
     window.menu = document.createElement("div");
     window.menu.className = "selection-menu";
@@ -137,20 +136,23 @@
     window.menu.style.visibility = "hidden";
     editorElt.appendChild(window.menu);
 
+  }
+
+  swell.onReady(function(service) {
+    window.service = service;
+
     swell.Editor.AnnotationRegistry.define("@selection","selection");
     swell.Editor.AnnotationRegistry.setHandler("@selection", (event) => {
-      console.log("@selection event("+event.type+") "+event.annotation.value+", "+event.annotation.start+":"+event.annotation.end);
+      console.log("@selection event("+event.type+") "+event.annotation.value+", "+event.annotation.range.start+":"+event.annotation.range.end);
       
       if (event.type == swell.AnnotationEvent.EVENT_UPDATED) {
         _event = event;
       }
-
       
-      /*
-      if (event.type == swell.Annotation.EVENT_DOM_ADDED && annot.value == currentSelectionId) {
+      if (event.type == swell.AnnotationEvent.EVENT_CREATED && event.annotation.value == currentSelectionId) {
 
-        _node = annot.node;
-        var sel = annot.node;  //document.getElementsByClassName("@selection")[0];
+        _node = event.annotation.node;
+        var sel = event.annotation.node;  //document.getElementsByClassName("@selection")[0];
         if (sel) {
 
           window.menu.style.top = (sel.offsetTop - sel.offsetHeight -   window.menu.offsetHeight) + "px";
@@ -160,10 +162,9 @@
 
       } 
       
-      if (type == swell.Annotation.EVENT_REMOVED && annot.value != currentSelectionId) {
-        window.menu.style.visibility = "hidden";
+      if (event.type == swell.Annotation.EVENT_REMOVED && event.annotation.value != currentSelectionId) {
+        // window.menu.style.visibility = "hidden";
       }
-      */
 
 
     });
@@ -209,15 +210,18 @@
 
       // Create editor instance, reusable
       editor = swell.Editor.create(document.getElementById("editor"));
+      
+      initMarkMenu(); // after Editor.create()
 
       _lastSelectionAnnotation = undefined;
 
       editor.setSelectionHandler((range, editor, selection) => {
           console.log('selection changed');
-          
+          _selection = selection;
           // This annotation shows the contextual menu
           if (_lastSelectionAnnotation) {
-            var r = swell.Range.create(_lastSelectionAnnotation.start, _lastSelectionAnnotation.end);
+            var r = { start: _lastSelectionAnnotation.range.start, 
+                      end: _lastSelectionAnnotation.range.end };
             editor.clearAnnotation("@selection", r);
              _lastSelectionAnnotation = undefined;
           }
@@ -226,9 +230,10 @@
             
               currentSelectionId = "selection-"+(new Date()).getTime();
               _lastSelectionAnnotation = editor.setAnnotation("@selection", currentSelectionId , range);
-
               currentSelection = selection;
               currentSelectionRange = range;
+              console.log("selection created "+currentSelectionId);
+              
           }
 
       });

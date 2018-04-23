@@ -18,6 +18,7 @@ import org.waveprotocol.wave.client.editor.content.paragraph.ParagraphBehaviour;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.Annotations;
+import org.waveprotocol.wave.model.document.util.IRange;
 import org.waveprotocol.wave.model.document.util.Point;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.CollectionUtils;
@@ -65,7 +66,7 @@ public class AnnotationController {
    * @param range
    * @throws SEditorException
    */
-  public static AnnotationValue set(Editor editor, String key, final String value, Range range)
+  public static AnnotationValue set(Editor editor, String key, final String value, IRange range)
       throws SEditorException {
 
     final AnnotationController ac = AnnotationRegistry.get(key);
@@ -93,7 +94,7 @@ public class AnnotationController {
       //
       // Paragraph value
       //
-      applyParagraphStyle(editor, key, value, range);
+      applyParagraphStyle(editor, key, value, Range.copy(range));
 
     } else if (ac.getType().equals(AnnotationController.Type.PARAGRAPH_ACTION)) {
 
@@ -113,7 +114,7 @@ public class AnnotationController {
     }
 
     return AnnotationValueBuilder.buildWithRange(editor.getContent().getMutableDoc(), key, value,
-        range,
+        Range.copy(range),
         AnnotationValue.MATCH_IN);
 
   }

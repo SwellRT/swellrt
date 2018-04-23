@@ -29,11 +29,15 @@ import jsinterop.annotations.JsType;
  * <br>
  * (Don't expose this class to native Javascript, that causes editor fails)
  */
-@JsType(namespace = "wave", name = "Range")
-public final class Range {
+@JsType(namespace = "swell", name = "Range")
+public final class Range implements IRange {
 
   public static final Range ALL = new Range(0,0);
   public static final Range NONE = new Range();
+
+  public static Range copy(IRange range) {
+    return create(range.getStart(), range.getEnd());
+  }
 
   public static Range create(int start, int end) {
     return new Range(start, end);
@@ -93,7 +97,7 @@ public final class Range {
    *
    * @return true if the range is collapsed
    */
-  @JsProperty
+  @JsIgnore
   public boolean isCollapsed() {
     return start == end;
   }
@@ -131,8 +135,9 @@ public final class Range {
         + ")";
   }
 
-  public boolean contains(Range r) {
-    return this.start <= r.start && r.end <= this.end;
+  @JsIgnore
+  public boolean contains(IRange r) {
+    return this.start <= r.getStart() && r.getEnd() <= this.end;
   }
 
 }

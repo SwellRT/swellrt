@@ -25,7 +25,7 @@ import jsinterop.annotations.JsType;
 @JsType(namespace = "swell.Editor", name = "Selection")
 public class SSelection {
 
-  protected static SSelection get(Range textRange) {
+  protected static SSelection get(Range range) {
 
     FocusedPointRange<Node> nativeSelectionPoint = NativeSelectionUtil.get();
 
@@ -41,7 +41,7 @@ public class SSelection {
 
       s.isCollapsed = nativeSelectionPoint.isCollapsed();
 
-      s.range = SRange.create(textRange);
+      s.range = range;
 
     return s;
 
@@ -77,7 +77,7 @@ public class SSelection {
   public int focusOffset;
 
   /** Range in the text document matching this selection */
-  public SRange range;
+  public Range range;
 
   public Element getElement() {
     return NativeSelectionUtil.getActiveElement();

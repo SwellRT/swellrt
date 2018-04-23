@@ -26,6 +26,7 @@ import org.waveprotocol.wave.client.editor.content.FullContentView;
 import org.waveprotocol.wave.client.editor.util.EditorAnnotationUtil;
 import org.waveprotocol.wave.model.document.RangedAnnotation;
 import org.waveprotocol.wave.model.document.util.DocHelper;
+import org.waveprotocol.wave.model.document.util.IRange;
 import org.waveprotocol.wave.model.document.util.Pretty;
 import org.waveprotocol.wave.model.document.util.Range;
 import org.waveprotocol.wave.model.util.ReadableStringSet;
@@ -307,9 +308,9 @@ public class SEditor implements EditorUpdateListener {
    * @param range
    * @return the original range or the current selection
    * @throws SEditorException
-   *           if not valid range can be privided
+   *           if not valid range can be provided
    */
-  protected Range rangeSafeCheck(Range range) throws SEditorException {
+  protected Range rangeSafeCheck(IRange range) throws SEditorException {
 
     if (Range.ALL.equals(range))
       range = SEditorHelper.getFullValidRange(editor);
@@ -320,7 +321,7 @@ public class SEditor implements EditorUpdateListener {
     if (range == null)
       throw new SEditorException("A valid range must be provided or a selection must be active");
 
-    return range;
+    return Range.copy(range);
   }
 
   /**
@@ -335,7 +336,7 @@ public class SEditor implements EditorUpdateListener {
    *          a range or null
    */
   public AnnotationValue setAnnotation(String key, String value,
-      @JsOptional SRange range)
+      @JsOptional IRange range)
       throws SEditorException {
 
     key = AnnotationRegistry.normalizeKey(key);
@@ -343,7 +344,7 @@ public class SEditor implements EditorUpdateListener {
     if (!editor.isEditing())
       return null;
 
-    final Range effectiveRange = rangeSafeCheck(range != null ? range.asRange() : null);
+    final Range effectiveRange = rangeSafeCheck(range);
     final Editor editor = getEditor();
 
     return AnnotationController.set(editor, key, value, effectiveRange);
@@ -360,13 +361,13 @@ public class SEditor implements EditorUpdateListener {
    * @param range
    * @throws SEditorException
    */
-  public void clearAnnotation(JavaScriptObject keys, @JsOptional SRange range)
+  public void clearAnnotation(JavaScriptObject keys, @JsOptional IRange range)
       throws SEditorException {
 
     if (!editor.isEditing())
       return;
 
-    Range effectiveRange = rangeSafeCheck(range != null ? range.asRange() : null);
+    Range effectiveRange = rangeSafeCheck(range);
 
     ReadableStringSet keySet = AnnotationRegistry.normalizeKeys(JsEditorUtils.toStringSet(keys));
 
@@ -389,11 +390,11 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional SRange range)
+  public JavaScriptObject getAnnotations(JavaScriptObject keys, @JsOptional IRange range)
       throws SEditorException {
 
     return AnnotationController.getAnnotationsWithFilters(editor, keys,
-        rangeSafeCheck(range != null ? range.asRange() : null),
+        rangeSafeCheck(range),
         null);
 
   }
@@ -413,11 +414,11 @@ public class SEditor implements EditorUpdateListener {
    * @throws SEditorException
    */
   public JavaScriptObject getAnnotationsWithValue(JavaScriptObject keys, final String value,
-      @JsOptional SRange range)
+      @JsOptional IRange range)
       throws SEditorException {
 
     return AnnotationController.getAnnotationsWithFilters(editor, keys,
-        rangeSafeCheck(range != null ? range.asRange() : null),
+        rangeSafeCheck(range),
         (Object o) -> {
 
       if (o instanceof String) {
@@ -439,11 +440,11 @@ public class SEditor implements EditorUpdateListener {
    * @return
    * @throws SEditorException
    */
-  public void setAnnotationOverlap(String key, String value, @JsOptional SRange range)
+  public void setAnnotationOverlap(String key, String value, @JsOptional IRange range)
       throws SEditorException {
 
 
-    final Range actualRange = rangeSafeCheck(range != null ? range.asRange() : null);
+    final Range actualRange = rangeSafeCheck(range);
     final CMutableDocument doc = editor.getDocument();
 
     if (value == null)
@@ -472,10 +473,10 @@ public class SEditor implements EditorUpdateListener {
    * @param range
    * @throws SEditorException
    */
-  public void clearAnnotationOverlap(String key, String value, @JsOptional SRange range)
+  public void clearAnnotationOverlap(String key, String value, @JsOptional IRange range)
       throws SEditorException {
 
-    final Range actualRange = rangeSafeCheck(range != null ? range.asRange() : null);
+    final Range actualRange = rangeSafeCheck(range);
     final CMutableDocument doc = editor.getDocument();
 
     final String nkey = AnnotationRegistry.normalizeKey(key);
@@ -522,35 +523,32 @@ public class SEditor implements EditorUpdateListener {
   }
 
 
-  public String getText(@JsOptional SRange range) {
-    Range actualRange;
+  public String getText(@JsOptional IRange range) {
+    IRange actualRange;
     try {
-      actualRange = rangeSafeCheck(range != null ? range.asRange() : null);
+      actualRange = rangeSafeCheck(range != null ? range : null);
     } catch (Exception e) {
       return null;
     }
     return DocHelper.getText(editor.getDocument(), actualRange.getStart(), actualRange.getEnd());
   }
 
-  public SRange replaceText(SRange range, String text) {
+  public IRange replaceText(IRange range, String text) {
     if (range == null)
       throw new IndexOutOfBoundsException("Text range is out of document size.");
-    Range actualRange = range.asRange();
-    editor.getDocument().deleteRange(actualRange.getStart(), actualRange.getEnd());
-    editor.getDocument().insertText(actualRange.getStart(), text);
-    return SRange
-        .create(Range.create(actualRange.getStart(), actualRange.getStart() + text.length()));
+    editor.getDocument().deleteRange(range.getStart(), range.getEnd());
+    editor.getDocument().insertText(range.getStart(), text);
+    return Range.create(range.getStart(), range.getStart() + text.length());
   }
 
   public void insertText(int position, String text) {
     editor.getDocument().insertText(position, text);
   }
 
-  public void deleteText(SRange range) {
+  public void deleteText(IRange range) {
     if (range == null)
       throw new IndexOutOfBoundsException("Text range is out of document size.");
-    Range actualRange = range.asRange();
-    editor.getDocument().deleteRange(actualRange.getStart(), actualRange.getEnd());
+    editor.getDocument().deleteRange(range.getStart(), range.getEnd());
   }
 
   public SSelection getSelection() {

@@ -2,9 +2,11 @@ package org.swellrt.beta.client.platform.web.editor.annotation;
 
 import org.waveprotocol.wave.client.doodad.annotation.UserAnnotationHandler;
 import org.waveprotocol.wave.client.doodad.annotation.UserAnnotationHandler.ContentMutationHandler;
+import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.content.CMutableDocument;
 import org.waveprotocol.wave.client.editor.content.ContentElement;
 import org.waveprotocol.wave.client.editor.content.misc.AnnotationPaint;
+import org.waveprotocol.wave.common.logging.AbstractLogger.Level;
 import org.waveprotocol.wave.model.document.util.DocumentContext;
 import org.waveprotocol.wave.model.document.util.Range;
 
@@ -85,7 +87,7 @@ public class TextEventHandler
                 newValue, new Range(start, end), AnnotationValue.MATCH_IN),
             null));
       } catch (Exception e) {
-
+        EditorStaticDeps.logger.log(Level.ERROR, e.getMessage());
       }
 
     }
