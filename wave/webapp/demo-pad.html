@@ -88,7 +88,7 @@
 
     <div class="row">
 
-      <div class="col-md-offset-1 col-xs-4 col-md-3 document-list">
+      <div class="col-xs-3 col-md-3 document-list">
         <h4>Documents</h4>
         <p>
         <input id="newBtn" class="btn btn-default" type="submit" value="New" onclick="newDocument()">
@@ -104,15 +104,23 @@
         </ul>
       </div>
 
-      <div class="col-md-7 col-xs-8">
-        <h4>Editor (<span id="title">New document</span>)        
-         <input id="editBtn" class="btn btn-default" type="submit" value="Edit On/Off" onclick="editDocument()">
-       </h4>
+      <div class="col-md-6 col-xs-6">
+        <div>
+          <h4 style="display:inline-block"><span id="title">(New document)</span></h4>
+          <input id="editBtn" class="btn btn-default pull-right" type="submit" value="Edit On" onclick="editDocument()">
+        </div>        
         <div id="editor" class="editor-canvas">
         </div>
         <div id="viewer" class="editor-canvas">
         </div>
       </div>
+
+      <div class="col-md-3 col-xs-3">
+        <h4>Version History</h4>
+        <div id="revlist" style="">
+        </div>
+      </div>
+
     </div>
     
     <div class="row">
@@ -188,7 +196,8 @@
   //
   // Starting swell
   //
-  
+
+ 
   swell.onReady(function(service) {
 
     window.service = service;
@@ -294,9 +303,12 @@
       isLocal = true;
       configButton("saveBtn","Save...");
     } else {
-      text = object.get('documents.'+name);
+      text = object.get('documents.'+name);      
       isLocal = false;
       configButton("saveBtn","Save", true);
+
+      revisionsText = text.getPlaybackTextFor(swell.TextWeb.REV_HISTORY);
+      renderRevisionList();
     }
 
     // Show the text in the editor,
@@ -308,6 +320,42 @@
     configButton("editBtn", "Edit On");
   }
 
+
+  
+  function renderRevisionList() {
+    revList = []; // global
+    var revIterator = revisionsText.getHistoryIterator();
+
+    function loadRevisions(onFinish) {
+      revIterator.prev(r => {
+        if (r) {
+          revList.push(r);
+          loadRevisions(revIterator);
+        } else  {
+          renderRevisions();
+        }
+
+      });
+    };
+    
+  function renderRevisions()  {
+      var revListElement = document.getElementById("revlist");
+      revListElement.innerHTML = "<span>Latest</span>";
+      for (var i in revList) {
+        var rev = revList[i];
+
+        var div = document.createElement("div");
+        div.id = rev.appliedAtVersion;
+        var dt = new Date(rev.time);
+        div.innerHTML = "<span>" + dt.toLocaleDateString() + " " + dt.toLocaleTimeString() + "</span>";
+        // div.innerHTML += "<br><span>"+ rev.author +"</span>";
+        revListElement.appendChild(div);
+      }
+
+    };
+
+    loadRevisions();
+  }
 
   function editDocument() {
     if (!editor.hasDocument()) return;
@@ -349,7 +397,7 @@
   function configTitle(name) {
     var t = document.getElementById("title");
     if (!name)
-      t.innerHTML = "New document";
+      t.innerHTML = "(New document)";
     else
       t.innerHTML = name;
   }
