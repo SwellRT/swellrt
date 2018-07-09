@@ -54,14 +54,13 @@ public class SEditor implements EditorUpdateListener {
     void exec(Range range, SEditor editor, SSelection node);
   }
 
-  private static boolean wasConfigured = false;
-
-  /** Configure editor component with custom settings */
+  /**
+   * Set the properties to configure new editor instances.
+   */
   public static void configure(SEditorConfig config) {
     if (config == null)
       return;
     SEditorStatics.setConfig(config);
-    wasConfigured = true;
   }
 
   public static SEditor create(@JsOptional Element e) {

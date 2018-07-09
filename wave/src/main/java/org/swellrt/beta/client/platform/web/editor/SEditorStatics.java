@@ -15,6 +15,7 @@ import org.waveprotocol.wave.client.editor.Editor;
 import org.waveprotocol.wave.client.editor.EditorSettings;
 import org.waveprotocol.wave.client.editor.EditorStaticDeps;
 import org.waveprotocol.wave.client.editor.Editors;
+import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.client.editor.content.misc.StyleAnnotationHandler;
 import org.waveprotocol.wave.client.editor.content.paragraph.LineRendering;
 import org.waveprotocol.wave.client.editor.keys.KeyBindingRegistry;
@@ -26,13 +27,18 @@ import org.waveprotocol.wave.model.conversation.Blips;
 import org.waveprotocol.wave.model.document.util.LineContainers;
 
 /**
- * Put here all static dependencies and initializations for the editor
- * component. Editor depends on several static stuff (Doodads, registries...)
+ * A static central place of configuration of SwellRT's Editor component. <br>
+ * This class will invoke configuration logic of Wave's Editor parts.
+ * <p>
  * <br>
  *
- * See {@link Editor.ROOT_HANDLER_REGISTRY} and
- * {@link Editor.ROOT_ANNOTATION_REGISTRY} for more info about Editor's
- * configuration.
+ * See following classes for more info on editor initialization
+ * <ul>
+ * <li>{@link Editors#initRootRegistries()}
+ * <li>{@link Editor#ROOT_HANDLER_REGISTRY}
+ * <li>{@link Editor#ROOT_ANNOTATION_REGISTRY}
+ * <li>{@link Editor#init(org.waveprotocol.wave.client.editor.content.Registries, KeyBindingRegistry, EditorSettings)}
+ * </ul>
  *
  *
  */
@@ -50,7 +56,7 @@ public class SEditorStatics {
   }
 
 
-  /** Editor's specific settings */
+  /** Editor's specific settings. */
   private static EditorSettings editorSettings;
 
   /** The latest configuration object */
@@ -162,6 +168,15 @@ public class SEditorStatics {
 
   }
 
+  /**
+   * Wave's Editor and ContentDocument logic relies on pluggable components as
+   * handlers, renderers that must be declared in Editor's registry.
+   * <p>
+   * Here we do initialization and registry of main handlers and renderer
+   * objects.
+   * <P>
+   * Call this method before creating any {@link ContentDocument} instance.
+   */
   public static void initRegistries() {
 
     Editors.initRootRegistries();

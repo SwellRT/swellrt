@@ -10,7 +10,7 @@ import jsinterop.annotations.JsType;
 
 /**
  * A class to define editor's settings. Create a javascript object with
- * following properties and pass it to {@link SEditor}.
+ * following properties and pass it to {@link SEditor#configure(SEditorConfig)}.
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  */
