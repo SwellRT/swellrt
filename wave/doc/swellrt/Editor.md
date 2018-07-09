@@ -1,34 +1,31 @@
 
 
-Swell Web API includes a customizable rich-text editor.
+# Editor
 
-## Editor component
+SwellRT Web API provides a customizable rich-text editor
+that allows real-time editing of SwellRT text nodes.
 
-The swell's text editor component allows to embed a full-featured text editor in a Web page that already uses the swell API.
+The text editor experience can be extended and enhanced by developers using the following features available in the API:
 
-An editor is attached to a particular DIV of a page:
+- Custom handlers for **carets** and **text selections**.
+- Custom and Predefined **text annotations**.
 
-```html
-<div id="editor">
-	<!-- swell's text fields cab be displayed here -->
-</div>
-```
 
-```js
-var editor = swell.Editor.create(document.getElementById("editor"));
-```
 
-An editor manages swell's text objects. A text can be just local...
+## Text nodes
+
+### Creation
+
+A local text node is create with the following sentence:
 
 ```js
 var text = swell.Text.create("Some initial text");
 ```
 
-... or can be shared in a collaborative object if it is assigned to one:
+To really have a collaborative text, share the node as 
+part of a collaborative object:
 
 ```js
-var text = swell.Text.create("Some initial text");
-
 service.open({ id : "shared-text-object" })
     .then(object => {
 		
@@ -36,55 +33,90 @@ service.open({ id : "shared-text-object" })
 			object.set('text', text);
 		}
 
-		text = object.get('text'); // remind to get this reference!
+		// remind to get this reference!
+		text = object.get('text');
+
 	});
 ```
 
-Common editor operations are:
 
-**editor.set(text)**
+### Rendering
 
-Attach the text to the editor, the content is rendered
+Text nodes can be directly rendered into a `div` element of the
+DOM tree. Rendered text can't be edited by users unless the text node is wrapped by an editor instance. However, a rendered view of a text is live, showing, in realtime,  changes performed remotely or locally via the API.
 
-**editor.edit(boolean)**
+### Text node functions 
 
-Enable user editing
+**text.attachToDOM(element)**
 
-**editor.isEditing()**
+Attach the text node to an existing DOM element and render it.
 
-Checks whether the editor is in user editing mode
+**deattachFromDOM()**
 
-**editor.hasDocument()** 
+Deattach this text node from DOM.
 
-Checks whether the editor has an attached text object
+**isAttachedToDOM():boolean**
+
+Check whether the node is attached or not.
+
+
+## Editor
+
+### Basic functions
+
+The SwellRT editor component, allows users to edit a text node
+in a Web page. It provides some features by default: *key events, clipboard copy/paste, embedded widgets, diff/history views, etc.*
+
+**swell.Editor.create([divElement])**
+
+Create a new editor instance. If a `div` element is provided, text nodes assigned to the editor will be rendered inside that element. Otherwise, the text node is required to be attached previously to a DOM element.
+
+```js
+var editor = swell.Editor.create(document.getElementById("editor"));
+```
+
+**editor.set(textNode)**
+
+Assign a text node to the editor, rendering the text inmediately.
 
 **editor.clean()**
 
-Deattach the text from the editor an clean editor content
+Unset the text node previously assigned to this editor. Stop rendering the text inmediately.
 
+**editor.edit(boolean)**
 
+Allow to user to edit interactively or not the text.
 
-## Text selections
+**editor.isEditing()**
 
-The editor component allow apps to assign logic when editor's caret position changes or the user selects text.
+Checks whether the editor is in edit mode.
 
+**editor.hasDocument()** 
+
+Checks whether the editor has attached a text node.
+
+### Caret and Selections
+
+Selections are those contiguous parts of a text selected by an user when she interacts with the editor canvas. Selections also
+points to the location of the editor's caret: the caret is always at the beginning of a selection, hence, a zero length selection stands for the caret.
+
+The Editor's API allows developers to listen when selections
+change using registering a selection handler in the editor:
 
 ```js
 editor.setSelectionHandler((range, editor, selection) => {
     
-
 
       });
 ```
 
 The selection handler receives following arguments:
 
-*editor*, a reference to the editor's object.
+**editor**, a reference to the editor's object.
 
-*range*, see *selection.range*. 
+**range**, the selection range. See *selection.range*. 
 
-*selection*, the object having information of the current selection. It can be also obtained programatically:
-
+**selection**, bundled information about the current selection. It can be also retrieved programatically:
 
 ```js
 var selection = editor.getSelection();
@@ -101,7 +133,7 @@ A selection object has following properties and methods:
 *selection.focusOffset*, number representing the offset of the selection's anchor within the focusNode. If focusNode is a text node, this is the number of characters within focusNode preceding the focus. Zero otherwise.
 
 
-*selection.range*, start and end indexes of the selection refering to the document content chars, not the DOM rendering. For example:
+*selection.range*, start and end indexes of the selection within the text. For example:
 
 ```js
  { 
@@ -110,12 +142,12 @@ A selection object has following properties and methods:
  }
 ```
 
-*selection.isCollpased*, boolean value, true iff range has same start and end positions.
+*selection.isCollpased*, boolean value, true iff range has same start and end positions, that is, if is a caret,
 
 *selection.getFocusBound()*, gets the y-bounds of the cursor position.
 
 
-*selection.getSelectionPosition()*, coordinates of the current selection start relative to a provided element, for example:
+*selection.getSelectionPosition()*, coordinates of the current selection start relative to a parent element, for example:
 
 ```js
 {
@@ -125,33 +157,53 @@ A selection object has following properties and methods:
 }
 ```
 
-*selection.getAnchorPosition()*, coordinates of the current selection end relative to a provided element.
+*selection.getAnchorPosition()*, coordinates of the current selection end relative to a parent element.
 
 
 ## Annotations
 
-An annotation is a pair *{key, value}* associated with a segment of text or *range* of the document. 
+An annotation is a set of tree values: `(key, value, range)`:
+
+**Annotation key**: type of the annotation, it is just a string
+that allows to group annotations by its value. Examples of annotation types in a text are "comments", "hyperlinks", "bookmarks". 
+
+**Annotation value**: the value of the annotation, for example a "URL" for an hyperlink annotation.
+
+**Annotation range**: a contiguous part of the text where the annotation applies to. Consider the following text (first char is always at position 0):
 
 ```
 	It was one of those March days when...
 	|                   |   |					  
 	0                  20   24 	  
 ```
-In this example, we could set an annotation to the word "March" with the following data:
+
+In this example, we could set an annotation for the word "March" with the following data:
 
 - *range: (20,24)*
 - *name/key: month*
 - *value: 4*
 
-The value and the key fields are strings and the range is an ordered pair of positions inside the text.
+Value and key fields are strings and the range is an ordered pair of positions inside the text.
 
-Annotations can also modify how text is rendered in order to provide visual effects:
+Annotations are stored as part of a text node and like the
+rest of SwellRT concepts, can be handled in real-time.
+However, how annotations are rendered is a responsability of the text/editor and its extensions.
 
-### Out of the box annotations
 
-The Swell editor provides a predefined set of annotations that helps to control appearence and styling of the text, following the CSS rules:
+### Predefined annotations for text styling.
 
-**Paragraph style annotations**
+The SwellRT editor provides a predefined set of annotation types that controls the rendered appearence and style of the text using the CSS syntaxis. 
+
+Use as follows to set a H1 header in the current selection.
+
+```js
+editor.setAnnotation("header", "h1");
+```
+
+For additional ways of setting annotations jump to the *Annotations Functions* section:
+
+
+#### Paragraph style annotations
 
 | Name | Values |
 |----- | ------ |
@@ -160,7 +212,7 @@ The Swell editor provides a predefined set of annotations that helps to control 
 |list     | *decimal, unordered* |
 |indent	  | *outdent, indent* |
 
-**Text style annotations**
+#### Text style annotations
 
 | Name | Values |
 |----- | ------ |
@@ -177,66 +229,93 @@ The values of these annotations will be added as inline CSS styles of the annota
 
 ### Custom annotations
 
-In order to use annotations that are rendered in a custom way we must define then in the editor:
+For custom annotations, developers can provide custom render logic within the editor canvas.
+
+First of all, a custom annotation type (key) must be registered in the API with the following syntax:
+
+(**NOTE: annotations must be registerd before creating any Editor instance.**)
+
 
 ```js
 swell.Editor.AnnotationRegistry.define(
-	'comment', 
-	'commentclass', 
+	<key>, 
+	<css-class>, 
 	{ 
-		backgroundColor: grey 
+		<inline-css-rule>,
+		<inline-css-rule>,
+		...
 	});
 ```
 
-In this example, when a *comment* annotation is rendered the editor will render the annotated text with a HTML like this:
+- `<key>` (string) the annotation type aka the annotation key.
+- `<css-class>` (string) a CSS class name.
+- `<inline-css-rule>` a CSS inline rule.
+
+
+These arguments customize how the annotated text will be rendered in the DOM.
+
+Having the following annotation definition for "draft":
+
+```js
+swell.Editor.AnnotationRegistry.define(
+	'draft', 
+	'draft', 
+	{ 
+		'background-color': 'grey'
+	});
+```
+a text annotated with it will be rendered as follows:
 
 ```html
-	<span class="comment" style="background-color: grey">bla bla bla</span>
+	<span 
+		class="draft" 
+		style="background-color: grey">
+		bla bla bla
+	</span>
+
 ```
 
-**Important**: define custom annotations always BEFORE to get a new editor's instance with any of the methods *swell.Editor.createXXX()*
 
 
-### Working with annotations
+### Annotations functions
 
 
 **editor.setAnnotation(key, value, [range])**
 
-Sets a new *name* annotation in the provided range with a given *value*.
-Setting a *null* value removes the annotation only in given range, spliting the rest of the annotation.
+Annotates with the provided key and value, the text in the current selection or the one selected by the provided range.
 
-If no range is provided, current selection is assumed.
+If a *null* value is set, the annotation is removed only in given range, spliting the rest of the annotation.
 
-**editor.clearAnnotation(keys, [range])**
 
-Remove all annotations within array *keys* that are partially o totally contained in the range.
+**editor.clearAnnotation(keys[], [range])**
 
-If no range is provided, current selection is assumed.
+Remove all annotations with key within the array *keys* that are partially or totally contained in the range.
 
-**editor.getAnnotations(keys, [range])**
+When no range is provided, current selection is assumed.
 
-Get all annotation values for the given keys. 
+**editor.getAnnotations(keys[], [range])**
 
+Get all annotation for the given keys. 
 If *range* is not provided, current selection range is used.
 
 **editor.getAnnotationsWithValue(keys, value, [range])**
 
-Similar to previous function but filters out annotations with the given value.
+Similar to previous function but filtering out annotations with the given value.
 
 *Annotation values*
 
-Annotations obtained from *getAnnotationsXXX()* methods returns an object with an array for each annotation found, for example:
+Annotations obtained from *getAnnotationsXXX()* methods returns an object with one array for each annotation key found, for example:
 
 ```js
 {
 	link: [ ... ],
-	mark: [ ... ],
+	draft: [ ... ],
 	style/fontSize: [ {
 
 		key: 'style/fontSize',
 		value: '20px',
-		line: <dom element>,
-		node: <dom node>,
+		line: <DOM element>,
+		node: <DOM node>,
 		range: {
 			start: 10,
 			end: 21
@@ -249,14 +328,18 @@ Annotations obtained from *getAnnotationsXXX()* methods returns an object with a
 
 }
 ```
-*searchMatch* value can take these values:
+
+Each element on these arrays have self-explanatory properties.
+In particular the *searchMatch* property represents how the the annotation overlaps the searched range:
 
 - *swell.Annotation.MATCH_IN* the search range is equals or inside the annotations's range.
 - *swell.Annotation.MATCH_OUT* the search range is partially out of the annotation's range or spans beyond it.
 
+
+
 *Ranges*
 
-Usually you won't need to provide a hand written range (because you will get one from another part of the API) but if that is the case, create a new object with following properties:
+Usually you won't need to provide a hand written range (because you will get one from another API function) but if necessary, a range is a property with following properties:
 
 ```js
 var range = {
@@ -268,15 +351,14 @@ var range = {
 In situations when you need to indicate a range spaning the whole document use the constant:
 
 ```js
-var fullDocumentRange = swell.Editor.RANGE_ALL;
+var fullDocumentRange = swell.Range.ALL;
 ```
 
 
 
+### Anotations Overlap
 
-### Overlapping Text annotations
-
-Overlapping of annotations with same name can be problematic for some specific logics. Let's imagine the following example of a annotated text representing a comment (with value A):
+Overlapped annotations with same key can be problematic in some scenarios. Let's suppose the following example of an annotated text representing a comment (with value A):
 
 ```
               	  {comment,A}  
@@ -286,7 +368,7 @@ Overlapping of annotations with same name can be problematic for some specific l
 	                	  
 ```
 
-If we want to comment another part of the text that overlaps first comment's text, by default, the editor will split an override the former annotation with the new one (B):
+If we want to comment another part of the text that overlaps first comment's text, by default, the editor will split and override the former annotation with the new one (B):
 
 ```
               	  {comment,A}  
@@ -298,11 +380,11 @@ If we want to comment another part of the text that overlaps first comment's tex
 
 In this case, we have lost the reference of comment A in the word "March". 
 
-To avoid this situation you can use specific methods for text annotations:
+To avoid this situation you can use special methods:
 
 **editor.setAnnotationOverlap(name, value, [range])**
 
-For the previous example, this method will generate following annotations:
+Following the previous example, this method will generate following annotations:
 
 ```
                 {comment,A}  {comment,B}  
@@ -312,64 +394,69 @@ For the previous example, this method will generate following annotations:
 	                  {comment, A,B}
 ```
 
-Now, the word "March" will be annotated with annotation "comment" with combined value "A,B".
+Now, the word "March" will be annotated with annotation "comment" with a combined value "A,B".
 
-In order to revert this annotation properly use the method:
+In order to revert this annotation properly, use the method:
 
 **editor.clearAnnotationOverlap(name, value, [range])**
 
 
-### Events
+### Annotation events
 
-Annotation events are triggered both when the annotation is created or deleted in the document and when it is rendered or removed from the DOM view.
+Annotation events are triggered both when the annotation is created or deleted in the document and when it is rendered or unredered in the DOM.
 
- Annotation's event handler must be set right after the an annotation is defined:
+ An Annotation handler must be registed right after the annotation is defined, for example:
 
 ```js
-swell.Editor.AnnotationRegistry
-	.define("mark","mark");
+swell.Editor.AnnotationRegistry.define("mark","mark");
 
- swell.Editor.AnnotationRegistry
- 	.setHandler("mark", (event) => {
+swell.Editor.AnnotationRegistrysetHandler("mark", (event) => {
 
       console.log("annotation event ["+event.type+"] "+event.annotation.key+"="+event.annotation.value+", "+event.annotation.range.start+":"+event.annotation.range.end);
 
     });	
 ```
-An event object is passed to the handler anytime the given annotation throws an event. This object has following properties:
+The event object is passed to the handler anytime the given annotation throws an event. This object has following properties:
 
 ```js
 event = {
 
 	type: <int>,
+	newValue: <string>,
 	annotation: <annotation value>
 	domEvent: <dom event>
 
 }
 ```
 
-There are two type of events, for DOM and for document changes. DOM events are thrown anytime the editor needs to repaint annotations:
+There are two type of events, DOM-level and Text-level. 
 
-- *swell.Annotation.EVENT_DOM_MUTATED* 
-- *swell.Annotation.EVENT_DOM_CREATED*
-- *swell.Annotation.EVENT_DOM_REMOVED*
+*DOM-level events* are triggered anytime the editor needs to repaint annotations:
 
-Document events are only thrown when annotations are created or removed in the document:
+- *swell.AnnotationEvent.EVENT_DOM_ADDED* 
+- *swell.AnnotationEvent.EVENT_DOM_MUTATED*
+- *swell.AnnotationEvent.EVENT_DOM_REMOVED*
+- *swell.AnnotationEvent.EVENT_DOM_EVENT*
 
-- *swell.Annotation.EVENT_CREATED*
-- *swell.Annotation.EVENT_REMOVED*
+*Text-level events* are only triggered when annotations are created or removed in the text:
+
+- *swell.AnnotationEvent.EVENT_CREATED*
+- *swell.AnnotationEvent.EVENT_REMOVED*
 
 
 ### Custom carets
 
-Rendering of carets can be customized. Custom carets must be objects providing following properties and methods:
+The text editor renders cursors for all user editing a text concurrently. Developers can customize the displayed caret configuring the editor with a caret factory.
+
+A custom caret is a simple Javascript object that must provide following properties and methods:
 
 ```js
 var caret = new Caret(); // our custom caret type
-caret.element; // property with the DOM element of the rendered caret.
-caret.update(caretInfo); // a method to pass info to the object.
+caret.element; // DOM element of the rendered caret.
+caret.update(caretInfo); //called to refresh the caret element.
 ```
-Configure the editor component with a factory of carets using the configuration property "caretFactory":
+
+Configure a caret factory of using the editor global property "caretFactory":
 
 ```js
 swell.Editor.configure({
@@ -377,11 +464,66 @@ swell.Editor.configure({
 });
 ```
 
-## Development
+An editor instance will call `update(<caretInfo>)` method anytime it suposes the caret needs to be rendered again.
 
-### Logging editor events
+A caret info object contains following information that can be used to customize the caret DOM:
 
-Log to browser's console:
+```
+	caretInfo = {
+		timestamp: <long>, // last time the caret position changed 
+		session: <Session>, // the session object
+		position: <int> // the caret position in the text
+	}
+```
+
+A session object provides following information of a user's session:
+
+```
+	session = {
+		sessionId: '<session-id>',
+		id: '<user id>`,
+		name: 'user full name',
+		nickname: 'user nick name',
+		color: {
+				cssColor: 'rgb(RR,GG,BB)',
+				hexColor: '#RRGGBB'
+				},
+		lastAccessTime: <long>,
+		firstAccessTime: <long>
+	}
+```
+
+
+### Advanced configuration
+
+Editor instances can be tunned with some adavanced
+settings that can be set using the following method:
+
+```js
+
+swell.Editor.configure({
+	consoleLog: true
+});
+```
+
+A list of available properties that can be passed to the *configure* method follows:
+
+| Setting name | Value |
+|----- | ------ |
+|traceUserAgent| (boolean) shows the browser's UA string in console |
+|logPanel| (Element) DOM element where editor's log messages are printed |
+|consoleLog| (boolean) print log messages in browser's console |
+|undo     | (boolean) enable/disable editor undo |
+|caretFactory	  | (CaretViewFactory) a factory of caret objects |
+
+For more information on Editor internals check out
+*SEditorStatics* class.
+
+## Development tips
+
+### Logging
+
+Enable console log:
 
 ```js
 swell.Editor.configure({
@@ -389,7 +531,7 @@ swell.Editor.configure({
 });
 ```
 
-Log to an HTML panel:
+Enable HTML log panel:
 
 ```js
 swell.Editor.configure({
