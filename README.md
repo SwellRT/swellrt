@@ -90,7 +90,7 @@ Build
 ./gradlew compileJava devWeb
 ```
 
-If you get a "User limit of inotify watches reached" error, please increase this limit following stesp [here](https://askubuntu.com/questions/770374/user-limit-of-inotify-watches-reached-on-ubuntu-16-04)
+If you get a "User limit of inotify watches reached" error, please increase this limit following the steps [here](https://askubuntu.com/questions/770374/user-limit-of-inotify-watches-reached-on-ubuntu-16-04).
 
 Start the server
 
