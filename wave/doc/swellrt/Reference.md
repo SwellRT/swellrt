@@ -48,10 +48,7 @@ You also can get a reference to the entry point calling the global method:
 By default, API's methods provide a **promise-based** syntax:
 
 ```js
-    service.login({
-      id : swell.Constants.ANONYMOUS_USER_ID,
-      password : ''
-    })
+    service.login({})
     .then( user => {  })
     .catch( error => {  });
 ```
@@ -66,11 +63,7 @@ In case you rather work with callbacks you can get the callback-based entry poin
 All API methods follow the same syntax for callbacks, for example:
 
 ```js
-    callbackBasedService.login({
-      id : swell.Constants.ANONYMOUS_USER_ID,
-      password : ''
-    },
-
+    callbackBasedService.login({},
     {  
        onSuccess: function(user) {  },
        onError: function(error) {  }  
