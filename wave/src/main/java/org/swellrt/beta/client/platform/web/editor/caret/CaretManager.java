@@ -168,7 +168,7 @@ public class CaretManager implements EditorUpdateListener {
   public void onUpdate(EditorUpdateEvent event) {
     FocusedRange selection = event.context().getSelectionHelper().getSelectionRange();
 
-    if (event.selectionLocationChanged() && selection != null) {
+    if (selection != null) {
 
       String compositionState = event.context().getImeCompositionState();
       int caretPos = selection.asRange().getStart();
