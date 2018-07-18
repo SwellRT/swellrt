@@ -157,6 +157,12 @@ public class SEditor implements EditorUpdateListener {
     return editorPanel.getParent() != null;
   }
 
+  public Element getDOMElement() {
+    if (editor != null)
+      return editor.getDocumentHtmlElement();
+    else
+      return null;
+  }
 
   /**
    * Attach a text object to this editor. The text will be
@@ -281,7 +287,7 @@ public class SEditor implements EditorUpdateListener {
 
   public void focus() {
     if (editor != null && editor.hasDocument()) {
-      editor.focus(false);
+      editor.focus(true);
     }
   }
 
