@@ -133,6 +133,7 @@ public class SWaveObject implements SObject, SObservableNode {
     nodeManager.setPublic(isPublic);
   }
 
+  @Override
   public boolean isPublic() {
     return nodeManager.isPublic();
   }

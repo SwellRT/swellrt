@@ -56,6 +56,8 @@ public interface SObject extends SMap, ServiceOperation.Response {
   /** Make this object to be public to any user */
   public void setPublic(boolean isPublic);
 
+  public boolean isPublic();
+
   /** @return root map of the user's private area in this object */
   public SMap getUserStore();
 

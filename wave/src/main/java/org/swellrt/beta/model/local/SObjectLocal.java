@@ -136,6 +136,10 @@ public class SObjectLocal implements SObject {
     // Ignore for local objects
   }
 
+  @Override
+  public boolean isPublic() {
+    return false;
+  }
 
   @SuppressWarnings("rawtypes")
   @JsIgnore
@@ -288,4 +292,5 @@ public class SObjectLocal implements SObject {
     // TODO Auto-generated method stub
     return null;
   }
+
 }
