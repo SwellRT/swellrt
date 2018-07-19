@@ -31,7 +31,7 @@ import jsinterop.annotations.JsType;
  * A ParticipantId uniquely identifies a participant. It looks like an email
  * address, e.g. 'joe@example.com'
  */
-@JsType(namespace = "swell", name = "Participant")
+@JsType(namespace = "swell", name = "ParticipantId")
 public final class ParticipantId implements Comparable<ParticipantId>, Serializable {
 
   private static final long serialVersionUID = -1465142562958113670L;
