@@ -53,6 +53,10 @@ public interface ParticipationHelper {
   static final ParticipationHelper AUTO = new ParticipationHelper() {
       @Override
       public ParticipantId getAuthoriser(ParticipantId editor, Set<ParticipantId> candidates) {
+      // avoid to add anonymous users as participants
+      if (editor.isAnonymous())
+        return null;
+
         return editor;
       }
     };
