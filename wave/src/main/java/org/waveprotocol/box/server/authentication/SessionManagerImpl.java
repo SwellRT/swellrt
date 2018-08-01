@@ -440,6 +440,10 @@ public final class SessionManagerImpl implements SessionManager {
         }
       }
 
+      if (pickedSessionUser == null) {
+        return null;
+      }
+
       updateSessionUser(request, pickedSessionUser);
       return pickedSessionUser.participanId;
 
