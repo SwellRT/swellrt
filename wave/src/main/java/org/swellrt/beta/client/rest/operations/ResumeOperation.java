@@ -23,6 +23,12 @@ public final class ResumeOperation
   }
 
   @Override
+  protected void doSuccess(Account response) {
+    context.initSession(response);
+    super.doSuccess(response);
+  }
+
+  @Override
   protected void buildRestParams() throws SException {
     addPathElement("auth");
     addPathElement(options.getId());
