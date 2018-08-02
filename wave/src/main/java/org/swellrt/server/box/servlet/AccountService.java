@@ -558,10 +558,12 @@ public class AccountService extends BaseService {
 
         if (accountData != null && accountData.isHuman()) {
           accountServiceDataList.add(toPublicServiceData(urlBuilder, accountData.asHuman()));
+        } else {
+          accountServiceDataList.add(new AccountServiceData(p.getAddress()));
         }
 
       } catch (PersistenceException e) {
-        // Ignore missing accounts
+        accountServiceDataList.add(new AccountServiceData(p.getAddress()));
       }
 
     }
