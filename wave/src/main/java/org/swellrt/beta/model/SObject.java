@@ -4,7 +4,6 @@ import org.swellrt.beta.client.rest.ServiceOperation;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsProperty;
@@ -43,7 +42,7 @@ public interface SObject extends SMap, ServiceOperation.Response {
    * @return array of all participants with access to the object currently. They
    *         might not get connected to the object yet.
    */
-  public ParticipantId[] getParticipants();
+  public String[] getParticipants();
 
   /**
    * @return array with the last session of any participant who had access to
@@ -56,7 +55,11 @@ public interface SObject extends SMap, ServiceOperation.Response {
   /** Make this object to be public to any user */
   public void setPublic(boolean isPublic);
 
+  /** Check if the object is public */
   public boolean isPublic();
+
+  /** Get creator id */
+  public String getCreatorId();
 
   /** @return root map of the user's private area in this object */
   public SMap getUserStore();

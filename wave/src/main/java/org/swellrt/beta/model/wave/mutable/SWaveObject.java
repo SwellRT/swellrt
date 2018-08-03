@@ -117,9 +117,10 @@ public class SWaveObject implements SObject, SObservableNode {
   }
 
   @Override
-  public ParticipantId[] getParticipants() {
-    return nodeManager.getParticipants()
-        .toArray(new ParticipantId[nodeManager.getParticipants().size()]);
+  public String[] getParticipants() {
+    return nodeManager.getParticipants().stream().map(p -> {
+      return p.getAddress();
+    }).toArray(String[]::new);
   }
 
   @Override
@@ -136,6 +137,11 @@ public class SWaveObject implements SObject, SObservableNode {
   @Override
   public boolean isPublic() {
     return nodeManager.isPublic();
+  }
+
+  @Override
+  public String getCreatorId() {
+    return nodeManager.getCreatorId().getAddress();
   }
 
   public Object js() {

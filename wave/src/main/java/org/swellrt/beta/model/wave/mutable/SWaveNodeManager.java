@@ -742,6 +742,9 @@ public class SWaveNodeManager {
     return dataWavelet.getParticipantIds();
   }
 
+  public ParticipantId getCreatorId() {
+    return dataWavelet.getCreatorId();
+  }
 
   //
   // For debug
