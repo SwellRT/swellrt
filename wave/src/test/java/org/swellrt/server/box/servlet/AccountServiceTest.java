@@ -64,6 +64,9 @@ public class AccountServiceTest extends TestCase {
       ParticipantId.ofUnsafe("mat@example.com"), "mat@mail.example.com", "image/png;image.png",
       "es_ES");
 
+  protected static HumanAccountData ACCOUNT_MIKE = createHumanAccount(
+      ParticipantId.ofUnsafe("mike@example.com"), null, null, null);
+
   AccountStore accountStore;
   AccountAttachmentStore accountAttachmentStore;
   AccountService service;
@@ -352,11 +355,12 @@ public class AccountServiceTest extends TestCase {
         (AccountServiceData[]) ServiceData.arrayFromJson(responseStream.toString("UTF-8"),
             AccountServiceData[].class);
 
-    assertEquals(3, responseData.length);
+    assertEquals(4, responseData.length);
     // We expect results in the same order as query
     assertEqualsAccount(ACCOUNT_JOE, responseData[0]);
     assertEqualsAccount(ACCOUNT_TOM, responseData[1]);
-    assertEqualsAccount(ACCOUNT_MAT, responseData[2]);
+    assertEqualsAccount(ACCOUNT_MIKE, responseData[2]);
+    assertEqualsAccount(ACCOUNT_MAT, responseData[3]);
   }
 
   protected void assertEqualsAccount(HumanAccountData expected, AccountServiceData actual) {
