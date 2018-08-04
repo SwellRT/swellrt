@@ -121,6 +121,9 @@ repositories {
     maven {
         url 'https://oss.sonatype.org/service/local/repositories/snapshots/content/'
     }
+    maven {
+        url 'https://maven.atlassian.com/3rdparty/'
+    }
 }
 
 dependencies {
@@ -193,9 +196,9 @@ dependencies {
             [group: "javax.jdo", name: "jdo2-api", version: "2.1"],                                             // [?, ?]
             [group: "jline", name: "jline", version: "0.9.94"],                                                 // [?, ?]
             [group: "joda-time", name: "joda-time", version: "1.6"],                                            // [?, ?]
-            [group: "net.oauth.core", name: "oauth-provider", version: "20100527"],                             // [?, ?]
-            [group: "net.oauth.core", name: "oauth", version: "20100527"],                                      // [?, ?]
-            [group: "net.oauth.core", name: "oauth-consumer", version: "20100527"],                             // [?, ?]
+            [group: "net.oauth.core", name: "oauth-provider", version: "20100601-atlassian-2"],                 // [11/2016, depreciate]
+            [group: "net.oauth.core", name: "oauth", version: "20100601-atlassian-2"],                          // [11/2016, depreciate]
+            [group: "net.oauth.core", name: "oauth-consumer", version: "20100601-atlassian-2"],                             // [?, ?]
             [group: "xerces", name: "xercesImpl", version: "2.11.0"],                                                // [?, ?]
             [group: "xpp3", name: "xpp3", version: "1.1.4c"],                                                   // [?, ?]
             [group: "xpp3", name: "xpp3_xpath", version: "1.1.4c"],                                             // [?, ?]
