@@ -31,7 +31,7 @@ apply plugin: 'jetty'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "1.0.4-beta"
+version = "2.0.0-beta"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
