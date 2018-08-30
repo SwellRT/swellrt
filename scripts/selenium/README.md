@@ -1,29 +1,22 @@
 
+This folder contains some Selenium scripts to automatically test client side aspects of SwellRT:
+
+- *TestWaveJS* allows to run automatically Jasmine unit tests of the JS API (see war/test)
+
 
 ## Setting up
 
-* Download the suitable driver (e.g. chromedriver)
+Download a suitable web driver (e.g. chromedriver)
+If location of the chrome driver is different from "/usr/local/bin/chromedriver" you should set the path as JVM option when you run the selenium project:
+
+`-Ddriverpath=path/to/chromedriver`
 
 ## Development Using Eclipse IDE
 
-Import the folder `selenium/` as Existing Java Project into Eclipse
-Edit `selenium/TestWaveJS.java`.
+Import the folder `selenium/` as "Existing Java Project" into Eclipse
+Customize o create a selenium script. Check out `selenium/TestWaveJS.java` as reference.
 
-## Build
 
-Compile with Ant: `ant -f build-swellrt.xml swellrt-compile-js-dev`
-
-## Run
-
-Build a run Wave Server separately: `ant compile run-server`
-
-The first time you run the test you should register the test user at http://localhost:9898/auth/register with name 'test' and password 'test'
-
-Run test: `ant -f build-swellrt.xml swellrt-js-test`
-
-Note: if the location of the chrome driver is different from "/usr/local/bin/chromedriver" you should set the path as JVM option as:
-
- `ant -f build-swellrt.xml swellrt-js-test -Ddriverpath=path/to/chromedriver`
 
 
 
