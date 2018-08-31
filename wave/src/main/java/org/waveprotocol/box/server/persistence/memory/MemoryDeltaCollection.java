@@ -140,19 +140,21 @@ public class MemoryDeltaCollection implements DeltasAccess {
   public long getDeltasInRange(long startVersion, long endVersion,
       Receiver<WaveletDeltaRecord> receiver) throws IOException {
 
-    Preconditions
-        .checkState((startVersion >= 0 && startVersion < endVersion && endVersion <= this.endVersion
-            .getVersion()));
+    Preconditions.checkState((startVersion >= 0 && startVersion < endVersion));
 
     long count = 0;
     long v = startVersion;
     while (v < endVersion) {
       WaveletDeltaRecord delta = deltas.get(v);
-      if (!receiver.put(delta)) {
+      if (delta != null) {
+        if (!receiver.put(delta)) {
+          break;
+        }
+        v = delta.getResultingVersion().getVersion();
+        count++;
+      } else {
         break;
       }
-      v = delta.getResultingVersion().getVersion();
-      count++;
     }
 
     return count;
