@@ -1,4 +1,4 @@
-<!--
+	<!--
   SwellRT Pad demo
   Author: Pablo Ojanguren (pablojan@gmail.com)
 
@@ -88,14 +88,6 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-offset-1 col-md-10">
-        <span>Static text view</span>
-        <div id="text" class="editor-canvas">
-        </div>
-      </div>
-    </div>
-
 
   </div><!-- container -->
 
@@ -142,11 +134,6 @@
         websocketHeartbeatInterval: 30000
     };
 
-    // Configure editor globals
-    __swellrt_editor_config = {
-      enableLog: false,
-      webkitComposition: false
-    };
   </script>
 
   <script src="js/jquery.min.js"></script>
@@ -212,22 +199,15 @@
       }
 
       // Create editor instance, reusable
+      
+      swell.Editor.configure({});
 
-      if (!params.static) {
+      editor = swell.Editor.create(document.getElementById("editor"));
+      
+      var text = object.get("text");
+      editor.set(text);
+      editor.edit(true);
 
-        editor = swellrt.Editor.createWithId("editor", service);
-
-        var text = object.get("text");
-        editor.set(text);
-        editor.edit(true);
-
-      } else {
-
-        var text = object.get("text");
-        text.setParent(document.getElementById("text"));
-        text.setInteractive();
-
-      }
 
     })
     .catch(function(e) {
