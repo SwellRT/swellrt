@@ -211,7 +211,7 @@ public class AuthenticationService extends BaseService {
 
       if (authData.id.equals(ANONYMOUS_ID)) {
 
-        doLogin(req, resp, ParticipantId.anonymousOfUnsafe(domain), false);
+        doLogin(req, resp, ParticipantId.anyoneUniversal(domain), false);
 
       } else {
 

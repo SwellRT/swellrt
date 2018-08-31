@@ -163,7 +163,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
     return address.startsWith(ANONYMOUS_PREFIX);
   }
 
-  public boolean isRegular() {
+  public boolean isRegistered() {
     return !getName().isEmpty() && !isAnonymous() && !isGroup() && !isSuperUser();
   }
 
@@ -179,7 +179,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
    * @return true if participant stands for any participant excluding anonymous
    *         (regular participants)
    */
-  public boolean isRegularAnyone() {
+  public boolean isAnyoneRegistered() {
     String name = getName();
     return name.isEmpty();
   }
@@ -187,7 +187,7 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   /**
    * @return true if participant stands for any participant including anonymous.
    */
-  public boolean isAnyone() {
+  public boolean isAnyoneUniversal() {
     String name = getName();
     return name.equals(ANONYMOUS_PREFIX);
   }
@@ -240,17 +240,17 @@ public final class ParticipantId implements Comparable<ParticipantId>, Serializa
   }
 
   @JsIgnore
-  public static ParticipantId anonymousOfUnsafe(String id, String domain) {
+  public static ParticipantId anonymous(String id, String domain) {
     return ofUnsafe(ANONYMOUS_PREFIX + id + DOMAIN_PREFIX + domain);
   }
 
   @JsIgnore
-  public static ParticipantId anonymousOfUnsafe(String domain) {
+  public static ParticipantId anyoneUniversal(String domain) {
     return ofUnsafe(ANONYMOUS_PREFIX + DOMAIN_PREFIX + domain);
   }
 
   @JsIgnore
-  public static ParticipantId ofPublic(String domain) {
+  public static ParticipantId anyoneRegistered(String domain) {
     return ParticipantId.ofUnsafe(DOMAIN_PREFIX + domain);
   }
 

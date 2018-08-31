@@ -158,7 +158,7 @@ public class ChatDemo {
   public static void main(String[] args) {
 
     ChatDemo chat = new ChatDemo("http://localhost:9898",
-        ParticipantId.anonymousOfUnsafe("local.net").getAddress(), "");
+        ParticipantId.anyoneUniversal("local.net").getAddress(), "");
 
     try {
       chat.run();

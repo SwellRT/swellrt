@@ -247,7 +247,7 @@ public class AuthenticationServlet extends HttpServlet {
 
     // Anonymous log in
     if (loggedInAddress == null) {
-      loggedInAddress = ParticipantId.anonymousOfUnsafe(session.getId(), domain);
+      loggedInAddress = ParticipantId.anonymous(session.getId(), domain);
     }
 
     sessionManager.login(session, loggedInAddress);

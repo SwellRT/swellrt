@@ -22,7 +22,7 @@ public class AccessController {
 
   private static final Log LOG = Log.get(AccessController.class);
 
-  private final ParticipantId anyonePid;
+  private final ParticipantId anyoneUniversalPid;
   private final ParticipantId anyoneRegularPid;
   private final ParticipantId superPid;
 
@@ -37,8 +37,8 @@ public class AccessController {
     String randomId = RandomStringUtils.randomAlphanumeric(10).toLowerCase();
 
     this.superPid = ParticipantIdUtil.makeSuperPartincipantId(randomId, waveDomain);
-    this.anyonePid = ParticipantIdUtil.makeAnyoneParticipantId(waveDomain);
-    this.anyoneRegularPid = ParticipantIdUtil.makeAnyoneRegularId(waveDomain);
+    this.anyoneUniversalPid = ParticipantIdUtil.makeAnyoneUniversal(waveDomain);
+    this.anyoneRegularPid = ParticipantIdUtil.makeAnyoneRegistered(waveDomain);
 
     this.groupStore = groupStore;
     LOG.info("Random Super Participant Id is " + superPid.toString());
@@ -70,10 +70,10 @@ public class AccessController {
     if (snapshot.getParticipants().contains(user))
       return true;
 
-    if (snapshot.getParticipants().contains(anyonePid))
+    if (snapshot.getParticipants().contains(anyoneUniversalPid))
       return true;
 
-    if (user.isRegular() && snapshot.getParticipants().contains(anyoneRegularPid))
+    if (user.isRegistered() && snapshot.getParticipants().contains(anyoneRegularPid))
       return true;
 
 

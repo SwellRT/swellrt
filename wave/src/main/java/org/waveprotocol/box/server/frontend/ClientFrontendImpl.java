@@ -19,8 +19,9 @@
 
 package org.waveprotocol.box.server.frontend;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.waveprotocol.box.common.DeltaSequence;
 import org.waveprotocol.box.common.comms.WaveClientRpc;
@@ -46,9 +47,8 @@ import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.model.wave.data.ReadableWaveletData;
 import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -66,6 +66,17 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
   private final WaveletInfo waveletInfo;
   private final String waveDomain;
 
+  /**
+   * The legacy "@domain.com" meta participant. It grants access for anyone
+   * registered but non anonymous accounts.
+   */
+  private final ParticipantId anyoneRegistered;
+
+  /**
+   * The swell ";@domain.com" meta participant. It grants access for anyone
+   * including anonymous accounts.
+   */
+  private final ParticipantId anyoneUniversal;
 
   /**
    * Creates a client frontend and subscribes it to the wave bus.
@@ -93,6 +104,8 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     this.waveletProvider = waveletProvider;
     this.waveletInfo = waveletInfo;
     this.waveDomain = waveDomain;
+    this.anyoneRegistered = ParticipantIdUtil.makeAnyoneRegistered(waveDomain);
+    this.anyoneUniversal = ParticipantIdUtil.makeAnyoneUniversal(waveDomain);
   }
 
   @Override
@@ -102,21 +115,21 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
         + waveletIdFilter + ", known wavelets: " + knownWavelets);
 
     // Users must be logged in always, but they might be anonymous.
-    if (loggedInUser == null) {      
+    if (loggedInUser == null) {
       openListener.onFailure(new ChannelException(ResponseCode.NOT_LOGGED_IN, "Not Logged in", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
 
-    if (!knownWavelets.isEmpty()) {      
+    if (!knownWavelets.isEmpty()) {
       openListener.onFailure(new ChannelException(ResponseCode.INTERNAL_ERROR, "Known wavelets not supported", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
-    
+
     boolean isNewWave = false;
     try {
       isNewWave = waveletInfo.initialiseWave(waveId);
     } catch (WaveServerException e) {
-      LOG.severe("Wave server failed lookup for " + waveId, e);      
+      LOG.severe("Wave server failed lookup for " + waveId, e);
       openListener.onFailure(new ChannelException(ResponseCode.WAVE_RETRIEVAL_ERROR, "Wave server failed to look up wave", null, Recoverable.NOT_RECOVERABLE, waveId, null));
       return;
     }
@@ -134,7 +147,7 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       waveletIds = Sets.newHashSet();
       LOG.warning("Failed to retrieve visible wavelets for " + loggedInUser, e1);
     }
-    
+
     for (WaveletId waveletId : waveletIds) {
       WaveletName waveletName = WaveletName.of(waveId, waveletId);
       // Ensure that implicit participants will also receive updates.
@@ -156,7 +169,7 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
       try {
         snapshotToSend = waveletProvider.getSnapshot(waveletName);
       } catch (WaveServerException e) {
-        LOG.warning("Failed to retrieve snapshot for wavelet " + waveletName, e);        
+        LOG.warning("Failed to retrieve snapshot for wavelet " + waveletName, e);
         openListener.onFailure(new ChannelException(ResponseCode.WAVELET_RETRIEVAL_ERROR, "Wave server failure retrieving wavelet", null, Recoverable.NOT_RECOVERABLE, waveId, waveletId));
         return;
       }
@@ -183,17 +196,17 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
 
     LOG.info("sending marker for " + dummyWaveletName);
     openListener.onUpdate(dummyWaveletName, null, DeltaSequence.empty(), null, true, null);
-    
+
     // After all, if user can't see any wavelet, response an error
     // A user should be able to access at least the master wavelet
     // The condition is place here, after updates for dummyWavelet and marker
-    // to keep protocol as compatible as possible 
-    
+    // to keep protocol as compatible as possible
+
     if (!isNewWave && waveletIds.isEmpty()) {
-      LOG.warning("No visible wavelets for " + loggedInUser + ", response failure");      
+      LOG.warning("No visible wavelets for " + loggedInUser + ", response failure");
       openListener.onFailure(new ChannelException(ResponseCode.NOT_AUTHORIZED, "No visible wavelets", null, Recoverable.NOT_RECOVERABLE, waveId, null));
         return;
-    }     
+    }
   }
 
   private String generateChannelID() {
@@ -252,7 +265,8 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
   private void participantUpdate(WaveletName waveletName, ParticipantId participant,
       DeltaSequence newDeltas, boolean add, boolean remove) {
     if(LOG.isFineLoggable()) {
-      LOG.fine("Notifying " + participant + " for " + waveletName);
+      LOG.fine("Sending deltas to " + participant + " for " + waveletName + ":"
+          + newDeltas.getEndVersion().getVersion());
     }
     if (add) {
       waveletInfo.notifyAddedExplicitWaveletParticipant(waveletName, participant);
@@ -313,22 +327,26 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     }
 
     // If the wavelet is still public, send delta updates to implicit participants
-    if (waveDomain != null
-        && remainingparticipants.contains(ParticipantIdUtil
-            .makeUnsafeSharedDomainParticipantId(waveDomain))) {
+    boolean publicToRegistered = remainingparticipants.contains(anyoneRegistered);
+    boolean publicToAnyone = remainingparticipants.contains(anyoneUniversal);
+
+    if (publicToAnyone || publicToRegistered) {
+
       Set<ParticipantId> explicitparticipants = waveletInfo.getWaveletParticipants(waveletName);
-      Set<ParticipantId> implicitparticipants =
-          waveletInfo.getImplicitWaveletParticipants(waveletName);
+      Set<ParticipantId> implicitparticipants = waveletInfo
+          .getImplicitWaveletParticipants(waveletName);
+
       for (ParticipantId p : implicitparticipants) {
         // If an implicit participant become explicit,
         // no need to update it again
         // We keep it as implicit in case it is
         // removed and the wavelet is still public
-        if (!explicitparticipants.contains(p) && !deletedparticipants.contains(p))
+        if ((!explicitparticipants.contains(p) && !deletedparticipants.contains(p))
+            && (publicToAnyone || (publicToRegistered && p.isRegistered())))
           participantUpdate(waveletName, p, newDeltas, false, false);
       }
-    }
 
+    }
 
   }
 

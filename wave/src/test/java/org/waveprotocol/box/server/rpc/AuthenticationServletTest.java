@@ -64,7 +64,7 @@ import junit.framework.TestCase;
 public class AuthenticationServletTest extends TestCase {
   private static final ParticipantId USER = ParticipantId.ofUnsafe("frodo@example.com");
   private static final ParticipantId ANONYMOUS_USER = ParticipantId
-      .anonymousOfUnsafe("example.com");
+      .anyoneUniversal("example.com");
   private AuthenticationServlet servlet;
 
   @Mock private HttpServletRequest req;

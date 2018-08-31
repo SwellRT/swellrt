@@ -710,7 +710,7 @@ public class SWaveNodeManager {
   //
 
   public void setPublic(boolean isPublic) {
-    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneParticipantId(domain);
+    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneUniversal(domain);
 
     if (isPublic) {
       dataWavelet.addParticipant(publicParticipanId);
@@ -722,7 +722,7 @@ public class SWaveNodeManager {
   }
 
   public boolean isPublic() {
-    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneParticipantId(domain);
+    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneUniversal(domain);
     return dataWavelet.getParticipantIds().contains(publicParticipanId);
   }
 

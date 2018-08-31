@@ -110,13 +110,13 @@ public final class ParticipantIdUtil {
         .ofUnsafe(ParticipantId.SUPER_USER_PREFIX + baseId + ParticipantId.DOMAIN_PREFIX + domain);
   }
 
-  public static ParticipantId makeAnyoneParticipantId(String domain) {
+  public static ParticipantId makeAnyoneUniversal(String domain) {
     return ParticipantId
         .ofUnsafe(ParticipantId.ANONYMOUS_PREFIX + ParticipantId.DOMAIN_PREFIX + domain);
 
   }
 
-  public static ParticipantId makeAnyoneRegularId(String domain) {
+  public static ParticipantId makeAnyoneRegistered(String domain) {
     return ParticipantId.ofUnsafe(makeDomainAddress(domain));
 
   }

@@ -368,7 +368,7 @@ public final class SessionManagerImpl implements SessionManager {
 
     if (participantId.isAnonymous()) {
       // For first time anonymous login we must complete the participant id
-      participantId = ParticipantId.anonymousOfUnsafe(session.getId(), participantId.getDomain());
+      participantId = ParticipantId.anonymous(session.getId(), participantId.getDomain());
     }
 
     // Remember always session data
