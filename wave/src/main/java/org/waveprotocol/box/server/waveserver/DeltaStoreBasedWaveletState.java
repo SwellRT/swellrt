@@ -640,11 +640,6 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     }
   };
 
-  /** Keyed by appliedAtVersion. */
-  /*
-  private final ConcurrentNavigableMap<HashedVersion, ByteStringMessage<ProtocolAppliedWaveletDelta>> appliedDeltas =
-      new ConcurrentSkipListMap<HashedVersion, ByteStringMessage<ProtocolAppliedWaveletDelta>>();
-  */
 
   /** Keyed by appliedAtVersion. */
   private final ConcurrentNavigableMap<HashedVersion, WaveletDeltaRecord> cachedDeltas =
@@ -935,9 +930,18 @@ class DeltaStoreBasedWaveletState implements WaveletState {
 
   @Override
   public void flush(HashedVersion version) {
-    cachedDeltas.remove(cachedDeltas.lowerKey(version));
+
+    HashedVersion toDeleteVersion = cachedDeltas.lowerKey(version);
+    int count = 0;
+    while (toDeleteVersion != null) {
+      count++;
+      WaveletDeltaRecord delta = cachedDeltas.remove(toDeleteVersion);
+      toDeleteVersion = delta != null ? delta.getAppliedAtVersion() : null;
+    }
+
     if (LOG.isFineLoggable()) {
-      LOG.fine("Flushed deltas up to version " + version);
+      LOG.fine(snapshot.getWaveId() + " / " + snapshot.getWaveletId() + " Flushed " + count
+          + " cached deltas up to version " + version + ". Cache size is " + cachedDeltas.size());
     }
   }
 
