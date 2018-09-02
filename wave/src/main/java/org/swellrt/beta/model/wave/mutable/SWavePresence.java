@@ -3,6 +3,7 @@ package org.swellrt.beta.model.wave.mutable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.client.wave.WaveDeps;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SEvent;
@@ -30,8 +31,8 @@ public class SWavePresence {
 
   private static final String PRESENCE_NODE = "presence";
 
-  private static final int REFRESH_TIME_MS = 5000;
-  private static final int MAX_INACTIVE_TIME = 8000;
+  private int REFRESH_TIME_MS = 10000;
+  private int MAX_INACTIVE_TIME = 15000;
 
   private static final String LAST_ACTIVITY_TIME = "time";
 
@@ -252,6 +253,8 @@ public class SWavePresence {
 
     this.sessionManager.registerHandler(sessionHandler);
 
+    REFRESH_TIME_MS = ServiceConfig.presencePingRateMs();
+    MAX_INACTIVE_TIME = MAX_INACTIVE_TIME + (MAX_INACTIVE_TIME / 2);
     WaveDeps.lowPriorityTimer.scheduleRepeating(presenceUpdateTask, 0, REFRESH_TIME_MS);
 
     hasStarted = true;

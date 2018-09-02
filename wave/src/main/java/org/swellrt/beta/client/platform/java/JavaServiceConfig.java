@@ -27,4 +27,9 @@ public class JavaServiceConfig implements ServiceConfigProvider {
 
   }
 
+  @Override
+  public int getTrackPresencePingRateMs() {
+    throw new IllegalStateException("not available");
+  }
+
 }

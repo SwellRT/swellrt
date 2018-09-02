@@ -18,6 +18,7 @@ public class ServiceConfig {
   public static final double RPC_MAX_STEADY_RATE = 1.0;
   public static final double RPC_MIN_RETRY_TIME = 5000; // ms
 
+  public static final int PRESENCE_PING_RATE = 10000; // ms
 
   /**
    * Yes, this method looks stupid. But when passing a javascript value as
@@ -78,4 +79,12 @@ public class ServiceConfig {
     return RPC_MAX_BACKOFF;
   }
 
+  public final static int presencePingRateMs() {
+    try {
+      Integer value = configProvider.getTrackPresencePingRateMs();
+      return value != null && checkPositiveInteger(value) ? value : PRESENCE_PING_RATE;
+    } catch (RuntimeException e) {
+      return PRESENCE_PING_RATE;
+    }
+  }
 }

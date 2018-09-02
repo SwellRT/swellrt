@@ -19,4 +19,7 @@ public interface ServiceConfigProvider {
   @JsProperty
   public boolean getWebsocketDebugLog();
 
+  @JsProperty
+  public int getTrackPresencePingRateMs();
+
 }
