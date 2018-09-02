@@ -30,7 +30,10 @@ import org.waveprotocol.wave.model.document.util.FocusedRange;
  * Currently only live carets are managed. Live selections are not activated as
  * long as they don't seem a practical feature. See
  * {@link CaretAnnotationConstants.USER_RANGE} for more info.
- *
+ * <p>
+ * <br>
+ * This manager controls the rate of editor events passed as caret updates in
+ * order to avoid overflow of deltas in transient storage.
  *
  */
 public class CaretManager implements EditorUpdateListener {
@@ -164,8 +167,36 @@ public class CaretManager implements EditorUpdateListener {
 
   }
 
+  private EditorUpdateEvent lastEditorEvent = null;
+  private long lastEditorEventTime = 0;
+
+  /**
+   * don't trigger a new caret update if last editor event happened before this
+   * amount of time
+   */
+  private int caretUpdateRateMs = 2000;
+
   @Override
   public void onUpdate(EditorUpdateEvent event) {
+
+    lastEditorEvent = event;
+    long now = System.currentTimeMillis();
+    if (now - lastEditorEventTime > caretUpdateRateMs) {
+      doCaretUpdate();
+    } else {
+      // TBC schedule a task to update caret if a last event exists
+    }
+    lastEditorEventTime = now;
+
+  }
+
+  private void doCaretUpdate() {
+
+    if (lastEditorEvent == null)
+      return;
+
+    EditorUpdateEvent event = lastEditorEvent;
+
     FocusedRange selection = event.context().getSelectionHelper().getSelectionRange();
 
     if (selection != null) {
@@ -182,7 +213,8 @@ public class CaretManager implements EditorUpdateListener {
       }
     }
 
+    lastEditorEvent = null;
+    lastEditorEventTime = 0;
   }
-
 
 }
