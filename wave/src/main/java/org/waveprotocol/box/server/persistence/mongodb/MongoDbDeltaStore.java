@@ -19,10 +19,14 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
+import java.util.regex.Pattern;
+
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.FileNotFoundPersistenceException;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
+import org.waveprotocol.box.server.waveserver.DeltaStoreTransient;
+import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -35,7 +39,7 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-
+import com.mongodb.client.model.Filters;
 /**
  * A MongoDB based Delta Store implementation using a <b>deltas</b>
  * collection and a snapshots collection.
@@ -47,7 +51,7 @@ import com.mongodb.client.MongoDatabase;
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
-public class MongoDbDeltaStore implements DeltaStore {
+public class MongoDbDeltaStore implements DeltaStore, DeltaStoreTransient {
 
   private static final Log LOG = Log.get(MongoDbDeltaStore.class);
 
@@ -71,16 +75,36 @@ public class MongoDbDeltaStore implements DeltaStore {
     MongoCollection<BasicDBObject> deltasCollection = database.getCollection(DELTAS_COLLECTION,
         BasicDBObject.class);
     checkDeltasCollectionIndexes(deltasCollection);
+    cleanTransientDeltaStores(deltasCollection);
+
     MongoDBSnapshotStore snapshotStore = MongoDBSnapshotStore.create(database);
 
     return new MongoDbDeltaStore(deltasCollection, snapshotStore);
+  }
+
+  private static void cleanTransientDeltaStores(MongoCollection<BasicDBObject> deltasCollection) {
+
+    try {
+
+      LOG.warning("Deleting transient wavelets data");
+
+      // Using Journaled Write Concern
+      // (http://docs.mongodb.org/manual/core/write-concern/#journaled)
+      deltasCollection.withWriteConcern(WriteConcern.JOURNALED)
+          .deleteMany(
+              Filters.regex(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID,
+                  Pattern.compile("\\+" + IdConstants.TRANSIENT_WAVELET_PREFIX)));
+    } catch (MongoException e) {
+      LOG.warning("Exception cleaning up transient data from database", e);
+    }
   }
 
   private static void checkDeltasCollectionIndexes(
       MongoCollection<BasicDBObject> deltasCollection) {
     // List<DBObject> indexInfo = deltasCollection.getIndexInfo();
 
-    LOG.info("Ensure MongoDB indexes for 'deltas' collection on 'waveid', 'waveletid' and 'transformed.resultingversion' fields");
+    LOG.warning(
+        "For prod environment, set mongoDB indexes in 'deltas' collection for 'waveid', 'waveletid' and 'transformed.resultingversion' fields");
 
     BasicDBObject newIndex = new BasicDBObject();
     newIndex.put("transformed.resultingversion.version", 1);
