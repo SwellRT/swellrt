@@ -17,7 +17,6 @@ import org.swellrt.beta.model.js.SMapProxyHandler;
 import org.swellrt.beta.model.presence.SPresenceEvent;
 import org.swellrt.beta.model.presence.SSession;
 import org.waveprotocol.wave.model.wave.InvalidParticipantAddress;
-import org.waveprotocol.wave.model.wave.ParticipantId;
 
 import jsinterop.annotations.JsIgnore;
 
@@ -66,7 +65,6 @@ public class SWaveObject implements SObject, SObservableNode {
     root = waveManager.getDataRoot();
     this.presence = SWavePresence.create(waveManager.getTransient().getRootMap(),
         waveManager.getSession());
-    this.presence.start();
     this.metadata = waveManager.getMetadata();
     this.versionManager = SWaveVersionManager.create(waveManager.getMetadataRoot(),
         waveManager.getSession().get());
