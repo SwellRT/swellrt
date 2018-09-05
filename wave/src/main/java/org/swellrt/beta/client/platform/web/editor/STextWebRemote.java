@@ -36,16 +36,8 @@ public class STextWebRemote extends SWaveText implements STextWeb {
   };
 
   public STextWebRemote(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
-      DocInitialization docInit, InteractiveDocument interactiveDoc) {
+      InteractiveDocument interactiveDoc) {
     super(nodeManager, substrateId, blip);
-
-    Preconditions.checkArgument(interactiveDoc != null,
-        "STextWebRemote object requires a InteractiveDocument");
-
-    if (docInit != null && interactiveDoc != null) {
-      interactiveDoc.getDocument().consume(docInit);
-    }
-
     this.interactiveDoc = interactiveDoc;
   }
 

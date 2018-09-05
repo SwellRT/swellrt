@@ -31,10 +31,12 @@ import org.waveprotocol.wave.model.document.Document;
 import org.waveprotocol.wave.model.document.ObservableDocument;
 import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.document.operation.automaton.DocumentSchema;
+import org.waveprotocol.wave.model.document.operation.impl.DocOpUtil;
 import org.waveprotocol.wave.model.document.util.DefaultDocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocEventRouter;
 import org.waveprotocol.wave.model.document.util.DocHelper;
 import org.waveprotocol.wave.model.document.util.DocumentEventRouter;
+import org.waveprotocol.wave.model.document.util.XmlStringBuilder;
 import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.IdGenerator;
 import org.waveprotocol.wave.model.id.ModernIdSerialiser;
@@ -529,13 +531,15 @@ public class SWaveNodeManager {
     Blip blip = substrateContainer.getBlip(substrateId.getDocumentId());
     if (blip == null) {
       blip = substrateContainer.createBlip(substrateId.getDocumentId());
-
-      // TODO The docInit stuff seems not to work, check out LazyContentDocument
-      // blip = substrateContainer.createBlip(substrateId.getDocumentId(),
-      // docInit);
+      // doc's content initialization must be done at the mutable document's
+      // level
+      if (docInit != null) {
+        blip.getContent()
+            .appendXml(XmlStringBuilder.createFromXmlString(DocOpUtil.toXmlString(docInit)));
+      }
     }
 
-    SWaveText textRemote = ModelFactory.instance.createWaveText(this, substrateId, blip, docInit,
+    SWaveText textRemote = ModelFactory.instance.createWaveText(this, substrateId, blip,
         documentRegistry.getTextDocument(substrateId));
 
     nodeStore.put(substrateId, textRemote);

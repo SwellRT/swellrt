@@ -5,7 +5,6 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
-import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
 public abstract class ModelFactory {
@@ -25,16 +24,13 @@ public abstract class ModelFactory {
    *          the id of the document in the Wave/Object
    * @param blip
    *          the wavelet's blip view of the document
-   * @param docInit
-   *          initialization data if blip is new
    * @param doc
    *          the interactive view of the document
    *
    * @return
    */
   public abstract SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId,
-      Blip blip, DocInitialization docInit,
-      InteractiveDocument doc);
+      Blip blip, InteractiveDocument doc);
 
   /**
    * Creates a stand alone text node.

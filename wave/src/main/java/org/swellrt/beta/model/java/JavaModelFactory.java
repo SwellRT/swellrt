@@ -10,7 +10,6 @@ import org.swellrt.beta.model.wave.SubstrateId;
 import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
-import org.waveprotocol.wave.model.document.operation.DocInitialization;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gson.Gson;
@@ -29,7 +28,7 @@ public class JavaModelFactory extends ModelFactory {
 
   @Override
   public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
-      DocInitialization docInit, InteractiveDocument doc) {
+      InteractiveDocument doc) {
     return new STextJavaWave(nodeManager, substrateId, blip);
   }
 

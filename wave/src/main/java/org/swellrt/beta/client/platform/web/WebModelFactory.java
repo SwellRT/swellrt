@@ -15,7 +15,7 @@ import org.swellrt.beta.model.wave.mutable.SWaveNodeManager;
 import org.swellrt.beta.model.wave.mutable.SWaveText;
 import org.waveprotocol.wave.client.common.util.JsoView;
 import org.waveprotocol.wave.client.wave.InteractiveDocument;
-import org.waveprotocol.wave.model.document.operation.DocInitialization;
+import org.waveprotocol.wave.model.util.Preconditions;
 import org.waveprotocol.wave.model.wave.Blip;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -31,9 +31,10 @@ public class WebModelFactory extends ModelFactory {
 
   @Override
   public SWaveText createWaveText(SWaveNodeManager nodeManager, SubstrateId substrateId, Blip blip,
-      DocInitialization docInit,
       InteractiveDocument doc) {
-    return new STextWebRemote(nodeManager, substrateId, blip, docInit, doc);
+    Preconditions.checkArgument(doc != null,
+        "WaveText nodes require a InteractiveDocument");
+    return new STextWebRemote(nodeManager, substrateId, blip, doc);
 
   }
 
