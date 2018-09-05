@@ -716,6 +716,34 @@ service.deleteObjectName(
   }).then( _names => { ... });
 ```
 
+#### Participants online/offline status
+
+Applications can track the online/offline status of participants in a collaborative object.
+First, applications must turn this feature on and register an event handler, always after the object is opened:
+
+```
+
+	object.setPresenceHandler(function(event) {
+    	 console.log(event.session.id + " is " + event.type);
+     });      
+      
+     object.trackPresence(true);
+     object.setPresence(true);
+ 	
+```
+
+To signal when the participant is online or offline, use the method `setPresence(isOnline:boolean)`, and to
+ensure that presence status is set offline when a window is closes , use the `window.unload` handler:
+
+```
+
+      window.onunload = function() {
+    	  object.setPresence(false);
+    	  object.trackPresence(false);
+      };
+      
+```
+
 ### Handling connection status
 
 **service.addConnectionHandler(`ConnectionHandler`)**

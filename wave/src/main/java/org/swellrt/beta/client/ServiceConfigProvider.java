@@ -22,4 +22,7 @@ public interface ServiceConfigProvider {
   @JsProperty
   public int getTrackPresencePingRateMs();
 
+  @JsProperty
+  public Boolean getPresencePassiveTracking();
+
 }

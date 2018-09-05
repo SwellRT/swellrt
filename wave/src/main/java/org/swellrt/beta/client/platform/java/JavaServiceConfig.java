@@ -32,4 +32,9 @@ public class JavaServiceConfig implements ServiceConfigProvider {
     throw new IllegalStateException("not available");
   }
 
+  @Override
+  public Boolean getPresencePassiveTracking() {
+    throw new IllegalStateException("not available");
+  }
+
 }

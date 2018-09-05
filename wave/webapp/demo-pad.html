@@ -210,7 +210,7 @@
     })
     .then(function(profile) {
       // Open the collaborative object to store text documents
-      return service.open({ id : "local.net/pads-01" });
+      return service.open({ id : "local.net/pads-02" });
     })
     .then(function(_object) {
 
@@ -248,6 +248,23 @@
           renderDocumentList();
       });
 
+      // Handle presence
+      object.setPresenceHandler(function(e) {
+    	 _event = e;
+    	 console.log(e.session.id + " is " + e.type);
+      });      
+      
+      window.onunload = function() {
+    	  console.log("Saying goodbye");
+    	  object.setPresence(false);
+    	  object.trackPresence(false);
+      };
+      
+      object.trackPresence(true);
+      object.setPresence(true);
+      
+      
+      
     })
     .catch(function(e) {
       _exception = e;

@@ -1,5 +1,6 @@
 package org.swellrt.beta.model.wave.mutable;
 
+import org.swellrt.beta.client.ServiceConfig;
 import org.swellrt.beta.common.SException;
 import org.swellrt.beta.model.SList;
 import org.swellrt.beta.model.SMap;
@@ -159,15 +160,24 @@ public class SWaveObject implements SObject, SObservableNode {
 
   @Override
   public void setPresenceHandler(SPresenceEvent.Handler handler) {
-    presence.registerHandler(handler);
+    presence.setEventHandler(handler);
   }
 
   @Override
   public void trackPresence(boolean enable) {
     if (enable)
-      presence.start();
+      presence.start(ServiceConfig.presencePassiveTracking() ? SWavePresence.Mode.PASSIVE
+          : SWavePresence.Mode.ACTIVE);
     else
       presence.stop();
+  }
+
+  @Override
+  public void setPresence(boolean online) {
+    if (online)
+      presence.setOnline();
+    else
+      presence.setOffline();
   }
 
   //

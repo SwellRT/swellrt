@@ -94,6 +94,9 @@ public interface SObject extends SMap, ServiceOperation.Response {
   /** start/stops the presence tracking */
   void trackPresence(boolean enable);
 
+  /** Inform others we are online or offline */
+  void setPresence(boolean online);
+
   /** Get the version manager to tag node versions */
   public SVersionManager getVersionManager();
 }

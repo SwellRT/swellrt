@@ -19,6 +19,7 @@ public class ServiceConfig {
   public static final double RPC_MIN_RETRY_TIME = 5000; // ms
 
   public static final int PRESENCE_PING_RATE = 10000; // ms
+  public static final boolean PRESENCE_PASSIVE_TRACKING = false;
 
   /**
    * Yes, this method looks stupid. But when passing a javascript value as
@@ -87,4 +88,14 @@ public class ServiceConfig {
       return PRESENCE_PING_RATE;
     }
   }
+
+  public final static boolean presencePassiveTracking() {
+    try {
+      Boolean value = configProvider.getPresencePassiveTracking();
+      return value != null ? value : PRESENCE_PASSIVE_TRACKING;
+    } catch (RuntimeException e) {
+      return PRESENCE_PASSIVE_TRACKING;
+    }
+  }
+
 }

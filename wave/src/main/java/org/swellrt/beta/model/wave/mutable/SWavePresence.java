@@ -20,89 +20,69 @@ import org.waveprotocol.wave.client.scheduler.Scheduler;
 import org.waveprotocol.wave.model.util.Preconditions;
 
 /**
- * Updates presence status of the local user and check presence status of remote
- * users. Status is stored in a map of the collaborative object (that should be
- * transient).
+ * Manages the participant's online/offline state. This class can be used in two
+ * modes:
+ * <p>
+ * <br>
+ * Passive mode: <br>
+ * Participants update periodically a presence (transient) map with a timestamp.
+ * Periodically each participant checks the presence map to determine which
+ * participants are online or not, depending if their timestamp is not expired
+ * (inactive time). <br>
+ * This mode is controlled with methods {@link #start()} and {@link #stop()}
+ * <p>
+ * <br>
+ * Active mode: <br>
+ * Participants inform they are online setting a timestamp in the presence map
+ * (method {@link #setOnline()}) or they are offline removing it
+ * ({@link #setOffline()})
+ *
  *
  * @author pablojan@gmail.com (Pablo Ojanguren)
  *
  */
 public class SWavePresence {
 
-  private static final String PRESENCE_NODE = "presence";
-
-  private int REFRESH_TIME_MS = 10000;
-  private int MAX_INACTIVE_TIME = 15000;
-
-  private static final String LAST_ACTIVITY_TIME = "time";
-
-  /** Convenience cache the online/offline state of remote users */
-  private Map<String, Boolean> onlineStatus = new HashMap<String, Boolean>();
-
-  private boolean hasStarted = false;
-
-  /**
-   * Perform periodically a keep a live signal (update our entry in the status
-   * map) and check for inactive sessions.
-   */
-
-  private final Scheduler.IncrementalTask presenceUpdateTask = new Scheduler.IncrementalTask() {
-
-    @Override
-    public boolean execute() {
-
-      // update our session status
-      refreshSession();
-
-      // check for inactive sessions
-      long now = System.currentTimeMillis();
-
-      try {
-        String[] keys = presenceStatusMap.keys();
-        for (int i=0; i < keys.length; i++) {
-
-          String sessionId = keys[i];
-
-          // ignore our own status
-          if (sessionId.equals(sessionManager.get().getSessionId())) {
-            continue;
-          }
-
-          SPrimitive status = (SPrimitive) presenceStatusMap.pick(sessionId);
-          long lastActiveTime = status.asSJson().getLong(LAST_ACTIVITY_TIME);
-
-          if (now - lastActiveTime > MAX_INACTIVE_TIME
-              && onlineStatus.getOrDefault(sessionId, false)) {
-            onlineStatus.put(sessionId, false);
-            if (eventHandler != null) {
-              eventHandler.exec(new SPresenceEvent(SSession.of(status.asSJson()),
-                  SPresenceEvent.EVENT_OFFLINE, lastActiveTime));
-            }
-          }
-        }
-
-
-      } catch (SException e) {
-        throw new IllegalStateException(e);
-      }
-
-      return true;
-    }
-
-
+  public enum Mode {
+    ACTIVE, PASSIVE
   };
 
+  private int PASSIVE_REFRESH_TIME_MS = 10000;
+  private int PASSIVE_MAX_INACTIVE_TIME_MS = 15000;
+
+
+  private static final String PRESENCE_NODE = "presence";
+  protected static final String LAST_ACTIVITY_TIME = "time";
+
+  /** A local cache of online users */
+  private Map<String, Boolean> onlineStateMap = new HashMap<String, Boolean>();
+
+  /** The shared map with presence status of all connected users */
+  private final SMap presenceSharedMap;
+
+  /** Local user's sessions using the object */
+  private final SSessionManager sessionManager;
+
+  /** Handler listening to remote presence changes */
+  private SPresenceEvent.Handler eventHandler;
+
+  /** mode of presence tracking */
+  private Mode mode;
+
+  /** presence handlers enabled? */
+  private boolean started = false;
+
   /**
-   * A status map mutation means an online or offline event.
+   * Detect changes in the shared map for online-offline changes.
    */
-  private final SMutationHandler presenceUpdateHandler = new SMutationHandler() {
+  private final SMutationHandler presenceMutationHandler = new SMutationHandler() {
 
     @Override
     public boolean exec(SEvent e) {
 
-      SPrimitive status = (SPrimitive) e.getNode();
-      SSession eventSession = SSession.of(status.asSJson());
-      long lastActiveTime = status.asSJson().getLong(LAST_ACTIVITY_TIME);
+      SPrimitive presenceRecord = (SPrimitive) e.getNode();
+      SSession eventSession = SWavePresence.getSSession(presenceRecord);
+      long lastActiveTime = SWavePresence.getPresenceValue(presenceRecord);
 
       // Skip our own status
       if (eventSession.getSessionId().equals(sessionManager.get().getSessionId())) {
@@ -111,18 +91,18 @@ public class SWavePresence {
 
       if (e.isAddEvent() || e.isUpdateEvent()) {
         // if the session was offline, go online
-        if (!onlineStatus.getOrDefault(eventSession.getSessionId(), false)) {
-          onlineStatus.put(eventSession.getSessionId(), true);
+        if (!onlineStateMap.getOrDefault(eventSession.getSessionId(), false)) {
+          onlineStateMap.put(eventSession.getSessionId(), true);
           if (eventHandler != null) {
             eventHandler.exec(
                 new SPresenceEvent(eventSession, SPresenceEvent.EVENT_ONLINE, lastActiveTime));
           }
         }
       } else if (e.isRemoveEvent()) {
-        onlineStatus.put(eventSession.getSessionId(), false);
+        onlineStateMap.put(eventSession.getSessionId(), false);
         if (eventHandler != null) {
-          eventHandler.exec(new SPresenceEvent(eventSession,
-              SPresenceEvent.EVENT_OFFLINE, lastActiveTime));
+          eventHandler
+              .exec(new SPresenceEvent(eventSession, SPresenceEvent.EVENT_OFFLINE, lastActiveTime));
         }
       }
 
@@ -130,23 +110,68 @@ public class SWavePresence {
     }
   };
 
+  /*
+   * ------------------------ Scheduler Tasks ---------------------------
+   */
+
+  /**
+   * (Passive Mode) Sends periodically a keep alive signal (update our entry in
+   * the status map) and check for inactive sessions.
+   */
+  private final Scheduler.IncrementalTask presenceUpdateTask = new Scheduler.IncrementalTask() {
+
+    @Override
+    public boolean execute() {
+
+      long now = System.currentTimeMillis();
+
+      // update our entry in the shared map
+      setPresenceStateValue(presenceSharedMap, sessionManager.get(), now);
+
+      // check for inactive sessions
+      try {
+        String[] keys = presenceSharedMap.keys();
+        for (int i = 0; i < keys.length; i++) {
+
+          String sessionId = keys[i];
+
+          // ignore our own status
+          if (sessionId.equals(sessionManager.get().getSessionId())) {
+            continue;
+          }
+
+          long lastActiveTime = SWavePresence.getPresenceStateValue(presenceSharedMap, sessionId);
+
+          if (now - lastActiveTime > PASSIVE_MAX_INACTIVE_TIME_MS
+              && onlineStateMap.getOrDefault(sessionId, false)) {
+            onlineStateMap.put(sessionId, false);
+            if (eventHandler != null) {
+              eventHandler
+                  .exec(new SPresenceEvent(SWavePresence.getSSession(presenceSharedMap, sessionId),
+                      SPresenceEvent.EVENT_OFFLINE, lastActiveTime));
+            }
+          }
+        }
+
+      } catch (SException e) {
+        throw new IllegalStateException(e);
+      }
+
+      return true;
+    }
+
+  };
+
   /** Listen for changes in user name... */
   private final SSessionManager.UpdateHandler sessionHandler = new UpdateHandler() {
 
     @Override
     public void onUpdate(SSession session) {
-      refreshSession();
+      setPresenceStateValue(presenceSharedMap, session, System.currentTimeMillis());
     }
   };
 
-  /** the shared map with presence status of all connected users */
-  private final SMap presenceStatusMap;
 
-  /** Local user's sessions using the object */
-  private final SSessionManager sessionManager;
-
-  /** the handler to receive presence events */
-  private SPresenceEvent.Handler eventHandler;
 
   public static SWavePresence create(SMap transientMap, SSessionManager sessionMgr) {
 
@@ -164,42 +189,89 @@ public class SWavePresence {
       throw new IllegalStateException(e);
     }
 
+    Preconditions.checkNotNull(presenceMap, "A transient map to store online state is required");
+
     return new SWavePresence(presenceMap, sessionMgr);
   }
 
-  protected SWavePresence(SMap presenceStatusMap, SSessionManager sessionMgr) {
-    Preconditions.checkNotNull(presenceStatusMap, "Presence requires a map for storage");
-    this.presenceStatusMap = presenceStatusMap;
-    this.sessionManager = sessionMgr;
-
-
-
-
+  protected SWavePresence(SMap presenceStateMap, SSessionManager sessionManager) {
+    this.presenceSharedMap = presenceStateMap;
+    this.sessionManager = sessionManager;
+    this.mode = Mode.ACTIVE;
   }
 
-  /** Refresh our session's time stamp to inform that we are alive */
-  private void refreshSession() {
+  /*
+   * ---------------------------------------------------------------------------
+   */
 
-    SJsonObject sjson = sessionManager.get().toSJson();
-    sjson.addLong(LAST_ACTIVITY_TIME, System.currentTimeMillis());
+  protected static void setPresenceStateValue(SMap presenceStateMap, SSession session,
+      long timeValue) {
+
+    SJsonObject sjObject = session.toSJson();
+    sjObject.addLong(LAST_ACTIVITY_TIME, timeValue);
     try {
-      presenceStatusMap.put(sessionManager.get().getSessionId(), sjson);
+      presenceStateMap.put(session.getSessionId(), sjObject);
     } catch (SException e) {
       throw new IllegalStateException(e);
     }
+  }
 
+  protected static void clearPresenceStateValue(SMap presenceStateMap, String sessionId) {
+    try {
+      presenceStateMap.remove(sessionId);
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  protected static long getPresenceStateValue(SMap presenceStateMap, String sessionId) {
+    try {
+      SPrimitive state = (SPrimitive) presenceStateMap.pick(sessionId);
+      return state.asSJson().getLong(LAST_ACTIVITY_TIME);
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  protected static SSession getSSession(SMap presenceStateMap, String sessionId) {
+
+    try {
+      SPrimitive state = (SPrimitive) presenceStateMap.pick(sessionId);
+      return SSession.of(state.asSJson());
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  protected static SSession getSSession(SPrimitive stateRecord) {
+    return SSession.of(stateRecord.asSJson());
+  }
+
+  protected static long getPresenceValue(SPrimitive stateRecord) {
+    return stateRecord.asSJson().getLong(LAST_ACTIVITY_TIME);
+  }
+
+
+  /*
+   * ---------------------------------------------------------------------------
+   */
+
+  public void setEventHandler(SPresenceEvent.Handler eventHandler) {
+    this.eventHandler = eventHandler;
+    if (this.eventHandler != null)
+      checkStateForAll();
   }
 
   /**
-   * When this component is started, traverse the presence status map and check
-   * which sessions are online.
+   *
    */
-  private void checkAllStatuses() {
+  private void checkStateForAll() {
 
     long now = System.currentTimeMillis();
 
+
     try {
-      String[] keys = presenceStatusMap.keys();
+      String[] keys = presenceSharedMap.keys();
       for (int i = 0; i < keys.length; i++) {
 
         String sessionId = keys[i];
@@ -209,20 +281,36 @@ public class SWavePresence {
           continue;
         }
 
-        SPrimitive status = (SPrimitive) presenceStatusMap.pick(sessionId);
-        SSession thisSession = SSession.of(status.asSJson());
-        long lastActiveTime = status.asSJson().getLong(LAST_ACTIVITY_TIME);
+        long lastActiveTime = SWavePresence.getPresenceStateValue(presenceSharedMap, sessionId);
 
-        if (now - lastActiveTime <= MAX_INACTIVE_TIME) {
+        if ((now - lastActiveTime <= PASSIVE_MAX_INACTIVE_TIME_MS) || mode == Mode.ACTIVE) {
 
-          onlineStatus.put(sessionId, true);
+          onlineStateMap.put(sessionId, true);
           if (eventHandler != null) {
             eventHandler
-                .exec(new SPresenceEvent(thisSession, SPresenceEvent.EVENT_ONLINE, lastActiveTime));
+                .exec(new SPresenceEvent(SWavePresence.getSSession(presenceSharedMap, sessionId),
+                    SPresenceEvent.EVENT_ONLINE, lastActiveTime));
           }
 
         }
+
+
       }
+
+      if (mode == Mode.ACTIVE) {
+        for (String sessionId: onlineStateMap.keySet()) {
+          if (onlineStateMap.get(sessionId) && !presenceSharedMap.has(sessionId)) {
+            if (eventHandler != null) {
+              onlineStateMap.put(sessionId, false);
+              eventHandler
+                  .exec(new SPresenceEvent(SWavePresence.getSSession(presenceSharedMap, sessionId),
+                      SPresenceEvent.EVENT_OFFLINE, 0));
+            }
+          }
+        }
+      }
+
+
 
     } catch (SException e) {
       throw new IllegalStateException(e);
@@ -230,68 +318,104 @@ public class SWavePresence {
 
   }
 
-  public void registerHandler(SPresenceEvent.Handler eventHandler) {
-    this.eventHandler = eventHandler;
-    if (this.eventHandler != null)
-      checkAllStatuses();
-  }
+  /*
+   * ---------------------------------------------------------------------------
+   */
 
-  public void start() {
 
-    // Ignore for platforms not supported yet
-    if (WaveDeps.lowPriorityTimer == null)
-      return;
+  public void start(Mode mode) {
 
-    if (hasStarted)
-      return;
+    Preconditions.checkNotNull(mode, "Presence module requires a explicit mode");
+
+    // Set shared handlers for both modes
 
     try {
-      this.presenceStatusMap.listen(presenceUpdateHandler);
+      this.presenceSharedMap.listen(presenceMutationHandler);
     } catch (SException e) {
       throw new IllegalStateException(e);
     }
 
     this.sessionManager.registerHandler(sessionHandler);
 
-    REFRESH_TIME_MS = ServiceConfig.presencePingRateMs();
-    MAX_INACTIVE_TIME = MAX_INACTIVE_TIME + (MAX_INACTIVE_TIME / 2);
-    WaveDeps.lowPriorityTimer.scheduleRepeating(presenceUpdateTask, 0, REFRESH_TIME_MS);
+    // Schedule tasks for passive mode
 
-    hasStarted = true;
+    if (mode == Mode.PASSIVE) {
+
+      // Ignore for platforms not supported yet
+      if (WaveDeps.lowPriorityTimer == null)
+        return;
+
+      if (started)
+        return;
+
+      PASSIVE_REFRESH_TIME_MS = ServiceConfig.presencePingRateMs();
+      PASSIVE_MAX_INACTIVE_TIME_MS = PASSIVE_MAX_INACTIVE_TIME_MS
+          + (PASSIVE_MAX_INACTIVE_TIME_MS / 2);
+      WaveDeps.lowPriorityTimer.scheduleRepeating(presenceUpdateTask, 0, PASSIVE_REFRESH_TIME_MS);
+
+    }
+
+    started = true;
+
   }
 
   public void stop() {
 
-    // Ignore for platforms not supported yet
-    if (WaveDeps.lowPriorityTimer == null)
+    if (!started)
       return;
 
-    if (hasStarted) {
+    // Unset shared handlers for both modes
 
-      WaveDeps.lowPriorityTimer.cancel(presenceUpdateTask);
-
-      try {
-        this.presenceStatusMap.unlisten(presenceUpdateHandler);
-      } catch (SException e) {
-        throw new IllegalStateException(e);
-      }
-
-      try {
-        this.presenceStatusMap.remove(sessionManager.get().getSessionId());
-      } catch (SException e) {
-        throw new IllegalStateException(e);
-      }
-
-      this.sessionManager.unregisterHandler(sessionHandler);
-
-      hasStarted = false;
-
+    try {
+      this.presenceSharedMap.unlisten(presenceMutationHandler);
+    } catch (SException e) {
+      throw new IllegalStateException(e);
     }
 
+    try {
+      this.presenceSharedMap.remove(sessionManager.get().getSessionId());
+    } catch (SException e) {
+      throw new IllegalStateException(e);
+    }
+
+    this.sessionManager.unregisterHandler(sessionHandler);
+
+    // Cancel schedules for tasks in passive mode
+
+    if (mode == Mode.PASSIVE) {
+
+      // Ignore for platforms not supported yet
+      if (WaveDeps.lowPriorityTimer == null)
+        return;
+
+      WaveDeps.lowPriorityTimer.cancel(presenceUpdateTask);
+    }
+
+    started = false;
+
   }
 
-  public boolean hasHandler() {
-    return eventHandler != null;
+  public void setOnline() {
+
+    if (this.mode != Mode.ACTIVE)
+      return;
+
+    SWavePresence.setPresenceStateValue(presenceSharedMap, sessionManager.get(),
+        System.currentTimeMillis());
+
   }
+
+  public void setOffline() {
+
+    if (this.mode != Mode.ACTIVE)
+      return;
+
+    SWavePresence.clearPresenceStateValue(presenceSharedMap, sessionManager.get().getId());
+
+  }
+
+  /*
+   * ---------------------------------------------------------------------------
+   */
 
 }

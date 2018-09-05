@@ -287,6 +287,11 @@ public class SObjectLocal implements SObject {
   }
 
   @Override
+  public void setPresence(boolean online) {
+    // Ignore in local objects
+  }
+
+  @Override
   public SNode[] values() throws SException {
     return delegateMap.values();
   }
