@@ -58,6 +58,8 @@ import org.waveprotocol.box.stat.StatService;
 import org.waveprotocol.wave.crypto.CertPathStore;
 import org.waveprotocol.wave.federation.FederationTransport;
 import org.waveprotocol.wave.federation.noop.NoOpFederationModule;
+import org.waveprotocol.wave.federation.matrix.MatrixFederationModule;
+import org.waveprotocol.wave.model.version.HashedVersionFactory;
 import org.waveprotocol.wave.model.wave.ParticipantIdUtil;
 import org.waveprotocol.wave.util.logging.Log;
 
@@ -110,10 +112,10 @@ public class ServerMain {
     injector = injector.createChildInjector(profilingModule, executorsModule);
 
     Config config = injector.getInstance(Config.class);
+    boolean enableFederation = config.getBoolean("federation.enable_federation");
 
     Module serverModule = injector.getInstance(ServerModule.class);
-    Module federationModule = buildFederationModule(injector);
-    // Module robotApiModule = new RobotApiModule();
+    Module federationModule = buildFederationModule(injector, enableFederation);
     PersistenceModule persistenceModule = injector.getInstance(PersistenceModule.class);
     // Module searchModule = injector.getInstance(SearchModule.class);
     // Module profileFetcherModule = injector.getInstance(ProfileFetcherModule.class);
@@ -144,9 +146,15 @@ public class ServerMain {
     server.startWebSocketServer(injector);
   }
 
-  private static Module buildFederationModule(Injector settingsInjector)
+  private static Module buildFederationModule(Injector settingsInjector, boolean enableFederation)
       throws ConfigurationException {
-    return settingsInjector.getInstance(NoOpFederationModule.class);
+    Module federationModule;
+    if (enableFederation) {
+      federationModule = settingsInjector.getInstance(MatrixFederationModule.class);
+    } else {
+      federationModule = settingsInjector.getInstance(NoOpFederationModule.class);
+    }
+    return federationModule;
   }
 
   private static void initializeServer(Injector injector, String waveDomain)
@@ -208,9 +216,6 @@ public class ServerMain {
       server.addFilter("/*", TimingFilter.class);
       server.addServlet(StatService.STAT_URL, StatuszServlet.class);
     }
-
-    // DSWG experimental
-    // server.addServlet("/shared/*", DSFileServlet.class);
 
     // SwellRT
     server.addServlet("/swell/*", SwellRtServlet.class);

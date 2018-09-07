@@ -139,6 +139,15 @@ public class ExecutorsModule extends AbstractModule {
 
   @Provides
   @Singleton
+  @MatrixExecutor
+  protected ScheduledExecutorService provideMatrixExecutor(
+      Provider<ScheduledRequestScopeExecutor> executorProvider) {
+    return provideScheduledThreadPoolExecutor(executorProvider, 1, MatrixExecutor.class
+        .getSimpleName());
+  }
+
+  @Provides
+  @Singleton
   @SolrExecutor
   protected Executor provideSolrExecutor(Provider<RequestScopeExecutor> executorProvider,
       Config config) {

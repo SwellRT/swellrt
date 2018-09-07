@@ -162,6 +162,7 @@ dependencies {
             [group: "com.google.inject", name: "guice", version: "4.1.0"],								        // [?, ?]
             [group: "com.google.inject.extensions", name: "guice-servlet", version: "4.1.0"],                   // [?, ?]            
             [group: "com.googlecode.protobuf-java-format", name: "protobuf-java-format", version: "1.2"],       // [?, ?]
+			[group: "com.mashape.unirest", name: "unirest-java", version: "1.4.9"], 							// [?, ?]
             [group: "com.typesafe", name: "config", version: "1.2.1"],                                          // [?, ?]
            // [group: "dom4j", name: "dom4j", version: "1.6.1"],                                                  // [?, ?]
             [group: "eu.infomas", name: "annotation-detector", version: "3.0.0"],                               // [?, ?]
@@ -714,7 +715,7 @@ jar {
     include "org/xmlpull/**/*"
     include "org/xmpp/**/*"
 
-	include "org/swellrt/common/**/*"
+    include "org/swellrt/common/**/*"
     include "org/swellrt/model/**/*"
     include "org/swellrt/server/**/*"
     include "velocity-tools-config.xml"

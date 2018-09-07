@@ -46,6 +46,9 @@ pst/.gitignore
 ### Gradle
 .gradle
 build/
+wave/wiab-server.log.*
+wave/*.crt
+wave/*.key
 wave/build/
 wave/war/WEB-INF/
 wave/war/webclient/

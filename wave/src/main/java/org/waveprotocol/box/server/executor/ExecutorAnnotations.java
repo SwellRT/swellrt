@@ -80,6 +80,11 @@ public interface ExecutorAnnotations {
   public @interface RobotGatewayExecutor {
   }
 
+  @Retention(RUNTIME)
+  @BindingAnnotation
+  public @interface MatrixExecutor {
+  }
+
   @BindingAnnotation
   public @interface SolrExecutor {
   }
