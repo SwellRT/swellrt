@@ -60,9 +60,9 @@ Client libraries for Web and Java/Android (experimental) are provided.
 
 ## Documentation and examples
 
-API documentation can be found [here](https://github.com/P2Pvalue/swellrt/blob/master/wave/doc/swellrt/Reference.md)
+API documentation can be found [here](https://github.com/SwellRT/swellrt/blob/master/wave/doc/swellrt/Reference.md)
 
-Basic examples can be found [here](https://github.com/P2Pvalue/swellrt/tree/master/wave/webapp). Try them running a SwellRT server
+Basic examples can be found [here](https://github.com/SwellRT/swellrt/tree/master/wave/webapp). Try them running a SwellRT server
 and visiting *http://localhost:9898*
 
 
@@ -80,7 +80,7 @@ Prerequisites
 Clone the project
 
 ```
-git clone git@github.com:P2Pvalue/swellrt.git
+git clone git@github.com:SwellRT/swellrt.git
 cd swellrt
 ```
 
@@ -148,7 +148,7 @@ These are all the folders you can map outside the container:
 **Server config**
 
 Server configuration can be adjusted by editing files in the **config/** folder. Default settings
-can be found in the [repo](https://github.com/P2Pvalue/swellrt/tree/master/wave/config).
+can be found in the [repo](https://github.com/SwellRT/swellrt/tree/master/wave/config).
 
 If you map the **config/** folder in your host machine, you must copy those files to it.
 
@@ -188,18 +188,19 @@ $ docker run \
 
 The database **swellrt** is created automatically if it doesn't exist.
 
-## Java/Android client
-
-An experimental Java library is in package *org.swellrt.beta.client.platform.java*
-Check out chat demo app in *org.swellrt.beta.client.platform.java.ChatDemo". 
- 
 ## Federation
 
-SwellRT servers can be federated using XMPP and Matrix.org protocol. Sorry, we are still writting the configuration guide. Please contact us for furhter information. 
+SwellRT servers can be federated using [Matrix protocol](http://matrix.org).
+A set up guide and technical documentation can be found [here](https://github.com/SwellRT/swellrt/blob/master/wave/doc/swellrt/Matrix-Federation.md). 
 
 ## Contact and Support
 
 Visit our [Gitter Channel](https://gitter.im/P2Pvalue/swellrt) or email to swellrt@gmail.com.
+
+## Java/Android client
+
+An experimental Java library is in package *org.swellrt.beta.client.platform.java*
+Check out chat demo app in *org.swellrt.beta.client.platform.java.ChatDemo". 
 
 ## Contributing
 
