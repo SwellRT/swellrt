@@ -19,28 +19,29 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.inject.Inject;
-import com.mashape.unirest.http.*;
-import com.mashape.unirest.request.*;
-import com.typesafe.config.Config;
-
-import org.apache.http.conn.ssl.*;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Logger;
 
-import javax.net.ssl.*;
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.inject.Inject;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.request.BaseRequest;
+import com.mashape.unirest.request.HttpRequest;
+import com.mashape.unirest.request.HttpRequestWithBody;
+import com.typesafe.config.Config;
 
 /**
  * Talks to a Matrix server using the Client-Server API.
@@ -51,9 +52,10 @@ import javax.net.ssl.*;
  *
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
+@SuppressWarnings("deprecation")
 public class AppServicePacketTransport implements Runnable, OutgoingPacketTransport {
-	
-  private static final Logger LOG = 
+
+  private static final Logger LOG =
       Logger.getLogger(AppServicePacketTransport.class.getCanonicalName());
 
   static final int MATRIX_SOCKET_TIMEOUT = 10000;
@@ -111,7 +113,7 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
       syncTime = packets.getString("next_batch");
 
 
-      
+
     } catch (Exception ex) {
       throw new RuntimeException(ex);
     }
@@ -164,9 +166,9 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
       JSONObject body = packet.getBody();
       request = ((HttpRequestWithBody)request).body(body.toString());
     }
-    
+
     return request;
-  } 
+  }
 
   private void setUp() {
     httpConfig();
@@ -223,12 +225,12 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   }
 
   // private void findMinTS() throws Exception {
-    
+
   //   long min_ts = Long.MAX_VALUE;
   //   String min_eventid = null;
   //   String min_roomid = null;
 
-    
+
 
   //   JSONObject rooms = sync.getJSONObject("rooms").getJSONObject("join");
 
@@ -239,12 +241,12 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
 
   //     if(roomId.split(":", 2)[1].equals(serverDomain)) {
   //       JSONObject roomInfo = rooms.getJSONObject(roomId);
-        
+
   //       JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
 
   //       for (int i=0; i < arr.length(); i++) {
   //         JSONObject x = arr.getJSONObject(i);
-          
+
   //         if(x.getString("type").equals("m.room.message.feedback") ) {
 
 
@@ -277,7 +279,7 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   //   syncTime = nextID;
 
   //   System.out.println("\n\n"+syncTime+"\n\n");
-   
+
   // }
 
 }
