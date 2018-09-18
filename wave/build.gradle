@@ -31,7 +31,7 @@ apply plugin: 'jetty'
 /* Meta Data Info */
 def title = 'SwellRT'
 def vendor = 'SwellRT Community'
-version = "2.0.0-beta"
+version = "2.0.3-beta"
 archivesBaseName = "swellrt"
 def distFolder = "swellrt"
 mainClassName = "org.waveprotocol.box.server.ServerMain"
@@ -720,6 +720,19 @@ jar {
     include "org/swellrt/server/**/*"
     include "velocity-tools-config.xml"
 
+	include "org/apache/http/**/*"
+	include "org/apache/xalan/**/*"
+	include "org/apache/xml/**/*"
+	include "org/apache/xpath/**/*"
+	include "org/apache/regexp/**/*"
+	include "javax/annotation/**/*"
+	include "net/jcip/annotations/**/*"
+	include "javax/ws/rs/**/*"
+	include "org/jboss/logging/**/*"
+	include "org/jboss/resteasy/**/*"
+	include "com/mashape/unirest/**/*"
+	
+
     exclude "org/waveprotocol/box/webclient/**/*"
     exclude "org/waveprotocol/box/consoleclient/**/*"
     exclude "org/waveprotocol/box/expimp/**/*"
@@ -807,6 +820,7 @@ task createDistBinTar(type: Tar) {
 	from('webapp') {
         into distFolder + '/webapp'
     }
+   
 }
 
 createDistBinZip.dependsOn jar, prodWeb, createPropertiesFile

@@ -1,4 +1,4 @@
-	<!--
+<!--
   SwellRT Pad demo
   Author: Pablo Ojanguren (pablojan@gmail.com)
 
@@ -7,7 +7,7 @@
 
   Example:
 
-  http://localhost:9898/test-pad.html?id=test3
+  http://localhost:9898/test-pad.html?id=test3&user=joe@local.net&pass=123456
 
 
 -->
@@ -20,7 +20,7 @@
 
   <title>SwellRT, Test Pad Page</title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/swellrt.css">
+  <link rel="stylesheet" href="css/swell.css">
   <style type="text/css">
 
   .bg-canvas {
@@ -47,16 +47,17 @@
 
 <body>
 
-  <div class="container-fluid">
+    <div class="container-fluid">
 
-    <div class="page-header">
-      <h4>
-        <span class="text-swellrt">
-          <span class="text-swell">Swell</span><span class="text-rt">RT</span>
-        </span>
-        <span class="title">Pad Test page</span><span class="net-status" id="netStatus"></span>
-      </h4>
-    </div>
+      <div class="page-header">
+        <h4>
+          <span class="text-swellrt">
+            <span class="text-swell">Swell</span><span class="text-rt">RT</span>
+          </span>
+          <span class="title">Test Pad</span><span class="net-status" id="netStatus"></span>
+        </h4>
+      </div>
+
 
     <!--
     <div class="row">
@@ -68,8 +69,16 @@
     </div>
   -->
 
+
+  <div class="row">
+      <div class="col-md-offset-1 col-md-10">
+        Participants (<a href="#" id="refreshLink">refresh</a> | <a href="#" id="addLink">add</a> | <a href="#" id="removeLink">remove</a>)  <span id="participants"></span>
+      </div>
+  </div>
+  
+    <br/>
     <div class="row">
-      <div class="col-md-offset-2 col-md-10">
+      <div class="col-md-offset-1 col-md-10">
           <span class="status-title">Live Status:</span>
           <span id="inflight" class="status-item"></span>
           <span id="ack-pending" class="status-item"></span>
@@ -80,6 +89,7 @@
           <span id="error" class="status-item"></span>
       </div>
     </div>
+
 
     <div class="row">
       <div class="col-md-offset-1 col-md-10">
@@ -154,10 +164,15 @@
     // Put on eye on live commucation turbulences
     service.addConnectionHandler(connectionHandler);
 
-    
-    service.login({
-      // We work with anonymous user
-    })
+    var loginParams = {};
+    if (params.user && params.pass) {
+      loginParams = { 
+        id: params.user, 
+        password: params.pass
+      };
+    }
+
+    service.login(loginParams)
     .then(function(profile) {
       // Open the collaborative object to store text documents
 
@@ -171,6 +186,28 @@
     .then(function(_object) {
 
       object = _object; // global var... yes, a bit nasty!
+
+      var refreshLink = document.getElementById("refreshLink");
+      refreshLink.onclick = function() {
+        refreshParticipants();
+        return false;
+      }
+
+     var addLink = document.getElementById("addLink");
+        addLink.onclick = function() {
+        var participant = prompt("Add participant:");
+        addParticipant(participant);
+        return false;
+      }
+
+     var removeLink = document.getElementById("removeLink");
+     removeLink.onclick = function() {
+        var participant = prompt("Remove participant:");
+        removeParticipant(participant);
+        return false;
+      }
+
+      refreshParticipants();
 
       setElementText("status", "OK");
       object.setStatusHandler(event => {
@@ -218,6 +255,20 @@
 
   });
 
+
+  function refreshParticipants() {
+    document.getElementById("participants").innerHTML=object.getParticipants().toString();
+  }
+
+  function addParticipant(p) {
+    object.addParticipant(p);
+    refreshParticipants();
+  }
+
+  function removeParticipant(p) {
+    object.removeParticipant(p);
+    refreshParticipants();
+  }
 
   function connectionHandler(s, e) {
     console.log(s);

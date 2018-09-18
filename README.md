@@ -1,18 +1,17 @@
 # SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
 
-SwellRT is an open source **backend-as-a-service**. It provides out-of-the-box features for
-apps:
+SwellRT is an open source **backend-as-a-service**. It provides prebuilt features to speed up development of collaborative Web applications:
 
-* Real-time storage (NoSQL)
-* User management
-* Authentication
-* Event based integration
+* Realtime storage (eventual consistency)
+* Extensible text collaborative editor
+* User management and authentication
+* Server federation with [Matrix](http://matrix.org)
+* Events and Bots (in development)
 
-SwellRT's goal is to ease development of real-time collaborative applications,
-specially those requiring collaborative text editing. 
 
-SwellRT objects can be shared and mutated in real-time. All changes are persisted and propagated transparently. 
-Object state is eventually consistent.
+
+The main feature of SwellRT is realtime storage based in objects. They can be shared among participants that can mutate them in realtime.
+All changes are persisted and propagated transparently. Object's state is eventually consistent.
 
 Check out API basics:
 
@@ -98,9 +97,21 @@ Start the server
 ./gradlew run
 ```
 
-Visit "http://localhost:9898" to check server installation and try some demos.
+Visit http://localhost:9898 to check server installation and try some demos.
+
+### Standalone installation (Jar) 
+
+To create a standalone installation of SwellRT, use the *createDistBinTar* or *createDistBinJar* tasks:
+
+```
+./gradlew createDistBinJar
+```
+
+The generated file is placed at *distributions/* folder.
+Extracts the file and use the *run-server.sh* or *run-server.bat* scripts to start the server.
 
 
+Edit configuration in *config/wave.conf* based on *config/reference.conf*.
 
 
 ### Docker

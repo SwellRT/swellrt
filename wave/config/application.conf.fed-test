@@ -1,0 +1,95 @@
+#
+# Example server configuration with federation 
+# for local domain test.localhost
+#
+# See documentation for more info.
+#
+
+core {
+
+  # Domain name of the Wave server.
+  wave_server_domain : "test.localhost"
+
+  # A comma separated list of address on which to listen for connections.
+  # Each address is a comma separated host:port pair.
+  http_frontend_addresses : ["localhost:9899"]
+
+
+  # Database's name. Default name: swellrt
+  mongodb_database : swell_test_localhost
+
+}
+
+network {
+
+  #
+  # Domain for cookie
+  # 
+  session_cookie_domain : "test.localhost"
+
+}
+
+# Federation set up
+federation {
+
+  # Federation Configuration for the Wave in a Box server
+  enable_federation : true
+
+  # The address of matrix client server api to be appended in requests
+  matrix_api_address : "/_matrix/client/r0"
+
+  # The PKCS#8-PEM-encoded private key.
+  certificate_private_key : "test.localhost.tls.key"
+
+  # The list of file names that have the certificates of this signer.
+  # The first file name must have the signer's target certificate. The  certificates can be DER or PEM encoded.
+  # The order of certificates is important. Place intermediate certs
+  # after "${wave_server_domain}.crt". Please refer to
+  # http://www.waveprotocol.org/federation/certificates
+  # for more details.
+  certificate_files : ["test.localhost.tls.crt"]
+
+  # The domain for which the certificate was issued.
+  certificate_domain : "test.localhost"
+
+  matrix_appservice_name : wave
+
+  # This server's appservice token
+  matrix_appservice_token : "MDAxY2xvY2F0aW9uIHRlc3QubG9jYWxob3N0CjAwMTNpZGVudGlmaWVyIGtleQowMDEwY2lkIGdlbiA9IDEKMDAyN2NpZCB1c2VyX2lkID0gQHdhdmU6dGVzdC5sb2NhbGhvc3QKMDAxNmNpZCB0eXBlID0gYWNjZXNzCjAwMWRjaWQgdGltZSA8IDE0Njk2OTU2MDE0MTAKMDAyZnNpZ25hdHVyZSDYp7o6NoSPXwvXw18KQM3-d1F29pGll4GTSCsuUvJ7xQo"
+
+  # This server's local ID
+  matrix_id : "@wave:test.localhost"
+
+  matrix_name : "wave"
+
+  matrix_pass : "123123"
+
+  matrix_server_description : "Wave in a Box"
+
+  matrix_room_type : "wave"
+
+  matrix_server_hostname : "test.localhost"
+
+  # How long to cache failed room search results.
+  matrix_room_search_failed_expiry : 300s
+
+  # How long to cache successful room search results.
+  matrix_room_search_successful_expiry : 7200s
+
+  room_search_expiration : 6h
+
+  # Set matrix_server_ip to localhost if the Matrix and Wave in a Box servers are
+  # running on the same host
+  matrix_server_ip : "localhost:8449"
+
+  # Set true to disable the verification of signed deltas
+  waveserver_disable_verification : true
+
+  # Set true to disable the verification of signers (certificates)
+  waveserver_disable_signer_verification : true
+}
+
+
+
+
+

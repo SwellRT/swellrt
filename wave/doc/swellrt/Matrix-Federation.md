@@ -100,15 +100,54 @@ Copy paste .crt and .key files from Matrix server  "~.synapse/example" folder to
 
 Just start the server. To test federation, create a collaborative object (aka wave), then add a participant from other domain. The second participant then could open the object and use it.
 
-### Set up in one physical server
+### Set up in single physical server
 
-For testing purposes you can install and federate two wave servers in the same box. Create a new instance-configuration of Synapse following previous instructios. At least you must provide a different name and ports. 
+For testing purposes you can install and federate two wave servers in the same box. 
 
-A parallel instance of a Wave server must be configured also, with its own configuration. Just ensure the host/port and certificates files of the new matrix server are properly set.
+In this scenario we will run two servers in domains *example.localhost* and *test.localhost*.
+
+Generate the distribution package of SwellRT from source code:
+
+```
+./gradlew createDistBinTar
+
+or
+
+./gradlew createDistBinZip
+```
+
+Extract the generated file and create two copies *swellrt-example/* and *swellrt-test/*:
+
+```
+cd distributions/
+tar zxvf swellrt-bin-X.Y.Z-beta.tar.gz
+mv swellrt/ swellrt-example
+cp -R swellrt-example/ swellrt-test
+```
+
+we provide two configuration files for this scenario. From the source code folder, copy *wave/config/application.conf.fed-example* and  *wave/config/application.conf.fed-test* to the standalone installations:
+
+```
+cp wave/config/application.conf.fed-example distributions/swellrt-example/config/application.conf
+
+cp wave/config/application.conf.fed-test distributions/swellrt-test/config/application.conf
+```
+
+Create a two instances of Synapse following previous instructions for the two different domains (example.localhost and test.localhost) and for the *test.localhost* server use port 8449
+
+Remind to copy certificates files to the root folder of each SwellRT installations:
+
+```
+cp ~/.synapse/example/*.crt distributions/swellrt-example/
+cp ~/.synapse/example/*.key distributions/swellrt-example/
+
+cp ~/.synapse/test/*.crt distributions/swellrt-test/
+cp ~/.synapse/test/*.key distributions/swellrt-test/
+```
 
 In this single box environment, Matrix servers will need to resolve each other's host/port using a DNS record. (As long as both servers are in the same host, DNS is the only way to resolve the right port).
 
-Installing a Bind9 DNS server you could use the following configuration for example.
+By installing a Bind9 DNS server you could use the following configuration for example.
 
 Content of "/etc/bind/db.local"
 ```
@@ -130,8 +169,46 @@ _matrix._tcp.example.localhost. 3600    IN      SRV     10 0 8448 localhost.
 _matrix._tcp.test.localhost.    3600    IN      SRV     10 0 8449 localhost.
 ```
 
+Remind you might need to configure the box's network configuration to use "127.0.0.1" as DNS server. To check if DNS works properly use the following query:
 
-Remind you might need to configure the box's network configuration to use "127.0.0.1" as DNS server.
+```
+nslookup -querytype=srv _matrix._tcp.example.localhost
+```
+
+*note*: in some servers, you will have to deactivate local DNS cache, for example in Ubuntu, edit */etc/NetworkManager/NetworkManager.conf* and comment "dns" entry.
+
+Start both synapse servers and both SwellRT servers (use scripts `run-server.sh` or `run-server.bat`)
+For each server, create an user:
+
+Go to http://example.localhost:9898/create-user.html and use following data:
+
+```
+username: example
+password: example
+```
+
+Go to http://test.localhost:9899/create-user.html and use following data:
+
+```
+username: test
+password: test
+```
+
+In the *example* server create the pad (aka collaborative object) with
+id *example.localhost/fedpad* using the user *example@example.localhost* user
+
+
+```
+http://example.localhost:9898/test-pad.html?id=example.localhost%2Ffedpad&user=example@example.localhost&pass=example
+```
+
+Add as participant the user from the other server *test@test.localhost*. 
+Then, open this pad from the *test* server:
+
+http://test.localhost:9899/test-pad.html?id=example.localhost%2Ffedpad&user=test@test.localhost&pass=test
+
+Now, both users must see and edit the same text.
+
 
 
 ## Wave Federation Protocol

@@ -1,0 +1,256 @@
+<!--
+  SwellRT Create user
+  Author: Pablo Ojanguren (pablojan@gmail.com)
+
+  A simple utility to create users
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SwellRT, Form Demo</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/swell.css">
+  <style type="text/css">
+
+
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container-fluid">
+
+    <div class="page-header">
+      <h4>
+        <span class="text-swellrt">
+          <span class="text-swell">Swell</span><span class="text-rt">RT</span>
+        </span>
+        <span class="title">Create user</span><span class="net-status" id="netStatus"></span>
+      </h4>
+    </div>
+
+    <div class="row">
+      <div class="col-md-offset-3 col-md-6 col-xs-offset-1 col-xs-10">
+
+        <form class="form-horizontal">
+
+          <div class="form-group">
+            <label for="inputName">User name</label>
+            <input type="text" class="form-control" id="inputName" placeholder="Username">
+          </div>
+
+          <div class="form-group">
+            <label for="fullName">Full name (optional)</label>
+            <input type="text" class="form-control" id="fullName" placeholder="Name">
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email address (optional)</label>
+            <input type="text" class="form-control" id="email" placeholder="Address">
+          </div>
+
+          <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" class="form-control" id="password" placeholder="Password">
+          </div>
+
+          <div class="form-group">
+              <label for="repeatPassword">Repeat Password</label>
+              <input type="password" class="form-control" id="repeatPassword" placeholder="Repeat password">
+          </div>
+
+
+          <br/>
+          <button id="btnSubmit" type="button" class="btn btn-default">Create User</button>
+          <br/>
+          <div id="alert" class="alert alert-danger" style="visibility: hidden" role="alert">
+          </div>
+          <div id="success" class="alert alert-success" style="visibility: hidden" role="alert">
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+
+</div><!-- container -->
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="/swell.js"></script>
+
+  <script>
+
+  swell.onReady(function(service) {
+    window.service = service;
+
+    // Put on eye on live communication turbulence
+    service.addConnectionHandler(connectionHandler);
+
+    service.login({
+      // anonymous login
+    })
+    .then( r => {
+
+      submit = document.getElementById('btnSubmit');
+      submit.addEventListener("click", function(e) {
+        cleanAlert();
+        createUser();
+      });
+
+
+
+    });
+
+
+  });
+
+  function showAlert(msg, alertId) {
+
+    if (!alertId)
+     alertId = "alert";
+    
+    alert = document.getElementById(alertId);
+    
+    alert.innerHTML = "<p>" + msg + "</p>";
+    alert.style.visibility = "visible";
+  }
+
+  function cleanAlert(alertId) {
+
+    if (!alertId)
+     alertId = "alert"
+
+    alert = document.getElementById(alertId);
+    alert.innerHTML = "";
+    alert.style.visibility = "hidden";
+  }
+
+  function createUser() {
+    cleanAlert();
+    cleanAlert("success");
+
+    var form = getFormData();
+
+    if (!form.username) {
+      showAlert("Username can't be empty");
+      return;
+    }
+    
+    if (form.password == "") {
+      showAlert("Password can't be empty");
+      return;
+    }
+    
+    if (form.password != form.repeatPassword) {
+      showAlert("Passwords doesn't match");
+      return;
+    }
+
+    service.createUser({
+      id: form.username,
+      name: form.fullname,
+      password: form.password,
+      email: form.email
+    })
+    .then( profile => {
+      cleanAlert();
+      showAlert("User created successfully! \n\n"+ JSON.stringify(profile), "success");
+      cleanForm();
+     })
+    .catch( err => { 
+      showAlert("Error creating user! \n\n"+ err);
+    });
+
+  }
+
+  function cleanForm() {
+    document.getElementById('inputName').value = '';
+    document.getElementById('fullName').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('repeatPassword').value = '';
+  }
+
+  function getFormData() {
+    return {
+      username : document.getElementById('inputName').value,
+      fullname : document.getElementById('fullName').value,
+      email : document.getElementById('email').value,
+      password : document.getElementById('password').value,
+      repeatPassword : document.getElementById('repeatPassword').value
+    };
+  }
+
+
+  // Utility functions
+
+  function objectHandler(s) {
+    var m = "";
+    if (s.type == 1) {
+      m += "error "+s.exception;
+    }
+    if (s.type == 2) {
+      if (s.uncommitted == s.unacknowledge == s.inflight == 0)
+        m += "all changes saved v="+s.lastCommittedVersion;
+      else
+        return;
+    }
+    if (s.type == 3) {
+      m += "closed";
+    }
+    console.log(m);
+  }
+
+
+function connectionHandler(s, e) {
+    console.log(s);
+    var netStatus = document.getElementById("netStatus");
+
+    if (s == "CONNECTED")
+      netStatus.innerHTML = '<span class="label label-info">Connected</span>';
+
+    if (s == "CONNECTING")
+      netStatus.innerHTML = '<span class="label label-warning">Connecting</span>';
+
+    if (s == "DISCONNECTED")
+      netStatus.innerHTML = '<span class="label label-danger">Disconnected</span>';
+
+    if (s == "ERROR")
+      netStatus.innerHTML = '<span class="label label-danger">Connection error. Please refresh the page!</span>';
+  }
+
+
+  function getURLSearchParam(name, defaultValue) {
+    var search = window.location.search;
+
+    if (search.indexOf('?') == 0) 
+      search = search.substring(1, search.length);
+
+    var searchMap = {};
+    var searchArray = search.split('&');
+    for(var i in searchArray) {
+      if (searchArray.hasOwnProperty(i)) {
+        var item = searchArray[i].split('=');
+        searchMap[item[0]] = item[1];
+      }
+    }
+
+    if (searchMap.hasOwnProperty(name)) 
+      return searchMap[name];
+    
+    return defaultValue;
+
+  }
+
+  </script>
+
+
+</body>
+
+</html>

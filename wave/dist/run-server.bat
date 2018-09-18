@@ -19,5 +19,5 @@ for /F "tokens=1* delims==" %%A IN (config/wave.conf) DO (
     )
 echo on
 
-java -Djava.util.logging.config.file=config/wiab-logging.conf -Djava.security.auth.login.config=config/jaas.config -Dwave.server.config=config/server.config  -jar bin/swellrt-%VERSION%.jar
+java -Djava.util.logging.config.file=config/swellrt-logging.conf -Djava.security.auth.login.config=config/jaas.config -jar bin/swellrt-%VERSION%.jar
 pause
