@@ -147,7 +147,7 @@ cp ~/.synapse/test/*.key distributions/swellrt-test/
 
 In this single box environment, Matrix servers will need to resolve each other's host/port using a DNS record. (As long as both servers are in the same host, DNS is the only way to resolve the right port).
 
-By installing a Bind9 DNS server you could use the following configuration for example.
+By installing a Bind9 DNS server you can use the following configuration for example.
 
 Content of "/etc/bind/db.local"
 ```
