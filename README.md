@@ -1,4 +1,4 @@
-# SwellRT [![Build Status](https://travis-ci.org/P2Pvalue/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
+# SwellRT [![Build Status](https://api.travis-ci.org/SwellRT/swellrt.svg?branch=master)](https://travis-ci.org/P2Pvalue/swellrt) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/P2Pvalue/swellrt)
 
 SwellRT is an open source **backend-as-a-service**. It provides prebuilt features to speed up development of collaborative Web applications:
 
