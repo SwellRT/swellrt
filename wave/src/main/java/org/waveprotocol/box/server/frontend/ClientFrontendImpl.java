@@ -290,7 +290,8 @@ public class ClientFrontendImpl implements ClientFrontend, WaveBus.Subscriber {
     WaveletName waveletName = WaveletName.of(wavelet.getWaveId(), wavelet.getWaveletId());
 
     if(waveletInfo.getCurrentWaveletVersion(waveletName).getVersion() == 0 && LOG.isWarningLoggable()) {
-      LOG.warning("Wavelet does not appear to have been initialized by client. Continuing anyway.");
+      LOG.warning("Wavelet " + waveletName.toString()
+          + " does not appear to have been initialized by client. Continuing anyway.");
     }
 
     waveletInfo.syncWaveletVersion(waveletName, newDeltas);
