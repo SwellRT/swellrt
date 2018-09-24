@@ -175,7 +175,7 @@ public class MongoDbDeltaCollection implements DeltaStore.DeltasAccess {
 
     if (result != null)
     try {
-      MongoDbDeltaStoreUtil.deserializeWaveletDeltaRecord(result);
+      waveletDelta = MongoDbDeltaStoreUtil.deserializeWaveletDeltaRecord(result);
     } catch (PersistenceException e) {
       throw new IOException(e);
     }
