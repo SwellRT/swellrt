@@ -19,14 +19,11 @@
 
 package org.waveprotocol.box.server.persistence.mongodb;
 
-import java.util.regex.Pattern;
-
 import org.waveprotocol.box.common.ExceptionalIterator;
 import org.waveprotocol.box.server.persistence.FileNotFoundPersistenceException;
 import org.waveprotocol.box.server.persistence.PersistenceException;
 import org.waveprotocol.box.server.waveserver.DeltaStore;
 import org.waveprotocol.box.server.waveserver.DeltaStoreTransient;
-import org.waveprotocol.wave.model.id.IdConstants;
 import org.waveprotocol.wave.model.id.WaveId;
 import org.waveprotocol.wave.model.id.WaveletId;
 import org.waveprotocol.wave.model.id.WaveletName;
@@ -39,7 +36,6 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 /**
  * A MongoDB based Delta Store implementation using a <b>deltas</b>
  * collection and a snapshots collection.
@@ -82,21 +78,31 @@ public class MongoDbDeltaStore implements DeltaStore, DeltaStoreTransient {
     return new MongoDbDeltaStore(deltasCollection, snapshotStore);
   }
 
+  /**
+   * Transient wavelets should only store data that could be delete eventually.
+   * However, deletion process must work in coordination with federated servers
+   * to keep data consistency among servers. <br>
+   * By now, it is only safe to delete those transient wavelets but not shared
+   * with other domains.
+   *
+   * @param deltasCollection
+   */
   private static void cleanTransientDeltaStores(MongoCollection<BasicDBObject> deltasCollection) {
 
-    try {
+    /*
+     * try {
+     *
+     * LOG.warning("Deleting transient wavelets data");
+     *
+     * // Using Journaled Write Concern //
+     * (http://docs.mongodb.org/manual/core/write-concern/#journaled)
+     * deltasCollection.withWriteConcern(WriteConcern.JOURNALED) .deleteMany(
+     * Filters.regex(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID,
+     * Pattern.compile("\\+" + IdConstants.TRANSIENT_WAVELET_PREFIX))); } catch
+     * (MongoException e) {
+     * LOG.warning("Exception cleaning up transient data from database", e); }
+     */
 
-      LOG.warning("Deleting transient wavelets data");
-
-      // Using Journaled Write Concern
-      // (http://docs.mongodb.org/manual/core/write-concern/#journaled)
-      deltasCollection.withWriteConcern(WriteConcern.JOURNALED)
-          .deleteMany(
-              Filters.regex(MongoDbDeltaStoreUtil.FIELD_WAVELET_ID,
-                  Pattern.compile("\\+" + IdConstants.TRANSIENT_WAVELET_PREFIX)));
-    } catch (MongoException e) {
-      LOG.warning("Exception cleaning up transient data from database", e);
-    }
   }
 
   private static void checkDeltasCollectionIndexes(
