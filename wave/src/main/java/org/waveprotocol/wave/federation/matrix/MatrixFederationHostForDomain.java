@@ -19,10 +19,8 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
-import com.typesafe.config.Config;
-import org.dom4j.Element;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,10 +30,11 @@ import org.waveprotocol.wave.federation.Proto.ProtocolHashedVersion;
 import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
+import com.typesafe.config.Config;
 
 
 /**
@@ -47,8 +46,7 @@ import java.util.logging.Logger;
  */
 class MatrixFederationHostForDomain implements WaveletFederationListener {
 
-  private static final Logger LOG =
-    Logger.getLogger(MatrixFederationHostForDomain.class.getCanonicalName());
+  private static final Log LOG = Log.get(MatrixFederationHostForDomain.class);
 
   // Timeout for outstanding listener updates sent over Matrix.
   private static final int MATRIX_LISTENER_TIMEOUT = 30;
@@ -96,19 +94,20 @@ class MatrixFederationHostForDomain implements WaveletFederationListener {
       throw new IllegalArgumentException("Must send at least one delta, or a last committed " +
           "version notice, for the target wavelet: " + waveletName);
     }
-    System.out.println("\n\nwavelet domain: " + remoteDomain);
+
+    LOG.fine("Looking up matrix room for remote domain " + remoteDomain + "...");
+
     room.searchRemoteId(remoteDomain, new SuccessFailCallback<String, String>() {
       @Override
       public void onSuccess(String roomId) {
-        System.out.println("\n\nroomId: " + roomId);
+        LOG.fine("Matrix room for remote domain " + remoteDomain + " is " + roomId);
         internalWaveletUpdate(waveletName, deltaList, committedVersion, callback, roomId);
       }
 
       @Override
       public void onFailure(String errorMessage) {
-        if (LOG.isLoggable(Level.FINE)) {
-          LOG.fine("Disco failed for remote domain " + remoteDomain + ", update not sent");
-        }
+        LOG.warning("Matrix room look up failed for remote domain " + remoteDomain
+            + ", waveletUpdate not sent");
         callback.onFailure(FederationErrors.newFederationError(
             FederationError.Code.RESOURCE_CONSTRAINT, errorMessage));
       }
@@ -176,10 +175,9 @@ class MatrixFederationHostForDomain implements WaveletFederationListener {
         commitNotice.putOpt("history-hash", Base64Util.encode(committedVersion.getHistoryHash()));
       }
 
-      System.out.println(message.getBody());
-
-      if(handler == null)
-        System.out.println("\n\nfml\n\n");
+      if (LOG.isFinerLoggable()) {
+        LOG.finer("waveletUpdate to remote: \n\n" + message.getBody().toString());
+      }
 
       // Send the generated message through to the foreign Matrix server.
       handler.send(message, new PacketCallback() {

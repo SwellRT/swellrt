@@ -19,22 +19,24 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.MapMaker;
-import com.google.inject.Inject;
-import com.typesafe.config.Config;
-import org.dom4j.Element;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 import org.waveprotocol.wave.federation.FederationErrors;
+import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.concurrent.*;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.MapMaker;
+import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * Provides abstraction between Federation-specific code and the backing Matrix
@@ -45,7 +47,7 @@ import java.util.logging.Logger;
  */
 public class MatrixPacketHandler implements IncomingPacketHandler {
 
-  private static final Logger LOG = Logger.getLogger(MatrixPacketHandler.class.getCanonicalName());
+  private static final Log LOG = Log.get(MatrixPacketHandler.class);
 
   /**
    * Inner static class representing a single outgoing call.
@@ -102,6 +104,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
 
         @Override
         public void onFailure(String errorMessage) {
+          LOG.warning(errorMessage);
         }
       });
     }
@@ -141,13 +144,13 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
     room.searchRemoteId("localhost:20000", new SuccessFailCallback<String, String>() {
       @Override
       public void onSuccess(String remoteJid) {
-        System.out.println("Success :" + remoteJid);
-        
+        LOG.info("Success :" + remoteJid);
+
       }
 
       @Override
       public void onFailure(String errorMessage) {
-        System.out.println("Fail : localhost:20000");
+        LOG.info("Fail : localhost:20000");
       }
     });
   }
@@ -157,31 +160,31 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
 
     try {
 
+      if (LOG.isFinerLoggable())
+        LOG.finer("Received packet: " + packet);
+
       JSONObject rooms = packet.getJSONObject("rooms");
       JSONObject invites = rooms.getJSONObject("invite");
 
+      @SuppressWarnings("unchecked")
       Iterator<String> invite_it = invites.keys();
       while(invite_it.hasNext()) {
         String roomId = invite_it.next();
 
-        System.out.println(roomId);
-
-        if (LOG.isLoggable(Level.FINE)) {
-          LOG.fine("Received incoming invite: " + roomId);
-        }
-
+        LOG.info("Received invite for room " + roomId);
         room.processRoomInvite(roomId);
       }
 
       JSONObject joined_rooms = rooms.optJSONObject("join");
 
       if(joined_rooms != null) {
+        @SuppressWarnings("unchecked")
         Iterator<String> joined_it = joined_rooms.keys();
         while(joined_it.hasNext()) {
           String roomId = joined_it.next();
 
           JSONObject roomInfo = joined_rooms.getJSONObject(roomId);
-          
+
           JSONArray arr = roomInfo.getJSONObject("timeline").getJSONArray("events");
 
           for (int i=0; i < arr.length(); i++) {
@@ -194,7 +197,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
                 processMessage(message);
             }
             else {
-              if(message.getString("type").equals("m.room.member") 
+              if(message.getString("type").equals("m.room.member")
                   && !message.getString("sender").equals(id))
               processResponse(message);
             }
@@ -204,7 +207,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
               processResponse(message);
           }
         }
-        
+
       }
     } catch (JSONException ex) {
       throw new RuntimeException(ex);
@@ -214,14 +217,15 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
   public void send(Request request, final PacketCallback callback, int timeout) {
 
     try {
- 
+
       JSONObject packet = transport.sendPacket(request);
 
       if(packet == null)
         callback.error(FederationErrors.internalServerError("UserId Not Found"));
       else {
 
-        System.out.println("\n\n return:-\n"+packet+"\n\n");
+        if (LOG.isFinerLoggable())
+          LOG.finer("Sending packet: " + packet);
 
         String temp_key = null;
 
@@ -250,12 +254,11 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
           };
           call.start(timeoutExecutor.schedule(timeoutTask, timeout, TimeUnit.SECONDS));
         } else {
-          String msg = "Could not send packet, ID already in-flight: " + key;
-          LOG.warning(msg);
-
+          String m = "Packet couldn't be sent because, packet id " + key + " already in-flight";
+          LOG.warning(m);
           // Invoke the callback with an internal error.
           callback.error(
-              FederationErrors.newFederationError(FederationError.Code.UNDEFINED_CONDITION, msg));
+              FederationErrors.newFederationError(FederationError.Code.UNDEFINED_CONDITION, m));
         }
 
       }
@@ -297,7 +300,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
 
   private void processMessage(JSONObject packet) {
     try {
-      PacketCallback responseCallback = 
+      PacketCallback responseCallback =
           new IncomingCallback(packet.getString("sender"), packet.getString("event_id"));
       JSONObject content = packet.getJSONObject("content");
       if(content.getString("msgtype").equals("m.notice"))
@@ -322,7 +325,7 @@ public class MatrixPacketHandler implements IncomingPacketHandler {
         else if (element.getString("node").equals("signer"))
             host.processGetSignerRequest(packet, responseCallback);
       }
-      
+
     } catch (JSONException ex) {
       throw new RuntimeException(ex);
     }

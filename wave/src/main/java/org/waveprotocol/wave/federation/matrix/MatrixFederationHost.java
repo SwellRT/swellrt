@@ -19,14 +19,9 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.typesafe.config.Config;
-import org.dom4j.Element;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,10 +35,15 @@ import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.typesafe.config.Config;
 
 /**
  * This class encapsulates the incoming packet processing portion of the
@@ -54,8 +54,7 @@ import java.util.logging.Logger;
  */
 public class MatrixFederationHost implements WaveletFederationListener.Factory {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(MatrixFederationHost.class.getCanonicalName());
+  private static final Log LOG = Log.get(MatrixFederationHost.class);
 
   private final WaveletFederationProvider waveletProvider;
 
@@ -80,9 +79,9 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
     this.waveletProvider = waveletProvider;
     listeners = CacheBuilder.newBuilder().build(new CacheLoader<String, WaveletFederationListener>() {
       @Override
-      public WaveletFederationListener load(@SuppressWarnings("NullableProblems") String domain) {
-        System.out.println("loading hosts");
-        return new MatrixFederationHostForDomain(domain, handler, room, config);
+          public WaveletFederationListener load(String domain) {
+            LOG.info("Loading Federation listener for domain " + domain);
+            return new MatrixFederationHostForDomain(domain, handler, room, config);
       }
     });
   }
@@ -94,7 +93,6 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
    */
   public void setHandler(MatrixPacketHandler handler) {
     this.handler = handler;
-    System.out.println("handler set");
   }
 
   /**
@@ -383,6 +381,7 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
         new WaveletFederationProvider.DeltaSignerInfoResponseListener() {
           @Override
           public void onFailure(FederationError error) {
+            LOG.warning(error.getErrorMessage());
             responseCallback.error(error);
           }
 
@@ -436,7 +435,7 @@ public class MatrixFederationHost implements WaveletFederationListener.Factory {
 
     ProtocolSignerInfo signer;
     signer = MatrixUtil.jsonToProtocolSignerInfo(signatureElement);
-    
+
 
     WaveletFederationProvider.PostSignerInfoResponseListener listener =
         new WaveletFederationProvider.PostSignerInfoResponseListener() {

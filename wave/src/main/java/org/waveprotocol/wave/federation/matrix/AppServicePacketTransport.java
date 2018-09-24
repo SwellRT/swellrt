@@ -22,7 +22,6 @@ package org.waveprotocol.wave.federation.matrix;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLContext;
 
@@ -33,6 +32,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.waveprotocol.wave.util.logging.Log;
 
 import com.google.inject.Inject;
 import com.mashape.unirest.http.HttpResponse;
@@ -52,11 +52,9 @@ import com.typesafe.config.Config;
  *
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
-@SuppressWarnings("deprecation")
 public class AppServicePacketTransport implements Runnable, OutgoingPacketTransport {
 
-  private static final Logger LOG =
-      Logger.getLogger(AppServicePacketTransport.class.getCanonicalName());
+  private static final Log LOG = Log.get(AppServicePacketTransport.class);
 
   static final int MATRIX_SOCKET_TIMEOUT = 10000;
   static final int MATRIX_CONNECT_TIMEOUT = 10000;
@@ -108,7 +106,9 @@ public class AppServicePacketTransport implements Runnable, OutgoingPacketTransp
   public void processPacket() {
     try {
       JSONObject packets = sendPacket(MatrixUtil.syncRequest(syncTime));
-      System.out.println("\n\n\n packet:-\n"+packets+"\n\n");
+      if (LOG.isFineLoggable()) {
+        LOG.fine(packets.toString());
+      }
       handler.receivePacket(packets);
       syncTime = packets.getString("next_batch");
 

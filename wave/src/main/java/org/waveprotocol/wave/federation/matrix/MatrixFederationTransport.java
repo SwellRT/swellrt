@@ -19,10 +19,10 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.inject.Inject;
-
 import org.waveprotocol.wave.federation.FederationTransport;
 import org.waveprotocol.wave.util.logging.Log;
+
+import com.google.inject.Inject;
 
 /**
  * An implementation of {@link FederationTransport} for Matrix federation.
@@ -41,17 +41,17 @@ public class MatrixFederationTransport implements FederationTransport {
 
   @Override
   public void startFederation() {
-    Thread transportThread = new Thread(transport);		
+    Thread transportThread = new Thread(transport);
 
     Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
       public void uncaughtException(Thread th, Throwable ex) {
-        LOG.warning("couldn't connect to Matrix server:", ex);
+        LOG.warning("Error on Federation Transport:", ex);
       }
     };
 
     transportThread.setUncaughtExceptionHandler(handler);
     transportThread.setDaemon(true);
-    transportThread.start();		
+    transportThread.start();
   }
 
 }

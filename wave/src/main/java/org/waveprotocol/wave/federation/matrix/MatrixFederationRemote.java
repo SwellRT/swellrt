@@ -19,15 +19,9 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
-import com.typesafe.config.Config;
-import org.apache.commons.codec.binary.Base64;
-import org.dom4j.Attribute;
-import org.dom4j.Element;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,10 +35,13 @@ import org.waveprotocol.wave.federation.WaveletFederationListener;
 import org.waveprotocol.wave.federation.WaveletFederationProvider;
 import org.waveprotocol.wave.model.id.URIEncoderDecoder.EncodingException;
 import org.waveprotocol.wave.model.id.WaveletName;
+import org.waveprotocol.wave.util.logging.Log;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
+import com.typesafe.config.Config;
 
 /**
  * Remote implementation. Receives submit and history requests from the local
@@ -55,7 +52,7 @@ import java.util.logging.Logger;
  * @author khwaqee@gmail.com (Waqee Khalid)
  */
 public class MatrixFederationRemote implements WaveletFederationProvider {
-  private static final Logger LOG = Logger.getLogger(MatrixFederationRemote.class.getCanonicalName());
+  private static final Log LOG = Log.get(MatrixFederationRemote.class);
 
   // Timeout for outstanding provider calls sent over Matrix.
   private static final int MATRIX_PROVIDER_TIMEOUT = 30;
@@ -203,7 +200,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
 
       items.putOpt("node", "wavelet");
       JSONObject historyDelta = new JSONObject();
-      
+
       items.putOpt("delta-history", historyDelta);
 
       historyDelta.putOpt("start-version", Long.toString(startVersion
@@ -275,7 +272,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
 
       // Extract domain from waveletId
       final String remoteDomain = waveletName.waveletId.getDomain();
-      
+
       items.putOpt("node", "signer");
       // TODO: should allow multiple requests in the same packet
       JSONObject signerRequest = new JSONObject();
@@ -482,9 +479,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
       // Submit all applied deltas to the domain-focused listener.
       List<ByteString> deltas = Lists.newArrayList();
       String deltaBody = waveletUpdate.optString("applied-delta");
-      System.out.println("wait");
       if (!deltaBody.isEmpty()) {
-        System.out.println("wtf");
         deltas.add(Base64Util.decode(deltaBody));
         callbackCount.incrementAndGet(); // Increment required callbacks.
         listener.waveletDeltaUpdate(waveletName, deltas, callback);
@@ -501,7 +496,7 @@ public class MatrixFederationRemote implements WaveletFederationProvider {
       }
     }
 
-    
+
 
     // Release sentinel so that 'expected' callbacks from the WS don't invoke
     // sending a receipt.

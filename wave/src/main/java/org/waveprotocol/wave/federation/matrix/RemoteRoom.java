@@ -19,39 +19,25 @@
 
 package org.waveprotocol.wave.federation.matrix;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.MapMaker;
-import com.google.common.collect.Sets;
+import java.security.SecureRandom;
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
-import org.dom4j.Attribute;
-import org.dom4j.Element;
 import org.joda.time.DateTimeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.waveprotocol.wave.federation.FederationErrors;
 import org.waveprotocol.wave.federation.FederationErrorProto.FederationError;
 
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
+import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * Represents Matrix room status for a specific remote domain. This class only
@@ -74,7 +60,7 @@ public class RemoteRoom {
 
 
   private final Random random = new SecureRandom();
-  private MatrixPacketHandler handler; 
+  private MatrixPacketHandler handler;
   private final String remoteId;
   private final AtomicReference<Status> status;
   private final Queue<SuccessFailCallback<String, String>> pending;
@@ -193,7 +179,6 @@ public class RemoteRoom {
           LOG.info("Checking room existance for: " + remoteId);
 
           String roomAlias = "%23" + remoteId + ":" + handler.getDomain();
-          System.out.println(roomAlias);
           JSONObject packet = handler.sendBlocking(MatrixUtil.getRoom(roomAlias));
 
           Request request = null;
@@ -233,7 +218,7 @@ public class RemoteRoom {
           }
 
           handler.send(request, callback, TIMEOUT);
-        
+
         } catch (JSONException ex) {
           throw new RuntimeException(ex);
         }
@@ -243,7 +228,7 @@ public class RemoteRoom {
     // Kick off requester!
     requester.run();
   }
-  
+
   boolean finish(String roomId, FederationError error) {
     Preconditions.checkArgument((roomId != null)^(error != null));
     if (!status.compareAndSet(Status.PENDING, Status.COMPLETE)) {
