@@ -241,7 +241,8 @@ public class SWaveNodeManager {
   private final Map<SubstrateId, SWaveNode> nodeStore = new HashMap<SubstrateId, SWaveNode>();
   private final SSessionManager session;
   private final IdGenerator idGenerator;
-  private final String domain;
+  private final String localDomain;
+  private final String waveDomain;
   private final ObservableWaveView wave;
   private final ContextStatus waveStatus;
 
@@ -257,9 +258,9 @@ public class SWaveNodeManager {
   private SWaveObject waveObject;
 
   public static SWaveNodeManager create(SSessionManager session, IdGenerator idGenerator,
-      String domain, ObservableWaveView wave, ContextStatus waveStatus,
+      String localDomain, ObservableWaveView wave, ContextStatus waveStatus,
       SWaveDocuments<? extends InteractiveDocument> documentRegistry) {
-    return new SWaveNodeManager(session, idGenerator, domain, wave, waveStatus, documentRegistry);
+    return new SWaveNodeManager(session, idGenerator, localDomain, wave, waveStatus, documentRegistry);
   }
 
   private static ObservableWavelet retrieveDataWavelet(String domain, ObservableWaveView wave) {
@@ -330,22 +331,23 @@ public class SWaveNodeManager {
   }
 
 
-  private SWaveNodeManager(SSessionManager session, IdGenerator idGenerator, String domain,
+  private SWaveNodeManager(SSessionManager session, IdGenerator idGenerator, String localDomain,
       ObservableWaveView wave, ContextStatus waveStatus,
       SWaveDocuments<? extends InteractiveDocument> documentRegistry) {
     this.session = session;
     this.idGenerator = idGenerator;
-    this.domain = domain;
+    this.localDomain = localDomain;
+    this.waveDomain = wave.getWaveId().getDomain();
     this.wave = wave;
-    this.dataWavelet = retrieveDataWavelet(domain, wave);
-    this.userWavelet = retrieveUserWavelet(domain, wave, session.get().getParticipantId());
-    this.transientWavelet = retrieveTransientWavelet(domain, wave);
+    this.dataWavelet = retrieveDataWavelet(waveDomain, wave);
+    this.userWavelet = retrieveUserWavelet(localDomain, wave, session.get().getParticipantId());
+    this.transientWavelet = retrieveTransientWavelet(waveDomain, wave);
     this.waveStatus = waveStatus;
     this.documentRegistry = documentRegistry;
   }
 
   public void setListener(SWaveletListener listener) {
-    this.wave.getWavelet(WaveletId.of(domain, WaveCommons.MASTER_DATA_WAVELET_NAME))
+    this.wave.getWavelet(WaveletId.of(waveDomain, WaveCommons.MASTER_DATA_WAVELET_NAME))
         .addListener(listener);
   }
 
@@ -714,7 +716,7 @@ public class SWaveNodeManager {
   //
 
   public void setPublic(boolean isPublic) {
-    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneUniversal(domain);
+    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneUniversal(localDomain);
 
     if (isPublic) {
       dataWavelet.addParticipant(publicParticipanId);
@@ -726,7 +728,7 @@ public class SWaveNodeManager {
   }
 
   public boolean isPublic() {
-    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneUniversal(domain);
+    ParticipantId publicParticipanId = ParticipantIdUtil.makeAnyoneUniversal(localDomain);
     return dataWavelet.getParticipantIds().contains(publicParticipanId);
   }
 
