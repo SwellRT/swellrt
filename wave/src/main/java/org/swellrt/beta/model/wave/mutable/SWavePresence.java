@@ -369,13 +369,11 @@ public class SWavePresence {
     try {
       this.presenceSharedMap.unlisten(presenceMutationHandler);
     } catch (SException e) {
-      throw new IllegalStateException(e);
     }
 
     try {
       this.presenceSharedMap.remove(sessionManager.get().getSessionId());
     } catch (SException e) {
-      throw new IllegalStateException(e);
     }
 
     this.sessionManager.unregisterHandler(sessionHandler);
@@ -385,10 +383,9 @@ public class SWavePresence {
     if (mode == Mode.PASSIVE) {
 
       // Ignore for platforms not supported yet
-      if (WaveDeps.lowPriorityTimer == null)
-        return;
-
-      WaveDeps.lowPriorityTimer.cancel(presenceUpdateTask);
+      if (WaveDeps.lowPriorityTimer != null) {
+        WaveDeps.lowPriorityTimer.cancel(presenceUpdateTask);
+      }
     }
 
     started = false;
