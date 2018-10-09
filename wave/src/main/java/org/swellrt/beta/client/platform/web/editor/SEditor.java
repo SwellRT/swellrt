@@ -87,6 +87,8 @@ public class SEditor implements EditorUpdateListener {
 
   private STextWeb text = null;
 
+  private boolean caretsEnabled = false;
+
   private ConnectionHandler connectionHandler = new ConnectionHandler() {
 
     @Override
@@ -216,6 +218,9 @@ public class SEditor implements EditorUpdateListener {
   }
 
   private void startCaretManager(STextWeb text) {
+
+    if (!caretsEnabled)
+      return;
 
     if (caretManager != null) {
       caretManager.stop();
@@ -622,6 +627,10 @@ public class SEditor implements EditorUpdateListener {
     return new Pretty<Node>().print(node.getContext().rendering().getFullHtmlView(),
         node.getImplNodelet());
 
+  }
+
+  public void enableCarets(boolean enable) {
+    this.caretsEnabled = enable;
   }
 
 }

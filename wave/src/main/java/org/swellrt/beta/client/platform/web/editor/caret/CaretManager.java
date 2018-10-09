@@ -13,6 +13,8 @@ import org.waveprotocol.wave.client.editor.content.ContentDocument;
 import org.waveprotocol.wave.model.document.MutableAnnotationSet;
 import org.waveprotocol.wave.model.document.util.FocusedRange;
 
+import com.google.gwt.core.client.GWT;
+
 /**
  * Carets positions are stored in a transient map (in the transient wavelet) by
  * this class when editor's selection changes.
@@ -122,22 +124,28 @@ public class CaretManager implements EditorUpdateListener {
     int currentFocusPos = annotations.firstAnnotationChange(0, size, key, null);
     int newFocusPos = caretInfo.getPosition();
 
-    if (currentFocusPos == -1) {
-      // New USER_END annotation
-      annotations.setAnnotation(newFocusPos, size, key, value);
+    try {
 
-    } else {
-      // Update annotation
+      if (currentFocusPos == -1) {
+        // New USER_END annotation
+        annotations.setAnnotation(newFocusPos, size, key, value);
 
-      if (newFocusPos < currentFocusPos) {
-        // New caret is before the current one. Extend the annotation.
-        annotations.setAnnotation(newFocusPos, currentFocusPos, key, value);
+      } else {
+        // Update annotation
 
-      } else if (newFocusPos > currentFocusPos) {
-        // New caret is after current, remove annotation in before the caret
-        annotations.setAnnotation(currentFocusPos, newFocusPos, key, null);
+        if (newFocusPos < currentFocusPos) {
+          // New caret is before the current one. Extend the annotation.
+          annotations.setAnnotation(newFocusPos, currentFocusPos, key, value);
+
+        } else if (newFocusPos > currentFocusPos) {
+          // New caret is after current, remove annotation in before the caret
+          annotations.setAnnotation(currentFocusPos, newFocusPos, key, null);
+        }
+
       }
 
+    } catch (Exception e) {
+      GWT.log("Exception setting caret annotation", e);
     }
 
   }
