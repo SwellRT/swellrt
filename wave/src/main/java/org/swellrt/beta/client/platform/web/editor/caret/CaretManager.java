@@ -145,7 +145,7 @@ public class CaretManager implements EditorUpdateListener {
       }
 
     } catch (Exception e) {
-      GWT.log("Exception setting caret annotation", e);
+      GWT.log("Captured exception on caret annotation (ignore?)", e);
     }
 
   }

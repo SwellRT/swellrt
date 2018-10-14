@@ -629,6 +629,11 @@ public class SEditor implements EditorUpdateListener {
 
   }
 
+  /**
+   * Enable live carets of concurrent participants to be syncronized and
+   * displayed. This state is only considered when on each call to
+   * {@link SEditor#set(STextWeb)}.
+   */
   public void enableCarets(boolean enable) {
     this.caretsEnabled = enable;
   }
