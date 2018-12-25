@@ -271,7 +271,9 @@
   }
 
   function connectionHandler(s, e) {
+	window._exception = e;	
     console.log(s);
+    console.log(e);
     var netStatus = document.getElementById("netStatus");
 
     if (s == "CONNECTED")
