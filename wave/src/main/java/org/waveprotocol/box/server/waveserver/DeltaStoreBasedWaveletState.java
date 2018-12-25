@@ -415,8 +415,8 @@ class DeltaStoreBasedWaveletState implements WaveletState {
    * </pre>
    * <b>
    * <p>
-   * Deltas are returned in ascending sort if startVersion is greater than endVersion,
-   * and desceding sort otherwise.
+   * Deltas are returned in ascending sort if startVersion is less than endVersion,
+   * and descending sort otherwise.
    *
    * @param reader
    * @param cachedDeltas
@@ -442,6 +442,10 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     HashedVersion startVersionCache = null;
     HashedVersion endVersionCache = null;
 
+    // DEBUG (https://github.com/SwellRT/swellrt/issues/246) 
+    WaveletDeltaRecord tmpStoredLastDelta = internalReceiver.lastDelta;
+    WaveletDeltaRecord tmpCachedLastDelta = null;
+
     if (internalReceiver.lastDelta == null) {
 
       startVersionCache = startVersion;
@@ -465,6 +469,25 @@ class DeltaStoreBasedWaveletState implements WaveletState {
     } else {
       readDeltasCacheDescending(cachedDeltas, startVersionCache, endVersionCache, internalReceiver);
     }
+
+    // DEBUG (https://github.com/SwellRT/swellrt/issues/246)
+    // 
+    tmpCachedLastDelta = internalReceiver.lastDelta;
+
+    if (internalReceiver.lastDelta.getResultingVersion().getVersion() != endVersion.getVersion()) {
+      LOG.severe("No enough Deltas were retrieved, expected from " + startVersion.getVersion()
+          + " to " + endVersion.getVersion());
+      if (tmpStoredLastDelta != null) {
+        LOG.severe("Last delta retrieved from storage was (resuting version) = "
+            + tmpStoredLastDelta.getResultingVersion().getVersion());
+      }
+      if (tmpCachedLastDelta != null) {
+        LOG.severe("Last delta retrieved from cache was (resuting version) = "
+            + tmpCachedLastDelta.getResultingVersion().getVersion());
+
+      }
+    }
+
 
     /*
 
@@ -884,17 +907,21 @@ class DeltaStoreBasedWaveletState implements WaveletState {
         snapshot = WaveletDataUtil.buildWaveletFromFirstDelta(getWaveletName(), deltaRecord.getTransformedDelta());
         contributions = new WaveletContributions(deltasAccess.getWaveletName());
         contributions.apply(deltaRecord.getTransformedDelta());
+        cachedDeltas.put(deltaRecord.getAppliedAtVersion(), deltaRecord);
       } else {
         // Avoid to update snapshot when it has being persisted
         synchronized (persistLock) {
           WaveletDataUtil.applyWaveletDelta(deltaRecord.getTransformedDelta(), snapshot);
           contributions.apply(deltaRecord.getTransformedDelta());
-        }
+          //
+          // Now that we built the snapshot without any exceptions, we record the
+          // delta.
+          // 
+          // Update cachedDeltas inside synchronized block to avoid cachedDelta's
+          // map got desynchronized with snapshot (https://github.com/SwellRT/swellrt/issues/246)
+          cachedDeltas.put(deltaRecord.getAppliedAtVersion(), deltaRecord);
+          }
       }
-
-
-    // Now that we built the snapshot without any exceptions, we record the delta.
-    cachedDeltas.put(deltaRecord.getAppliedAtVersion(), deltaRecord);
 
     // Increment counter controlling snapshot persistence
     deltasCountBeforeSnapshotStore++;
