@@ -30,6 +30,10 @@ plugins {
 
 }
 allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.fork = true
+    }
+
     apply plugin: 'eclipse';
     apply plugin: 'idea';
     apply plugin: 'jacoco'
